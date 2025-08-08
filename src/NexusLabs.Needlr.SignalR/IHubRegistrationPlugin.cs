@@ -1,6 +1,7 @@
 ﻿namespace NexusLabs.Needlr.SignalR;
 
 [DoNotAutoRegister]
+[DoNotInject]
 public interface IHubRegistrationPlugin
 {
     /// <summary>

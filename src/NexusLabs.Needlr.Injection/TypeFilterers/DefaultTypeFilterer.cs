@@ -18,9 +18,7 @@ public sealed class DefaultTypeFilterer : ITypeFilterer
             return false;
         }
 
-        // ignore our own plugin types
-        if (type.IsAssignableTo(typeof(IServiceCollectionPlugin)) ||
-            type.IsAssignableTo(typeof(IPostBuildServiceCollectionPlugin)))
+        if (type.GetCustomAttribute<DoNotInjectAttribute>(inherit: true) is not null)
         {
             return false;
         }

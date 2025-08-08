@@ -4,6 +4,7 @@
 /// Defines a plugin that can configure the <see cref="IServiceCollection"/> for dependency injection.
 /// </summary>
 [DoNotAutoRegister]
+[DoNotInject]
 public interface IServiceCollectionPlugin
 {
     /// <summary>

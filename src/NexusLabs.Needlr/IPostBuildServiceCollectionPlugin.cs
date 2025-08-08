@@ -1,6 +1,7 @@
 ﻿namespace NexusLabs.Needlr;
 
 [DoNotAutoRegister]
+[DoNotInject]
 public interface IPostBuildServiceCollectionPlugin
 {
     /// <summary>
