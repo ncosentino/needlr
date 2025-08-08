@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Plugins\NexusLabs.Needlr.Plugins.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  </ItemGroup>
+
+</Project>

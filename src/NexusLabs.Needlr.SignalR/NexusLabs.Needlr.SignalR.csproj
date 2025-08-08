@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Plugins\NexusLabs.Needlr.Plugins.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  </ItemGroup>
+
+</Project>
