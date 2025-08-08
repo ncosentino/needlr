@@ -3,12 +3,6 @@ using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Scrutor;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 
-using var loggerFactory = LoggerFactory
-    .Create(builder => builder
-    .AddConsole()
-    .SetMinimumLevel(LogLevel.Information));
-var logger = loggerFactory.CreateLogger("AspNetCoreApp1.Startup");
-
 var assemblyProvider = new AssembyProviderBuilder()
     .MatchingAssemblies(x => 
         x.Contains("NexusLabs", StringComparison.OrdinalIgnoreCase) ||
@@ -27,12 +21,10 @@ ServiceProviderBuilder serviceProviderBuilder = new(
 WebApplicationFactory webApplicationFactory = new(
     serviceProviderBuilder,
     serviceCollectionPopulator);
-CreateWebApplicationOptions options = new(
-    new WebApplicationOptions()
-    {
-        Args = args,
-        ApplicationName = "AspNetCoreApp1",
-    },
-    logger);
-var webApplication = webApplicationFactory.Create(options);
+var options = CreateWebApplicationOptions.Default
+    .UsingCliArgs(args)
+    .UsingApplicationName("Dev Leader Weather App")
+    .UsingStartupConsoleLogger();
+var webApplication = webApplicationFactory.Create(
+    options);
 await webApplication.RunAsync();
