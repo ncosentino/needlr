@@ -8,13 +8,13 @@ public sealed class DefaultAssemblyLoader : IAssemblyLoader
 
     public DefaultAssemblyLoader()
     {
+        var entrypointPath = Path.GetFileName(Assembly.GetEntryAssembly().Location);
         _fileMatchAssemblyLoader = new FileMatchAssemblyLoader(
             [AppDomain.CurrentDomain.BaseDirectory],
             fileName =>
             {
                 return
-                    fileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);
+                    fileName.Equals(entrypointPath, StringComparison.OrdinalIgnoreCase);
             });
     }
 
