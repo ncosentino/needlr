@@ -10,7 +10,8 @@ namespace NexusLabs.Needlr.AspNet;
 [DoNotAutoRegister]
 public sealed class WebApplicationFactory(
     IServiceProviderBuilder _serviceProviderBuilder,
-    IServiceCollectionPopulator _serviceCollectionPopulator) : IWebApplicationFactory
+    IServiceCollectionPopulator _serviceCollectionPopulator) :
+    IWebApplicationFactory
 {
     private readonly PluginFactory _pluginFactory = new();
 

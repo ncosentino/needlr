@@ -1,0 +1,82 @@
+using Microsoft.Extensions.Configuration;
+
+using System.Reflection;
+
+namespace NexusLabs.Needlr.Injection;
+
+/// <summary>
+/// Provides a fluent API for configuring and building service providers using Needlr.
+/// Acts as an immutable container that creates copies via extension methods.
+/// </summary>
+[DoNotAutoRegister]
+public sealed record Syringe
+{
+    internal ITypeRegistrar? TypeRegistrar { get; init; }
+    internal ITypeFilterer? TypeFilterer { get; init; }
+    internal Func<ITypeRegistrar, ITypeFilterer, IServiceCollectionPopulator>? ServiceCollectionPopulatorFactory { get; init; }
+    internal IAssemblyProvider? AssemblyProvider { get; init; }
+    internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
+
+    /// <summary>
+    /// Builds a service provider with the configured settings.
+    /// </summary>
+    /// <param name="config">The configuration to use for building the service provider.</param>
+    /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
+    public IServiceProvider BuildServiceProvider(
+        IConfiguration config)
+    {
+        var typeRegistrar = GetOrCreateTypeRegistrar();
+        var typeFilterer = GetOrCreateTypeFilterer();
+        var serviceCollectionPopulator = GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var assemblyProvider = GetOrCreateAssemblyProvider();
+        var additionalAssemblies = AdditionalAssemblies ?? [];
+
+        var serviceProviderBuilder = new ServiceProviderBuilder(
+            serviceCollectionPopulator,
+            assemblyProvider,
+            additionalAssemblies);
+
+        return serviceProviderBuilder.Build(config);
+    }
+        
+    /// <summary>
+    /// Gets the configured type registrar or creates a default one.
+    /// </summary>
+    public ITypeRegistrar GetOrCreateTypeRegistrar()
+    {
+        return TypeRegistrar ?? new TypeRegistrars.DefaultTypeRegistrar();
+    }
+
+    /// <summary>
+    /// Gets the configured type filterer or creates a default one.
+    /// </summary>
+    public ITypeFilterer GetOrCreateTypeFilterer()
+    {
+        return TypeFilterer ?? new TypeFilterers.DefaultTypeFilterer();
+    }
+
+    /// <summary>
+    /// Gets the configured service collection populator or creates a default one.
+    /// </summary>
+    public IServiceCollectionPopulator GetOrCreateServiceCollectionPopulator(ITypeRegistrar typeRegistrar, ITypeFilterer typeFilterer)
+    {
+        return ServiceCollectionPopulatorFactory?.Invoke(typeRegistrar, typeFilterer) 
+            ?? new ServiceCollectionPopulator(typeRegistrar, typeFilterer);
+    }
+
+    /// <summary>
+    /// Gets the configured assembly provider or creates a default one.
+    /// </summary>
+    public IAssemblyProvider GetOrCreateAssemblyProvider()
+    {
+        return AssemblyProvider ?? new AssembyProviderBuilder().Build();
+    }
+
+    /// <summary>
+    /// Gets the configured additional assemblies.
+    /// </summary>
+    public IReadOnlyList<Assembly> GetAdditionalAssemblies()
+    {
+        return AdditionalAssemblies ?? [];
+    }
+}
