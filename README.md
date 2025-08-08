@@ -1,3 +1,5 @@
+![Needlr](needlr.webp)
+
 # Needlr
 
 Needlr is an opinionated fluent dependency injection library for .NET that provides automatic service registration and web application setup through a simple, discoverable API. It's designed to minimize boilerplate code by defaulting to registering types from scanned assemblies automatically.
@@ -240,3 +242,5 @@ await webApplication.RunAsync();
 
 - .NET 9 or later
 - C# 13.0 or later
+
+
