@@ -1,24 +1,30 @@
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Scrutor;
 
-var webApplication = new Syringe()
-    .UsingScrutorTypeRegistrar()
-    .BuildWebApplication();
+var webApplication = new Syringe().BuildWebApplication();
 await webApplication.RunAsync();
 
 internal sealed class WeatherPlugin : IWebApplicationPlugin
 {
     public void Configure(WebApplicationPluginOptions options)
     {
-        options.WebApplication.MapGet("/weather", (IConfiguration config) =>
+        options.WebApplication.MapGet("/weather", (WeatherProvider weatherProvider) =>
         {
-            var weatherConfig = config.GetSection("Weather");
-            return Results.Ok(new
-            {
-                TemperatureC = weatherConfig.GetValue<double>("TemperatureCelsius"),
-                Summary = weatherConfig.GetValue<string>("Summary"),
-            });
+            return Results.Ok(weatherProvider.GetWeather());
         });
+    }
+}
+
+internal sealed class WeatherProvider(
+    IConfiguration _config)
+{
+    public object GetWeather()
+    {
+        var weatherConfig = _config.GetSection("Weather");
+        return new
+        {
+            TemperatureC = weatherConfig.GetValue<double>("TemperatureCelsius"),
+            Summary = weatherConfig.GetValue<string>("Summary"),
+        };
     }
 }
