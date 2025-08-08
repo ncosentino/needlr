@@ -1,0 +1,23 @@
+
+<Solution>
+  <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.Plugins\NexusLabs.Needlr.Plugins.csproj" />
+  <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="NuGet.config" />
+  </Folder>
+  <Project Path="NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+  <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
+  <Project Path="NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
+  <Folder Name="/Examples/">
+    <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
+  </Folder>
+  <SolutionItems>
+    <File Path="Directory.Packages.props" />
+    <File Path="NuGet.config" />
+  </SolutionItems>
+</Solution>
