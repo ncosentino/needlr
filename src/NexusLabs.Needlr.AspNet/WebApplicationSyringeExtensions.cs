@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -10,6 +11,38 @@ namespace NexusLabs.Needlr.AspNet;
 /// Remember to use base <see cref="Syringe"/> extension methods BEFORE calling 
 /// <seealso cref="SyringeAspNetExtensions.ForWebApplication(Syringe)"/>.
 /// </remarks>
+/// <example>
+/// Complete web application configuration:
+/// <code>
+/// var webApplication = new Syringe()
+///     // Configure base Syringe first
+///     .UsingScrutorTypeRegistrar()
+///     .UsingDefaultTypeFilterer()
+///     .UsingAssemblyProvider(builder => builder
+///         .MatchingAssemblies(x => x.Contains("MyApp"))
+///         .Build())
+///     // Transition to web application mode
+///     .ForWebApplication()
+///     // Configure web-specific options
+///     .UsingOptions(() => CreateWebApplicationOptions.Default
+///         .UsingCliArgs(args)
+///         .UsingApplicationName("My Web Application")
+///         .UsingStartupConsoleLogger())
+///     .UsingWebApplicationFactory((serviceProviderBuilder, serviceCollectionPopulator) => 
+///         new WebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator))
+///     .BuildWebApplication();
+/// 
+/// await webApplication.RunAsync();
+/// </code>
+/// 
+/// Minimal web application:
+/// <code>
+/// var webApp = new Syringe()
+///     .UsingScrutorTypeRegistrar()
+///     .ForWebApplication()
+///     .BuildWebApplication();
+/// </code>
+/// </example>
 public static class WebApplicationSyringeExtensions
 {
     /// <summary>
@@ -18,6 +51,16 @@ public static class WebApplicationSyringeExtensions
     /// <param name="syringe">The web application syringe to configure.</param>
     /// <param name="optionsFactory">The factory function for creating web application options.</param>
     /// <returns>A new configured web application syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var webAppSyringe = syringe
+    ///     .ForWebApplication()
+    ///     .UsingOptions(() => CreateWebApplicationOptions.Default
+    ///         .UsingCliArgs(args)
+    ///         .UsingApplicationName("My App")
+    ///         .UsingStartupConsoleLogger());
+    /// </code>
+    /// </example>
     public static WebApplicationSyringe UsingOptions(
         this WebApplicationSyringe syringe, 
         Func<CreateWebApplicationOptions> optionsFactory)
@@ -34,6 +77,17 @@ public static class WebApplicationSyringeExtensions
     /// <param name="syringe">The web application syringe to configure.</param>
     /// <param name="factory">The factory function for creating web application factories.</param>
     /// <returns>A new configured web application syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var webAppSyringe = syringe
+    ///     .ForWebApplication()
+    ///     .UsingWebApplicationFactory((serviceProviderBuilder, serviceCollectionPopulator) => 
+    ///     {
+    ///         // Custom factory logic here
+    ///         return new CustomWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator);
+    ///     });
+    /// </code>
+    /// </example>
     public static WebApplicationSyringe UsingWebApplicationFactory(
         this WebApplicationSyringe syringe, 
         Func<IServiceProviderBuilder, IServiceCollectionPopulator, IWebApplicationFactory> factory)

@@ -8,6 +8,29 @@ namespace NexusLabs.Needlr.Injection;
 /// <summary>
 /// Extension methods for configuring <see cref="Syringe"/> instances.
 /// </summary>
+/// <example>
+/// Basic usage pattern:
+/// <code>
+/// var serviceProvider = new Syringe()
+///     .UsingScrutorTypeRegistrar()
+///     .UsingDefaultTypeFilterer()
+///     .UsingDefaultAssemblyProvider()
+///     .BuildServiceProvider();
+/// </code>
+/// 
+/// Advanced configuration:
+/// <code>
+/// var syringe = new Syringe()
+///     .UsingTypeRegistrar(customRegistrar)
+///     .UsingTypeFilterer(customFilterer)
+///     .UsingServiceCollectionPopulator((tr, tf) => new ServiceCollectionPopulator(tr, tf))
+///     .UsingAssemblyProvider(builder => builder
+///         .MatchingAssemblies(x => x.Contains("MyApp"))
+///         .UseLibTestEntrySorting()
+///         .Build())
+///     .UsingAdditionalAssemblies([Assembly.GetExecutingAssembly()]);
+/// </code>
+/// </example>
 public static class SyringeExtensions
 {
     /// <summary>
@@ -15,7 +38,13 @@ public static class SyringeExtensions
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingDefaultTypeRegistrar(this Syringe syringe)
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe().UsingDefaultTypeRegistrar();
+    /// </code>
+    /// </example>
+    public static Syringe UsingDefaultTypeRegistrar(
+        this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingTypeRegistrar(new DefaultTypeRegistrar());
@@ -27,8 +56,14 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="typeRegistrar">The type registrar to use.</param>
     /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var customRegistrar = new MyCustomTypeRegistrar();
+    /// var syringe = new Syringe().UsingTypeRegistrar(customRegistrar);
+    /// </code>
+    /// </example>
     public static Syringe UsingTypeRegistrar(
-        this Syringe syringe,
+        this Syringe syringe, 
         ITypeRegistrar typeRegistrar)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -42,6 +77,11 @@ public static class SyringeExtensions
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe().UsingDefaultTypeFilterer();
+    /// </code>
+    /// </example>
     public static Syringe UsingDefaultTypeFilterer(
         this Syringe syringe)
     {
@@ -55,8 +95,14 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="typeFilterer">The type filterer to use.</param>
     /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var customFilterer = new MyCustomTypeFilterer();
+    /// var syringe = new Syringe().UsingTypeFilterer(customFilterer);
+    /// </code>
+    /// </example>
     public static Syringe UsingTypeFilterer(
-        this Syringe syringe,
+        this Syringe syringe, 
         ITypeFilterer typeFilterer)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -71,6 +117,13 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="factory">The factory function for creating service collection populators.</param>
     /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingServiceCollectionPopulator((typeRegistrar, typeFilterer) => 
+    ///         new ServiceCollectionPopulator(typeRegistrar, typeFilterer));
+    /// </code>
+    /// </example>
     public static Syringe UsingServiceCollectionPopulator(
         this Syringe syringe,
         Func<ITypeRegistrar, ITypeFilterer, IServiceCollectionPopulator> factory)
@@ -86,6 +139,11 @@ public static class SyringeExtensions
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe().UsingDefaultAssemblyProvider();
+    /// </code>
+    /// </example>
     public static Syringe UsingDefaultAssemblyProvider(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -98,9 +156,18 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="builderFunc">The function to configure the assembly provider builder.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingAssemblyProvider(
-        this Syringe syringe,
-        Func<IAssembyProviderBuilder, IAssemblyProvider> builderFunc)
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingAssemblyProvider(builder => builder
+    ///         .MatchingAssemblies(x => 
+    ///             x.Contains("MyApp", StringComparison.OrdinalIgnoreCase) ||
+    ///             x.Contains("MyLibrary", StringComparison.OrdinalIgnoreCase))
+    ///         .UseLibTestEntrySorting()
+    ///         .Build());
+    /// </code>
+    /// </example>
+    public static Syringe UsingAssemblyProvider(this Syringe syringe, Func<IAssembyProviderBuilder, IAssemblyProvider> builderFunc)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(builderFunc);
@@ -116,9 +183,15 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="assemblyProvider">The assembly provider to use.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingAssemblyProvider(
-        this Syringe syringe, 
-        IAssemblyProvider assemblyProvider)
+    /// <example>
+    /// <code>
+    /// var assemblyProvider = new AssembyProviderBuilder()
+    ///     .MatchingAssemblies(x => x.Contains("MyApp"))
+    ///     .Build();
+    /// var syringe = new Syringe().UsingAssemblyProvider(assemblyProvider);
+    /// </code>
+    /// </example>
+    public static Syringe UsingAssemblyProvider(this Syringe syringe, IAssemblyProvider assemblyProvider)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(assemblyProvider);
@@ -132,9 +205,13 @@ public static class SyringeExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="additionalAssemblies">The additional assemblies to include.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingAdditionalAssemblies(
-        this Syringe syringe, 
-        IReadOnlyList<Assembly> additionalAssemblies)
+    /// <example>
+    /// <code>
+    /// var additionalAssemblies = new[] { Assembly.GetExecutingAssembly(), Assembly.GetCallingAssembly() };
+    /// var syringe = new Syringe().UsingAdditionalAssemblies(additionalAssemblies);
+    /// </code>
+    /// </example>
+    public static Syringe UsingAdditionalAssemblies(this Syringe syringe, IReadOnlyList<Assembly> additionalAssemblies)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(additionalAssemblies);

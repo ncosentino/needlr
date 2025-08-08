@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -9,6 +8,30 @@ namespace NexusLabs.Needlr.AspNet;
 /// Provides a fluent API for configuring and building web applications using Needlr.
 /// Wraps a base Syringe with additional web application functionality.
 /// </summary>
+/// <example>
+/// Creating and configuring a WebApplicationSyringe:
+/// <code>
+/// // Method 1: Transition from base Syringe
+/// var webAppSyringe = new Syringe()
+///     .UsingScrutorTypeRegistrar()
+///     .UsingDefaultTypeFilterer()
+///     .ForWebApplication();
+/// 
+/// // Method 2: Direct instantiation with base Syringe
+/// var baseSyringe = new Syringe().UsingScrutorTypeRegistrar();
+/// var webAppSyringe = new WebApplicationSyringe(baseSyringe);
+/// 
+/// // Method 3: Default constructor
+/// var webAppSyringe = new WebApplicationSyringe();
+/// 
+/// // Build and run the web application
+/// var webApp = webAppSyringe
+///     .UsingOptions(() => CreateWebApplicationOptions.Default.UsingCliArgs(args))
+///     .BuildWebApplication();
+/// 
+/// await webApp.RunAsync();
+/// </code>
+/// </example>
 [DoNotAutoRegister]
 public sealed record WebApplicationSyringe
 {
@@ -20,6 +43,15 @@ public sealed record WebApplicationSyringe
     /// Initializes a new instance of the <see cref="WebApplicationSyringe"/> class.
     /// </summary>
     /// <param name="baseSyringe">The base syringe to wrap.</param>
+    /// <example>
+    /// <code>
+    /// var baseSyringe = new Syringe()
+    ///     .UsingScrutorTypeRegistrar()
+    ///     .UsingDefaultTypeFilterer();
+    /// 
+    /// var webAppSyringe = new WebApplicationSyringe(baseSyringe);
+    /// </code>
+    /// </example>
     public WebApplicationSyringe(Syringe baseSyringe)
     {
         ArgumentNullException.ThrowIfNull(baseSyringe);
@@ -29,6 +61,12 @@ public sealed record WebApplicationSyringe
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationSyringe"/> class with default settings.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// var webAppSyringe = new WebApplicationSyringe();
+    /// var webApp = webAppSyringe.BuildWebApplication();
+    /// </code>
+    /// </example>
     public WebApplicationSyringe()
     {
     }
@@ -37,6 +75,22 @@ public sealed record WebApplicationSyringe
     /// Builds a web application with the configured settings.
     /// </summary>
     /// <returns>The configured <see cref="WebApplication"/>.</returns>
+    /// <example>
+    /// <code>
+    /// var webApplication = new Syringe()
+    ///     .UsingScrutorTypeRegistrar()
+    ///     .ForWebApplication()
+    ///     .UsingOptions(() => CreateWebApplicationOptions.Default
+    ///         .UsingCliArgs(args)
+    ///         .UsingApplicationName("My Web App"))
+    ///     .BuildWebApplication();
+    /// 
+    /// // Configure middleware and endpoints
+    /// webApplication.MapGet("/", () => "Hello World!");
+    /// 
+    /// await webApplication.RunAsync();
+    /// </code>
+    /// </example>
     public WebApplication BuildWebApplication()
     {
         var typeRegistrar = BaseSyringe.GetOrCreateTypeRegistrar();
@@ -61,8 +115,21 @@ public sealed record WebApplicationSyringe
     /// </summary>
     /// <param name="config">The configuration to use for building the service provider.</param>
     /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
-    public IServiceProvider BuildServiceProvider(
-        IConfiguration config)
+    /// <example>
+    /// <code>
+    /// var config = new ConfigurationBuilder()
+    ///     .AddJsonFile("appsettings.json")
+    ///     .Build();
+    /// 
+    /// var serviceProvider = new Syringe()
+    ///     .UsingScrutorTypeRegistrar()
+    ///     .ForWebApplication()
+    ///     .BuildServiceProvider(config);
+    /// 
+    /// var myService = serviceProvider.GetRequiredService&lt;IMyService&gt;();
+    /// </code>
+    /// </example>
+    public IServiceProvider BuildServiceProvider(IConfiguration config)
     {
         return BaseSyringe.BuildServiceProvider(config);
     }
