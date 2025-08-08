@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NexusLabs.Needlr.Injection;
 
@@ -22,11 +21,14 @@ public sealed class WebApplicationFactory(
         options.Logger.LogInformation("Creating web application builder...");
         var webApplicationBuilder = createWebApplicationBuilderCallback.Invoke();
 
+        var candidateAssemblies = _serviceProviderBuilder.GetCandidateAssemblies();
+
         ConfigureServices(
             _serviceCollectionPopulator,
             webApplicationBuilder,
             _pluginFactory,
-            options);
+            options.Logger,
+            candidateAssemblies);
 
         options.Logger.LogInformation("Building web application...");
         var webApplication = webApplicationBuilder.Build();
@@ -35,7 +37,8 @@ public sealed class WebApplicationFactory(
             _serviceProviderBuilder,
             _pluginFactory,
             webApplication,
-            options);
+            options.Logger,
+            candidateAssemblies);
 
         options.Logger.LogInformation("Web application created successfully.");
         return webApplication;
@@ -45,26 +48,28 @@ public sealed class WebApplicationFactory(
         IServiceProviderBuilder serviceProviderBuilder,
         IPluginFactory pluginFactory,
         WebApplication webApplication,
-        CreateWebApplicationOptions options)
+        ILogger logger,
+        IReadOnlyList<Assembly> assembliesToLoadFrom)
     {
         ArgumentNullException.ThrowIfNull(serviceProviderBuilder);
         ArgumentNullException.ThrowIfNull(pluginFactory);
         ArgumentNullException.ThrowIfNull(webApplication);
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(assembliesToLoadFrom);
 
-        options.Logger.LogInformation("Configuring web application...");
+        logger.LogInformation("Configuring web application...");
 
         RegisterWebApplicationPlugins(
             webApplication,
             pluginFactory,
-            options.AssembliesToLoadFrom,
-            options.Logger);
+            assembliesToLoadFrom,
+            logger);
 
         serviceProviderBuilder.ConfigurePostBuildServiceCollectionPlugins(
             webApplication.Services,
             webApplication.Configuration);
 
-        options.Logger.LogInformation("Web application configured successfully.");
+        logger.LogInformation("Web application configured successfully.");
     }
 
     private static void RegisterWebApplicationPlugins(
@@ -124,27 +129,30 @@ public sealed class WebApplicationFactory(
         IServiceCollectionPopulator serviceCollectionPopulator,
         WebApplicationBuilder builder,
         IPluginFactory pluginFactory,
-        CreateWebApplicationOptions options)
+        ILogger logger,
+        IReadOnlyList<Assembly> assembliesToLoadFrom)
     {
         ArgumentNullException.ThrowIfNull(serviceCollectionPopulator);
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(pluginFactory);
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(assembliesToLoadFrom);
 
-        options.Logger.LogInformation("Configuring web application services...");
+        logger.LogInformation("Configuring web application services...");
 
         RegisterWebApplicationBuilderPlugins(
             builder,
             pluginFactory,
-            options.AssembliesToLoadFrom,
-            options.Logger);
+            assembliesToLoadFrom,
+            logger);
 
-        options.Logger.LogInformation("Registering services to service collection...");
+        logger.LogInformation("Registering services to service collection...");
         serviceCollectionPopulator.RegisterToServiceCollection(
             builder.Services,
-            builder.Configuration);
-        options.Logger.LogInformation("Registered services to service collection.");
+            builder.Configuration,
+            assembliesToLoadFrom);
+        logger.LogInformation("Registered services to service collection.");
 
-        options.Logger.LogInformation("Configured web application services successfully.");
+        logger.LogInformation("Configured web application services successfully.");
     }
 }

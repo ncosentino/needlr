@@ -89,7 +89,8 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
 
         _serviceCollectionPopulator.RegisterToServiceCollection(
             services,
-            config);
+            config,
+            GetCandidateAssemblies());
 
         var provider = services.BuildServiceProvider();
 
@@ -115,80 +116,5 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         {
             plugin.Configure(options);
         }
-    }
-}
-
-[DoNotAutoRegister]
-public interface IServiceCollectionPopulator
-{
-    IServiceCollection RegisterToServiceCollection(
-        IServiceCollection services,
-        IConfiguration config);
-}
-
-[DoNotAutoRegister]
-public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
-{
-    private readonly IReadOnlyList<Assembly> _candidateAssemblies;
-    private readonly ITypeRegistrar _typeRegistrar;
-    private readonly ITypeFilterer _typeFilterer;
-    private readonly PluginFactory _pluginFactory;
-
-    public ServiceCollectionPopulator(
-        IReadOnlyList<Assembly> candidateAssemblies,
-        ITypeRegistrar typeRegistrar,
-        ITypeFilterer typeFilterer)
-    {
-        ArgumentNullException.ThrowIfNull(candidateAssemblies);
-        ArgumentNullException.ThrowIfNull(typeRegistrar);
-        ArgumentNullException.ThrowIfNull(typeFilterer);
-
-        _candidateAssemblies = candidateAssemblies;
-        _typeRegistrar = typeRegistrar;
-        _typeFilterer = typeFilterer;
-        _pluginFactory = new PluginFactory();
-    }
-
-    public IServiceCollection RegisterToServiceCollection(
-        IServiceCollection services,
-        IConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        if (_candidateAssemblies.Count == 0)
-        {
-            return services;
-        }
-
-        services.AddSingleton(typeof(Lazy<>), typeof(LazyFactory<>));
-
-        foreach (var assembly in _candidateAssemblies)
-        {
-            services.AddSingleton(assembly);
-        }
-
-        _typeRegistrar.RegisterTypesFromAssemblies(
-            services,
-            _typeFilterer,
-            _candidateAssemblies);
-
-        ServiceCollectionPluginOptions options = new(
-            services,
-            config,
-            _candidateAssemblies);
-
-        foreach (var serviceCollectionPlugin in _pluginFactory.CreatePluginsFromAssemblies<IServiceCollectionPlugin>(_candidateAssemblies))
-        {
-            serviceCollectionPlugin.Configure(options);
-        }
-
-        return services;
-    }
-
-    private sealed class LazyFactory<T> : Lazy<T>
-        where T : notnull
-    {
-        public LazyFactory(IServiceProvider provider)
-            : base(() => provider.GetRequiredService<T>()) { }
     }
 }

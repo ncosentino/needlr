@@ -15,17 +15,15 @@ var assemblyProvider = new AssembyProviderBuilder()
         x.Contains("AspNetCoreApp1", StringComparison.OrdinalIgnoreCase))
     .UseLibTestEntrySorting()
     .Build();
-var candidateAssemblies = assemblyProvider.GetCandidateAssemblies();
 ScrutorTypeRegistrar typeRegistrar = new();
-var typeFilterer = new DefaultTypeFilterer();
+DefaultTypeFilterer typeFilterer = new();
 ServiceCollectionPopulator serviceCollectionPopulator = new(
-    candidateAssemblies, 
     typeRegistrar, 
     typeFilterer);
 ServiceProviderBuilder serviceProviderBuilder = new(
     serviceCollectionPopulator,
     assemblyProvider,
-    candidateAssemblies);
+    additionalAssemblies: []);
 WebApplicationFactory webApplicationFactory = new(
     serviceProviderBuilder,
     serviceCollectionPopulator);
@@ -35,7 +33,6 @@ CreateWebApplicationOptions options = new(
         Args = args,
         ApplicationName = "AspNetCoreApp1",
     },
-    candidateAssemblies,
     logger);
 var webApplication = webApplicationFactory.Create(options);
 await webApplication.RunAsync();
