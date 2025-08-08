@@ -1,9 +1,13 @@
-using Carter;
-
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Scrutor;
 using NexusLabs.Needlr.Injection.TypeFilterers;
+
+using var loggerFactory = LoggerFactory
+    .Create(builder => builder
+    .AddConsole()
+    .SetMinimumLevel(LogLevel.Information));
+var logger = loggerFactory.CreateLogger("AspNetCoreApp1.Startup");
 
 var assemblyProvider = new AssembyProviderBuilder()
     .MatchingAssemblies(x => 
@@ -31,21 +35,7 @@ CreateWebApplicationOptions options = new(
         Args = args,
         ApplicationName = "AspNetCoreApp1",
     },
-    candidateAssemblies);
+    candidateAssemblies,
+    logger);
 var webApplication = webApplicationFactory.Create(options);
 await webApplication.RunAsync();
-
-internal sealed class WeatherCarterModule : CarterModule
-{
-    public override void AddRoutes(IEndpointRouteBuilder app)
-    {
-        app.MapGet("/weather", () =>
-        {
-            return Results.Ok(new
-            {
-                TemperatureC = 25,
-                Summary = "Warm"
-            });
-        });
-    }
-}
