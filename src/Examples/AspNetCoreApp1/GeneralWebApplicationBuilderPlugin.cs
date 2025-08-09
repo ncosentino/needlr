@@ -2,6 +2,13 @@ using NexusLabs.Needlr.AspNet;
 
 using System.Net;
 
+/// <summary>
+/// This is an example plugin where you are configuring various aspects 
+/// of your <see cref="WebApplicationBuilder"/>. You do not need to
+/// add any attributes to this class, as it implements the
+/// <see cref="IWebApplicationBuilderPlugin"/> interface, and will be
+/// automatically registered and invoked by the Needlr framework.
+/// </summary>
 internal sealed class GeneralWebApplicationBuilderPlugin : IWebApplicationBuilderPlugin
 {
     public void Configure(WebApplicationBuilderPluginOptions options)

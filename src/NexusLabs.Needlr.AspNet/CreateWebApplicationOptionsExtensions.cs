@@ -3,8 +3,20 @@ using Microsoft.Extensions.Logging;
 
 namespace NexusLabs.Needlr.AspNet;
 
+/// <summary>
+/// Provides extension methods for configuring <see cref="CreateWebApplicationOptions"/>.
+/// </summary>
 public static class CreateWebApplicationOptionsExtensions
 {
+    /// <summary>
+    /// Configures the options to use a console logger for startup logging.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="name">The name of the logger. Defaults to "Startup".</param>
+    /// <param name="level">The minimum log level. Defaults to <see cref="LogLevel.Debug"/>.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the console logger configured.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is null or whitespace.</exception>
     public static CreateWebApplicationOptions UsingStartupConsoleLogger(
         this CreateWebApplicationOptions options,
         string name = "Startup",
@@ -27,6 +39,13 @@ public static class CreateWebApplicationOptionsExtensions
         return newOptions;
     }
 
+    /// <summary>
+    /// Configures the options to use the specified command line arguments.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="args">The command line arguments to use.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the command line arguments configured.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="args"/> is null.</exception>
     public static CreateWebApplicationOptions UsingCliArgs(
         this CreateWebApplicationOptions options,
         string[] args)
@@ -49,6 +68,13 @@ public static class CreateWebApplicationOptionsExtensions
         return newOptions;
     }
 
+    /// <summary>
+    /// Configures the options to use the specified application name.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="applicationName">The application name to use.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the application name configured.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="applicationName"/> is null.</exception>
     public static CreateWebApplicationOptions UsingApplicationName(
         this CreateWebApplicationOptions options,
         string applicationName)
