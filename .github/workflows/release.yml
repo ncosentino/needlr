@@ -82,14 +82,14 @@ jobs:
     - name: List packages
       run: ls -la artifacts/packages
 
-    # - name: Push to NuGet.org
-    #   env:
-    #     NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-    #   run: |
-    #     dotnet nuget push "artifacts/packages/*.nupkg" \
-    #       --api-key "$NUGET_API_KEY" \
-    #       --source https://api.nuget.org/v3/index.json \
-    #       --skip-duplicate
+    - name: Push to NuGet.org
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push "artifacts/packages/*.nupkg" \
+          --api-key "$NUGET_API_KEY" \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
 
     - name: Push to GitHub Packages
       env:
