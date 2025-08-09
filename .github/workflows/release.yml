@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'    # e.g., v1.2.3 or v1.2.3-rc.1
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0    # NBGV + SourceLink need full history
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Install NBGV CLI
+      run: dotnet tool install -g nbgv
+
+    - name: Validate tag matches NBGV version
+      id: version
+      shell: bash
+      run: |
+        TAG="${GITHUB_REF_NAME}"             # e.g., v1.2.3 or v1.2.3-rc.1
+        TAG_CLEAN="${TAG#v}"                 # strip leading "v"
+
+        # Ask NBGV what this commit's SemVer2 is
+        SEMVER="$(nbgv get-version -v SemVer2)"
+        echo "NBGV version: ${SEMVER}"
+        echo "Tag version:  ${TAG_CLEAN}"
+
+        if [ "${SEMVER}" != "${TAG_CLEAN}" ]; then
+          echo "ERROR: Tag (${TAG_CLEAN}) does not match NBGV computed version (${SEMVER})."
+          echo "Make sure version.json/branch state matches the tag (or tag the correct commit)."
+          exit 1
+        fi
+
+        echo "version=${SEMVER}" >> "$GITHUB_OUTPUT"
+
+    - name: Restore
+      run: dotnet restore src/NexusLabs.Needlr.slnx
+
+    - name: Build (Release)
+      run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore
+
+    # Pack only the subset: NexusLabs.Needlr*
+    - name: Pack subset (NexusLabs.Needlr*)
+      shell: bash
+      run: |
+        mkdir -p artifacts/packages
+        mapfile -t PACK_PROJECTS < <(find src -name 'NexusLabs.Needlr*.csproj' | sort)
+        if [ ${#PACK_PROJECTS[@]} -eq 0 ]; then
+          echo "No matching projects found (pattern: NexusLabs.Needlr*)."
+          exit 1
+        fi
+
+        echo "Packing projects:"
+        printf ' - %s\n' "${PACK_PROJECTS[@]}"
+
+        for csproj in "${PACK_PROJECTS[@]}"; do
+          dotnet pack "$csproj" \
+            --configuration Release \
+            --no-build \
+            --output artifacts/packages
+        done
+
+    - name: List packages
+      run: ls -la artifacts/packages
+
+    # - name: Push to NuGet.org
+    #   env:
+    #     NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    #   run: |
+    #     dotnet nuget push "artifacts/packages/*.nupkg" \
+    #       --api-key "$NUGET_API_KEY" \
+    #       --source https://api.nuget.org/v3/index.json \
+    #       --skip-duplicate
+
+    - name: Push to GitHub Packages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        dotnet nuget push "artifacts/packages/*.nupkg" \
+          --api-key "$GITHUB_TOKEN" \
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --skip-duplicate
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: ${{ contains(github.ref_name, '-') }}
+        files: |
+          artifacts/packages/*.nupkg
+          artifacts/packages/*.snupkg
