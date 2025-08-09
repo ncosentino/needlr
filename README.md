@@ -62,9 +62,6 @@ await webApplication.RunAsync();
 
 <!-- SignalR integration -->
 <PackageReference Include="NexusLabs.Needlr.SignalR" />
-
-<!-- Plugin system -->
-<PackageReference Include="NexusLabs.Needlr.Plugins" />
 ```
 
 ## Core Concepts

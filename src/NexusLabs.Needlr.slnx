@@ -1,7 +1,6 @@
 
 <Solution>
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
-  <Project Path="NexusLabs.Needlr.Plugins\NexusLabs.Needlr.Plugins.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
   <Folder Name="/Solution Items/">
