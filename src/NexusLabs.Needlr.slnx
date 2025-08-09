@@ -1,7 +1,10 @@
 
 <Solution>
+  <Project Path="NexusLabs.Needlr.Tests\NexusLabs.Needlr.Tests.csproj" />
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests\NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection.Tests\NexusLabs.Needlr.Injection.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
@@ -12,9 +15,13 @@
     <File Path="Directory.Packages.props" />
     <File Path="NuGet.config" />
   </Folder>
+  <Project Path="NexusLabs.Needlr.AspNet.Tests\NexusLabs.Needlr.AspNet.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+  <Project Path="NexusLabs.Needlr.SignalR.Tests\NexusLabs.Needlr.SignalR.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
+  <Project Path="NexusLabs.Needlr.Carter.Tests\NexusLabs.Needlr.Carter.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests\NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
   <Folder Name="/Examples/">
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
