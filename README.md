@@ -242,5 +242,3 @@ await webApplication.RunAsync();
 
 - .NET 9 or later
 - C# 13.0 or later
-
-

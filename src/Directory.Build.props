@@ -30,7 +30,28 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+	<!-- Default README all packages get unless overridden -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <!-- Automatically mark matching projects as packable -->
+  <PropertyGroup Condition="
+    $([System.String]::new('$(MSBuildProjectName)').StartsWith('NexusLabs.Needlr'))
+    AND
+    !$([System.String]::new('$(MSBuildProjectName)').EndsWith('Tests'))
+  ">
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+	<!-- Point this at your shared README -->
+	<None 
+		Include="$(SolutionDir)../README.md"
+		Pack="true"
+		PackagePath="\"
+		Condition="'$(PackageReadmeFile)' == 'README.md'"/>
+  </ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
