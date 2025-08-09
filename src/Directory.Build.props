@@ -44,6 +44,15 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <!-- Automatically configure test projects -->
+  <PropertyGroup Condition="$([System.String]::new('$(MSBuildProjectName)').EndsWith('Tests'))">
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
   <!-- README selection:
        1) Use per-project README at src/<proj>/Package.README.md if present.
        2) Else use the repo-root README.md.
@@ -74,6 +83,21 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Automatically include test packages for test projects -->
+  <ItemGroup Condition="$([System.String]::new('$(MSBuildProjectName)').EndsWith('Tests'))">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   
 </Project>
