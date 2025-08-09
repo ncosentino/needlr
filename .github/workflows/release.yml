@@ -36,21 +36,20 @@ jobs:
       id: version
       shell: bash
       run: |
-        TAG="${GITHUB_REF_NAME}"             # e.g., v1.2.3 or v1.2.3-rc.1
-        TAG_CLEAN="${TAG#v}"                 # strip leading "v"
-
-        # Ask NBGV what this commit's SemVer2 is
-        SEMVER="$(nbgv get-version -v SemVer2)"
-        echo "NBGV version: ${SEMVER}"
-        echo "Tag version:  ${TAG_CLEAN}"
-
-        if [ "${SEMVER}" != "${TAG_CLEAN}" ]; then
-          echo "ERROR: Tag (${TAG_CLEAN}) does not match NBGV computed version (${SEMVER})."
-          echo "Make sure version.json/branch state matches the tag (or tag the correct commit)."
+        TAG="${GITHUB_REF_NAME}"          # e.g., v1.2.3 or v1.2.3-rc.1
+        TAG_CLEAN="${TAG#v}"
+    
+        # Use the NuGet-safe version (no +build metadata)
+        NUGETVER="$(nbgv get-version -v NuGetPackageVersion)"
+        echo "NBGV NuGetPackageVersion: ${NUGETVER}"
+        echo "Tag version:              ${TAG_CLEAN}"
+    
+        if [ "${NUGETVER}" != "${TAG_CLEAN}" ]; then
+          echo "ERROR: Tag (${TAG_CLEAN}) does not match NBGV NuGetPackageVersion (${NUGETVER})."
           exit 1
         fi
-
-        echo "version=${SEMVER}" >> "$GITHUB_OUTPUT"
+    
+        echo "version=${NUGETVER}" >> "$GITHUB_OUTPUT"
 
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx
