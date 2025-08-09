@@ -31,8 +31,8 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     
-	<!-- Default README all packages get unless overridden -->
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Default README all packages get unless overridden -->
+	<RootReadmePath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\README.md'))</RootReadmePath>
   </PropertyGroup>
 
   <!-- Automatically mark matching projects as packable -->
@@ -44,18 +44,36 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsPackable)' == 'true'">
-	<!-- Point this at your shared README -->
-	<None 
-		Include="$(SolutionDir)../README.md"
-		Pack="true"
-		PackagePath="\"
-		Condition="'$(PackageReadmeFile)' == 'README.md'"/>
-  </ItemGroup>
+  <!-- README selection:
+       1) Use per-project README at src/<proj>/Package.README.md if present.
+       2) Else use the repo-root README.md.
+       3) If neither exists, don't set PackageReadmeFile (avoids NU5039). -->
+  <Choose>
+    <When Condition="'$(IsPackable)' == 'true' and Exists('$(MSBuildProjectDirectory)\Package.README.md')">
+      <PropertyGroup>
+        <PackageReadmeFile>Package.README.md</PackageReadmeFile>
+      </PropertyGroup>
+      <ItemGroup>
+        <None Include='$(MSBuildProjectDirectory)\Package.README.md'
+            Pack='true'
+            PackagePath='\' />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup Condition="'$(IsPackable)' == 'true' and Exists('$(RootReadmePath)')">
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+      </PropertyGroup>
+      <ItemGroup Condition="'$(IsPackable)' == 'true' and Exists('$(RootReadmePath)')">
+        <None Include='$(RootReadmePath)'
+            Pack='true'
+            PackagePath='\' />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemGroup>
-	<PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
-	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
-	
+  
 </Project>
