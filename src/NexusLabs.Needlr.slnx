@@ -31,4 +31,5 @@
     <File Path="Directory.Packages.props" />
     <File Path="NuGet.config" />
   </SolutionItems>
+  <Project Path="NexusLabs.Needlr.Extensions.Configuration/NexusLabs.Needlr.Extensions.Configuration.csproj" />
 </Solution>
