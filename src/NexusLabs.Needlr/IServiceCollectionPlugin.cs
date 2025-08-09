@@ -1,4 +1,6 @@
-﻿namespace NexusLabs.Needlr;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace NexusLabs.Needlr;
 
 /// <summary>
 /// Defines a plugin that can configure the <see cref="IServiceCollection"/> for dependency injection.

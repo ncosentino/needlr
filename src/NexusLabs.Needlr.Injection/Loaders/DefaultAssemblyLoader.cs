@@ -8,7 +8,9 @@ public sealed class DefaultAssemblyLoader : IAssemblyLoader
 
     public DefaultAssemblyLoader()
     {
-        var entrypointPath = Path.GetFileName(Assembly.GetEntryAssembly().Location);
+        var filePath = Assembly.GetEntryAssembly()?.Location ??
+            throw new InvalidOperationException("Entry assembly location is null.");
+        var entrypointPath = Path.GetFileName(filePath);
         _fileMatchAssemblyLoader = new FileMatchAssemblyLoader(
             [AppDomain.CurrentDomain.BaseDirectory],
             fileName =>
