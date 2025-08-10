@@ -86,7 +86,9 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         IConfiguration config)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(config);
 
+        services.AddSingleton(config);
         _serviceCollectionPopulator.RegisterToServiceCollection(
             services,
             config,
