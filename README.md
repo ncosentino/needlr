@@ -107,7 +107,7 @@ Services are automatically registered based on conventions. By default, Needlr w
 
 ### Preventing Auto-Registration
 
-Use the `[DoNotAutoRegister]` attribute to exclude types:
+Use the `[DoNotAutoRegister]` attribute to exclude types from automatic registration. This is typically done when you need manual control over service registration:
 
 ```csharp
 [DoNotAutoRegister]
@@ -139,6 +139,104 @@ internal class WeatherProvider
 ```
 
 The above class would be available for use in minimal APIs and can be injected into other types resolved from the dependency container.
+
+## Manual Service Registration
+
+While Needlr automatically registers services by convention, you may need to manually register services for more complex scenarios like decorator patterns, conditional registration, or when you need precise control over service lifetimes and configurations.
+
+### Preventing Auto-Registration
+
+Use the `[DoNotAutoRegister]` attribute to exclude types from automatic registration:
+
+```csharp
+using NexusLabs.Needlr;
+
+[DoNotAutoRegister]
+public sealed class MyService : IMyService
+{
+    public void DoSomething()
+    {
+        Console.WriteLine("Hello, from Dev Leader!");
+    }
+}
+```
+
+### Manual Registration with IServiceCollectionPlugin
+
+Create a plugin that implements `IServiceCollectionPlugin` to manually configure services:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using NexusLabs.Needlr;
+
+internal sealed class MyPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        // Register service manually as singleton
+        options.Services.AddSingleton<IMyService, MyService>();
+    }
+}
+```
+
+### Decorator Pattern Example
+
+Here's a complete example showing manual registration with a decorator pattern:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Injection;
+
+// Interface
+public interface IMyService
+{
+    void DoSomething();
+}
+
+// Base service implementation
+[DoNotAutoRegister]
+public sealed class MyService : IMyService
+{
+    public void DoSomething()
+    {
+        Console.WriteLine("Hello, from Dev Leader!");
+    }
+}
+
+// Decorator that adds additional behavior
+[DoNotAutoRegister]
+public sealed class MyDecorator(IMyService wrapped) : IMyService
+{
+    public void DoSomething()
+    {
+        Console.WriteLine("---BEFORE---");
+        wrapped.DoSomething();
+        Console.WriteLine("---AFTER---");
+    }
+}
+
+// Plugin for manual registration
+internal sealed class MyPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        options.Services.AddSingleton<MyService>();
+        options.Services.AddSingleton<IMyService, MyDecorator>(s => 
+            new MyDecorator(s.GetRequiredService<MyService>()));
+    }
+}
+
+// Usage
+var serviceProvider = new Syringe().BuildServiceProvider();
+serviceProvider.GetRequiredService<IMyService>().DoSomething();
+// Output:
+// ---BEFORE---
+// Hello, from Dev Leader!
+// ---AFTER---
+```
+
+The `IServiceCollectionPlugin` is automatically discovered and registered by Needlr, so you don't need to manually register the plugin itself.
 
 ## Plugin System
 
