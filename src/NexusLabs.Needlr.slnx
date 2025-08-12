@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/Examples/">
     <Project Path="Examples/ManualRegistrationExample/ManualRegistrationExample.csproj" />
+    <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
     <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
   </Folder>
