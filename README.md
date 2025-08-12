@@ -238,6 +238,46 @@ serviceProvider.GetRequiredService<IMyService>().DoSomething();
 
 The `IServiceCollectionPlugin` is automatically discovered and registered by Needlr, so you don't need to manually register the plugin itself.
 
+### Manual Registration with Scrutor Decoration
+
+When using Scrutor type registrar, you can leverage Scrutor's decoration extensions for cleaner decorator pattern implementation:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Scrutor;
+
+// Interface and service implementations (same as above example)
+// ...
+
+// Plugin using Scrutor decoration extensions
+internal sealed class MyScrutorPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        // Register the base service first
+        options.Services.AddSingleton<IMyService, MyService>();
+        
+        // Use Scrutor to decorate the service
+        options.Services.Decorate<IMyService, MyDecorator>();
+    }
+}
+
+// Usage with Scrutor type registrar
+var serviceProvider = new Syringe()
+    .UsingScrutorTypeRegistrar()
+    .BuildServiceProvider();
+
+serviceProvider.GetRequiredService<IMyService>().DoSomething();
+// Output:
+// ---BEFORE---
+// Hello, from Dev Leader!
+// ---AFTER---
+```
+
+This approach is cleaner than manual decorator registration as Scrutor handles the complex dependency injection logic internally.
+
 ## Plugin System
 
 Needlr supports a plugin architecture for modular applications:
