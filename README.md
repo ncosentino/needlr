@@ -173,10 +173,8 @@ internal sealed class MyPlugin : IServiceCollectionPlugin
 {
     public void Configure(ServiceCollectionPluginOptions options)
     {
-        // Register services manually
-        options.Services.AddSingleton<MyService>();
-        options.Services.AddSingleton<IMyService, MyDecorator>(s => 
-            new MyDecorator(s.GetRequiredService<MyService>()));
+        // Register service manually as singleton
+        options.Services.AddSingleton<IMyService, MyService>();
     }
 }
 ```
