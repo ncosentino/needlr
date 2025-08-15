@@ -50,7 +50,8 @@ public sealed class DefaultTypeRegistrar : ITypeRegistrar
 
     private static bool HasDoNotAutoRegisterAttribute(Type type)
     {
-        return type.GetCustomAttribute<DoNotAutoRegisterAttribute>(inherit: true) is not null;
+        return type.GetCustomAttribute<DoNotAutoRegisterAttribute>(inherit: true) is not null ||
+            type.GetInterfaces().Any(t => HasDoNotAutoRegisterAttribute(t));
     }
 
     private static void RegisterTypeAsSelfWithInterfaces(

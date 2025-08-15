@@ -2,29 +2,20 @@ using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
 
 var webApplication = new Syringe().BuildWebApplication();
-await webApplication.RunAsync();
 
-internal sealed class WeatherPlugin : IWebApplicationPlugin
-{
-    public void Configure(WebApplicationPluginOptions options)
-    {
-        options.WebApplication.MapGet("/weather", (WeatherProvider weatherProvider) =>
-        {
-            return Results.Ok(weatherProvider.GetWeather());
-        });
-    }
-}
+var webAppTask = webApplication.RunAsync();
 
-internal sealed class WeatherProvider(
-    IConfiguration _config)
-{
-    public object GetWeather()
-    {
-        var weatherConfig = _config.GetSection("Weather");
-        return new
-        {
-            TemperatureC = weatherConfig.GetValue<double>("TemperatureCelsius"),
-            Summary = weatherConfig.GetValue<string>("Summary"),
-        };
-    }
-}
+var serviceProvider = webApplication.Services;
+Console.WriteLine("MinimalWebApi Example");
+Console.WriteLine("=====================");
+
+Console.WriteLine();
+Console.WriteLine("Checking service provider registrations...");
+Console.WriteLine(
+    $"serviceProvider.GetService<WeatherPlugin>():   {serviceProvider.GetService<WeatherPlugin>() is not null}");
+Console.WriteLine(
+    $"serviceProvider.GetService<WeatherProvider>(): {serviceProvider.GetService<WeatherProvider>() is not null}");
+Console.WriteLine(
+    $"serviceProvider.GetService<IConfiguration>():  {serviceProvider.GetService<IConfiguration>() is not null}");
+
+await webAppTask;
