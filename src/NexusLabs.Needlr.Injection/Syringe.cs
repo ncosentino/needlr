@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 using System.Reflection;
 
@@ -16,6 +17,7 @@ public sealed record Syringe
     internal Func<ITypeRegistrar, ITypeFilterer, IServiceCollectionPopulator>? ServiceCollectionPopulatorFactory { get; init; }
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
+    internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
 
     /// <summary>
     /// Builds a service provider with the configured settings.
@@ -30,13 +32,17 @@ public sealed record Syringe
         var serviceCollectionPopulator = GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
         var assemblyProvider = GetOrCreateAssemblyProvider();
         var additionalAssemblies = AdditionalAssemblies ?? [];
+        var callbacks = PostPluginRegistrationCallbacks ?? [];
 
         var serviceProviderBuilder = new ServiceProviderBuilder(
             serviceCollectionPopulator,
             assemblyProvider,
             additionalAssemblies);
 
-        return serviceProviderBuilder.Build(config);
+        return serviceProviderBuilder.Build(
+            services: new ServiceCollection(),
+            config: config,
+            postPluginRegistrationCallbacks: callbacks);
     }
         
     /// <summary>
@@ -78,5 +84,13 @@ public sealed record Syringe
     public IReadOnlyList<Assembly> GetAdditionalAssemblies()
     {
         return AdditionalAssemblies ?? [];
+    }
+
+    /// <summary>
+    /// Gets the configured post-plugin registration callbacks.
+    /// </summary>
+    public IReadOnlyList<Action<IServiceCollection>> GetPostPluginRegistrationCallbacks()
+    {
+        return PostPluginRegistrationCallbacks ?? [];
     }
 }

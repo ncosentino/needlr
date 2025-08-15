@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Injection;
@@ -15,6 +16,7 @@ public sealed class WebApplicationFactory(
 {
     private readonly PluginFactory _pluginFactory = new();
 
+    /// <inheritdoc />
     public WebApplication Create(
         CreateWebApplicationOptions options,
         Func<WebApplicationBuilder> createWebApplicationBuilderCallback)
@@ -29,7 +31,8 @@ public sealed class WebApplicationFactory(
             webApplicationBuilder,
             _pluginFactory,
             options.Logger,
-            candidateAssemblies);
+            candidateAssemblies,
+            options.PostPluginRegistrationCallbacks);
 
         options.Logger.LogInformation("Building web application...");
         var webApplication = webApplicationBuilder.Build();
@@ -131,13 +134,15 @@ public sealed class WebApplicationFactory(
         WebApplicationBuilder builder,
         IPluginFactory pluginFactory,
         ILogger logger,
-        IReadOnlyList<Assembly> assembliesToLoadFrom)
+        IReadOnlyList<Assembly> assembliesToLoadFrom,
+        IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks)
     {
         ArgumentNullException.ThrowIfNull(serviceCollectionPopulator);
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(pluginFactory);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(assembliesToLoadFrom);
+        ArgumentNullException.ThrowIfNull(postPluginRegistrationCallbacks);
 
         logger.LogInformation("Configuring web application services...");
 
@@ -153,6 +158,13 @@ public sealed class WebApplicationFactory(
             builder.Configuration,
             assembliesToLoadFrom);
         logger.LogInformation("Registered services to service collection.");
+
+        // Execute post-plugin registration callbacks
+        foreach (var callback in postPluginRegistrationCallbacks)
+        {
+            logger.LogInformation("Executing post-plugin registration callback...");
+            callback.Invoke(builder.Services);
+        }
 
         logger.LogInformation("Configured web application services successfully.");
     }

@@ -64,35 +64,42 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
 
     public IReadOnlyList<Assembly> GetCandidateAssemblies() => _lazyCandidateAssemblies.Value;
 
-    /// <summary>
-    /// Builds a new <see cref="IServiceProvider"/> using the discovered assemblies and a custom registration callback.
-    /// </summary>
-    /// <param name="config">The configuration to use for settings.</param>
-    /// <returns>The built <see cref="IServiceProvider"/>.</returns>
+    /// <inheritdoc />
     public IServiceProvider Build(
         IConfiguration config) =>
         Build(
             services: new ServiceCollection(),
             config: config);
 
-    /// <summary>
-    /// Builds a new <see cref="IServiceProvider"/> using the provided <see cref="IServiceCollection"/> and a custom registration callback.
-    /// </summary>
-    /// <param name="services">The service collection to configure.</param>
-    /// <param name="config">The configuration to use for settings.</param>
-    /// <returns>The built <see cref="IServiceProvider"/>.</returns>
+    /// <inheritdoc />
     public IServiceProvider Build(
         IServiceCollection services,
-        IConfiguration config)
+        IConfiguration config) =>
+        Build(
+            services: services,
+            config: config,
+            postPluginRegistrationCallbacks: []);
+
+    /// <inheritdoc/>
+    public IServiceProvider Build(
+        IServiceCollection services,
+        IConfiguration config,
+        IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(postPluginRegistrationCallbacks);
 
         services.AddSingleton(config);
         _serviceCollectionPopulator.RegisterToServiceCollection(
             services,
             config,
             GetCandidateAssemblies());
+
+        foreach (var callback in postPluginRegistrationCallbacks)
+        {
+            callback.Invoke(services);
+        }
 
         var provider = services.BuildServiceProvider();
 
@@ -101,6 +108,7 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         return provider;
     }
 
+    /// <inheritdoc />
     public void ConfigurePostBuildServiceCollectionPlugins(
         IServiceProvider provider,
         IConfiguration config)

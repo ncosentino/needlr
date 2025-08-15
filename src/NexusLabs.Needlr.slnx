@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/Examples/">
     <Project Path="Examples/ManualRegistrationExample/ManualRegistrationExample.csproj" />
+    <Project Path="Examples/ManualRegistrationWithPluginExample/ManualRegistrationWithPluginExample.csproj" Id="d09d5b82-e112-491d-b702-c0a9a236722a" />
     <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
     <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
@@ -30,6 +31,7 @@
   <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Tests\NexusLabs.Needlr.Injection.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+  <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" Id="7e0b2760-1fc3-4359-bbc6-88c91b87ac82" />
   <Project Path="NexusLabs.Needlr.SignalR.Tests\NexusLabs.Needlr.SignalR.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
   <Project Path="NexusLabs.Needlr.Tests\NexusLabs.Needlr.Tests.csproj" />

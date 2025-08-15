@@ -4,24 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
 
-// Minimal setup with an additional registration. This is an approach I like to do
-// when I write tests and I can override some of the existing services that
-// would otherwise come from the standard IServiceProvider for my application. I
-// might add a mocked interface or similar.
-var serviceProvider = new Syringe()
-    .AddPostPluginRegistrationCallback(services =>
-    {
-        services.AddSingleton<MyService>();
-        services.AddSingleton<IMyService, MyDecorator>(s =>
-            new MyDecorator(s.GetRequiredService<MyService>()));
-    })
-    .BuildServiceProvider();
+// minimal Needler setup: build the provider and get our service
+var serviceProvider = new Syringe().BuildServiceProvider();
 
-Console.WriteLine("Needlr Manual Registration Example");
-Console.WriteLine("==================================");
+Console.WriteLine("Needlr Manual Registration With Plugin Example");
+Console.WriteLine("==============================================");
 
 Console.WriteLine();
 Console.WriteLine("Checking service provider registrations...");
+Console.WriteLine(
+    $"serviceProvider.GetService<MyPlugin>():       {serviceProvider.GetService<MyPlugin>() is not null}");
 Console.WriteLine(
     $"serviceProvider.GetService<IMyService>():     {serviceProvider.GetService<IMyService>() is not null}");
 Console.WriteLine(

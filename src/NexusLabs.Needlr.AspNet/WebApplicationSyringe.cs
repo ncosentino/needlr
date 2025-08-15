@@ -98,6 +98,7 @@ public sealed record WebApplicationSyringe
         var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
         var assemblyProvider = BaseSyringe.GetOrCreateAssemblyProvider();
         var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
+        var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
 
         var serviceProviderBuilder = new ServiceProviderBuilder(
             serviceCollectionPopulator,
@@ -106,6 +107,10 @@ public sealed record WebApplicationSyringe
 
         var webApplicationFactory = GetOrCreateWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator);
         var options = GetOrCreateOptions();
+        options = options with
+        { 
+            PostPluginRegistrationCallbacks = callbacks,
+        };
 
         return webApplicationFactory.Create(options, () => WebApplication.CreateBuilder());
     }

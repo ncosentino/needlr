@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
 
@@ -18,7 +19,7 @@ namespace NexusLabs.Needlr.Injection;
 ///     .BuildServiceProvider();
 /// </code>
 /// 
-/// Advanced configuration:
+/// Advanced configuration with callbacks:
 /// <code>
 /// var syringe = new Syringe()
 ///     .UsingTypeRegistrar(customRegistrar)
@@ -28,7 +29,9 @@ namespace NexusLabs.Needlr.Injection;
 ///         .MatchingAssemblies(x => x.Contains("MyApp"))
 ///         .UseLibTestEntrySorting()
 ///         .Build())
-///     .UsingAdditionalAssemblies([Assembly.GetExecutingAssembly()]);
+///     .UsingAdditionalAssemblies([Assembly.GetExecutingAssembly()])
+///     .UsingPostPluginRegistrationCallback(services => services.AddScoped&lt;IMyService, MyService&gt;())
+///     .UsingPostPluginRegistrationCallback(services => services.Configure&lt;MyOptions&gt;(opt => opt.Value = "test"));
 /// </code>
 /// </example>
 public static class SyringeExtensions
@@ -217,5 +220,118 @@ public static class SyringeExtensions
         ArgumentNullException.ThrowIfNull(additionalAssemblies);
 
         return syringe with { AdditionalAssemblies = additionalAssemblies };
+    }
+
+    /// <summary>
+    /// Configures the syringe to use post-plugin registration callbacks.
+    /// These callbacks are executed after plugin registration but before the service provider is finalized.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="callbacks">The callbacks to execute during service provider building.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var callbacks = new List&lt;Action&lt;IServiceCollection&gt;&gt;
+    /// {
+    ///     services => services.AddScoped&lt;IMyService, MyService&gt;(),
+    ///     services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test")
+    /// };
+    /// var syringe = new Syringe().UsingPostPluginRegistrationCallbacks(callbacks);
+    /// </code>
+    /// </example>
+    public static Syringe UsingPostPluginRegistrationCallbacks(
+        this Syringe syringe, 
+        IReadOnlyList<Action<IServiceCollection>> callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callbacks);
+
+        return syringe with { PostPluginRegistrationCallbacks = callbacks };
+    }
+
+    /// <summary>
+    /// Configures the syringe to add a single post-plugin registration callback.
+    /// This callback is executed after plugin registration but before the service provider is finalized.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="callback">The callback to execute during service provider building.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingPostPluginRegistrationCallback(services => services.AddScoped&lt;IMyService, MyService&gt;())
+    ///     .UsingPostPluginRegistrationCallback(services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test"));
+    /// </code>
+    /// </example>
+    public static Syringe UsingPostPluginRegistrationCallback(
+        this Syringe syringe, 
+        Action<IServiceCollection> callback)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var existingCallbacks = syringe.PostPluginRegistrationCallbacks ?? [];
+        var newCallbacks = new List<Action<IServiceCollection>>(existingCallbacks) { callback };
+        
+        return syringe with { PostPluginRegistrationCallbacks = newCallbacks };
+    }
+
+    /// <summary>
+    /// Configures the syringe to add multiple post-plugin registration callbacks.
+    /// These callbacks are executed after plugin registration but before the service provider is finalized.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="callbacks">The callbacks to add to the existing callback list.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .AddPostPluginRegistrationCallbacks(new[]
+    ///     {
+    ///         services => services.AddScoped&lt;IMyService, MyService&gt;(),
+    ///         services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test")
+    ///     });
+    /// </code>
+    /// </example>
+    public static Syringe AddPostPluginRegistrationCallbacks(
+        this Syringe syringe, 
+        IEnumerable<Action<IServiceCollection>> callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callbacks);
+
+        var existingCallbacks = syringe.PostPluginRegistrationCallbacks ?? [];
+        List<Action<IServiceCollection>> newCallbacks = 
+        [
+            .. existingCallbacks, 
+            .. callbacks
+        ];
+        
+        return syringe with { PostPluginRegistrationCallbacks = newCallbacks };
+    }
+
+    /// <summary>
+    /// Configures the syringe to add a post-plugin registration callback.
+    /// This callback is executed after plugin registration but before the service provider is finalized.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="callback">The callback to add to the existing callback list.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .AddPostPluginRegistrationCallback(
+    ///         services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test")
+    ///     );
+    /// </code>
+    /// </example>
+    public static Syringe AddPostPluginRegistrationCallback(
+        this Syringe syringe,
+        Action<IServiceCollection> callback)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        return syringe.AddPostPluginRegistrationCallbacks([callback]);
     }
 }
