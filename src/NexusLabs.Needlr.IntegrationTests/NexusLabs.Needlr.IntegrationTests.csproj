@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Extensions.Configuration\NexusLabs.Needlr.Extensions.Configuration.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+	</ItemGroup>
+
+</Project>

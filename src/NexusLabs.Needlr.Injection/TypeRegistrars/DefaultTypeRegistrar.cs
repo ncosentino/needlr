@@ -70,7 +70,19 @@ public sealed class DefaultTypeRegistrar : ITypeRegistrar
 
         foreach (var interfaceType in interfaces)
         {
-            services.Add(new ServiceDescriptor(interfaceType, type, lifetime));
+            // For singletons, register interfaces as factory delegates to ensure same instance
+            if (lifetime == ServiceLifetime.Singleton)
+            {
+                services.Add(new ServiceDescriptor(
+                    interfaceType, 
+                    serviceProvider => serviceProvider.GetRequiredService(type), 
+                    lifetime));
+            }
+            else
+            {
+                // For transient services, direct registration is fine
+                services.Add(new ServiceDescriptor(interfaceType, type, lifetime));
+            }
         }
     }
 }
