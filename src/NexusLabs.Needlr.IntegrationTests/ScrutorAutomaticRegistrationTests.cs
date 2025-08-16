@@ -3,18 +3,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Scrutor;
 
 using Xunit;
 
 namespace NexusLabs.Needlr.IntegrationTests;
 
-public sealed class DefaultAutomaticRegistrationTests
+public sealed class ScrutorAutomaticRegistrationTests
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public DefaultAutomaticRegistrationTests()
+    public ScrutorAutomaticRegistrationTests()
     {
-        _serviceProvider = new Syringe().BuildServiceProvider();
+        _serviceProvider = new Syringe()
+            .UsingScrutorTypeRegistrar()
+            .BuildServiceProvider();
     }
 
     [Fact]

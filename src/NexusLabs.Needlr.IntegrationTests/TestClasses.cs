@@ -49,3 +49,15 @@ public sealed class MyManualDecorator(
         _wrapped.DoSomething();
     }
 }
+
+public interface IInterfaceWithMultipleImplementations
+{
+}
+
+public sealed class ImplementationA : IInterfaceWithMultipleImplementations
+{
+}
+
+public sealed class ImplementationB : IInterfaceWithMultipleImplementations
+{
+}

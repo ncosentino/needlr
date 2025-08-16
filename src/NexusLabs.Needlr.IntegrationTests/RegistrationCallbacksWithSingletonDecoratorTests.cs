@@ -25,13 +25,13 @@ public sealed class RegistrationCallbacksWithSingletonDecoratorTests
     }
 
     [Fact]
-    public void GetService_IMyService_NotNull()
+    public void GetService_IMyManualService_NotNull()
     {
         Assert.NotNull(_serviceProvider.GetService<IMyManualService>());
     }
 
     [Fact]
-    public void GetService_IMyService_IsSingleInstance()
+    public void GetService_IMyManualService_IsSingleInstance()
     {
         var instance1 = _serviceProvider.GetService<IMyManualService>();
         var instance2 = _serviceProvider.GetService<IMyManualService>();
@@ -39,7 +39,15 @@ public sealed class RegistrationCallbacksWithSingletonDecoratorTests
     }
 
     [Fact]
-    public void GetService_IMyServiceAndMyService_AreNotSameInstance()
+    public void GetService_IMyManualService2_IsSingleInstance()
+    {
+        var instance1 = _serviceProvider.GetService<IMyManualService2>();
+        var instance2 = _serviceProvider.GetService<IMyManualService2>();
+        Assert.Same(instance1, instance2);
+    }
+
+    [Fact]
+    public void GetService_IMyManualServiceAndMyManualService_AreNotSameInstance()
     {
         var theInterface = _serviceProvider.GetService<IMyManualService>();
         var theImplementation = _serviceProvider.GetService<MyManualService>();
@@ -47,13 +55,13 @@ public sealed class RegistrationCallbacksWithSingletonDecoratorTests
     }
 
     [Fact]
-    public void GetService_MyService_NotNull()
+    public void GetService_MyManualService_NotNull()
     {
         Assert.NotNull(_serviceProvider.GetService<MyManualService>());
     }
 
     [Fact]
-    public void GetService_MyService_IsSingleInstance()
+    public void GetService_MyManualService_IsSingleInstance()
     {
         var instance1 = _serviceProvider.GetService<MyManualService>();
         var instance2 = _serviceProvider.GetService<MyManualService>();

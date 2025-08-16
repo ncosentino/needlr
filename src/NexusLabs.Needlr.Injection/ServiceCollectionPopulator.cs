@@ -34,6 +34,8 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         ArgumentNullException.ThrowIfNull(candidateAssemblies);
 
         services.AddSingleton(typeof(Lazy<>), typeof(LazyFactory<>));
+        services.AddSingleton(typeof(IReadOnlyList<>), typeof(ReadOnlyListFactory<>));
+        services.AddSingleton(typeof(IReadOnlyCollection<>), typeof(ReadOnlyListFactory<>));
 
         foreach (var assembly in candidateAssemblies)
         {
@@ -58,10 +60,25 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         return services;
     }
 
-    private sealed class LazyFactory<T> : Lazy<T>
+    private sealed class LazyFactory<T>(IServiceProvider provider) : 
+        Lazy<T>(() => provider.GetRequiredService<T>())
         where T : notnull
     {
-        public LazyFactory(IServiceProvider provider)
-            : base(() => provider.GetRequiredService<T>()) { }
+    }
+
+    private sealed class ReadOnlyListFactory<T>(IServiceProvider provider) : IReadOnlyList<T>
+        where T : notnull
+    {
+        private readonly Lazy<IReadOnlyList<T>> _lazyItems = new(() => provider
+            .GetServices<T>()
+            .ToArray());
+
+        public T this[int index] => _lazyItems.Value[index];
+        
+        public int Count => _lazyItems.Value.Count;
+        
+        public IEnumerator<T> GetEnumerator() => _lazyItems.Value.GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
