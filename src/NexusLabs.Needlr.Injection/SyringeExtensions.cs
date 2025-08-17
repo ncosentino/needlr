@@ -334,4 +334,33 @@ public static class SyringeExtensions
 
         return syringe.AddPostPluginRegistrationCallbacks([callback]);
     }
+
+    /// <summary>
+    /// Configures the syringe to add a decorator for the specified service type.
+    /// This is a convenience method that adds a post-plugin registration callback to decorate the service.
+    /// The decorator will preserve the original service's lifetime.
+    /// Works with both interfaces and class types.
+    /// </summary>
+    /// <typeparam name="TService">The service type (interface or class) to decorate.</typeparam>
+    /// <typeparam name="TDecorator">The decorator type that implements TService.</typeparam>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingDefaultTypeRegistrar()
+    ///     .AddDecorator&lt;IMyService, MyServiceDecorator&gt;();
+    /// </code>
+    /// </example>
+    public static Syringe AddDecorator<TService, TDecorator>(
+        this Syringe syringe)
+        where TDecorator : class, TService
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+
+        return syringe.AddPostPluginRegistrationCallback(services =>
+        {
+            services.AddDecorator<TService, TDecorator>();
+        });
+    }
 }

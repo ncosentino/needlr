@@ -11,10 +11,9 @@ using NexusLabs.Needlr.Injection;
 var serviceProvider = new Syringe()
     .AddPostPluginRegistrationCallback(services =>
     {
-        services.AddSingleton<MyService>();
-        services.AddSingleton<IMyService, MyDecorator>(s =>
-            new MyDecorator(s.GetRequiredService<MyService>()));
+        services.AddSingleton<IMyService, MyService>();
     })
+    .AddDecorator<IMyService, MyDecorator>()
     .BuildServiceProvider();
 
 Console.WriteLine("Needlr Manual Registration Example");

@@ -61,3 +61,33 @@ public sealed class ImplementationA : IInterfaceWithMultipleImplementations
 public sealed class ImplementationB : IInterfaceWithMultipleImplementations
 {
 }
+
+public interface ITestServiceForDecoration
+{
+    string DoSomething();
+}
+
+[DoNotAutoRegister]
+public sealed class TestServiceToBeDecorated : ITestServiceForDecoration
+{
+    public string DoSomething()
+    {
+        return "Original";
+    }
+}
+
+[DoNotAutoRegister]
+public sealed class TestServiceDecorator : ITestServiceForDecoration
+{
+    private readonly ITestServiceForDecoration _wrapped;
+
+    public TestServiceDecorator(ITestServiceForDecoration wrapped)
+    {
+        _wrapped = wrapped;
+    }
+
+    public string DoSomething()
+    {
+        return $"Decorated: {_wrapped.DoSomething()}";
+    }
+}
