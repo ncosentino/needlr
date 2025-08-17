@@ -169,6 +169,31 @@ var webApplication = new Syringe()
     .BuildWebApplication();
 ```
 
+### With Configuration Callback
+
+The `UsingConfigurationCallback` method allows you to customize the WebApplicationBuilder before the application is built:
+
+```csharp
+var webApplication = new Syringe()
+    .ForWebApplication()
+    .UsingConfigurationCallback((builder, options) =>
+    {
+        // Customize configuration sources
+        builder.Configuration
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.local.json", optional: true)
+            .AddEnvironmentVariables("MYAPP_");
+        
+        // Add services before plugin registration
+        builder.Services.AddSingleton<ICustomService, CustomService>();
+        
+        // Configure logging
+        builder.Logging.AddConsole();
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
+    })
+    .BuildWebApplication();
+```
+
 ### With Web Application Factory
 
 ```csharp

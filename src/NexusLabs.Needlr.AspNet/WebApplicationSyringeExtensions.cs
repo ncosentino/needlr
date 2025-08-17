@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -52,11 +54,11 @@ namespace NexusLabs.Needlr.AspNet;
 public static class WebApplicationSyringeExtensions
 {
     /// <summary>
-    /// Configures the web application syringe to use the specified web application options factory.
+    /// Configures the <see cref="WebApplicationSyringe"/> to use the specified web application options factory.
     /// </summary>
-    /// <param name="syringe">The web application syringe to configure.</param>
+    /// <param name="syringe">The <see cref="WebApplicationSyringe"/> to configure.</param>
     /// <param name="optionsFactory">The factory function for creating web application options.</param>
-    /// <returns>A new configured web application syringe instance.</returns>
+    /// <returns>A new configured <see cref="WebApplicationSyringe"/> instance.</returns>
     /// <example>
     /// <code>
     /// var webAppSyringe = syringe
@@ -78,11 +80,11 @@ public static class WebApplicationSyringeExtensions
     }
 
     /// <summary>
-    /// Configures the web application syringe to use the specified web application factory.
+    /// Configures the <see cref="WebApplicationSyringe"/> to use the specified web application factory.
     /// </summary>
-    /// <param name="syringe">The web application syringe to configure.</param>
+    /// <param name="syringe">The <see cref="WebApplicationSyringe"/> to configure.</param>
     /// <param name="factory">The factory function for creating web application factories.</param>
-    /// <returns>A new configured web application syringe instance.</returns>
+    /// <returns>A new configured <see cref="WebApplicationSyringe"/> instance.</returns>
     /// <example>
     /// <code>
     /// var webAppSyringe = syringe
@@ -105,13 +107,13 @@ public static class WebApplicationSyringeExtensions
     }
 
     /// <summary>
-    /// Configures the web application syringe to use a callback for configuring the WebApplicationBuilder.
-    /// This allows for custom configuration of the builder, such as modifying the ConfigurationBuilder
+    /// Configures the <see cref="WebApplicationSyringe"/> to use a callback for configuring the <see cref="WebApplicationBuilder"/>.
+    /// This allows for custom configuration of the builder, such as modifying the <see cref="ConfigurationBuilder"/>
     /// or adding additional services before the web application is built.
     /// </summary>
-    /// <param name="syringe">The web application syringe to configure.</param>
-    /// <param name="configureCallback">The callback to configure the WebApplicationBuilder.</param>
-    /// <returns>A new configured web application syringe instance.</returns>
+    /// <param name="syringe">The <see cref="WebApplicationSyringe"/> to configure.</param>
+    /// <param name="configureCallback">The callback to configure the <see cref="WebApplicationBuilder"/>.</param>
+    /// <returns>A new configured <see cref="WebApplicationSyringe"/> instance.</returns>
     /// <example>
     /// <code>
     /// var webAppSyringe = syringe

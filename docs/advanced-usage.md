@@ -309,6 +309,59 @@ var serviceProvider = new Syringe()
 
 ## Advanced Web Application Configuration
 
+### Using Configuration Callback
+
+The `UsingConfigurationCallback` method provides fine-grained control over the WebApplicationBuilder configuration:
+
+```csharp
+var webApplication = new Syringe()
+    .UsingScrutorTypeRegistrar()
+    .ForWebApplication()
+    .UsingConfigurationCallback((builder, options) =>
+    {
+        // Conditional configuration based on environment
+        if (builder.Environment.IsEnvironment("Test"))
+        {
+            // Test-specific configuration
+            builder.Configuration.AddJsonFile("appsettings.Test.json", optional: false);
+        }
+        else
+        {
+            // Production configuration
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", 
+                    optional: true, reloadOnChange: true);
+        }
+        
+        // Add environment variables with custom prefix
+        builder.Configuration.AddEnvironmentVariables("MYAPP_");
+        
+        // Override with in-memory configuration for testing
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DebugMode"] = "true",
+                ["DetailedErrors"] = "true"
+            });
+        }
+        
+        // Configure services before plugin registration
+        builder.Services.Configure<JsonOptions>(opts =>
+        {
+            opts.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        });
+        
+        // Configure Kestrel
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50MB
+        });
+    })
+    .BuildWebApplication();
+```
+
 ### Custom Web Application Factory
 
 ```csharp
@@ -374,6 +427,34 @@ public class CustomWebApplicationFactory : IWebApplicationFactory
 var webApp = new Syringe()
     .ForWebApplication()
     .UsingWebApplicationFactory<CustomWebApplicationFactory>()
+    .BuildWebApplication();
+```
+
+### Combining Configuration Methods
+
+You can combine multiple configuration methods for maximum flexibility:
+
+```csharp
+var webApp = new Syringe()
+    .UsingScrutorTypeRegistrar()
+    .UsingAssemblyProvider(builder => builder
+        .MatchingAssemblies(x => x.Contains("MyApp"))
+        .UseLibTestEntrySorting()
+        .Build())
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions
+        .Default
+        .UsingStartupConsoleLogger()
+        .UsingApplicationName("MyApp"))
+    .UsingConfigurationCallback((builder, options) =>
+    {
+        // Fine-tune the configuration
+        builder.Configuration.SetBasePath(AppContext.BaseDirectory);
+        builder.Configuration.AddUserSecrets<Program>();
+        
+        // Add services that plugins might depend on
+        builder.Services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
+    })
     .BuildWebApplication();
 ```
 

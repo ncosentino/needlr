@@ -278,6 +278,11 @@ public static WebApplicationSyringe UsingOptions(
 public static WebApplicationSyringe UsingWebApplicationFactory<TFactory>(
     this WebApplicationSyringe syringe)
     where TFactory : IWebApplicationFactory, new();
+
+// Configure the WebApplicationBuilder before building
+public static WebApplicationSyringe UsingConfigurationCallback(
+    this WebApplicationSyringe syringe,
+    Action<WebApplicationBuilder, CreateWebApplicationOptions> configureCallback);
 ```
 
 ### Classes
