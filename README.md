@@ -12,6 +12,20 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 - **Plugin System**: Extensible architecture for modular applications
 - **Multiple Type Registrars**: Built-in support for default registration and Scrutor-based scanning
 - **Flexible Filtering**: Control which types get registered automatically
+- **Decorator Pattern Support**: Built-in support for service decoration with `AddDecorator` extension
+- **Post-Build Plugins**: Execute configuration after the main service collection has been built
+- **Configuration Integration**: Automatic IConfiguration registration and support
+- **Assembly Provider**: Flexible assembly scanning with filtering and sorting options
+
+## 📚 Documentation
+
+**[Getting Started Guide →](docs/getting-started.md)** - New to Needlr? Start here for a step-by-step introduction.
+
+Additional documentation:
+- [Core Concepts](docs/core-concepts.md) - Understand the architecture and design
+- [Plugin Development](docs/plugin-development.md) - Create custom plugins to extend functionality
+- [Advanced Usage](docs/advanced-usage.md) - Complex scenarios and optimization techniques
+- [API Reference](docs/api-reference.md) - Complete API documentation
 
 ## Quick Start
 
@@ -277,6 +291,31 @@ serviceProvider.GetRequiredService<IMyService>().DoSomething();
 ```
 
 This approach is cleaner than manual decorator registration as Scrutor handles the complex dependency injection logic internally.
+
+### Using AddDecorator Extension
+
+Needlr provides a convenient `AddDecorator` extension method that simplifies decorator registration:
+
+```csharp
+using NexusLabs.Needlr.Injection;
+
+var serviceProvider = new Syringe()
+    .UsingPostPluginRegistrationCallback(services =>
+    {
+        // Register the base service
+        services.AddSingleton<IMyService, MyService>();
+    })
+    .AddDecorator<IMyService, MyDecorator>()
+    .BuildServiceProvider();
+
+serviceProvider.GetRequiredService<IMyService>().DoSomething();
+// Output:
+// ---BEFORE---
+// Hello, from Dev Leader!
+// ---AFTER---
+```
+
+The `AddDecorator` extension automatically wraps the existing service registration with the decorator, preserving the original service's lifetime.
 
 ## Plugin System
 
