@@ -18,16 +18,15 @@ public static class IWebApplicationFactoryExtensions
     public static WebApplication Create(
         this IWebApplicationFactory factory,
         CreateWebApplicationOptions options,
-        Action<WebApplicationBuilder, CreateWebApplicationOptions> configureCallback)
+        Action<WebApplicationBuilder, CreateWebApplicationOptions>? configureCallback)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(configureCallback);
 
         WebApplicationBuilder Factory()
         {
             var webApplicationBuilder = WebApplication.CreateBuilder(options.Options);
-            configureCallback.Invoke(webApplicationBuilder, options);
+            configureCallback?.Invoke(webApplicationBuilder, options);
             return webApplicationBuilder;
         }
 

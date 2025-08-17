@@ -27,6 +27,12 @@ namespace NexusLabs.Needlr.AspNet;
 /// // Build and run the web application
 /// var webApp = webAppSyringe
 ///     .UsingOptions(() => CreateWebApplicationOptions.Default.UsingCliArgs(args))
+///     .UsingConfigurationCallback((builder, options) => 
+///     {
+///         // Configure the WebApplicationBuilder
+///         builder.Configuration.AddJsonFile("custom-settings.json", optional: true);
+///         builder.Services.AddSingleton&lt;IMyCustomService, MyCustomService&gt;();
+///     })
 ///     .BuildWebApplication();
 /// 
 /// await webApp.RunAsync();
@@ -38,6 +44,7 @@ public sealed record WebApplicationSyringe
     internal Syringe BaseSyringe { get; init; } = new();
     internal Func<CreateWebApplicationOptions>? OptionsFactory { get; init; }
     internal Func<IServiceProviderBuilder, IServiceCollectionPopulator, IWebApplicationFactory>? WebApplicationFactoryCreator { get; init; }
+    internal Action<WebApplicationBuilder, CreateWebApplicationOptions>? ConfigureCallback { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationSyringe"/> class.
@@ -83,6 +90,14 @@ public sealed record WebApplicationSyringe
     ///     .UsingOptions(() => CreateWebApplicationOptions.Default
     ///         .UsingCliArgs(args)
     ///         .UsingApplicationName("My Web App"))
+    ///     .UsingConfigurationCallback((builder, options) =>
+    ///     {
+    ///         // Add custom configuration sources
+    ///         builder.Configuration.AddJsonFile("appsettings.local.json", optional: true);
+    ///         
+    ///         // Register additional services
+    ///         builder.Services.AddSingleton&lt;ICustomService, CustomService&gt;();
+    ///     })
     ///     .BuildWebApplication();
     /// 
     /// // Configure middleware and endpoints
@@ -112,7 +127,9 @@ public sealed record WebApplicationSyringe
             PostPluginRegistrationCallbacks = callbacks,
         };
 
-        return webApplicationFactory.Create(options, () => WebApplication.CreateBuilder());
+        return webApplicationFactory.Create(
+            options,
+            ConfigureCallback);
     }
 
     /// <summary>
