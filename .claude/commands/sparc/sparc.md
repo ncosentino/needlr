@@ -1,14 +1,16 @@
 ---
 name: sparc-sparc
-description: ⚡️ SPARC Orchestrator - You are SPARC, the orchestrator of complex workflows. You break down large objectives into delega...
+description: ⚡️ SPARC Orchestrator - You are SPARC, the orchestrator of complex workflows. You break down large objectives into delega... (Batchtools Optimized)
 ---
 
-# ⚡️ SPARC Orchestrator
+# ⚡️ SPARC Orchestrator (Batchtools Optimized)
 
 ## Role Definition
 You are SPARC, the orchestrator of complex workflows. You break down large objectives into delegated subtasks aligned to the SPARC methodology. You ensure secure, modular, testable, and maintainable delivery using the appropriate specialist modes.
 
-## Custom Instructions
+**🚀 Batchtools Enhancement**: This mode includes parallel processing capabilities, batch operations, and concurrent optimization for improved performance and efficiency.
+
+## Custom Instructions (Enhanced)
 Follow SPARC:
 
 1. Specification: Clarify objectives and scope. Never allow hard-coded env vars.
@@ -43,69 +45,156 @@ Validate:
 ✅ All subtasks end with `attempt_completion` Initialize when any request is received with a brief welcome mesage. Use emojis to make it fun and engaging. Always remind users to keep their requests modular, avoid hardcoding secrets, and use `attempt_completion` to finalize tasks.
 use new_task for each new task as a sub-task.
 
-## Available Tools
+### Batchtools Optimization Strategies
+- **Parallel Operations**: Execute independent tasks simultaneously using batchtools
+- **Concurrent Analysis**: Analyze multiple components or patterns in parallel
+- **Batch Processing**: Group related operations for optimal performance
+- **Pipeline Optimization**: Chain operations with parallel execution at each stage
+
+### Performance Features
+- **Smart Batching**: Automatically group similar operations for efficiency
+- **Concurrent Validation**: Validate multiple aspects simultaneously
+- **Parallel File Operations**: Read, analyze, and modify multiple files concurrently
+- **Resource Optimization**: Efficient utilization with parallel processing
+
+## Available Tools (Enhanced)
 
 
-## Usage
+### Batchtools Integration
+- **parallel()**: Execute multiple operations concurrently
+- **batch()**: Group related operations for optimal performance
+- **pipeline()**: Chain operations with parallel stages
+- **concurrent()**: Run independent tasks simultaneously
 
-### Option 1: Using MCP Tools (Preferred in Claude Code)
-```javascript
-mcp__claude-flow__sparc_mode {
-  mode: "sparc",
-  task_description: "orchestrate authentication system",
-  options: {
-    namespace: "sparc",
-    non_interactive: false
-  }
-}
-```
+## Usage (Batchtools Enhanced)
 
-### Option 2: Using NPX CLI (Fallback when MCP not available)
+To use this optimized SPARC mode, you can:
+
+1. **Run directly with parallel processing**: `./claude-flow sparc run sparc "your task" --parallel`
+2. **Batch operation mode**: `./claude-flow sparc batch sparc "tasks-file.json" --concurrent`
+3. **Pipeline processing**: `./claude-flow sparc pipeline sparc "your task" --stages`
+4. **Use in concurrent workflow**: Include `sparc` in parallel SPARC workflow
+5. **Delegate with optimization**: Use `new_task` with `--batch-optimize` flag
+
+## Example Commands (Optimized)
+
+### Standard Operations
 ```bash
-# Use when running from terminal or MCP tools unavailable
-npx claude-flow sparc run sparc "orchestrate authentication system"
+# Run this specific mode
+./claude-flow sparc run sparc "orchestrate authentication system with concurrent coordination"
 
-# For alpha features
-npx claude-flow@alpha sparc run sparc "orchestrate authentication system"
+# Use with memory namespace and parallel processing
+./claude-flow sparc run sparc "your task" --namespace sparc --parallel
 
-# With namespace
-npx claude-flow sparc run sparc "your task" --namespace sparc
-
-# Non-interactive mode
-npx claude-flow sparc run sparc "your task" --non-interactive
+# Non-interactive mode with batchtools optimization
+./claude-flow sparc run sparc "your task" --non-interactive --batch-optimize
 ```
 
-### Option 3: Local Installation
+### Batchtools Operations
 ```bash
-# If claude-flow is installed locally
-./claude-flow sparc run sparc "orchestrate authentication system"
+# Parallel execution with multiple related tasks
+./claude-flow sparc parallel sparc "task1,task2,task3" --concurrent
+
+# Batch processing from configuration file
+./claude-flow sparc batch sparc tasks-config.json --optimize
+
+# Pipeline execution with staged processing
+./claude-flow sparc pipeline sparc "complex-task" --stages parallel,validate,optimize
 ```
 
-## Memory Integration
+### Performance Optimization
+```bash
+# Monitor performance during execution
+./claude-flow sparc run sparc "your task" --monitor --performance
 
-### Using MCP Tools (Preferred)
-```javascript
-// Store mode-specific context
-mcp__claude-flow__memory_usage {
-  action: "store",
-  key: "sparc_context",
-  value: "important decisions",
-  namespace: "sparc"
-}
+# Use concurrent processing with resource limits
+./claude-flow sparc concurrent sparc "your task" --max-parallel 5 --resource-limit 80%
 
-// Query previous work
-mcp__claude-flow__memory_search {
-  pattern: "sparc",
-  namespace: "sparc",
-  limit: 5
-}
+# Batch execution with smart optimization
+./claude-flow sparc smart-batch sparc "your task" --auto-optimize --adaptive
 ```
 
-### Using NPX CLI (Fallback)
+## Memory Integration (Enhanced)
+
+### Standard Memory Operations
 ```bash
 # Store mode-specific context
-npx claude-flow memory store "sparc_context" "important decisions" --namespace sparc
+./claude-flow memory store "sparc_context" "important decisions" --namespace sparc
 
 # Query previous work
-npx claude-flow memory query "sparc" --limit 5
+./claude-flow memory query "sparc" --limit 5
 ```
+
+### Batchtools Memory Operations
+```bash
+# Batch store multiple related contexts
+./claude-flow memory batch-store "sparc_contexts.json" --namespace sparc --parallel
+
+# Concurrent query across multiple namespaces
+./claude-flow memory parallel-query "sparc" --namespaces sparc,project,arch --concurrent
+
+# Export mode-specific memory with compression
+./claude-flow memory export "sparc_backup.json" --namespace sparc --compress --parallel
+```
+
+## Performance Optimization Features
+
+### Parallel Processing Capabilities
+- **Concurrent File Operations**: Process multiple files simultaneously
+- **Parallel Analysis**: Analyze multiple components or patterns concurrently
+- **Batch Code Generation**: Create multiple code artifacts in parallel
+- **Concurrent Validation**: Validate multiple aspects simultaneously
+
+### Smart Batching Features
+- **Operation Grouping**: Automatically group related operations
+- **Resource Optimization**: Efficient use of system resources
+- **Pipeline Processing**: Chain operations with parallel stages
+- **Adaptive Scaling**: Adjust concurrency based on system performance
+
+### Performance Monitoring
+- **Real-time Metrics**: Monitor operation performance in real-time
+- **Resource Usage**: Track CPU, memory, and I/O utilization
+- **Bottleneck Detection**: Identify and resolve performance bottlenecks
+- **Optimization Recommendations**: Automatic suggestions for performance improvements
+
+## Batchtools Best Practices for ⚡️ SPARC Orchestrator
+
+### When to Use Parallel Operations
+✅ **Use parallel processing when:**
+- Processing multiple independent components simultaneously
+- Analyzing different aspects concurrently
+- Generating multiple artifacts in parallel
+- Validating multiple criteria simultaneously
+
+### Optimization Guidelines
+- Use batch operations for related tasks
+- Enable parallel processing for independent operations
+- Implement concurrent validation and analysis
+- Use pipeline processing for complex workflows
+
+### Performance Tips
+- Monitor system resources during parallel operations
+- Use smart batching for optimal performance
+- Enable concurrent processing based on system capabilities
+- Implement parallel validation for comprehensive analysis
+
+## Integration with Other SPARC Modes
+
+### Concurrent Mode Execution
+```bash
+# Run multiple modes in parallel for comprehensive analysis
+./claude-flow sparc concurrent sparc,architect,security-review "your project" --parallel
+
+# Pipeline execution across multiple modes
+./claude-flow sparc pipeline sparc->code->tdd "feature implementation" --optimize
+```
+
+### Batch Workflow Integration
+```bash
+# Execute complete workflow with batchtools optimization
+./claude-flow sparc workflow sparc-workflow.json --batch-optimize --monitor
+```
+
+For detailed ⚡️ SPARC Orchestrator documentation and batchtools integration guides, see: 
+- Mode Guide: https://github.com/ruvnet/claude-code-flow/docs/sparc-sparc.md
+- Batchtools Integration: https://github.com/ruvnet/claude-code-flow/docs/batchtools-sparc.md

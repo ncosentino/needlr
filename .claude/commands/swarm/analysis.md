@@ -5,91 +5,42 @@ Comprehensive analysis through distributed agent coordination.
 
 ## Activation
 
-### Using MCP Tools
+### Option 1: Using MCP Tools (Preferred in Claude Code)
 ```javascript
-// Initialize analysis swarm
-mcp__claude-flow__swarm_init({
-  "topology": "mesh",
-  "maxAgents": 6,
-  "strategy": "adaptive"
-})
+mcp__claude-flow__swarm_init {
+  topology: "mesh",
+  strategy: "analysis",
+  maxAgents: 6
+}
 
-// Orchestrate analysis task
-mcp__claude-flow__task_orchestrate({
-  "task": "analyze system performance",
-  "strategy": "parallel",
-  "priority": "medium"
-})
+mcp__claude-flow__task_orchestrate {
+  task: "analyze system performance",
+  strategy: "distributed"
+}
 ```
 
-### Using CLI (Fallback)
-`npx claude-flow swarm "analyze system performance" --strategy analysis`
+### Option 2: Using NPX CLI (Fallback when MCP not available)
+```bash
+# Use when running from terminal or MCP tools unavailable
+npx claude-flow swarm "analyze system performance" --strategy analysis
+
+# For alpha features
+npx claude-flow@alpha swarm "analyze system performance" --strategy analysis
+```
+
+### Option 3: Local Installation
+```bash
+# If claude-flow is installed locally
+./claude-flow swarm "analyze system performance" --strategy analysis
+```
 
 ## Agent Roles
-
-### Agent Spawning with MCP
-```javascript
-// Spawn analysis agents
-mcp__claude-flow__agent_spawn({
-  "type": "analyst",
-  "name": "Data Collector",
-  "capabilities": ["metrics", "logging", "monitoring"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "analyst",
-  "name": "Pattern Analyzer",
-  "capabilities": ["pattern-recognition", "anomaly-detection"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "documenter",
-  "name": "Report Generator",
-  "capabilities": ["reporting", "visualization"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "coordinator",
-  "name": "Insight Synthesizer",
-  "capabilities": ["synthesis", "correlation"]
-})
-```
+- Data Collector: Gathers metrics and logs
+- Pattern Analyzer: Identifies trends and anomalies
+- Report Generator: Creates comprehensive reports
+- Insight Synthesizer: Combines findings
 
 ## Coordination Modes
 - Mesh: For exploratory analysis
 - Pipeline: For sequential processing
 - Hierarchical: For complex systems
-
-## Analysis Operations
-```javascript
-// Run performance analysis
-mcp__claude-flow__performance_report({
-  "format": "detailed",
-  "timeframe": "24h"
-})
-
-// Identify bottlenecks
-mcp__claude-flow__bottleneck_analyze({
-  "component": "api",
-  "metrics": ["response-time", "throughput"]
-})
-
-// Pattern recognition
-mcp__claude-flow__pattern_recognize({
-  "data": performanceData,
-  "patterns": ["anomaly", "trend", "cycle"]
-})
-```
-
-## Status Monitoring
-```javascript
-// Monitor analysis progress
-mcp__claude-flow__task_status({
-  "taskId": "analysis-task-001"
-})
-
-// Get analysis results
-mcp__claude-flow__task_results({
-  "taskId": "analysis-task-001"
-})
-```

@@ -5,127 +5,43 @@ Comprehensive testing through distributed execution.
 
 ## Activation
 
-### Using MCP Tools
+### Option 1: Using MCP Tools (Preferred in Claude Code)
 ```javascript
-// Initialize testing swarm
-mcp__claude-flow__swarm_init({
-  "topology": "star",
-  "maxAgents": 7,
-  "strategy": "parallel"
-})
+mcp__claude-flow__swarm_init {
+  topology: "distributed",
+  strategy: "testing",
+  maxAgents: 5
+}
 
-// Orchestrate testing task
-mcp__claude-flow__task_orchestrate({
-  "task": "test application",
-  "strategy": "parallel",
-  "priority": "high"
-})
+mcp__claude-flow__task_orchestrate {
+  task: "test application",
+  strategy: "parallel"
+}
 ```
 
-### Using CLI (Fallback)
-`npx claude-flow swarm "test application" --strategy testing`
+### Option 2: Using NPX CLI (Fallback when MCP not available)
+```bash
+# Use when running from terminal or MCP tools unavailable
+npx claude-flow swarm "test application" --strategy testing
+
+# For alpha features
+npx claude-flow@alpha swarm "test application" --strategy testing
+```
+
+### Option 3: Local Installation
+```bash
+# If claude-flow is installed locally
+./claude-flow swarm "test application" --strategy testing
+```
 
 ## Agent Roles
-
-### Agent Spawning with MCP
-```javascript
-// Spawn testing agents
-mcp__claude-flow__agent_spawn({
-  "type": "tester",
-  "name": "Unit Tester",
-  "capabilities": ["unit-testing", "mocking", "coverage"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "tester",
-  "name": "Integration Tester",
-  "capabilities": ["integration", "api-testing", "contract-testing"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "tester",
-  "name": "E2E Tester",
-  "capabilities": ["e2e", "ui-testing", "user-flows"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "tester",
-  "name": "Performance Tester",
-  "capabilities": ["load-testing", "stress-testing", "benchmarking"]
-})
-
-mcp__claude-flow__agent_spawn({
-  "type": "monitor",
-  "name": "Security Tester",
-  "capabilities": ["security-testing", "penetration-testing", "vulnerability-scanning"]
-})
-```
+- Unit Tester: Tests individual components
+- Integration Tester: Validates interactions
+- E2E Tester: Tests user flows
+- Performance Tester: Measures metrics
+- Security Tester: Finds vulnerabilities
 
 ## Test Coverage
-
-### Coverage Analysis
-```javascript
-// Quality assessment
-mcp__claude-flow__quality_assess({
-  "target": "test-coverage",
-  "criteria": ["line-coverage", "branch-coverage", "function-coverage"]
-})
-
-// Edge case detection
-mcp__claude-flow__pattern_recognize({
-  "data": testScenarios,
-  "patterns": ["edge-case", "boundary-condition", "error-path"]
-})
-```
-
-### Test Execution
-```javascript
-// Parallel test execution
-mcp__claude-flow__parallel_execute({
-  "tasks": [
-    { "id": "unit-tests", "command": "npm run test:unit" },
-    { "id": "integration-tests", "command": "npm run test:integration" },
-    { "id": "e2e-tests", "command": "npm run test:e2e" }
-  ]
-})
-
-// Batch processing for test suites
-mcp__claude-flow__batch_process({
-  "items": testSuites,
-  "operation": "execute-test-suite"
-})
-```
-
-### Performance Testing
-```javascript
-// Run performance benchmarks
-mcp__claude-flow__benchmark_run({
-  "suite": "performance-tests"
-})
-
-// Security scanning
-mcp__claude-flow__security_scan({
-  "target": "application",
-  "depth": "comprehensive"
-})
-```
-
-### Monitoring and Reporting
-```javascript
-// Monitor test execution
-mcp__claude-flow__swarm_monitor({
-  "swarmId": "testing-swarm",
-  "interval": 2000
-})
-
-// Generate test report
-mcp__claude-flow__performance_report({
-  "format": "detailed",
-  "timeframe": "current-run"
-})
-
-// Get test results
-mcp__claude-flow__task_results({
-  "taskId": "test-execution-001"
-})
-```
+- Code coverage analysis
+- Edge case identification
+- Regression prevention
