@@ -147,4 +147,85 @@ public sealed class ScrutorAutomaticRegistrationTests
         Assert.NotNull(instances);
         Assert.NotEmpty(instances);
     }
+
+    [Fact]
+    public void GetRegisteredTypes_WithScrutorRegistrar_ContainsExpectedTypes()
+    {
+        var interfaceTypes = _serviceProvider.GetRegisteredTypes(type => type.IsInterface);
+        
+        Assert.Contains(typeof(IMyAutomaticService), interfaceTypes);
+        Assert.Contains(typeof(IMyAutomaticService2), interfaceTypes);
+        Assert.Contains(typeof(IInterfaceWithMultipleImplementations), interfaceTypes);
+        Assert.Contains(typeof(IConfiguration), interfaceTypes);
+        Assert.Contains(typeof(IServiceProvider), interfaceTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypes_WithScrutorRegistrar_ContainsClasses()
+    {
+        var classTypes = _serviceProvider.GetRegisteredTypes(type => type.IsClass && !type.IsAbstract);
+        
+        Assert.Contains(typeof(MyAutomaticService), classTypes);
+        Assert.Contains(typeof(ImplementationA), classTypes);
+        Assert.Contains(typeof(ImplementationB), classTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypesOf_IMyAutomaticService_WithScrutor_ContainsExpectedTypes()
+    {
+        var automaticServiceTypes = _serviceProvider.GetRegisteredTypesOf<IMyAutomaticService>();
+        
+        Assert.Contains(typeof(IMyAutomaticService), automaticServiceTypes);
+        Assert.Contains(typeof(MyAutomaticService), automaticServiceTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypesOf_IInterfaceWithMultipleImplementations_WithScrutor_ContainsAllImplementations()
+    {
+        var multipleImplTypes = _serviceProvider.GetRegisteredTypesOf<IInterfaceWithMultipleImplementations>();
+        
+        Assert.Contains(typeof(IInterfaceWithMultipleImplementations), multipleImplTypes);
+        Assert.Contains(typeof(ImplementationA), multipleImplTypes);
+        Assert.Contains(typeof(ImplementationB), multipleImplTypes);
+    }
+
+    [Fact]
+    public void GetServiceRegistrations_WithScrutorRegistrar_ContainsSingletonServices()
+    {
+        var singletonRegistrations = _serviceProvider.GetServiceRegistrations(
+            descriptor => descriptor.Lifetime == ServiceLifetime.Singleton);
+        
+        Assert.Contains(singletonRegistrations, r => r.ServiceType == typeof(IMyAutomaticService));
+        Assert.Contains(singletonRegistrations, r => r.ServiceType == typeof(IMyAutomaticService2));
+        Assert.Contains(singletonRegistrations, r => r.ServiceType == typeof(MyAutomaticService));
+    }
+
+    [Fact]
+    public void GetServiceRegistrations_WithScrutorRegistrar_MyAutomaticServiceImplementations()
+    {
+        var myServiceRegistrations = _serviceProvider.GetServiceRegistrations(
+            descriptor => descriptor.ImplementationType == typeof(MyAutomaticService));
+        
+        // Should have direct registration for the class
+        Assert.Contains(myServiceRegistrations, r => r.ServiceType == typeof(MyAutomaticService));
+        Assert.All(myServiceRegistrations, r => 
+        {
+            Assert.Equal(typeof(MyAutomaticService), r.ImplementationType);
+            Assert.Equal(ServiceLifetime.Singleton, r.Lifetime);
+        });
+    }
+
+    [Fact]
+    public void GetRegisteredTypes_WithScrutorRegistrar_ContainsTestNamespaceTypes()
+    {
+        var testNamespaceTypes = _serviceProvider.GetRegisteredTypes(type => 
+            type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true);
+        
+        Assert.Contains(typeof(MyAutomaticService), testNamespaceTypes);
+        Assert.Contains(typeof(IMyAutomaticService), testNamespaceTypes);
+        Assert.Contains(typeof(IMyAutomaticService2), testNamespaceTypes);
+        Assert.Contains(typeof(ImplementationA), testNamespaceTypes);
+        Assert.Contains(typeof(ImplementationB), testNamespaceTypes);
+        Assert.Contains(typeof(IInterfaceWithMultipleImplementations), testNamespaceTypes);
+    }
 }

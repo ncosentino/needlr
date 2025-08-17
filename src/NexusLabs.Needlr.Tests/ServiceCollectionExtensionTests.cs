@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using System;
+
 using Xunit;
 
-namespace NexusLabs.Needlr.Injection.Tests;
+namespace NexusLabs.Needlr.Tests;
 
 public sealed class ServiceCollectionExtensionTests
 {

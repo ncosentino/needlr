@@ -33,6 +33,8 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         ArgumentNullException.ThrowIfNull(config);
         ArgumentNullException.ThrowIfNull(candidateAssemblies);
 
+        services.AddSingleton(services);
+        services.AddSingleton(provider => provider);
         services.AddSingleton(typeof(Lazy<>), typeof(LazyFactory<>));
         services.AddSingleton(typeof(IReadOnlyList<>), typeof(ReadOnlyListFactory<>));
         services.AddSingleton(typeof(IReadOnlyCollection<>), typeof(ReadOnlyListFactory<>));

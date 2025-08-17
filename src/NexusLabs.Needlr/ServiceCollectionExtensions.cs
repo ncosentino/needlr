@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr;
 
 /// <summary>
 /// Extension methods for <see cref="IServiceCollection"/> to provide decorator functionality.

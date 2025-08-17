@@ -77,4 +77,70 @@ public sealed class SingletonClassAsInterfaceRegistrationCallbacksTests
         var instance2 = _serviceProvider.GetService<IServiceProvider>();
         Assert.Same(instance1, instance2);
     }
+
+    [Fact]
+    public void GetRegisteredTypes_InterfaceOnlyRegistration_ContainsInterface()
+    {
+        var interfaceTypes = _serviceProvider.GetRegisteredTypes(type => type.IsInterface);
+
+        Assert.Contains(typeof(IMyManualService), interfaceTypes);
+        Assert.Contains(typeof(IConfiguration), interfaceTypes);
+        Assert.Contains(typeof(IServiceProvider), interfaceTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypes_InterfaceOnlyRegistration_DoesNotContainImplementation()
+    {
+        var allTypes = _serviceProvider.GetRegisteredTypes(type => true);
+
+        Assert.Contains(typeof(IMyManualService), allTypes);
+        // MyManualService is not directly registered, only as implementation for the interface
+        Assert.DoesNotContain(typeof(MyManualService), allTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypesOf_IMyManualService_ContainsInterface()
+    {
+        var manualServiceTypes = _serviceProvider.GetRegisteredTypesOf<IMyManualService>();
+
+        Assert.Contains(typeof(IMyManualService), manualServiceTypes);
+    }
+
+    [Fact]
+    public void GetRegisteredTypesOf_MyManualService_IsEmpty()
+    {
+        var manualServiceTypes = _serviceProvider.GetRegisteredTypesOf<MyManualService>();
+
+        // MyManualService is not directly registered, so this should be empty
+        Assert.Empty(manualServiceTypes);
+    }
+
+    [Fact]
+    public void GetServiceRegistrations_InterfaceOnlyRegistration_ContainsCorrectImplementationType()
+    {
+        var manualServiceRegistrations = _serviceProvider.GetServiceRegistrations(
+            descriptor => descriptor.ServiceType == typeof(IMyManualService));
+
+        Assert.Single(manualServiceRegistrations);
+        var registration = manualServiceRegistrations.First();
+
+        Assert.Equal(typeof(IMyManualService), registration.ServiceType);
+        Assert.Equal(typeof(MyManualService), registration.ImplementationType);
+        Assert.Equal(ServiceLifetime.Singleton, registration.Lifetime);
+        Assert.False(registration.HasFactory);
+        Assert.False(registration.HasInstance);
+    }
+
+    [Fact]
+    public void GetServiceRegistrations_ByImplementationType_FindsInterfaceRegistration()
+    {
+        var myServiceImplementations = _serviceProvider.GetServiceRegistrations(
+            descriptor => descriptor.ImplementationType == typeof(MyManualService));
+
+        Assert.Single(myServiceImplementations);
+        var registration = myServiceImplementations.First();
+
+        Assert.Equal(typeof(IMyManualService), registration.ServiceType);
+        Assert.Equal(typeof(MyManualService), registration.ImplementationType);
+    }
 }
