@@ -255,6 +255,93 @@ public class ConditionalDecoratorPlugin : IServiceCollectionPlugin
 }
 ```
 
+## Post-Plugin Registration Callbacks
+
+The `UsingPostPluginRegistrationCallback` method provides a way to register services after all plugins have been processed. This is available on both the `Syringe` class and `CreateWebApplicationOptions`.
+
+### Using with Syringe
+
+Register services directly on the Syringe instance:
+
+```csharp
+var serviceProvider = new Syringe()
+    .UsingPostPluginRegistrationCallback(services =>
+    {
+        // Override or add services after plugins
+        services.AddSingleton<ICustomService, CustomService>();
+        services.Configure<MyOptions>(options => 
+        {
+            options.EnableFeature = true;
+        });
+    })
+    .UsingPostPluginRegistrationCallback(services =>
+    {
+        // You can chain multiple callbacks
+        services.AddScoped<IAnotherService, AnotherService>();
+    })
+    .BuildServiceProvider();
+```
+
+You can also use the plural overload ```UsingPostPluginRegistrationCallbacks``` to pass in multiple callbacks.
+
+### Using with CreateWebApplicationOptions
+
+For web applications, add callbacks through the options:
+
+```csharp
+var webApplication = new Syringe()
+    .ForWebApplication()
+    .UsingOptions(() => 
+    {
+        var options = CreateWebApplicationOptions.Default;
+        
+        // Add post-plugin registration callbacks
+        options.PostPluginRegistrationCallbacks.Add(services =>
+        {
+            services.AddAuthentication();
+            services.AddAuthorization();
+        });
+        
+        options.PostPluginRegistrationCallbacks.Add(services =>
+        {
+            // Configure after authentication is added
+            services.Configure<JwtBearerOptions>(options =>
+            {
+                options.Authority = "https://auth.example.com";
+            });
+        });
+        
+        return options;
+    })
+    .BuildWebApplication();
+```
+
+### Common Use Cases
+
+Post-plugin registration callbacks are particularly useful for:
+
+1. **Overriding Plugin Registrations**: Replace a service registered by a plugin with a custom implementation
+2. **Conditional Registration**: Add services based on configuration or environment
+3. **Testing**: Override services with mocks or test doubles
+
+Example of overriding a plugin registration:
+
+```csharp
+var syringe = new Syringe()
+    .UsingPostPluginRegistrationCallback(services =>
+    {
+        // Remove the default implementation registered by a plugin
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IEmailService));
+        if (descriptor != null)
+        {
+            services.Remove(descriptor);
+        }
+        
+        // Add custom implementation
+        services.AddSingleton<IEmailService, CustomEmailService>();
+    });
+```
+
 ## Custom Assembly Providers
 
 ### Implementing IAssemblyProvider
@@ -458,67 +545,7 @@ var webApp = new Syringe()
     .BuildWebApplication();
 ```
 
-## Multi-Tenant Applications
-
-### Tenant-Specific Service Registration
-
-```csharp
-public interface ITenantService
-{
-    string TenantId { get; }
-    void ProcessTenantData();
-}
-
-public class TenantServiceFactory
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly Dictionary<string, Type> _tenantServices;
-    
-    public TenantServiceFactory(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-        _tenantServices = new Dictionary<string, Type>
-        {
-            ["tenant-a"] = typeof(TenantAService),
-            ["tenant-b"] = typeof(TenantBService),
-            ["default"] = typeof(DefaultTenantService)
-        };
-    }
-    
-    public ITenantService GetTenantService(string tenantId)
-    {
-        var serviceType = _tenantServices.GetValueOrDefault(tenantId) 
-            ?? _tenantServices["default"];
-        
-        return (ITenantService)_serviceProvider.GetRequiredService(serviceType);
-    }
-}
-
-public class MultiTenantPlugin : IServiceCollectionPlugin
-{
-    public void Configure(ServiceCollectionPluginOptions options)
-    {
-        // Register all tenant services
-        options.Services.AddScoped<TenantAService>();
-        options.Services.AddScoped<TenantBService>();
-        options.Services.AddScoped<DefaultTenantService>();
-        
-        // Register factory
-        options.Services.AddSingleton<TenantServiceFactory>();
-        
-        // Register tenant resolver
-        options.Services.AddScoped<ITenantService>(sp =>
-        {
-            var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            var tenantId = httpContext?.Request.Headers["X-Tenant-Id"].FirstOrDefault() ?? "default";
-            var factory = sp.GetRequiredService<TenantServiceFactory>();
-            return factory.GetTenantService(tenantId);
-        });
-    }
-}
-```
-
-## Performance Optimization
+## Delayed Resolution
 
 ### Lazy Service Resolution
 
@@ -554,109 +581,6 @@ public class ServiceConsumer
             // Service is only instantiated when actually needed
             _expensiveService.Value.DoExpensiveWork();
         }
-    }
-}
-```
-
-### Service Collection Optimization
-
-```csharp
-public class OptimizedRegistrationPlugin : IServiceCollectionPlugin
-{
-    public void Configure(ServiceCollectionPluginOptions options)
-    {
-        // Use TryAdd to avoid duplicate registrations
-        options.Services.TryAddSingleton<ICommonService, CommonService>();
-        
-        // Use batch registration for related services
-        var serviceTypes = new[]
-        {
-            typeof(ServiceA),
-            typeof(ServiceB),
-            typeof(ServiceC)
-        };
-        
-        foreach (var type in serviceTypes)
-        {
-            options.Services.AddTransient(type);
-        }
-        
-        // Use factory pattern for complex initialization
-        options.Services.AddSingleton<IComplexService>(sp =>
-        {
-            var config = sp.GetRequiredService<IConfiguration>();
-            var logger = sp.GetRequiredService<ILogger<ComplexService>>();
-            
-            return new ComplexService(
-                config.GetValue<string>("ComplexService:Setting1"),
-                config.GetValue<int>("ComplexService:Setting2"),
-                logger);
-        });
-    }
-}
-```
-
-## Integration with External Systems
-
-### gRPC Services
-
-```csharp
-public class GrpcPlugin : IWebApplicationBuilderPlugin, IWebApplicationPlugin
-{
-    public void Configure(WebApplicationBuilderPluginOptions options)
-    {
-        // Add gRPC services
-        options.Builder.Services.AddGrpc();
-        
-        // Configure gRPC options
-        options.Builder.Services.Configure<GrpcServiceOptions>(opts =>
-        {
-            opts.MaxReceiveMessageSize = 10 * 1024 * 1024; // 10MB
-            opts.EnableDetailedErrors = options.Builder.Environment.IsDevelopment();
-        });
-    }
-    
-    public void Configure(WebApplicationPluginOptions options)
-    {
-        // Map gRPC services
-        options.WebApplication.MapGrpcService<GreeterService>();
-        options.WebApplication.MapGrpcService<DataService>();
-        
-        // Add gRPC-Web support
-        options.WebApplication.UseGrpcWeb();
-    }
-}
-```
-
-### Message Queue Integration
-
-```csharp
-public class MessageQueuePlugin : IServiceCollectionPlugin, IPostBuildServiceCollectionPlugin
-{
-    public void Configure(ServiceCollectionPluginOptions options)
-    {
-        // Register message queue services
-        options.Services.AddSingleton<IMessageQueueConnection>(sp =>
-        {
-            var config = sp.GetRequiredService<IConfiguration>();
-            return new RabbitMQConnection(config.GetConnectionString("RabbitMQ"));
-        });
-        
-        options.Services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
-        options.Services.AddSingleton<IMessageConsumer, RabbitMQConsumer>();
-        
-        // Register message handlers
-        options.Services.AddTransient<IMessageHandler<OrderMessage>, OrderMessageHandler>();
-        options.Services.AddTransient<IMessageHandler<PaymentMessage>, PaymentMessageHandler>();
-    }
-    
-    public void Configure(PostBuildServiceCollectionPluginOptions options)
-    {
-        // Start message consumers
-        var consumer = options.ServiceProvider.GetRequiredService<IMessageConsumer>();
-        consumer.StartConsuming();
-        
-        options.Logger.LogInformation("Message queue consumers started");
     }
 }
 ```

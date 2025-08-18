@@ -25,7 +25,6 @@ Additional documentation:
 - [Core Concepts](docs/core-concepts.md) - Understand the architecture and design
 - [Plugin Development](docs/plugin-development.md) - Create custom plugins to extend functionality
 - [Advanced Usage](docs/advanced-usage.md) - Complex scenarios and optimization techniques
-- [API Reference](docs/api-reference.md) - Complete API documentation
 
 ## Quick Start
 

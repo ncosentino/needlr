@@ -208,4 +208,3 @@ var webApplication = new Syringe()
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding
 - Explore [Plugin Development](plugin-development.md) to extend functionality
 - See [Advanced Usage](advanced-usage.md) for complex scenarios
-- Check the [API Reference](api-reference.md) for detailed documentation
