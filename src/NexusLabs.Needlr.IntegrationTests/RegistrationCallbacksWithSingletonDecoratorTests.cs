@@ -15,7 +15,7 @@ public sealed class RegistrationCallbacksWithSingletonDecoratorTests
     public RegistrationCallbacksWithSingletonDecoratorTests()
     {
         _serviceProvider = new Syringe()
-            .AddPostPluginRegistrationCallback(services =>
+            .UsingPostPluginRegistrationCallback(services =>
             {
                 services.AddSingleton<MyManualService>();
                 services.AddSingleton<IMyManualService, MyManualDecorator>(s =>

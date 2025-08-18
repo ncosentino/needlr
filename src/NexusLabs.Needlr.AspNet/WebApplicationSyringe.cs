@@ -122,10 +122,17 @@ public sealed record WebApplicationSyringe
 
         var webApplicationFactory = GetOrCreateWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator);
         var options = GetOrCreateOptions();
-        options = options with
-        { 
-            PostPluginRegistrationCallbacks = callbacks,
-        };
+        if (callbacks.Count > 0)
+        {
+            options = options with
+            {
+                PostPluginRegistrationCallbacks =
+                [
+                    .. options.PostPluginRegistrationCallbacks,
+                    .. callbacks,
+                ],
+            };
+        }
 
         return webApplicationFactory.Create(
             options,

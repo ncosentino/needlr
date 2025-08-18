@@ -15,7 +15,7 @@ public sealed class SingletonClassAsInterfaceRegistrationCallbacksTests
     public SingletonClassAsInterfaceRegistrationCallbacksTests()
     {
         _serviceProvider = new Syringe()
-            .AddPostPluginRegistrationCallback(services =>
+            .UsingPostPluginRegistrationCallback(services =>
             {
                 services.AddSingleton<IMyManualService, MyManualService>();
             })

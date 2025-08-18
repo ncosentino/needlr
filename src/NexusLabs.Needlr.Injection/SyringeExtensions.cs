@@ -278,65 +278,6 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Configures the syringe to add multiple post-plugin registration callbacks.
-    /// These callbacks are executed after plugin registration but before the service provider is finalized.
-    /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
-    /// <param name="callbacks">The callbacks to add to the existing callback list.</param>
-    /// <returns>A new configured syringe instance.</returns>
-    /// <example>
-    /// <code>
-    /// var syringe = new Syringe()
-    ///     .AddPostPluginRegistrationCallbacks(new[]
-    ///     {
-    ///         services => services.AddScoped&lt;IMyService, MyService&gt;(),
-    ///         services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test")
-    ///     });
-    /// </code>
-    /// </example>
-    public static Syringe AddPostPluginRegistrationCallbacks(
-        this Syringe syringe, 
-        IEnumerable<Action<IServiceCollection>> callbacks)
-    {
-        ArgumentNullException.ThrowIfNull(syringe);
-        ArgumentNullException.ThrowIfNull(callbacks);
-
-        var existingCallbacks = syringe.PostPluginRegistrationCallbacks ?? [];
-        List<Action<IServiceCollection>> newCallbacks = 
-        [
-            .. existingCallbacks, 
-            .. callbacks
-        ];
-        
-        return syringe with { PostPluginRegistrationCallbacks = newCallbacks };
-    }
-
-    /// <summary>
-    /// Configures the syringe to add a post-plugin registration callback.
-    /// This callback is executed after plugin registration but before the service provider is finalized.
-    /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
-    /// <param name="callback">The callback to add to the existing callback list.</param>
-    /// <returns>A new configured syringe instance.</returns>
-    /// <example>
-    /// <code>
-    /// var syringe = new Syringe()
-    ///     .AddPostPluginRegistrationCallback(
-    ///         services => services.Configure&lt;MyOptions&gt;(options => options.Value = "test")
-    ///     );
-    /// </code>
-    /// </example>
-    public static Syringe AddPostPluginRegistrationCallback(
-        this Syringe syringe,
-        Action<IServiceCollection> callback)
-    {
-        ArgumentNullException.ThrowIfNull(syringe);
-        ArgumentNullException.ThrowIfNull(callback);
-
-        return syringe.AddPostPluginRegistrationCallbacks([callback]);
-    }
-
-    /// <summary>
     /// Configures the syringe to add a decorator for the specified service type.
     /// This is a convenience method that adds a post-plugin registration callback to decorate the service.
     /// The decorator will preserve the original service's lifetime.
@@ -359,7 +300,7 @@ public static class SyringeExtensions
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        return syringe.AddPostPluginRegistrationCallback(services =>
+        return syringe.UsingPostPluginRegistrationCallback(services =>
         {
             services.AddDecorator<TService, TDecorator>();
         });

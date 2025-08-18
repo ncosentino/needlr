@@ -9,7 +9,7 @@ using NexusLabs.Needlr.Injection;
 // would otherwise come from the standard IServiceProvider for my application. I
 // might add a mocked interface or similar.
 var serviceProvider = new Syringe()
-    .AddPostPluginRegistrationCallback(services =>
+    .UsingPostPluginRegistrationCallback(services =>
     {
         services.AddSingleton<IMyService, MyService>();
     })
