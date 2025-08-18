@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "PostPluginCallbackExample": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:63239;http://localhost:63240"
+    }
+  }
+}

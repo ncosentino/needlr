@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -92,6 +93,62 @@ public static class CreateWebApplicationOptionsExtensions
                 EnvironmentName = options.Options.EnvironmentName,
                 WebRootPath = options.Options.WebRootPath
             }
+        };
+
+        return newOptions;
+    }
+
+    /// <summary>
+    /// Adds a post-plugin registration callback to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callback">The callback to add for post-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callback added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callback"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPostPluginRegistrationCallback(
+        this CreateWebApplicationOptions options,
+        Action<IServiceCollection> callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return options.UsingPostPluginRegistrationCallbacks(callback);
+    }
+
+    /// <summary>
+    /// Adds multiple post-plugin registration callbacks to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callbacks">The callbacks to add for post-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callbacks added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callbacks"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPostPluginRegistrationCallbacks(
+        this CreateWebApplicationOptions options,
+        params Action<IServiceCollection>[] callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(callbacks);
+        return options.UsingPostPluginRegistrationCallbacks(callbacks.AsEnumerable());
+    }
+
+    /// <summary>
+    /// Adds multiple post-plugin registration callbacks to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callbacks">The callbacks to add for post-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callbacks added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callbacks"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPostPluginRegistrationCallbacks(
+        this CreateWebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(callbacks);
+
+        var allCallbacks = new List<Action<IServiceCollection>>(options.PostPluginRegistrationCallbacks);
+        allCallbacks.AddRange(callbacks);
+
+        var newOptions = options with
+        {
+            PostPluginRegistrationCallbacks = allCallbacks
         };
 
         return newOptions;

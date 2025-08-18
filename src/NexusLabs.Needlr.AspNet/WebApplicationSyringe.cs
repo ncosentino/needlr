@@ -124,14 +124,7 @@ public sealed record WebApplicationSyringe
         var options = GetOrCreateOptions();
         if (callbacks.Count > 0)
         {
-            options = options with
-            {
-                PostPluginRegistrationCallbacks =
-                [
-                    .. options.PostPluginRegistrationCallbacks,
-                    .. callbacks,
-                ],
-            };
+            options = options.UsingPostPluginRegistrationCallbacks(callbacks);
         }
 
         return webApplicationFactory.Create(

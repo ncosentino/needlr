@@ -286,33 +286,38 @@ You can also use the plural overload ```UsingPostPluginRegistrationCallbacks``` 
 
 ### Using with CreateWebApplicationOptions
 
-For web applications, add callbacks through the options:
+For web applications, add callbacks through the options using the fluent extension methods:
 
 ```csharp
 var webApplication = new Syringe()
     .ForWebApplication()
-    .UsingOptions(() => 
-    {
-        var options = CreateWebApplicationOptions.Default;
-        
-        // Add post-plugin registration callbacks
-        options.PostPluginRegistrationCallbacks.Add(services =>
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingPostPluginRegistrationCallback(services =>
         {
             services.AddAuthentication();
             services.AddAuthorization();
-        });
-        
-        options.PostPluginRegistrationCallbacks.Add(services =>
+        })
+        .UsingPostPluginRegistrationCallback(services =>
         {
             // Configure after authentication is added
             services.Configure<JwtBearerOptions>(options =>
             {
                 options.Authority = "https://auth.example.com";
             });
-        });
-        
-        return options;
-    })
+        }))
+    .BuildWebApplication();
+```
+
+You can also use the plural overload to add multiple callbacks at once:
+
+```csharp
+var webApplication = new Syringe()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingPostPluginRegistrationCallbacks(
+            services => services.AddAuthentication(),
+            services => services.AddAuthorization(),
+            services => services.AddAntiforgery()))
     .BuildWebApplication();
 ```
 

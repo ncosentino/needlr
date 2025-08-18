@@ -14,6 +14,7 @@
     <Project Path="Examples/ManualRegistrationWithPluginExample/ManualRegistrationWithPluginExample.csproj" Id="d09d5b82-e112-491d-b702-c0a9a236722a" />
     <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
+    <Project Path="Examples/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
     <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
   </Folder>
   <SolutionItems>
