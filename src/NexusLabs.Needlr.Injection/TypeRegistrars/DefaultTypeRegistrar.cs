@@ -19,13 +19,17 @@ public sealed class DefaultTypeRegistrar : ITypeRegistrar
 
         foreach (var type in allTypes)
         {
-            if (typeFilterer.IsInjectableTransientType(type))
+            if (typeFilterer.IsInjectableSingletonType(type))
+            {
+                RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Singleton);
+            }
+            else if (typeFilterer.IsInjectableTransientType(type))
             {
                 RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Transient);
             }
-            else if (typeFilterer.IsInjectableSingletonType(type))
+            else if (typeFilterer.IsInjectableScopedType(type))
             {
-                RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Singleton);
+                RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Scoped);
             }
         }
     }

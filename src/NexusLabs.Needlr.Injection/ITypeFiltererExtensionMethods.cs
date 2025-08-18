@@ -11,8 +11,44 @@ public static class ITypeFiltererExtensionMethods
 
         return new TypeFilterDecorator(
             typeFilterer,
-            t => !t.IsAssignableTo(typeof(T)),
-            t => !t.IsAssignableTo(typeof(T)),
-            t => !t.IsAssignableTo(typeof(T)));
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+    }
+
+    public static ITypeFilterer UsingOnlyAsScoped<T>(
+        this ITypeFilterer typeFilterer)
+    {
+        ArgumentNullException.ThrowIfNull(typeFilterer);
+
+        return new TypeFilterDecorator(
+            typeFilterer,
+            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+    }
+
+    public static ITypeFilterer UsingOnlyAsTransient<T>(
+        this ITypeFilterer typeFilterer)
+    {
+        ArgumentNullException.ThrowIfNull(typeFilterer);
+
+        return new TypeFilterDecorator(
+            typeFilterer,
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+    }
+
+    public static ITypeFilterer UsingOnlyAsSingleton<T>(
+        this ITypeFilterer typeFilterer)
+    {
+        ArgumentNullException.ThrowIfNull(typeFilterer);
+
+        return new TypeFilterDecorator(
+            typeFilterer,
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)));
     }
 }

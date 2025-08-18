@@ -3,7 +3,7 @@
 [DoNotAutoRegister]
 public interface ITypeFilterer
 {
-    bool IsInjectableType(
+    bool IsInjectableScopedType(
         Type type);
 
     bool IsInjectableTransientType(

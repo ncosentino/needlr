@@ -3,33 +3,39 @@
 public sealed class TypeFilterDecorator : ITypeFilterer
 {
     private readonly ITypeFilterer _innerFilterer;
-    private readonly Predicate<Type> _filter;
-    private readonly Predicate<Type> _scopedTypeFilter;
-    private readonly Predicate<Type> _singletonTypeFilter;
+    private readonly Func<Predicate<Type>, Type, bool> _scopedTypeFilterer;
+    private readonly Func<Predicate<Type>, Type, bool> _transientTypeFilter;
+    private readonly Func<Predicate<Type>, Type, bool> _singletonTypeFilter;
 
     public TypeFilterDecorator(
         ITypeFilterer innerFilterer,
-        Predicate<Type> typeFilter,
-        Predicate<Type> scopedTypeFilter,
-        Predicate<Type> singletonTypeFilter)
+        Func<Predicate<Type>, Type, bool> scopedTypeFilterer,
+        Func<Predicate<Type>, Type, bool> transientTypeFilterer,
+        Func<Predicate<Type>, Type, bool> singletonTypeFilter)
     {
         ArgumentNullException.ThrowIfNull(innerFilterer);
-        ArgumentNullException.ThrowIfNull(typeFilter);
-        ArgumentNullException.ThrowIfNull(scopedTypeFilter);
+        ArgumentNullException.ThrowIfNull(scopedTypeFilterer);
+        ArgumentNullException.ThrowIfNull(transientTypeFilterer);
         ArgumentNullException.ThrowIfNull(singletonTypeFilter);
 
         _innerFilterer = innerFilterer;
-        _filter = typeFilter;
-        _scopedTypeFilter = scopedTypeFilter;
+        _scopedTypeFilterer = scopedTypeFilterer;
+        _transientTypeFilter = transientTypeFilterer;
         _singletonTypeFilter = singletonTypeFilter;
     }
 
-    public bool IsInjectableType(Type type)
-        => _innerFilterer.IsInjectableType(type) && _filter.Invoke(type);
+    public bool IsInjectableScopedType(Type type)
+        => _scopedTypeFilterer.Invoke(
+            _innerFilterer.IsInjectableScopedType, 
+            type);
     
     public bool IsInjectableTransientType(Type type)
-        => _innerFilterer.IsInjectableTransientType(type) && _scopedTypeFilter.Invoke(type);
+        => _transientTypeFilter.Invoke(
+            _innerFilterer.IsInjectableTransientType, 
+            type);
     
     public bool IsInjectableSingletonType(Type type)
-        => _innerFilterer.IsInjectableSingletonType(type) && _singletonTypeFilter.Invoke(type);
+        => _singletonTypeFilter.Invoke(
+            _innerFilterer.IsInjectableSingletonType, 
+            type);
 }

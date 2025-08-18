@@ -7,172 +7,141 @@ namespace NexusLabs.Needlr.Injection.Tests.TypeFilterers;
 public sealed class TypeFilterDecoratorTests
 {
     [Fact]
-    public void Constructor_WithNullInnerFilterer_ThrowsArgumentNullException()
+    public void IsInjectableScopedType_CallsProvidedFunction()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-            new TypeFilterDecorator(
-                null!,
-                t => true,
-                t => true,
-                t => true));
-    }
-
-    [Fact]
-    public void Constructor_WithNullTypeFilter_ThrowsArgumentNullException()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        
-        Assert.Throws<ArgumentNullException>(() =>
-            new TypeFilterDecorator(
-                innerFilterer,
-                null!,
-                t => true,
-                t => true));
-    }
-
-    [Fact]
-    public void Constructor_WithNullScopedTypeFilter_ThrowsArgumentNullException()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        
-        Assert.Throws<ArgumentNullException>(() =>
-            new TypeFilterDecorator(
-                innerFilterer,
-                t => true,
-                null!,
-                t => true));
-    }
-
-    [Fact]
-    public void Constructor_WithNullSingletonTypeFilter_ThrowsArgumentNullException()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        
-        Assert.Throws<ArgumentNullException>(() =>
-            new TypeFilterDecorator(
-                innerFilterer,
-                t => true,
-                t => true,
-                null!));
-    }
-
-    [Fact]
-    public void IsInjectableType_AppliesBothInnerAndOuterFilters()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        var callCount = 0;
+        var innerFilterer = new EmptyTypeFilterer();
+        var wasCalled = false;
         var decorator = new TypeFilterDecorator(
             innerFilterer,
-            t => { callCount++; return true; },
-            t => true,
-            t => true);
+            scopedTypeFilterer: (predicate, type) =>
+            {
+                wasCalled = true;
+                return predicate(type) || type == typeof(SimpleClass);
+            },
+            transientTypeFilterer: (predicate, type) => predicate(type),
+            singletonTypeFilter: (predicate, type) => predicate(type));
         
-        var result = decorator.IsInjectableType(typeof(SimpleClass));
+        var result = decorator.IsInjectableScopedType(typeof(SimpleClass));
         
+        Assert.True(wasCalled);
         Assert.True(result);
-        Assert.Equal(1, callCount);
     }
 
     [Fact]
-    public void IsInjectableType_WhenInnerFilterReturnsFalse_ReturnsFalse()
+    public void IsInjectableTransientType_CallsProvidedFunction()
     {
-        var innerFilterer = new DefaultTypeFilterer();
+        var innerFilterer = new EmptyTypeFilterer();
+        var wasCalled = false;
         var decorator = new TypeFilterDecorator(
             innerFilterer,
-            t => true,
-            t => true,
-            t => true);
-        
-        var result = decorator.IsInjectableType(typeof(AbstractClass));
-        
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void IsInjectableType_WhenOuterFilterReturnsFalse_ReturnsFalse()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        var decorator = new TypeFilterDecorator(
-            innerFilterer,
-            t => false,
-            t => true,
-            t => true);
-        
-        var result = decorator.IsInjectableType(typeof(SimpleClass));
-        
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void IsInjectableTransientType_AppliesBothInnerAndScopedFilters()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        var wasFilterCalled = false;
-        var decorator = new TypeFilterDecorator(
-            innerFilterer,
-            t => true,
-            t => { wasFilterCalled = true; return false; },
-            t => true);
+            scopedTypeFilterer: (predicate, type) => predicate(type),
+            transientTypeFilterer: (predicate, type) =>
+            {
+                wasCalled = true;
+                return predicate(type) || type == typeof(SimpleClass);
+            },
+            singletonTypeFilter: (predicate, type) => predicate(type));
         
         var result = decorator.IsInjectableTransientType(typeof(SimpleClass));
         
-        Assert.False(result);
-        Assert.False(wasFilterCalled);
-    }
-
-    [Fact]
-    public void IsInjectableSingletonType_AppliesBothInnerAndSingletonFilters()
-    {
-        var innerFilterer = new DefaultTypeFilterer();
-        var callCount = 0;
-        var decorator = new TypeFilterDecorator(
-            innerFilterer,
-            t => true,
-            t => true,
-            t => { callCount++; return true; });
-        
-        var result = decorator.IsInjectableSingletonType(typeof(SimpleClass));
-        
+        Assert.True(wasCalled);
         Assert.True(result);
-        Assert.Equal(1, callCount);
     }
 
     [Fact]
-    public void IsInjectableSingletonType_WhenSingletonFilterReturnsFalse_ReturnsFalse()
+    public void IsInjectableSingletonType_CallsProvidedFunction()
     {
-        var innerFilterer = new DefaultTypeFilterer();
+        var innerFilterer = new EmptyTypeFilterer();
+        var wasCalled = false;
         var decorator = new TypeFilterDecorator(
             innerFilterer,
-            t => true,
-            t => true,
-            t => false);
+            scopedTypeFilterer: (predicate, type) => predicate(type),
+            transientTypeFilterer: (predicate, type) => predicate(type),
+            singletonTypeFilter: (predicate, type) =>
+            {
+                wasCalled = true;
+                return predicate(type) || type == typeof(SimpleClass);
+            });
         
         var result = decorator.IsInjectableSingletonType(typeof(SimpleClass));
         
-        Assert.False(result);
+        Assert.True(wasCalled);
+        Assert.True(result);
     }
 
     [Fact]
-    public void FiltersCanBeChained()
+    public void Decorator_PassesInnerFiltererPredicate()
     {
         var innerFilterer = new DefaultTypeFilterer();
+        Type? capturedType = null;
+        
+        var decorator = new TypeFilterDecorator(
+            innerFilterer,
+            scopedTypeFilterer: (predicate, type) =>
+            {
+                capturedType = type;
+                return predicate(type);
+            },
+            transientTypeFilterer: (predicate, type) => predicate(type),
+            singletonTypeFilter: (predicate, type) => predicate(type));
+        
+        var testType = typeof(SimpleClass);
+        var result = decorator.IsInjectableScopedType(testType);
+        
+        Assert.Same(testType, capturedType);
+        Assert.Equal(innerFilterer.IsInjectableScopedType(testType), result);
+    }
+
+    [Fact]
+    public void Decorator_CanOverrideInnerFiltererDecision()
+    {
+        var innerFilterer = new EmptyTypeFilterer();
+        
+        var decorator = new TypeFilterDecorator(
+            innerFilterer,
+            scopedTypeFilterer: (predicate, type) => true,
+            transientTypeFilterer: (predicate, type) => false,
+            singletonTypeFilter: (predicate, type) => true);
+        
+        Assert.False(innerFilterer.IsInjectableScopedType(typeof(SimpleClass)));
+        Assert.True(decorator.IsInjectableScopedType(typeof(SimpleClass)));
+        
+        Assert.False(innerFilterer.IsInjectableTransientType(typeof(SimpleClass)));
+        Assert.False(decorator.IsInjectableTransientType(typeof(SimpleClass)));
+        
+        Assert.False(innerFilterer.IsInjectableSingletonType(typeof(SimpleClass)));
+        Assert.True(decorator.IsInjectableSingletonType(typeof(SimpleClass)));
+    }
+
+    [Fact]
+    public void IsInjectableScopedType_ComposedFilters_PredicatesCanBeChained()
+    {
+        var innerFilterer = new EmptyTypeFilterer();
+        
         var firstDecorator = new TypeFilterDecorator(
             innerFilterer,
-            t => t.Name.Length > 8,
-            t => true,
-            t => true);
+            scopedTypeFilterer: static (predicate, type) => 
+                predicate(type) || type.Name.StartsWith('S'),
+            transientTypeFilterer: (predicate, type) => predicate(type),
+            singletonTypeFilter: (predicate, type) => predicate(type));
         
         var secondDecorator = new TypeFilterDecorator(
             firstDecorator,
-            t => t.Name.StartsWith("S"),
-            t => true,
-            t => true);
-        
-        var result1 = secondDecorator.IsInjectableType(typeof(SimpleClass));
-        var result2 = secondDecorator.IsInjectableType(typeof(ShortClass));
-        
-        Assert.True(result1);
-        Assert.True(result2);
+            scopedTypeFilterer: (predicate, type) => 
+                predicate(type) && type.Name.Length > 10,
+            transientTypeFilterer: (predicate, type) => predicate(type),
+            singletonTypeFilter: (predicate, type) => predicate(type));
+
+        Assert.True(firstDecorator.IsInjectableScopedType(typeof(SimpleClass)));
+        Assert.False(firstDecorator.IsInjectableScopedType(typeof(LongNamedClass)));
+        Assert.True(firstDecorator.IsInjectableScopedType(typeof(ShortClass)));
+
+        Assert.True(secondDecorator.IsInjectableScopedType(typeof(SimpleClass)));
+        Assert.False(secondDecorator.IsInjectableScopedType(typeof(LongNamedClass)));
+        Assert.False(secondDecorator.IsInjectableScopedType(typeof(ShortClass)));
     }
 
+    private class SimpleClass { }
+    private class ShortClass { }
+    private class LongNamedClass { }
 }

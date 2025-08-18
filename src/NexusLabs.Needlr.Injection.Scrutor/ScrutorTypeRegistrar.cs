@@ -26,6 +26,17 @@ public sealed class ScrutorTypeRegistrar : ITypeRegistrar
             .AddClasses(classes =>
                 classes
                     .WithoutAttribute<DoNotAutoRegisterAttribute>()
+                    .Where(type => typeFilterer.IsInjectableScopedType(type)),
+                publicOnly: false)
+            .AsSelfWithInterfaces()
+            .WithScopedLifetime());
+
+        services
+            .Scan(x => x
+            .FromAssemblies(assemblies)
+            .AddClasses(classes =>
+                classes
+                    .WithoutAttribute<DoNotAutoRegisterAttribute>()
                     .Where(type => typeFilterer.IsInjectableTransientType(type)),
                 publicOnly: false)
             .AsSelfWithInterfaces()

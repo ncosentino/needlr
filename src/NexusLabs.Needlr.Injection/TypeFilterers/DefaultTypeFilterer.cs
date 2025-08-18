@@ -4,13 +4,13 @@ namespace NexusLabs.Needlr.Injection.TypeFilterers;
 
 public sealed class DefaultTypeFilterer : ITypeFilterer
 {
+    public bool IsInjectableScopedType(Type type)
+        => false;
+
     public bool IsInjectableTransientType(Type type)
         => false;
 
-    public bool IsInjectableSingletonType(Type type)
-        => IsInjectableType(type);
-
-    public bool IsInjectableType(
+    public bool IsInjectableSingletonType(
         Type type)
     {
         if (!TypeFiltering.IsConcreteType(type))
