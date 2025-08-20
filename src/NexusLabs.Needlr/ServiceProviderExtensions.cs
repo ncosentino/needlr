@@ -105,12 +105,7 @@ public static class ServiceProviderExtensions
 
         return serviceCollection
             .Where(predicate)
-            .Select(descriptor => new ServiceRegistrationInfo(
-                descriptor.ServiceType,
-                descriptor.ImplementationType,
-                descriptor.Lifetime,
-                descriptor.ImplementationFactory is not null,
-                descriptor.ImplementationInstance is not null))
+            .Select(descriptor => new ServiceRegistrationInfo(descriptor))
             .ToArray();
     }
 }
