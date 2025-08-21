@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
+using System;
+
 namespace NexusLabs.Needlr;
 
 /// <summary>
@@ -107,5 +109,28 @@ public static class ServiceProviderExtensions
             .Where(predicate)
             .Select(descriptor => new ServiceRegistrationInfo(descriptor))
             .ToArray();
+    }
+
+    public static void CopyRegistrationsToServiceCollection(
+        this IServiceProvider serviceProvider,
+        IServiceCollection serviceCollection)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(serviceCollection);
+
+        foreach (var registration in serviceProvider.GetServiceRegistrations(x => true))
+        {
+            serviceCollection.Add(registration.ServiceDescriptor);
+        }
+    }
+
+    public static IServiceCollection CopyRegistrationsToServiceCollection(
+        this IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        ServiceCollection serviceCollection = new();
+        serviceProvider.CopyRegistrationsToServiceCollection(serviceCollection);
+        return serviceCollection;
     }
 }
