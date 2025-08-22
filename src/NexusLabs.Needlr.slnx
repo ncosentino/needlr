@@ -29,6 +29,7 @@
     <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests\NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Tests\NexusLabs.Needlr.Injection.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" Id="7e0b2760-1fc3-4359-bbc6-88c91b87ac82" />
+    <Project Path="NexusLabs.Needlr.SemanticKernel.Tests\NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Tests\NexusLabs.Needlr.SignalR.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Tests\NexusLabs.Needlr.Tests.csproj" />
   </Folder>

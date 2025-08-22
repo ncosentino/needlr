@@ -31,7 +31,7 @@ public static class ServiceProviderExtensions
     ///     typeof(IRepository).IsAssignableFrom(type));
     /// </code>
     /// </example>
-    public static IReadOnlyList<Type> GetRegisteredTypes(
+    public static IEnumerable<Type> GetRegisteredTypes(
         this IServiceProvider serviceProvider,
         Func<Type, bool> predicate)
     {
@@ -48,8 +48,7 @@ public static class ServiceProviderExtensions
         return serviceCollection
             .Select(descriptor => descriptor.ServiceType)
             .Distinct()
-            .Where(predicate)
-            .ToArray();
+            .Where(predicate);
     }
 
     /// <summary>
@@ -68,11 +67,54 @@ public static class ServiceProviderExtensions
     /// var serviceTypes = serviceProvider.GetRegisteredTypesOf&lt;BaseService&gt;();
     /// </code>
     /// </example>
-    public static IReadOnlyList<Type> GetRegisteredTypesOf<T>(this IServiceProvider serviceProvider)
+    public static IEnumerable<Type> GetRegisteredTypesOf<T>(this IServiceProvider serviceProvider)
     {
         return serviceProvider
             .GetRegisteredTypes(type => typeof(T)
             .IsAssignableFrom(type));
+    }
+
+    public static bool IsRegistered<TService>(this IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        return serviceProvider.IsRegistered(typeof(TService));
+    }
+
+    public static bool IsRegistered(
+        this IServiceProvider serviceProvider,
+        Type serviceType)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        return serviceProvider
+            .GetServiceCollection()
+            .IsRegistered(serviceType);
+    }
+
+    /// <summary>
+    /// Gets detailed information about all registered services.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider to inspect.</param>
+    /// <returns>A read-only list of service registration information.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when serviceProvider is null.</exception>
+    /// <example>
+    /// <code>
+    /// // Get all singleton services
+    /// var singletons = serviceProvider.GetServiceRegistrations(
+    ///     descriptor => descriptor.Lifetime == ServiceLifetime.Singleton);
+    /// 
+    /// // Get all services with a specific implementation type
+    /// var specificImpls = serviceProvider.GetServiceRegistrations(
+    ///     descriptor => descriptor.ImplementationType == typeof(MyService));
+    /// </code>
+    /// </example>
+    public static IReadOnlyList<ServiceRegistrationInfo> GetServiceRegistrations(
+        this IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        return serviceProvider
+            .GetServiceCollection()
+            .GetServiceRegistrations();
     }
 
     /// <summary>
@@ -102,9 +144,7 @@ public static class ServiceProviderExtensions
 
         return serviceProvider
             .GetServiceCollection()
-            .Where(predicate)
-            .Select(descriptor => new ServiceRegistrationInfo(descriptor))
-            .ToArray();
+            .GetServiceRegistrations(predicate);
     }
 
     public static IServiceCollection GetServiceCollection(

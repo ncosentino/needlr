@@ -67,6 +67,76 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Gets detailed information about all registered services.
+    /// </summary>
+    /// <param name="serviceCollection">The service provider to inspect.</param>
+    /// <returns>A read-only list of service registration information.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when serviceCollection is null.</exception>
+    /// <example>
+    /// <code>
+    /// // Get all singleton services
+    /// var singletons = serviceCollection.GetServiceRegistrations(
+    ///     descriptor => descriptor.Lifetime == ServiceLifetime.Singleton);
+    /// 
+    /// // Get all services with a specific implementation type
+    /// var specificImpls = serviceCollection.GetServiceRegistrations(
+    ///     descriptor => descriptor.ImplementationType == typeof(MyService));
+    /// </code>
+    /// </example>
+    public static IReadOnlyList<ServiceRegistrationInfo> GetServiceRegistrations(
+        this IServiceCollection serviceCollection)
+    {
+        ArgumentNullException.ThrowIfNull(serviceCollection);
+
+        return serviceCollection.GetServiceRegistrations(_ => true);
+    }
+
+    /// <summary>
+    /// Gets detailed information about all registered services that match the specified predicate.
+    /// </summary>
+    /// <param name="serviceCollection">The service provider to inspect.</param>
+    /// <param name="predicate">A function to filter the service descriptors.</param>
+    /// <returns>A read-only list of service registration information.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when serviceCollection or predicate is null.</exception>
+    /// <example>
+    /// <code>
+    /// // Get all singleton services
+    /// var singletons = serviceCollection.GetServiceRegistrations(
+    ///     descriptor => descriptor.Lifetime == ServiceLifetime.Singleton);
+    /// 
+    /// // Get all services with a specific implementation type
+    /// var specificImpls = serviceCollection.GetServiceRegistrations(
+    ///     descriptor => descriptor.ImplementationType == typeof(MyService));
+    /// </code>
+    /// </example>
+    public static IReadOnlyList<ServiceRegistrationInfo> GetServiceRegistrations(
+        this IServiceCollection serviceCollection,
+        Func<ServiceDescriptor, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(serviceCollection);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        return serviceCollection
+            .Where(predicate)
+            .Select(descriptor => new ServiceRegistrationInfo(descriptor))
+            .ToArray();
+    }
+
+    public static bool IsRegistered<TService>(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        return services.IsRegistered(typeof(TService));
+    }
+
+    public static bool IsRegistered(
+        this IServiceCollection services,
+        Type serviceType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        return services.Any(d => d.ServiceType == serviceType);
+    }
+
     private static TService CreateOriginalService<TService>(IServiceProvider provider, ServiceDescriptor originalDescriptor)
     {
         if (originalDescriptor.ImplementationFactory is not null)
