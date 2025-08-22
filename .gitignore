@@ -114,3 +114,4 @@ claude-flow
 claude-flow.bat
 claude-flow.ps1
 hive-mind-prompt-*.txt
+**appsettings.Development.json
