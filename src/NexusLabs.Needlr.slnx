@@ -15,6 +15,7 @@
     <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
     <Project Path="Examples/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
+    <Project Path="Examples/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" Id="781f9847-f3e7-4db1-807e-9450a5debed8" />
     <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
   </Folder>
   <SolutionItems>
@@ -37,6 +38,7 @@
   <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+  <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" Id="e695dd52-abed-44e2-9bb8-81db4321afa5" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
 </Solution>
