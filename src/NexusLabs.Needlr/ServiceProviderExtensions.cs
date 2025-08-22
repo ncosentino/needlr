@@ -100,15 +100,22 @@ public static class ServiceProviderExtensions
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var serviceCollection = serviceProvider.GetService<IServiceCollection>()
-            ?? throw new InvalidOperationException(
-                "Unable to access the service collection from the service provider. " +
-                "Ensure the IServiceCollection is registered in the container.");
-
-        return serviceCollection
+        return serviceProvider
+            .GetServiceCollection()
             .Where(predicate)
             .Select(descriptor => new ServiceRegistrationInfo(descriptor))
             .ToArray();
+    }
+
+    public static IServiceCollection GetServiceCollection(
+        this IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        return serviceProvider.GetService<IServiceCollection>()
+            ?? throw new InvalidOperationException(
+                "Unable to access the service collection from the service provider. " +
+                "Ensure the IServiceCollection is registered in the container.");
     }
 
     public static void CopyRegistrationsToServiceCollection(
@@ -118,9 +125,29 @@ public static class ServiceProviderExtensions
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(serviceCollection);
 
-        foreach (var registration in serviceProvider.GetServiceRegistrations(x => true))
+        foreach (var registration in serviceProvider.GetServiceRegistrations(_ => true))
         {
-            serviceCollection.Add(registration.ServiceDescriptor);
+            if (registration.ServiceType == typeof(IServiceProvider))
+            {
+                continue;
+            }
+
+            if (registration.ServiceDescriptor.ServiceType.IsGenericTypeDefinition)
+            {
+                serviceCollection.Add(registration.ServiceDescriptor);
+                continue;
+            }
+
+            var descriptor = registration.Lifetime switch
+            {
+                ServiceLifetime.Singleton => new ServiceDescriptor(
+                    registration.ServiceType,
+                    _ => serviceProvider.GetRequiredService(registration.ServiceType),
+                    ServiceLifetime.Singleton),
+                _ => registration.ServiceDescriptor
+            };
+
+            serviceCollection.Add(descriptor);
         }
     }
 
