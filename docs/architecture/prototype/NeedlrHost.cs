@@ -82,7 +82,7 @@ public static class NeedlrHostBuilderExtensions
     /// Configures the underlying Syringe used by the host builder.
     /// This allows you to set up Needlr-specific features like type registrars and assembly providers.
     /// </summary>
-    /// <param name="hostBuilder">The host builder to configure</param>
+    /// <param name="hostBuilder">The NeedlrHostBuilder to configure</param>
     /// <param name="configure">Configuration action for the Syringe</param>
     /// <returns>The configured host builder</returns>
     /// <example>
@@ -97,13 +97,11 @@ public static class NeedlrHostBuilderExtensions
     ///     .Build();
     /// </code>
     /// </example>
-    public static IHostBuilder ConfigureNeedlr(this IHostBuilder hostBuilder, Action<Syringe> configure)
+    public static NeedlrHostBuilder ConfigureNeedlr(this NeedlrHostBuilder hostBuilder, Action<Syringe> configure)
     {
-        if (hostBuilder is NeedlrHostBuilder needlrBuilder)
-        {
-            return needlrBuilder.ConfigureNeedlr(configure);
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
+        ArgumentNullException.ThrowIfNull(configure);
         
-        throw new InvalidOperationException("ConfigureNeedlr can only be used with NeedlrHostBuilder instances.");
+        return hostBuilder.ConfigureNeedlr(configure);
     }
 }
