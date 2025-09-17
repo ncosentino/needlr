@@ -62,10 +62,7 @@ public class NeedlrHostBuilder : IHostBuilder
         var finalConfiguration = configBuilder.Build();
         context.Configuration = finalConfiguration;
 
-        // Build the Needlr service provider first to get automatic registrations
-        var needlrServiceProvider = _baseSyringe.BuildServiceProvider(finalConfiguration);
-
-        // Create a service collection and add Needlr services
+        // Create a service collection and populate it directly using Needlr's pattern
         var services = new ServiceCollection();
         
         // Add configuration and environment
@@ -88,13 +85,33 @@ public class NeedlrHostBuilder : IHostBuilder
             options.ShutdownTimeout = TimeSpan.FromSeconds(30);
         });
 
-        // Add the Needlr service provider as a service
-        services.AddSingleton<INeedlrServiceProvider>(new NeedlrServiceProvider(needlrServiceProvider));
+        // Use Needlr's service collection populator to register services directly
+        // This follows the same pattern as WebApplicationFactory
+        var typeRegistrar = _baseSyringe.GetOrCreateTypeRegistrar();
+        var typeFilterer = _baseSyringe.GetOrCreateTypeFilterer();
+        var serviceCollectionPopulator = _baseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var assemblyProvider = _baseSyringe.GetOrCreateAssemblyProvider();
+        var additionalAssemblies = _baseSyringe.GetAdditionalAssemblies();
+        
+        var allAssemblies = assemblyProvider.GetCandidateAssemblies()
+            .Concat(additionalAssemblies)
+            .Distinct()
+            .ToList();
+        
+        // Let Needlr populate the service collection directly
+        serviceCollectionPopulator.RegisterToServiceCollection(services, finalConfiguration, allAssemblies);
 
         // Apply additional service configurations
         foreach (var serviceConfig in _serviceConfigurations)
         {
             serviceConfig(context, services);
+        }
+
+        // Execute post-plugin registration callbacks
+        var callbacks = _baseSyringe.GetPostPluginRegistrationCallbacks();
+        foreach (var callback in callbacks)
+        {
+            callback(services);
         }
 
         // Build the final service provider

@@ -139,25 +139,48 @@ public sealed record HostSyringe
         var configuration = BuildConfiguration();
         var context = CreateHostBuilderContext(configuration);
         
-        // Apply service configurations to create the final service collection
+        // Create a service collection and populate it directly using Needlr's pattern
         var services = new ServiceCollection();
         
-        // First, let Needlr populate the service collection with automatic registrations
-        var serviceProvider = BaseSyringe.BuildServiceProvider(configuration);
-        
-        // Add the Needlr services to our collection
-        foreach (var service in GetNeedlrServices(serviceProvider))
+        // Add standard host services
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(context.HostingEnvironment);
+        services.AddOptions();
+        services.Configure<HostOptions>(options =>
         {
-            services.Add(service);
-        }
+            options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+        });
         
-        // Then apply any manual service configurations
+        // Use Needlr's service collection populator to register services directly
+        // This follows the same pattern as WebApplicationFactory
+        var typeRegistrar = BaseSyringe.GetOrCreateTypeRegistrar();
+        var typeFilterer = BaseSyringe.GetOrCreateTypeFilterer();
+        var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var assemblyProvider = BaseSyringe.GetOrCreateAssemblyProvider();
+        var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
+        
+        var allAssemblies = assemblyProvider.GetCandidateAssemblies()
+            .Concat(additionalAssemblies)
+            .Distinct()
+            .ToList();
+        
+        // Let Needlr populate the service collection directly
+        serviceCollectionPopulator.RegisterToServiceCollection(services, configuration, allAssemblies);
+        
+        // Apply any manual service configurations
         if (ServiceConfigurations != null)
         {
             foreach (var serviceConfig in ServiceConfigurations)
             {
                 serviceConfig(context, services);
             }
+        }
+        
+        // Execute post-plugin registration callbacks
+        var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
+        foreach (var callback in callbacks)
+        {
+            callback(services);
         }
         
         // Build the final service provider
@@ -234,14 +257,6 @@ public sealed record HostSyringe
             ContentRootPath = ContentRoot ?? Directory.GetCurrentDirectory(),
             EnvironmentName = Environment ?? "Production"
         };
-    }
-
-    private static IEnumerable<ServiceDescriptor> GetNeedlrServices(IServiceProvider serviceProvider)
-    {
-        // This is a simplified approach - in practice, you'd need a way to extract
-        // the service descriptors from the Needlr-built service provider
-        // For now, we'll register the service provider itself
-        yield return ServiceDescriptor.Singleton(serviceProvider);
     }
 }
 
@@ -440,19 +455,35 @@ public static class ServiceCollectionNeedlrExtensions
     /// <summary>
     /// Adds Needlr's automatic registration capabilities to an existing service collection.
     /// This allows you to use Needlr within traditional Microsoft.Extensions.Hosting applications.
+    /// Note: For better integration, consider using PopulateFromNeedlr during service configuration.
     /// </summary>
     /// <param name="services">The service collection to enhance</param>
     /// <param name="configure">Configuration action for the Syringe</param>
     /// <returns>The service collection for chaining</returns>
     /// <example>
     /// <code>
+    /// // Option 1: Direct population (recommended)
     /// var host = Host.CreateDefaultBuilder(args)
     ///     .ConfigureServices((context, services) =>
     ///     {
-    ///         // Add manual services
     ///         services.AddSingleton<IMyManualService, MyManualService>();
     ///         
-    ///         // Add Needlr's automatic registration
+    ///         var syringe = new Syringe()
+    ///             .UsingScrutorTypeRegistrar()
+    ///             .UsingAssemblyProvider(builder => builder
+    ///                 .MatchingAssemblies(x => x.Contains("MyApp"))
+    ///                 .Build());
+    ///         
+    ///         services.PopulateFromNeedlr(syringe, context.Configuration);
+    ///     })
+    ///     .Build();
+    /// 
+    /// // Option 2: Deferred registration (for compatibility)
+    /// var host = Host.CreateDefaultBuilder(args)
+    ///     .ConfigureServices((context, services) =>
+    ///     {
+    ///         services.AddSingleton<IMyManualService, MyManualService>();
+    ///         
     ///         services.AddNeedlr(syringe => syringe
     ///             .UsingScrutorTypeRegistrar()
     ///             .UsingAssemblyProvider(builder => builder
@@ -488,7 +519,8 @@ public static class ServiceCollectionNeedlrExtensions
         ArgumentNullException.ThrowIfNull(configure);
         ArgumentNullException.ThrowIfNull(configureWithConfig);
 
-        services.AddSingleton<INeedlrServiceProvider>(serviceProvider =>
+        // Add a registration that will populate services when the host is built
+        services.AddSingleton<INeedlrRegistration>(serviceProvider =>
         {
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
             configureWithConfig(configuration);
@@ -496,9 +528,49 @@ public static class ServiceCollectionNeedlrExtensions
             var syringe = new Syringe();
             configure(syringe);
             
-            var needlrProvider = syringe.BuildServiceProvider(configuration);
-            return new NeedlrServiceProvider(needlrProvider);
+            return new NeedlrRegistration(syringe, configuration);
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Needlr's automatic registration capabilities by directly populating the service collection.
+    /// This method should be called during the host building process.
+    /// </summary>
+    /// <param name="services">The service collection to populate</param>
+    /// <param name="syringe">The configured Syringe</param>
+    /// <param name="configuration">The configuration to use</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection PopulateFromNeedlr(
+        this IServiceCollection services,
+        Syringe syringe,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var typeRegistrar = syringe.GetOrCreateTypeRegistrar();
+        var typeFilterer = syringe.GetOrCreateTypeFilterer();
+        var serviceCollectionPopulator = syringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var assemblyProvider = syringe.GetOrCreateAssemblyProvider();
+        var additionalAssemblies = syringe.GetAdditionalAssemblies();
+        
+        var allAssemblies = assemblyProvider.GetCandidateAssemblies()
+            .Concat(additionalAssemblies)
+            .Distinct()
+            .ToList();
+        
+        // Let Needlr populate the service collection directly
+        serviceCollectionPopulator.RegisterToServiceCollection(services, configuration, allAssemblies);
+
+        // Execute post-plugin registration callbacks
+        var callbacks = syringe.GetPostPluginRegistrationCallbacks();
+        foreach (var callback in callbacks)
+        {
+            callback(services);
+        }
 
         return services;
     }
@@ -509,6 +581,7 @@ public static class ServiceCollectionNeedlrExtensions
     /// <param name="services">The service collection to enhance</param>
     /// <param name="needlrServiceProvider">The Needlr-built service provider</param>
     /// <returns>The service collection for chaining</returns>
+    [Obsolete("Use PopulateFromNeedlr instead. This method creates problematic service provider dependencies.")]
     public static IServiceCollection AddNeedlrServices(
         this IServiceCollection services,
         IServiceProvider needlrServiceProvider)
@@ -518,6 +591,37 @@ public static class ServiceCollectionNeedlrExtensions
 
         services.AddSingleton<INeedlrServiceProvider>(new NeedlrServiceProvider(needlrServiceProvider));
         return services;
+    }
+}
+
+/// <summary>
+/// Represents a Needlr registration that can be applied to a service collection.
+/// </summary>
+public interface INeedlrRegistration
+{
+    /// <summary>
+    /// The configured Syringe.
+    /// </summary>
+    Syringe Syringe { get; }
+    
+    /// <summary>
+    /// The configuration to use.
+    /// </summary>
+    IConfiguration Configuration { get; }
+}
+
+/// <summary>
+/// Implementation of INeedlrRegistration.
+/// </summary>
+internal class NeedlrRegistration : INeedlrRegistration
+{
+    public Syringe Syringe { get; }
+    public IConfiguration Configuration { get; }
+
+    public NeedlrRegistration(Syringe syringe, IConfiguration configuration)
+    {
+        Syringe = syringe ?? throw new ArgumentNullException(nameof(syringe));
+        Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 }
 
@@ -623,17 +727,18 @@ var host = Host.CreateDefaultBuilder(args)
         // Traditional service registration
         services.AddSingleton<IMyManualService, MyManualService>();
         
-        // Add Needlr for automatic registration
-        services.AddNeedlr(syringe => syringe
+        // Use Needlr to populate services directly into the same service collection
+        var syringe = new Syringe()
             .UsingScrutorTypeRegistrar()
-            .UsingDefaultTypeFilterer());
+            .UsingDefaultTypeFilterer();
+            
+        services.PopulateFromNeedlr(syringe, context.Configuration);
     })
     .Build();
 
-// Access both traditional and Needlr services
+// Access both traditional and Needlr services normally
 var manualService = host.Services.GetRequiredService<IMyManualService>();
-var needlrProvider = host.Services.GetRequiredService<INeedlrServiceProvider>();
-var autoService = needlrProvider.GetRequiredService<IMyAutoService>();
+var autoService = host.Services.GetRequiredService<IMyAutoService>();
 ```
 
 ## Benefits of This Approach
