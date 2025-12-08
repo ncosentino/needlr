@@ -31,6 +31,7 @@
     <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" Id="7e0b2760-1fc3-4359-bbc6-88c91b87ac82" />
     <Project Path="NexusLabs.Needlr.SemanticKernel.Tests\NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Tests\NexusLabs.Needlr.SignalR.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.SourceGenerators.Tests\NexusLabs.Needlr.SourceGenerators.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Tests\NexusLabs.Needlr.Tests.csproj" />
   </Folder>
   <Project Path="NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
@@ -41,5 +42,6 @@
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
   <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" Id="e695dd52-abed-44e2-9bb8-81db4321afa5" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
+  <Project Path="NexusLabs.Needlr.SourceGenerators\NexusLabs.Needlr.SourceGenerators.csproj" />
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
 </Solution>
