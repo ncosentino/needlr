@@ -10,18 +10,42 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
 {
     private readonly ITypeRegistrar _typeRegistrar;
     private readonly ITypeFilterer _typeFilterer;
-    private readonly PluginFactory _pluginFactory;
+    private readonly IPluginFactory _pluginFactory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ServiceCollectionPopulator"/> class.
+    /// </summary>
+    /// <param name="typeRegistrar">The type registrar to use for service registration.</param>
+    /// <param name="typeFilterer">The type filterer to determine service lifetimes.</param>
+    /// <remarks>
+    /// Uses the default reflection-based <see cref="PluginFactory"/> for plugin discovery.
+    /// </remarks>
     public ServiceCollectionPopulator(
         ITypeRegistrar typeRegistrar,
         ITypeFilterer typeFilterer)
+        : this(typeRegistrar, typeFilterer, new PluginFactory())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ServiceCollectionPopulator"/> class
+    /// with a custom plugin factory.
+    /// </summary>
+    /// <param name="typeRegistrar">The type registrar to use for service registration.</param>
+    /// <param name="typeFilterer">The type filterer to determine service lifetimes.</param>
+    /// <param name="pluginFactory">The plugin factory to use for plugin discovery and instantiation.</param>
+    public ServiceCollectionPopulator(
+        ITypeRegistrar typeRegistrar,
+        ITypeFilterer typeFilterer,
+        IPluginFactory pluginFactory)
     {
         ArgumentNullException.ThrowIfNull(typeRegistrar);
         ArgumentNullException.ThrowIfNull(typeFilterer);
+        ArgumentNullException.ThrowIfNull(pluginFactory);
 
         _typeRegistrar = typeRegistrar;
         _typeFilterer = typeFilterer;
-        _pluginFactory = new PluginFactory();
+        _pluginFactory = pluginFactory;
     }
 
     public IServiceCollection RegisterToServiceCollection(

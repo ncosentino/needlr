@@ -81,3 +81,42 @@ public readonly struct InjectableTypeInfo
     /// </remarks>
     public InjectableLifetime? Lifetime { get; }
 }
+
+/// <summary>
+/// Represents metadata about a plugin type discovered at compile time.
+/// </summary>
+/// <remarks>
+/// This struct is used by the generated TypeRegistry to provide plugin
+/// factory methods without requiring reflection or Activator.CreateInstance at runtime.
+/// </remarks>
+public readonly struct PluginTypeInfo
+{
+    /// <summary>
+    /// Initializes a new instance of <see cref="PluginTypeInfo"/>.
+    /// </summary>
+    /// <param name="pluginType">The concrete plugin type.</param>
+    /// <param name="pluginInterfaces">The plugin interfaces implemented by the type.</param>
+    /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
+    public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory)
+    {
+        PluginType = pluginType;
+        PluginInterfaces = pluginInterfaces;
+        Factory = factory;
+    }
+
+    /// <summary>
+    /// Gets the concrete plugin type.
+    /// </summary>
+    public Type PluginType { get; }
+
+    /// <summary>
+    /// Gets the plugin interfaces implemented by the type.
+    /// </summary>
+    public IReadOnlyList<Type> PluginInterfaces { get; }
+
+    /// <summary>
+    /// Gets a factory delegate that creates an instance of the plugin
+    /// without using Activator.CreateInstance.
+    /// </summary>
+    public Func<object> Factory { get; }
+}

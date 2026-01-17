@@ -288,9 +288,112 @@ namespace TestApp
         Assert.Contains("null)", generatedCode);
     }
 
+    [Fact]
+    public void Generator_GeneratesPluginTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyPlugin { }
+    public class MyPlugin : IMyPlugin { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Verify plugin types are generated
+        Assert.Contains("GetPluginTypes", generatedCode);
+        Assert.Contains("_plugins", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_GeneratesPluginFactory()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyPlugin { }
+    public class MyPlugin : IMyPlugin { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Verify factory lambda is generated
+        Assert.Contains("() => new global::TestApp.MyPlugin()", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_ExcludesPluginsWithoutParameterlessConstructor()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyPlugin { }
+
+    public class InvalidPlugin : IMyPlugin
+    {
+        public InvalidPlugin(string dependency) { }
+    }
+
+    public class ValidPlugin : IMyPlugin { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // ValidPlugin should be in plugins, InvalidPlugin should not
+        Assert.Contains("ValidPlugin", generatedCode);
+        // InvalidPlugin appears in _types (as injectable) but not in _plugins (no parameterless ctor)
+        var pluginsSection = ExtractPluginsSection(generatedCode);
+        Assert.DoesNotContain("InvalidPlugin", pluginsSection);
+    }
+
+    [Fact]
+    public void Generator_IncludesPluginInterfaces()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IPluginA { }
+    public interface IPluginB { }
+    public class MultiPlugin : IPluginA, IPluginB { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Verify both interfaces are in the plugin entry
+        Assert.Contains("typeof(global::TestApp.IPluginA)", generatedCode);
+        Assert.Contains("typeof(global::TestApp.IPluginB)", generatedCode);
+    }
+
+    private static string ExtractPluginsSection(string generatedCode)
+    {
+        var startIndex = generatedCode.IndexOf("private static readonly PluginTypeInfo[]");
+        if (startIndex < 0) return string.Empty;
+
+        var endIndex = generatedCode.IndexOf("];", startIndex);
+        if (endIndex < 0) return string.Empty;
+
+        return generatedCode.Substring(startIndex, endIndex - startIndex + 2);
+    }
+
     private static string RunGenerator(string source)
     {
-        // Create the attribute source with InjectableLifetime enum
+        // Create the attribute source with InjectableLifetime enum and PluginTypeInfo
         var attributeSource = @"
 namespace NexusLabs.Needlr.Generators
 {
@@ -323,6 +426,20 @@ namespace NexusLabs.Needlr.Generators
         public System.Type Type { get; }
         public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
         public InjectableLifetime? Lifetime { get; }
+    }
+
+    public readonly struct PluginTypeInfo
+    {
+        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
+        {
+            PluginType = pluginType;
+            PluginInterfaces = pluginInterfaces;
+            Factory = factory;
+        }
+
+        public System.Type PluginType { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
+        public System.Func<object> Factory { get; }
     }
 }";
 

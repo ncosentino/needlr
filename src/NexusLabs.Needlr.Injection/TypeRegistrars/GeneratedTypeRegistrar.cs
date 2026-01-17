@@ -76,7 +76,7 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
         {
             var type = typeInfo.Type;
 
-            // Use pre-computed lifetime if available (Phase 2 - no reflection needed)
+            // Use pre-computed lifetime if available
             if (typeInfo.Lifetime.HasValue)
             {
                 var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);

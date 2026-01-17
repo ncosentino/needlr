@@ -14,7 +14,8 @@ public sealed record Syringe
 {
     internal ITypeRegistrar? TypeRegistrar { get; init; }
     internal ITypeFilterer? TypeFilterer { get; init; }
-    internal Func<ITypeRegistrar, ITypeFilterer, IServiceCollectionPopulator>? ServiceCollectionPopulatorFactory { get; init; }
+    internal IPluginFactory? PluginFactory { get; init; }
+    internal Func<ITypeRegistrar, ITypeFilterer, IPluginFactory, IServiceCollectionPopulator>? ServiceCollectionPopulatorFactory { get; init; }
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
@@ -29,7 +30,8 @@ public sealed record Syringe
     {
         var typeRegistrar = GetOrCreateTypeRegistrar();
         var typeFilterer = GetOrCreateTypeFilterer();
-        var serviceCollectionPopulator = GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var pluginFactory = GetOrCreatePluginFactory();
+        var serviceCollectionPopulator = GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
         var assemblyProvider = GetOrCreateAssemblyProvider();
         var additionalAssemblies = AdditionalAssemblies ?? [];
         var callbacks = PostPluginRegistrationCallbacks ?? [];
@@ -62,12 +64,23 @@ public sealed record Syringe
     }
 
     /// <summary>
+    /// Gets the configured plugin factory or creates a default one.
+    /// </summary>
+    public IPluginFactory GetOrCreatePluginFactory()
+    {
+        return PluginFactory ?? new NexusLabs.Needlr.PluginFactory();
+    }
+
+    /// <summary>
     /// Gets the configured service collection populator or creates a default one.
     /// </summary>
-    public IServiceCollectionPopulator GetOrCreateServiceCollectionPopulator(ITypeRegistrar typeRegistrar, ITypeFilterer typeFilterer)
+    public IServiceCollectionPopulator GetOrCreateServiceCollectionPopulator(
+        ITypeRegistrar typeRegistrar,
+        ITypeFilterer typeFilterer,
+        IPluginFactory pluginFactory)
     {
-        return ServiceCollectionPopulatorFactory?.Invoke(typeRegistrar, typeFilterer) 
-            ?? new ServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        return ServiceCollectionPopulatorFactory?.Invoke(typeRegistrar, typeFilterer, pluginFactory)
+            ?? new ServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
     }
 
     /// <summary>

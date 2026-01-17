@@ -110,7 +110,8 @@ public sealed record WebApplicationSyringe
     {
         var typeRegistrar = BaseSyringe.GetOrCreateTypeRegistrar();
         var typeFilterer = BaseSyringe.GetOrCreateTypeFilterer();
-        var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer);
+        var pluginFactory = BaseSyringe.GetOrCreatePluginFactory();
+        var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
         var assemblyProvider = BaseSyringe.GetOrCreateAssemblyProvider();
         var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
         var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();

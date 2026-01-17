@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.PluginFactories;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
 
@@ -179,6 +180,103 @@ public static class SyringeExtensions
     }
 
     /// <summary>
+    /// Configures the syringe to use the default reflection-based plugin factory.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe().UsingDefaultPluginFactory();
+    /// </code>
+    /// </example>
+    public static Syringe UsingDefaultPluginFactory(
+        this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.UsingPluginFactory(new PluginFactory());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated plugin factory.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This factory uses compile-time generated plugin information instead of
+    /// runtime reflection, providing better performance and AOT compatibility.
+    /// </para>
+    /// <para>
+    /// To use this, your assembly must have:
+    /// <list type="bullet">
+    /// <item>A reference to <c>NexusLabs.Needlr.Generators</c></item>
+    /// <item>The <c>[assembly: GenerateTypeRegistry(...)]</c> attribute</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe().UsingGeneratedPluginFactory();
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedPluginFactory(
+        this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.UsingPluginFactory(new GeneratedPluginFactory());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated plugin factory with a custom plugin provider.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This overload allows you to provide a custom function that returns the
+    /// plugin types. This is useful for testing or when you need to customize
+    /// the plugin discovery behavior.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="pluginProvider">A function that returns the plugin types.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedPluginFactory(NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedPluginFactory(
+        this Syringe syringe,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(pluginProvider);
+        return syringe.UsingPluginFactory(new GeneratedPluginFactory(pluginProvider));
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the specified plugin factory.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="pluginFactory">The plugin factory to use.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var customFactory = new MyCustomPluginFactory();
+    /// var syringe = new Syringe().UsingPluginFactory(customFactory);
+    /// </code>
+    /// </example>
+    public static Syringe UsingPluginFactory(
+        this Syringe syringe,
+        IPluginFactory pluginFactory)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(pluginFactory);
+
+        return syringe with { PluginFactory = pluginFactory };
+    }
+
+    /// <summary>
     /// Configures the syringe to use the specified service collection populator factory.
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
@@ -187,13 +285,13 @@ public static class SyringeExtensions
     /// <example>
     /// <code>
     /// var syringe = new Syringe()
-    ///     .UsingServiceCollectionPopulator((typeRegistrar, typeFilterer) => 
-    ///         new ServiceCollectionPopulator(typeRegistrar, typeFilterer));
+    ///     .UsingServiceCollectionPopulator((typeRegistrar, typeFilterer, pluginFactory) =>
+    ///         new ServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory));
     /// </code>
     /// </example>
     public static Syringe UsingServiceCollectionPopulator(
         this Syringe syringe,
-        Func<ITypeRegistrar, ITypeFilterer, IServiceCollectionPopulator> factory)
+        Func<ITypeRegistrar, ITypeFilterer, IPluginFactory, IServiceCollectionPopulator> factory)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(factory);

@@ -328,4 +328,95 @@ internal static class TypeDiscoveryHelper
 
         return false;
     }
+
+    /// <summary>
+    /// Determines if a type is a valid plugin type (concrete class with parameterless constructor).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type is a valid plugin type.</returns>
+    public static bool IsPluginType(INamedTypeSymbol typeSymbol)
+    {
+        // Must be a concrete class
+        if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        if (typeSymbol.IsAbstract)
+            return false;
+
+        if (typeSymbol.IsStatic)
+            return false;
+
+        if (typeSymbol.IsUnboundGenericType)
+            return false;
+
+        // Must have a parameterless constructor
+        if (!HasParameterlessConstructor(typeSymbol))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Gets the plugin interfaces implemented by a type.
+    /// Plugin interfaces are interfaces in non-System namespaces.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>A list of plugin interface symbols.</returns>
+    public static IReadOnlyList<INamedTypeSymbol> GetPluginInterfaces(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<INamedTypeSymbol>();
+
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            if (iface.IsUnboundGenericType)
+                continue;
+
+            if (IsSystemInterface(iface))
+                continue;
+
+            result.Add(iface);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Checks if a type implements a specific interface by name.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="interfaceFullName">The full name of the interface.</param>
+    /// <returns>True if the type implements the interface.</returns>
+    public static bool ImplementsInterface(INamedTypeSymbol typeSymbol, string interfaceFullName)
+    {
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            if (iface.ToDisplayString() == interfaceFullName)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if a type has a public parameterless constructor.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has a parameterless constructor.</returns>
+    public static bool HasParameterlessConstructor(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.DeclaredAccessibility == Accessibility.Public &&
+                ctor.Parameters.Length == 0)
+            {
+                return true;
+            }
+        }
+
+        // If no explicit constructors, the default constructor is available
+        // (unless there are other constructors with parameters)
+        if (typeSymbol.InstanceConstructors.Length == 0)
+            return true;
+
+        return false;
+    }
 }

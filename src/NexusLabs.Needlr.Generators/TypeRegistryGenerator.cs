@@ -42,12 +42,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Use the first attribute (only one should be present per assembly)
             var attributeInfo = attributes[0];
 
-            var injectableTypes = DiscoverInjectableTypes(
+            var discoveryResult = DiscoverTypes(
                 compilation,
                 attributeInfo.NamespacePrefixes,
                 attributeInfo.IncludeSelf);
 
-            var sourceText = GenerateTypeRegistrySource(injectableTypes);
+            var sourceText = GenerateTypeRegistrySource(discoveryResult);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
         });
     }
@@ -91,18 +91,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return null;
     }
 
-    private static IReadOnlyList<DiscoveredType> DiscoverInjectableTypes(
+    private static DiscoveryResult DiscoverTypes(
         Compilation compilation,
         string[]? namespacePrefixes,
         bool includeSelf)
     {
-        var result = new List<DiscoveredType>();
+        var injectableTypes = new List<DiscoveredType>();
+        var pluginTypes = new List<DiscoveredPlugin>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, result);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes);
         }
 
         // Collect types from all referenced assemblies
@@ -110,36 +111,51 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, result);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes);
             }
         }
 
-        return result;
+        return new DiscoveryResult(injectableTypes, pluginTypes);
     }
 
     private static void CollectTypesFromAssembly(
         IAssemblySymbol assembly,
         IReadOnlyList<string>? namespacePrefixes,
-        List<DiscoveredType> result)
+        List<DiscoveredType> injectableTypes,
+        List<DiscoveredPlugin> pluginTypes)
     {
         foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assembly.GlobalNamespace))
         {
-            if (!TypeDiscoveryHelper.IsInjectableType(typeSymbol))
-                continue;
-
             if (!TypeDiscoveryHelper.MatchesNamespacePrefix(typeSymbol, namespacePrefixes))
                 continue;
 
-            var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
-            var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-            var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
-            var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+            // Check for injectable types
+            if (TypeDiscoveryHelper.IsInjectableType(typeSymbol))
+            {
+                var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
 
-            result.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime));
+                injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime));
+            }
+
+            // Check for plugin types (concrete class with parameterless ctor and interfaces)
+            if (TypeDiscoveryHelper.IsPluginType(typeSymbol))
+            {
+                var pluginInterfaces = TypeDiscoveryHelper.GetPluginInterfaces(typeSymbol);
+                if (pluginInterfaces.Count > 0)
+                {
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var interfaceNames = pluginInterfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+
+                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name));
+                }
+            }
         }
     }
 
-    private static string GenerateTypeRegistrySource(IReadOnlyList<DiscoveredType> types)
+    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult)
     {
         var builder = new StringBuilder();
 
@@ -154,16 +170,39 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("namespace NexusLabs.Needlr.Generated;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
-        builder.AppendLine("/// Compile-time generated registry of injectable types.");
+        builder.AppendLine("/// Compile-time generated registry of injectable types and plugins.");
         builder.AppendLine("/// This eliminates the need for runtime reflection-based type discovery.");
         builder.AppendLine("/// </summary>");
         builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
         builder.AppendLine("public static class TypeRegistry");
         builder.AppendLine("{");
+
+        GenerateInjectableTypesArray(builder, discoveryResult.InjectableTypes);
+        builder.AppendLine();
+        GeneratePluginTypesArray(builder, discoveryResult.PluginTypes);
+
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets all injectable types discovered at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <returns>A read-only list of injectable type information.</returns>");
+        builder.AppendLine("    public static IReadOnlyList<InjectableTypeInfo> GetInjectableTypes() => _types;");
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets all plugin types discovered at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <returns>A read-only list of plugin type information.</returns>");
+        builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    private static void GenerateInjectableTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredType> types)
+    {
         builder.AppendLine("    private static readonly InjectableTypeInfo[] _types =");
         builder.AppendLine("    [");
 
-        // Group by assembly for readable output
         var typesByAssembly = types.GroupBy(t => t.AssemblyName).OrderBy(g => g.Key);
 
         foreach (var group in typesByAssembly)
@@ -185,7 +224,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     builder.Append("], ");
                 }
 
-                // Emit the lifetime
                 if (type.Lifetime.HasValue)
                 {
                     builder.AppendLine($"InjectableLifetime.{type.Lifetime.Value}),");
@@ -198,15 +236,40 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine("    ];");
-        builder.AppendLine();
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets all injectable types discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <returns>A read-only list of injectable type information.</returns>");
-        builder.AppendLine("    public static IReadOnlyList<InjectableTypeInfo> GetInjectableTypes() => _types;");
-        builder.AppendLine("}");
+    }
 
-        return builder.ToString();
+    private static void GeneratePluginTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredPlugin> plugins)
+    {
+        builder.AppendLine("    private static readonly PluginTypeInfo[] _plugins =");
+        builder.AppendLine("    [");
+
+        var pluginsByAssembly = plugins.GroupBy(p => p.AssemblyName).OrderBy(g => g.Key);
+
+        foreach (var group in pluginsByAssembly)
+        {
+            builder.AppendLine($"        // From {group.Key}");
+
+            foreach (var plugin in group.OrderBy(p => p.TypeName))
+            {
+                builder.Append($"        new(typeof({plugin.TypeName}), ");
+
+                if (plugin.InterfaceNames.Length == 0)
+                {
+                    builder.Append("Array.Empty<Type>(), ");
+                }
+                else
+                {
+                    builder.Append("[");
+                    builder.Append(string.Join(", ", plugin.InterfaceNames.Select(i => $"typeof({i})")));
+                    builder.Append("], ");
+                }
+
+                // Generate factory lambda - no Activator.CreateInstance needed
+                builder.AppendLine($"() => new {plugin.TypeName}()),");
+            }
+        }
+
+        builder.AppendLine("    ];");
     }
 
     private readonly struct AttributeInfo
@@ -235,5 +298,33 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
         public GeneratorLifetime? Lifetime { get; }
+    }
+
+    private readonly struct DiscoveredPlugin
+    {
+        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName)
+        {
+            TypeName = typeName;
+            InterfaceNames = interfaceNames;
+            AssemblyName = assemblyName;
+        }
+
+        public string TypeName { get; }
+        public string[] InterfaceNames { get; }
+        public string AssemblyName { get; }
+    }
+
+    private readonly struct DiscoveryResult
+    {
+        public DiscoveryResult(
+            IReadOnlyList<DiscoveredType> injectableTypes,
+            IReadOnlyList<DiscoveredPlugin> pluginTypes)
+        {
+            InjectableTypes = injectableTypes;
+            PluginTypes = pluginTypes;
+        }
+
+        public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
+        public IReadOnlyList<DiscoveredPlugin> PluginTypes { get; }
     }
 }
