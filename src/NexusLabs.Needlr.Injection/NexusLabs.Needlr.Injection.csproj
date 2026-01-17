@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
   </ItemGroup>
 
 </Project>

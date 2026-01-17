@@ -14,6 +14,7 @@
     <Project Path="Examples/ManualRegistrationWithPluginExample/ManualRegistrationWithPluginExample.csproj" Id="d09d5b82-e112-491d-b702-c0a9a236722a" />
     <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
     <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
+    <Project Path="Examples/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
     <Project Path="Examples/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
     <Project Path="Examples/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" Id="781f9847-f3e7-4db1-807e-9450a5debed8" />
     <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
@@ -23,6 +24,7 @@
     <File Path="NuGet.config" />
   </SolutionItems>
   <Folder Name="/Tests/">
+    <Project Path="NexusLabs.Needlr.Generators.Tests\NexusLabs.Needlr.Generators.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AspNet.Tests\NexusLabs.Needlr.AspNet.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter.Tests\NexusLabs.Needlr.Carter.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests\NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
@@ -42,4 +44,6 @@
   <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" Id="e695dd52-abed-44e2-9bb8-81db4321afa5" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
 </Solution>

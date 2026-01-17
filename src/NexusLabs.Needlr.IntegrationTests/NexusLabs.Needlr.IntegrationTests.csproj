@@ -9,6 +9,8 @@
 		<ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
 		<ProjectReference Include="..\NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
 		<ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -32,6 +32,7 @@ public sealed class WebApplicationFactory(
             _pluginFactory,
             options.Logger,
             candidateAssemblies,
+            options.PrePluginRegistrationCallbacks,
             options.PostPluginRegistrationCallbacks);
 
         options.Logger.LogInformation("Building web application...");
@@ -135,6 +136,7 @@ public sealed class WebApplicationFactory(
         IPluginFactory pluginFactory,
         ILogger logger,
         IReadOnlyList<Assembly> assembliesToLoadFrom,
+        IReadOnlyList<Action<IServiceCollection>> prePluginRegistrationCallbacks,
         IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks)
     {
         ArgumentNullException.ThrowIfNull(serviceCollectionPopulator);
@@ -142,9 +144,16 @@ public sealed class WebApplicationFactory(
         ArgumentNullException.ThrowIfNull(pluginFactory);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(assembliesToLoadFrom);
+        ArgumentNullException.ThrowIfNull(prePluginRegistrationCallbacks);
         ArgumentNullException.ThrowIfNull(postPluginRegistrationCallbacks);
 
         logger.LogInformation("Configuring web application services...");
+
+        foreach (var callback in prePluginRegistrationCallbacks)
+        {
+            logger.LogInformation("Executing pre-plugin registration callback...");
+            callback.Invoke(builder.Services);
+        }
 
         RegisterWebApplicationBuilderPlugins(
             builder,
@@ -159,7 +168,6 @@ public sealed class WebApplicationFactory(
             assembliesToLoadFrom);
         logger.LogInformation("Registered services to service collection.");
 
-        // Execute post-plugin registration callbacks
         foreach (var callback in postPluginRegistrationCallbacks)
         {
             logger.LogInformation("Executing post-plugin registration callback...");

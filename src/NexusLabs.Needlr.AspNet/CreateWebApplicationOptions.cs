@@ -25,6 +25,11 @@ public sealed record CreateWebApplicationOptions(
     private static readonly CreateWebApplicationOptions _defaultOptions = new(options: new());
 
     /// <summary>
+    /// Callbacks to execute before plugin registration to allow configuring the service collection.
+    /// </summary>
+    public IReadOnlyList<Action<IServiceCollection>> PrePluginRegistrationCallbacks { get; init; } = Array.Empty<Action<IServiceCollection>>();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CreateWebApplicationOptions"/> 
     /// record with a <see cref="NullLogger"/>.
     /// </summary>
@@ -37,6 +42,21 @@ public sealed record CreateWebApplicationOptions(
         : this(options, PostPluginRegistrationCallbacks: [], NullLogger.Instance)
     {
         ArgumentNullException.ThrowIfNull(options);
+    }
+
+    /// <summary>
+    /// Initializes a new instance with pre-plugin registration callbacks.
+    /// </summary>
+    /// <param name="options">The web application options to use.</param>
+    /// <param name="prePluginRegistrationCallbacks">Callbacks to execute before plugin registration.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="prePluginRegistrationCallbacks"/> is null.</exception>
+    public CreateWebApplicationOptions(
+        WebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> prePluginRegistrationCallbacks)
+        : this(options)
+    {
+        ArgumentNullException.ThrowIfNull(prePluginRegistrationCallbacks);
+        PrePluginRegistrationCallbacks = prePluginRegistrationCallbacks.ToArray();
     }
 
     /// <summary>
@@ -60,6 +80,23 @@ public sealed record CreateWebApplicationOptions(
     }
 
     /// <summary>
+    /// Initializes a new instance with pre- and post-plugin registration callbacks.
+    /// </summary>
+    /// <param name="options">The web application options to use.</param>
+    /// <param name="prePluginRegistrationCallbacks">Callbacks to execute before plugin registration.</param>
+    /// <param name="postPluginRegistrationCallbacks">Callbacks to execute after plugin registration.</param>
+    /// <exception cref="ArgumentNullException">Thrown when a parameter is null.</exception>
+    public CreateWebApplicationOptions(
+        WebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> prePluginRegistrationCallbacks,
+        IEnumerable<Action<IServiceCollection>> postPluginRegistrationCallbacks)
+        : this(options, PostPluginRegistrationCallbacks: (postPluginRegistrationCallbacks ?? throw new ArgumentNullException(nameof(postPluginRegistrationCallbacks))).ToArray(), NullLogger.Instance)
+    {
+        ArgumentNullException.ThrowIfNull(prePluginRegistrationCallbacks);
+        PrePluginRegistrationCallbacks = prePluginRegistrationCallbacks.ToArray();
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CreateWebApplicationOptions"/> 
     /// record with a <see cref="NullLogger"/>.
     /// </summary>
@@ -77,6 +114,23 @@ public sealed record CreateWebApplicationOptions(
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
+    }
+
+    /// <summary>
+    /// Initializes a new instance with pre-plugin registration callbacks and logger.
+    /// </summary>
+    /// <param name="options">The web application options to use.</param>
+    /// <param name="prePluginRegistrationCallbacks">Callbacks to execute before plugin registration.</param>
+    /// <param name="logger">The logger instance to use for logging during application creation.</param>
+    /// <exception cref="ArgumentNullException">Thrown when a parameter is null.</exception>
+    public CreateWebApplicationOptions(
+        WebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> prePluginRegistrationCallbacks,
+        ILogger logger)
+        : this(options, PostPluginRegistrationCallbacks: [], logger)
+    {
+        ArgumentNullException.ThrowIfNull(prePluginRegistrationCallbacks);
+        PrePluginRegistrationCallbacks = prePluginRegistrationCallbacks.ToArray();
     }
 
     /// <summary>
@@ -103,6 +157,25 @@ public sealed record CreateWebApplicationOptions(
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(postPluginRegistrationCallback);
         ArgumentNullException.ThrowIfNull(logger);
+    }
+
+    /// <summary>
+    /// Initializes a new instance with pre- and post-plugin registration callbacks and logger.
+    /// </summary>
+    /// <param name="options">The web application options to use.</param>
+    /// <param name="prePluginRegistrationCallbacks">Callbacks to execute before plugin registration.</param>
+    /// <param name="postPluginRegistrationCallbacks">Callbacks to execute after plugin registration.</param>
+    /// <param name="logger">The logger instance to use for logging during application creation.</param>
+    /// <exception cref="ArgumentNullException">Thrown when a parameter is null.</exception>
+    public CreateWebApplicationOptions(
+        WebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> prePluginRegistrationCallbacks,
+        IEnumerable<Action<IServiceCollection>> postPluginRegistrationCallbacks,
+        ILogger logger)
+        : this(options, PostPluginRegistrationCallbacks: (postPluginRegistrationCallbacks ?? throw new ArgumentNullException(nameof(postPluginRegistrationCallbacks))).ToArray(), logger)
+    {
+        ArgumentNullException.ThrowIfNull(prePluginRegistrationCallbacks);
+        PrePluginRegistrationCallbacks = prePluginRegistrationCallbacks.ToArray();
     }
 
     /// <summary>

@@ -99,6 +99,63 @@ public static class CreateWebApplicationOptionsExtensions
     }
 
     /// <summary>
+    /// Adds a pre-plugin registration callback to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callback">The callback to add for pre-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callback added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callback"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPrePluginRegistrationCallback(
+        this CreateWebApplicationOptions options,
+        Action<IServiceCollection> callback)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(callback);
+        return options.UsingPrePluginRegistrationCallbacks(callback);
+    }
+
+    /// <summary>
+    /// Adds multiple pre-plugin registration callbacks to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callbacks">The callbacks to add for pre-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callbacks added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callbacks"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPrePluginRegistrationCallbacks(
+        this CreateWebApplicationOptions options,
+        params Action<IServiceCollection>[] callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(callbacks);
+        return options.UsingPrePluginRegistrationCallbacks(callbacks.AsEnumerable());
+    }
+
+    /// <summary>
+    /// Adds multiple pre-plugin registration callbacks to the options.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="callbacks">The callbacks to add for pre-plugin registration.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the callbacks added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="callbacks"/> is null.</exception>
+    public static CreateWebApplicationOptions UsingPrePluginRegistrationCallbacks(
+        this CreateWebApplicationOptions options,
+        IEnumerable<Action<IServiceCollection>> callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(callbacks);
+
+        var allCallbacks = new List<Action<IServiceCollection>>(options.PrePluginRegistrationCallbacks);
+        allCallbacks.AddRange(callbacks);
+
+        var newOptions = options with
+        {
+            PrePluginRegistrationCallbacks = allCallbacks
+        };
+
+        return newOptions;
+    }
+
+    /// <summary>
     /// Adds a post-plugin registration callback to the options.
     /// </summary>
     /// <param name="options">The options to configure.</param>

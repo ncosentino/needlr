@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Description>Attributes for NexusLabs.Needlr source generators. Used to mark assemblies for compile-time type registry generation.</Description>
+  </PropertyGroup>
+
+</Project>

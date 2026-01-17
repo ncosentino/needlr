@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
 
@@ -52,6 +53,68 @@ public static class SyringeExtensions
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingTypeRegistrar(new DefaultTypeRegistrar());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated type registrar.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This registrar uses compile-time generated type information instead of
+    /// runtime reflection, providing better performance and AOT compatibility.
+    /// </para>
+    /// <para>
+    /// To use this, your assembly must have:
+    /// <list type="bullet">
+    /// <item>A reference to <c>NexusLabs.Needlr.Generators</c></item>
+    /// <item>The <c>[assembly: GenerateTypeRegistry(...)]</c> attribute</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// // In AssemblyInfo.cs or any file:
+    /// [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "MyCompany", "NexusLabs" })]
+    ///
+    /// // When building the service provider:
+    /// var syringe = new Syringe().UsingGeneratedTypeRegistrar();
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedTypeRegistrar(
+        this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.UsingTypeRegistrar(new GeneratedTypeRegistrar());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated type registrar with a custom type provider.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This overload allows you to provide a custom function that returns the
+    /// injectable types. This is useful for testing or when you need to customize
+    /// the type discovery behavior.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="typeProvider">A function that returns the injectable types.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedTypeRegistrar(NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedTypeRegistrar(
+        this Syringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> typeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(typeProvider);
+        return syringe.UsingTypeRegistrar(new GeneratedTypeRegistrar(typeProvider));
     }
 
     /// <summary>
