@@ -267,7 +267,7 @@ namespace TestApp
     }
 
     [Fact]
-    public void Generator_EmitsNullForNonInjectableConstructors()
+    public void Generator_ExcludesTypesWithNonInjectableConstructors()
     {
         var source = @"
 using NexusLabs.Needlr.Generators;
@@ -280,12 +280,18 @@ namespace TestApp
     {
         public ServiceWithStringParam(string value) { }
     }
+
+    public interface IInjectableService { }
+    public class InjectableService : IInjectableService { }
 }";
 
         var generatedCode = RunGenerator(source);
 
-        // ServiceWithStringParam has string parameter -> null lifetime
-        Assert.Contains("null)", generatedCode);
+        // ServiceWithStringParam has string parameter -> should be excluded entirely
+        Assert.DoesNotContain("ServiceWithStringParam", generatedCode);
+
+        // InjectableService should be included
+        Assert.Contains("InjectableService", generatedCode);
     }
 
     [Fact]

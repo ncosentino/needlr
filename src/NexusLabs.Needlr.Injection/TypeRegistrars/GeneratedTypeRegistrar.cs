@@ -76,13 +76,15 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
         {
             var type = typeInfo.Type;
 
-            // Use pre-computed lifetime if available
+            // Use pre-computed lifetime - no reflection needed
+            // The source generator only emits types with valid lifetimes
             if (typeInfo.Lifetime.HasValue)
             {
                 var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);
                 RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, lifetime);
             }
-            // Fall back to runtime type filtering if lifetime not pre-computed
+            // Fallback for backward compatibility with older generated code
+            // that may have null lifetimes. Uses runtime type filtering.
             else if (typeFilterer.IsInjectableSingletonType(type))
             {
                 RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Singleton);

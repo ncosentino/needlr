@@ -419,4 +419,89 @@ internal static class TypeDiscoveryHelper
 
         return false;
     }
+
+    /// <summary>
+    /// Gets the attribute types applied to a plugin type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>A list of attribute type names (fully qualified).</returns>
+    public static IReadOnlyList<string> GetPluginAttributes(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<string>();
+
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            // Skip system attributes and compiler-generated attributes
+            var ns = attributeClass.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+            if (ns.StartsWith("System.Runtime.CompilerServices", StringComparison.Ordinal))
+                continue;
+
+            // Include this attribute
+            var attributeName = GetFullyQualifiedName(attributeClass);
+            if (!result.Contains(attributeName))
+            {
+                result.Add(attributeName);
+            }
+        }
+
+        // Also check for inherited attributes from base types
+        var baseType = typeSymbol.BaseType;
+        while (baseType != null && baseType.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var attribute in baseType.GetAttributes())
+            {
+                var attributeClass = attribute.AttributeClass;
+                if (attributeClass == null)
+                    continue;
+
+                // Check if attribute is inherited
+                if (!IsInheritedAttribute(attributeClass))
+                    continue;
+
+                var ns = attributeClass.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+                if (ns.StartsWith("System.Runtime.CompilerServices", StringComparison.Ordinal))
+                    continue;
+
+                var attributeName = GetFullyQualifiedName(attributeClass);
+                if (!result.Contains(attributeName))
+                {
+                    result.Add(attributeName);
+                }
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Checks if an attribute type has [AttributeUsage(Inherited = true)].
+    /// </summary>
+    private static bool IsInheritedAttribute(INamedTypeSymbol attributeClass)
+    {
+        foreach (var attr in attributeClass.GetAttributes())
+        {
+            if (attr.AttributeClass?.ToDisplayString() != "System.AttributeUsageAttribute")
+                continue;
+
+            foreach (var namedArg in attr.NamedArguments)
+            {
+                if (namedArg.Key == "Inherited" && namedArg.Value.Value is bool inherited)
+                {
+                    return inherited;
+                }
+            }
+
+            // Default for AttributeUsage is Inherited = true
+            return true;
+        }
+
+        // Default is Inherited = true
+        return true;
+    }
 }

@@ -57,12 +57,65 @@ public static class SyringeExtensions
     }
 
     /// <summary>
+    /// Configures the syringe with all generated components for zero-reflection operation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is the recommended way to use source-generated dependency injection.
+    /// It configures the type registrar, type filterer, and plugin factory to use
+    /// pre-computed compile-time information, eliminating all runtime reflection.
+    /// </para>
+    /// <para>
+    /// To use this, your assembly must have:
+    /// <list type="bullet">
+    /// <item>A reference to <c>NexusLabs.Needlr.Generators</c></item>
+    /// <item>The <c>[assembly: GenerateTypeRegistry(...)]</c> attribute</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types (typically TypeRegistry.GetInjectableTypes).</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types (typically TypeRegistry.GetPluginTypes).</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// // Zero-reflection configuration:
+    /// using NexusLabs.Needlr.Generated;
+    ///
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedComponents(
+    ///         TypeRegistry.GetInjectableTypes,
+    ///         TypeRegistry.GetPluginTypes);
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedComponents(
+        this Syringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(injectableTypeProvider);
+        ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+
+        return syringe
+            .UsingGeneratedTypeRegistrar(injectableTypeProvider)
+            .UsingGeneratedTypeFilterer(injectableTypeProvider)
+            .UsingGeneratedPluginFactory(pluginTypeProvider);
+    }
+
+    /// <summary>
     /// Configures the syringe to use the generated type registrar.
     /// </summary>
     /// <remarks>
     /// <para>
     /// This registrar uses compile-time generated type information instead of
     /// runtime reflection, providing better performance and AOT compatibility.
+    /// </para>
+    /// <para>
+    /// <b>Note:</b> This overload uses reflection to locate the generated TypeRegistry.
+    /// For zero-reflection scenarios, use <see cref="UsingGeneratedComponents"/> or
+    /// <see cref="UsingGeneratedTypeRegistrar(Syringe, Func{IReadOnlyList{InjectableTypeInfo}})"/>
+    /// with an explicit type provider.
     /// </para>
     /// <para>
     /// To use this, your assembly must have:
@@ -158,6 +211,66 @@ public static class SyringeExtensions
     }
 
     /// <summary>
+    /// Configures the syringe to use the generated type filterer.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This filterer uses compile-time generated lifetime information instead of
+    /// runtime reflection for constructor analysis. When used with
+    /// <see cref="UsingGeneratedTypeRegistrar(Syringe, Func{IReadOnlyList{InjectableTypeInfo}})"/>,
+    /// it provides zero-reflection type filtering.
+    /// </para>
+    /// <para>
+    /// For zero-reflection scenarios, explicitly provide the type provider to both
+    /// the registrar and the filterer.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// // Zero-reflection configuration:
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedTypeRegistrar(TypeRegistry.GetInjectableTypes)
+    ///     .UsingGeneratedTypeFilterer();
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedTypeFilterer(
+        this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.UsingTypeFilterer(new GeneratedTypeFilterer());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated type filterer with a custom type provider.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This overload allows you to provide a custom function that returns the
+    /// injectable types. The filterer builds a lookup table from this information,
+    /// enabling reflection-free lifetime checks.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="typeProvider">A function that returns the injectable types.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedTypeFilterer(TypeRegistry.GetInjectableTypes);
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedTypeFilterer(
+        this Syringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> typeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(typeProvider);
+        return syringe.UsingTypeFilterer(new GeneratedTypeFilterer(typeProvider));
+    }
+
+    /// <summary>
     /// Configures the syringe to use the specified type filterer.
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
@@ -203,6 +316,12 @@ public static class SyringeExtensions
     /// <para>
     /// This factory uses compile-time generated plugin information instead of
     /// runtime reflection, providing better performance and AOT compatibility.
+    /// </para>
+    /// <para>
+    /// <b>Note:</b> This overload uses reflection to locate the generated TypeRegistry.
+    /// For zero-reflection scenarios, use <see cref="UsingGeneratedComponents"/> or
+    /// <see cref="UsingGeneratedPluginFactory(Syringe, Func{IReadOnlyList{PluginTypeInfo}})"/>
+    /// with an explicit plugin provider.
     /// </para>
     /// <para>
     /// To use this, your assembly must have:

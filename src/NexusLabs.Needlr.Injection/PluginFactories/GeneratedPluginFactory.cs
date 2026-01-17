@@ -87,8 +87,8 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             if (!assemblySet.Contains(pluginAssemblyName))
                 continue;
 
-            // Check for attribute - this still requires reflection but happens rarely
-            if (info.PluginType.GetCustomAttribute<TAttribute>(inherit: true) is null)
+            // Use pre-computed attribute info - no reflection needed
+            if (!info.HasAttribute<TAttribute>())
                 continue;
 
             yield return info.Factory();
@@ -113,8 +113,8 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             if (!pluginType.IsAssignableFrom(info.PluginType))
                 continue;
 
-            // Check for attribute
-            if (info.PluginType.GetCustomAttribute<TAttribute>(inherit: true) is null)
+            // Use pre-computed attribute info - no reflection needed
+            if (!info.HasAttribute<TAttribute>())
                 continue;
 
             yield return (TPlugin)info.Factory();

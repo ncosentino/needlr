@@ -132,12 +132,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Check for injectable types
             if (TypeDiscoveryHelper.IsInjectableType(typeSymbol))
             {
-                var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
-                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                // Determine lifetime first - only include types that are actually injectable
                 var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+                if (lifetime.HasValue)
+                {
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
 
-                injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value));
+                }
             }
 
             // Check for plugin types (concrete class with parameterless ctor and interfaces)
@@ -148,8 +152,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = pluginInterfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                    var attributeNames = TypeDiscoveryHelper.GetPluginAttributes(typeSymbol).ToArray();
 
-                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name));
+                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames));
                 }
             }
         }
@@ -224,14 +229,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     builder.Append("], ");
                 }
 
-                if (type.Lifetime.HasValue)
-                {
-                    builder.AppendLine($"InjectableLifetime.{type.Lifetime.Value}),");
-                }
-                else
-                {
-                    builder.AppendLine("null),");
-                }
+                builder.AppendLine($"InjectableLifetime.{type.Lifetime}),");
             }
         }
 
@@ -253,6 +251,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 builder.Append($"        new(typeof({plugin.TypeName}), ");
 
+                // Interfaces
                 if (plugin.InterfaceNames.Length == 0)
                 {
                     builder.Append("Array.Empty<Type>(), ");
@@ -264,8 +263,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     builder.Append("], ");
                 }
 
-                // Generate factory lambda - no Activator.CreateInstance needed
-                builder.AppendLine($"() => new {plugin.TypeName}()),");
+                // Factory lambda - no Activator.CreateInstance needed
+                builder.Append($"() => new {plugin.TypeName}(), ");
+
+                // Attributes
+                if (plugin.AttributeNames.Length == 0)
+                {
+                    builder.AppendLine("Array.Empty<Type>()),");
+                }
+                else
+                {
+                    builder.Append("[");
+                    builder.Append(string.Join(", ", plugin.AttributeNames.Select(a => $"typeof({a})")));
+                    builder.AppendLine("]),");
+                }
             }
         }
 
@@ -286,7 +297,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime? lifetime)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
@@ -297,21 +308,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string TypeName { get; }
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
-        public GeneratorLifetime? Lifetime { get; }
+        public GeneratorLifetime Lifetime { get; }
     }
 
     private readonly struct DiscoveredPlugin
     {
-        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName)
+        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
+            AttributeNames = attributeNames;
         }
 
         public string TypeName { get; }
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
+        public string[] AttributeNames { get; }
     }
 
     private readonly struct DiscoveryResult

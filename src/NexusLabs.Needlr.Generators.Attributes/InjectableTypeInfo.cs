@@ -98,10 +98,23 @@ public readonly struct PluginTypeInfo
     /// <param name="pluginInterfaces">The plugin interfaces implemented by the type.</param>
     /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
     public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory)
+        : this(pluginType, pluginInterfaces, factory, Array.Empty<Type>())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="PluginTypeInfo"/>.
+    /// </summary>
+    /// <param name="pluginType">The concrete plugin type.</param>
+    /// <param name="pluginInterfaces">The plugin interfaces implemented by the type.</param>
+    /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
+    /// <param name="attributes">The attribute types applied to the plugin type.</param>
+    public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory, IReadOnlyList<Type> attributes)
     {
         PluginType = pluginType;
         PluginInterfaces = pluginInterfaces;
         Factory = factory;
+        Attributes = attributes;
     }
 
     /// <summary>
@@ -119,4 +132,44 @@ public readonly struct PluginTypeInfo
     /// without using Activator.CreateInstance.
     /// </summary>
     public Func<object> Factory { get; }
+
+    /// <summary>
+    /// Gets the attribute types applied to the plugin type.
+    /// </summary>
+    /// <remarks>
+    /// This enables attribute-based plugin filtering without requiring
+    /// reflection via <c>GetCustomAttribute</c> at runtime.
+    /// </remarks>
+    public IReadOnlyList<Type> Attributes { get; }
+
+    /// <summary>
+    /// Checks if the plugin has an attribute of the specified type.
+    /// </summary>
+    /// <typeparam name="TAttribute">The attribute type to check for.</typeparam>
+    /// <returns>True if the plugin has the attribute; otherwise, false.</returns>
+    public bool HasAttribute<TAttribute>() where TAttribute : Attribute
+    {
+        var attributeType = typeof(TAttribute);
+        for (int i = 0; i < Attributes.Count; i++)
+        {
+            if (attributeType.IsAssignableFrom(Attributes[i]))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the plugin has an attribute of the specified type.
+    /// </summary>
+    /// <param name="attributeType">The attribute type to check for.</param>
+    /// <returns>True if the plugin has the attribute; otherwise, false.</returns>
+    public bool HasAttribute(Type attributeType)
+    {
+        for (int i = 0; i < Attributes.Count; i++)
+        {
+            if (attributeType.IsAssignableFrom(Attributes[i]))
+                return true;
+        }
+        return false;
+    }
 }
