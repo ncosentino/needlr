@@ -1,8 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-using NexusLabs.Needlr.Generators;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -248,9 +246,51 @@ namespace TestApp
         Assert.Contains("GetInjectableTypes", generatedCode);
     }
 
+    [Fact]
+    public void Generator_EmitsLifetimeForInjectableTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyService { }
+    public class MyService : IMyService { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Verify lifetime is emitted (MyService has parameterless constructor -> Singleton)
+        Assert.Contains("InjectableLifetime.Singleton", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_EmitsNullForNonInjectableConstructors()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class ServiceWithStringParam
+    {
+        public ServiceWithStringParam(string value) { }
+    }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // ServiceWithStringParam has string parameter -> null lifetime
+        Assert.Contains("null)", generatedCode);
+    }
+
     private static string RunGenerator(string source)
     {
-        // Create the attribute source
+        // Create the attribute source with InjectableLifetime enum
         var attributeSource = @"
 namespace NexusLabs.Needlr.Generators
 {
@@ -261,9 +301,29 @@ namespace NexusLabs.Needlr.Generators
         public bool IncludeSelf { get; set; } = true;
     }
 
-    public readonly record struct InjectableTypeInfo(
-        System.Type Type,
-        System.Collections.Generic.IReadOnlyList<System.Type> Interfaces);
+    public enum InjectableLifetime
+    {
+        Singleton = 0,
+        Scoped = 1,
+        Transient = 2
+    }
+
+    public readonly struct InjectableTypeInfo
+    {
+        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces)
+            : this(type, interfaces, null) { }
+
+        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime)
+        {
+            Type = type;
+            Interfaces = interfaces;
+            Lifetime = lifetime;
+        }
+
+        public System.Type Type { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
+        public InjectableLifetime? Lifetime { get; }
+    }
 }";
 
         var syntaxTrees = new[]

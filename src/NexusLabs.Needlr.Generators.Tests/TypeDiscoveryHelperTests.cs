@@ -1,8 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-using NexusLabs.Needlr.Generators;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -275,6 +273,160 @@ namespace TestNamespace
         var result = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
 
         Assert.Equal("global::TestNamespace.TestService", result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_ParameterlessConstructor_ReturnsSingleton()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithParameterlessCtor
+    {
+        public ServiceWithParameterlessCtor() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithParameterlessCtor");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Equal(GeneratorLifetime.Singleton, result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_InjectableParameters_ReturnsSingleton()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IDependency { }
+    public class ServiceWithDependency
+    {
+        public ServiceWithDependency(IDependency dependency) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithDependency");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Equal(GeneratorLifetime.Singleton, result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_StringParameter_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithStringParam
+    {
+        public ServiceWithStringParam(string value) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithStringParam");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_IntParameter_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithIntParam
+    {
+        public ServiceWithIntParam(int value) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithIntParam");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_DelegateParameter_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithDelegateParam
+    {
+        public ServiceWithDelegateParam(System.Action action) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithDelegateParam");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_CopyConstructor_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithCopyCtor
+    {
+        public ServiceWithCopyCtor(ServiceWithCopyCtor other) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithCopyCtor");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_WithDoNotInjectAttribute_ReturnsNull()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DoNotInjectAttribute : System.Attribute { }
+}
+
+namespace TestNamespace
+{
+    [NexusLabs.Needlr.DoNotInject]
+    public class MarkedService
+    {
+        public MarkedService() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.MarkedService");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_MultipleConstructors_UsesValidOne()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IDependency { }
+    public class ServiceWithMultipleCtors
+    {
+        public ServiceWithMultipleCtors(string invalid) { }
+        public ServiceWithMultipleCtors(IDependency valid) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithMultipleCtors");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Equal(GeneratorLifetime.Singleton, result);
     }
 
     private static INamedTypeSymbol GetTypeSymbol(string source, string typeName)

@@ -133,8 +133,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
             var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
             var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+            var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
 
-            result.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name));
+            result.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime));
         }
     }
 
@@ -175,13 +176,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
                 if (type.InterfaceNames.Length == 0)
                 {
-                    builder.AppendLine("Array.Empty<Type>()),");
+                    builder.Append("Array.Empty<Type>(), ");
                 }
                 else
                 {
                     builder.Append("[");
                     builder.Append(string.Join(", ", type.InterfaceNames.Select(i => $"typeof({i})")));
-                    builder.AppendLine("]),");
+                    builder.Append("], ");
+                }
+
+                // Emit the lifetime
+                if (type.Lifetime.HasValue)
+                {
+                    builder.AppendLine($"InjectableLifetime.{type.Lifetime.Value}),");
+                }
+                else
+                {
+                    builder.AppendLine("null),");
                 }
             }
         }
@@ -212,15 +223,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime? lifetime)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
+            Lifetime = lifetime;
         }
 
         public string TypeName { get; }
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
+        public GeneratorLifetime? Lifetime { get; }
     }
 }

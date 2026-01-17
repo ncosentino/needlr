@@ -3,12 +3,25 @@ using Microsoft.CodeAnalysis;
 namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
+/// Internal lifetime enum used by the generator to avoid runtime dependency on Attributes assembly.
+/// Maps 1:1 with InjectableLifetime in the Attributes package.
+/// </summary>
+internal enum GeneratorLifetime
+{
+    Singleton = 0,
+    Scoped = 1,
+    Transient = 2
+}
+
+/// <summary>
 /// Helper utilities for discovering injectable types from Roslyn symbols.
 /// </summary>
 internal static class TypeDiscoveryHelper
 {
     private const string DoNotAutoRegisterAttributeName = "DoNotAutoRegisterAttribute";
     private const string DoNotAutoRegisterAttributeFullName = "NexusLabs.Needlr.DoNotAutoRegisterAttribute";
+    private const string DoNotInjectAttributeName = "DoNotInjectAttribute";
+    private const string DoNotInjectAttributeFullName = "NexusLabs.Needlr.DoNotInjectAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -221,6 +234,96 @@ internal static class TypeDiscoveryHelper
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines the injectable lifetime for a type by analyzing its constructors.
+    /// This mirrors the logic in DefaultTypeFilterer.IsInjectableSingletonType.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to analyze.</param>
+    /// <returns>The determined lifetime, or null if the type is not injectable.</returns>
+    public static GeneratorLifetime? DetermineLifetime(INamedTypeSymbol typeSymbol)
+    {
+        // Check for DoNotInjectAttribute
+        if (HasDoNotInjectAttribute(typeSymbol))
+            return null;
+
+        // Get all instance constructors
+        var constructors = typeSymbol.InstanceConstructors;
+
+        foreach (var ctor in constructors)
+        {
+            // Skip static constructors
+            if (ctor.IsStatic)
+                continue;
+
+            var parameters = ctor.Parameters;
+
+            // Parameterless constructor is always valid
+            if (parameters.Length == 0)
+                return GeneratorLifetime.Singleton;
+
+            // Single parameter of same type (copy constructor) - not injectable
+            if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
+                continue;
+
+            // Check if all parameters are injectable types
+            if (AllParametersAreInjectable(parameters))
+                return GeneratorLifetime.Singleton;
+        }
+
+        return null;
+    }
+
+    private static bool AllParametersAreInjectable(System.Collections.Immutable.ImmutableArray<IParameterSymbol> parameters)
+    {
+        foreach (var param in parameters)
+        {
+            if (!IsInjectableParameterType(param.Type))
+                return false;
+        }
+        return true;
+    }
+
+    private static bool IsInjectableParameterType(ITypeSymbol typeSymbol)
+    {
+        // Must not be a delegate
+        if (typeSymbol.TypeKind == TypeKind.Delegate)
+            return false;
+
+        // Must not be a value type
+        if (typeSymbol.IsValueType)
+            return false;
+
+        // Must not be string
+        if (typeSymbol.SpecialType == SpecialType.System_String)
+            return false;
+
+        // Must be a class or interface
+        if (typeSymbol.TypeKind != TypeKind.Class && typeSymbol.TypeKind != TypeKind.Interface)
+            return false;
+
+        return true;
+    }
+
+    private static bool HasDoNotInjectAttribute(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            if (name == DoNotInjectAttributeName)
+                return true;
+
+            var fullName = attributeClass.ToDisplayString();
+            if (fullName == DoNotInjectAttributeFullName)
+                return true;
         }
 
         return false;

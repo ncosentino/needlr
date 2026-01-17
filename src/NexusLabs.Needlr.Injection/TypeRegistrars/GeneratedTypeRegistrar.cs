@@ -76,7 +76,14 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
         {
             var type = typeInfo.Type;
 
-            if (typeFilterer.IsInjectableSingletonType(type))
+            // Use pre-computed lifetime if available (Phase 2 - no reflection needed)
+            if (typeInfo.Lifetime.HasValue)
+            {
+                var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);
+                RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, lifetime);
+            }
+            // Fall back to runtime type filtering if lifetime not pre-computed
+            else if (typeFilterer.IsInjectableSingletonType(type))
             {
                 RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Singleton);
             }
@@ -89,6 +96,17 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
                 RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Scoped);
             }
         }
+    }
+
+    private static ServiceLifetime ConvertLifetime(InjectableLifetime lifetime)
+    {
+        return lifetime switch
+        {
+            InjectableLifetime.Singleton => ServiceLifetime.Singleton,
+            InjectableLifetime.Scoped => ServiceLifetime.Scoped,
+            InjectableLifetime.Transient => ServiceLifetime.Transient,
+            _ => ServiceLifetime.Singleton
+        };
     }
 
     private IReadOnlyList<InjectableTypeInfo> GetInjectableTypes(IReadOnlyList<Assembly> assemblies)
