@@ -1,7 +1,10 @@
+using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.PluginFactories;
 
 using Xunit;
 
@@ -362,5 +365,319 @@ public sealed class ReflectionVsSourceGenerationParityTests
         }
 
         return Array.Empty<ServiceDescriptor>();
+    }
+
+    // ========================================================================
+    // Plugin Discovery Parity Tests
+    // These tests verify that reflection-based and source-generated plugin
+    // discovery produce identical results when using REAL generated code.
+    // ========================================================================
+
+    /// <summary>
+    /// Verifies that both reflection and source-generated plugin factories
+    /// discover the same ITestPlugin implementations.
+    /// </summary>
+    [Fact]
+    public void PluginParity_ITestPlugin_BothFactoriesDiscoverSamePlugins()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .Select(p => p.GetType())
+            .OrderBy(t => t.FullName)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .Select(p => p.GetType())
+            .OrderBy(t => t.FullName)
+            .ToList();
+
+        // Assert - both should discover the same plugin types
+        Assert.Equal(reflectionPlugins.Count, generatedPlugins.Count);
+        Assert.Equal(reflectionPlugins, generatedPlugins);
+    }
+
+    /// <summary>
+    /// Verifies that both factories instantiate plugins that are functional.
+    /// </summary>
+    [Fact]
+    public void PluginParity_ITestPlugin_BothFactoriesInstantiateWorkingPlugins()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert - all plugins should be non-null and have working Name property
+        Assert.All(reflectionPlugins, p =>
+        {
+            Assert.NotNull(p);
+            Assert.NotNull(p.Name);
+        });
+
+        Assert.All(generatedPlugins, p =>
+        {
+            Assert.NotNull(p);
+            Assert.NotNull(p.Name);
+        });
+
+        // Verify the same plugin names
+        var reflectionNames = reflectionPlugins.Select(p => p.Name).OrderBy(n => n).ToList();
+        var generatedNames = generatedPlugins.Select(p => p.Name).OrderBy(n => n).ToList();
+        Assert.Equal(reflectionNames, generatedNames);
+    }
+
+    /// <summary>
+    /// Verifies that both factories discover multi-interface plugins correctly.
+    /// </summary>
+    [Fact]
+    public void PluginParity_ITestPluginWithOutput_BothFactoriesDiscoverSamePlugins()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPluginWithOutput>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPluginWithOutput>(assemblies)
+            .ToList();
+
+        // Assert - both should find MultiInterfaceTestPlugin
+        Assert.Equal(reflectionPlugins.Count, generatedPlugins.Count);
+        Assert.Contains(reflectionPlugins, p => p.GetType() == typeof(MultiInterfaceTestPlugin));
+        Assert.Contains(generatedPlugins, p => p.GetType() == typeof(MultiInterfaceTestPlugin));
+
+        // Verify output works
+        foreach (var plugin in generatedPlugins)
+        {
+            Assert.NotNull(plugin.GetOutput());
+        }
+    }
+
+    /// <summary>
+    /// Verifies that both factories exclude plugins without parameterless constructors.
+    /// </summary>
+    [Fact]
+    public void PluginParity_PluginWithDependency_ExcludedByBothFactories()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert - PluginWithDependency should NOT be in either list
+        Assert.DoesNotContain(reflectionPlugins, p => p.GetType() == typeof(PluginWithDependency));
+        Assert.DoesNotContain(generatedPlugins, p => p.GetType() == typeof(PluginWithDependency));
+    }
+
+    /// <summary>
+    /// Verifies that both factories exclude abstract plugins.
+    /// </summary>
+    [Fact]
+    public void PluginParity_AbstractTestPlugin_ExcludedByBothFactories()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert - AbstractTestPlugin should NOT be in either list
+        Assert.DoesNotContain(reflectionPlugins, p => p.GetType() == typeof(AbstractTestPlugin));
+        Assert.DoesNotContain(generatedPlugins, p => p.GetType() == typeof(AbstractTestPlugin));
+
+        // But ConcreteTestPlugin SHOULD be in both lists
+        Assert.Contains(reflectionPlugins, p => p.GetType() == typeof(ConcreteTestPlugin));
+        Assert.Contains(generatedPlugins, p => p.GetType() == typeof(ConcreteTestPlugin));
+    }
+
+    /// <summary>
+    /// Verifies that ManualRegistrationTestPlugin is discovered by both factories
+    /// since DoNotAutoRegister only affects service registration, not plugin discovery.
+    /// </summary>
+    [Fact]
+    public void PluginParity_ManualRegistrationTestPlugin_DiscoveredByBothFactories()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert - ManualRegistrationTestPlugin SHOULD be in both lists
+        // because DoNotAutoRegister is for service registration, not plugin discovery
+        Assert.Contains(reflectionPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
+        Assert.Contains(generatedPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
+    }
+
+    /// <summary>
+    /// Verifies that both factories return empty when given empty assemblies.
+    /// </summary>
+    [Fact]
+    public void PluginParity_EmptyAssemblies_BothFactoriesReturnEmpty()
+    {
+        // Arrange
+        var assemblies = Array.Empty<Assembly>();
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert
+        Assert.Empty(reflectionPlugins);
+        Assert.Empty(generatedPlugins);
+    }
+
+    /// <summary>
+    /// Verifies that both factories return empty when given assemblies without matching plugins.
+    /// </summary>
+    [Fact]
+    public void PluginParity_UnmatchedAssembly_BothFactoriesReturnEmpty()
+    {
+        // Arrange - use a system assembly that won't have our plugins
+        var assemblies = new[] { typeof(object).Assembly };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert
+        Assert.Empty(reflectionPlugins);
+        Assert.Empty(generatedPlugins);
+    }
+
+    /// <summary>
+    /// Verifies that the generated plugin factory uses compile-time factory delegates
+    /// instead of Activator.CreateInstance. This is a behavioral test showing the
+    /// generated factory produces working instances.
+    /// </summary>
+    [Fact]
+    public void PluginParity_GeneratedFactory_InstantiatesWithoutActivator()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var plugins = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .ToList();
+
+        // Assert - all plugins should be functional
+        Assert.NotEmpty(plugins);
+        foreach (var plugin in plugins)
+        {
+            Assert.NotNull(plugin);
+            Assert.NotNull(plugin.Name);
+            // Execute should not throw
+            plugin.Execute();
+        }
+    }
+
+    /// <summary>
+    /// Verifies exact count parity between reflection and source-generated plugin discovery.
+    /// This is a comprehensive test that the source generator discovered all plugin types.
+    /// </summary>
+    [Fact]
+    public void PluginParity_PluginCount_IdenticalBetweenReflectionAndGenerated()
+    {
+        // Arrange
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var reflectionFactory = new PluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+
+        // Act
+        var reflectionCount = reflectionFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .Count();
+
+        var generatedCount = generatedFactory
+            .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
+            .Count();
+
+        // Assert
+        Assert.Equal(reflectionCount, generatedCount);
+
+        // The expected valid plugins are:
+        // 1. SimpleTestPlugin (has parameterless ctor)
+        // 2. MultiInterfaceTestPlugin (has parameterless ctor)
+        // 3. AnotherTestPlugin (has parameterless ctor)
+        // 4. ManualRegistrationTestPlugin (has parameterless ctor, DoNotAutoRegister doesn't affect plugins)
+        // 5. ConcreteTestPlugin (has parameterless ctor)
+        //
+        // Excluded:
+        // - PluginWithDependency (no parameterless ctor)
+        // - AbstractTestPlugin (abstract)
+        Assert.Equal(5, reflectionCount);
+        Assert.Equal(5, generatedCount);
     }
 }
