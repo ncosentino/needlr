@@ -70,7 +70,7 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
         ITypeFilterer typeFilterer,
         IReadOnlyList<Assembly> assemblies)
     {
-        var types = GetInjectableTypes(assemblies);
+        var types = _typeProvider?.Invoke() ?? [];
 
         foreach (var typeInfo in types)
         {
@@ -82,20 +82,6 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
             {
                 var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);
                 RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, lifetime);
-            }
-            // Fallback for backward compatibility with older generated code
-            // that may have null lifetimes. Uses runtime type filtering.
-            else if (typeFilterer.IsInjectableSingletonType(type))
-            {
-                RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Singleton);
-            }
-            else if (typeFilterer.IsInjectableTransientType(type))
-            {
-                RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Transient);
-            }
-            else if (typeFilterer.IsInjectableScopedType(type))
-            {
-                RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, ServiceLifetime.Scoped);
             }
         }
     }
@@ -109,41 +95,6 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
             InjectableLifetime.Transient => ServiceLifetime.Transient,
             _ => ServiceLifetime.Singleton
         };
-    }
-
-    private IReadOnlyList<InjectableTypeInfo> GetInjectableTypes(IReadOnlyList<Assembly> assemblies)
-    {
-        if (_typeProvider != null)
-        {
-            return _typeProvider();
-        }
-
-        // Try to find the generated TypeRegistry in the assemblies
-        foreach (var assembly in assemblies)
-        {
-            var registryType = assembly.GetType("NexusLabs.Needlr.Generated.TypeRegistry");
-            if (registryType != null)
-            {
-                var method = registryType.GetMethod(
-                    "GetInjectableTypes",
-                    BindingFlags.Public | BindingFlags.Static);
-
-                if (method != null)
-                {
-                    var result = method.Invoke(null, null);
-                    if (result is IReadOnlyList<InjectableTypeInfo> types)
-                    {
-                        return types;
-                    }
-                }
-            }
-        }
-
-        throw new InvalidOperationException(
-            "Could not locate the generated TypeRegistry. " +
-            "Ensure you have added the [assembly: GenerateTypeRegistry(...)] attribute " +
-            "and the NexusLabs.Needlr.Generators package to your project. " +
-            "The generated TypeRegistry class should be at 'NexusLabs.Needlr.Generated.TypeRegistry'.");
     }
 
     private static void RegisterTypeAsSelfWithInterfaces(

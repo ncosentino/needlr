@@ -28,19 +28,6 @@ public sealed class GeneratedPluginFactory : IPluginFactory
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneratedPluginFactory"/> class
-    /// using the generated TypeRegistry.
-    /// </summary>
-    /// <remarks>
-    /// Uses the generated <c>NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes()</c> method.
-    /// </remarks>
-    public GeneratedPluginFactory()
-    {
-        // Use reflection to find the generated TypeRegistry
-        _pluginProvider = FindGeneratedTypeRegistry();
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GeneratedPluginFactory"/> class
     /// with a custom plugin provider.
     /// </summary>
     /// <param name="pluginProvider">A function that returns the plugin types.</param>
@@ -130,28 +117,5 @@ public sealed class GeneratedPluginFactory : IPluginFactory
 
             yield return (TPlugin)info.Factory();
         }
-    }
-
-    private static Func<IReadOnlyList<PluginTypeInfo>> FindGeneratedTypeRegistry()
-    {
-        // Search all loaded assemblies for the generated TypeRegistry
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            var typeRegistryType = assembly.GetType("NexusLabs.Needlr.Generated.TypeRegistry");
-            if (typeRegistryType is null)
-                continue;
-
-            var method = typeRegistryType.GetMethod(
-                "GetPluginTypes",
-                BindingFlags.Public | BindingFlags.Static);
-
-            if (method is null)
-                continue;
-
-            return () => (IReadOnlyList<PluginTypeInfo>)method.Invoke(null, null)!;
-        }
-
-        // Return empty list if no generated registry found
-        return static () => [];
     }
 }

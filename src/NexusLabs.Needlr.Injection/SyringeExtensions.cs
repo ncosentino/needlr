@@ -351,42 +351,6 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Configures the syringe to use the generated plugin factory.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This factory uses compile-time generated plugin information instead of
-    /// runtime reflection, providing better performance and AOT compatibility.
-    /// </para>
-    /// <para>
-    /// <b>Note:</b> This overload uses reflection to locate the generated TypeRegistry.
-    /// For zero-reflection scenarios, use <see cref="UsingGeneratedComponents"/> or
-    /// <see cref="UsingGeneratedPluginFactory(Syringe, Func{IReadOnlyList{PluginTypeInfo}})"/>
-    /// with an explicit plugin provider.
-    /// </para>
-    /// <para>
-    /// To use this, your assembly must have:
-    /// <list type="bullet">
-    /// <item>A reference to <c>NexusLabs.Needlr.Generators</c></item>
-    /// <item>The <c>[assembly: GenerateTypeRegistry(...)]</c> attribute</item>
-    /// </list>
-    /// </para>
-    /// </remarks>
-    /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance.</returns>
-    /// <example>
-    /// <code>
-    /// var syringe = new Syringe().UsingGeneratedPluginFactory();
-    /// </code>
-    /// </example>
-    public static Syringe UsingGeneratedPluginFactory(
-        this Syringe syringe)
-    {
-        ArgumentNullException.ThrowIfNull(syringe);
-        return syringe.UsingPluginFactory(new GeneratedPluginFactory());
-    }
-
-    /// <summary>
     /// Configures the syringe to use the generated plugin factory with a custom plugin provider.
     /// </summary>
     /// <remarks>
