@@ -6,7 +6,7 @@ using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.IntegrationTests;
+namespace NexusLabs.Needlr.IntegrationTests.Reflection;
 
 public sealed class RegistrationCallbacksWithSingletonDecoratorTests
 {

@@ -6,13 +6,13 @@ using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.IntegrationTests;
+namespace NexusLabs.Needlr.IntegrationTests.Reflection;
 
-public sealed class DefaultAutomaticRegistrationTests
+public sealed class ReflectionAutomaticRegistrationTests
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public DefaultAutomaticRegistrationTests()
+    public ReflectionAutomaticRegistrationTests()
     {
         _serviceProvider = new Syringe()
             .UsingReflection()

@@ -7,7 +7,7 @@ using NexusLabs.Needlr.Injection.Scrutor;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.IntegrationTests;
+namespace NexusLabs.Needlr.IntegrationTests.Reflection;
 
 public sealed class ScrutorAutomaticRegistrationTests
 {
