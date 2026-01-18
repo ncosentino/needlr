@@ -1,5 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<OutputType>Exe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -7,7 +8,6 @@
 		<!-- NativeAOT host -->
 		<PublishAot>true</PublishAot>
 		<IsAotCompatible>true</IsAotCompatible>
-		<EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
 
 		<!-- Trimming: host is the proving ground -->
 		<PublishTrimmed>true</PublishTrimmed>
@@ -29,12 +29,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
 		<ProjectReference Include="..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
-						  OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="false" />
+		  OutputItemType="Analyzer"
+		  ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
-		<ProjectReference Include="..\AotSourceGenPlugin\AotSourceGenPlugin.csproj" />
+		<ProjectReference Include="..\AotSourceGenConsolePlugin\AotSourceGenConsolePlugin.csproj" />
 	</ItemGroup>
 </Project>

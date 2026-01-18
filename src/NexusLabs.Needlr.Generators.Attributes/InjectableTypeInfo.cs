@@ -43,7 +43,7 @@ public readonly struct InjectableTypeInfo
     /// <param name="type">The concrete implementation type.</param>
     /// <param name="interfaces">The interfaces implemented by the type that should be registered.</param>
     public InjectableTypeInfo(Type type, IReadOnlyList<Type> interfaces)
-        : this(type, interfaces, null)
+        : this(type, interfaces, null, null)
     {
     }
 
@@ -54,10 +54,26 @@ public readonly struct InjectableTypeInfo
     /// <param name="interfaces">The interfaces implemented by the type that should be registered.</param>
     /// <param name="lifetime">The pre-computed service lifetime, or null if not determined.</param>
     public InjectableTypeInfo(Type type, IReadOnlyList<Type> interfaces, InjectableLifetime? lifetime)
+        : this(type, interfaces, lifetime, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="InjectableTypeInfo"/>.
+    /// </summary>
+    /// <param name="type">The concrete implementation type.</param>
+    /// <param name="interfaces">The interfaces implemented by the type that should be registered.</param>
+    /// <param name="lifetime">The pre-computed service lifetime, or null if not determined.</param>
+    /// <param name="factory">
+    /// A factory delegate that creates an instance of the type using the service provider.
+    /// When provided, enables AOT-compatible instantiation without runtime reflection.
+    /// </param>
+    public InjectableTypeInfo(Type type, IReadOnlyList<Type> interfaces, InjectableLifetime? lifetime, Func<IServiceProvider, object>? factory)
     {
         Type = type;
         Interfaces = interfaces;
         Lifetime = lifetime;
+        Factory = factory;
     }
 
     /// <summary>
@@ -80,6 +96,22 @@ public readonly struct InjectableTypeInfo
     /// AOT compilation scenarios.
     /// </remarks>
     public InjectableLifetime? Lifetime { get; }
+
+    /// <summary>
+    /// Gets a factory delegate that creates an instance of the type using the service provider.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When this delegate is provided, the type registrar can use it to create instances
+    /// without relying on <c>Activator.CreateInstance</c> or reflection-based constructor
+    /// invocation. This is essential for NativeAOT scenarios where reflection may be disabled.
+    /// </para>
+    /// <para>
+    /// The factory receives an <see cref="IServiceProvider"/> and should resolve all
+    /// constructor dependencies from it before creating the instance.
+    /// </para>
+    /// </remarks>
+    public Func<IServiceProvider, object>? Factory { get; }
 }
 
 /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace NexusLabs.Needlr;
 
@@ -7,6 +8,12 @@ namespace NexusLabs.Needlr;
 /// are decorated with particular attributes, or meet both criteria. All discovered types are instantiated
 /// using their parameterless constructors.
 /// </summary>
+/// <remarks>
+/// This factory uses runtime reflection and is not compatible with NativeAOT or trimming.
+/// For AOT scenarios, use the GeneratedPluginFactory from NexusLabs.Needlr.Injection
+/// with the Needlr source generator instead.
+/// </remarks>
+[RequiresUnreferencedCode("PluginFactory uses reflection to discover and instantiate plugins. Use GeneratedPluginFactory for AOT scenarios.")]
 public sealed class PluginFactory : IPluginFactory
 {
     /// <inheritdoc />

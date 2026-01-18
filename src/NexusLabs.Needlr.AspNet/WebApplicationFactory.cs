@@ -21,7 +21,7 @@ public sealed class WebApplicationFactory(
     private static IPluginFactory CreateDefaultPluginFactory()
     {
         return NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
-            ? new GeneratedPluginFactory(pluginTypeProvider)
+            ? new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true)
             : new PluginFactory();
     }
 

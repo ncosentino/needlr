@@ -141,8 +141,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                    var constructorParams = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol) ?? [];
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams.ToArray()));
                 }
             }
 
@@ -171,6 +172,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
         builder.AppendLine("using NexusLabs.Needlr.Generators;");
         builder.AppendLine();
@@ -243,6 +246,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 builder.Append($"        new(typeof({type.TypeName}), ");
 
+                // Interfaces
                 if (type.InterfaceNames.Length == 0)
                 {
                     builder.Append("Array.Empty<Type>(), ");
@@ -254,7 +258,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     builder.Append("], ");
                 }
 
-                builder.AppendLine($"InjectableLifetime.{type.Lifetime}),");
+                // Lifetime
+                builder.Append($"InjectableLifetime.{type.Lifetime}, ");
+
+                // Factory lambda - resolves dependencies and creates instance without reflection
+                builder.Append("sp => new ");
+                builder.Append(type.TypeName);
+                builder.Append("(");
+                if (type.ConstructorParameterTypes.Length > 0)
+                {
+                    var parameterExpressions = type.ConstructorParameterTypes
+                        .Select(p => $"sp.GetRequiredService<{p}>()");
+                    builder.Append(string.Join(", ", parameterExpressions));
+                }
+                builder.AppendLine(")),");
             }
         }
 
@@ -322,18 +339,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, string[] constructorParameterTypes)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             Lifetime = lifetime;
+            ConstructorParameterTypes = constructorParameterTypes;
         }
 
         public string TypeName { get; }
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
         public GeneratorLifetime Lifetime { get; }
+        public string[] ConstructorParameterTypes { get; }
     }
 
     private readonly struct DiscoveredPlugin

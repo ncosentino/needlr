@@ -1,8 +1,13 @@
 
 <Solution>
-  <Folder Name="/Examples/Aot/">
+  <Folder Name="/Examples/Aot/" />
+  <Folder Name="/Examples/Aot/WebApi/">
     <Project Path="Examples/AotSourceGenApp/AotSourceGenApp.csproj" />
     <Project Path="Examples/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
+  </Folder>
+  <Folder Name="/Examples/Aot/Console/">
+    <Project Path="Examples/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />
+    <Project Path="Examples/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />

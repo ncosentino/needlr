@@ -1,4 +1,6 @@
-﻿namespace NexusLabs.Needlr.Injection;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace NexusLabs.Needlr.Injection;
 
 public static class TypeFiltering
 {
@@ -8,6 +10,7 @@ public static class TypeFiltering
     /// </summary>
     /// <param name="type">The type to check.</param>
     /// <returns>True if the type is a concrete type that can be instantiated.</returns>
+    [RequiresUnreferencedCode("IsConcreteType calls IsRecord which uses reflection.")]
     public static bool IsConcreteType(Type type) =>
         type.IsClass &&
         !type.IsAbstract &&
@@ -30,6 +33,7 @@ public static class TypeFiltering
     /// </summary>
     /// <param name="type">The type to check.</param>
     /// <returns>True if the type is a record.</returns>
+    [RequiresUnreferencedCode("IsRecord uses Type.GetMethod which requires reflection.")]
     public static bool IsRecord(Type type)
     {
         return type.IsClass &&

@@ -7,6 +7,7 @@ using NexusLabs.Needlr.Injection.PluginFactories;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -56,6 +57,8 @@ public sealed record Syringe
     /// <summary>
     /// Gets the configured type registrar or creates a default one.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
+        Justification = "DefaultTypeRegistrar is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public ITypeRegistrar GetOrCreateTypeRegistrar()
     {
         if (TypeRegistrar is not null)
@@ -70,6 +73,8 @@ public sealed record Syringe
     /// <summary>
     /// Gets the configured type filterer or creates a default one.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
+        Justification = "DefaultTypeFilterer is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public ITypeFilterer GetOrCreateTypeFilterer()
     {
         if (TypeFilterer is not null)
@@ -84,13 +89,15 @@ public sealed record Syringe
     /// <summary>
     /// Gets the configured plugin factory or creates a default one.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
+        Justification = "PluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public IPluginFactory GetOrCreatePluginFactory()
     {
         if (PluginFactory is not null)
             return PluginFactory;
 
         if (NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider))
-            return new GeneratedPluginFactory(pluginTypeProvider);
+            return new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
 
         return new NexusLabs.Needlr.PluginFactory();
     }
@@ -110,6 +117,8 @@ public sealed record Syringe
     /// <summary>
     /// Gets the configured assembly provider or creates a default one.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
+        Justification = "AssembyProviderBuilder is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public IAssemblyProvider GetOrCreateAssemblyProvider()
     {
         if (AssemblyProvider is not null)

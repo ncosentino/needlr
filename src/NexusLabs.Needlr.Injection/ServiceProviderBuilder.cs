@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection.PluginFactories;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -40,13 +41,15 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         _lazyCandidateAssemblies = new(() =>
         {
             var staticAssemblies = assemblyProvider.GetCandidateAssemblies();
-            HashSet<string> uniqueAssemblyPaths = new(StringComparer.OrdinalIgnoreCase);
+            // Use assembly full name for deduplication instead of Location (Location is empty for single-file/AOT)
+            HashSet<string> uniqueAssemblyNames = new(StringComparer.OrdinalIgnoreCase);
             List<Assembly> allCandidateAssemblies = new(additionalAssemblies.Count + staticAssemblies.Count);
 
             // load the static referenced assemblies
             foreach (var assembly in staticAssemblies)
             {
-                if (uniqueAssemblyPaths.Add(assembly.Location))
+                var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
+                if (uniqueAssemblyNames.Add(name))
                 {
                     allCandidateAssemblies.Add(assembly);
                 }
@@ -55,7 +58,8 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
             // load any additional
             foreach (var assembly in additionalAssemblies)
             {
-                if (uniqueAssemblyPaths.Add(assembly.Location))
+                var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
+                if (uniqueAssemblyNames.Add(name))
                 {
                     allCandidateAssemblies.Add(assembly);
                 }
@@ -112,6 +116,8 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
+        Justification = "PluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public void ConfigurePostBuildServiceCollectionPlugins(
         IServiceProvider provider,
         IConfiguration config)
@@ -126,7 +132,7 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
             candidateAssemblies);
 
         IPluginFactory pluginFactory = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
-            ? new GeneratedPluginFactory(pluginTypeProvider)
+            ? new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true)
             : new PluginFactory();
 
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))

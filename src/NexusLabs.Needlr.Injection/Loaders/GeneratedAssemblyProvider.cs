@@ -44,20 +44,30 @@ public sealed class GeneratedAssemblyProvider : IAssemblyProvider
     /// <inheritdoc />
     public IReadOnlyList<Assembly> GetCandidateAssemblies()
     {
-        var assemblies = new HashSet<Assembly>();
-
-        // Extract assemblies from injectable types
-        foreach (var info in _injectableTypesProvider())
+        // In NativeAOT with reflection disabled, Type.Assembly can throw.
+        // Candidate assemblies are only a hint for reflection-based discovery.
+        // For source generation, the plugin/type registries already define the universe.
+        try
         {
-            assemblies.Add(info.Type.Assembly);
-        }
+            var assemblies = new HashSet<Assembly>();
 
-        // Extract assemblies from plugin types
-        foreach (var info in _pluginTypesProvider())
+            // Extract assemblies from injectable types
+            foreach (var info in _injectableTypesProvider())
+            {
+                assemblies.Add(info.Type.Assembly);
+            }
+
+            // Extract assemblies from plugin types
+            foreach (var info in _pluginTypesProvider())
+            {
+                assemblies.Add(info.PluginType.Assembly);
+            }
+
+            return assemblies.ToList();
+        }
+        catch (NotSupportedException)
         {
-            assemblies.Add(info.PluginType.Assembly);
+            return Array.Empty<Assembly>();
         }
-
-        return assemblies.ToList();
     }
 }

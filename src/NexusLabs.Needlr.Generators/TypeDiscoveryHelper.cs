@@ -504,4 +504,56 @@ internal static class TypeDiscoveryHelper
         // Default is Inherited = true
         return true;
     }
+
+    /// <summary>
+    /// Gets the parameters of the best injectable constructor for a type.
+    /// Returns the first constructor where all parameters are injectable types.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to analyze.</param>
+    /// <returns>
+    /// A list of fully qualified parameter type names, or null if no injectable constructor was found.
+    /// </returns>
+    public static IReadOnlyList<string>? GetBestConstructorParameters(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.IsStatic)
+                continue;
+
+            if (ctor.DeclaredAccessibility != Accessibility.Public)
+                continue;
+
+            var parameters = ctor.Parameters;
+
+            // Parameterless constructor - no parameters needed
+            if (parameters.Length == 0)
+                return Array.Empty<string>();
+
+            // Single parameter of same type (copy constructor) - skip
+            if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
+                continue;
+
+            // Check if all parameters are injectable
+            if (!AllParametersAreInjectable(parameters))
+                continue;
+
+            // This constructor is good - collect parameter type names
+            var parameterTypes = new string[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                parameterTypes[i] = GetFullyQualifiedNameForType(parameters[i].Type);
+            }
+            return parameterTypes;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the fully qualified name for any type symbol (including generics like Lazy&lt;T&gt;).
+    /// </summary>
+    private static string GetFullyQualifiedNameForType(ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+    }
 }

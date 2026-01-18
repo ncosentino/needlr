@@ -25,16 +25,24 @@ namespace NexusLabs.Needlr.Injection.PluginFactories;
 public sealed class GeneratedPluginFactory : IPluginFactory
 {
     private readonly Func<IReadOnlyList<PluginTypeInfo>> _pluginProvider;
+    private readonly bool _allowAllWhenAssembliesEmpty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneratedPluginFactory"/> class
     /// with a custom plugin provider.
     /// </summary>
     /// <param name="pluginProvider">A function that returns the plugin types.</param>
-    public GeneratedPluginFactory(Func<IReadOnlyList<PluginTypeInfo>> pluginProvider)
+    /// <param name="allowAllWhenAssembliesEmpty">
+    /// When true, passing an empty assemblies collection to the factory methods will not filter plugins.
+    /// This is useful for NativeAOT scenarios where producing an <see cref="Assembly"/> list without reflection is not possible.
+    /// </param>
+    public GeneratedPluginFactory(
+        Func<IReadOnlyList<PluginTypeInfo>> pluginProvider,
+        bool allowAllWhenAssembliesEmpty = false)
     {
         ArgumentNullException.ThrowIfNull(pluginProvider);
         _pluginProvider = pluginProvider;
+        _allowAllWhenAssembliesEmpty = allowAllWhenAssembliesEmpty;
     }
 
     /// <inheritdoc />
@@ -43,7 +51,22 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         where TPlugin : class
     {
         var pluginType = typeof(TPlugin);
-        var assemblySet = assemblies
+
+        var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
+        if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
+        {
+            foreach (var info in _pluginProvider())
+            {
+                if (!pluginType.IsAssignableFrom(info.PluginType))
+                    continue;
+
+                yield return (TPlugin)info.Factory();
+            }
+
+            yield break;
+        }
+
+        var assemblySet = assemblyList
             .Select(a => a.GetName().Name)
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
@@ -69,7 +92,21 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         IEnumerable<Assembly> assemblies)
         where TAttribute : Attribute
     {
-        var assemblySet = assemblies
+        var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
+        if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
+        {
+            foreach (var info in _pluginProvider())
+            {
+                if (!info.HasAttribute<TAttribute>())
+                    continue;
+
+                yield return info.Factory();
+            }
+
+            yield break;
+        }
+
+        var assemblySet = assemblyList
             .Select(a => a.GetName().Name)
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
@@ -96,7 +133,25 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         where TAttribute : Attribute
     {
         var pluginType = typeof(TPlugin);
-        var assemblySet = assemblies
+
+        var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
+        if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
+        {
+            foreach (var info in _pluginProvider())
+            {
+                if (!pluginType.IsAssignableFrom(info.PluginType))
+                    continue;
+
+                if (!info.HasAttribute<TAttribute>())
+                    continue;
+
+                yield return (TPlugin)info.Factory();
+            }
+
+            yield break;
+        }
+
+        var assemblySet = assemblyList
             .Select(a => a.GetName().Name)
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;

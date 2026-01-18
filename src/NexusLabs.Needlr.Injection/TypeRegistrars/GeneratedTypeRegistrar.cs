@@ -74,14 +74,12 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
 
         foreach (var typeInfo in types)
         {
-            var type = typeInfo.Type;
-
             // Use pre-computed lifetime - no reflection needed
             // The source generator only emits types with valid lifetimes
             if (typeInfo.Lifetime.HasValue)
             {
                 var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);
-                RegisterTypeAsSelfWithInterfaces(services, type, typeInfo.Interfaces, lifetime);
+                RegisterTypeAsSelfWithInterfaces(services, typeInfo, lifetime);
             }
         }
     }
@@ -99,15 +97,26 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
 
     private static void RegisterTypeAsSelfWithInterfaces(
         IServiceCollection services,
-        Type type,
-        IReadOnlyList<Type> interfaces,
+        InjectableTypeInfo typeInfo,
         ServiceLifetime lifetime)
     {
-        // Register as self
-        services.Add(new ServiceDescriptor(type, type, lifetime));
+        var type = typeInfo.Type;
+        var factory = typeInfo.Factory;
+
+        // Factory is always provided by source generator - required for AOT compatibility
+        if (factory is null)
+        {
+            throw new InvalidOperationException(
+                $"No factory delegate provided for type '{type.FullName}'. " +
+                "This indicates the type was not processed by the Needlr source generator. " +
+                "Ensure the type is included in the GenerateTypeRegistry namespace prefixes.");
+        }
+
+        // Register as self using factory (AOT-compatible, no reflection needed)
+        services.Add(new ServiceDescriptor(type, factory, lifetime));
 
         // Register as interfaces
-        foreach (var interfaceType in interfaces)
+        foreach (var interfaceType in typeInfo.Interfaces)
         {
             // For singletons, register interfaces as factory delegates to ensure same instance
             if (lifetime == ServiceLifetime.Singleton)
@@ -119,8 +128,8 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
             }
             else
             {
-                // For transient/scoped services, direct registration is fine
-                services.Add(new ServiceDescriptor(interfaceType, type, lifetime));
+                // For transient/scoped services, use the factory
+                services.Add(new ServiceDescriptor(interfaceType, factory, lifetime));
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -86,7 +87,7 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         return services;
     }
 
-    private sealed class LazyFactory<T>(IServiceProvider provider) : 
+    private sealed class LazyFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>(IServiceProvider provider) :
         Lazy<T>(() => provider.GetRequiredService<T>())
         where T : notnull
     {
