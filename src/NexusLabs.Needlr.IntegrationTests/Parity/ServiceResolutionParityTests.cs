@@ -15,7 +15,7 @@ public sealed class ServiceResolutionParityTests
     public ServiceResolutionParityTests()
     {
         _reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
+            .UsingReflectionTypeRegistrar()
             .BuildServiceProvider();
 
         _generatedProvider = new Syringe()

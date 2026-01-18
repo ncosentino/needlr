@@ -15,7 +15,7 @@ public sealed class RegistrationMetadataParityTests
     public RegistrationMetadataParityTests()
     {
         _reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
+            .UsingReflectionTypeRegistrar()
             .BuildServiceProvider();
 
         _generatedProvider = new Syringe()

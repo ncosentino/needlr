@@ -1,13 +1,23 @@
 
 <Solution>
-  <Folder Name="/Examples/Aot/" />
-  <Folder Name="/Examples/Aot/WebApi/">
-    <Project Path="Examples/AotSourceGenApp/AotSourceGenApp.csproj" />
-    <Project Path="Examples/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
+  <Folder Name="/Examples/" />
+  <Folder Name="/Examples/SourceGen/">
+    <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
+    <Project Path="Examples/SourceGen/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
+    <Project Path="Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />
+    <Project Path="Examples/SourceGen/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
+    <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>
-  <Folder Name="/Examples/Aot/Console/">
-    <Project Path="Examples/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />
-    <Project Path="Examples/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
+  <Folder Name="/Examples/Reflection/">
+    <Project Path="Examples/Reflection/AspNetCoreApp1/AspNetCoreApp1.csproj" />
+    <Project Path="Examples/Reflection/ManualRegistrationExample/ManualRegistrationExample.csproj" />
+    <Project Path="Examples/Reflection/ManualRegistrationWithPluginExample/ManualRegistrationWithPluginExample.csproj" />
+    <Project Path="Examples/Reflection/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
+    <Project Path="Examples/Reflection/MinimalWebApi/MinimalWebApi.csproj" />
+    <Project Path="Examples/Reflection/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
+  </Folder>
+  <Folder Name="/Examples/SemanticKernel/">
+    <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
@@ -18,41 +28,27 @@
     <File Path="Directory.Packages.props" />
     <File Path="NuGet.config" />
   </Folder>
-  <Folder Name="/Examples/">
-    <Project Path="Examples/ManualRegistrationExample/ManualRegistrationExample.csproj" />
-    <Project Path="Examples/ManualRegistrationWithPluginExample/ManualRegistrationWithPluginExample.csproj" Id="d09d5b82-e112-491d-b702-c0a9a236722a" />
-    <Project Path="Examples/ManualScrutorRegistrationExample/ManualScrutorRegistrationExample.csproj" />
-    <Project Path="Examples/MinimalWebApi/MinimalWebApi.csproj" />
-    <Project Path="Examples/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
-    <Project Path="Examples/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
-    <Project Path="Examples/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" Id="781f9847-f3e7-4db1-807e-9450a5debed8" />
-    <Project Path="Examples\AspNetCoreApp1\AspNetCoreApp1.csproj" />
-  </Folder>
-  <SolutionItems>
-    <File Path="Directory.Packages.props" />
-    <File Path="NuGet.config" />
-  </SolutionItems>
   <Folder Name="/Tests/">
-    <Project Path="NexusLabs.Needlr.AspNet.Tests\NexusLabs.Needlr.AspNet.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Carter.Tests\NexusLabs.Needlr.Carter.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests\NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Generators.Tests\NexusLabs.Needlr.Generators.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests\NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Injection.Tests\NexusLabs.Needlr.Injection.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" Id="7e0b2760-1fc3-4359-bbc6-88c91b87ac82" />
-    <Project Path="NexusLabs.Needlr.SemanticKernel.Tests\NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.SignalR.Tests\NexusLabs.Needlr.SignalR.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.Tests\NexusLabs.Needlr.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.AspNet.Tests/NexusLabs.Needlr.AspNet.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Carter.Tests/NexusLabs.Needlr.Carter.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests/NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Generators.Tests/NexusLabs.Needlr.Generators.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests/NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Injection.Tests/NexusLabs.Needlr.Injection.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" />
+    <Project Path="NexusLabs.Needlr.SemanticKernel.Tests/NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.SignalR.Tests/NexusLabs.Needlr.SignalR.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Tests/NexusLabs.Needlr.Tests.csproj" />
   </Folder>
-  <Project Path="NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
-  <Project Path="NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+  <Project Path="NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet.csproj" />
+  <Project Path="NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Configuration/NexusLabs.Needlr.Extensions.Configuration.csproj" />
-  <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" />
-  <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
-  <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
-  <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" Id="e695dd52-abed-44e2-9bb8-81db4321afa5" />
-  <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
-  <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.csproj" />
+  <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
+  <Project Path="NexusLabs.Needlr.SignalR/NexusLabs.Needlr.SignalR.csproj" />
+  <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
 </Solution>

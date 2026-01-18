@@ -17,12 +17,6 @@ namespace NexusLabs.Needlr.AspNet;
 /// Complete web application configuration:
 /// <code>
 /// var webApplication = new Syringe()
-///     // Configure base Syringe first
-///     .UsingScrutorTypeRegistrar()
-///     .UsingDefaultTypeFilterer()
-///     .UsingAssemblyProvider(builder => builder
-///         .MatchingAssemblies(x => x.Contains("MyApp"))
-///         .Build())
 ///     // Transition to web application mode
 ///     .ForWebApplication()
 ///     // Configure web-specific options
@@ -30,8 +24,6 @@ namespace NexusLabs.Needlr.AspNet;
 ///         .UsingCliArgs(args)
 ///         .UsingApplicationName("My Web Application")
 ///         .UsingStartupConsoleLogger())
-///     .UsingWebApplicationFactory((serviceProviderBuilder, serviceCollectionPopulator) => 
-///         new WebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator))
 ///     .UsingConfigurationCallback((builder, options) =>
 ///     {
 ///         // Configure the WebApplicationBuilder
@@ -46,7 +38,6 @@ namespace NexusLabs.Needlr.AspNet;
 /// Minimal web application:
 /// <code>
 /// var webApp = new Syringe()
-///     .UsingScrutorTypeRegistrar()
 ///     .ForWebApplication()
 ///     .BuildWebApplication();
 /// </code>

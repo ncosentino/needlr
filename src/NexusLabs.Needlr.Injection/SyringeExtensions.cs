@@ -6,6 +6,7 @@ using NexusLabs.Needlr.Injection.PluginFactories;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -14,12 +15,21 @@ namespace NexusLabs.Needlr.Injection;
 /// Extension methods for configuring <see cref="Syringe"/> instances.
 /// </summary>
 /// <example>
-/// Basic usage pattern:
+/// Source-gen first (recommended for AOT/trimming):
+/// <code>
+/// // With module initializer bootstrap (automatic):
+/// var serviceProvider = new Syringe().BuildServiceProvider();
+/// 
+/// // Or explicit generated components:
+/// var serviceProvider = new Syringe()
+///     .UsingGeneratedComponents(TypeRegistry.GetInjectableTypes, TypeRegistry.GetPluginTypes)
+///     .BuildServiceProvider();
+/// </code>
+/// 
+/// Reflection-based (for dynamic scenarios):
 /// <code>
 /// var serviceProvider = new Syringe()
-///     .UsingScrutorTypeRegistrar()
-///     .UsingDefaultTypeFilterer()
-///     .UsingDefaultAssemblyProvider()
+///     .UsingReflection()
 ///     .BuildServiceProvider();
 /// </code>
 /// 
@@ -41,16 +51,54 @@ namespace NexusLabs.Needlr.Injection;
 public static class SyringeExtensions
 {
     /// <summary>
-    /// Configures the syringe to use the default type registrar.
+    /// Configures the syringe to use reflection-based type discovery.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Use this when source generation is not available or when runtime assembly loading is required.
+    /// This sets all components (type registrar, type filterer, plugin factory, assembly provider)
+    /// to their reflection-based implementations.
+    /// </para>
+    /// <para>
+    /// For AOT/trimming compatibility, use source-generated components instead (the default behavior
+    /// when <c>[assembly: GenerateTypeRegistry(...)]</c> is present).
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance with all reflection-based components.</returns>
+    /// <example>
+    /// <code>
+    /// var serviceProvider = new Syringe()
+    ///     .UsingReflection()
+    ///     .BuildServiceProvider();
+    /// </code>
+    /// </example>
+    [RequiresUnreferencedCode("Enables reflection-based type discovery. Not compatible with AOT/trimming.")]
+    public static Syringe UsingReflection(this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe
+            .UsingReflectionTypeRegistrar()
+            .UsingReflectionTypeFilterer()
+            .UsingReflectionPluginFactory()
+            .UsingReflectionAssemblyProvider();
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the reflection-based type registrar.
+    /// </summary>
+    /// <remarks>
+    /// This registrar uses runtime reflection to discover and register types.
+    /// For AOT/trimming compatibility, use <see cref="UsingGeneratedTypeRegistrar(Syringe)"/> instead.
+    /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
     /// <example>
     /// <code>
-    /// var syringe = new Syringe().UsingDefaultTypeRegistrar();
+    /// var syringe = new Syringe().UsingReflectionTypeRegistrar();
     /// </code>
     /// </example>
-    public static Syringe UsingDefaultTypeRegistrar(
+    public static Syringe UsingReflectionTypeRegistrar(
         this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -235,16 +283,20 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Configures the syringe to use the default type filterer.
+    /// Configures the syringe to use the reflection-based type filterer.
     /// </summary>
+    /// <remarks>
+    /// This filterer uses runtime reflection to analyze types.
+    /// For AOT/trimming compatibility, use <see cref="UsingGeneratedTypeFilterer(Syringe)"/> instead.
+    /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
     /// <example>
     /// <code>
-    /// var syringe = new Syringe().UsingDefaultTypeFilterer();
+    /// var syringe = new Syringe().UsingReflectionTypeFilterer();
     /// </code>
     /// </example>
-    public static Syringe UsingDefaultTypeFilterer(
+    public static Syringe UsingReflectionTypeFilterer(
         this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -334,16 +386,20 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Configures the syringe to use the default reflection-based plugin factory.
+    /// Configures the syringe to use the reflection-based plugin factory.
     /// </summary>
+    /// <remarks>
+    /// This factory uses runtime reflection to instantiate plugins.
+    /// For AOT/trimming compatibility, use <see cref="UsingGeneratedPluginFactory"/> instead.
+    /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
     /// <example>
     /// <code>
-    /// var syringe = new Syringe().UsingDefaultPluginFactory();
+    /// var syringe = new Syringe().UsingReflectionPluginFactory();
     /// </code>
     /// </example>
-    public static Syringe UsingDefaultPluginFactory(
+    public static Syringe UsingReflectionPluginFactory(
         this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -424,16 +480,20 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Configures the syringe to use the default assembly provider.
+    /// Configures the syringe to use the reflection-based assembly provider.
     /// </summary>
+    /// <remarks>
+    /// This provider uses runtime reflection to scan assemblies.
+    /// For AOT/trimming compatibility, use <see cref="UsingGeneratedAssemblyProvider"/> instead.
+    /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
     /// <example>
     /// <code>
-    /// var syringe = new Syringe().UsingDefaultAssemblyProvider();
+    /// var syringe = new Syringe().UsingReflectionAssemblyProvider();
     /// </code>
     /// </example>
-    public static Syringe UsingDefaultAssemblyProvider(this Syringe syringe)
+    public static Syringe UsingReflectionAssemblyProvider(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingAssemblyProvider(new AssembyProviderBuilder().Build());
@@ -575,7 +635,7 @@ public static class SyringeExtensions
     /// <example>
     /// <code>
     /// var syringe = new Syringe()
-    ///     .UsingDefaultTypeRegistrar()
+    ///     .UsingReflectionTypeRegistrar()
     ///     .AddDecorator&lt;IMyService, MyServiceDecorator&gt;();
     /// </code>
     /// </example>
@@ -589,5 +649,90 @@ public static class SyringeExtensions
         {
             services.AddDecorator<TService, TDecorator>();
         });
+    }
+
+    /// <summary>
+    /// Configures a handler to be invoked when reflection-based components are used as fallback
+    /// because source-generated components are not available.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// By default, Needlr silently falls back to reflection when source generation is not configured.
+    /// Use this method to detect and respond to reflection fallback scenarios.
+    /// </para>
+    /// <para>
+    /// Built-in handlers are available in <see cref="ReflectionFallbackHandlers"/>:
+    /// <list type="bullet">
+    /// <item><see cref="ReflectionFallbackHandlers.ThrowException"/> - Throws an exception on fallback</item>
+    /// <item><see cref="ReflectionFallbackHandlers.LogWarning"/> - Logs a warning to Console.Error</item>
+    /// <item><see cref="ReflectionFallbackHandlers.Silent"/> - Does nothing (default behavior)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// See also: <seealso cref="WithFastFailOnReflection(Syringe)"/>
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="handler">The handler to invoke when reflection fallback occurs.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// // Fail fast if reflection is used (recommended for AOT apps):
+    /// var syringe = new Syringe()
+    ///     .WithReflectionFallbackHandler(ReflectionFallbackHandlers.ThrowException);
+    /// 
+    /// // Log warnings during development:
+    /// var syringe = new Syringe()
+    ///     .WithReflectionFallbackHandler(ReflectionFallbackHandlers.LogWarning);
+    /// 
+    /// // Custom handling:
+    /// var syringe = new Syringe()
+    ///     .WithReflectionFallbackHandler(ctx => 
+    ///         _logger.LogWarning("Reflection fallback: {Component}", ctx.ComponentName));
+    /// </code>
+    /// </example>
+    public static Syringe WithReflectionFallbackHandler(
+        this Syringe syringe,
+        Action<ReflectionFallbackContext> handler)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(handler);
+
+        return syringe with { ReflectionFallbackHandler = handler };
+    }
+
+    /// <summary>
+    /// Configures the syringe to throw an exception immediately if any reflection-based 
+    /// component is used as a fallback.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is a convenience method equivalent to calling 
+    /// <see cref="WithReflectionFallbackHandler"/> with <see cref="ReflectionFallbackHandlers.ThrowException"/>.
+    /// </para>
+    /// <para>
+    /// Use this method in AOT/trimming scenarios where reflection is not available
+    /// and you want to ensure that source-generated components are always used.
+    /// If reflection fallback occurs, an exception will be thrown immediately,
+    /// making it easy to identify missing source generation configuration.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance that will throw on reflection fallback.</returns>
+    /// <example>
+    /// <code>
+    /// // Ensure no reflection is used (recommended for AOT apps):
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedComponents(TypeRegistry.GetInjectableTypes, TypeRegistry.GetPluginTypes)
+    ///     .WithFastFailOnReflection();
+    /// </code>
+    /// </example>
+    /// <seealso cref="WithReflectionFallbackHandler"/>
+    /// <seealso cref="ReflectionFallbackHandlers.ThrowException"/>
+    public static Syringe WithFastFailOnReflection(
+        this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.WithReflectionFallbackHandler(ReflectionFallbackHandlers.ThrowException);
     }
 }

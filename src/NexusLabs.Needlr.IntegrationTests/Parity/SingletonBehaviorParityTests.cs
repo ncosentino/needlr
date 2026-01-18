@@ -15,7 +15,7 @@ public sealed class SingletonBehaviorParityTests
     public SingletonBehaviorParityTests()
     {
         _reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
+            .UsingReflectionTypeRegistrar()
             .BuildServiceProvider();
 
         _generatedProvider = new Syringe()

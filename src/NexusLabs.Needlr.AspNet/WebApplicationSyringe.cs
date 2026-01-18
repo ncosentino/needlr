@@ -11,17 +11,11 @@ namespace NexusLabs.Needlr.AspNet;
 /// <example>
 /// Creating and configuring a WebApplicationSyringe:
 /// <code>
-/// // Method 1: Transition from base Syringe
+/// // Method 1: Transition from base Syringe (source-gen by default)
 /// var webAppSyringe = new Syringe()
-///     .UsingScrutorTypeRegistrar()
-///     .UsingDefaultTypeFilterer()
 ///     .ForWebApplication();
 /// 
-/// // Method 2: Direct instantiation with base Syringe
-/// var baseSyringe = new Syringe().UsingScrutorTypeRegistrar();
-/// var webAppSyringe = new WebApplicationSyringe(baseSyringe);
-/// 
-/// // Method 3: Default constructor
+/// // Method 2: Default constructor
 /// var webAppSyringe = new WebApplicationSyringe();
 /// 
 /// // Build and run the web application
@@ -52,9 +46,7 @@ public sealed record WebApplicationSyringe
     /// <param name="baseSyringe">The base syringe to wrap.</param>
     /// <example>
     /// <code>
-    /// var baseSyringe = new Syringe()
-    ///     .UsingScrutorTypeRegistrar()
-    ///     .UsingDefaultTypeFilterer();
+    /// var baseSyringe = new Syringe();
     /// 
     /// var webAppSyringe = new WebApplicationSyringe(baseSyringe);
     /// </code>

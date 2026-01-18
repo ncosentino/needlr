@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>exe</OutputType>
+  </PropertyGroup>
+  
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Extensions.Configuration\NexusLabs.Needlr.Extensions.Configuration.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+	  <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+	</ItemGroup>
+	
+</Project>

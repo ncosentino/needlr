@@ -26,6 +26,7 @@ public sealed record Syringe
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
+    internal Action<ReflectionFallbackContext>? ReflectionFallbackHandler { get; init; }
 
     /// <summary>
     /// Builds a service provider with the configured settings.
@@ -67,6 +68,7 @@ public sealed record Syringe
         if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
             return new GeneratedTypeRegistrar(injectableTypeProvider);
 
+        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeRegistrarContext());
         return new DefaultTypeRegistrar();
     }
 
@@ -83,6 +85,7 @@ public sealed record Syringe
         if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
             return new GeneratedTypeFilterer(injectableTypeProvider);
 
+        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeFiltererContext());
         return new DefaultTypeFilterer();
     }
 
@@ -99,6 +102,7 @@ public sealed record Syringe
         if (NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider))
             return new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
 
+        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreatePluginFactoryContext());
         return new NexusLabs.Needlr.PluginFactory();
     }
 
@@ -127,6 +131,7 @@ public sealed record Syringe
         if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
             return new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider);
 
+        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateAssemblyProviderContext());
         return new AssembyProviderBuilder().Build();
     }
 

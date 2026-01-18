@@ -20,9 +20,9 @@ public sealed class ZeroReflectionParityTests
     {
         // Reflection-based configuration
         _reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
-            .UsingDefaultTypeFilterer()
-            .UsingDefaultPluginFactory()
+            .UsingReflectionTypeRegistrar()
+            .UsingReflectionTypeFilterer()
+            .UsingReflectionPluginFactory()
             .BuildServiceProvider();
 
         // Zero-reflection configuration using UsingGeneratedComponents

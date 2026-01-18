@@ -7,28 +7,24 @@ namespace NexusLabs.Needlr.AspNet;
 /// Extension methods for configuring <see cref="Syringe"/> instances with ASP.NET Core functionality.
 /// </summary>
 /// <example>
-/// Complete web application setup:
+/// Source-gen first (recommended for AOT/trimming):
 /// <code>
+/// // With module initializer bootstrap (automatic):
 /// var webApplication = new Syringe()
-///     .UsingScrutorTypeRegistrar()
-///     .UsingDefaultTypeFilterer()
-///     .UsingAssemblyProvider(builder => builder
-///         .MatchingAssemblies(x => x.Contains("MyApp"))
-///         .Build())
 ///     .ForWebApplication()
-///     .UsingOptions(() => CreateWebApplicationOptions.Default
-///         .UsingCliArgs(args)
-///         .UsingApplicationName("My Web App"))
 ///     .BuildWebApplication();
 /// 
 /// await webApplication.RunAsync();
 /// </code>
 /// 
-/// Service provider only:
+/// Reflection-based (for dynamic scenarios):
 /// <code>
-/// var serviceProvider = new Syringe()
-///     .UsingScrutorTypeRegistrar()
-///     .BuildServiceProvider();
+/// var webApplication = new Syringe()
+///     .UsingReflection()
+///     .ForWebApplication()
+///     .BuildWebApplication();
+/// 
+/// await webApplication.RunAsync();
 /// </code>
 /// </example>
 public static class SyringeAspNetExtensions
@@ -41,11 +37,6 @@ public static class SyringeAspNetExtensions
     /// <example>
     /// <code>
     /// var webAppSyringe = new Syringe()
-    ///     .UsingScrutorTypeRegistrar()
-    ///     .UsingDefaultTypeFilterer()
-    ///     .UsingAssemblyProvider(builder => builder
-    ///         .MatchingAssemblies(x => x.Contains("MyApp"))
-    ///         .Build())
     ///     .ForWebApplication(); // Transition to web application mode
     /// 
     /// // Now you can use web-specific methods
@@ -69,8 +60,6 @@ public static class SyringeAspNetExtensions
     /// <code>
     /// // Direct build without additional web configuration
     /// var webApplication = new Syringe()
-    ///     .UsingScrutorTypeRegistrar()
-    ///     .UsingDefaultTypeFilterer()
     ///     .BuildWebApplication();
     /// 
     /// await webApplication.RunAsync();

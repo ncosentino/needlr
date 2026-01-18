@@ -29,8 +29,8 @@ public sealed class ComprehensiveParityAnalysisTests
     {
         // Reflection-based discovery
         var reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
-            .UsingDefaultTypeFilterer()
+            .UsingReflectionTypeRegistrar()
+            .UsingReflectionTypeFilterer()
             .BuildServiceProvider();
 
         // Generated-based discovery (zero reflection)
@@ -55,8 +55,8 @@ public sealed class ComprehensiveParityAnalysisTests
     public void TypeRegistration_ServiceLifetimes_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
-            .UsingDefaultTypeFilterer()
+            .UsingReflectionTypeRegistrar()
+            .UsingReflectionTypeFilterer()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()
@@ -223,7 +223,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void Exclusion_DoNotAutoRegister_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
+            .UsingReflectionTypeRegistrar()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()
@@ -287,7 +287,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void InterfaceRegistration_MultipleInterfaces_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingDefaultTypeRegistrar()
+            .UsingReflectionTypeRegistrar()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()
