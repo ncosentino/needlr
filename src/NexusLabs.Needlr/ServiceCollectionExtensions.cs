@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NexusLabs.Needlr;
@@ -27,7 +29,7 @@ public static class ServiceCollectionExtensions
     /// services.AddDecorator&lt;IMyService, MyServiceDecorator&gt;();
     /// </code>
     /// </example>
-    public static IServiceCollection AddDecorator<TService, TDecorator>(this IServiceCollection services)
+    public static IServiceCollection AddDecorator<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDecorator>(this IServiceCollection services)
         where TDecorator : class, TService
     {
         ArgumentNullException.ThrowIfNull(services);
