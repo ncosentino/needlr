@@ -56,10 +56,10 @@ public sealed record Syringe
     }
         
     /// <summary>
-    /// Gets the configured type registrar or creates a default one.
+    /// Gets the configured type registrar or creates a reflection-based one.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "DefaultTypeRegistrar is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
+        Justification = "ReflectionTypeRegistrar is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public ITypeRegistrar GetOrCreateTypeRegistrar()
     {
         if (TypeRegistrar is not null)
@@ -69,14 +69,14 @@ public sealed record Syringe
             return new GeneratedTypeRegistrar(injectableTypeProvider);
 
         ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeRegistrarContext());
-        return new DefaultTypeRegistrar();
+        return new ReflectionTypeRegistrar();
     }
 
     /// <summary>
-    /// Gets the configured type filterer or creates a default one.
+    /// Gets the configured type filterer or creates a reflection-based one.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "DefaultTypeFilterer is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
+        Justification = "ReflectionTypeFilterer is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public ITypeFilterer GetOrCreateTypeFilterer()
     {
         if (TypeFilterer is not null)
@@ -86,11 +86,11 @@ public sealed record Syringe
             return new GeneratedTypeFilterer(injectableTypeProvider);
 
         ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeFiltererContext());
-        return new DefaultTypeFilterer();
+        return new ReflectionTypeFilterer();
     }
 
     /// <summary>
-    /// Gets the configured plugin factory or creates a default one.
+    /// Gets the configured plugin factory or creates a reflection-based one.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
         Justification = "PluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]

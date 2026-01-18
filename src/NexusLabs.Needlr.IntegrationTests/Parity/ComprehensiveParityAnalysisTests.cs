@@ -82,7 +82,7 @@ public sealed class ComprehensiveParityAnalysisTests
     [Fact]
     public void TypeFilterer_SingletonDetection_IdenticalBetweenReflectionAndGenerated()
     {
-        var reflectionFilterer = new DefaultTypeFilterer();
+        var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
             NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
 
@@ -103,7 +103,7 @@ public sealed class ComprehensiveParityAnalysisTests
     [Fact]
     public void TypeFilterer_TransientDetection_IdenticalBetweenReflectionAndGenerated()
     {
-        var reflectionFilterer = new DefaultTypeFilterer();
+        var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
             NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
 
@@ -124,7 +124,7 @@ public sealed class ComprehensiveParityAnalysisTests
     [Fact]
     public void TypeFilterer_ScopedDetection_IdenticalBetweenReflectionAndGenerated()
     {
-        var reflectionFilterer = new DefaultTypeFilterer();
+        var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
             NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
 

@@ -4,14 +4,14 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Injection.TypeFilterers;
 
 /// <summary>
-/// Default type filterer that uses runtime reflection to analyze constructors.
+/// Type filterer that uses runtime reflection to analyze constructors.
 /// </summary>
 /// <remarks>
 /// This filterer is not compatible with NativeAOT or trimming. For AOT scenarios,
 /// use <see cref="GeneratedTypeFilterer"/> with the Needlr source generator instead.
 /// </remarks>
-[RequiresUnreferencedCode("DefaultTypeFilterer uses reflection to analyze constructors. Use GeneratedTypeFilterer for AOT scenarios.")]
-public sealed class DefaultTypeFilterer : ITypeFilterer
+[RequiresUnreferencedCode("ReflectionTypeFilterer uses reflection to analyze constructors. Use GeneratedTypeFilterer for AOT scenarios.")]
+public sealed class ReflectionTypeFilterer : ITypeFilterer
 {
     public bool IsInjectableScopedType(Type type)
         => false;

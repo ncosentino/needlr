@@ -148,7 +148,7 @@ public sealed class ReflectionFallbackHandlerTests
         // Assert
         Assert.Equal("TypeRegistrar", context.ComponentName);
         Assert.Contains("NeedlrSourceGenBootstrap", context.Reason);
-        Assert.Equal(typeof(DefaultTypeRegistrar), context.ReflectionComponentType);
+        Assert.Equal(typeof(ReflectionTypeRegistrar), context.ReflectionComponentType);
         Assert.Equal(typeof(GeneratedTypeRegistrar), context.GeneratedComponentType);
     }
 
@@ -160,7 +160,7 @@ public sealed class ReflectionFallbackHandlerTests
 
         // Assert
         Assert.Equal("TypeFilterer", context.ComponentName);
-        Assert.Equal(typeof(DefaultTypeFilterer), context.ReflectionComponentType);
+        Assert.Equal(typeof(ReflectionTypeFilterer), context.ReflectionComponentType);
         Assert.Equal(typeof(GeneratedTypeFilterer), context.GeneratedComponentType);
     }
 

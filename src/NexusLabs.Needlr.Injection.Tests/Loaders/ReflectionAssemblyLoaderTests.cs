@@ -6,12 +6,12 @@ using Xunit;
 
 namespace NexusLabs.Needlr.Injection.Tests.Loaders;
 
-public sealed class DefaultAssemblyLoaderTests
+public sealed class ReflectionAssemblyLoaderTests
 {
     [Fact]
     public void LoadAssemblies_WithValidEntryAssembly_ReturnsAssemblies()
     {
-        var loader = new DefaultAssemblyLoader();        
+        var loader = new ReflectionAssemblyLoader();        
         var assemblies = loader.LoadAssemblies(continueOnAssemblyError: true);
         
         Assert.NotNull(assemblies);
@@ -27,7 +27,7 @@ public sealed class DefaultAssemblyLoaderTests
     [Fact]
     public void LoadAssemblies_WithContinueOnError_DoesNotThrowOnLoadFailure()
     {
-        var loader = new DefaultAssemblyLoader();        
+        var loader = new ReflectionAssemblyLoader();        
         var assemblies = loader.LoadAssemblies(continueOnAssemblyError: true);        
         Assert.NotNull(assemblies);
     }
@@ -35,7 +35,7 @@ public sealed class DefaultAssemblyLoaderTests
     [Fact]
     public void Constructor_CreatesFileMatchAssemblyLoaderWithCorrectParameters()
     {
-        var loader = new DefaultAssemblyLoader();        
+        var loader = new ReflectionAssemblyLoader();        
         Assert.NotNull(loader);
     }
 }

@@ -72,7 +72,7 @@ public sealed class TypeFilterDecoratorTests
     [Fact]
     public void Decorator_PassesInnerFiltererPredicate()
     {
-        var innerFilterer = new DefaultTypeFilterer();
+        var innerFilterer = new ReflectionTypeFilterer();
         Type? capturedType = null;
         
         var decorator = new TypeFilterDecorator(

@@ -6,14 +6,14 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Injection.TypeRegistrars;
 
 /// <summary>
-/// Default type registrar that uses runtime reflection to discover and register types.
+/// Type registrar that uses runtime reflection to discover and register types.
 /// </summary>
 /// <remarks>
 /// This registrar is not compatible with NativeAOT or trimming. For AOT scenarios,
 /// use <see cref="GeneratedTypeRegistrar"/> with the Needlr source generator instead.
 /// </remarks>
-[RequiresUnreferencedCode("DefaultTypeRegistrar uses reflection to discover types. Use GeneratedTypeRegistrar for AOT scenarios.")]
-public sealed class DefaultTypeRegistrar : ITypeRegistrar
+[RequiresUnreferencedCode("ReflectionTypeRegistrar uses reflection to discover types. Use GeneratedTypeRegistrar for AOT scenarios.")]
+public sealed class ReflectionTypeRegistrar : ITypeRegistrar
 {
     public void RegisterTypesFromAssemblies(
         IServiceCollection services,

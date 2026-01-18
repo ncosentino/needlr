@@ -21,8 +21,8 @@ public sealed class AssembyProviderBuilder : IAssembyProviderBuilder
 
     public AssembyProviderBuilder()
     {
-        _assemblyLoader = new DefaultAssemblyLoader();
-        _assemblySorter = new DefaultAssemblySorter();
+        _assemblyLoader = new ReflectionAssemblyLoader();
+        _assemblySorter = new ReflectionAssemblySorter();
     }
 
     public AssembyProviderBuilder UseLoader(IAssemblyLoader loader)

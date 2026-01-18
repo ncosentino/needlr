@@ -174,7 +174,7 @@ public static class IAssembyProviderBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(sortCallback);
         var sorter = new AssemblySorter(
-            new DefaultAssemblySorter(),
+            new ReflectionAssemblySorter(),
             sortCallback);
         return builder.UseSorter(sorter);
     }

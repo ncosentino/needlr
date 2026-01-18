@@ -241,7 +241,7 @@ internal static class TypeDiscoveryHelper
 
     /// <summary>
     /// Determines the injectable lifetime for a type by analyzing its constructors.
-    /// This mirrors the logic in DefaultTypeFilterer.IsInjectableSingletonType.
+    /// This mirrors the logic in ReflectionTypeFilterer.IsInjectableSingletonType.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to analyze.</param>
     /// <returns>The determined lifetime, or null if the type is not injectable.</returns>

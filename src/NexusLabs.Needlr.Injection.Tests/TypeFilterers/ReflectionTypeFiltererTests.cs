@@ -4,9 +4,9 @@ using Xunit;
 
 namespace NexusLabs.Needlr.Injection.Tests.TypeFilterers;
 
-public sealed class DefaultTypeFiltererTests
+public sealed class ReflectionTypeFiltererTests
 {
-    private readonly DefaultTypeFilterer _filterer = new();
+    private readonly ReflectionTypeFilterer _filterer = new();
 
     [Fact]
     public void IsInjectableScopedType_AlwaysReturnsFalse()

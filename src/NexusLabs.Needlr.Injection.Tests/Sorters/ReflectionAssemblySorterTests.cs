@@ -6,12 +6,12 @@ using Xunit;
 
 namespace NexusLabs.Needlr.Injection.Tests.Sorters;
 
-public sealed class DefaultAssemblySorterTests
+public sealed class ReflectionAssemblySorterTests
 {
     [Fact]
     public void Sort_WithNullAssemblies_ThrowsArgumentNullException()
     {
-        var sorter = new DefaultAssemblySorter();
+        var sorter = new ReflectionAssemblySorter();
         
         Assert.Throws<ArgumentNullException>(() => sorter.Sort(null!).ToList());
     }
@@ -19,7 +19,7 @@ public sealed class DefaultAssemblySorterTests
     [Fact]
     public void Sort_WithEmptyList_ReturnsEmpty()
     {
-        var sorter = new DefaultAssemblySorter();
+        var sorter = new ReflectionAssemblySorter();
         var assemblies = new List<Assembly>();
         
         var sorted = sorter.Sort(assemblies).ToList();
@@ -30,7 +30,7 @@ public sealed class DefaultAssemblySorterTests
     [Fact]
     public void Sort_WithSingleAssembly_ReturnsSameAssembly()
     {
-        var sorter = new DefaultAssemblySorter();
+        var sorter = new ReflectionAssemblySorter();
         var assembly = Assembly.GetExecutingAssembly();
         var assemblies = new[] { assembly };
         
@@ -43,7 +43,7 @@ public sealed class DefaultAssemblySorterTests
     [Fact]
     public void Sort_WithMultipleAssemblies_ReturnsInOriginalOrder()
     {
-        var sorter = new DefaultAssemblySorter();
+        var sorter = new ReflectionAssemblySorter();
         var assembly1 = Assembly.GetExecutingAssembly();
         var assembly2 = typeof(object).Assembly;
         var assembly3 = typeof(Xunit.Assert).Assembly;
@@ -60,7 +60,7 @@ public sealed class DefaultAssemblySorterTests
     [Fact]
     public void Sort_DoesNotModifyInputList()
     {
-        var sorter = new DefaultAssemblySorter();
+        var sorter = new ReflectionAssemblySorter();
         var originalAssemblies = new[] 
         { 
             Assembly.GetExecutingAssembly(),

@@ -68,7 +68,7 @@ public static class ReflectionFallbackHandlers
     {
         ComponentName = "TypeRegistrar",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
-        ReflectionComponentType = typeof(DefaultTypeRegistrar),
+        ReflectionComponentType = typeof(ReflectionTypeRegistrar),
         GeneratedComponentType = typeof(GeneratedTypeRegistrar)
     };
 
@@ -79,7 +79,7 @@ public static class ReflectionFallbackHandlers
     {
         ComponentName = "TypeFilterer",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
-        ReflectionComponentType = typeof(DefaultTypeFilterer),
+        ReflectionComponentType = typeof(ReflectionTypeFilterer),
         GeneratedComponentType = typeof(GeneratedTypeFilterer)
     };
 

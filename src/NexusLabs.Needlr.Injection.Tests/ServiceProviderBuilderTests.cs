@@ -21,8 +21,8 @@ public sealed class ServiceProviderBuilderTests
             .Build();
 
         var serviceCollectionPopulator = new ServiceCollectionPopulator(
-            new DefaultTypeRegistrar(),
-            new DefaultTypeFilterer());
+            new ReflectionTypeRegistrar(),
+            new ReflectionTypeFilterer());
 
         var assemblyProvider = new AssembyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(
@@ -48,8 +48,8 @@ public sealed class ServiceProviderBuilderTests
 
         var services = new ServiceCollection();
         var serviceCollectionPopulator = new ServiceCollectionPopulator(
-            new DefaultTypeRegistrar(),
-            new DefaultTypeFilterer());
+            new ReflectionTypeRegistrar(),
+            new ReflectionTypeFilterer());
 
         var assemblyProvider = new AssembyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(

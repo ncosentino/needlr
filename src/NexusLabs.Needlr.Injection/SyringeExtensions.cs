@@ -102,7 +102,7 @@ public static class SyringeExtensions
         this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
-        return syringe.UsingTypeRegistrar(new DefaultTypeRegistrar());
+        return syringe.UsingTypeRegistrar(new ReflectionTypeRegistrar());
     }
 
     /// <summary>
@@ -300,7 +300,7 @@ public static class SyringeExtensions
         this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
-        return syringe.UsingTypeFilterer(new DefaultTypeFilterer());
+        return syringe.UsingTypeFilterer(new ReflectionTypeFilterer());
     }
 
     /// <summary>

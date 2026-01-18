@@ -2,7 +2,10 @@
 
 namespace NexusLabs.Needlr.Injection.Sorters;
 
-public sealed class DefaultAssemblySorter : IAssemblySorter
+/// <summary>
+/// Assembly sorter that provides a default pass-through sorting behavior.
+/// </summary>
+public sealed class ReflectionAssemblySorter : IAssemblySorter
 {
     public IEnumerable<Assembly> Sort(IReadOnlyList<Assembly> assemblies)
     {
