@@ -556,4 +556,120 @@ internal static class TypeDiscoveryHelper
     {
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
+
+    /// <summary>
+    /// Result of hub registration discovery.
+    /// </summary>
+    public readonly struct HubRegistrationInfo
+    {
+        public HubRegistrationInfo(string hubTypeName, string hubPath)
+        {
+            HubTypeName = hubTypeName;
+            HubPath = hubPath;
+        }
+
+        public string HubTypeName { get; }
+        public string HubPath { get; }
+    }
+
+    /// <summary>
+    /// Tries to extract hub registration info from an IHubRegistrationPlugin implementation.
+    /// Returns null if the type doesn't implement IHubRegistrationPlugin or if the values can't be determined at compile time.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="compilation">The compilation context.</param>
+    /// <returns>Hub registration info if discoverable, null otherwise.</returns>
+    public static HubRegistrationInfo? TryGetHubRegistrationInfo(INamedTypeSymbol typeSymbol, Compilation compilation)
+    {
+        const string HubRegistrationPluginInterfaceName = "NexusLabs.Needlr.SignalR.IHubRegistrationPlugin";
+
+        // Check if type implements IHubRegistrationPlugin
+        if (!ImplementsInterface(typeSymbol, HubRegistrationPluginInterfaceName))
+            return null;
+
+        // Must have a parameterless constructor to be instantiable
+        if (!HasParameterlessConstructor(typeSymbol))
+            return null;
+
+        // Try to find HubPath and HubType property values
+        string? hubPath = null;
+        string? hubTypeName = null;
+
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is not IPropertySymbol property)
+                continue;
+
+            if (property.Name == "HubPath")
+            {
+                // Try to get the constant value from the property getter
+                hubPath = TryGetPropertyStringValue(property, compilation);
+            }
+            else if (property.Name == "HubType")
+            {
+                // Try to get the type returned by the property
+                hubTypeName = TryGetPropertyTypeValue(property, compilation);
+            }
+        }
+
+        if (hubPath != null && hubTypeName != null)
+        {
+            return new HubRegistrationInfo(hubTypeName, hubPath);
+        }
+
+        return null;
+    }
+
+    private static string? TryGetPropertyStringValue(IPropertySymbol property, Compilation compilation)
+    {
+        // For expression-bodied properties like: string HubPath => "/chat";
+        // Or get-only properties with a return statement
+        var syntaxRefs = property.DeclaringSyntaxReferences;
+        if (syntaxRefs.Length == 0)
+            return null;
+
+        var syntax = syntaxRefs[0].GetSyntax();
+
+        // Look for string literal in the property
+        foreach (var node in syntax.DescendantNodes())
+        {
+            if (node is Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax literal)
+            {
+                var semanticModel = compilation.GetSemanticModel(literal.SyntaxTree);
+                var constantValue = semanticModel.GetConstantValue(literal);
+                if (constantValue.HasValue && constantValue.Value is string strValue)
+                {
+                    return strValue;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string? TryGetPropertyTypeValue(IPropertySymbol property, Compilation compilation)
+    {
+        // For properties like: Type HubType => typeof(ChatHub);
+        var syntaxRefs = property.DeclaringSyntaxReferences;
+        if (syntaxRefs.Length == 0)
+            return null;
+
+        var syntax = syntaxRefs[0].GetSyntax();
+
+        // Look for typeof expression in the property
+        foreach (var node in syntax.DescendantNodes())
+        {
+            if (node is Microsoft.CodeAnalysis.CSharp.Syntax.TypeOfExpressionSyntax typeOfExpr)
+            {
+                var semanticModel = compilation.GetSemanticModel(typeOfExpr.SyntaxTree);
+                var typeInfo = semanticModel.GetTypeInfo(typeOfExpr.Type);
+                if (typeInfo.Type is INamedTypeSymbol namedType)
+                {
+                    return GetFullyQualifiedName(namedType);
+                }
+            }
+        }
+
+        return null;
+    }
 }
