@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Injection.TypeFilterers;
-using NexusLabs.Needlr.Injection.TypeRegistrars;
+using NexusLabs.Needlr.Injection.Bundle;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
+using NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 
 using Xunit;
 

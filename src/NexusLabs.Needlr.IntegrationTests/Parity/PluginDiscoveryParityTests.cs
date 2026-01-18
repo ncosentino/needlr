@@ -1,6 +1,7 @@
 using System.Reflection;
 
-using NexusLabs.Needlr.Injection.PluginFactories;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
 using Xunit;
 

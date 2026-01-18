@@ -1,4 +1,4 @@
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr.Injection.Reflection;
 
 /// <summary>
 /// Provides context information when a reflection-based component is used as a fallback
@@ -24,6 +24,7 @@ public sealed class ReflectionFallbackContext
 
     /// <summary>
     /// Gets the type of the source-generated component that would have been used if available.
+    /// May be null if the reflection package doesn't have visibility to source-gen types.
     /// </summary>
-    public required Type GeneratedComponentType { get; init; }
+    public Type? GeneratedComponentType { get; init; }
 }

@@ -1,9 +1,10 @@
-﻿using NexusLabs.Needlr.Injection.Loaders;
+﻿using NexusLabs.Needlr.Injection.Reflection.Loaders;
+using NexusLabs.Needlr.Injection.Reflection.Sorters;
 using NexusLabs.Needlr.Injection.Sorters;
 
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr.Injection.Reflection;
 
 public static class IAssembyProviderBuilderExtensions
 {

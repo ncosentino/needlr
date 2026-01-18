@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -22,6 +23,7 @@ public sealed class EnvironmentSpecificConfigurationTests
         var baseConfigValue = "BaseValue";
         var envConfigValue = "DevelopmentValue";
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingOptions(() => new CreateWebApplicationOptions(
                 new WebApplicationOptions { EnvironmentName = environmentName }))
@@ -67,6 +69,7 @@ public sealed class EnvironmentSpecificConfigurationTests
         bool shouldLoadBaseConfig)
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingOptions(() => new CreateWebApplicationOptions(
                 new WebApplicationOptions { EnvironmentName = environmentName }))
@@ -109,6 +112,7 @@ public sealed class EnvironmentSpecificConfigurationTests
         var temperatureCelsius = 25.5;
         var summary = "Sunny";
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {
@@ -136,6 +140,7 @@ public sealed class EnvironmentSpecificConfigurationTests
     public void BuildWebApplication_WithOverridingConfiguration_LastSourceWins()
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {

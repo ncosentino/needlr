@@ -1,6 +1,7 @@
 using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.TypeFilterers;
+using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
+using NexusLabs.Needlr.Injection.SourceGen.TypeFilterers;
 
 using Xunit;
 

@@ -1,4 +1,4 @@
-using NexusLabs.Needlr.Injection.Loaders;
+using NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 using Xunit;
 

@@ -2,7 +2,7 @@ using System.Reflection;
 
 using NexusLabs.Needlr.Generators;
 
-namespace NexusLabs.Needlr.Injection.PluginFactories;
+namespace NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
 /// <summary>
 /// A plugin factory that uses compile-time generated type information

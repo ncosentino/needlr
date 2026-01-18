@@ -1,17 +1,17 @@
-﻿using NexusLabs.Needlr.Injection.Loaders;
-using NexusLabs.Needlr.Injection.Sorters;
+﻿using NexusLabs.Needlr.Injection.Reflection.Loaders;
+using NexusLabs.Needlr.Injection.Reflection.Sorters;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr.Injection.Reflection;
 
 /// <summary>
 /// Builder for creating assembly providers using reflection-based loaders.
 /// </summary>
 /// <remarks>
 /// This builder uses reflection-based assembly loading and is not compatible with NativeAOT or trimming.
-/// For AOT scenarios, use <see cref="Loaders.GeneratedAssemblyProvider"/> with the Needlr source generator instead.
+/// For AOT scenarios, use GeneratedAssemblyProvider from NexusLabs.Needlr.Injection.SourceGen instead.
 /// </remarks>
 [RequiresUnreferencedCode("AssembyProviderBuilder uses reflection-based assembly loading. Use GeneratedAssemblyProvider for AOT scenarios.")]
 public sealed class AssembyProviderBuilder : IAssembyProviderBuilder

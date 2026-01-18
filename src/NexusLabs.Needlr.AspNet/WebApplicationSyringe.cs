@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Bundle;
 
 namespace NexusLabs.Needlr.AspNet;
 

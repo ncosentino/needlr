@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel.Tests;
 
@@ -13,6 +14,7 @@ public sealed class KernelFactoryTests
     {
         var config = new ConfigurationBuilder().Build();
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>();
@@ -30,6 +32,7 @@ public sealed class KernelFactoryTests
         var configurationActionCalled = false;
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe =>
             {
                 configurationActionCalled = true;
@@ -50,6 +53,7 @@ public sealed class KernelFactoryTests
         var methodConfigCalled = false;
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>();
@@ -68,6 +72,7 @@ public sealed class KernelFactoryTests
         var config = new ConfigurationBuilder().Build();
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe.Configure(opts =>
             {
                 opts.KernelBuilder.Services.AddSingleton<TestService>();
@@ -88,6 +93,7 @@ public sealed class KernelFactoryTests
         var config = new ConfigurationBuilder().Build();
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>();
@@ -103,6 +109,7 @@ public sealed class KernelFactoryTests
         var config = new ConfigurationBuilder().Build();
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>();

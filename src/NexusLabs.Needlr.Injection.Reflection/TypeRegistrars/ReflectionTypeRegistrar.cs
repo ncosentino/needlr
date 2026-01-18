@@ -3,14 +3,14 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.TypeRegistrars;
+namespace NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 
 /// <summary>
 /// Type registrar that uses runtime reflection to discover and register types.
 /// </summary>
 /// <remarks>
 /// This registrar is not compatible with NativeAOT or trimming. For AOT scenarios,
-/// use <see cref="GeneratedTypeRegistrar"/> with the Needlr source generator instead.
+/// use GeneratedTypeRegistrar from NexusLabs.Needlr.Injection.SourceGen with the Needlr source generator instead.
 /// </remarks>
 [RequiresUnreferencedCode("ReflectionTypeRegistrar uses reflection to discover types. Use GeneratedTypeRegistrar for AOT scenarios.")]
 public sealed class ReflectionTypeRegistrar : ITypeRegistrar

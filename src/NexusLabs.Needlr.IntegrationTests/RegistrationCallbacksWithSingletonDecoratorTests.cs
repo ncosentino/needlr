@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -15,6 +15,7 @@ public sealed class RegistrationCallbacksWithSingletonDecoratorTests
     public RegistrationCallbacksWithSingletonDecoratorTests()
     {
         _serviceProvider = new Syringe()
+            .UsingReflection()
             .UsingPostPluginRegistrationCallback(services =>
             {
                 services.AddSingleton<MyManualService>();

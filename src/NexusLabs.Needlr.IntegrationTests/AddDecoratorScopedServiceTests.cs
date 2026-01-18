@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -14,6 +14,7 @@ public sealed class AddDecoratorScopedServiceTests
     public AddDecoratorScopedServiceTests()
     {
         _serviceProvider = new Syringe()
+            .UsingReflection()
             .UsingPostPluginRegistrationCallback(services =>
             {
                 // Register the base service as scoped

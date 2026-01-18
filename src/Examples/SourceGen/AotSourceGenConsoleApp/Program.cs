@@ -4,13 +4,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 var config = new ConfigurationManager();
 config["Greeting"] = "hello";
 config["Weather:Prefix"] = "AOT";
 
 var provider = new Syringe()
-    .WithFastFailOnReflection()
+    .UsingSourceGen()
     .BuildServiceProvider(config);
 
 Console.WriteLine("AotSourceGenConsoleApp running. Reflection disabled; demonstrating source-gen registry + plugins.");

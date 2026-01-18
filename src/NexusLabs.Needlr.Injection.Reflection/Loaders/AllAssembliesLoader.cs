@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.Loaders;
+namespace NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 public sealed class AllAssembliesLoader : IAssemblyLoader
 {

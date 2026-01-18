@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel.Tests;
 
@@ -10,7 +11,8 @@ public sealed class SemanticKernelSyringeExtensionsTests
     [Fact]
     public void UsingKernelFactory_WithDefaultConfiguration_RegistersIKernelFactory()
     {
-        var syringe = new Syringe();
+        var syringe = new Syringe()
+            .UsingReflection();
         
         var config = new ConfigurationBuilder().Build();
         var result = syringe.UsingSemanticKernel();
@@ -23,7 +25,8 @@ public sealed class SemanticKernelSyringeExtensionsTests
     [Fact]
     public void UsingKernelFactory_WithConfigurationCallback_AppliesConfiguration()
     {
-        var syringe = new Syringe();
+        var syringe = new Syringe()
+            .UsingReflection();
         var configurationCalled = false;
         
         var result = syringe.UsingSemanticKernel(syringe => syringe.Configure(opts =>
@@ -45,7 +48,8 @@ public sealed class SemanticKernelSyringeExtensionsTests
     [Fact]
     public void UsingKernelFactory_CalledOnSyringe_ReturnsNewSyringeInstance()
     {
-        var syringe = new Syringe();        
+        var syringe = new Syringe()
+            .UsingReflection();        
         var result = syringe.UsingSemanticKernel();        
         Assert.NotSame(syringe, result);
     }
@@ -53,7 +57,8 @@ public sealed class SemanticKernelSyringeExtensionsTests
     [Fact]
     public void UsingKernelFactory_RegisteredInServiceProvider_RegistersAsSingleton()
     {
-        var syringe = new Syringe();
+        var syringe = new Syringe()
+            .UsingReflection();
         
         var config = new ConfigurationBuilder().Build();
         var serviceProvider = syringe.UsingSemanticKernel().BuildServiceProvider(config);
@@ -71,6 +76,7 @@ public sealed class SemanticKernelSyringeExtensionsTests
         var callbackExecuted = false;
 
         var serviceProvider = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .UsingPostPluginRegistrationCallback(services =>
             {

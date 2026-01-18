@@ -1,14 +1,12 @@
-using NexusLabs.Needlr.Generators;
-using NexusLabs.Needlr.Injection.Loaders;
-using NexusLabs.Needlr.Injection.PluginFactories;
-using NexusLabs.Needlr.Injection.TypeFilterers;
-using NexusLabs.Needlr.Injection.TypeRegistrars;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
+using NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr.Injection.Reflection;
 
 /// <summary>
 /// Provides built-in handlers for reflection fallback scenarios.
-/// Use these with <see cref="SyringeExtensions.WithReflectionFallbackHandler"/> to control
+/// Use these with <see cref="SyringeReflectionExtensions.WithReflectionFallbackHandler"/> to control
 /// what happens when source-generated components are not available.
 /// </summary>
 public static class ReflectionFallbackHandlers
@@ -29,7 +27,7 @@ public static class ReflectionFallbackHandlers
         throw new InvalidOperationException(
             $"Reflection fallback detected for {context.ComponentName}. " +
             $"{context.Reason} " +
-            $"Expected: {context.GeneratedComponentType.Name}, " +
+            $"Expected: {context.GeneratedComponentType?.Name ?? "source-generated component"}, " +
             $"Fallback: {context.ReflectionComponentType.Name}. " +
             "Add [assembly: GenerateTypeRegistry(...)] to enable source generation, " +
             "or call .UsingReflection() to explicitly opt into reflection-based discovery.");
@@ -69,7 +67,7 @@ public static class ReflectionFallbackHandlers
         ComponentName = "TypeRegistrar",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
         ReflectionComponentType = typeof(ReflectionTypeRegistrar),
-        GeneratedComponentType = typeof(GeneratedTypeRegistrar)
+        GeneratedComponentType = null
     };
 
     /// <summary>
@@ -80,7 +78,7 @@ public static class ReflectionFallbackHandlers
         ComponentName = "TypeFilterer",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
         ReflectionComponentType = typeof(ReflectionTypeFilterer),
-        GeneratedComponentType = typeof(GeneratedTypeFilterer)
+        GeneratedComponentType = null
     };
 
     /// <summary>
@@ -90,8 +88,8 @@ public static class ReflectionFallbackHandlers
     {
         ComponentName = "PluginFactory",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
-        ReflectionComponentType = typeof(NexusLabs.Needlr.PluginFactory),
-        GeneratedComponentType = typeof(GeneratedPluginFactory)
+        ReflectionComponentType = typeof(ReflectionPluginFactory),
+        GeneratedComponentType = null
     };
 
     /// <summary>
@@ -102,6 +100,6 @@ public static class ReflectionFallbackHandlers
         ComponentName = "AssemblyProvider",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
         ReflectionComponentType = typeof(AssembyProviderBuilder),
-        GeneratedComponentType = typeof(GeneratedAssemblyProvider)
+        GeneratedComponentType = null
     };
 }

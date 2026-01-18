@@ -2,50 +2,56 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Generators;
-using NexusLabs.Needlr.Injection.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection;
+namespace NexusLabs.Needlr.Injection.SourceGen;
 
 /// <summary>
-/// Builds and configures an <see cref="IServiceCollection"/>, scanning assemblies for injectable types and plugins.
+/// Builds and configures an <see cref="IServiceCollection"/> using source-generated plugin discovery.
 /// </summary>
+/// <remarks>
+/// This builder uses <see cref="GeneratedPluginFactory"/> for plugin discovery and is AOT compatible.
+/// </remarks>
 [DoNotAutoRegister]
-public sealed class ServiceProviderBuilder : IServiceProviderBuilder
+public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
 {
     private readonly IServiceCollectionPopulator _serviceCollectionPopulator;
     private readonly Lazy<IReadOnlyList<Assembly>> _lazyCandidateAssemblies;
+    private readonly GeneratedPluginFactory _pluginFactory;
 
-    public ServiceProviderBuilder(
+    public GeneratedServiceProviderBuilder(
         IServiceCollectionPopulator serviceCollectionPopulator,
-        IAssemblyProvider assemblyProvider) :
+        IAssemblyProvider assemblyProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider) :
         this(
             serviceCollectionPopulator,
             assemblyProvider,
-            additionalAssemblies: [])
+            additionalAssemblies: [],
+            pluginTypeProvider)
     {
     }
 
-    public ServiceProviderBuilder(
+    public GeneratedServiceProviderBuilder(
         IServiceCollectionPopulator serviceCollectionPopulator,
         IAssemblyProvider assemblyProvider,
-        IReadOnlyList<Assembly> additionalAssemblies)
+        IReadOnlyList<Assembly> additionalAssemblies,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
         ArgumentNullException.ThrowIfNull(serviceCollectionPopulator);
         ArgumentNullException.ThrowIfNull(assemblyProvider);
         ArgumentNullException.ThrowIfNull(additionalAssemblies);
+        ArgumentNullException.ThrowIfNull(pluginTypeProvider);
 
         _serviceCollectionPopulator = serviceCollectionPopulator;
+        _pluginFactory = new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
         _lazyCandidateAssemblies = new(() =>
         {
             var staticAssemblies = assemblyProvider.GetCandidateAssemblies();
-            // Use assembly full name for deduplication instead of Location (Location is empty for single-file/AOT)
             HashSet<string> uniqueAssemblyNames = new(StringComparer.OrdinalIgnoreCase);
             List<Assembly> allCandidateAssemblies = new(additionalAssemblies.Count + staticAssemblies.Count);
 
-            // load the static referenced assemblies
             foreach (var assembly in staticAssemblies)
             {
                 var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
@@ -55,7 +61,6 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
                 }
             }
 
-            // load any additional
             foreach (var assembly in additionalAssemblies)
             {
                 var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
@@ -116,8 +121,6 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "PluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public void ConfigurePostBuildServiceCollectionPlugins(
         IServiceProvider provider,
         IConfiguration config)
@@ -131,11 +134,7 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
             config,
             candidateAssemblies);
 
-        IPluginFactory pluginFactory = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
-            ? new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true)
-            : new PluginFactory();
-
-        foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
+        foreach (var plugin in _pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
         {
             plugin.Configure(options);
         }

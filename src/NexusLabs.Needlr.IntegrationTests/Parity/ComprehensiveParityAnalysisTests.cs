@@ -2,12 +2,16 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.PluginFactories;
-using NexusLabs.Needlr.Injection.TypeFilterers;
-using NexusLabs.Needlr.Injection.TypeRegistrars;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
+using NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
+using NexusLabs.Needlr.Injection.SourceGen;
+using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen.TypeFilterers;
+using NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars;
 
 using Xunit;
 
@@ -29,8 +33,7 @@ public sealed class ComprehensiveParityAnalysisTests
     {
         // Reflection-based discovery
         var reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
-            .UsingReflectionTypeFilterer()
+            .UsingReflection()
             .BuildServiceProvider();
 
         // Generated-based discovery (zero reflection)
@@ -55,8 +58,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void TypeRegistration_ServiceLifetimes_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
-            .UsingReflectionTypeFilterer()
+            .UsingReflection()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()
@@ -223,7 +225,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void Exclusion_DoNotAutoRegister_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
+            .UsingReflection()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()
@@ -287,7 +289,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void InterfaceRegistration_MultipleInterfaces_IdenticalBetweenReflectionAndGenerated()
     {
         var reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
+            .UsingReflection()
             .BuildServiceProvider();
 
         var generatedProvider = new Syringe()

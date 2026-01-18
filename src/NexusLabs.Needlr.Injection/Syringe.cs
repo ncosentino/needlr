@@ -1,13 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Generators;
-using NexusLabs.Needlr.Injection.Loaders;
-using NexusLabs.Needlr.Injection.PluginFactories;
 using NexusLabs.Needlr.Injection.TypeFilterers;
-using NexusLabs.Needlr.Injection.TypeRegistrars;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -16,6 +11,16 @@ namespace NexusLabs.Needlr.Injection;
 /// Provides a fluent API for configuring and building service providers using Needlr.
 /// Acts as an immutable container that creates copies via extension methods.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Syringe requires explicit configuration of its components. Use one of these approaches:
+/// </para>
+/// <list type="bullet">
+/// <item>Reference <c>NexusLabs.Needlr.Injection.SourceGen</c> and call <c>.UsingSourceGen()</c></item>
+/// <item>Reference <c>NexusLabs.Needlr.Injection.Reflection</c> and call <c>.UsingReflection()</c></item>
+/// <item>Reference <c>NexusLabs.Needlr.Injection.Bundle</c> for automatic fallback behavior</item>
+/// </list>
+/// </remarks>
 [DoNotAutoRegister]
 public sealed record Syringe
 {
@@ -26,13 +31,20 @@ public sealed record Syringe
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
-    internal Action<ReflectionFallbackContext>? ReflectionFallbackHandler { get; init; }
+    
+    /// <summary>
+    /// Factory for creating <see cref="IServiceProviderBuilder"/> instances.
+    /// </summary>
+    internal Func<IServiceCollectionPopulator, IAssemblyProvider, IReadOnlyList<Assembly>, IServiceProviderBuilder>? ServiceProviderBuilderFactory { get; init; }
 
     /// <summary>
     /// Builds a service provider with the configured settings.
     /// </summary>
     /// <param name="config">The configuration to use for building the service provider.</param>
     /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if required components (TypeRegistrar, TypeFilterer, PluginFactory, AssemblyProvider) are not configured.
+    /// </exception>
     public IServiceProvider BuildServiceProvider(
         IConfiguration config)
     {
@@ -44,7 +56,7 @@ public sealed record Syringe
         var additionalAssemblies = AdditionalAssemblies ?? [];
         var callbacks = PostPluginRegistrationCallbacks ?? [];
 
-        var serviceProviderBuilder = new ServiceProviderBuilder(
+        var serviceProviderBuilder = GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
             assemblyProvider,
             additionalAssemblies);
@@ -56,54 +68,41 @@ public sealed record Syringe
     }
         
     /// <summary>
-    /// Gets the configured type registrar or creates a reflection-based one.
+    /// Gets the configured type registrar.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "ReflectionTypeRegistrar is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if no type registrar is configured. Use <c>.UsingSourceGen()</c>, <c>.UsingReflection()</c>,
+    /// or reference the Bundle package for automatic fallback.
+    /// </exception>
     public ITypeRegistrar GetOrCreateTypeRegistrar()
     {
-        if (TypeRegistrar is not null)
-            return TypeRegistrar;
-
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
-            return new GeneratedTypeRegistrar(injectableTypeProvider);
-
-        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeRegistrarContext());
-        return new ReflectionTypeRegistrar();
+        return TypeRegistrar ?? throw new InvalidOperationException(
+            "No TypeRegistrar configured. Add a reference to NexusLabs.Needlr.Injection.SourceGen and call .UsingSourceGen(), " +
+            "or add NexusLabs.Needlr.Injection.Reflection and call .UsingReflection(), " +
+            "or add NexusLabs.Needlr.Injection.Bundle for automatic fallback behavior.");
     }
 
     /// <summary>
-    /// Gets the configured type filterer or creates a reflection-based one.
+    /// Gets the configured type filterer or creates an empty one.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "ReflectionTypeFilterer is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     public ITypeFilterer GetOrCreateTypeFilterer()
     {
-        if (TypeFilterer is not null)
-            return TypeFilterer;
-
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
-            return new GeneratedTypeFilterer(injectableTypeProvider);
-
-        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateTypeFiltererContext());
-        return new ReflectionTypeFilterer();
+        return TypeFilterer ?? new EmptyTypeFilterer();
     }
 
     /// <summary>
-    /// Gets the configured plugin factory or creates a reflection-based one.
+    /// Gets the configured plugin factory.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "PluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if no plugin factory is configured. Use <c>.UsingSourceGen()</c>, <c>.UsingReflection()</c>,
+    /// or reference the Bundle package for automatic fallback.
+    /// </exception>
     public IPluginFactory GetOrCreatePluginFactory()
     {
-        if (PluginFactory is not null)
-            return PluginFactory;
-
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider))
-            return new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
-
-        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreatePluginFactoryContext());
-        return new NexusLabs.Needlr.PluginFactory();
+        return PluginFactory ?? throw new InvalidOperationException(
+            "No PluginFactory configured. Add a reference to NexusLabs.Needlr.Injection.SourceGen and call .UsingSourceGen(), " +
+            "or add NexusLabs.Needlr.Injection.Reflection and call .UsingReflection(), " +
+            "or add NexusLabs.Needlr.Injection.Bundle for automatic fallback behavior.");
     }
 
     /// <summary>
@@ -119,20 +118,37 @@ public sealed record Syringe
     }
 
     /// <summary>
-    /// Gets the configured assembly provider or creates a default one.
+    /// Gets the configured service provider builder or throws if not configured.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", 
-        Justification = "AssembyProviderBuilder is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if no service provider builder factory is configured. Use <c>.UsingSourceGen()</c>, <c>.UsingReflection()</c>,
+    /// or reference the Bundle package for automatic fallback.
+    /// </exception>
+    public IServiceProviderBuilder GetOrCreateServiceProviderBuilder(
+        IServiceCollectionPopulator serviceCollectionPopulator,
+        IAssemblyProvider assemblyProvider,
+        IReadOnlyList<Assembly> additionalAssemblies)
+    {
+        return ServiceProviderBuilderFactory?.Invoke(serviceCollectionPopulator, assemblyProvider, additionalAssemblies)
+            ?? throw new InvalidOperationException(
+                "No ServiceProviderBuilderFactory configured. Add a reference to NexusLabs.Needlr.Injection.SourceGen and call .UsingSourceGen(), " +
+                "or add NexusLabs.Needlr.Injection.Reflection and call .UsingReflection(), " +
+                "or add NexusLabs.Needlr.Injection.Bundle for automatic fallback behavior.");
+    }
+
+    /// <summary>
+    /// Gets the configured assembly provider.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if no assembly provider is configured. Use <c>.UsingSourceGen()</c>, <c>.UsingReflection()</c>,
+    /// or reference the Bundle package for automatic fallback.
+    /// </exception>
     public IAssemblyProvider GetOrCreateAssemblyProvider()
     {
-        if (AssemblyProvider is not null)
-            return AssemblyProvider;
-
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
-            return new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider);
-
-        ReflectionFallbackHandler?.Invoke(ReflectionFallbackHandlers.CreateAssemblyProviderContext());
-        return new AssembyProviderBuilder().Build();
+        return AssemblyProvider ?? throw new InvalidOperationException(
+            "No AssemblyProvider configured. Add a reference to NexusLabs.Needlr.Injection.SourceGen and call .UsingSourceGen(), " +
+            "or add NexusLabs.Needlr.Injection.Reflection and call .UsingReflection(), " +
+            "or add NexusLabs.Needlr.Injection.Bundle for automatic fallback behavior.");
     }
 
     /// <summary>

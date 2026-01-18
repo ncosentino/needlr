@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using System.ComponentModel;
 
@@ -17,6 +18,7 @@ public sealed class ExtensionMethodTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPlugin<ExtensionTestPlugin>())
             .BuildServiceProvider(config)
@@ -34,6 +36,7 @@ public sealed class ExtensionMethodTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromAssemblies())
             .BuildServiceProvider(config)
@@ -50,6 +53,7 @@ public sealed class ExtensionMethodTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromProvider())
             .UsingPostPluginRegistrationCallback(services =>
@@ -70,6 +74,7 @@ public sealed class ExtensionMethodTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromProvider()
                 .AddSemanticKernelPluginsFromAssemblies()

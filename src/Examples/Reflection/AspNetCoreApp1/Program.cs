@@ -1,8 +1,10 @@
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.Injection.Scrutor;
 
 var webApplication = new Syringe()
+    .UsingReflection()
     .UsingScrutorTypeRegistrar()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x =>

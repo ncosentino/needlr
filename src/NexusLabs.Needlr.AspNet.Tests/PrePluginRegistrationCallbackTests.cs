@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Threading;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -16,6 +17,7 @@ public sealed class PrePluginRegistrationCallbackTests
         PrePostOrderLog.Current.Value = events;
 
         var webApplication = new Syringe()
+            .UsingReflection()
             .UsingAdditionalAssemblies([Assembly.GetExecutingAssembly()])
             .ForWebApplication()
             .UsingOptions(() => CreateWebApplicationOptions.Default
@@ -37,6 +39,7 @@ public sealed class PrePluginRegistrationCallbackTests
         PrePostOrderLog.Current.Value = events;
 
         var webApplication = new Syringe()
+            .UsingReflection()
             .UsingAdditionalAssemblies([Assembly.GetExecutingAssembly()])
             .ForWebApplication()
             .UsingOptions(() => CreateWebApplicationOptions.Default

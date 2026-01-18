@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.SemanticKernel;
 
 using System.ComponentModel;
@@ -22,6 +23,7 @@ public class IntegrationTests
             .Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .Configure((opts) =>
                 {
@@ -47,6 +49,7 @@ public class IntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromAssemblies())
             .UsingPostPluginRegistrationCallback(svc => svc.AddSingleton<TestDependency>())
@@ -64,6 +67,7 @@ public class IntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromAssemblies(
                     includeInstancePlugins: true,
@@ -82,6 +86,7 @@ public class IntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>()
@@ -97,6 +102,7 @@ public class IntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var factory = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel()
             .BuildServiceProvider(config)
             .GetRequiredService<IKernelFactory>();

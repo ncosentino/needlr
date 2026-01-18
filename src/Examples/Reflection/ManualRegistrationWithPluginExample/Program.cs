@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 // minimal Needler setup: build the provider and get our service
-var serviceProvider = new Syringe().BuildServiceProvider();
+var serviceProvider = new Syringe()
+    .UsingReflection()
+    .BuildServiceProvider();
 
 Console.WriteLine("Needlr Manual Registration With Plugin Example");
 Console.WriteLine("==============================================");

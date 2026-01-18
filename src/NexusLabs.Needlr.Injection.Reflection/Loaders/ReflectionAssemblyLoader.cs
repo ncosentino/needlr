@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.Loaders;
+namespace NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 /// <summary>
 /// Assembly loader that uses reflection to discover the entry assembly.
 /// </summary>
 /// <remarks>
 /// This loader is not compatible with NativeAOT or trimming. For AOT scenarios,
-/// use <see cref="GeneratedAssemblyProvider"/> with the Needlr source generator instead.
+/// use GeneratedAssemblyProvider from NexusLabs.Needlr.Injection.SourceGen with the Needlr source generator instead.
 /// </remarks>
 [RequiresUnreferencedCode("ReflectionAssemblyLoader uses reflection to load assemblies. Use GeneratedAssemblyProvider for AOT scenarios.")]
 public sealed class ReflectionAssemblyLoader : IAssemblyLoader

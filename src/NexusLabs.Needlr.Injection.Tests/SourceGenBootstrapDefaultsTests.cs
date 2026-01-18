@@ -1,8 +1,9 @@
 using NexusLabs.Needlr.Generators;
-using NexusLabs.Needlr.Injection.Loaders;
-using NexusLabs.Needlr.Injection.PluginFactories;
-using NexusLabs.Needlr.Injection.TypeFilterers;
-using NexusLabs.Needlr.Injection.TypeRegistrars;
+using NexusLabs.Needlr.Injection.SourceGen;
+using NexusLabs.Needlr.Injection.SourceGen.Loaders;
+using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen.TypeFilterers;
+using NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars;
 
 using Xunit;
 
@@ -22,7 +23,8 @@ public sealed class SourceGenBootstrapDefaultsTests
 
         using var _ = NeedlrSourceGenBootstrap.BeginTestScope(() => types, () => plugins);
 
-        var syringe = new Syringe();
+        // With new architecture, we must explicitly call UsingSourceGen() to use source-generated components
+        var syringe = new Syringe().UsingSourceGen();
         Assert.IsType<GeneratedTypeRegistrar>(syringe.GetOrCreateTypeRegistrar());
         Assert.IsType<GeneratedTypeFilterer>(syringe.GetOrCreateTypeFilterer());
         Assert.IsType<GeneratedPluginFactory>(syringe.GetOrCreatePluginFactory());

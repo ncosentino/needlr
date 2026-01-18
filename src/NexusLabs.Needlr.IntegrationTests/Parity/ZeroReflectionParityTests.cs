@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 using Xunit;
 
@@ -20,9 +21,7 @@ public sealed class ZeroReflectionParityTests
     {
         // Reflection-based configuration
         _reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
-            .UsingReflectionTypeFilterer()
-            .UsingReflectionPluginFactory()
+            .UsingReflection()
             .BuildServiceProvider();
 
         // Zero-reflection configuration using UsingGeneratedComponents

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.Sorters;
+namespace NexusLabs.Needlr.Injection.Reflection.Sorters;
 
 /// <summary>
 /// Assembly sorter that provides a default pass-through sorting behavior.

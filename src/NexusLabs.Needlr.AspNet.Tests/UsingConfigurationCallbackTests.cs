@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -20,6 +21,7 @@ public sealed class UsingConfigurationCallbackTests
         var customServiceValue = "true";
         
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {
@@ -41,6 +43,7 @@ public sealed class UsingConfigurationCallbackTests
     public void BuildWebApplication_WithConfigurationCallback_CanAddCustomServices()
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {
@@ -64,6 +67,7 @@ public sealed class UsingConfigurationCallbackTests
     public void BuildWebApplication_WithMultipleConfigurationSources_MergesCorrectly()
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {
@@ -93,6 +97,7 @@ public sealed class UsingConfigurationCallbackTests
     public void BuildWebApplication_WithConfigurationCallback_CanConfigureComplexObjects()
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {
@@ -132,6 +137,7 @@ public sealed class UsingConfigurationCallbackTests
         string? capturedAppName = null;
         
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingOptions(() => new CreateWebApplicationOptions(
                 new WebApplicationOptions { ApplicationName = "TestApplication" }))
@@ -158,6 +164,7 @@ public sealed class UsingConfigurationCallbackTests
     public void BuildWebApplication_WithoutConfigurationCallback_StillBuildsSuccessfully()
     {
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .BuildWebApplication();
 
@@ -172,6 +179,7 @@ public sealed class UsingConfigurationCallbackTests
         var testBasePath = AppContext.BaseDirectory;
         
         var webApplication = new Syringe()
+            .UsingReflection()
             .ForWebApplication()
             .UsingConfigurationCallback((builder, options) =>
             {

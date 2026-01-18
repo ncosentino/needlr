@@ -1,7 +1,10 @@
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
-var webApplication = new Syringe().BuildWebApplication();
+var webApplication = new Syringe()
+    .UsingReflection()
+    .BuildWebApplication();
 
 var webAppTask = webApplication.RunAsync();
 

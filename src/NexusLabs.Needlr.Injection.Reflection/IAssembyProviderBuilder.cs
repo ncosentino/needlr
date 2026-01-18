@@ -1,4 +1,4 @@
-﻿namespace NexusLabs.Needlr.Injection;
+﻿namespace NexusLabs.Needlr.Injection.Reflection;
 
 [DoNotAutoRegister]
 public interface IAssembyProviderBuilder

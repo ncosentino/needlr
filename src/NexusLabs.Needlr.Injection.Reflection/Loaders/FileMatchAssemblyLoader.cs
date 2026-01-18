@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.Loaders;
+namespace NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 /// <summary>
 /// Assembly loader that loads assemblies from disk based on file name matching.
 /// </summary>
 /// <remarks>
 /// This loader is not compatible with NativeAOT or trimming. For AOT scenarios,
-/// use <see cref="GeneratedAssemblyProvider"/> with the Needlr source generator instead.
+/// use GeneratedAssemblyProvider from NexusLabs.Needlr.Injection.SourceGen instead.
 /// </remarks>
 [RequiresUnreferencedCode("FileMatchAssemblyLoader uses Assembly.LoadFrom which is not AOT-compatible. Use GeneratedAssemblyProvider for AOT scenarios.")]
 public sealed class FileMatchAssemblyLoader : IAssemblyLoader

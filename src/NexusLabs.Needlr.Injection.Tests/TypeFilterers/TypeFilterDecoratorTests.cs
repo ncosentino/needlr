@@ -1,3 +1,4 @@
+using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 
 using Xunit;

@@ -4,7 +4,7 @@ using NexusLabs.Needlr.Generators;
 
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.TypeRegistrars;
+namespace NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars;
 
 /// <summary>
 /// A type registrar that uses compile-time generated type registry

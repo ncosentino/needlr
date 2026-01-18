@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NexusLabs.Needlr.Injection.TypeFilterers;
+namespace NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
 
 /// <summary>
 /// Type filterer that uses runtime reflection to analyze constructors.
 /// </summary>
 /// <remarks>
 /// This filterer is not compatible with NativeAOT or trimming. For AOT scenarios,
-/// use <see cref="GeneratedTypeFilterer"/> with the Needlr source generator instead.
+/// use GeneratedTypeFilterer from NexusLabs.Needlr.Injection.SourceGen with the Needlr source generator instead.
 /// </remarks>
 [RequiresUnreferencedCode("ReflectionTypeFilterer uses reflection to analyze constructors. Use GeneratedTypeFilterer for AOT scenarios.")]
 public sealed class ReflectionTypeFilterer : ITypeFilterer

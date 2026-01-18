@@ -3,8 +3,10 @@ using Microsoft.Extensions.Options;
 using NexusLabs.Needlr;
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 var webApplication = new Syringe()
+    .UsingReflection()
     .ForWebApplication()
     .UsingOptions(() => CreateWebApplicationOptions.Default
         .UsingStartupConsoleLogger()

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NexusLabs.Needlr;
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 using System.Text.Json.Serialization;
 
@@ -13,7 +14,7 @@ var app = new Syringe()
     {
         services.AddDecorator<IWeatherProvider, DecoratedWeatherProvider>();
     })
-    .WithFastFailOnReflection()
+    .UsingSourceGen()
     .ForWebApplication()
     .UsingOptions(() => CreateWebApplicationOptions.Default.UsingCliArgs(args))
     .BuildWebApplication();

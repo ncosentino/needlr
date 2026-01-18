@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using System.ComponentModel;
 
@@ -16,6 +17,7 @@ public sealed class PluginScannerIntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromAssemblies(
                     includeInstancePlugins: true,
@@ -34,6 +36,7 @@ public sealed class PluginScannerIntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromAssemblies(
                     includeInstancePlugins: false,
@@ -53,6 +56,7 @@ public sealed class PluginScannerIntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromProvider())
             .UsingPostPluginRegistrationCallback(services =>
@@ -73,6 +77,7 @@ public sealed class PluginScannerIntegrationTests
         var config = new ConfigurationBuilder().Build();
         
         var kernel = new Syringe()
+            .UsingReflection()
             .UsingSemanticKernel(syringe => syringe
                 .AddSemanticKernelPluginsFromProvider()
                 .AddSemanticKernelPluginsFromAssemblies()

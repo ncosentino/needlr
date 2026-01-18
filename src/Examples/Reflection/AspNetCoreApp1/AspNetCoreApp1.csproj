@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />

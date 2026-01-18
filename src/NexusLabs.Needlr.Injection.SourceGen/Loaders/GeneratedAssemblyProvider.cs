@@ -2,7 +2,7 @@ using System.Reflection;
 
 using NexusLabs.Needlr.Generators;
 
-namespace NexusLabs.Needlr.Injection.Loaders;
+namespace NexusLabs.Needlr.Injection.SourceGen.Loaders;
 
 /// <summary>
 /// An assembly provider that derives assemblies from the generated TypeRegistry.

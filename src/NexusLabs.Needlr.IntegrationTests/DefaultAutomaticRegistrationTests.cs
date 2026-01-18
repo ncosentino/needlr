@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -14,7 +14,9 @@ public sealed class DefaultAutomaticRegistrationTests
 
     public DefaultAutomaticRegistrationTests()
     {
-        _serviceProvider = new Syringe().BuildServiceProvider();
+        _serviceProvider = new Syringe()
+            .UsingReflection()
+            .BuildServiceProvider();
     }
 
     [Fact]

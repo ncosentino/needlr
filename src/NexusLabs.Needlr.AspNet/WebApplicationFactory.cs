@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.PluginFactories;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -18,11 +20,13 @@ public sealed class WebApplicationFactory(
 {
     private readonly IPluginFactory _pluginFactory = CreateDefaultPluginFactory();
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "ReflectionPluginFactory is only used as fallback when source-gen bootstrap is not present. AOT apps use source-gen.")]
     private static IPluginFactory CreateDefaultPluginFactory()
     {
         return NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
             ? new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true)
-            : new PluginFactory();
+            : new ReflectionPluginFactory();
     }
 
     /// <inheritdoc />

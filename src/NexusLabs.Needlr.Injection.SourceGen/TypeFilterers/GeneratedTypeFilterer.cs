@@ -1,6 +1,6 @@
 using NexusLabs.Needlr.Generators;
 
-namespace NexusLabs.Needlr.Injection.TypeFilterers;
+namespace NexusLabs.Needlr.Injection.SourceGen.TypeFilterers;
 
 /// <summary>
 /// A type filterer that uses compile-time generated lifetime information

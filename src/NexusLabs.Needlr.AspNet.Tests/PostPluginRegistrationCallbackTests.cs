@@ -1,4 +1,5 @@
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -12,6 +13,7 @@ public sealed class PostPluginRegistrationCallbackTests
         List<string> callbackCalls = [];
 
         var webApplication = new Syringe()
+            .UsingReflection()
             .UsingPostPluginRegistrationCallback(_ =>
             {
                 callbackCalls.Add(nameof(SyringeExtensions.UsingPostPluginRegistrationCallback));
@@ -39,6 +41,7 @@ public sealed class PostPluginRegistrationCallbackTests
         List<string> callbackCalls = [];
 
         var webApplication = new Syringe()
+            .UsingReflection()
             .UsingPostPluginRegistrationCallback(_ =>
             {
                 callbackCalls.Add(nameof(SyringeExtensions.UsingPostPluginRegistrationCallback) + "1");

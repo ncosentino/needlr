@@ -1,13 +1,14 @@
 using MinimalWebApiSourceGen;
 
 using NexusLabs.Needlr.AspNet;
-using NexusLabs.Needlr.Generated;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
-// Build web application using source generation instead of reflection.
 // This uses the compile-time generated TypeRegistry for AOT compatibility
 // and better startup performance.
-var webApplication = new Syringe().BuildWebApplication();
+var webApplication = new Syringe()
+    .UsingSourceGen()
+    .BuildWebApplication();
 var webAppTask = webApplication.RunAsync();
 
 var serviceProvider = webApplication.Services;

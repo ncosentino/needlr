@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 using Xunit;
 
@@ -15,12 +16,13 @@ public sealed class ExclusionParityTests
     public ExclusionParityTests()
     {
         _reflectionProvider = new Syringe()
-            .UsingReflectionTypeRegistrar()
+            .UsingReflection()
             .BuildServiceProvider();
 
         _generatedProvider = new Syringe()
-            .UsingGeneratedTypeRegistrar(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes)
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
     }
 

@@ -1,3 +1,4 @@
+using NexusLabs.Needlr.Injection.Reflection.Sorters;
 using NexusLabs.Needlr.Injection.Sorters;
 
 using System.Reflection;
