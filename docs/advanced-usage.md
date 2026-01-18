@@ -2,15 +2,19 @@
 
 This guide covers advanced scenarios and techniques for using Needlr in complex applications.
 
+> **Note**: Many advanced features require reflection. If you're building an AOT application, 
+> stick to the source-generation patterns described in the [Getting Started](getting-started.md) guide.
+
 ## Custom Type Registrars
 
 ### Implementing ITypeRegistrar
 
-Create custom registration logic by implementing `ITypeRegistrar`:
+Create custom registration logic by implementing `ITypeRegistrar`. This is typically used with reflection:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 public class ConventionBasedTypeRegistrar : ITypeRegistrar
 {
@@ -51,8 +55,9 @@ public class ConventionBasedTypeRegistrar : ITypeRegistrar
     }
 }
 
-// Usage
+// Usage (requires reflection strategy)
 var serviceProvider = new Syringe()
+    .UsingReflection()
     .UsingTypeRegistrar(new ConventionBasedTypeRegistrar())
     .BuildServiceProvider();
 ```
@@ -94,8 +99,9 @@ public class NamespaceTypeFilterer : ITypeFilterer
     }
 }
 
-// Usage
+// Usage (requires reflection strategy)
 var serviceProvider = new Syringe()
+    .UsingReflection()
     .UsingTypeFilterer(new NamespaceTypeFilterer(
         "MyCompany.Core",
         "MyCompany.Services",
@@ -128,10 +134,11 @@ public class CompositeFilterer : ITypeFilterer
     }
 }
 
-// Usage
+// Usage (requires reflection strategy)
 var serviceProvider = new Syringe()
+    .UsingReflection()
     .UsingTypeFilterer(new CompositeFilterer(
-        new DefaultTypeFilterer(),
+        new ReflectionTypeFilterer(),
         new NamespaceTypeFilterer("MyCompany"),
         new AttributeTypeFilterer<ObsoleteAttribute>(exclude: true)))
     .BuildServiceProvider();
@@ -393,8 +400,9 @@ public class PluginAssemblyProvider : IAssemblyProvider
     }
 }
 
-// Usage
+// Usage (requires reflection strategy for dynamic assembly loading)
 var serviceProvider = new Syringe()
+    .UsingReflection()
     .UsingAssemblyProvider(new PluginAssemblyProvider("./plugins"))
     .BuildServiceProvider();
 ```
@@ -407,7 +415,7 @@ The `UsingConfigurationCallback` method provides fine-grained control over the W
 
 ```csharp
 var webApplication = new Syringe()
-    .UsingScrutorTypeRegistrar()
+    .UsingSourceGen()  // or .UsingReflection()
     .ForWebApplication()
     .UsingConfigurationCallback((builder, options) =>
     {
@@ -527,7 +535,9 @@ var webApp = new Syringe()
 You can combine multiple configuration methods for maximum flexibility:
 
 ```csharp
+// With reflection and Scrutor
 var webApp = new Syringe()
+    .UsingReflection()
     .UsingScrutorTypeRegistrar()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x => x.Contains("MyApp"))
@@ -547,6 +557,18 @@ var webApp = new Syringe()
         // Add services that plugins might depend on
         builder.Services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
     })
+    .BuildWebApplication();
+
+// With source generation
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .UsingAssemblyProvider(builder => builder
+        .MatchingAssemblies(x => x.Contains("MyApp"))
+        .Build())
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions
+        .Default
+        .UsingStartupConsoleLogger())
     .BuildWebApplication();
 ```
 
@@ -601,6 +623,7 @@ public class IntegrationTestBase
         Action<Syringe> configureSyringe = null)
     {
         var syringe = new Syringe()
+            .UsingReflection()  // Reflection often useful for testing flexibility
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("MyApp"))
                 .Build())

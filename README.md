@@ -4,8 +4,12 @@
 
 Needlr is an opinionated fluent dependency injection library for .NET that provides automatic service registration and web application setup through a simple, discoverable API. It's designed to minimize boilerplate code by defaulting to registering types from scanned assemblies automatically.
 
+**Needlr is source-generation-first**: The default approach uses compile-time source generation for AOT compatibility and optimal performance. Reflection-based discovery is available as an explicit opt-in for dynamic scenarios.
+
 ## Features
 
+- **Source Generation First**: Compile-time type discovery for AOT/trimming compatibility
+- **Reflection as Opt-In**: Dynamic type discovery available when needed
 - **Automatic Service Discovery**: Automatically registers services from assemblies using conventions
 - **Fluent API**: Chain-able configuration methods for clean, readable setup
 - **ASP.NET Core Integration**: Seamless web application creation and configuration
@@ -28,28 +32,51 @@ Additional documentation:
 
 ## Quick Start
 
-### Basic Web Application
+### Source Generation (Recommended)
+
+For AOT-compatible applications with compile-time type discovery:
 
 ```csharp
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
-var webApplication = new Syringe().BuildWebApplication();
+var webApplication = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .BuildWebApplication();
+
 await webApplication.RunAsync();
 ```
 
-### Advanced Configuration with Scrutor
+### Reflection-Based (Dynamic Scenarios)
+
+For applications that need runtime type discovery:
 
 ```csharp
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Scrutor;
+using NexusLabs.Needlr.Injection.Reflection;
 
 var webApplication = new Syringe()
-    .UsingScrutorTypeRegistrar()
-    .UsingAssemblyProvider(builder => builder
-        .MatchingAssemblies(x => x.Contains("MyApp"))
-        .Build())
+    .UsingReflection()
+    .ForWebApplication()
+    .BuildWebApplication();
+
+await webApplication.RunAsync();
+```
+
+### Auto-Configuration (Bundle)
+
+For convenience with automatic fallback from source-gen to reflection:
+
+```csharp
+using NexusLabs.Needlr.AspNet;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Bundle;
+
+var webApplication = new Syringe()
+    .UsingAutoConfiguration()
     .ForWebApplication()
     .BuildWebApplication();
 
@@ -58,23 +85,37 @@ await webApplication.RunAsync();
 
 ## Installation
 
-**// TODO: COMING SOON** Add the core package and any additional packages you need:
+Add the core package and choose your discovery strategy:
 
 ```xml
-<!-- Core dependency injection -->
+<!-- Core dependency injection (abstractions only) -->
 <PackageReference Include="NexusLabs.Needlr.Injection" />
+
+<!-- CHOOSE ONE: Source Generation (recommended for AOT) -->
+<PackageReference Include="NexusLabs.Needlr.Injection.SourceGen" />
+<PackageReference Include="NexusLabs.Needlr.Generators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+<PackageReference Include="NexusLabs.Needlr.Generators.Attributes" />
+
+<!-- CHOOSE ONE: Reflection (for dynamic scenarios) -->
+<PackageReference Include="NexusLabs.Needlr.Injection.Reflection" />
+
+<!-- CHOOSE ONE: Bundle (includes both with auto-fallback) -->
+<PackageReference Include="NexusLabs.Needlr.Injection.Bundle" />
 
 <!-- ASP.NET Core web applications -->
 <PackageReference Include="NexusLabs.Needlr.AspNet" />
 
-<!-- Scrutor-based type registration -->
+<!-- Optional: Scrutor-based type registration -->
 <PackageReference Include="NexusLabs.Needlr.Injection.Scrutor" />
 
-<!-- Carter framework integration -->
+<!-- Optional: Carter framework integration -->
 <PackageReference Include="NexusLabs.Needlr.Carter" />
 
-<!-- SignalR integration -->
+<!-- Optional: SignalR integration -->
 <PackageReference Include="NexusLabs.Needlr.SignalR" />
+
+<!-- Optional: Semantic Kernel integration -->
+<PackageReference Include="NexusLabs.Needlr.SemanticKernel" />
 ```
 
 ## Core Concepts
@@ -83,14 +124,23 @@ await webApplication.RunAsync();
 
 The `Syringe` class is the main entry point for configuring dependency injection in Needlr. It provides a fluent API for setting up:
 
+- **Discovery Strategy**: Source generation (`.UsingSourceGen()`) or reflection (`.UsingReflection()`)
 - **Type Registrars**: How services are registered (default or Scrutor-based)
 - **Type Filterers**: Which types should be registered automatically
 - **Assembly Providers**: Which assemblies to scan for services
 
 ```csharp
+// Source generation approach (recommended)
 var syringe = new Syringe()
+    .UsingSourceGen()
+    .UsingAssemblyProvider(builder => builder
+        .MatchingAssemblies(x => x.Contains("MyApp"))
+        .Build());
+
+// Reflection approach (dynamic scenarios)
+var syringe = new Syringe()
+    .UsingReflection()
     .UsingScrutorTypeRegistrar()
-    .UsingDefaultTypeFilterer()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x => x.Contains("MyApp"))
         .Build());
@@ -101,8 +151,8 @@ var syringe = new Syringe()
 For web applications, use `ForWebApplication()` to transition to web-specific configuration:
 
 ```csharp
-var webAppSyringe = new Syringe()
-    .UsingScrutorTypeRegistrar()
+var webApp = new Syringe()
+    .UsingSourceGen()
     .ForWebApplication()
     .UsingOptions(() => CreateWebApplicationOptions.Default)
     .BuildWebApplication();
@@ -240,8 +290,10 @@ internal sealed class MyPlugin : IServiceCollectionPlugin
     }
 }
 
-// Usage
-var serviceProvider = new Syringe().BuildServiceProvider();
+// Usage (with source generation)
+var serviceProvider = new Syringe()
+    .UsingSourceGen()
+    .BuildServiceProvider();
 serviceProvider.GetRequiredService<IMyService>().DoSomething();
 // Output:
 // ---BEFORE---
@@ -277,8 +329,9 @@ internal sealed class MyScrutorPlugin : IServiceCollectionPlugin
     }
 }
 
-// Usage with Scrutor type registrar
+// Usage with Scrutor type registrar (requires reflection)
 var serviceProvider = new Syringe()
+    .UsingReflection()
     .UsingScrutorTypeRegistrar()
     .BuildServiceProvider();
 
@@ -297,8 +350,10 @@ Needlr provides a convenient `AddDecorator` extension method that simplifies dec
 
 ```csharp
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 var serviceProvider = new Syringe()
+    .UsingSourceGen()
     .UsingPostPluginRegistrationCallback(services =>
     {
         // Register the base service
@@ -350,15 +405,19 @@ public sealed class CarterWebApplicationBuilderPlugin : IWebApplicationBuilderPl
 
 ## Examples
 
-### Minimal Web API
+### Minimal Web API (Source Generation)
 
 The following example has a custom type automatically registered and a minimal API that will consume it:
 
 ```csharp
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
-var webApplication = new Syringe().BuildWebApplication();
+var webApplication = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .BuildWebApplication();
 await webApplication.RunAsync();
 
 internal sealed class WeatherPlugin : IWebApplicationPlugin
@@ -386,14 +445,16 @@ internal sealed class WeatherProvider(IConfiguration config)
 }
 ```
 
-### Fluent Configuration
+### Fluent Configuration (Reflection with Scrutor)
 
 ```csharp
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.Injection.Scrutor;
 
 var webApplication = new Syringe()
+    .UsingReflection()
     .UsingScrutorTypeRegistrar()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x =>
@@ -410,6 +471,27 @@ var webApplication = new Syringe()
 
 await webApplication.RunAsync();
 ```
+
+## Source Generation vs Reflection
+
+| Feature | Source Generation | Reflection |
+|---------|-------------------|------------|
+| **AOT Compatible** | ✅ Yes | ❌ No |
+| **Trimming Safe** | ✅ Yes | ❌ No |
+| **Startup Performance** | ✅ Faster | ⚠️ Slower |
+| **Dynamic Plugin Loading** | ❌ No | ✅ Yes |
+| **Runtime Assembly Scanning** | ❌ No | ✅ Yes |
+
+**Use Source Generation when:**
+- Building AOT-compiled applications
+- Targeting trimmed/self-contained deployments
+- You want faster startup times
+- All plugins are known at compile time
+
+**Use Reflection when:**
+- Loading plugins dynamically at runtime
+- Scanning assemblies not known at compile time
+- Using Scrutor for advanced registration patterns
 
 ## Requirements
 

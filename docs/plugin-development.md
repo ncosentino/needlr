@@ -140,11 +140,20 @@ public class ApiPlugin : IWebApplicationPlugin
 
 ### Automatic Discovery
 
-Plugins are automatically discovered through assembly scanning:
+Plugins are automatically discovered through assembly scanning. You must configure a discovery strategy:
 
 ```csharp
-// Plugins in scanned assemblies are automatically found and registered
-var webApp = new Syringe().BuildWebApplication();
+// With source generation
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .BuildWebApplication();
+
+// With reflection
+var webApp = new Syringe()
+    .UsingReflection()
+    .ForWebApplication()
+    .BuildWebApplication();
 ```
 
 For built-in plugins, you do not need to annotate them with the special
@@ -159,10 +168,12 @@ Control which assemblies are scanned for plugins:
 
 ```csharp
 var webApp = new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x => 
             x.Contains("MyCompany.Plugins"))
         .Build())
+    .ForWebApplication()
     .BuildWebApplication();
 ```
 
@@ -172,9 +183,11 @@ Plugins are executed in the order they're discovered, which follows the assembly
 
 ```csharp
 var webApp = new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
     .UsingAssemblyProvider(builder => builder
         .UseLibTestEntrySorting() // Libraries → Tests → Entry assembly
         .Build())
+    .ForWebApplication()
     .BuildWebApplication();
 ```
 

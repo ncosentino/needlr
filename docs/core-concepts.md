@@ -4,22 +4,86 @@ This guide explains the fundamental concepts and architecture of Needlr.
 
 ## Architecture Overview
 
-Needlr is built around several key components that work together to provide automatic dependency injection:
+Needlr is built around several key components that work together to provide automatic dependency injection. **Needlr is source-generation-first**: compile-time discovery is the default, with reflection available as an opt-in alternative.
 
 ```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Syringe   │────▶│ Assembly Provider│────▶│ Type Discovery  │
-└─────────────┘     └──────────────────┘     └─────────────────┘
-       │                                              │
-       ▼                                              ▼
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│Type Filterer│────▶│ Type Registrar   │────▶│Service Collection│
-└─────────────┘     └──────────────────┘     └─────────────────┘
-       │                                              │
-       ▼                                              ▼
-┌─────────────┐                               ┌─────────────────┐
-│   Plugins   │──────────────────────────────▶│Service Provider │
-└─────────────┘                               └─────────────────┘
+                         ┌─────────────────────────┐
+                         │   Discovery Strategy    │
+                         │ (.UsingSourceGen() or   │
+                         │  .UsingReflection())    │
+                         └───────────┬─────────────┘
+                                     │
+┌─────────────┐     ┌────────────────▼───────────────┐     ┌─────────────────┐
+│   Syringe   │────▶│     Assembly Provider          │────▶│ Type Discovery  │
+└─────────────┘     └────────────────────────────────┘     └─────────────────┘
+       │                                                           │
+       ▼                                                           ▼
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────────────────────┐
+│Type Filterer│────▶│ Type Registrar   │────▶│      Service Collection         │
+└─────────────┘     └──────────────────┘     └─────────────────────────────────┘
+       │                                                           │
+       ▼                                                           ▼
+┌─────────────┐                                        ┌─────────────────┐
+│   Plugins   │───────────────────────────────────────▶│Service Provider │
+└─────────────┘                                        └─────────────────┘
+```
+
+## Source Generation vs Reflection
+
+Needlr supports two discovery strategies:
+
+### Source Generation (Recommended)
+
+Uses compile-time code generation to discover and register types:
+
+```csharp
+using NexusLabs.Needlr.Injection.SourceGen;
+
+var syringe = new Syringe()
+    .UsingSourceGen();  // Configures all source-gen components
+```
+
+**Benefits:**
+- ✅ AOT compatible
+- ✅ Trimming safe
+- ✅ Faster startup (no runtime scanning)
+- ✅ Compile-time error detection
+
+**Requirements:**
+- Add `NexusLabs.Needlr.Generators` as an analyzer
+- Add `NexusLabs.Needlr.Generators.Attributes`
+- All types must be known at compile time
+
+### Reflection (Dynamic Scenarios)
+
+Uses runtime reflection to discover and register types:
+
+```csharp
+using NexusLabs.Needlr.Injection.Reflection;
+
+var syringe = new Syringe()
+    .UsingReflection();  // Configures all reflection components
+```
+
+**Benefits:**
+- ✅ Dynamic plugin loading
+- ✅ Runtime assembly scanning
+- ✅ Scrutor integration support
+
+**Drawbacks:**
+- ❌ Not AOT compatible
+- ❌ Not trimming safe
+- ❌ Slower startup
+
+### Bundle (Auto-Fallback)
+
+Automatically chooses source-gen if available, falls back to reflection:
+
+```csharp
+using NexusLabs.Needlr.Injection.Bundle;
+
+var syringe = new Syringe()
+    .UsingAutoConfiguration();  // Source-gen preferred, reflection fallback
 ```
 
 ## The Syringe Class
@@ -28,10 +92,11 @@ The `Syringe` class is the central configuration point for Needlr. It's an immut
 
 ### Key Properties
 
-- **TypeRegistrar**: Determines how types are registered (default or Scrutor)
+- **TypeRegistrar**: Determines how types are registered
 - **TypeFilterer**: Controls which types get automatically registered
 - **AssemblyProvider**: Specifies which assemblies to scan
-- **ServiceCollectionPopulator**: Orchestrates the registration process
+- **PluginFactory**: Discovers and creates plugin instances
+- **ServiceProviderBuilderFactory**: Creates the appropriate service provider builder
 
 ### Immutability
 
@@ -39,11 +104,25 @@ Each configuration method returns a new `Syringe` instance:
 
 ```csharp
 var syringe1 = new Syringe();
-var syringe2 = syringe1.UsingScrutorTypeRegistrar();
+var syringe2 = syringe1.UsingSourceGen();
 // syringe1 != syringe2 (different instances)
 ```
 
 This pattern helps support the fluent-builder syntax.
+
+### Required Configuration
+
+Unlike earlier versions, you must explicitly configure a discovery strategy:
+
+```csharp
+// ❌ This will throw an InvalidOperationException
+var provider = new Syringe().BuildServiceProvider();
+
+// ✅ Correct - specify strategy
+var provider = new Syringe()
+    .UsingSourceGen()
+    .BuildServiceProvider();
+```
 
 ## Assembly Scanning
 
@@ -84,15 +163,22 @@ NOTE: you can provider your own custom sorters.
 
 Type registrars determine how discovered types are registered:
 
-#### DefaultTypeRegistrar
+#### GeneratedTypeRegistrar (Source Generation)
 
-Registers types with basic conventions:
-- Classes registered as themselves and their interfaces
-- Appropriate lifetimes based on type characteristics
+Used with source generation strategy:
+- Types discovered at compile time
+- AOT and trimming compatible
+- No runtime reflection
 
-#### ScrutorTypeRegistrar
+#### ReflectionTypeRegistrar (Reflection)
 
-Uses Scrutor library for advanced registration scenarios:
+Used with reflection strategy:
+- Types discovered at runtime
+- Supports dynamic scenarios
+
+#### ScrutorTypeRegistrar (Reflection only)
+
+Uses Scrutor library for advanced registration scenarios (requires reflection):
 - Assembly scanning with filters
 - Decorator pattern support
 - Advanced lifetime management
@@ -103,9 +189,16 @@ NOTE: you can provide your own custom type registrars.
 
 Control which types are eligible for automatic registration:
 
-#### DefaultTypeFilterer
+#### GeneratedTypeFilterer (Source Generation)
 
-Filters based on:
+For source-gen, filtering is done at compile time based on:
+- Types with `[DoNotAutoRegister]` attribute excluded
+- Types with `[DoNotInject]` attribute excluded
+- Abstract classes and interfaces excluded
+
+#### ReflectionTypeFilterer (Reflection)
+
+For reflection, filters at runtime based on:
 - Excludes types with `[DoNotAutoRegister]` attribute
 - Excludes types with `[DoNotInject]` attribute
 - Excludes abstract classes and interfaces
@@ -244,11 +337,12 @@ services.AddSingleton<IService>(sp =>
 
 ```csharp
 new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
     .AddDecorator<IService, ServiceDecorator>()
     .BuildServiceProvider();
 ```
 
-### With Scrutor
+### With Scrutor (Reflection only)
 
 ```csharp
 services.Decorate<IService, ServiceDecorator>();
@@ -262,6 +356,7 @@ Needlr automatically registers `IConfiguration`:
 
 ```csharp
 var provider = new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
     .UsingConfiguration()  // Adds IConfiguration support
     .BuildServiceProvider();
 ```
@@ -274,6 +369,7 @@ Extends Syringe for web applications:
 
 ```csharp
 var webApp = new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
     .ForWebApplication()  // Returns WebApplicationSyringe
     .UsingOptions(() => CreateWebApplicationOptions.Default)
     .BuildWebApplication();
@@ -281,12 +377,17 @@ var webApp = new Syringe()
 
 ## Best Practices
 
-### 1. Use Appropriate Attributes
+### 1. Choose the Right Discovery Strategy
+
+- Use **Source Generation** for AOT, trimmed, or performance-critical apps
+- Use **Reflection** only when dynamic discovery is required
+
+### 2. Use Appropriate Attributes
 
 - `[DoNotAutoRegister]`: Exclude from automatic registration
 - `[DoNotInject]`: Prevent dependency injection
 
-### 2. Leverage Assembly Filtering
+### 3. Leverage Assembly Filtering
 
 Filter assemblies to improve performance:
 
@@ -296,7 +397,7 @@ Filter assemblies to improve performance:
     .Build())
 ```
 
-### 3. Order Matters
+### 4. Order Matters
 
 Use assembly sorting for predictable registration order:
 
@@ -304,19 +405,19 @@ Use assembly sorting for predictable registration order:
 .UseLibTestEntrySorting()  // Libraries → Tests → Entry
 ```
 
-### 4. Plugin Organization
+### 5. Plugin Organization
 
 - Group related configuration in plugins
 - Use appropriate plugin types for timing
 - Keep plugins focused and single-purpose
 
-### 5. Immutability
+### 6. Immutability
 
 Remember that Syringe is immutable:
 
 ```csharp
 var configured = new Syringe()
-    .UsingScrutorTypeRegistrar()
+    .UsingSourceGen()  // or .UsingReflection()
     .UsingConfiguration();
 // Chain all configuration before building
 ```
