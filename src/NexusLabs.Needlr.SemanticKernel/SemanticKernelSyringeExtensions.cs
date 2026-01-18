@@ -31,6 +31,59 @@ public static class SemanticKernelSyringeExtensions
         return syringe.AddSemanticKernelPlugins([typeof(T)]);
     }
 
+    /// <summary>
+    /// Adds SemanticKernel plugins from a pre-discovered list of types.
+    /// This is the recommended approach for AOT/trimmed applications.
+    /// </summary>
+    /// <param name="syringe">The SemanticKernel syringe to configure.</param>
+    /// <param name="pluginTypes">
+    /// Pre-discovered plugin types, typically from the generated 
+    /// <c>NexusLabs.Needlr.Generated.SemanticKernelPlugins.AllPluginTypes</c>.
+    /// </param>
+    /// <returns>The configured syringe.</returns>
+    /// <remarks>
+    /// Example usage with source-generated types:
+    /// <code>
+    /// syringe.AddSemanticKernelPluginsFromGenerated(
+    ///     NexusLabs.Needlr.Generated.SemanticKernelPlugins.AllPluginTypes);
+    /// </code>
+    /// </remarks>
+    public static SemanticKernelSyringe AddSemanticKernelPluginsFromGenerated(
+        this SemanticKernelSyringe syringe,
+        IReadOnlyList<Type> pluginTypes)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(pluginTypes);
+
+        var scanner = new GeneratedSemanticKernelPluginScanner(pluginTypes);
+        return syringe.AddSemanticKernelPluginsFromScanner(scanner);
+    }
+
+    /// <summary>
+    /// Adds SemanticKernel plugins from a custom scanner.
+    /// </summary>
+    /// <param name="syringe">The SemanticKernel syringe to configure.</param>
+    /// <param name="scanner">The scanner to use for plugin discovery.</param>
+    /// <param name="includeInstancePlugins">Whether to include instance plugins.</param>
+    /// <param name="includeStaticPlugins">Whether to include static plugins.</param>
+    /// <returns>The configured syringe.</returns>
+    public static SemanticKernelSyringe AddSemanticKernelPluginsFromScanner(
+        this SemanticKernelSyringe syringe,
+        ISemanticKernelPluginScanner scanner,
+        bool includeInstancePlugins = true,
+        bool includeStaticPlugins = true)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(scanner);
+
+        // This method doesn't require reflection for scanning since the scanner provides the types
+        // However, the AddSemanticKernelPlugins method still uses reflection for type inspection
+        return syringe.AddSemanticKernelPlugins(
+            scanner,
+            includeInstancePlugins: includeInstancePlugins,
+            includeStaticPlugins: includeStaticPlugins);
+    }
+
     [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [KernelFunction] methods.")]
     [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPluginsFromAssemblies(

@@ -558,6 +558,49 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Checks if a type has any methods with the [KernelFunction] attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has kernel function methods.</returns>
+    public static bool HasKernelFunctions(INamedTypeSymbol typeSymbol)
+    {
+        const string KernelFunctionAttributeName = "Microsoft.SemanticKernel.KernelFunctionAttribute";
+
+        // Must be a class (static or instance)
+        if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        // For non-static classes, must not be abstract
+        if (!typeSymbol.IsStatic && typeSymbol.IsAbstract)
+            return false;
+
+        // Check for methods with [KernelFunction] attribute
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is not IMethodSymbol method)
+                continue;
+
+            // Skip constructors, property accessors, etc.
+            if (method.MethodKind != MethodKind.Ordinary)
+                continue;
+
+            // Must be public
+            if (method.DeclaredAccessibility != Accessibility.Public)
+                continue;
+
+            // Check for [KernelFunction] attribute
+            foreach (var attribute in method.GetAttributes())
+            {
+                var attrName = attribute.AttributeClass?.ToDisplayString();
+                if (attrName == KernelFunctionAttributeName)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Result of hub registration discovery.
     /// </summary>
     public readonly struct HubRegistrationInfo
