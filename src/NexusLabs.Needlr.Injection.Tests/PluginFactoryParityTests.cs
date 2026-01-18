@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
 using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
 using Xunit;
@@ -27,7 +28,7 @@ public sealed class PluginFactoryParityTests
     {
         // Arrange - configure generated factory with the same types reflection would find
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = CreateGeneratedPluginFactoryMatchingReflection();
 
         // Act
@@ -56,7 +57,7 @@ public sealed class PluginFactoryParityTests
     {
         // Arrange
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = CreateGeneratedPluginFactoryMatchingReflection();
 
         // Act
@@ -78,7 +79,7 @@ public sealed class PluginFactoryParityTests
     {
         // Arrange
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = CreateGeneratedPluginFactoryMatchingReflection();
 
         // Act
@@ -102,7 +103,7 @@ public sealed class PluginFactoryParityTests
     {
         // Arrange
         var assemblies = Array.Empty<Assembly>();
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = CreateGeneratedPluginFactoryMatchingReflection();
 
         // Act
@@ -124,7 +125,7 @@ public sealed class PluginFactoryParityTests
     {
         // Arrange - use a system assembly that won't have our plugins
         var assemblies = new[] { typeof(object).Assembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = CreateGeneratedPluginFactoryMatchingReflection();
 
         // Act

@@ -1,16 +1,19 @@
 using System.Reflection;
+
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+
 using Xunit;
 
-namespace NexusLabs.Needlr.Tests;
+namespace NexusLabs.Needlr.Injection.Tests.PluginFactories;
 
-public sealed class PluginFactoryTests
+public sealed class ReflectionPluginFactoryTests
 {
-    private readonly PluginFactory _factory = new();
+    private readonly ReflectionPluginFactory _factory = new();
 
     [Fact]
     public void CreatePluginsFromAssemblies_WithValidPluginInterface_ReturnsInstances()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies);
         
@@ -41,7 +44,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithInvalidTypes_FiltersCorrectly()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies).ToList();
         
@@ -54,7 +57,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithGenericTypes_ExcludesGenericTypeDefinitions()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<object>(assemblies).ToList();
         
@@ -67,7 +70,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsWithAttributeFromAssemblies_WithValidAttribute_ReturnsInstances()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsWithAttributeFromAssemblies<TestPluginAttribute>(assemblies);
         
@@ -98,7 +101,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsWithAttributeFromAssemblies_WithoutAttribute_ReturnsEmpty()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsWithAttributeFromAssemblies<ObsoleteAttribute>(assemblies);
         
@@ -109,7 +112,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithInterfaceAndAttribute_ReturnsFilteredInstances()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin, TestPluginAttribute>(assemblies);
         
@@ -142,7 +145,7 @@ public sealed class PluginFactoryTests
     public void CreatePluginsFromAssemblies_WithAssemblyLoadException_HandlesGracefully()
     {
         var mockAssembly = new MockAssemblyWithLoadException();
-        var assemblies = new Assembly[] { mockAssembly, typeof(PluginFactoryTests).Assembly };
+        var assemblies = new Assembly[] { mockAssembly, typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies);
         
@@ -155,7 +158,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithParameterlessConstructor_CreatesInstance()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies).ToList();
         
@@ -167,7 +170,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithNoParameterlessConstructor_FiltersOut()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies).ToList();
         
@@ -180,7 +183,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsWithAttributeFromAssemblies_WithInheritedAttribute_FindsAttribute()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsWithAttributeFromAssemblies<TestPluginAttribute>(assemblies).ToList();
         
@@ -190,7 +193,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithValueTypes_ExcludesValueTypes()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<object>(assemblies).ToList();
         
@@ -200,7 +203,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_EnumeratedMultipleTimes_ReturnsSameResults()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies);
         
@@ -217,7 +220,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithComplexInheritanceHierarchy_WorksCorrectly()
     {
-        var assemblies = new[] { typeof(PluginFactoryTests).Assembly };
+        var assemblies = new[] { typeof(ReflectionPluginFactoryTests).Assembly };
         
         var plugins = _factory.CreatePluginsFromAssemblies<ITestPlugin>(assemblies).ToList();
         
@@ -229,7 +232,7 @@ public sealed class PluginFactoryTests
     [Fact]
     public void CreatePluginsFromAssemblies_WithMultipleAssemblies_CombinesResults()
     {
-        var assembly1 = typeof(PluginFactoryTests).Assembly;
+        var assembly1 = typeof(ReflectionPluginFactoryTests).Assembly;
         var assembly2 = typeof(object).Assembly; // System assembly
         var assemblies = new[] { assembly1, assembly2 };
         

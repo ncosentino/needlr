@@ -13,7 +13,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_ITestPlugin_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -37,7 +37,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_ITestPlugin_BothFactoriesInstantiateWorkingPlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -70,7 +70,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_ITestPluginWithOutput_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -96,7 +96,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_PluginWithDependency_ExcludedByBothFactories()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -116,7 +116,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_AbstractTestPlugin_ExcludedByBothFactories()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -139,7 +139,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_ManualRegistrationTestPlugin_DiscoveredByBothFactories()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -159,7 +159,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_EmptyAssemblies_BothFactoriesReturnEmpty()
     {
         var assemblies = Array.Empty<Assembly>();
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -179,7 +179,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_UnmatchedAssembly_BothFactoriesReturnEmpty()
     {
         var assemblies = new[] { typeof(object).Assembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -219,7 +219,7 @@ public sealed class PluginDiscoveryParityTests
     public void PluginParity_PluginCount_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 

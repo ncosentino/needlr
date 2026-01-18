@@ -7,13 +7,13 @@ namespace NexusLabs.Needlr.SemanticKernel;
 
 internal sealed class KernelFactory(
     IServiceProvider _serviceProvider,
+    IPluginFactory _pluginFactory,
     Action<KernelFactoryOptions>? _configure) :
     IKernelFactory
 {
     private readonly Lazy<IReadOnlyList<IKernelBuilderPlugin>> _lazyKernelBuilderPlugins = new(() =>
     {
-        PluginFactory pluginFactory = new();
-        return pluginFactory
+        return _pluginFactory
             .CreatePluginsFromAssemblies<IKernelBuilderPlugin>(_serviceProvider
                 .GetRequiredService<IReadOnlyList<Assembly>>())
             .ToArray();

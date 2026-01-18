@@ -152,7 +152,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void PluginDiscovery_AllPlugins_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -175,7 +175,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void PluginDiscovery_AttributeBasedFiltering_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -198,7 +198,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void PluginDiscovery_AttributeOnlyQuery_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -245,7 +245,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void Exclusion_AbstractTypes_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -265,7 +265,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void Exclusion_TypesWithoutParameterlessConstructor_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -322,7 +322,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void InheritedAttribute_PluginDiscovery_IdenticalBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -358,7 +358,7 @@ public sealed class ComprehensiveParityAnalysisTests
     public void Summary_PluginTypeCount_MatchesBetweenReflectionAndGenerated()
     {
         var assemblies = new[] { TestAssembly };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 

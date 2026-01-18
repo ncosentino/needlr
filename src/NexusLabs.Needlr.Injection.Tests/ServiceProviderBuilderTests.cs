@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection.Bundle;
 using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
 using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
 using NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 
@@ -24,7 +25,8 @@ public sealed class ServiceProviderBuilderTests
 
         var serviceCollectionPopulator = new ServiceCollectionPopulator(
             new ReflectionTypeRegistrar(),
-            new ReflectionTypeFilterer());
+            new ReflectionTypeFilterer(),
+            new ReflectionPluginFactory());
 
         var assemblyProvider = new AssembyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(
@@ -51,7 +53,8 @@ public sealed class ServiceProviderBuilderTests
         var services = new ServiceCollection();
         var serviceCollectionPopulator = new ServiceCollectionPopulator(
             new ReflectionTypeRegistrar(),
-            new ReflectionTypeFilterer());
+            new ReflectionTypeFilterer(),
+            new ReflectionPluginFactory());
 
         var assemblyProvider = new AssembyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(

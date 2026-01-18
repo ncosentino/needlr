@@ -13,7 +13,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_SpecialPluginAttribute_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -38,7 +38,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_PriorityPluginAttribute_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -63,7 +63,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_CreatePluginsWithAttribute_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -87,7 +87,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_InheritedAttribute_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -107,7 +107,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_NoAttribute_ExcludedByBothFactories()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -129,7 +129,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_MultipleAttributes_BothFactoriesDiscoverSamePlugins()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 
@@ -157,7 +157,7 @@ public sealed class AttributeBasedPluginParityTests
     public void AttributeParity_NonExistentAttribute_BothFactoriesReturnEmpty()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
-        var reflectionFactory = new PluginFactory();
+        var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
 

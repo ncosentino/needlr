@@ -18,22 +18,6 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
     /// </summary>
     /// <param name="typeRegistrar">The type registrar to use for service registration.</param>
     /// <param name="typeFilterer">The type filterer to determine service lifetimes.</param>
-    /// <remarks>
-    /// Uses the default reflection-based <see cref="PluginFactory"/> for plugin discovery.
-    /// </remarks>
-    public ServiceCollectionPopulator(
-        ITypeRegistrar typeRegistrar,
-        ITypeFilterer typeFilterer)
-        : this(typeRegistrar, typeFilterer, new PluginFactory())
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ServiceCollectionPopulator"/> class
-    /// with a custom plugin factory.
-    /// </summary>
-    /// <param name="typeRegistrar">The type registrar to use for service registration.</param>
-    /// <param name="typeFilterer">The type filterer to determine service lifetimes.</param>
     /// <param name="pluginFactory">The plugin factory to use for plugin discovery and instantiation.</param>
     public ServiceCollectionPopulator(
         ITypeRegistrar typeRegistrar,
@@ -63,6 +47,7 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         services.AddSingleton(typeof(Lazy<>), typeof(LazyFactory<>));
         services.AddSingleton(typeof(IReadOnlyList<>), typeof(ReadOnlyListFactory<>));
         services.AddSingleton(typeof(IReadOnlyCollection<>), typeof(ReadOnlyListFactory<>));
+        services.AddSingleton(_pluginFactory);
 
         foreach (var assembly in candidateAssemblies)
         {

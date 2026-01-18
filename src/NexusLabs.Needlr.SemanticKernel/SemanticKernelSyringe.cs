@@ -18,8 +18,10 @@ public sealed record SemanticKernelSyringe
     public IKernelFactory BuildKernelFactory(
         Action<KernelFactoryOptions>? configure = null)
     {
+        var pluginFactory = ServiceProvider.GetRequiredService<IPluginFactory>();
         KernelFactory kernelFactory = new(
             _serviceProvider: ServiceProvider,
+            _pluginFactory: pluginFactory,
             _configure: options =>
             {
                 SetupPlugins(
