@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Bundle;
 
 namespace NexusLabs.Needlr.AspNet;
 
@@ -109,12 +108,12 @@ public sealed record WebApplicationSyringe
         var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
         var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
 
-        var serviceProviderBuilder = new ServiceProviderBuilder(
+        var serviceProviderBuilder = BaseSyringe.GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
             assemblyProvider,
             additionalAssemblies);
 
-        var webApplicationFactory = GetOrCreateWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator);
+        var webApplicationFactory = GetOrCreateWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator, pluginFactory);
         var options = GetOrCreateOptions();
         if (callbacks.Count > 0)
         {
@@ -152,10 +151,11 @@ public sealed record WebApplicationSyringe
 
     private IWebApplicationFactory GetOrCreateWebApplicationFactory(
         IServiceProviderBuilder serviceProviderBuilder, 
-        IServiceCollectionPopulator serviceCollectionPopulator)
+        IServiceCollectionPopulator serviceCollectionPopulator,
+        IPluginFactory pluginFactory)
     {
         return WebApplicationFactoryCreator?.Invoke(serviceProviderBuilder, serviceCollectionPopulator)
-            ?? new WebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator);
+            ?? new WebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator, pluginFactory);
     }
 
     private CreateWebApplicationOptions GetOrCreateOptions()

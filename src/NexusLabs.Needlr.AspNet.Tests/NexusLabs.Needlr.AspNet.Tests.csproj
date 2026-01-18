@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
   </ItemGroup>
 
   <ItemGroup>

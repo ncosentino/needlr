@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.SemanticKernel\NexusLabs.Needlr.SemanticKernel.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
   </ItemGroup>
 
