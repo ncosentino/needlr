@@ -2,11 +2,21 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel;
 
+/// <summary>
+/// Fluent builder for configuring Semantic Kernel with Needlr plugin discovery.
+/// </summary>
+/// <remarks>
+/// This class uses reflection to discover methods with <see cref="KernelFunctionAttribute"/>.
+/// For AOT/trimmed applications, consider registering kernel functions explicitly.
+/// </remarks>
 [DoNotAutoRegister]
+[RequiresUnreferencedCode("SemanticKernel plugin setup uses reflection to discover [KernelFunction] methods.")]
+[RequiresDynamicCode("SemanticKernel plugin setup uses reflection APIs that require dynamic code generation.")]
 public sealed record SemanticKernelSyringe
 {
     public required IServiceProvider ServiceProvider { get; init; }

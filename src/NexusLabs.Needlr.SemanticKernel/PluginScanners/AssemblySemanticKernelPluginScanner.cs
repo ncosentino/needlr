@@ -1,9 +1,12 @@
 ﻿using Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel.PluginScanners;
 
+[RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [KernelFunction] methods.")]
+[RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
 internal sealed class AssemblySemanticKernelPluginScanner(
     IReadOnlyList<Assembly> _assemblies) :
     ISemanticKernelPluginScanner

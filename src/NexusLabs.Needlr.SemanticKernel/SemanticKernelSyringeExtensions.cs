@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.SemanticKernel.PluginScanners;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel;
@@ -30,6 +31,8 @@ public static class SemanticKernelSyringeExtensions
         return syringe.AddSemanticKernelPlugins([typeof(T)]);
     }
 
+    [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [KernelFunction] methods.")]
+    [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPluginsFromAssemblies(
         this SemanticKernelSyringe syringe,
         bool includeInstancePlugins = true,
@@ -44,6 +47,8 @@ public static class SemanticKernelSyringeExtensions
             includeStaticPlugins: includeStaticPlugins);
     }
 
+    [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [KernelFunction] methods.")]
+    [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPluginsFromAssemblies(
         this SemanticKernelSyringe syringe,
         IReadOnlyList<Assembly> asssemblies,
@@ -60,6 +65,8 @@ public static class SemanticKernelSyringeExtensions
             includeStaticPlugins: includeStaticPlugins);
     }
 
+    [RequiresUnreferencedCode("Service provider scanning uses reflection to discover types with [KernelFunction] methods.")]
+    [RequiresDynamicCode("Service provider scanning uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPluginsFromProvider(
         this SemanticKernelSyringe syringe)
     {
@@ -69,6 +76,8 @@ public static class SemanticKernelSyringeExtensions
         return syringe.AddSemanticKernelPlugins(scanner);
     }
 
+    [RequiresUnreferencedCode("Plugin scanning uses reflection to discover types with [KernelFunction] methods.")]
+    [RequiresDynamicCode("Plugin scanning uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPlugins(
         this SemanticKernelSyringe syringe,
         ISemanticKernelPluginScanner scanner,
@@ -85,6 +94,8 @@ public static class SemanticKernelSyringeExtensions
             includeStaticPlugins: includeStaticPlugins);
     }
 
+    [RequiresUnreferencedCode("Plugin type inspection uses reflection to check for [KernelFunction] methods.")]
+    [RequiresDynamicCode("Plugin type inspection uses reflection APIs that may require dynamic code generation.")]
     public static SemanticKernelSyringe AddSemanticKernelPlugins(
         this SemanticKernelSyringe syringe,
         IReadOnlyList<Type> pluginTypes,

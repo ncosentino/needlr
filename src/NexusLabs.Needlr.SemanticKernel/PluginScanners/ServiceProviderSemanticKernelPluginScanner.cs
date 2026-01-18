@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel.PluginScanners;
 
+[RequiresUnreferencedCode("Service provider scanning uses reflection to discover types with [KernelFunction] methods.")]
+[RequiresDynamicCode("Service provider scanning uses reflection APIs that may require dynamic code generation.")]
 internal sealed class ServiceProviderSemanticKernelPluginScanner(
     IServiceProvider _root) : 
     ISemanticKernelPluginScanner
