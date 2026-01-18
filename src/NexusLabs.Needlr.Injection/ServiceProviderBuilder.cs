@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.PluginFactories;
+
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -121,7 +124,11 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
             provider,
             config,
             candidateAssemblies);
-        PluginFactory pluginFactory = new();
+
+        IPluginFactory pluginFactory = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
+            ? new GeneratedPluginFactory(pluginTypeProvider)
+            : new PluginFactory();
+
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
         {
             plugin.Configure(options);

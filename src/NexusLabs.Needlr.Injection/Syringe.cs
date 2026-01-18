@@ -1,6 +1,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.Loaders;
+using NexusLabs.Needlr.Injection.PluginFactories;
+using NexusLabs.Needlr.Injection.TypeFilterers;
+using NexusLabs.Needlr.Injection.TypeRegistrars;
+
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -52,7 +58,13 @@ public sealed record Syringe
     /// </summary>
     public ITypeRegistrar GetOrCreateTypeRegistrar()
     {
-        return TypeRegistrar ?? new TypeRegistrars.DefaultTypeRegistrar();
+        if (TypeRegistrar is not null)
+            return TypeRegistrar;
+
+        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
+            return new GeneratedTypeRegistrar(injectableTypeProvider);
+
+        return new DefaultTypeRegistrar();
     }
 
     /// <summary>
@@ -60,7 +72,13 @@ public sealed record Syringe
     /// </summary>
     public ITypeFilterer GetOrCreateTypeFilterer()
     {
-        return TypeFilterer ?? new TypeFilterers.DefaultTypeFilterer();
+        if (TypeFilterer is not null)
+            return TypeFilterer;
+
+        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out _))
+            return new GeneratedTypeFilterer(injectableTypeProvider);
+
+        return new DefaultTypeFilterer();
     }
 
     /// <summary>
@@ -68,7 +86,13 @@ public sealed record Syringe
     /// </summary>
     public IPluginFactory GetOrCreatePluginFactory()
     {
-        return PluginFactory ?? new NexusLabs.Needlr.PluginFactory();
+        if (PluginFactory is not null)
+            return PluginFactory;
+
+        if (NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider))
+            return new GeneratedPluginFactory(pluginTypeProvider);
+
+        return new NexusLabs.Needlr.PluginFactory();
     }
 
     /// <summary>
@@ -88,7 +112,13 @@ public sealed record Syringe
     /// </summary>
     public IAssemblyProvider GetOrCreateAssemblyProvider()
     {
-        return AssemblyProvider ?? new AssembyProviderBuilder().Build();
+        if (AssemblyProvider is not null)
+            return AssemblyProvider;
+
+        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
+            return new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider);
+
+        return new AssembyProviderBuilder().Build();
     }
 
     /// <summary>

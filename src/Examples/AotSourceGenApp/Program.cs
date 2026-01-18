@@ -4,13 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 using NexusLabs.Needlr;
 using NexusLabs.Needlr.AspNet;
-using NexusLabs.Needlr.Generated;
 using NexusLabs.Needlr.Injection;
 
 using System.Text.Json.Serialization;
 
 var app = new Syringe()
-    .UsingGeneratedComponents(TypeRegistry.GetInjectableTypes, TypeRegistry.GetPluginTypes)
     .UsingPostPluginRegistrationCallback(services =>
     {
         services.AddDecorator<IWeatherProvider, DecoratedWeatherProvider>();

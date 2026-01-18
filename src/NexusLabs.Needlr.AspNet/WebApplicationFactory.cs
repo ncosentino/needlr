@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.PluginFactories;
 
 using System.Reflection;
 
@@ -14,7 +16,14 @@ public sealed class WebApplicationFactory(
     IServiceCollectionPopulator _serviceCollectionPopulator) :
     IWebApplicationFactory
 {
-    private readonly PluginFactory _pluginFactory = new();
+    private readonly IPluginFactory _pluginFactory = CreateDefaultPluginFactory();
+
+    private static IPluginFactory CreateDefaultPluginFactory()
+    {
+        return NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
+            ? new GeneratedPluginFactory(pluginTypeProvider)
+            : new PluginFactory();
+    }
 
     /// <inheritdoc />
     public WebApplication Create(

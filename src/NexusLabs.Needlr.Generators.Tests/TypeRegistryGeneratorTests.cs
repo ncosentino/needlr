@@ -28,6 +28,27 @@ namespace TestApp
     }
 
     [Fact]
+    public void Generator_EmitsModuleInitializerBootstrap()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class MyService { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Contains("ModuleInitializer", generatedCode);
+        Assert.Contains("NeedlrSourceGenBootstrap.Register", generatedCode);
+        Assert.Contains("TypeRegistry.GetInjectableTypes", generatedCode);
+        Assert.Contains("TypeRegistry.GetPluginTypes", generatedCode);
+    }
+
+    [Fact]
     public void Generator_WithNamespacePrefixFilter_FiltersTypes()
     {
         var source = @"
@@ -447,6 +468,15 @@ namespace NexusLabs.Needlr.Generators
         public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
         public System.Func<object> Factory { get; }
     }
+
+    public static class NeedlrSourceGenBootstrap
+    {
+        public static void Register(
+            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+        {
+        }
+    }
 }";
 
         var syntaxTrees = new[]
@@ -471,6 +501,7 @@ namespace NexusLabs.Needlr.Generators
 
         var generatedTrees = outputCompilation.SyntaxTrees
             .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .OrderBy(t => t.FilePath)
             .ToList();
 
         if (generatedTrees.Count == 0)
@@ -479,6 +510,6 @@ namespace NexusLabs.Needlr.Generators
             return string.Empty;
         }
 
-        return generatedTrees[0].GetText().ToString();
+        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
     }
 }
