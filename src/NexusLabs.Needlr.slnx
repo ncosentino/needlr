@@ -1,5 +1,9 @@
 
 <Solution>
+  <Folder Name="/Examples/Aot/">
+    <Project Path="Examples/AotSourceGenApp/AotSourceGenApp.csproj" />
+    <Project Path="Examples/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
     <File Path="../LICENSE" />
@@ -24,10 +28,10 @@
     <File Path="NuGet.config" />
   </SolutionItems>
   <Folder Name="/Tests/">
-    <Project Path="NexusLabs.Needlr.Generators.Tests\NexusLabs.Needlr.Generators.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AspNet.Tests\NexusLabs.Needlr.AspNet.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter.Tests\NexusLabs.Needlr.Carter.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests\NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Generators.Tests\NexusLabs.Needlr.Generators.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests\NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Tests\NexusLabs.Needlr.Injection.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" Id="7e0b2760-1fc3-4359-bbc6-88c91b87ac82" />
@@ -39,11 +43,11 @@
   <Project Path="NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Configuration/NexusLabs.Needlr.Extensions.Configuration.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+  <Project Path="NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Scrutor\NexusLabs.Needlr.Injection.Scrutor.csproj" />
   <Project Path="NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
   <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" Id="e695dd52-abed-44e2-9bb8-81db4321afa5" />
   <Project Path="NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
   <Project Path="NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
 </Solution>

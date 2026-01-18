@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAotCompatible>true</IsAotCompatible>
+		<EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+		<ProjectReference Include="..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+		<ProjectReference Include="..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+						  OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+	</ItemGroup>
+</Project>

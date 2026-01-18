@@ -56,13 +56,16 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         where TPlugin : class
     {
         var pluginType = typeof(TPlugin);
-        var assemblySet = assemblies.Select(a => a.GetName().Name).ToHashSet(StringComparer.Ordinal);
+        var assemblySet = assemblies
+            .Select(a => a.GetName().Name)
+            .Where(n => n is not null)
+            .ToHashSet(StringComparer.Ordinal)!;
 
         foreach (var info in _pluginProvider())
         {
             // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (!assemblySet.Contains(pluginAssemblyName))
+            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
                 continue;
 
             // Check if plugin implements the requested type
@@ -79,12 +82,16 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         IEnumerable<Assembly> assemblies)
         where TAttribute : Attribute
     {
-        var assemblySet = assemblies.Select(a => a.GetName().Name).ToHashSet(StringComparer.Ordinal);
+        var assemblySet = assemblies
+            .Select(a => a.GetName().Name)
+            .Where(n => n is not null)
+            .ToHashSet(StringComparer.Ordinal)!;
 
         foreach (var info in _pluginProvider())
         {
+            // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (!assemblySet.Contains(pluginAssemblyName))
+            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
                 continue;
 
             // Use pre-computed attribute info - no reflection needed
@@ -102,12 +109,16 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         where TAttribute : Attribute
     {
         var pluginType = typeof(TPlugin);
-        var assemblySet = assemblies.Select(a => a.GetName().Name).ToHashSet(StringComparer.Ordinal);
+        var assemblySet = assemblies
+            .Select(a => a.GetName().Name)
+            .Where(n => n is not null)
+            .ToHashSet(StringComparer.Ordinal)!;
 
         foreach (var info in _pluginProvider())
         {
+            // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (!assemblySet.Contains(pluginAssemblyName))
+            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
                 continue;
 
             if (!pluginType.IsAssignableFrom(info.PluginType))

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.Loaders;
 using NexusLabs.Needlr.Injection.PluginFactories;
 using NexusLabs.Needlr.Injection.TypeFilterers;
 using NexusLabs.Needlr.Injection.TypeRegistrars;
@@ -62,8 +63,12 @@ public static class SyringeExtensions
     /// <remarks>
     /// <para>
     /// This is the recommended way to use source-generated dependency injection.
-    /// It configures the type registrar, type filterer, and plugin factory to use
-    /// pre-computed compile-time information, eliminating all runtime reflection.
+    /// It configures the type registrar, type filterer, plugin factory, and assembly
+    /// provider to use pre-computed compile-time information, eliminating all runtime reflection.
+    /// </para>
+    /// <para>
+    /// The assembly provider is automatically configured to include all assemblies
+    /// that contain types in the TypeRegistry, enabling cross-assembly plugin discovery.
     /// </para>
     /// <para>
     /// To use this, your assembly must have:
@@ -100,7 +105,43 @@ public static class SyringeExtensions
         return syringe
             .UsingGeneratedTypeRegistrar(injectableTypeProvider)
             .UsingGeneratedTypeFilterer(injectableTypeProvider)
-            .UsingGeneratedPluginFactory(pluginTypeProvider);
+            .UsingGeneratedPluginFactory(pluginTypeProvider)
+            .UsingGeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider);
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated assembly provider.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This provider derives the list of candidate assemblies from the TypeRegistry,
+    /// extracting unique assemblies from both injectable types and plugin types.
+    /// This enables cross-assembly plugin discovery when using source generation.
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// var syringe = new Syringe()
+    ///     .UsingGeneratedAssemblyProvider(
+    ///         TypeRegistry.GetInjectableTypes,
+    ///         TypeRegistry.GetPluginTypes);
+    /// </code>
+    /// </example>
+    public static Syringe UsingGeneratedAssemblyProvider(
+        this Syringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(injectableTypeProvider);
+        ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+
+        return syringe.UsingAssemblyProvider(
+            new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider));
     }
 
     /// <summary>
