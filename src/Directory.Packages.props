@@ -16,6 +16,9 @@
     <PackageVersion Include="Carter" Version="9.0.0" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <!-- ASP.NET packages -->
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="9.0.8" />
     <!-- Testing packages -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.3" />
