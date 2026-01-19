@@ -46,6 +46,7 @@
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
   <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection.Bundle.Tests/NexusLabs.Needlr.Injection.Bundle.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Bundle/NexusLabs.Needlr.Injection.Bundle.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor.csproj" />

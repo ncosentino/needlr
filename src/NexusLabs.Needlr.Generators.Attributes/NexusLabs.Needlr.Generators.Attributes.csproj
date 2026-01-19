@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NexusLabs.Needlr.Injection.Tests" />
+    <InternalsVisibleTo Include="NexusLabs.Needlr.Injection.Bundle.Tests" />
   </ItemGroup>
 
   <PropertyGroup>
