@@ -16,11 +16,12 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 	</ItemGroup>
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\NexusLabs.Needlr.Extensions.Configuration\NexusLabs.Needlr.Extensions.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.SemanticKernel\NexusLabs.Needlr.SemanticKernel.csproj" />
 	</ItemGroup>
 

@@ -48,7 +48,6 @@
   </Folder>
   <Project Path="NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet.csproj" />
   <Project Path="NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.csproj" />
-  <Project Path="NexusLabs.Needlr.Extensions.Configuration/NexusLabs.Needlr.Extensions.Configuration.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
   <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
