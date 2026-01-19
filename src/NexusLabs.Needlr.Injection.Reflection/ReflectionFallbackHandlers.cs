@@ -99,7 +99,7 @@ public static class ReflectionFallbackHandlers
     {
         ComponentName = "AssemblyProvider",
         Reason = "No source-generated TypeRegistry found via NeedlrSourceGenBootstrap.",
-        ReflectionComponentType = typeof(AssembyProviderBuilder),
+        ReflectionComponentType = typeof(AssemblyProviderBuilder),
         GeneratedComponentType = null
     };
 }

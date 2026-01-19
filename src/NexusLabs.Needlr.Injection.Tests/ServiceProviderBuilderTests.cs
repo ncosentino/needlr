@@ -28,7 +28,7 @@ public sealed class ServiceProviderBuilderTests
             new ReflectionTypeFilterer(),
             new ReflectionPluginFactory());
 
-        var assemblyProvider = new AssembyProviderBuilder().Build();
+        var assemblyProvider = new AssemblyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(
             serviceCollectionPopulator,
             assemblyProvider);
@@ -56,7 +56,7 @@ public sealed class ServiceProviderBuilderTests
             new ReflectionTypeFilterer(),
             new ReflectionPluginFactory());
 
-        var assemblyProvider = new AssembyProviderBuilder().Build();
+        var assemblyProvider = new AssemblyProviderBuilder().Build();
         var serviceProviderBuilder = new ServiceProviderBuilder(
             serviceCollectionPopulator,
             assemblyProvider);

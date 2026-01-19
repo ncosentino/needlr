@@ -86,11 +86,11 @@ public static class SyringeReflectionExtensions
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
     /// <returns>A new configured syringe instance.</returns>
-    [RequiresUnreferencedCode("AssembyProviderBuilder uses reflection to load assemblies.")]
+    [RequiresUnreferencedCode("AssemblyProviderBuilder uses reflection to load assemblies.")]
     public static Syringe UsingReflectionAssemblyProvider(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
-        return syringe.UsingAssemblyProvider(new AssembyProviderBuilder().Build());
+        return syringe.UsingAssemblyProvider(new AssemblyProviderBuilder().Build());
     }
 
     /// <summary>
@@ -99,15 +99,15 @@ public static class SyringeReflectionExtensions
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="configure">A function to configure the assembly provider builder.</param>
     /// <returns>A new configured syringe instance.</returns>
-    [RequiresUnreferencedCode("AssembyProviderBuilder uses reflection to load assemblies.")]
+    [RequiresUnreferencedCode("AssemblyProviderBuilder uses reflection to load assemblies.")]
     public static Syringe UsingAssemblyProvider(
         this Syringe syringe,
-        Func<IAssembyProviderBuilder, IAssemblyProvider> configure)
+        Func<IAssemblyProviderBuilder, IAssemblyProvider> configure)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var provider = configure(new AssembyProviderBuilder());
+        var provider = configure(new AssemblyProviderBuilder());
         return syringe.UsingAssemblyProvider(provider);
     }
 

@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection.Reflection;
 
-public static class IAssembyProviderBuilderExtensions
+public static class IAssemblyProviderBuilderExtensions
 {
     /// <summary>
     /// Configures the builder to load assemblies from the application's base directory that match the specified filter criteria.
@@ -21,8 +21,8 @@ public static class IAssembyProviderBuilderExtensions
     /// builder.MatchingAssemblies(path => path.Contains("MyProject"));
     /// </code>
     /// </example>
-    public static IAssembyProviderBuilder MatchingAssemblies(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingAssemblies(
+        this IAssemblyProviderBuilder builder,
         Predicate<string> fileFilter)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -39,8 +39,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="fileFilter">A predicate that determines which files to include based on their file path.</param>
     /// <returns>The configured assembly provider builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="fileFilter"/> is null.</exception>
-    public static IAssembyProviderBuilder MatchingFiles(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingFiles(
+        this IAssemblyProviderBuilder builder,
         Predicate<string> fileFilter)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -60,8 +60,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="fileFilter">A predicate that determines which assembly files to include based on their file path.</param>
     /// <returns>The configured assembly provider builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="directory"/>, or <paramref name="fileFilter"/> is null.</exception>
-    public static IAssembyProviderBuilder MatchingAssemblies(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingAssemblies(
+        this IAssemblyProviderBuilder builder,
         string directory,
         Predicate<string> fileFilter)
     {
@@ -82,8 +82,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="fileFilter">A predicate that determines which files to include based on their file path.</param>
     /// <returns>The configured assembly provider builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="directory"/>, or <paramref name="fileFilter"/> is null.</exception>
-    public static IAssembyProviderBuilder MatchingFiles(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingFiles(
+        this IAssemblyProviderBuilder builder,
         string directory,
         Predicate<string> fileFilter)
     {
@@ -105,8 +105,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="fileFilter">A predicate that determines which assembly files to include based on their file path.</param>
     /// <returns>The configured assembly provider builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="directories"/>, or <paramref name="fileFilter"/> is null.</exception>
-    public static IAssembyProviderBuilder MatchingAssemblies(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingAssemblies(
+        this IAssemblyProviderBuilder builder,
         IReadOnlyList<string> directories,
         Predicate<string> fileFilter)
     {
@@ -128,8 +128,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="fileFilter">A predicate that determines which files to include based on their file path.</param>
     /// <returns>The configured assembly provider builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="directories"/>, or <paramref name="fileFilter"/> is null.</exception>
-    public static IAssembyProviderBuilder MatchingFiles(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder MatchingFiles(
+        this IAssemblyProviderBuilder builder,
         IReadOnlyList<string> directories,
         Predicate<string> fileFilter)
     {
@@ -148,8 +148,8 @@ public static class IAssembyProviderBuilderExtensions
     /// <param name="builder">The assembly provider builder to configure.</param>
     /// <returns>The configured assembly provider builder with alphabetical sorting enabled.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public static IAssembyProviderBuilder UseAlphabeticalSorting(
-        this IAssembyProviderBuilder builder)
+    public static IAssemblyProviderBuilder UseAlphabeticalSorting(
+        this IAssemblyProviderBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
         return builder.UseSorter(new AlphabeticalAssemblySorter());
@@ -168,8 +168,8 @@ public static class IAssembyProviderBuilderExtensions
     /// builder.UseSortingCallback(assemblies => assemblies.OrderBy(a => a.GetName().Name));
     /// </code>
     /// </example>
-    public static IAssembyProviderBuilder UseSortingCallback(
-        this IAssembyProviderBuilder builder,
+    public static IAssemblyProviderBuilder UseSortingCallback(
+        this IAssemblyProviderBuilder builder,
         Func<IReadOnlyList<Assembly>, IEnumerable<Assembly>> sortCallback)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -187,8 +187,8 @@ public static class IAssembyProviderBuilderExtensions
     /// </summary>
     /// <param name="builder">The assembly provider builder to configure.</param>
     /// <returns>The configured assembly provider builder with lib-test-entry sorting enabled.</returns>
-    public static IAssembyProviderBuilder UseLibTestEntrySorting(
-        this IAssembyProviderBuilder builder)
+    public static IAssemblyProviderBuilder UseLibTestEntrySorting(
+        this IAssemblyProviderBuilder builder)
     {
         return builder.UseSorter(new LibTestEntryAssemblySorter(
             a => a.GetName().Name?.Contains("Tests", StringComparison.OrdinalIgnoreCase) == true,

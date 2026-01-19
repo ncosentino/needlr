@@ -13,26 +13,26 @@ namespace NexusLabs.Needlr.Injection.Reflection;
 /// This builder uses reflection-based assembly loading and is not compatible with NativeAOT or trimming.
 /// For AOT scenarios, use GeneratedAssemblyProvider from NexusLabs.Needlr.Injection.SourceGen instead.
 /// </remarks>
-[RequiresUnreferencedCode("AssembyProviderBuilder uses reflection-based assembly loading. Use GeneratedAssemblyProvider for AOT scenarios.")]
-public sealed class AssembyProviderBuilder : IAssembyProviderBuilder
+[RequiresUnreferencedCode("AssemblyProviderBuilder uses reflection-based assembly loading. Use GeneratedAssemblyProvider for AOT scenarios.")]
+public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
 {
     private IAssemblyLoader _assemblyLoader;
     private IAssemblySorter _assemblySorter;
 
-    public AssembyProviderBuilder()
+    public AssemblyProviderBuilder()
     {
         _assemblyLoader = new ReflectionAssemblyLoader();
         _assemblySorter = new ReflectionAssemblySorter();
     }
 
-    public AssembyProviderBuilder UseLoader(IAssemblyLoader loader)
+    public AssemblyProviderBuilder UseLoader(IAssemblyLoader loader)
     {
         ArgumentNullException.ThrowIfNull(loader);
         _assemblyLoader = loader;
         return this;
     }
 
-    public AssembyProviderBuilder UseSorter(IAssemblySorter sorter)
+    public AssemblyProviderBuilder UseSorter(IAssemblySorter sorter)
     {
         ArgumentNullException.ThrowIfNull(sorter);
         _assemblySorter = sorter;
