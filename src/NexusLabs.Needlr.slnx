@@ -1,5 +1,8 @@
 
 <Solution>
+  <Folder Name="/Analyzers/">
+    <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
+  </Folder>
   <Folder Name="/Examples/" />
   <Folder Name="/Examples/SourceGen/">
     <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
@@ -29,6 +32,7 @@
     <File Path="NuGet.config" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="NexusLabs.Needlr.Analyzers.Tests/NexusLabs.Needlr.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AspNet.Tests/NexusLabs.Needlr.AspNet.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter.Tests/NexusLabs.Needlr.Carter.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests/NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
