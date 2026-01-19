@@ -5,4 +5,19 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
+  <!-- Include analyzers in the NuGet package -->
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Analyzers\NexusLabs.Needlr.Analyzers.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.Analyzers\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.Analyzers.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
 </Project>
