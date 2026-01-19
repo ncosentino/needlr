@@ -24,7 +24,7 @@ namespace NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 [DoNotAutoRegister]
 public sealed class GeneratedPluginFactory : IPluginFactory
 {
-    private readonly Func<IReadOnlyList<PluginTypeInfo>> _pluginProvider;
+    private readonly Lazy<IReadOnlyList<PluginTypeInfo>> _lazyPlugins;
     private readonly bool _allowAllWhenAssembliesEmpty;
 
     /// <summary>
@@ -41,7 +41,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         bool allowAllWhenAssembliesEmpty = false)
     {
         ArgumentNullException.ThrowIfNull(pluginProvider);
-        _pluginProvider = pluginProvider;
+        _lazyPlugins = new(() => pluginProvider.Invoke().ToArray());
         _allowAllWhenAssembliesEmpty = allowAllWhenAssembliesEmpty;
     }
 
@@ -55,7 +55,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _pluginProvider())
+            foreach (var info in _lazyPlugins.Value)
             {
                 if (!pluginType.IsAssignableFrom(info.PluginType))
                     continue;
@@ -71,7 +71,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
-        foreach (var info in _pluginProvider())
+        foreach (var info in _lazyPlugins.Value)
         {
             // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
@@ -95,7 +95,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _pluginProvider())
+            foreach (var info in _lazyPlugins.Value)
             {
                 if (!info.HasAttribute<TAttribute>())
                     continue;
@@ -111,7 +111,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
-        foreach (var info in _pluginProvider())
+        foreach (var info in _lazyPlugins.Value)
         {
             // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
@@ -137,7 +137,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _pluginProvider())
+            foreach (var info in _lazyPlugins.Value)
             {
                 if (!pluginType.IsAssignableFrom(info.PluginType))
                     continue;
@@ -156,7 +156,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
-        foreach (var info in _pluginProvider())
+        foreach (var info in _lazyPlugins.Value)
         {
             // Check if this plugin is from one of the specified assemblies
             var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
