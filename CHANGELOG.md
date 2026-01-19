@@ -107,6 +107,6 @@ var sp = new Syringe()
 
 ---
 
-## [0.0.1-alpha.19] - Previous
+## [0.0.1-alpha.19] - 2026-01-18
 
 Initial alpha releases with reflection-based architecture.

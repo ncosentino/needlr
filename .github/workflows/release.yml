@@ -100,11 +100,39 @@ jobs:
           --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --skip-duplicate
 
+    - name: Extract Release Notes from CHANGELOG
+      id: release-notes
+      shell: bash
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
+        
+        # Extract section between this version header and next version header
+        NOTES=$(awk -v ver="$VERSION" '
+          /^## \[/ { 
+            if (found) exit
+            if (index($0, "[" ver "]")) found=1
+          }
+          found { print }
+        ' CHANGELOG.md)
+        
+        if [ -z "$NOTES" ]; then
+          echo "::warning::No changelog entry found for version $VERSION"
+          NOTES="Release $VERSION - see CHANGELOG.md for details."
+        fi
+        
+        # Output for GitHub Release body (multiline)
+        {
+          echo "notes<<CHANGELOG_EOF"
+          echo "$NOTES"
+          echo "CHANGELOG_EOF"
+        } >> "$GITHUB_OUTPUT"
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
+        body: ${{ steps.release-notes.outputs.notes }}
         draft: false
         prerelease: ${{ contains(github.ref_name, '-') }}
         files: |
