@@ -12,11 +12,25 @@ namespace NexusLabs.Needlr.SignalR;
 /// Plugin that registers SignalR hubs discovered via <see cref="IHubRegistrationPlugin"/> implementations.
 /// </summary>
 /// <remarks>
+/// <para>
 /// This plugin uses reflection to invoke MapHub&lt;T&gt;() at runtime because the SignalR API
-/// does not provide a non-generic overload. For AOT/trimmed applications, consider using
-/// source-generated hub registration instead.
+/// does not provide a non-generic overload.
+/// </para>
+/// <para>
+/// <strong>For AOT/trimmed applications</strong>, use the source-generated approach instead:
+/// <code>
+/// var app = builder.Build();
+/// app.MapGeneratedHubs(); // Generated at compile-time, no reflection
+/// </code>
+/// </para>
+/// <para>
+/// This plugin is marked with <see cref="DoNotAutoRegisterAttribute"/> to prevent automatic
+/// registration in source-gen scenarios. To use this reflection-based approach, explicitly
+/// register the plugin or call <see cref="SignalRExtensions.UseSignalRHubsWithReflection"/>.
+/// </para>
 /// </remarks>
-[RequiresUnreferencedCode("SignalR hub registration uses reflection to invoke MapHub<T>(). For AOT scenarios, register hubs explicitly.")]
+[DoNotAutoRegister]
+[RequiresUnreferencedCode("SignalR hub registration uses reflection to invoke MapHub<T>(). For AOT scenarios, use app.MapGeneratedHubs() instead.")]
 [RequiresDynamicCode("SignalR hub registration uses MakeGenericMethod() which requires dynamic code generation.")]
 public sealed class SignalRHubRegistrationPlugin : IWebApplicationPlugin
 {

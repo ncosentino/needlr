@@ -2,6 +2,8 @@
 
 using NexusLabs.Needlr.Injection;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace NexusLabs.Needlr.SemanticKernel;
 
 /// <summary>
@@ -10,9 +12,17 @@ namespace NexusLabs.Needlr.SemanticKernel;
 /// as part of the Needlr build pipeline.
 /// </summary>
 /// <remarks>
+/// <para>
 /// These helpers defer service registration using the Syringe
 /// post-plugin registration callback so that plugin discovery and
 /// registration are completed before the Semantic Kernel factory is added.
+/// </para>
+/// <para>
+/// <strong>Note:</strong> Microsoft.SemanticKernel internally uses reflection to discover
+/// <c>[KernelFunction]</c> methods and create plugins. This integration therefore requires
+/// reflection and is not fully AOT-compatible. For AOT scenarios, consider registering
+/// kernel functions explicitly.
+/// </para>
 /// </remarks>
 public static class SyringeExtensionsForSemanticKernel
 {
@@ -37,6 +47,8 @@ public static class SyringeExtensionsForSemanticKernel
     /// var syringe = new Syringe().UsingSemanticKernel();
     /// </code>
     /// </example>
+    [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
+    [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
     public static Syringe UsingSemanticKernel(
         this Syringe syringe)
     {
@@ -76,6 +88,8 @@ public static class SyringeExtensionsForSemanticKernel
     ///     });
     /// </code>
     /// </example>
+    [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
+    [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
     public static Syringe UsingSemanticKernel(
         this Syringe syringe,
         Func<SemanticKernelSyringe, SemanticKernelSyringe> configure)
@@ -126,6 +140,8 @@ public static class SyringeExtensionsForSemanticKernel
     ///     });
     /// </code>
     /// </example>
+    [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
+    [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
     public static Syringe UsingSemanticKernel(
         this Syringe syringe,
         Func<SemanticKernelSyringe> configure)
