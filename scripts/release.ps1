@@ -19,8 +19,16 @@ function Ensure-CleanRepo {
 }
 
 function Ensure-Nbgv {
-  if (-not (Get-Command nbgv -ErrorAction SilentlyContinue)) {
-    throw "NBGV CLI not found. Install with: dotnet tool install -g nbgv"
+  # Check if nbgv is in PATH or in dotnet tools folder
+  $nbgvPath = Get-Command nbgv -ErrorAction SilentlyContinue
+  if (-not $nbgvPath) {
+    $toolsPath = Join-Path $env:USERPROFILE ".dotnet\tools\nbgv.exe"
+    if (Test-Path $toolsPath) {
+      # Add to PATH for this session
+      $env:Path = "$env:USERPROFILE\.dotnet\tools;$env:Path"
+    } else {
+      throw "NBGV CLI not found. Install with: dotnet tool install -g nbgv"
+    }
   }
 }
 
@@ -59,9 +67,30 @@ if (-not $Version) {
 
 Write-Host "Preparing release for version: $Version"
 
+# Check for changelog entry
+$changelogPath = Join-Path $PSScriptRoot "..\CHANGELOG.md"
+$changelogEntry = $null
+if (Test-Path $changelogPath) {
+  $content = Get-Content $changelogPath -Raw
+  # Extract section for this version
+  if ($content -match "(?ms)^## \[$([regex]::Escape($Version))\].*?(?=^## \[|\z)") {
+    $changelogEntry = $Matches[0].Trim()
+  }
+}
+
 if (-not $DryRun) { Ensure-CleanRepo }
 
 if ($DryRun) {
+  Write-Host ""
+  Write-Host "=== CHANGELOG ENTRY ===" -ForegroundColor Cyan
+  if ($changelogEntry) {
+    Write-Host $changelogEntry -ForegroundColor Green
+  } else {
+    Write-Host "[WARNING] No changelog entry found for version $Version" -ForegroundColor Yellow
+    Write-Host "Consider running: python skills/changelog-generator/scripts/generate.py --from <prev-tag> --to HEAD --version $Version" -ForegroundColor Yellow
+  }
+  Write-Host ""
+  Write-Host "=== ACTIONS ===" -ForegroundColor Cyan
   Write-Host "[DRY RUN] Would run:"
   Write-Host "  nbgv set-version $Version"
   Write-Host "  git commit -am 'chore: bump version to $Version'"
