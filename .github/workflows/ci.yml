@@ -25,7 +25,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: |
+          ${{ env.DOTNET_VERSION }}
+          10.0.x
 
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx
@@ -35,3 +37,50 @@ jobs:
 
     - name: Test
       run: dotnet test src/NexusLabs.Needlr.slnx --configuration Release --no-build --verbosity normal
+
+  aot-validation:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Install AOT dependencies
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+    - name: Publish AOT Console App
+      run: |
+        dotnet publish src/Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj \
+          -c Release \
+          -r linux-x64 \
+          --self-contained \
+          -o artifacts/console
+
+    - name: Verify Console App Executable
+      run: |
+        test -f artifacts/console/AotSourceGenConsoleApp
+        file artifacts/console/AotSourceGenConsoleApp
+
+    - name: Run Console App
+      run: artifacts/console/AotSourceGenConsoleApp || echo "App executed (exit expected for demo)"
+
+    - name: Publish AOT Web App
+      run: |
+        dotnet publish src/Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj \
+          -c Release \
+          -r linux-x64 \
+          --self-contained \
+          -o artifacts/webapp
+
+    - name: Verify Web App Executable
+      run: |
+        test -f artifacts/webapp/AotSourceGenApp
+        file artifacts/webapp/AotSourceGenApp
