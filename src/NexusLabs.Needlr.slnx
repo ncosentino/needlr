@@ -50,6 +50,9 @@
     <Project Path="NexusLabs.Needlr.SignalR.Tests/NexusLabs.Needlr.SignalR.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Tests/NexusLabs.Needlr.Tests.csproj" />
   </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj" />
+  </Folder>
   <Project Path="NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet.csproj" />
   <Project Path="NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
