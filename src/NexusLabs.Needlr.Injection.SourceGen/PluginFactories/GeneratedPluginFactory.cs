@@ -45,22 +45,35 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         _allowAllWhenAssembliesEmpty = allowAllWhenAssembliesEmpty;
     }
 
+    /// <summary>
+    /// Creates instances of plugins of type <typeparamref name="TPlugin"/>.
+    /// </summary>
+    /// <typeparam name="TPlugin">The plugin interface or base type to search for.</typeparam>
+    /// <returns>An enumerable of instantiated plugins implementing <typeparamref name="TPlugin"/>.</returns>
+    public IEnumerable<TPlugin> CreatePlugins<TPlugin>()
+        where TPlugin : class
+    {
+        var pluginType = typeof(TPlugin);
+        foreach (var info in _lazyPlugins.Value)
+        {
+            if (!pluginType.IsAssignableFrom(info.PluginType))
+                continue;
+
+            yield return (TPlugin)info.Factory();
+        }
+    }
+
     /// <inheritdoc />
     public IEnumerable<TPlugin> CreatePluginsFromAssemblies<TPlugin>(
         IEnumerable<Assembly> assemblies)
         where TPlugin : class
     {
-        var pluginType = typeof(TPlugin);
-
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _lazyPlugins.Value)
+            foreach (var p in CreatePlugins<TPlugin>())
             {
-                if (!pluginType.IsAssignableFrom(info.PluginType))
-                    continue;
-
-                yield return (TPlugin)info.Factory();
+                yield return p;
             }
 
             yield break;
@@ -71,6 +84,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
+        var pluginType = typeof(TPlugin);
         foreach (var info in _lazyPlugins.Value)
         {
             // Check if this plugin is from one of the specified assemblies
@@ -87,6 +101,23 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         }
     }
 
+    /// <summary>
+    /// Creates instances of plugins that are decorated with the specified attribute.
+    /// </summary>
+    /// <typeparam name="TAttribute">The attribute type to search for in the type hierarchy.</typeparam>
+    /// <returns>An enumerable of instantiated plugins decorated with <typeparamref name="TAttribute"/>.</returns>
+    public IEnumerable<object> CreatePluginsWithAttribute<TAttribute>()
+        where TAttribute : Attribute
+    {
+        foreach (var info in _lazyPlugins.Value)
+        {
+            if (!info.HasAttribute<TAttribute>())
+                continue;
+
+            yield return info.Factory();
+        }
+    }
+
     /// <inheritdoc />
     public IEnumerable<object> CreatePluginsWithAttributeFromAssemblies<TAttribute>(
         IEnumerable<Assembly> assemblies)
@@ -95,12 +126,9 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _lazyPlugins.Value)
+            foreach (var p in CreatePluginsWithAttribute<TAttribute>())
             {
-                if (!info.HasAttribute<TAttribute>())
-                    continue;
-
-                yield return info.Factory();
+                yield return p;
             }
 
             yield break;
@@ -126,26 +154,46 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         }
     }
 
+    /// <summary>
+    /// Creates instances of plugins of type <typeparamref name="TPlugin"/> that are 
+    /// decorated with the specified attribute.
+    /// </summary>
+    /// <typeparam name="TPlugin">The plugin interface or base type to search for.</typeparam>
+    /// <typeparam name="TAttribute">The attribute type to search for in the type hierarchy.</typeparam>
+    /// <returns>
+    /// An enumerable of instantiated plugins implementing <typeparamref name="TPlugin"/> and 
+    /// decorated with <typeparamref name="TAttribute"/>.
+    /// </returns>
+    public IEnumerable<TPlugin> CreatePlugins<TPlugin, TAttribute>()
+        where TPlugin : class
+        where TAttribute : Attribute
+    {
+        var pluginType = typeof(TPlugin);
+
+        foreach (var info in _lazyPlugins.Value)
+        {
+            if (!pluginType.IsAssignableFrom(info.PluginType))
+                continue;
+
+            if (!info.HasAttribute<TAttribute>())
+                continue;
+
+            yield return (TPlugin)info.Factory();
+        }
+    }
+
     /// <inheritdoc />
     public IEnumerable<TPlugin> CreatePluginsFromAssemblies<TPlugin, TAttribute>(
         IEnumerable<Assembly> assemblies)
         where TPlugin : class
         where TAttribute : Attribute
     {
-        var pluginType = typeof(TPlugin);
-
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var info in _lazyPlugins.Value)
+            foreach (var p in CreatePlugins<TPlugin, TAttribute>())
             {
-                if (!pluginType.IsAssignableFrom(info.PluginType))
-                    continue;
-
-                if (!info.HasAttribute<TAttribute>())
-                    continue;
-
-                yield return (TPlugin)info.Factory();
+                yield return p;
             }
 
             yield break;
@@ -156,6 +204,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
+        var pluginType = typeof(TPlugin);
         foreach (var info in _lazyPlugins.Value)
         {
             // Check if this plugin is from one of the specified assemblies

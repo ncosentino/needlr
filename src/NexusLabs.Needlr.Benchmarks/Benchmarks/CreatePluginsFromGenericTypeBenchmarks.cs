@@ -10,12 +10,12 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 
 /// <summary>
 /// Benchmarks comparing GeneratedPluginFactory vs ReflectionPluginFactory
-/// for discovering ALL plugin types (both IServiceCollectionPlugin and IPostBuildServiceCollectionPlugin).
+/// for creating plugins from a type parameter.
 /// Uses REAL generated TypeRegistry from source generator.
 /// Reflection is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
-public class AllPluginsBenchmarks
+public class CreatePluginsFromGenericTypeBenchmarks
 {
     private Assembly[] _assemblies = null!;
     private ReflectionPluginFactory _reflectionFactory = null!;
@@ -24,7 +24,7 @@ public class AllPluginsBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _assemblies = [typeof(ServiceCollectionPlugin1).Assembly];
+        _assemblies = [typeof(PostBuildPlugin1).Assembly];
         _reflectionFactory = new ReflectionPluginFactory();
         _sourceGenFactory = new GeneratedPluginFactory(
             NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes,
@@ -32,18 +32,26 @@ public class AllPluginsBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public int Reflection()
+    public List<IPostBuildServiceCollectionPlugin> Reflection()
     {
-        var servicePlugins = _reflectionFactory.CreatePluginsFromAssemblies<IServiceCollectionPlugin>(_assemblies).Count();
-        var postBuildPlugins = _reflectionFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(_assemblies).Count();
-        return servicePlugins + postBuildPlugins;
+        return _reflectionFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(_assemblies).ToList();
     }
 
     [Benchmark]
-    public int SourceGen()
+    public List<IPostBuildServiceCollectionPlugin> SourceGen_AssemblyListProvided()
     {
-        var servicePlugins = _sourceGenFactory.CreatePluginsFromAssemblies<IServiceCollectionPlugin>(_assemblies).Count();
-        var postBuildPlugins = _sourceGenFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(_assemblies).Count();
-        return servicePlugins + postBuildPlugins;
+        return _sourceGenFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(_assemblies).ToList();
+    }
+
+    [Benchmark]
+    public List<IPostBuildServiceCollectionPlugin> SourceGen_EmptyAssemblyList()
+    {
+        return _sourceGenFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>([]).ToList();
+    }
+
+    [Benchmark]
+    public List<IPostBuildServiceCollectionPlugin> SourceGen_ParameterlessOverload()
+    {
+        return _sourceGenFactory.CreatePlugins<IPostBuildServiceCollectionPlugin>().ToList();
     }
 }

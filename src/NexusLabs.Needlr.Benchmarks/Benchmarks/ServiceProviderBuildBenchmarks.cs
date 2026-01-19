@@ -39,7 +39,7 @@ public class ServiceProviderBuildBenchmarks
     }
 
     [Benchmark]
-    public IServiceProvider BuildServiceProvider_SourceGenExplicit()
+    public IServiceProvider BuildServiceProvider_SourceGenExplicit_AssemblyListProvided()
     {
         return new Syringe()
             .UsingGeneratedComponents(
@@ -50,11 +50,29 @@ public class ServiceProviderBuildBenchmarks
     }
 
     [Benchmark]
-    public IServiceProvider BuildServiceProvider_SourceGenImplicit()
+    public IServiceProvider BuildServiceProvider_SourceGenImplicit_AssemblyListProvided()
     {
         return new Syringe()
             .UsingSourceGen()
             .UsingAdditionalAssemblies(_assemblies)
+            .BuildServiceProvider(_configuration);
+    }
+
+    [Benchmark]
+    public IServiceProvider BuildServiceProvider_SourceGenExplicit_NoAssemblyList()
+    {
+        return new Syringe()
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+            .BuildServiceProvider(_configuration);
+    }
+
+    [Benchmark]
+    public IServiceProvider BuildServiceProvider_SourceGenImplicit_NoAssemblyList()
+    {
+        return new Syringe()
+            .UsingSourceGen()
             .BuildServiceProvider(_configuration);
     }
 }
