@@ -62,7 +62,11 @@ jobs:
       shell: bash
       run: |
         mkdir -p artifacts/packages
-        mapfile -t PACK_PROJECTS < <(find src -name 'NexusLabs.Needlr*.csproj' | sort)
+        mapfile -t PACK_PROJECTS < <(find src -name 'NexusLabs.Needlr*.csproj' \
+          ! -name '*.Tests.csproj' \
+          ! -name '*.Benchmarks.csproj' \
+          ! -name '*IntegrationTests.csproj' \
+          | sort)
         if [ ${#PACK_PROJECTS[@]} -eq 0 ]; then
           echo "No matching projects found (pattern: NexusLabs.Needlr*)."
           exit 1
