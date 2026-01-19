@@ -2,6 +2,7 @@
 <Solution>
   <Folder Name="/Analyzers/">
     <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
+    <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
   </Folder>
   <Folder Name="/Examples/" />
   <Folder Name="/Examples/SourceGen/">
@@ -41,6 +42,7 @@
     <Project Path="NexusLabs.Needlr.Injection.Tests/NexusLabs.Needlr.Injection.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" />
     <Project Path="NexusLabs.Needlr.SemanticKernel.Tests/NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Tests/NexusLabs.Needlr.SignalR.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Tests/NexusLabs.Needlr.Tests.csproj" />
   </Folder>
