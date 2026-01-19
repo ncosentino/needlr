@@ -5,6 +5,10 @@
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
   </Folder>
   <Folder Name="/Examples/" />
+  <Folder Name="/Examples/Bundle/">
+    <Project Path="Examples/Bundle/BundleExampleApp/BundleExampleApp.csproj" />
+    <Project Path="Examples/Bundle/BundleExamplePlugin/BundleExamplePlugin.csproj" />
+  </Folder>
   <Folder Name="/Examples/SourceGen/">
     <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
     <Project Path="Examples/SourceGen/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
