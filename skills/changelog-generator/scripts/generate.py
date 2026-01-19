@@ -35,18 +35,25 @@ BREAKING_KEYWORDS = [
     'BREAKING CHANGE',
     'BREAKING:',
     'breaking change',
-    'removes ',
-    'removed ',
-    'deletes ',
-    'deleted ',
-    'renames ',
-    'renamed ',
 ]
 
-# File patterns that indicate non-user-facing changes
+# Keywords that indicate significant restructuring (potential breaking)
+RESTRUCTURE_KEYWORDS = [
+    'reorganiz',
+    'refactor',
+    'restructur',
+    'migrat',
+    'explicit reflection',
+    'explicit source-gen',
+    '-> default',
+]
+
+# File patterns that indicate non-user-facing changes (excluded from changelog)
 EXCLUDED_PATTERNS = [
     r'\.md$',
-    r'test',
+    r'[Tt]est',
+    r'[Bb]enchmark',
+    r'[Ee]xample',
     r'spec',
     r'\.github/',
     r'\.gitignore',
@@ -202,6 +209,66 @@ def detect_breaking_change(commit: Commit) -> None:
             return
 
 
+def is_infrastructure_commit(commit: Commit) -> bool:
+    """Check if commit is infrastructure/internal (CI, docs, tests only)."""
+    subject_lower = commit.subject.lower()
+    
+    # CI/CD commits
+    if subject_lower.startswith('ci:') or subject_lower.startswith('ci('):
+        return True
+    
+    # Pure doc commits
+    if subject_lower.startswith('docs:') or subject_lower.startswith('docs('):
+        return True
+    
+    # Test-only commits (by subject)
+    if 'test' in subject_lower and not any(kw in subject_lower for kw in ['source', 'plugin', 'inject', 'registr']):
+        return True
+    
+    # Benchmark commits
+    if 'benchmark' in subject_lower:
+        return True
+    
+    # Internal tweaks
+    if any(kw in subject_lower for kw in ['tweak', 'ignore', 'artifact']):
+        return True
+    
+    # Commits that only touch non-user-facing files
+    if commit.files:
+        non_user_facing = all(
+            any(pattern in f.lower() for pattern in ['.md', 'test', '.github/', 'benchmark', 'example'])
+            for f in commit.files
+        )
+        if non_user_facing and len(commit.files) > 0:
+            return True
+    
+    return False
+
+
+def clean_commit_subject(subject: str, commit_type: str | None) -> str:
+    """Clean up commit subject for changelog display."""
+    description = subject
+    
+    # Remove conventional commit prefix
+    if commit_type:
+        pattern = rf'^{commit_type}(?:\([^)]+\))?!?:\s*'
+        description = re.sub(pattern, '', description, flags=re.IGNORECASE)
+    
+    # Clean up arrow notation (e.g., "AspNet -> No Longer Depends")
+    description = re.sub(r'\s*->\s*', ': ', description)
+    
+    # Remove common prefixes
+    description = re.sub(r'^Initial:\s*', '', description, flags=re.IGNORECASE)
+    description = re.sub(r'^Fix:\s*', '', description, flags=re.IGNORECASE)
+    description = re.sub(r'^Add:\s*', '', description, flags=re.IGNORECASE)
+    
+    # Capitalize first letter
+    if description:
+        description = description[0].upper() + description[1:]
+    
+    return description.strip()
+
+
 def assign_category(commit: Commit) -> None:
     """Assign changelog category to commit."""
     if commit.is_breaking:
@@ -215,11 +282,17 @@ def assign_category(commit: Commit) -> None:
     # Fallback: analyze subject for keywords
     subject_lower = commit.subject.lower()
     
-    if any(kw in subject_lower for kw in ['add', 'new', 'create', 'implement']):
+    # Check for restructuring (significant changes)
+    for kw in RESTRUCTURE_KEYWORDS:
+        if kw in subject_lower:
+            commit.category = 'Changed'
+            return
+    
+    if any(kw in subject_lower for kw in ['add ', 'added', 'new ', 'create', 'implement', 'wire ']):
         commit.category = 'Added'
     elif any(kw in subject_lower for kw in ['fix', 'bug', 'patch', 'resolve']):
         commit.category = 'Fixed'
-    elif any(kw in subject_lower for kw in ['remove', 'delete', 'drop']):
+    elif any(kw in subject_lower for kw in ['remove', 'delete', 'drop', 'kill']):
         commit.category = 'Removed'
     elif any(kw in subject_lower for kw in ['deprecate']):
         commit.category = 'Deprecated'
@@ -266,23 +339,18 @@ def deduplicate_commits(commits: list[Commit]) -> list[ChangeEntry]:
     for commit in commits:
         if not commit.category:
             continue
+        
+        # Skip infrastructure commits (CI, docs-only, etc.)
+        if is_infrastructure_commit(commit):
+            continue
             
         # Skip if all files are non-user-facing
         user_facing_files = [f for f in commit.files if is_user_facing_file(f)]
         if commit.files and not user_facing_files and commit.category != '⚠️ Breaking Changes':
             continue
         
-        # Create entry description
-        description = commit.subject
-        
-        # Clean up conventional commit prefix for display
-        if commit.commit_type:
-            pattern = rf'^{commit.commit_type}(?:\([^)]+\))?!?:\s*'
-            description = re.sub(pattern, '', description, flags=re.IGNORECASE)
-        
-        # Capitalize first letter
-        if description:
-            description = description[0].upper() + description[1:]
+        # Create cleaned entry description
+        description = clean_commit_subject(commit.subject, commit.commit_type)
         
         entry = ChangeEntry(
             description=description,
