@@ -22,8 +22,7 @@ namespace NexusLabs.Needlr.Injection.SourceGen.Loaders;
 [DoNotAutoRegister]
 public sealed class GeneratedAssemblyProvider : IAssemblyProvider
 {
-    private readonly Func<IReadOnlyList<InjectableTypeInfo>> _injectableTypesProvider;
-    private readonly Func<IReadOnlyList<PluginTypeInfo>> _pluginTypesProvider;
+    private readonly Lazy<IReadOnlyList<Assembly>> _lazyAssemblies;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneratedAssemblyProvider"/> class.
@@ -37,37 +36,37 @@ public sealed class GeneratedAssemblyProvider : IAssemblyProvider
         ArgumentNullException.ThrowIfNull(injectableTypesProvider);
         ArgumentNullException.ThrowIfNull(pluginTypesProvider);
 
-        _injectableTypesProvider = injectableTypesProvider;
-        _pluginTypesProvider = pluginTypesProvider;
+        _lazyAssemblies = new(() =>
+        {
+            // In NativeAOT with reflection disabled, Type.Assembly can throw.
+            // Candidate assemblies are only a hint for reflection-based discovery.
+            // For source generation, the plugin/type registries already define the universe.
+            try
+            {
+                var assemblies = new HashSet<Assembly>();
+
+                // Extract assemblies from injectable types
+                foreach (var info in injectableTypesProvider())
+                {
+                    assemblies.Add(info.Type.Assembly);
+                }
+
+                // Extract assemblies from plugin types
+                foreach (var info in pluginTypesProvider())
+                {
+                    assemblies.Add(info.PluginType.Assembly);
+                }
+
+                return assemblies.ToList();
+            }
+            catch (NotSupportedException)
+            {
+                return Array.Empty<Assembly>();
+            }
+        });
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<Assembly> GetCandidateAssemblies()
-    {
-        // In NativeAOT with reflection disabled, Type.Assembly can throw.
-        // Candidate assemblies are only a hint for reflection-based discovery.
-        // For source generation, the plugin/type registries already define the universe.
-        try
-        {
-            var assemblies = new HashSet<Assembly>();
-
-            // Extract assemblies from injectable types
-            foreach (var info in _injectableTypesProvider())
-            {
-                assemblies.Add(info.Type.Assembly);
-            }
-
-            // Extract assemblies from plugin types
-            foreach (var info in _pluginTypesProvider())
-            {
-                assemblies.Add(info.PluginType.Assembly);
-            }
-
-            return assemblies.ToList();
-        }
-        catch (NotSupportedException)
-        {
-            return Array.Empty<Assembly>();
-        }
-    }
+    public IReadOnlyList<Assembly> GetCandidateAssemblies() =>
+        _lazyAssemblies.Value;
 }

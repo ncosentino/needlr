@@ -18,63 +18,25 @@ namespace NexusLabs.Needlr.Injection.SourceGen;
 public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
 {
     private readonly IServiceCollectionPopulator _serviceCollectionPopulator;
-    private readonly Lazy<IReadOnlyList<Assembly>> _lazyCandidateAssemblies;
+    private readonly IAssemblyProvider _assemblyProvider;
     private readonly GeneratedPluginFactory _pluginFactory;
 
     public GeneratedServiceProviderBuilder(
         IServiceCollectionPopulator serviceCollectionPopulator,
         IAssemblyProvider assemblyProvider,
-        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider) :
-        this(
-            serviceCollectionPopulator,
-            assemblyProvider,
-            additionalAssemblies: [],
-            pluginTypeProvider)
-    {
-    }
-
-    public GeneratedServiceProviderBuilder(
-        IServiceCollectionPopulator serviceCollectionPopulator,
-        IAssemblyProvider assemblyProvider,
-        IReadOnlyList<Assembly> additionalAssemblies,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
         ArgumentNullException.ThrowIfNull(serviceCollectionPopulator);
         ArgumentNullException.ThrowIfNull(assemblyProvider);
-        ArgumentNullException.ThrowIfNull(additionalAssemblies);
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
 
         _serviceCollectionPopulator = serviceCollectionPopulator;
+        _assemblyProvider = assemblyProvider;
         _pluginFactory = new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
-        _lazyCandidateAssemblies = new(() =>
-        {
-            var staticAssemblies = assemblyProvider.GetCandidateAssemblies();
-            HashSet<string> uniqueAssemblyNames = new(StringComparer.OrdinalIgnoreCase);
-            List<Assembly> allCandidateAssemblies = new(additionalAssemblies.Count + staticAssemblies.Count);
-
-            foreach (var assembly in staticAssemblies)
-            {
-                var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
-                if (uniqueAssemblyNames.Add(name))
-                {
-                    allCandidateAssemblies.Add(assembly);
-                }
-            }
-
-            foreach (var assembly in additionalAssemblies)
-            {
-                var name = assembly.FullName ?? assembly.GetName().Name ?? string.Empty;
-                if (uniqueAssemblyNames.Add(name))
-                {
-                    allCandidateAssemblies.Add(assembly);
-                }
-            }
-
-            return allCandidateAssemblies.Distinct().ToArray();
-        });
     }
 
-    public IReadOnlyList<Assembly> GetCandidateAssemblies() => _lazyCandidateAssemblies.Value;
+    public IReadOnlyList<Assembly> GetCandidateAssemblies() =>
+        _assemblyProvider.GetCandidateAssemblies();
 
     /// <inheritdoc />
     public IServiceProvider Build(
@@ -114,9 +76,7 @@ public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
         }
 
         var provider = services.BuildServiceProvider();
-
         ConfigurePostBuildServiceCollectionPlugins(provider, config);
-
         return provider;
     }
 
@@ -134,7 +94,7 @@ public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
             config,
             candidateAssemblies);
 
-        foreach (var plugin in _pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
+        foreach (var plugin in _pluginFactory.CreatePlugins<IPostBuildServiceCollectionPlugin>())
         {
             plugin.Configure(options);
         }

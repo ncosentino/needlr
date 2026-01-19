@@ -75,8 +75,8 @@ public static class SyringeSourceGenExtensions
             .UsingGeneratedPluginFactory(pluginTypeProvider)
             .UsingGeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider)
             .UsingServiceProviderBuilderFactory(
-                (populator, assemblyProvider, additionalAssemblies) => 
-                    new GeneratedServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies, pluginTypeProvider));
+                (populator, assemblyProvider, _) => 
+                    new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider));
     }
 
     /// <summary>
