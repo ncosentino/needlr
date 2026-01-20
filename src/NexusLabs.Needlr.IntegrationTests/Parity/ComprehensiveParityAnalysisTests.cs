@@ -39,8 +39,8 @@ public sealed class ComprehensiveParityAnalysisTests
         // Generated-based discovery (zero reflection)
         var generatedProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
 
         // Get all test namespace types registered
@@ -63,8 +63,8 @@ public sealed class ComprehensiveParityAnalysisTests
 
         var generatedProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
 
         // Verify singleton behavior matches
@@ -86,9 +86,9 @@ public sealed class ComprehensiveParityAnalysisTests
     {
         var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes);
 
-        var generatedTypes = NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes();
+        var generatedTypes = NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes();
         var testTypes = generatedTypes
             .Where(t => t.Type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true)
             .ToList();
@@ -107,9 +107,9 @@ public sealed class ComprehensiveParityAnalysisTests
     {
         var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes);
 
-        var generatedTypes = NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes();
+        var generatedTypes = NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes();
         var testTypes = generatedTypes
             .Where(t => t.Type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true)
             .ToList();
@@ -128,9 +128,9 @@ public sealed class ComprehensiveParityAnalysisTests
     {
         var reflectionFilterer = new ReflectionTypeFilterer();
         var generatedFilterer = new GeneratedTypeFilterer(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes);
 
-        var generatedTypes = NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes();
+        var generatedTypes = NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes();
         var testTypes = generatedTypes
             .Where(t => t.Type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true)
             .ToList();
@@ -154,7 +154,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -177,7 +177,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin, SpecialPluginAttribute>(assemblies)
@@ -200,7 +200,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsWithAttributeFromAssemblies<SpecialPluginAttribute>(assemblies)
@@ -230,8 +230,8 @@ public sealed class ComprehensiveParityAnalysisTests
 
         var generatedProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
 
         // Types with [DoNotAutoRegister] should be excluded by both
@@ -247,7 +247,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -267,7 +267,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -294,8 +294,8 @@ public sealed class ComprehensiveParityAnalysisTests
 
         var generatedProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
 
         // MyAutomaticService implements both IMyAutomaticService and IMyAutomaticService2
@@ -324,7 +324,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin, SpecialPluginAttribute>(assemblies)
@@ -345,7 +345,7 @@ public sealed class ComprehensiveParityAnalysisTests
     [Fact]
     public void Summary_InjectableTypeCount_MatchesBetweenReflectionAndGenerated()
     {
-        var generatedTypes = NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes();
+        var generatedTypes = NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes();
         var testTypes = generatedTypes
             .Where(t => t.Type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true)
             .ToList();
@@ -360,7 +360,7 @@ public sealed class ComprehensiveParityAnalysisTests
         var assemblies = new[] { TestAssembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionCount = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)

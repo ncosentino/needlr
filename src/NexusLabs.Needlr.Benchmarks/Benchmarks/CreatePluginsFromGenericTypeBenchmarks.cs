@@ -27,7 +27,7 @@ public class CreatePluginsFromGenericTypeBenchmarks
         _assemblies = [typeof(PostBuildPlugin1).Assembly];
         _reflectionFactory = new ReflectionPluginFactory();
         _sourceGenFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes,
+            NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetPluginTypes,
             allowAllWhenAssembliesEmpty: false);
     }
 

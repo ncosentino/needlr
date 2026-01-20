@@ -27,11 +27,18 @@ internal static class TypeDiscoveryHelper
     /// Determines whether a type symbol represents a concrete injectable type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly (allows internal types).</param>
     /// <returns>True if the type is a valid injectable type; otherwise, false.</returns>
-    public static bool IsInjectableType(INamedTypeSymbol typeSymbol)
+    public static bool IsInjectableType(INamedTypeSymbol typeSymbol, bool isCurrentAssembly = false)
     {
         // Must be a class (not interface, struct, enum, delegate)
         if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        // Must be accessible from generated code
+        // - Current assembly: internal and public types are accessible
+        // - Referenced assemblies: only public types are accessible
+        if (!IsAccessibleFromGeneratedCode(typeSymbol, isCurrentAssembly))
             return false;
 
         if (typeSymbol.IsAbstract)
@@ -73,6 +80,9 @@ internal static class TypeDiscoveryHelper
     {
         var result = new List<INamedTypeSymbol>();
 
+        // Get all constructor parameter types to detect decorator pattern
+        var constructorParamTypes = GetConstructorParameterTypes(typeSymbol);
+
         foreach (var iface in typeSymbol.AllInterfaces)
         {
             if (iface.IsUnboundGenericType)
@@ -84,10 +94,47 @@ internal static class TypeDiscoveryHelper
             if (HasDoNotAutoRegisterAttributeDirect(iface))
                 continue;
 
+            // Skip interfaces that this type also takes as constructor parameters (decorator pattern)
+            // A type that implements IFoo and takes IFoo in its constructor is likely a decorator
+            // and should not be auto-registered as IFoo to avoid circular dependencies
+            if (IsDecoratorInterface(iface, constructorParamTypes))
+                continue;
+
             result.Add(iface);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets all parameter types from all constructors of a type.
+    /// </summary>
+    private static HashSet<string> GetConstructorParameterTypes(INamedTypeSymbol typeSymbol)
+    {
+        var paramTypes = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.IsStatic)
+                continue;
+
+            foreach (var param in ctor.Parameters)
+            {
+                var paramTypeName = param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                paramTypes.Add(paramTypeName);
+            }
+        }
+
+        return paramTypes;
+    }
+
+    /// <summary>
+    /// Checks if an interface is a decorator interface (also taken as a constructor parameter).
+    /// </summary>
+    private static bool IsDecoratorInterface(INamedTypeSymbol iface, HashSet<string> constructorParamTypes)
+    {
+        var ifaceName = iface.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        return constructorParamTypes.Contains(ifaceName);
     }
 
     /// <summary>
@@ -240,6 +287,77 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Checks if a type is accessible from generated code.
+    /// For types in the current assembly, internal and public types are accessible.
+    /// For types in referenced assemblies, only public types are accessible.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly.</param>
+    /// <returns>True if the type is accessible from generated code.</returns>
+    private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol, bool isCurrentAssembly)
+    {
+        // Check the type itself
+        var accessibility = typeSymbol.DeclaredAccessibility;
+
+        if (isCurrentAssembly)
+        {
+            // For current assembly, allow public or internal
+            if (accessibility != Accessibility.Public && accessibility != Accessibility.Internal)
+                return false;
+        }
+        else
+        {
+            // For referenced assemblies, only public is accessible
+            if (accessibility != Accessibility.Public)
+                return false;
+        }
+
+        // Check all containing types (for nested types)
+        var containingType = typeSymbol.ContainingType;
+        while (containingType != null)
+        {
+            var containingAccessibility = containingType.DeclaredAccessibility;
+            if (isCurrentAssembly)
+            {
+                if (containingAccessibility != Accessibility.Public && containingAccessibility != Accessibility.Internal)
+                    return false;
+            }
+            else
+            {
+                if (containingAccessibility != Accessibility.Public)
+                    return false;
+            }
+            containingType = containingType.ContainingType;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if a type is publicly accessible (can be referenced from generated code).
+    /// A type is publicly accessible if it and all its containing types are public.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type is publicly accessible.</returns>
+    private static bool IsPubliclyAccessible(INamedTypeSymbol typeSymbol)
+    {
+        // Check the type itself
+        if (typeSymbol.DeclaredAccessibility != Accessibility.Public)
+            return false;
+
+        // Check all containing types (for nested types)
+        var containingType = typeSymbol.ContainingType;
+        while (containingType != null)
+        {
+            if (containingType.DeclaredAccessibility != Accessibility.Public)
+                return false;
+            containingType = containingType.ContainingType;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Determines the injectable lifetime for a type by analyzing its constructors.
     /// This mirrors the logic in ReflectionTypeFilterer.IsInjectableSingletonType.
     /// </summary>
@@ -333,11 +451,18 @@ internal static class TypeDiscoveryHelper
     /// Determines if a type is a valid plugin type (concrete class with parameterless constructor).
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly (allows internal types).</param>
     /// <returns>True if the type is a valid plugin type.</returns>
-    public static bool IsPluginType(INamedTypeSymbol typeSymbol)
+    public static bool IsPluginType(INamedTypeSymbol typeSymbol, bool isCurrentAssembly = false)
     {
         // Must be a concrete class
         if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        // Must be accessible from generated code
+        // - Current assembly: internal and public types are accessible
+        // - Referenced assemblies: only public types are accessible
+        if (!IsAccessibleFromGeneratedCode(typeSymbol, isCurrentAssembly))
             return false;
 
         if (typeSymbol.IsAbstract)
@@ -561,13 +686,18 @@ internal static class TypeDiscoveryHelper
     /// Checks if a type has any methods with the [KernelFunction] attribute.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly (allows internal types).</param>
     /// <returns>True if the type has kernel function methods.</returns>
-    public static bool HasKernelFunctions(INamedTypeSymbol typeSymbol)
+    public static bool HasKernelFunctions(INamedTypeSymbol typeSymbol, bool isCurrentAssembly = false)
     {
         const string KernelFunctionAttributeName = "Microsoft.SemanticKernel.KernelFunctionAttribute";
 
         // Must be a class (static or instance)
         if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        // Must be accessible from generated code
+        if (!IsAccessibleFromGeneratedCode(typeSymbol, isCurrentAssembly))
             return false;
 
         // For non-static classes, must not be abstract
@@ -621,13 +751,18 @@ internal static class TypeDiscoveryHelper
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
     /// <param name="compilation">The compilation context.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly (allows internal types).</param>
     /// <returns>Hub registration info if discoverable, null otherwise.</returns>
-    public static HubRegistrationInfo? TryGetHubRegistrationInfo(INamedTypeSymbol typeSymbol, Compilation compilation)
+    public static HubRegistrationInfo? TryGetHubRegistrationInfo(INamedTypeSymbol typeSymbol, Compilation compilation, bool isCurrentAssembly = false)
     {
         const string HubRegistrationPluginInterfaceName = "NexusLabs.Needlr.SignalR.IHubRegistrationPlugin";
 
         // Check if type implements IHubRegistrationPlugin
         if (!ImplementsInterface(typeSymbol, HubRegistrationPluginInterfaceName))
+            return null;
+
+        // Must be accessible from generated code
+        if (!IsAccessibleFromGeneratedCode(typeSymbol, isCurrentAssembly))
             return null;
 
         // Must have a parameterless constructor to be instantiable

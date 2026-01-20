@@ -40,29 +40,30 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             // Use the first attribute (only one should be present per assembly)
             var attributeInfo = attributes[0];
+            var assemblyName = compilation.AssemblyName ?? "Generated";
 
             var discoveryResult = DiscoverTypes(
                 compilation,
                 attributeInfo.NamespacePrefixes,
                 attributeInfo.IncludeSelf);
 
-            var sourceText = GenerateTypeRegistrySource(discoveryResult);
+            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource();
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate SignalR hub registrations if any were discovered
             if (discoveryResult.HubRegistrations.Count > 0)
             {
-                var hubRegistrationsText = GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations);
+                var hubRegistrationsText = GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName);
                 spc.AddSource("SignalRHubRegistrations.g.cs", SourceText.From(hubRegistrationsText, Encoding.UTF8));
             }
 
             // Generate SemanticKernel plugin type registry if any were discovered
             if (discoveryResult.KernelPlugins.Count > 0)
             {
-                var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins);
+                var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName);
                 spc.AddSource("SemanticKernelPlugins.g.cs", SourceText.From(kernelPluginsText, Encoding.UTF8));
             }
         });
@@ -121,7 +122,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -129,7 +130,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -143,7 +144,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredPlugin> pluginTypes,
         List<DiscoveredHubRegistration> hubRegistrations,
         List<DiscoveredKernelPlugin> kernelPlugins,
-        Compilation compilation)
+        Compilation compilation,
+        bool isCurrentAssembly)
     {
         foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assembly.GlobalNamespace))
         {
@@ -151,7 +153,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 continue;
 
             // Check for injectable types
-            if (TypeDiscoveryHelper.IsInjectableType(typeSymbol))
+            if (TypeDiscoveryHelper.IsInjectableType(typeSymbol, isCurrentAssembly))
             {
                 // Determine lifetime first - only include types that are actually injectable
                 var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
@@ -167,7 +169,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for plugin types (concrete class with parameterless ctor and interfaces)
-            if (TypeDiscoveryHelper.IsPluginType(typeSymbol))
+            if (TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly))
             {
                 var pluginInterfaces = TypeDiscoveryHelper.GetPluginInterfaces(typeSymbol);
                 if (pluginInterfaces.Count > 0)
@@ -181,7 +183,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for IHubRegistrationPlugin implementations
-            var hubInfo = TypeDiscoveryHelper.TryGetHubRegistrationInfo(typeSymbol, compilation);
+            var hubInfo = TypeDiscoveryHelper.TryGetHubRegistrationInfo(typeSymbol, compilation, isCurrentAssembly);
             if (hubInfo.HasValue)
             {
                 hubRegistrations.Add(new DiscoveredHubRegistration(
@@ -191,7 +193,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for SemanticKernel plugin types (classes/statics with [KernelFunction] methods)
-            if (TypeDiscoveryHelper.HasKernelFunctions(typeSymbol))
+            if (TypeDiscoveryHelper.HasKernelFunctions(typeSymbol, isCurrentAssembly))
             {
                 var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                 var isStatic = typeSymbol.IsStatic;
@@ -200,9 +202,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
     }
 
-    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult)
+    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName)
     {
         var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
         builder.AppendLine("// <auto-generated/>");
         builder.AppendLine("#nullable enable");
@@ -214,7 +217,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
         builder.AppendLine("using NexusLabs.Needlr.Generators;");
         builder.AppendLine();
-        builder.AppendLine("namespace NexusLabs.Needlr.Generated;");
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Compile-time generated registry of injectable types and plugins.");
@@ -245,14 +248,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateModuleInitializerBootstrapSource()
+    private static string GenerateModuleInitializerBootstrapSource(string assemblyName)
     {
         var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
         builder.AppendLine("// <auto-generated/>");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
-        builder.AppendLine("namespace NexusLabs.Needlr.Generated;");
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
         builder.AppendLine("internal static class NeedlrSourceGenModuleInitializer");
         builder.AppendLine("{");
@@ -260,8 +264,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    internal static void Initialize()");
         builder.AppendLine("    {");
         builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
-        builder.AppendLine("            global::NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,");
-        builder.AppendLine("            global::NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);");
+        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
+        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes);");
         builder.AppendLine("    }");
         builder.AppendLine("}");
 
@@ -362,9 +366,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations)
+    private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName)
     {
         var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
         builder.AppendLine("// <auto-generated/>");
         builder.AppendLine("#nullable enable");
@@ -372,7 +377,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("using Microsoft.AspNetCore.Builder;");
         builder.AppendLine("using Microsoft.AspNetCore.SignalR;");
         builder.AppendLine();
-        builder.AppendLine("namespace NexusLabs.Needlr.Generated;");
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Compile-time generated SignalR hub registrations.");
@@ -407,9 +412,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins)
+    private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins, string assemblyName)
     {
         var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
         builder.AppendLine("// <auto-generated/>");
         builder.AppendLine("#nullable enable");
@@ -417,7 +423,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
         builder.AppendLine();
-        builder.AppendLine("namespace NexusLabs.Needlr.Generated;");
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Compile-time generated registry of SemanticKernel plugin types.");
@@ -474,6 +480,44 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("}");
 
         return builder.ToString();
+    }
+
+    /// <summary>
+    /// Sanitizes an assembly name to be a valid C# identifier for use in namespaces.
+    /// </summary>
+    private static string SanitizeIdentifier(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return "Generated";
+
+        var sb = new StringBuilder(name.Length);
+        foreach (var c in name)
+        {
+            if (char.IsLetterOrDigit(c) || c == '_')
+            {
+                sb.Append(c);
+            }
+            else if (c == '.' || c == '-' || c == ' ')
+            {
+                // Keep dots for namespace segments, replace dashes/spaces with underscores
+                sb.Append(c == '.' ? '.' : '_');
+            }
+            // Skip other characters
+        }
+
+        var result = sb.ToString();
+
+        // Ensure each segment doesn't start with a digit
+        var segments = result.Split('.');
+        for (int i = 0; i < segments.Length; i++)
+        {
+            if (segments[i].Length > 0 && char.IsDigit(segments[i][0]))
+            {
+                segments[i] = "_" + segments[i];
+            }
+        }
+
+        return string.Join(".", segments.Where(s => s.Length > 0));
     }
 
     private readonly struct AttributeInfo

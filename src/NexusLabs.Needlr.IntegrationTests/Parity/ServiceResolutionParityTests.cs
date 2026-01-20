@@ -21,8 +21,8 @@ public sealed class ServiceResolutionParityTests
 
         _generatedProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
     }
 

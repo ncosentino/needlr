@@ -12,7 +12,7 @@ public interface IConsoleWeatherProvider
     string GetForecast();
 }
 
-public sealed class ConsoleWeatherProvider(IConfiguration config) : IConsoleWeatherProvider
+internal sealed class ConsoleWeatherProvider(IConfiguration config) : IConsoleWeatherProvider
 {
     public string GetForecast()
     {
@@ -28,7 +28,7 @@ public interface IConsoleTimeProvider
     DateTimeOffset GetNow();
 }
 
-public sealed class ConsoleTimeProvider : IConsoleTimeProvider
+internal sealed class ConsoleTimeProvider : IConsoleTimeProvider
 {
     public DateTimeOffset GetNow() => DateTimeOffset.UtcNow;
 }
@@ -39,13 +39,13 @@ public interface IConsoleManualService
     string Echo(string value);
 }
 
-public sealed class ConsoleManualService : IConsoleManualService
+internal sealed class ConsoleManualService : IConsoleManualService
 {
     public string Echo(string value) => $"manual:{value}";
 }
 
 // Manual registration via IServiceCollectionPlugin (must run, even though IConsoleManualService is [DoNotAutoRegister]).
-public sealed class ConsoleManualRegistrationPlugin : IServiceCollectionPlugin
+internal sealed class ConsoleManualRegistrationPlugin : IServiceCollectionPlugin
 {
     public void Configure(ServiceCollectionPluginOptions options)
     {
@@ -58,7 +58,7 @@ public interface IConsoleReport
     string BuildReport();
 }
 
-public sealed class ConsoleReport(
+internal sealed class ConsoleReport(
     IConsoleWeatherProvider weather,
     IConsoleTimeProvider time,
     Lazy<IConsoleManualService> manual,
@@ -83,7 +83,7 @@ public sealed class ConsoleReport(
 public sealed class NotInjectedService;
 
 // Post-build plugin for runtime verification.
-public sealed class ConsolePostBuildPlugin : IPostBuildServiceCollectionPlugin
+internal sealed class ConsolePostBuildPlugin : IPostBuildServiceCollectionPlugin
 {
     public void Configure(PostBuildServiceCollectionPluginOptions options)
     {

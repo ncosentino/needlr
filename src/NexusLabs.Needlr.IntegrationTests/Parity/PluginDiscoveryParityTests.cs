@@ -15,7 +15,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -39,7 +39,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -72,7 +72,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPluginWithOutput>(assemblies)
@@ -98,7 +98,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -118,7 +118,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -141,7 +141,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -161,7 +161,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = Array.Empty<Assembly>();
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -181,7 +181,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { typeof(object).Assembly };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionPlugins = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -200,7 +200,7 @@ public sealed class PluginDiscoveryParityTests
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var plugins = generatedFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
@@ -221,7 +221,7 @@ public sealed class PluginDiscoveryParityTests
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionCount = reflectionFactory
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)

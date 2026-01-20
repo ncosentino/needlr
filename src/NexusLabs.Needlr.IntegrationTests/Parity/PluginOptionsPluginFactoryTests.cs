@@ -69,7 +69,7 @@ public sealed class PluginOptionsPluginFactoryTests
         var config = new ConfigurationBuilder().Build();
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var options = new ServiceCollectionPluginOptions(
             services,
@@ -118,7 +118,7 @@ public sealed class PluginOptionsPluginFactoryTests
         var config = new ConfigurationBuilder().Build();
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var options = new PostBuildServiceCollectionPluginOptions(
             provider,
@@ -145,7 +145,7 @@ public sealed class PluginOptionsPluginFactoryTests
 
         var reflectionFactory = new ReflectionPluginFactory();
         var generatedFactory = new GeneratedPluginFactory(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         var reflectionOptions = new ServiceCollectionPluginOptions(
             services,

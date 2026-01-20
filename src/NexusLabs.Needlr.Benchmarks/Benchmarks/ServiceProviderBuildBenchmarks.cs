@@ -43,8 +43,8 @@ public class ServiceProviderBuildBenchmarks
     {
         return new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetPluginTypes)
             .UsingAdditionalAssemblies(_assemblies)
             .BuildServiceProvider(_configuration);
     }
@@ -63,8 +63,8 @@ public class ServiceProviderBuildBenchmarks
     {
         return new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider(_configuration);
     }
 

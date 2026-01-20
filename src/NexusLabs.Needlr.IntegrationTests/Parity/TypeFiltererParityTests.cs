@@ -19,9 +19,9 @@ public sealed class TypeFiltererParityTests
     public TypeFiltererParityTests()
     {
         _reflectionFilterer = new ReflectionTypeFilterer();
-        _generatedTypes = NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes();
+        _generatedTypes = NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes();
         _generatedFilterer = new GeneratedTypeFilterer(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes);
     }
 
     [Fact]

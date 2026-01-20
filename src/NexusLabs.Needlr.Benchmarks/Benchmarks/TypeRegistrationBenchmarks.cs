@@ -33,10 +33,10 @@ public class TypeRegistrationBenchmarks
         _assemblies = [typeof(SimpleService1).Assembly];
         _reflectionTypeFilterer = new ReflectionTypeFilterer();
         _sourceGenTypeFilterer = new GeneratedTypeFilterer(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes);
         _reflectionRegistrar = new ReflectionTypeRegistrar();
         _sourceGenRegistrar = new GeneratedTypeRegistrar(
-            NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes);
+            NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes);
     }
 
     [Benchmark(Baseline = true)]

@@ -26,6 +26,10 @@
 		<TrimmerSingleWarn>false</TrimmerSingleWarn>
 		<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
 		<WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2060;IL2072;IL2075;IL2091</WarningsAsErrors>
+
+		<!-- Emit generated files for debugging -->
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

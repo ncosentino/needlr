@@ -27,8 +27,8 @@ public sealed class ZeroReflectionParityTests
         // Zero-reflection configuration using UsingGeneratedComponents
         _zeroReflectionProvider = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes)
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
             .BuildServiceProvider();
     }
 
@@ -90,8 +90,8 @@ public sealed class ZeroReflectionParityTests
         // Verify that UsingGeneratedComponents configures the registrar, filterer, and plugin factory
         var syringe = new Syringe()
             .UsingGeneratedComponents(
-                NexusLabs.Needlr.Generated.TypeRegistry.GetInjectableTypes,
-                NexusLabs.Needlr.Generated.TypeRegistry.GetPluginTypes);
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes);
 
         // Verify service provider can be built and services resolved
         var provider = syringe.BuildServiceProvider();
