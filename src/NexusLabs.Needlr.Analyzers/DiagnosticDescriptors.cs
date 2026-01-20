@@ -11,7 +11,7 @@ public static class DiagnosticDescriptors
     private const string HelpLinkBase = "https://github.com/nexus-labs/needlr/blob/main/docs/analyzers/";
 
     /// <summary>
-    /// NDLR0001: Reflection API used in AOT project.
+    /// NDLRCOR001: Reflection API used in AOT project.
     /// </summary>
     public static readonly DiagnosticDescriptor ReflectionInAotProject = new(
         id: DiagnosticIds.ReflectionInAotProject,
@@ -21,10 +21,10 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         description: "Reflection-based Needlr APIs cannot be used in projects with PublishAot or IsAotCompatible enabled. Use source-generated components instead.",
-        helpLinkUri: HelpLinkBase + "NDLR0001.md");
+        helpLinkUri: HelpLinkBase + "NDLRCOR001.md");
 
     /// <summary>
-    /// NDLR0002: Plugin has constructor dependencies.
+    /// NDLRCOR002: Plugin has constructor dependencies.
     /// </summary>
     public static readonly DiagnosticDescriptor PluginHasConstructorDependencies = new(
         id: DiagnosticIds.PluginHasConstructorDependencies,
@@ -34,5 +34,5 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "IServiceCollectionPlugin and IPostBuildServiceCollectionPlugin implementations are instantiated before the dependency injection container is built, so they cannot have constructor dependencies.",
-        helpLinkUri: HelpLinkBase + "NDLR0002.md");
+        helpLinkUri: HelpLinkBase + "NDLRCOR002.md");
 }

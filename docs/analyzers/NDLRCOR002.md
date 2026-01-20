@@ -1,4 +1,4 @@
-# NDLR0002: Plugin has constructor dependencies
+# NDLRCOR002: Plugin has constructor dependencies
 
 ## Cause
 
@@ -67,13 +67,13 @@ Suppress this warning if:
 - You are using a custom plugin factory that handles constructor injection
 
 ```csharp
-#pragma warning disable NDLR0002
+#pragma warning disable NDLRCOR002
 public class MyCustomPlugin : IServiceCollectionPlugin
 {
     public MyCustomPlugin(IPluginFactory factory) { }
     // ...
 }
-#pragma warning restore NDLR0002
+#pragma warning restore NDLRCOR002
 ```
 
 ## See Also

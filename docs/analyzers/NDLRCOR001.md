@@ -1,4 +1,4 @@
-# NDLR0001: Reflection API used in AOT project
+# NDLRCOR001: Reflection API used in AOT project
 
 ## Cause
 
@@ -58,9 +58,9 @@ Ensure you have the source generator packages installed:
 Only suppress this warning if you are certain the reflection code path will not be executed at runtime, such as in conditional compilation scenarios where the reflection code is only used in non-AOT builds.
 
 ```csharp
-#pragma warning disable NDLR0001
+#pragma warning disable NDLRCOR001
 // Reflection code that won't run in AOT
-#pragma warning restore NDLR0001
+#pragma warning restore NDLRCOR001
 ```
 
 ## See Also

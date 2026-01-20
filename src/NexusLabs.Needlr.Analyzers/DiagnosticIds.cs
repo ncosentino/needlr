@@ -1,17 +1,20 @@
 namespace NexusLabs.Needlr.Analyzers;
 
 /// <summary>
-/// Contains diagnostic IDs for all Needlr analyzers.
+/// Contains diagnostic IDs for all Needlr core analyzers.
 /// </summary>
+/// <remarks>
+/// Core analyzer codes use the NDLRCOR prefix.
+/// </remarks>
 public static class DiagnosticIds
 {
     /// <summary>
-    /// NDLR0001: Reflection API used in AOT project.
+    /// NDLRCOR001: Reflection API used in AOT project.
     /// </summary>
-    public const string ReflectionInAotProject = "NDLR0001";
+    public const string ReflectionInAotProject = "NDLRCOR001";
 
     /// <summary>
-    /// NDLR0002: Plugin has constructor dependencies.
+    /// NDLRCOR002: Plugin has constructor dependencies.
     /// </summary>
-    public const string PluginHasConstructorDependencies = "NDLR0002";
+    public const string PluginHasConstructorDependencies = "NDLRCOR002";
 }

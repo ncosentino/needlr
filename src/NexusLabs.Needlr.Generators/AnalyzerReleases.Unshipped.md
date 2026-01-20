@@ -5,5 +5,5 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-NDLR1001 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, Internal type in referenced assembly cannot be registered
-NDLR1002 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, Referenced assembly has internal plugin types but no type registry
+NDLRGEN001 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, Internal type in referenced assembly cannot be registered
+NDLRGEN002 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, Referenced assembly has internal plugin types but no type registry

@@ -8,7 +8,7 @@ using Xunit;
 namespace NexusLabs.Needlr.Generators.Tests;
 
 /// <summary>
-/// Tests for NDLR1002: Referenced assembly has internal plugin types but no type registry.
+/// Tests for NDLRGEN002: Referenced assembly has internal plugin types but no type registry.
 /// </summary>
 public sealed class MissingTypeRegistryDiagnosticTests
 {
@@ -88,16 +88,16 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should have NDLR1002 error
-        var ndlr1002Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1002")
+        // Assert - should have NDLRGEN002 error
+        var ndlrgen002Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN002")
             .ToList();
 
-        Assert.NotEmpty(ndlr1002Diagnostics);
-        Assert.Contains(ndlr1002Diagnostics, d => 
+        Assert.NotEmpty(ndlrgen002Diagnostics);
+        Assert.Contains(ndlrgen002Diagnostics, d => 
             d.GetMessage().Contains("MyPlugin") && 
             d.GetMessage().Contains("TestPlugin"));
-        Assert.All(ndlr1002Diagnostics, d => 
+        Assert.All(ndlrgen002Diagnostics, d => 
             Assert.Equal(DiagnosticSeverity.Error, d.Severity));
     }
 
@@ -166,12 +166,12 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1002 error (public plugins are fine)
-        var ndlr1002Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1002")
+        // Assert - should NOT have NDLRGEN002 error (public plugins are fine)
+        var ndlrgen002Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN002")
             .ToList();
 
-        Assert.Empty(ndlr1002Diagnostics);
+        Assert.Empty(ndlrgen002Diagnostics);
     }
 
     [Fact]
@@ -253,12 +253,12 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1002 error (assembly has [GenerateTypeRegistry])
-        var ndlr1002Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1002")
+        // Assert - should NOT have NDLRGEN002 error (assembly has [GenerateTypeRegistry])
+        var ndlrgen002Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN002")
             .ToList();
 
-        Assert.Empty(ndlr1002Diagnostics);
+        Assert.Empty(ndlrgen002Diagnostics);
     }
 
     [Fact]
@@ -314,12 +314,12 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1002 error (not a plugin type)
-        var ndlr1002Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1002")
+        // Assert - should NOT have NDLRGEN002 error (not a plugin type)
+        var ndlrgen002Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN002")
             .ToList();
 
-        Assert.Empty(ndlr1002Diagnostics);
+        Assert.Empty(ndlrgen002Diagnostics);
     }
 
     private static string GetAttributeSource() => @"

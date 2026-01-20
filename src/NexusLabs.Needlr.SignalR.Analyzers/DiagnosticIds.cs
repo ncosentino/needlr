@@ -4,17 +4,17 @@ namespace NexusLabs.Needlr.SignalR.Analyzers;
 /// Diagnostic IDs for SignalR-specific Needlr analyzers.
 /// </summary>
 /// <remarks>
-/// SignalR analyzer codes use the NDLR1xxx range.
+/// SignalR analyzer codes use the NDLRSIG prefix.
 /// </remarks>
 public static class DiagnosticIds
 {
     /// <summary>
-    /// NDLR1001: HubPath must be a constant expression.
+    /// NDLRSIG001: HubPath must be a constant expression.
     /// </summary>
-    public const string HubPathMustBeConstant = "NDLR1001";
+    public const string HubPathMustBeConstant = "NDLRSIG001";
 
     /// <summary>
-    /// NDLR1002: HubType must be a typeof expression.
+    /// NDLRSIG002: HubType must be a typeof expression.
     /// </summary>
-    public const string HubTypeMustBeTypeOf = "NDLR1002";
+    public const string HubTypeMustBeTypeOf = "NDLRSIG002";
 }

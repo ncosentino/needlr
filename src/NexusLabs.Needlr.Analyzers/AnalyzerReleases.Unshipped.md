@@ -5,5 +5,5 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-NDLR0001 | NexusLabs.Needlr | Error | ReflectionInAotProjectAnalyzer, Reflection API used in AOT project
-NDLR0002 | NexusLabs.Needlr | Warning | PluginConstructorDependenciesAnalyzer, Plugin has constructor dependencies
+NDLRCOR001 | NexusLabs.Needlr | Error | ReflectionInAotProjectAnalyzer, Reflection API used in AOT project
+NDLRCOR002 | NexusLabs.Needlr | Warning | PluginConstructorDependenciesAnalyzer, Plugin has constructor dependencies

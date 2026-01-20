@@ -1,4 +1,4 @@
-# NDLR1002: HubType must be a typeof expression
+# NDLRSIG002: HubType must be a typeof expression
 
 ## Cause
 
@@ -13,7 +13,7 @@ SignalR hub type references must use the `typeof()` operator for proper type res
 ### Incorrect
 
 ```csharp
-[HubPath("/chat", someTypeVariable)] // NDLR1002
+[HubPath("/chat", someTypeVariable)] // NDLRSIG002
 public class ChatHubRegistration : ISignalRHub { }
 ```
 
@@ -40,4 +40,4 @@ This warning should not be suppressed. Non-typeof expressions will cause compila
 ## See Also
 
 - [SignalR Integration](../advanced-usage.md#signalr)
-- [NDLR1001: HubPath must be a constant](NDLR1001.md)
+- [NDLRSIG001: HubPath must be a constant](NDLRSIG001.md)

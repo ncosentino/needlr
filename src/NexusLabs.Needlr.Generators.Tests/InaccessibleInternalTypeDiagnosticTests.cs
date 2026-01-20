@@ -10,7 +10,7 @@ using Xunit;
 namespace NexusLabs.Needlr.Generators.Tests;
 
 /// <summary>
-/// Tests for NDLR1001: Internal type in referenced assembly cannot be registered.
+/// Tests for NDLRGEN001: Internal type in referenced assembly cannot be registered.
 /// </summary>
 public sealed class InaccessibleInternalTypeDiagnosticTests
 {
@@ -73,16 +73,16 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should have NDLR1001 error
-        var ndlr1001Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1001")
+        // Assert - should have NDLRGEN001 error
+        var ndlrgen001Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN001")
             .ToList();
 
-        Assert.NotEmpty(ndlr1001Diagnostics);
-        Assert.Contains(ndlr1001Diagnostics, d => 
+        Assert.NotEmpty(ndlrgen001Diagnostics);
+        Assert.Contains(ndlrgen001Diagnostics, d => 
             d.GetMessage().Contains("InternalService") && 
             d.GetMessage().Contains("ReferencedLib"));
-        Assert.All(ndlr1001Diagnostics, d => 
+        Assert.All(ndlrgen001Diagnostics, d => 
             Assert.Equal(DiagnosticSeverity.Error, d.Severity));
     }
 
@@ -139,12 +139,12 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1001 error
-        var ndlr1001Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1001")
+        // Assert - should NOT have NDLRGEN001 error
+        var ndlrgen001Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN001")
             .ToList();
 
-        Assert.Empty(ndlr1001Diagnostics);
+        Assert.Empty(ndlrgen001Diagnostics);
     }
 
     [Fact]
@@ -182,12 +182,12 @@ namespace TestApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1001 error for internal types in current assembly
-        var ndlr1001Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1001")
+        // Assert - should NOT have NDLRGEN001 error for internal types in current assembly
+        var ndlrgen001Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN001")
             .ToList();
 
-        Assert.Empty(ndlr1001Diagnostics);
+        Assert.Empty(ndlrgen001Diagnostics);
     }
 
     [Fact]
@@ -243,12 +243,12 @@ namespace HostApp
             out _,
             out var diagnostics);
 
-        // Assert - should NOT have NDLR1001 because namespace doesn't match
-        var ndlr1001Diagnostics = diagnostics
-            .Where(d => d.Id == "NDLR1001")
+        // Assert - should NOT have NDLRGEN001 because namespace doesn't match
+        var ndlrgen001Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN001")
             .ToList();
 
-        Assert.Empty(ndlr1001Diagnostics);
+        Assert.Empty(ndlrgen001Diagnostics);
     }
 
     private static string GetAttributeSource() => @"

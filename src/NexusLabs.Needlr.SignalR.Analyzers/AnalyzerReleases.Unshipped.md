@@ -5,5 +5,5 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-NDLR1001 | NexusLabs.Needlr.SignalR | Warning | HubPathAttributeAnalyzer, HubPath must be a constant expression
-NDLR1002 | NexusLabs.Needlr.SignalR | Warning | HubPathAttributeAnalyzer, HubType must be a typeof expression
+NDLRSIG001 | NexusLabs.Needlr.SignalR | Warning | HubPathAttributeAnalyzer, HubPath must be a constant expression
+NDLRSIG002 | NexusLabs.Needlr.SignalR | Warning | HubPathAttributeAnalyzer, HubType must be a typeof expression

@@ -1,4 +1,4 @@
-# NDLR1001: HubPath must be a constant
+# NDLRSIG001: HubPath must be a constant
 
 ## Cause
 
@@ -18,7 +18,7 @@ public static class HubPaths
     public static string ChatHub = "/chat"; // Not const!
 }
 
-[HubPath(HubPaths.ChatHub, typeof(ChatHub))] // NDLR1001
+[HubPath(HubPaths.ChatHub, typeof(ChatHub))] // NDLRSIG001
 public class ChatHubRegistration : ISignalRHub { }
 ```
 

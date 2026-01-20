@@ -11,7 +11,7 @@ public static class DiagnosticDescriptors
     private const string HelpLinkBase = "https://github.com/nexus-labs/needlr/blob/main/docs/analyzers/";
 
     /// <summary>
-    /// NDLR1001: HubPath must be a constant expression for AOT compatibility.
+    /// NDLRSIG001: HubPath must be a constant expression for AOT compatibility.
     /// </summary>
     public static readonly DiagnosticDescriptor HubPathMustBeConstant = new(
         id: DiagnosticIds.HubPathMustBeConstant,
@@ -21,10 +21,10 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "The HubPath parameter of HubPathAttribute must be a compile-time constant string for AOT compatibility.",
-        helpLinkUri: HelpLinkBase + "NDLR1001.md");
+        helpLinkUri: HelpLinkBase + "NDLRSIG001.md");
 
     /// <summary>
-    /// NDLR1002: HubType must be a typeof expression for AOT compatibility.
+    /// NDLRSIG002: HubType must be a typeof expression for AOT compatibility.
     /// </summary>
     public static readonly DiagnosticDescriptor HubTypeMustBeTypeOf = new(
         id: DiagnosticIds.HubTypeMustBeTypeOf,
@@ -34,5 +34,5 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "The HubType parameter of HubPathAttribute must be a typeof expression for AOT compatibility.",
-        helpLinkUri: HelpLinkBase + "NDLR1002.md");
+        helpLinkUri: HelpLinkBase + "NDLRSIG002.md");
 }
