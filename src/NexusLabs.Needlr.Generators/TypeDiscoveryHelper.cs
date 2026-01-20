@@ -334,6 +334,180 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Checks if a type would be registerable as injectable, ignoring accessibility constraints.
+    /// This is used to detect internal types that match namespace filters but cannot be included.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type would be injectable if it were accessible.</returns>
+    public static bool WouldBeInjectableIgnoringAccessibility(INamedTypeSymbol typeSymbol)
+    {
+        // Must be a class (not interface, struct, enum, delegate)
+        if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        if (typeSymbol.IsAbstract)
+            return false;
+
+        if (typeSymbol.IsStatic)
+            return false;
+
+        if (typeSymbol.IsUnboundGenericType)
+            return false;
+
+        if (typeSymbol.ContainingType != null)
+            return false;
+
+        if (IsCompilerGenerated(typeSymbol))
+            return false;
+
+        if (InheritsFrom(typeSymbol, "System.Exception"))
+            return false;
+
+        if (InheritsFrom(typeSymbol, "System.Attribute"))
+            return false;
+
+        if (typeSymbol.IsRecord)
+            return false;
+
+        if (HasDoNotAutoRegisterAttribute(typeSymbol))
+            return false;
+
+        // Must have a determinable lifetime to be injectable
+        var lifetime = DetermineLifetime(typeSymbol);
+        if (!lifetime.HasValue)
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if a type would be registerable as a plugin, ignoring accessibility constraints.
+    /// This is used to detect internal types that match namespace filters but cannot be included.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type would be a plugin if it were accessible.</returns>
+    public static bool WouldBePluginIgnoringAccessibility(INamedTypeSymbol typeSymbol)
+    {
+        // Must be a concrete class
+        if (typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        if (typeSymbol.IsAbstract)
+            return false;
+
+        if (typeSymbol.IsStatic)
+            return false;
+
+        if (typeSymbol.IsUnboundGenericType)
+            return false;
+
+        // Must have a parameterless constructor
+        if (!HasParameterlessConstructor(typeSymbol))
+            return false;
+
+        // Must have at least one plugin interface
+        var pluginInterfaces = GetPluginInterfaces(typeSymbol);
+        return pluginInterfaces.Count > 0;
+    }
+
+    /// <summary>
+    /// Checks if a type is internal (not public) and would be inaccessible from generated code
+    /// in a different assembly.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type is internal or less accessible.</returns>
+    public static bool IsInternalOrLessAccessible(INamedTypeSymbol typeSymbol)
+    {
+        // Check the type itself
+        if (typeSymbol.DeclaredAccessibility != Accessibility.Public)
+            return true;
+
+        // Check all containing types (for nested types)
+        var containingType = typeSymbol.ContainingType;
+        while (containingType != null)
+        {
+            if (containingType.DeclaredAccessibility != Accessibility.Public)
+                return true;
+            containingType = containingType.ContainingType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Known Needlr plugin interface names that indicate a type is a plugin.
+    /// </summary>
+    private static readonly string[] NeedlrPluginInterfaceNames =
+    [
+        "NexusLabs.Needlr.IServiceCollectionPlugin",
+        "NexusLabs.Needlr.IPostBuildServiceCollectionPlugin",
+        "NexusLabs.Needlr.AspNet.IWebApplicationPlugin",
+        "NexusLabs.Needlr.AspNet.IWebApplicationBuilderPlugin",
+        "NexusLabs.Needlr.SignalR.IHubRegistrationPlugin",
+        "NexusLabs.Needlr.SemanticKernel.IKernelBuilderPlugin"
+    ];
+
+    /// <summary>
+    /// Checks if a type implements any known Needlr plugin interface.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type implements a Needlr plugin interface.</returns>
+    public static bool ImplementsNeedlrPluginInterface(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            var ifaceName = iface.ToDisplayString();
+            foreach (var pluginInterface in NeedlrPluginInterfaceNames)
+            {
+                if (ifaceName == pluginInterface)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the name of the first Needlr plugin interface implemented by the type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>The interface name, or null if none found.</returns>
+    public static string? GetNeedlrPluginInterfaceName(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            var ifaceName = iface.ToDisplayString();
+            foreach (var pluginInterface in NeedlrPluginInterfaceNames)
+            {
+                if (ifaceName == pluginInterface)
+                    return ifaceName;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Checks if an assembly has the [GenerateTypeRegistry] attribute.
+    /// </summary>
+    /// <param name="assembly">The assembly symbol to check.</param>
+    /// <returns>True if the assembly has the attribute.</returns>
+    public static bool HasGenerateTypeRegistryAttribute(IAssemblySymbol assembly)
+    {
+        const string attributeName = "NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute";
+        
+        foreach (var attribute in assembly.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass == null)
+                continue;
+                
+            if (attrClass.ToDisplayString() == attributeName)
+                return true;
+        }
+        
+        return false;
+    }
+
+    /// <summary>
     /// Checks if a type is publicly accessible (can be referenced from generated code).
     /// A type is publicly accessible if it and all its containing types are public.
     /// </summary>

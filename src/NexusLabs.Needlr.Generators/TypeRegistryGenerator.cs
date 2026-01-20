@@ -47,6 +47,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 attributeInfo.NamespacePrefixes,
                 attributeInfo.IncludeSelf);
 
+            // Report errors for inaccessible internal types in referenced assemblies
+            foreach (var inaccessibleType in discoveryResult.InaccessibleTypes)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.InaccessibleInternalType,
+                    Location.None,
+                    inaccessibleType.TypeName,
+                    inaccessibleType.AssemblyName));
+            }
+
+            // Report errors for referenced assemblies with internal plugin types but no [GenerateTypeRegistry]
+            foreach (var missingPlugin in discoveryResult.MissingTypeRegistryPlugins)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.MissingGenerateTypeRegistryAttribute,
+                    Location.None,
+                    missingPlugin.AssemblyName,
+                    missingPlugin.TypeName));
+            }
+
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
@@ -117,12 +137,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var pluginTypes = new List<DiscoveredPlugin>();
         var hubRegistrations = new List<DiscoveredHubRegistration>();
         var kernelPlugins = new List<DiscoveredKernelPlugin>();
+        var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -130,11 +151,37 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins);
+        // Check for referenced assemblies with internal plugin types but no [GenerateTypeRegistry]
+        var missingTypeRegistryPlugins = new List<MissingTypeRegistryPlugin>();
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
+            {
+                // Skip assemblies that already have [GenerateTypeRegistry]
+                if (TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
+                    continue;
+
+                // Look for internal types that implement Needlr plugin interfaces
+                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
+                {
+                    if (!TypeDiscoveryHelper.IsInternalOrLessAccessible(typeSymbol))
+                        continue;
+
+                    if (!TypeDiscoveryHelper.ImplementsNeedlrPluginInterface(typeSymbol))
+                        continue;
+
+                    // This is an internal plugin type in an assembly without [GenerateTypeRegistry]
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    missingTypeRegistryPlugins.Add(new MissingTypeRegistryPlugin(typeName, assemblySymbol.Name));
+                }
+            }
+        }
+
+        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, missingTypeRegistryPlugins);
     }
 
     private static void CollectTypesFromAssembly(
@@ -144,6 +191,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredPlugin> pluginTypes,
         List<DiscoveredHubRegistration> hubRegistrations,
         List<DiscoveredKernelPlugin> kernelPlugins,
+        List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
     {
@@ -151,6 +199,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (!TypeDiscoveryHelper.MatchesNamespacePrefix(typeSymbol, namespacePrefixes))
                 continue;
+
+            // For referenced assemblies, check if the type would be registerable but is inaccessible
+            if (!isCurrentAssembly && TypeDiscoveryHelper.IsInternalOrLessAccessible(typeSymbol))
+            {
+                // Check if this type would have been registered if it were accessible
+                if (TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) ||
+                    TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                {
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    inaccessibleTypes.Add(new InaccessibleType(typeName, assembly.Name));
+                }
+                continue; // Skip further processing for inaccessible types
+            }
 
             // Check for injectable types
             if (TypeDiscoveryHelper.IsInjectableType(typeSymbol, isCurrentAssembly))
@@ -594,23 +655,53 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public bool IsStatic { get; }
     }
 
+    private readonly struct InaccessibleType
+    {
+        public InaccessibleType(string typeName, string assemblyName)
+        {
+            TypeName = typeName;
+            AssemblyName = assemblyName;
+        }
+
+        public string TypeName { get; }
+        public string AssemblyName { get; }
+    }
+
+    private readonly struct MissingTypeRegistryPlugin
+    {
+        public MissingTypeRegistryPlugin(string typeName, string assemblyName)
+        {
+            TypeName = typeName;
+            AssemblyName = assemblyName;
+        }
+
+        public string TypeName { get; }
+        public string AssemblyName { get; }
+    }
+
     private readonly struct DiscoveryResult
     {
         public DiscoveryResult(
             IReadOnlyList<DiscoveredType> injectableTypes,
             IReadOnlyList<DiscoveredPlugin> pluginTypes,
             IReadOnlyList<DiscoveredHubRegistration> hubRegistrations,
-            IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins)
+            IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins,
+            IReadOnlyList<InaccessibleType> inaccessibleTypes,
+            IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins)
         {
             InjectableTypes = injectableTypes;
             PluginTypes = pluginTypes;
             HubRegistrations = hubRegistrations;
             KernelPlugins = kernelPlugins;
+            InaccessibleTypes = inaccessibleTypes;
+            MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
         }
 
         public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
         public IReadOnlyList<DiscoveredPlugin> PluginTypes { get; }
         public IReadOnlyList<DiscoveredHubRegistration> HubRegistrations { get; }
         public IReadOnlyList<DiscoveredKernelPlugin> KernelPlugins { get; }
+        public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
+        public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
     }
 }

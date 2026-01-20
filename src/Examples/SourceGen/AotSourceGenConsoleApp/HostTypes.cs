@@ -2,7 +2,7 @@ using AotSourceGenConsolePlugin;
 
 using Microsoft.Extensions.Configuration;
 
-namespace AotSourceGenConsole;
+namespace AotSourceGenConsoleApp;
 
 public interface IHostGreeter
 {

@@ -32,4 +32,9 @@
     <None Include="$(OutputPath)\NexusLabs.Needlr.Generators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
 </Project>
