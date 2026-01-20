@@ -74,11 +74,15 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
         // Register as self
         services.Add(new ServiceDescriptor(type, type, lifetime));
 
-        // Register as interfaces (excluding system interfaces and generic type definitions)
+        // Get constructor parameter types to detect decorator pattern
+        var constructorParamTypes = GetConstructorParameterTypes(type);
+
+        // Register as interfaces (excluding system interfaces, generic type definitions, and decorator interfaces)
         var interfaces = type.GetInterfaces()
             .Where(i => !i.IsGenericTypeDefinition)
             .Where(i => i.Assembly != typeof(object).Assembly) // Skip system interfaces
             .Where(i => !i.Name.StartsWith("System.")) // Additional system interface filtering
+            .Where(i => !IsDecoratorInterface(i, constructorParamTypes)) // Skip decorator pattern interfaces
             .ToList();
 
         foreach (var interfaceType in interfaces)
@@ -97,5 +101,33 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
                 services.Add(new ServiceDescriptor(interfaceType, type, lifetime));
             }
         }
+    }
+
+    /// <summary>
+    /// Gets all parameter types from all constructors of a type.
+    /// </summary>
+    private static HashSet<Type> GetConstructorParameterTypes(Type type)
+    {
+        var paramTypes = new HashSet<Type>();
+
+        foreach (var ctor in type.GetConstructors(BindingFlags.Public | BindingFlags.Instance))
+        {
+            foreach (var param in ctor.GetParameters())
+            {
+                paramTypes.Add(param.ParameterType);
+            }
+        }
+
+        return paramTypes;
+    }
+
+    /// <summary>
+    /// Checks if an interface is a decorator interface (type implements it and also takes it as a constructor parameter).
+    /// A type that implements IFoo and takes IFoo in its constructor is likely a decorator
+    /// and should not be auto-registered as IFoo to avoid circular dependencies.
+    /// </summary>
+    private static bool IsDecoratorInterface(Type interfaceType, HashSet<Type> constructorParamTypes)
+    {
+        return constructorParamTypes.Contains(interfaceType);
     }
 }
