@@ -129,7 +129,8 @@ public sealed class ReflectionServiceProviderBuilder : IServiceProviderBuilder
         PostBuildServiceCollectionPluginOptions options = new(
             provider,
             config,
-            candidateAssemblies);
+            candidateAssemblies,
+            _pluginFactory);
 
         foreach (var plugin in _pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
         {

@@ -8,4 +8,5 @@ namespace NexusLabs.Needlr;
 public sealed record ServiceCollectionPluginOptions(
     IServiceCollection Services,
     IConfiguration Config,
-    IReadOnlyList<Assembly> Assemblies);
+    IReadOnlyList<Assembly> Assemblies,
+    IPluginFactory PluginFactory);

@@ -62,7 +62,8 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         ServiceCollectionPluginOptions options = new(
             services,
             config,
-            candidateAssemblies);
+            candidateAssemblies,
+            _pluginFactory);
 
         foreach (var serviceCollectionPlugin in _pluginFactory.CreatePluginsFromAssemblies<IServiceCollectionPlugin>(candidateAssemblies))
         {

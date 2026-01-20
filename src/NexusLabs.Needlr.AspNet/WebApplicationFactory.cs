@@ -91,7 +91,8 @@ public sealed class WebApplicationFactory(
 
         WebApplicationPluginOptions options = new(
             webApplication,
-            assembliesToLoadFrom);
+            assembliesToLoadFrom,
+            pluginFactory);
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IWebApplicationPlugin>(
             assembliesToLoadFrom))
         {
@@ -118,7 +119,8 @@ public sealed class WebApplicationFactory(
         WebApplicationBuilderPluginOptions options = new(
             builder,
             assembliesToLoadFrom,
-            logger);
+            logger,
+            pluginFactory);
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IWebApplicationBuilderPlugin>(
             assembliesToLoadFrom))
         {

@@ -127,14 +127,16 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         ArgumentNullException.ThrowIfNull(config);
 
         var candidateAssemblies = GetCandidateAssemblies();
-        PostBuildServiceCollectionPluginOptions options = new(
-            provider,
-            config,
-            candidateAssemblies);
 
         IPluginFactory pluginFactory = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginTypeProvider)
             ? new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true)
             : new ReflectionPluginFactory();
+
+        PostBuildServiceCollectionPluginOptions options = new(
+            provider,
+            config,
+            candidateAssemblies,
+            pluginFactory);
 
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
         {

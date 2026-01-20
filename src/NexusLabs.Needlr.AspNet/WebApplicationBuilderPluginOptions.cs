@@ -8,4 +8,5 @@ namespace NexusLabs.Needlr.AspNet;
 public sealed record WebApplicationBuilderPluginOptions(
     WebApplicationBuilder Builder,
     IReadOnlyList<Assembly> Assemblies,
-    ILogger Logger);
+    ILogger Logger,
+    IPluginFactory PluginFactory);

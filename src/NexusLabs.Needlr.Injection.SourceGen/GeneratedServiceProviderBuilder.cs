@@ -92,7 +92,8 @@ public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
         PostBuildServiceCollectionPluginOptions options = new(
             provider,
             config,
-            candidateAssemblies);
+            candidateAssemblies,
+            _pluginFactory);
 
         foreach (var plugin in _pluginFactory.CreatePlugins<IPostBuildServiceCollectionPlugin>())
         {

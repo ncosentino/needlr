@@ -22,8 +22,9 @@ public sealed class CarterWebApplicationBuilderPluginIntegrationTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
         var plugin = new CarterWebApplicationBuilderPlugin();
-        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
 
         // Act
         plugin.Configure(options);
@@ -50,10 +51,11 @@ public sealed class CarterWebApplicationBuilderPluginIntegrationTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
         mockLogger.Setup(l => l.IsEnabled(LogLevel.Information)).Returns(true);
 
         var plugin = new CarterWebApplicationBuilderPlugin();
-        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
 
         // Act
         plugin.Configure(options);
@@ -75,8 +77,9 @@ public sealed class CarterWebApplicationBuilderPluginIntegrationTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
         var plugin = new CarterWebApplicationBuilderPlugin();
-        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
 
         // Act - calling twice should not throw
         var exception = Record.Exception(() =>
@@ -114,17 +117,18 @@ public sealed class CarterModuleIntegrationTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
 
         // Configure via builder plugin
         var builderPlugin = new CarterWebApplicationBuilderPlugin();
-        var builderOptions = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var builderOptions = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
         builderPlugin.Configure(builderOptions);
 
         var app = builder.Build();
 
         // Configure via app plugin
         var appPlugin = new CarterWebApplicationPlugin();
-        var appOptions = new WebApplicationPluginOptions(app, []);
+        var appOptions = new WebApplicationPluginOptions(app, [], mockPluginFactory.Object);
 
         // Act
         var exception = Record.Exception(() => appPlugin.Configure(appOptions));

@@ -3,6 +3,8 @@ using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
+using Moq;
+
 using NexusLabs.Needlr.AspNet;
 
 using Xunit;
@@ -29,8 +31,9 @@ public sealed class CarterWebApplicationPluginTests
         builder.Services.AddCarter();
         var app = builder.Build();
 
+        var mockPluginFactory = new Mock<IPluginFactory>();
         var plugin = new CarterWebApplicationPlugin();
-        var options = new WebApplicationPluginOptions(app, []);
+        var options = new WebApplicationPluginOptions(app, [], mockPluginFactory.Object);
 
         // Act - should not throw
         plugin.Configure(options);

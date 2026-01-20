@@ -45,7 +45,7 @@ public static class SignalRExtensions
 
         var plugin = new SignalRHubRegistrationPlugin();
         var assemblyList = assemblies as IReadOnlyList<System.Reflection.Assembly> ?? assemblies.ToList();
-        plugin.Configure(new WebApplicationPluginOptions(app, assemblyList));
+        plugin.Configure(new WebApplicationPluginOptions(app, assemblyList, pluginFactory));
 
         return app;
     }

@@ -17,8 +17,9 @@ public sealed class CarterWebApplicationBuilderPluginTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
         var plugin = new CarterWebApplicationBuilderPlugin();
-        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
 
         // Act
         plugin.Configure(options);
@@ -43,10 +44,11 @@ public sealed class CarterWebApplicationBuilderPluginTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         var mockLogger = new Mock<ILogger>();
+        var mockPluginFactory = new Mock<IPluginFactory>();
         mockLogger.Setup(l => l.IsEnabled(LogLevel.Information)).Returns(true);
         
         var plugin = new CarterWebApplicationBuilderPlugin();
-        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object);
+        var options = new WebApplicationBuilderPluginOptions(builder, [], mockLogger.Object, mockPluginFactory.Object);
 
         // Act
         plugin.Configure(options);
