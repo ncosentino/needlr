@@ -27,6 +27,9 @@
   <Folder Name="/Examples/SemanticKernel/">
     <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
   </Folder>
+  <Folder Name="/Examples/Hosting/">
+    <Project Path="Examples/Hosting/WorkerServiceExample/WorkerServiceExample.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
     <File Path="../LICENSE" />
