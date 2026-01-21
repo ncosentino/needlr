@@ -429,6 +429,209 @@ namespace TestNamespace
         Assert.Equal(GeneratorLifetime.Singleton, result);
     }
 
+    [Fact]
+    public void HasDeferToContainerAttribute_WithAttribute_ReturnsTrue()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    public interface IDependency { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(IDependency))]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.HasDeferToContainerAttribute(typeSymbol);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void HasDeferToContainerAttribute_WithoutAttribute_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class NormalService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.NormalService");
+
+        var result = TypeDiscoveryHelper.HasDeferToContainerAttribute(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void GetDeferToContainerParameterTypes_WithSingleType_ReturnsType()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    public interface IDependency { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(IDependency))]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal("global::TestNamespace.IDependency", result[0]);
+    }
+
+    [Fact]
+    public void GetDeferToContainerParameterTypes_WithMultipleTypes_ReturnsAllTypes()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    public interface IDependency1 { }
+    public interface IDependency2 { }
+    public interface IDependency3 { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(IDependency1), typeof(IDependency2), typeof(IDependency3))]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count);
+        Assert.Equal("global::TestNamespace.IDependency1", result[0]);
+        Assert.Equal("global::TestNamespace.IDependency2", result[1]);
+        Assert.Equal("global::TestNamespace.IDependency3", result[2]);
+    }
+
+    [Fact]
+    public void GetDeferToContainerParameterTypes_WithEmptyParams_ReturnsEmptyList()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    [NexusLabs.Needlr.DeferToContainer]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void GetDeferToContainerParameterTypes_WithoutAttribute_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class NormalService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.NormalService");
+
+        var result = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_WithDeferToContainerAttribute_ReturnsSingleton()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    public interface IDependency { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(IDependency))]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Equal(GeneratorLifetime.Singleton, result);
+    }
+
+    [Fact]
+    public void GetDeferToContainerParameterTypes_WithGenericType_ReturnsFullyQualifiedName()
+    {
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes) { }
+    }
+}
+
+namespace TestNamespace
+{
+    public interface ILogger<T> { }
+    public interface ICacheProvider { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(ICacheProvider), typeof(ILogger<DeferredService>))]
+    public partial class DeferredService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DeferredService");
+
+        var result = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal("global::TestNamespace.ICacheProvider", result[0]);
+        Assert.Equal("global::TestNamespace.ILogger<global::TestNamespace.DeferredService>", result[1]);
+    }
+
     private static INamedTypeSymbol GetTypeSymbol(string source, string typeName)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);

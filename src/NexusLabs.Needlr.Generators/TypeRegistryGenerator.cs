@@ -223,7 +223,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
-                    var constructorParams = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol) ?? [];
+                    
+                    // Check for [DeferToContainer] attribute - use declared types instead of discovered constructors
+                    var deferredParams = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
+                    var constructorParams = deferredParams ?? TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol) ?? [];
 
                     injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams.ToArray()));
                 }

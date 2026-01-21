@@ -799,3 +799,130 @@ Override the default namespace prefix in a specific project:
 When plugin projects contain internal types, the host application's generator cannot access them. Each plugin must generate its own type registry. Without the MSBuild convention approach, you would need to manually add `[GenerateTypeRegistry]` to every plugin project.
 
 The generator emits error `NDLRGEN002` if it detects internal plugin types in a referenced assembly without `[GenerateTypeRegistry]`, helping you identify projects that need the attribute.
+
+## Working with Other Source Generators
+
+When using Needlr with other source generators that modify your types (such as generators that add constructors to partial classes), you may encounter scenarios where Needlr's generator cannot see the constructor that will be added by another generator.
+
+### The Problem
+
+Source generators in .NET run in isolation - they cannot see each other's output. If you have a partial class like:
+
+```csharp
+// Your code - another generator will add a constructor
+[CacheProvider("EngageFeed")]  // Triggers CacheProviderGenerator
+public partial class EngageFeedCacheProvider { }
+
+// CacheProviderGenerator produces:
+public sealed partial class EngageFeedCacheProvider(ICacheProvider _cacheProvider) { }
+```
+
+Needlr's generator sees only your original declaration without the constructor, so it would generate an incorrect factory:
+
+```csharp
+// Wrong! Missing the ICacheProvider dependency
+sp => new EngageFeedCacheProvider()
+```
+
+### Solution: The DeferToContainer Attribute
+
+Use `[DeferToContainer]` to explicitly declare the constructor parameter types that another generator will add. Needlr will use these types to generate the correct factory:
+
+```csharp
+using NexusLabs.Needlr;
+
+// Declare the expected constructor parameters
+[DeferToContainer(typeof(ICacheProvider))]
+[CacheProvider("EngageFeed")]
+public partial class EngageFeedCacheProvider { }
+```
+
+Needlr now generates the correct factory:
+
+```csharp
+// Correct! Resolves ICacheProvider from the container
+sp => new EngageFeedCacheProvider(
+    sp.GetRequiredService<ICacheProvider>())
+```
+
+### Multiple Dependencies
+
+You can declare multiple constructor parameters in order:
+
+```csharp
+[DeferToContainer(
+    typeof(ICacheProvider), 
+    typeof(ILogger<EngageFeedCacheProvider>),
+    typeof(IOptions<CacheOptions>))]
+[CacheProvider("EngageFeed")]
+public partial class EngageFeedCacheProvider { }
+```
+
+This generates:
+
+```csharp
+sp => new EngageFeedCacheProvider(
+    sp.GetRequiredService<ICacheProvider>(),
+    sp.GetRequiredService<ILogger<EngageFeedCacheProvider>>(),
+    sp.GetRequiredService<IOptions<CacheOptions>>())
+```
+
+### Parameterless Constructor Override
+
+Use `[DeferToContainer]` without parameters if the other generator will add a parameterless constructor or you want to ensure Needlr doesn't inspect the actual constructors:
+
+```csharp
+[DeferToContainer]  // Empty - no constructor parameters
+[SomeOtherGeneratorAttribute]
+public partial class SimpleService { }
+```
+
+### Compile-Time Validation
+
+If the declared parameter types don't match the actual generated constructor, the build will fail with a compile error. This provides compile-time safety - you'll know immediately if the other generator changes its output.
+
+### When to Use DeferToContainer
+
+Use `[DeferToContainer]` when:
+
+1. **Another source generator adds a constructor** to your partial class
+2. **The constructor has dependencies** that need to be resolved from DI
+3. **You're using source generation** (`.UsingSourceGen()`) - reflection-based discovery doesn't have this limitation
+
+You do NOT need `[DeferToContainer]` when:
+
+1. Using `.UsingReflection()` - it discovers constructors at runtime
+2. Your class has an explicit constructor in your source code
+3. The other generator doesn't add constructor parameters
+
+### Example: FusionCache Integration
+
+Here's a complete example integrating with a hypothetical `CacheProviderGenerator`:
+
+```csharp
+// In your cache providers project
+namespace MyApp.Caching;
+
+public interface ICacheProvider { }
+
+// The CacheProviderGenerator will add:
+// public sealed partial class EngageFeedCacheProvider(ICacheProvider _cacheProvider)
+
+[DeferToContainer(typeof(ICacheProvider))]
+[CacheProvider("EngageFeed")]
+public partial class EngageFeedCacheProvider { }
+
+[DeferToContainer(typeof(ICacheProvider), typeof(ILogger<UserProfileCacheProvider>))]
+[CacheProvider("UserProfile")]
+public partial class UserProfileCacheProvider { }
+```
+
+```csharp
+// In your host application
+var app = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .BuildWebApplication();
+
+// Both cache providers are correctly registered with their dependencies resolved
+```

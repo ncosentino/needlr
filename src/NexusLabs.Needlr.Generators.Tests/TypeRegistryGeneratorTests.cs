@@ -512,4 +512,176 @@ namespace NexusLabs.Needlr.Generators
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
     }
+
+    [Fact]
+    public void Generator_WithDeferToContainerAttribute_UsesAttributeParameterTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICacheProvider { }
+
+    // Simulates a partial class that will get a constructor from another generator
+    [NexusLabs.Needlr.DeferToContainer(typeof(ICacheProvider))]
+    public partial class CacheService { }
+}";
+
+        var generatedCode = RunGeneratorWithDeferToContainer(source);
+
+        // Should contain factory that resolves ICacheProvider
+        Assert.Contains("sp => new global::TestApp.CacheService(sp.GetRequiredService<global::TestApp.ICacheProvider>())", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithDeferToContainerAttribute_MultipleParams_GeneratesCorrectFactory()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICacheProvider { }
+    public interface ILogger { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(ICacheProvider), typeof(ILogger))]
+    public partial class CacheService { }
+}";
+
+        var generatedCode = RunGeneratorWithDeferToContainer(source);
+
+        // Should contain factory that resolves both dependencies
+        Assert.Contains("sp => new global::TestApp.CacheService(sp.GetRequiredService<global::TestApp.ICacheProvider>(), sp.GetRequiredService<global::TestApp.ILogger>())", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithDeferToContainerAttribute_EmptyParams_GeneratesParameterlessFactory()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    [NexusLabs.Needlr.DeferToContainer]
+    public partial class SimpleService { }
+}";
+
+        var generatedCode = RunGeneratorWithDeferToContainer(source);
+
+        // Should contain parameterless factory
+        Assert.Contains("sp => new global::TestApp.SimpleService()", generatedCode);
+    }
+
+    private static string RunGeneratorWithDeferToContainer(string source)
+    {
+        var attributeSource = @"
+namespace NexusLabs.Needlr.Generators
+{
+    [System.AttributeUsage(System.AttributeTargets.Assembly)]
+    public sealed class GenerateTypeRegistryAttribute : System.Attribute
+    {
+        public string[]? IncludeNamespacePrefixes { get; set; }
+        public bool IncludeSelf { get; set; } = true;
+    }
+
+    public enum InjectableLifetime
+    {
+        Singleton = 0,
+        Scoped = 1,
+        Transient = 2
+    }
+
+    public readonly struct InjectableTypeInfo
+    {
+        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime, System.Func<System.IServiceProvider, object>? factory)
+        {
+            Type = type;
+            Interfaces = interfaces;
+            Lifetime = lifetime;
+            Factory = factory;
+        }
+
+        public System.Type Type { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
+        public InjectableLifetime? Lifetime { get; }
+        public System.Func<System.IServiceProvider, object>? Factory { get; }
+    }
+
+    public readonly struct PluginTypeInfo
+    {
+        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
+        {
+            PluginType = pluginType;
+            PluginInterfaces = pluginInterfaces;
+            Factory = factory;
+        }
+
+        public System.Type PluginType { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
+        public System.Func<object> Factory { get; }
+    }
+
+    public static class NeedlrSourceGenBootstrap
+    {
+        public static void Register(
+            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+        {
+        }
+    }
+}
+
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes)
+        {
+            ConstructorParameterTypes = constructorParameterTypes ?? System.Array.Empty<System.Type>();
+        }
+
+        public System.Type[] ConstructorParameterTypes { get; }
+    }
+}";
+
+        var syntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(attributeSource),
+            CSharpSyntaxTree.ParseText(source)
+        };
+
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            syntaxTrees,
+            Basic.Reference.Assemblies.Net90.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out var diagnostics);
+
+        var generatedTrees = outputCompilation.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .OrderBy(t => t.FilePath)
+            .ToList();
+
+        if (generatedTrees.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+    }
 }

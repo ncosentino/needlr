@@ -22,6 +22,8 @@ internal static class TypeDiscoveryHelper
     private const string DoNotAutoRegisterAttributeFullName = "NexusLabs.Needlr.DoNotAutoRegisterAttribute";
     private const string DoNotInjectAttributeName = "DoNotInjectAttribute";
     private const string DoNotInjectAttributeFullName = "NexusLabs.Needlr.DoNotInjectAttribute";
+    private const string DeferToContainerAttributeName = "DeferToContainerAttribute";
+    private const string DeferToContainerAttributeFullName = "NexusLabs.Needlr.DeferToContainerAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -545,6 +547,11 @@ internal static class TypeDiscoveryHelper
         if (HasDoNotInjectAttribute(typeSymbol))
             return null;
 
+        // Types with [DeferToContainer] are always injectable as Singleton
+        // (the attribute declares constructor params that will be added by another generator)
+        if (HasDeferToContainerAttribute(typeSymbol))
+            return GeneratorLifetime.Singleton;
+
         // Get all instance constructors
         var constructors = typeSymbol.InstanceConstructors;
 
@@ -1021,6 +1028,76 @@ internal static class TypeDiscoveryHelper
                 {
                     return GetFullyQualifiedName(namedType);
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks if a type has the <c>[DeferToContainer]</c> attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has the DeferToContainer attribute.</returns>
+    public static bool HasDeferToContainerAttribute(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass is null)
+                continue;
+
+            var name = attrClass.Name;
+            var fullName = attrClass.ToDisplayString();
+
+            if (name == DeferToContainerAttributeName || fullName == DeferToContainerAttributeFullName)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the constructor parameter types declared in the <c>[DeferToContainer]</c> attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>
+    /// A list of fully qualified parameter type names from the attribute, 
+    /// or null if the attribute is not present.
+    /// </returns>
+    public static IReadOnlyList<string>? GetDeferToContainerParameterTypes(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass is null)
+                continue;
+
+            var name = attrClass.Name;
+            var fullName = attrClass.ToDisplayString();
+
+            if (name != DeferToContainerAttributeName && fullName != DeferToContainerAttributeFullName)
+                continue;
+
+            // The attribute has a params Type[] constructor parameter
+            // Check constructor arguments
+            if (attribute.ConstructorArguments.Length == 0)
+                return Array.Empty<string>();
+
+            var arg = attribute.ConstructorArguments[0];
+            
+            // params array is passed as a single array argument
+            if (arg.Kind == TypedConstantKind.Array)
+            {
+                var types = new List<string>();
+                foreach (var element in arg.Values)
+                {
+                    if (element.Value is INamedTypeSymbol namedType)
+                    {
+                        types.Add(GetFullyQualifiedName(namedType));
+                    }
+                }
+                return types;
             }
         }
 
