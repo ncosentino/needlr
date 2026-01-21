@@ -16,7 +16,9 @@ public sealed class PluginConstructorDependenciesAnalyzer : DiagnosticAnalyzer
     // Plugin interfaces that are instantiated before DI is available
     private static readonly ImmutableHashSet<string> PluginInterfaceNames = ImmutableHashSet.Create(
         "IServiceCollectionPlugin",
-        "IPostBuildServiceCollectionPlugin");
+        "IPostBuildServiceCollectionPlugin",
+        "IWebApplicationBuilderPlugin",
+        "IHostApplicationBuilderPlugin");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.PluginHasConstructorDependencies);
