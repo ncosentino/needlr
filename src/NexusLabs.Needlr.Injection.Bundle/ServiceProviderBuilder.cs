@@ -70,6 +70,7 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
         });
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<Assembly> GetCandidateAssemblies() => _lazyCandidateAssemblies.Value;
 
     /// <inheritdoc />

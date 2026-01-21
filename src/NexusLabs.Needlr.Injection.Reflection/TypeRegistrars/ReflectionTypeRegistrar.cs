@@ -15,6 +15,7 @@ namespace NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 [RequiresUnreferencedCode("ReflectionTypeRegistrar uses reflection to discover types. Use GeneratedTypeRegistrar for AOT scenarios.")]
 public sealed class ReflectionTypeRegistrar : ITypeRegistrar
 {
+    /// <inheritdoc />
     public void RegisterTypesFromAssemblies(
         IServiceCollection services,
         ITypeFilterer typeFilterer,

@@ -2,6 +2,9 @@
 
 namespace NexusLabs.Needlr.Injection;
 
+/// <summary>
+/// Provides helper methods for filtering types during dependency injection scanning.
+/// </summary>
 public static class TypeFiltering
 {
     /// <summary>

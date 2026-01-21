@@ -5,6 +5,10 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
 
+/// <summary>
+/// Defines a builder for constructing service providers with Needlr's auto-discovery capabilities.
+/// Coordinates assembly loading, type registration, and plugin execution.
+/// </summary>
 [DoNotAutoRegister]
 public interface IServiceProviderBuilder
 {

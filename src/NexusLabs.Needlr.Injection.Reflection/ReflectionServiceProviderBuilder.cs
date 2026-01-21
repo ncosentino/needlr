@@ -71,6 +71,7 @@ public sealed class ReflectionServiceProviderBuilder : IServiceProviderBuilder
         });
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<Assembly> GetCandidateAssemblies() => _lazyCandidateAssemblies.Value;
 
     /// <inheritdoc />

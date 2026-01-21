@@ -34,6 +34,7 @@ namespace NexusLabs.Needlr.SignalR;
 [RequiresDynamicCode("SignalR hub registration uses MakeGenericMethod() which requires dynamic code generation.")]
 public sealed class SignalRHubRegistrationPlugin : IWebApplicationPlugin
 {
+    /// <inheritdoc />
     public void Configure(WebApplicationPluginOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

@@ -2,6 +2,10 @@
 
 namespace NexusLabs.Needlr.Injection.Sorters;
 
+/// <summary>
+/// Sorts assemblies in order: class libraries first, then executables, then test assemblies.
+/// This ensures library registrations are processed before application-specific overrides.
+/// </summary>
 public sealed class LibTestEntryAssemblySorter : IAssemblySorter
 {
     private readonly Predicate<Assembly> _isTestAssembly;
@@ -21,6 +25,7 @@ public sealed class LibTestEntryAssemblySorter : IAssemblySorter
         _isEntryPoint = isEntryPoint;
     }
 
+    /// <inheritdoc />
     public IEnumerable<Assembly> Sort(IReadOnlyList<Assembly> assemblies)
     {
         var nonTestClassLibs = assemblies

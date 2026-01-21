@@ -6,8 +6,13 @@ using NexusLabs.Needlr.AspNet;
 
 namespace NexusLabs.Needlr.Carter;
 
+/// <summary>
+/// Plugin that configures Carter middleware on the web application.
+/// Maps Carter routes after the application has been built.
+/// </summary>
 public sealed class CarterWebApplicationPlugin : IWebApplicationPlugin
 {
+    /// <inheritdoc />
     public void Configure(WebApplicationPluginOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

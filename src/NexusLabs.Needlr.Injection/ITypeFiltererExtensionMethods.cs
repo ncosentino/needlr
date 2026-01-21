@@ -2,6 +2,9 @@
 
 namespace NexusLabs.Needlr.Injection;
 
+/// <summary>
+/// Extension methods for <see cref="ITypeFilterer"/> providing fluent configuration of type lifetime rules.
+/// </summary>
 public static class ITypeFiltererExtensionMethods
 {
     public static ITypeFilterer Except<T>(

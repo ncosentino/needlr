@@ -5,8 +5,13 @@ using NexusLabs.Needlr.AspNet;
 
 namespace NexusLabs.Needlr.SignalR;
 
+/// <summary>
+/// Plugin that registers SignalR services with the web application builder.
+/// Automatically adds SignalR support to the ASP.NET Core application.
+/// </summary>
 public sealed class SignalRWebApplicationBuilderPlugin : IWebApplicationBuilderPlugin
 {
+    /// <inheritdoc />
     public void Configure(WebApplicationBuilderPluginOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

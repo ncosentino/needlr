@@ -31,6 +31,7 @@ public sealed class ReflectionAssemblyLoader : IAssemblyLoader
             });
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<Assembly> LoadAssemblies(bool continueOnAssemblyError) =>
         _fileMatchAssemblyLoader.LoadAssemblies(continueOnAssemblyError);
 }

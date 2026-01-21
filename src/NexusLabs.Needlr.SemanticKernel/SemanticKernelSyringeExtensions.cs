@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.SemanticKernel;
 
+/// <summary>
+/// Extension methods for <see cref="SemanticKernelSyringe"/> providing fluent configuration of Semantic Kernel integration.
+/// </summary>
 public static class SemanticKernelSyringeExtensions
 {
     public static SemanticKernelSyringe Configure(

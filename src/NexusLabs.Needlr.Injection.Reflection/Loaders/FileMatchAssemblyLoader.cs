@@ -27,6 +27,7 @@ public sealed class FileMatchAssemblyLoader : IAssemblyLoader
         _fileFilter = fileFilter;
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<Assembly> LoadAssemblies(
         bool continueOnAssemblyError)
     {

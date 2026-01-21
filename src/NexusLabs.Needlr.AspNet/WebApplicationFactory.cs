@@ -8,6 +8,10 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.AspNet;
 
+/// <summary>
+/// Default implementation of <see cref="IWebApplicationFactory"/> that creates and configures ASP.NET Core web applications.
+/// Handles service registration, plugin execution, and the complete application build lifecycle.
+/// </summary>
 [DoNotAutoRegister]
 public sealed class WebApplicationFactory(
     IServiceProviderBuilder _serviceProviderBuilder,

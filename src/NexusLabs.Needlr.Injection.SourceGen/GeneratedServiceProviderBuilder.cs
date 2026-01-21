@@ -35,6 +35,7 @@ public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
         _pluginFactory = new GeneratedPluginFactory(pluginTypeProvider, allowAllWhenAssembliesEmpty: true);
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<Assembly> GetCandidateAssemblies() =>
         _assemblyProvider.GetCandidateAssemblies();
 

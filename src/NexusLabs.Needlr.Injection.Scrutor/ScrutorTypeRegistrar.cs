@@ -15,6 +15,7 @@ namespace NexusLabs.Needlr.Injection.Scrutor;
 /// </remarks>
 public sealed class ScrutorTypeRegistrar : ITypeRegistrar
 {
+    /// <inheritdoc />
     public void RegisterTypesFromAssemblies(
         IServiceCollection services,
         ITypeFilterer typeFilterer,

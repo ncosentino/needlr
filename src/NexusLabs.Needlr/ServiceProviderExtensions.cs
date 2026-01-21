@@ -74,12 +74,24 @@ public static class ServiceProviderExtensions
             .IsAssignableFrom(type));
     }
 
+    /// <summary>
+    /// Determines whether a service of the specified type is registered in the service provider.
+    /// </summary>
+    /// <typeparam name="TService">The service type to check.</typeparam>
+    /// <param name="serviceProvider">The service provider to check.</param>
+    /// <returns>True if the service is registered; otherwise, false.</returns>
     public static bool IsRegistered<TService>(this IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
         return serviceProvider.IsRegistered(typeof(TService));
     }
 
+    /// <summary>
+    /// Determines whether a service of the specified type is registered in the service provider.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider to check.</param>
+    /// <param name="serviceType">The service type to check.</param>
+    /// <returns>True if the service is registered; otherwise, false.</returns>
     public static bool IsRegistered(
         this IServiceProvider serviceProvider,
         Type serviceType)
@@ -147,6 +159,12 @@ public static class ServiceProviderExtensions
             .GetServiceRegistrations(predicate);
     }
 
+    /// <summary>
+    /// Gets the service collection from the service provider.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider.</param>
+    /// <returns>The service collection.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the service collection is not available.</exception>
     public static IServiceCollection GetServiceCollection(
         this IServiceProvider serviceProvider)
     {
@@ -158,6 +176,11 @@ public static class ServiceProviderExtensions
                 "Ensure the IServiceCollection is registered in the container.");
     }
 
+    /// <summary>
+    /// Copies all service registrations from the service provider to the specified service collection.
+    /// </summary>
+    /// <param name="serviceProvider">The source service provider.</param>
+    /// <param name="serviceCollection">The target service collection.</param>
     public static void CopyRegistrationsToServiceCollection(
         this IServiceProvider serviceProvider,
         IServiceCollection serviceCollection)
@@ -191,6 +214,11 @@ public static class ServiceProviderExtensions
         }
     }
 
+    /// <summary>
+    /// Copies all service registrations from the service provider to a new service collection.
+    /// </summary>
+    /// <param name="serviceProvider">The source service provider.</param>
+    /// <returns>A new service collection containing all registrations.</returns>
     public static IServiceCollection CopyRegistrationsToServiceCollection(
         this IServiceProvider serviceProvider)
     {

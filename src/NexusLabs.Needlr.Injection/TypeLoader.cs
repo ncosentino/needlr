@@ -2,6 +2,9 @@
 
 namespace NexusLabs.Needlr.Injection;
 
+/// <summary>
+/// Provides methods for loading types from assemblies based on filter criteria.
+/// </summary>
 public static class TypeLoader
 {
     public static IReadOnlyList<Type> GetInjectableTypesImplementing<T>(

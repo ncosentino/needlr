@@ -2,6 +2,9 @@
 
 namespace NexusLabs.Needlr.Injection.Sorters;
 
+/// <summary>
+/// A decorator that wraps another <see cref="IAssemblySorter"/> and applies a custom sort callback.
+/// </summary>
 public sealed class AssemblySorter : IAssemblySorter
 {
     private readonly IAssemblySorter _wrappedSorter;
@@ -17,6 +20,7 @@ public sealed class AssemblySorter : IAssemblySorter
         _sortCallback = sortCallback;
     }
 
+    /// <inheritdoc />
     public IEnumerable<Assembly> Sort(IReadOnlyList<Assembly> assemblies)
     {
         ArgumentNullException.ThrowIfNull(assemblies);

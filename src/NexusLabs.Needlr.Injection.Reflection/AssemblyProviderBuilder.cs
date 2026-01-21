@@ -65,6 +65,7 @@ public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
             });
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<Assembly> GetCandidateAssemblies()
             => _lazyAssemblies.Value;
     }

@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace NexusLabs.Needlr.Extensions.Logging;
 
+/// <summary>
+/// Extension methods for <see cref="PostBuildServiceCollectionPluginOptions"/> to simplify logger retrieval.
+/// </summary>
 public static class PostBuildServiceCollectionPluginOptionsExtensions
 {
     public static ILogger GetLogger<T>(this PostBuildServiceCollectionPluginOptions options)

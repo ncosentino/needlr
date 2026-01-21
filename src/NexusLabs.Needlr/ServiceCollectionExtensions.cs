@@ -125,12 +125,24 @@ public static class ServiceCollectionExtensions
             .ToArray();
     }
 
+    /// <summary>
+    /// Determines whether a service of the specified type is registered in the service collection.
+    /// </summary>
+    /// <typeparam name="TService">The service type to check.</typeparam>
+    /// <param name="services">The service collection to check.</param>
+    /// <returns>True if the service is registered; otherwise, false.</returns>
     public static bool IsRegistered<TService>(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         return services.IsRegistered(typeof(TService));
     }
 
+    /// <summary>
+    /// Determines whether a service of the specified type is registered in the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to check.</param>
+    /// <param name="serviceType">The service type to check.</param>
+    /// <returns>True if the service is registered; otherwise, false.</returns>
     public static bool IsRegistered(
         this IServiceCollection services,
         Type serviceType)

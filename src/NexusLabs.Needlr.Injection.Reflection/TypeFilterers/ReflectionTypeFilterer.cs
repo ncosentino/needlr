@@ -13,12 +13,15 @@ namespace NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
 [RequiresUnreferencedCode("ReflectionTypeFilterer uses reflection to analyze constructors. Use GeneratedTypeFilterer for AOT scenarios.")]
 public sealed class ReflectionTypeFilterer : ITypeFilterer
 {
+    /// <inheritdoc />
     public bool IsInjectableScopedType(Type type)
         => false;
 
+    /// <inheritdoc />
     public bool IsInjectableTransientType(Type type)
         => false;
 
+    /// <inheritdoc />
     public bool IsInjectableSingletonType(
         Type type)
     {

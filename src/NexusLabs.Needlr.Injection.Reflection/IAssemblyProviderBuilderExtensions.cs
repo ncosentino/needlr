@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection.Reflection;
 
+/// <summary>
+/// Extension methods for <see cref="IAssemblyProviderBuilder"/> providing fluent configuration of assembly loading and sorting.
+/// </summary>
 public static class IAssemblyProviderBuilderExtensions
 {
     /// <summary>

@@ -6,6 +6,10 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
 
+/// <summary>
+/// Default implementation of <see cref="IServiceCollectionPopulator"/> that registers discovered types into a service collection.
+/// Handles type registration, plugin execution, and built-in service factory registration.
+/// </summary>
 [DoNotAutoRegister]
 public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
 {
@@ -33,6 +37,7 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
         _pluginFactory = pluginFactory;
     }
 
+    /// <inheritdoc />
     public IServiceCollection RegisterToServiceCollection(
         IServiceCollection services,
         IConfiguration config,

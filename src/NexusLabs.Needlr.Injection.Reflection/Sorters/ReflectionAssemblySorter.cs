@@ -7,6 +7,7 @@ namespace NexusLabs.Needlr.Injection.Reflection.Sorters;
 /// </summary>
 public sealed class ReflectionAssemblySorter : IAssemblySorter
 {
+    /// <inheritdoc />
     public IEnumerable<Assembly> Sort(IReadOnlyList<Assembly> assemblies)
     {
         ArgumentNullException.ThrowIfNull(assemblies);
