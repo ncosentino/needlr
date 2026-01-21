@@ -29,6 +29,7 @@
   </Folder>
   <Folder Name="/Examples/Hosting/">
     <Project Path="Examples/Hosting/WorkerServiceExample/WorkerServiceExample.csproj" />
+    <Project Path="Examples/Hosting/HostBuilderIntegrationExample/HostBuilderIntegrationExample.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
