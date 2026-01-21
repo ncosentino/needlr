@@ -45,6 +45,15 @@ Examples showing integration with Microsoft Semantic Kernel:
 |---------|-------------|
 | `SimpleSemanticKernelApp` | Basic Semantic Kernel integration with Needlr |
 
+### `Hosting/` - Generic Host Examples
+
+Examples showing Needlr integration with the Generic Host for worker services and console applications:
+
+| Example | Description |
+|---------|-------------|
+| `WorkerServiceExample` | Full worker service using Needlr's `ForHost()` - Needlr controls the host lifecycle |
+| `HostBuilderIntegrationExample` | Using `UseNeedlrDiscovery()` with user-controlled `HostApplicationBuilder` |
+
 ## Running Examples
 
 Most examples can be run with:
