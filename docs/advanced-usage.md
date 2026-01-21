@@ -881,6 +881,27 @@ public partial class SimpleService { }
 
 If the declared parameter types don't match the actual generated constructor, the build will fail with a compile error. This provides compile-time safety - you'll know immediately if the other generator changes its output.
 
+### ⚠️ Critical: The Attribute Must Be in Your Original Source
+
+**The `[DeferToContainer]` attribute MUST be placed on your original partial class declaration - NOT in generated code.**
+
+Source generators run in isolation and cannot see output from other generators. If another generator adds `[DeferToContainer]` to its generated output, Needlr's generator will **never see it**.
+
+```csharp
+// ❌ WRONG - Placing attribute in generated code doesn't work!
+// CacheProviderGenerator.g.cs (GENERATED FILE)
+[DeferToContainer(typeof(ICacheProvider))]  // Needlr can't see this!
+public sealed partial class EngageFeedCacheProvider(ICacheProvider _cacheProvider) { }
+
+// ✅ CORRECT - Place attribute in your original source file
+// EngageFeedCacheProvider.cs (YOUR FILE)
+[DeferToContainer(typeof(ICacheProvider))]  // Needlr sees this!
+[CacheProvider("EngageFeed")]
+public partial class EngageFeedCacheProvider { }
+```
+
+The analyzer `NDLRCOR003` will detect and report an error if it finds `[DeferToContainer]` in generated code. See the [NDLRCOR003 documentation](analyzers/NDLRCOR003.md) for more details.
+
 ### When to Use DeferToContainer
 
 Use `[DeferToContainer]` when:

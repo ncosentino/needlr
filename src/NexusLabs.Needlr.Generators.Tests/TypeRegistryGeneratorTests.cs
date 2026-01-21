@@ -639,6 +639,36 @@ namespace TestApp
         Assert.Contains("sp => new global::TestApp.SimpleService()", generatedCode);
     }
 
+    [Fact]
+    public void Generator_WithDeferToContainerAttribute_AndPrimaryConstructor_UsesAttributeNotConstructor()
+    {
+        // This mimics the real scenario: a class has BOTH [DeferToContainer] AND a primary constructor
+        // The generator should use the attribute types, not the visible constructor
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICacheProvider { }
+
+    // Class has primary constructor AND DeferToContainer attribute
+    // Generator should use attribute (typeof(ICacheProvider)), not the actual constructor
+    [NexusLabs.Needlr.DeferToContainer(typeof(ICacheProvider))]
+    public sealed partial class EngageFeedCacheProvider(ICacheProvider _cacheProvider)
+    {
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDeferToContainer(source);
+
+        // Should use the DeferToContainer parameter, producing a factory with ICacheProvider
+        Assert.Contains("sp => new global::TestApp.EngageFeedCacheProvider(sp.GetRequiredService<global::TestApp.ICacheProvider>())", generatedCode);
+        // Should NOT produce parameterless factory
+        Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
+    }
+
     private static string RunGeneratorWithDeferToContainer(string source)
     {
         var attributeSource = @"
@@ -744,4 +774,143 @@ namespace NexusLabs.Needlr
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
     }
+
+#pragma warning disable xUnit1051 // Using CancellationToken with synchronous compilation methods
+    [Fact]
+    public void Generator_WithDeferToContainerFromReferencedAssembly_UsesAttributeParameterTypes()
+    {
+        // Create a compilation for the "NexusLabs.Needlr" assembly that contains DeferToContainerAttribute
+        var needlrSource = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes)
+        {
+            ConstructorParameterTypes = constructorParameterTypes ?? System.Array.Empty<System.Type>();
+        }
+
+        public System.Type[] ConstructorParameterTypes { get; }
+    }
+}";
+        var needlrCompilation = CSharpCompilation.Create(
+            "NexusLabs.Needlr",
+            new[] { CSharpSyntaxTree.ParseText(needlrSource) },
+            Basic.Reference.Assemblies.Net90.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var needlrAssemblyStream = new System.IO.MemoryStream();
+        var needlrEmitResult = needlrCompilation.Emit(needlrAssemblyStream);
+        Assert.True(needlrEmitResult.Success, "Failed to emit NexusLabs.Needlr assembly");
+        needlrAssemblyStream.Position = 0;
+        var needlrReference = MetadataReference.CreateFromStream(needlrAssemblyStream);
+
+        // Create source for the generator attributes
+        var generatorAttributeSource = @"
+namespace NexusLabs.Needlr.Generators
+{
+    [System.AttributeUsage(System.AttributeTargets.Assembly)]
+    public sealed class GenerateTypeRegistryAttribute : System.Attribute
+    {
+        public string[]? IncludeNamespacePrefixes { get; set; }
+        public bool IncludeSelf { get; set; } = true;
+    }
+
+    public enum InjectableLifetime
+    {
+        Singleton = 0,
+        Scoped = 1,
+        Transient = 2
+    }
+
+    public readonly struct InjectableTypeInfo
+    {
+        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime, System.Func<System.IServiceProvider, object>? factory)
+        {
+            Type = type;
+            Interfaces = interfaces;
+            Lifetime = lifetime;
+            Factory = factory;
+        }
+
+        public System.Type Type { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
+        public InjectableLifetime? Lifetime { get; }
+        public System.Func<System.IServiceProvider, object>? Factory { get; }
+    }
+
+    public readonly struct PluginTypeInfo
+    {
+        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
+        {
+            PluginType = pluginType;
+            PluginInterfaces = pluginInterfaces;
+            Factory = factory;
+        }
+
+        public System.Type PluginType { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
+        public System.Func<object> Factory { get; }
+    }
+
+    public static class NeedlrSourceGenBootstrap
+    {
+        public static void Register(
+            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+        {
+        }
+    }
+}";
+        // Consumer app source - references NexusLabs.Needlr.DeferToContainer from external assembly
+        var appSource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICacheProvider { }
+
+    [NexusLabs.Needlr.DeferToContainer(typeof(ICacheProvider))]
+    public sealed partial class EngageFeedCacheProvider(ICacheProvider _cacheProvider)
+    {
+    }
+}";
+        var syntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(generatorAttributeSource),
+            CSharpSyntaxTree.ParseText(appSource)
+        };
+
+        var references = Basic.Reference.Assemblies.Net90.References.All.Append(needlrReference).ToList();
+
+        var compilation = CSharpCompilation.Create(
+            "TestApp",
+            syntaxTrees,
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out var diagnostics);
+
+        var generatedTrees = outputCompilation.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .OrderBy(t => t.FilePath)
+            .ToList();
+
+        var generatedCode = string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+
+        // Should use the DeferToContainer parameter, producing a factory with ICacheProvider
+        Assert.Contains("sp => new global::TestApp.EngageFeedCacheProvider(sp.GetRequiredService<global::TestApp.ICacheProvider>())", generatedCode);
+        // Should NOT produce parameterless factory
+        Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
+    }
+#pragma warning restore xUnit1051
 }

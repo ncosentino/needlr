@@ -17,4 +17,9 @@ public static class DiagnosticIds
     /// NDLRCOR002: Plugin has constructor dependencies.
     /// </summary>
     public const string PluginHasConstructorDependencies = "NDLRCOR002";
+
+    /// <summary>
+    /// NDLRCOR003: DeferToContainer attribute in generated code.
+    /// </summary>
+    public const string DeferToContainerInGeneratedCode = "NDLRCOR003";
 }

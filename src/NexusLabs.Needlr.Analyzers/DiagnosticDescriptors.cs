@@ -35,4 +35,17 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "IServiceCollectionPlugin and IPostBuildServiceCollectionPlugin implementations are instantiated before the dependency injection container is built, so they cannot have constructor dependencies.",
         helpLinkUri: HelpLinkBase + "NDLRCOR002.md");
+
+    /// <summary>
+    /// NDLRCOR003: DeferToContainer attribute in generated code.
+    /// </summary>
+    public static readonly DiagnosticDescriptor DeferToContainerInGeneratedCode = new(
+        id: DiagnosticIds.DeferToContainerInGeneratedCode,
+        title: "[DeferToContainer] attribute in generated code is ignored",
+        messageFormat: "[DeferToContainer] on '{0}' is in generated code and will be ignored by Needlr. Move the attribute to your original partial class declaration.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Source generators run in isolation and cannot see attributes added by other generators. The [DeferToContainer] attribute must be placed on the original user-written partial class declaration, not in generated code.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR003.md");
 }
