@@ -444,7 +444,9 @@ internal static class TypeDiscoveryHelper
         "NexusLabs.Needlr.AspNet.IWebApplicationPlugin",
         "NexusLabs.Needlr.AspNet.IWebApplicationBuilderPlugin",
         "NexusLabs.Needlr.SignalR.IHubRegistrationPlugin",
-        "NexusLabs.Needlr.SemanticKernel.IKernelBuilderPlugin"
+        "NexusLabs.Needlr.SemanticKernel.IKernelBuilderPlugin",
+        "NexusLabs.Needlr.Hosting.IHostApplicationBuilderPlugin",
+        "NexusLabs.Needlr.Hosting.IHostPlugin"
     ];
 
     /// <summary>
