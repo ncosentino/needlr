@@ -632,18 +632,163 @@ namespace TestNamespace
         Assert.Equal("global::TestNamespace.ILogger<global::TestNamespace.DeferredService>", result[1]);
     }
 
+    [Fact]
+    public void IsInjectableType_OpenGenericType_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IJob { }
+    
+    public class JobScheduler<TJob> where TJob : IJob
+    {
+        public JobScheduler() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.JobScheduler`1");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsInjectableType_OpenGenericWithMultipleParameters_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class Repository<TEntity, TKey>
+    {
+        public Repository() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.Repository`2");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPluginType_OpenGenericType_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IPlugin { }
+    
+    public class GenericPlugin<T> : IPlugin
+    {
+        public GenericPlugin() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.GenericPlugin`1");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void DetermineLifetime_OpenGenericType_ReturnsNull()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class GenericService<T>
+    {
+        public GenericService() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.GenericService`1");
+
+        var result = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_OpenGenericType_ReturnsOpenGenericSyntax()
+    {
+        // Verifies that if an open generic type were to be used, 
+        // it would produce valid open generic syntax (MyClass<>) not invalid (MyClass<T>)
+        var source = @"
+namespace TestNamespace
+{
+    public class GenericService<T>
+    {
+        public GenericService() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.GenericService`1");
+
+        var result = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+
+        // Should produce open generic syntax, not GenericService<T>
+        Assert.Equal("global::TestNamespace.GenericService<>", result);
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_OpenGenericWithMultipleParams_ReturnsCorrectSyntax()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class Repository<TEntity, TKey>
+    {
+        public Repository() { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.Repository`2");
+
+        var result = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+
+        // Should produce MyClass<,> for 2 type params
+        Assert.Equal("global::TestNamespace.Repository<,>", result);
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_ClosedGenericType_ReturnsFullType()
+    {
+        // Closed generics (with concrete type arguments) should keep their type arguments
+        var source = @"
+namespace TestNamespace
+{
+    public interface ILogger<T> { }
+    public class MyService { }
+    public class Consumer
+    {
+        public Consumer(ILogger<MyService> logger) { }
+    }
+}";
+        var compilation = CreateCompilation(source);
+        var consumerType = compilation.GetTypeByMetadataName("TestNamespace.Consumer")!;
+        var constructor = consumerType.InstanceConstructors.First(c => c.Parameters.Length > 0);
+        var loggerType = (INamedTypeSymbol)constructor.Parameters[0].Type;
+
+        var result = TypeDiscoveryHelper.GetFullyQualifiedName(loggerType);
+
+        // Should keep the concrete type argument
+        Assert.Equal("global::TestNamespace.ILogger<global::TestNamespace.MyService>", result);
+    }
+
     private static INamedTypeSymbol GetTypeSymbol(string source, string typeName)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            [syntaxTree],
-            Basic.Reference.Assemblies.Net90.References.All,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
+        var compilation = CreateCompilation(source);
         var typeSymbol = compilation.GetTypeByMetadataName(typeName);
         Assert.NotNull(typeSymbol);
 
         return typeSymbol;
+    }
+
+    private static CSharpCompilation CreateCompilation(string source)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        return CSharpCompilation.Create(
+            "TestAssembly",
+            [syntaxTree],
+            Basic.Reference.Assemblies.Net90.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 }

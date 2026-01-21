@@ -514,6 +514,66 @@ namespace NexusLabs.Needlr.Generators
     }
 
     [Fact]
+    public void Generator_OpenGenericType_IsExcludedFromGeneration()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IJob { }
+    
+    // Open generic type - should NOT be included in generated code
+    public class JobScheduler<TJob> where TJob : IJob
+    {
+        public JobScheduler() { }
+    }
+    
+    // Regular class - should be included
+    public class RegularService { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Should contain the regular service
+        Assert.Contains("RegularService", generatedCode);
+        // Should NOT contain the generic type with type parameter
+        Assert.DoesNotContain("JobScheduler<TJob>", generatedCode);
+        Assert.DoesNotContain("JobScheduler`1", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_MultipleTypeParameterGeneric_IsExcludedFromGeneration()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    // Open generic type with multiple parameters - should NOT be included
+    public class Repository<TEntity, TKey>
+    {
+        public Repository() { }
+    }
+    
+    // Regular class - should be included
+    public class ConcreteRepository { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Should contain the concrete type
+        Assert.Contains("ConcreteRepository", generatedCode);
+        // Should NOT contain the generic type
+        Assert.DoesNotContain("Repository<TEntity", generatedCode);
+        Assert.DoesNotContain("Repository`2", generatedCode);
+    }
+
+    [Fact]
     public void Generator_WithDeferToContainerAttribute_UsesAttributeParameterTypes()
     {
         var source = @"

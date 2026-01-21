@@ -52,6 +52,11 @@ internal static class TypeDiscoveryHelper
         if (typeSymbol.IsUnboundGenericType)
             return false;
 
+        // Exclude open generic types (type definitions with type parameters like MyClass<T>)
+        // These cannot be instantiated directly and would produce invalid typeof() expressions
+        if (typeSymbol.TypeParameters.Length > 0)
+            return false;
+
         if (typeSymbol.ContainingType != null)
             return false;
 
@@ -141,11 +146,43 @@ internal static class TypeDiscoveryHelper
 
     /// <summary>
     /// Gets the fully qualified name for a type symbol suitable for code generation.
+    /// For generic type definitions (open generics), outputs open generic syntax (e.g., MyClass&lt;&gt;).
+    /// For constructed generics with concrete type arguments, outputs the full type (e.g., MyClass&lt;int&gt;).
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns>The fully qualified type name with global:: prefix.</returns>
     public static string GetFullyQualifiedName(INamedTypeSymbol typeSymbol)
     {
+        // Check if this is an open generic type definition (has type parameters, not type arguments)
+        // e.g., JobScheduler<TJob> where TJob is a TypeParameter, not a concrete type
+        // We need to convert these to open generic syntax: JobScheduler<>
+        if (typeSymbol.TypeParameters.Length > 0 && !typeSymbol.IsUnboundGenericType)
+        {
+            // Check if type arguments are still type parameters (meaning this is a generic definition)
+            // For a closed generic like ILogger<MyService>, TypeArguments contains MyService (a NamedTypeSymbol)
+            // For an open generic like JobScheduler<TJob>, TypeArguments contains TJob (a TypeParameterSymbol)
+            var hasUnresolvedTypeParameters = typeSymbol.TypeArguments.Any(ta => ta.TypeKind == TypeKind.TypeParameter);
+            
+            if (hasUnresolvedTypeParameters)
+            {
+                // Build the open generic name manually
+                var containingNamespace = typeSymbol.ContainingNamespace?.ToDisplayString();
+                var typeName = typeSymbol.Name;
+                var arity = typeSymbol.TypeParameters.Length;
+                
+                // Create the open generic syntax: MyClass<,> for 2 type params, MyClass<> for 1
+                var commas = arity > 1 ? new string(',', arity - 1) : string.Empty;
+                var openGenericPart = $"<{commas}>";
+                
+                if (string.IsNullOrEmpty(containingNamespace) || containingNamespace == "<global namespace>")
+                {
+                    return $"global::{typeName}{openGenericPart}";
+                }
+                
+                return $"global::{containingNamespace}.{typeName}{openGenericPart}";
+            }
+        }
+        
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 
@@ -356,6 +393,10 @@ internal static class TypeDiscoveryHelper
         if (typeSymbol.IsUnboundGenericType)
             return false;
 
+        // Exclude open generic types (type definitions with type parameters like MyClass<T>)
+        if (typeSymbol.TypeParameters.Length > 0)
+            return false;
+
         if (typeSymbol.ContainingType != null)
             return false;
 
@@ -401,6 +442,10 @@ internal static class TypeDiscoveryHelper
             return false;
 
         if (typeSymbol.IsUnboundGenericType)
+            return false;
+
+        // Exclude open generic types (type definitions with type parameters like MyClass<T>)
+        if (typeSymbol.TypeParameters.Length > 0)
             return false;
 
         // Must have a parameterless constructor
@@ -547,6 +592,10 @@ internal static class TypeDiscoveryHelper
         if (HasDoNotInjectAttribute(typeSymbol))
             return null;
 
+        // Exclude open generic types (type definitions with type parameters like MyClass<T>)
+        if (typeSymbol.TypeParameters.Length > 0)
+            return null;
+
         // Types with [DeferToContainer] are always injectable as Singleton
         // (the attribute declares constructor params that will be added by another generator)
         if (HasDeferToContainerAttribute(typeSymbol))
@@ -655,6 +704,11 @@ internal static class TypeDiscoveryHelper
             return false;
 
         if (typeSymbol.IsUnboundGenericType)
+            return false;
+
+        // Exclude open generic types (type definitions with type parameters like MyClass<T>)
+        // These cannot be instantiated directly and would produce invalid typeof() expressions
+        if (typeSymbol.TypeParameters.Length > 0)
             return false;
 
         // Must have a parameterless constructor
