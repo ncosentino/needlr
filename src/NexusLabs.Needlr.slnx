@@ -28,8 +28,14 @@
     <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
   </Folder>
   <Folder Name="/Examples/Hosting/">
-    <Project Path="Examples/Hosting/WorkerServiceExample/WorkerServiceExample.csproj" />
-    <Project Path="Examples/Hosting/HostBuilderIntegrationExample/HostBuilderIntegrationExample.csproj" />
+  </Folder>
+  <Folder Name="/Examples/Hosting/Reflection/">
+    <Project Path="Examples/Hosting/Reflection/WorkerServiceExample/WorkerServiceExample.csproj" />
+    <Project Path="Examples/Hosting/Reflection/HostBuilderIntegrationExample/HostBuilderIntegrationExample.csproj" />
+  </Folder>
+  <Folder Name="/Examples/Hosting/SourceGen/">
+    <Project Path="Examples/Hosting/SourceGen/WorkerServiceSourceGen/WorkerServiceSourceGen.csproj" />
+    <Project Path="Examples/Hosting/SourceGen/HostBuilderIntegrationSourceGen/HostBuilderIntegrationSourceGen.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />

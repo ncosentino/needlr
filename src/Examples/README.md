@@ -49,10 +49,19 @@ Examples showing integration with Microsoft Semantic Kernel:
 
 Examples showing Needlr integration with the Generic Host for worker services and console applications:
 
+#### `Hosting/Reflection/` - Reflection-Based Hosting
+
 | Example | Description |
 |---------|-------------|
-| `WorkerServiceExample` | Full worker service using Needlr's `ForHost()` - Needlr controls the host lifecycle |
-| `HostBuilderIntegrationExample` | Using `UseNeedlrDiscovery()` with user-controlled `HostApplicationBuilder` |
+| `WorkerServiceExample` | Full worker service using Needlr's `ForHost()` with reflection - Needlr controls the host lifecycle |
+| `HostBuilderIntegrationExample` | Using `UseNeedlrDiscovery()` with user-controlled `HostApplicationBuilder` and reflection |
+
+#### `Hosting/SourceGen/` - Source-Generation Hosting
+
+| Example | Description |
+|---------|-------------|
+| `WorkerServiceSourceGen` | Full worker service using Needlr's `ForHost()` with source generation - AOT compatible |
+| `HostBuilderIntegrationSourceGen` | Using `UseNeedlrDiscovery()` with user-controlled `HostApplicationBuilder` and source generation |
 
 ## Running Examples
 

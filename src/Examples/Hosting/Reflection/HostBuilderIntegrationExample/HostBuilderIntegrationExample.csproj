@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Hosting\NexusLabs.Needlr.Hosting.csproj" />
+    <ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
+    <ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+  </ItemGroup>
+
+</Project>
