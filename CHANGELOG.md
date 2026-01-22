@@ -5,7 +5,7 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.2-alpha.7] - 2026-01-21
+## [0.0.2-alpha.7] - 2026-01-22
 
 ### Added
 - **Global Namespace Support**: Empty string `""` in `IncludeNamespacePrefixes` now explicitly includes types in the global namespace
@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Detects types in global namespace that implement interfaces, have DI attributes, or have dependency constructors
   - Reports warning with guidance to either add a namespace or include `""` in `IncludeNamespacePrefixes`
   - Automatically suppressed when type has `[DoNotInject]` or `[DoNotAutoRegister]`
+
+### Fixed
+- **Needlr.Carter and Needlr.SignalR plugins not discovered**: Added `[GenerateTypeRegistry]` to Carter and SignalR packages
+  - `CarterWebApplicationBuilderPlugin` and `CarterWebApplicationPlugin` now register automatically
+  - `SignalRWebApplicationBuilderPlugin` now registers automatically
+  - These packages now have their own TypeRegistry and module initializer for source generation compatibility
 
 ## [0.0.2-alpha.6] - 2026-01-21
 
