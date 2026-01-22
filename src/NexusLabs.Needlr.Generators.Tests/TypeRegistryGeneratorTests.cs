@@ -73,6 +73,78 @@ namespace OtherCompany.Services
     }
 
     [Fact]
+    public void Generator_WithEmptyStringPrefix_IncludesGlobalNamespaceTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+// Empty string prefix means include global namespace types
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MyCompany"", """" })]
+
+namespace MyCompany.Services
+{
+    public class NamespacedService { }
+}
+
+// This class is in the global namespace
+public class GlobalService { }
+";
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Contains("NamespacedService", generatedCode);
+        Assert.Contains("GlobalService", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithoutEmptyStringPrefix_ExcludesGlobalNamespaceTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+// No empty string prefix, so global namespace types should be excluded
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MyCompany"" })]
+
+namespace MyCompany.Services
+{
+    public class NamespacedService { }
+}
+
+// This class is in the global namespace - should NOT be included
+public class GlobalService { }
+";
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Contains("NamespacedService", generatedCode);
+        Assert.DoesNotContain("GlobalService", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithOnlyEmptyStringPrefix_IncludesOnlyGlobalNamespaceTypes()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+// Only empty string prefix - only global namespace types
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { """" })]
+
+namespace MyCompany.Services
+{
+    public class NamespacedService { }
+}
+
+// This class is in the global namespace
+public class GlobalService { }
+";
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.DoesNotContain("NamespacedService", generatedCode);
+        Assert.Contains("GlobalService", generatedCode);
+    }
+
+    [Fact]
     public void Generator_WithIncludeSelfFalse_ExcludesSelfTypes()
     {
         var source = @"

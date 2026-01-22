@@ -198,9 +198,20 @@ internal static class TypeDiscoveryHelper
             return true;
 
         var typeNamespace = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        
+        // Check if type is in the global namespace
+        var isGlobalNamespace = typeSymbol.ContainingNamespace?.IsGlobalNamespace == true;
 
         foreach (var prefix in namespacePrefixes)
         {
+            // Empty string prefix matches global namespace types
+            if (string.IsNullOrEmpty(prefix))
+            {
+                if (isGlobalNamespace)
+                    return true;
+                continue;
+            }
+            
             if (typeNamespace.StartsWith(prefix, StringComparison.Ordinal))
                 return true;
         }

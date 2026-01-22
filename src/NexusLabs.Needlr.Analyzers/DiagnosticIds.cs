@@ -22,4 +22,9 @@ public static class DiagnosticIds
     /// NDLRCOR003: DeferToContainer attribute in generated code.
     /// </summary>
     public const string DeferToContainerInGeneratedCode = "NDLRCOR003";
+
+    /// <summary>
+    /// NDLRCOR004: Injectable type in global namespace may not be discovered.
+    /// </summary>
+    public const string GlobalNamespaceTypeNotDiscovered = "NDLRCOR004";
 }

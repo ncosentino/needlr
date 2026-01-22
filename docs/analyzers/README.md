@@ -10,6 +10,8 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 |---------|----------|-------------|
 | [NDLRCOR001](NDLRCOR001.md) | Error | Reflection API used in AOT project |
 | [NDLRCOR002](NDLRCOR002.md) | Warning | Plugin has constructor dependencies |
+| [NDLRCOR003](NDLRCOR003.md) | Error | [DeferToContainer] attribute in generated code is ignored |
+| [NDLRCOR004](NDLRCOR004.md) | Warning | Injectable type in global namespace may not be discovered |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 

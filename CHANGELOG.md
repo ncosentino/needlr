@@ -5,6 +5,17 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.7] - 2026-01-21
+
+### Added
+- **Global Namespace Support**: Empty string `""` in `IncludeNamespacePrefixes` now explicitly includes types in the global namespace
+  - Allows source generation to discover types without a `namespace` declaration
+  - Example: `[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "MyCompany", "" })]`
+- **NDLRCOR004 Analyzer**: Warns when injectable types in the global namespace may not be discovered
+  - Detects types in global namespace that implement interfaces, have DI attributes, or have dependency constructors
+  - Reports warning with guidance to either add a namespace or include `""` in `IncludeNamespacePrefixes`
+  - Automatically suppressed when type has `[DoNotInject]` or `[DoNotAutoRegister]`
+
 ## [0.0.2-alpha.6] - 2026-01-21
 
 ### Added

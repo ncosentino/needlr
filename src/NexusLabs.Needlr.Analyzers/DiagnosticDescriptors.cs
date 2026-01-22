@@ -48,4 +48,17 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Source generators run in isolation and cannot see attributes added by other generators. The [DeferToContainer] attribute must be placed on the original user-written partial class declaration, not in generated code.",
         helpLinkUri: HelpLinkBase + "NDLRCOR003.md");
+
+    /// <summary>
+    /// NDLRCOR004: Injectable type in global namespace may not be discovered.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GlobalNamespaceTypeNotDiscovered = new(
+        id: DiagnosticIds.GlobalNamespaceTypeNotDiscovered,
+        title: "Injectable type in global namespace may not be discovered",
+        messageFormat: "Type '{0}' is in the global namespace and won't be discovered when IncludeNamespacePrefixes is set. Add a namespace or include \"\" in IncludeNamespacePrefixes.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Types in the global namespace are not matched by namespace prefix filters. Either move the type to a namespace that matches your IncludeNamespacePrefixes, or add an empty string (\"\") to IncludeNamespacePrefixes to include global namespace types.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR004.md");
 }
