@@ -12,7 +12,7 @@ using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.IntegrationTests.Parity;
+namespace NexusLabs.Needlr.IntegrationTests;
 
 /// <summary>
 /// Tests that verify plugins from Needlr extension packages (Carter, SignalR) are 
