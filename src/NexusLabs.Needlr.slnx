@@ -16,6 +16,11 @@
     <Project Path="Examples/SourceGen/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
     <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>
+  <Folder Name="/Examples/SourceGen/TransitiveDependencyDemo/">
+    <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.Host/TransitiveDemo.Host.csproj" />
+    <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureA/TransitiveDemo.FeatureA.csproj" />
+    <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureB/TransitiveDemo.FeatureB.csproj" />
+  </Folder>
   <Folder Name="/Examples/Reflection/">
     <Project Path="Examples/Reflection/AspNetCoreApp1/AspNetCoreApp1.csproj" />
     <Project Path="Examples/Reflection/ManualRegistrationExample/ManualRegistrationExample.csproj" />

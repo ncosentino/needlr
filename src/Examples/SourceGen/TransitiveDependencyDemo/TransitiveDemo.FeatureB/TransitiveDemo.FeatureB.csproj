@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAotCompatible>true</IsAotCompatible>
+
+		<!-- Emit generated files for debugging -->
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+		  OutputItemType="Analyzer"
+		  ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+		<!-- Reference FeatureA to use ICoreLogger -->
+		<ProjectReference Include="..\TransitiveDemo.FeatureA\TransitiveDemo.FeatureA.csproj" />
+	</ItemGroup>
+</Project>

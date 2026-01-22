@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- NativeAOT host -->
+		<PublishAot>true</PublishAot>
+		<IsAotCompatible>true</IsAotCompatible>
+
+		<!-- Trimming -->
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>full</TrimMode>
+
+		<!-- Optional: smaller/faster -->
+		<InvariantGlobalization>true</InvariantGlobalization>
+
+		<!-- Analyze + enforce -->
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+		<EnableAotAnalyzer>true</EnableAotAnalyzer>
+
+		<!-- Emit generated files for debugging -->
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+		  OutputItemType="Analyzer"
+		  ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+		
+		<!-- 
+		IMPORTANT: We reference BOTH FeatureA and FeatureB.
+		However, Program.cs ONLY uses types from FeatureB!
+		
+		Without Needlr's automatic assembly force-loading feature, FeatureA's
+		assembly would never be loaded by the CLR, and its plugin would never run.
+		This would cause FeatureBPlugin to fail because ICoreLogger wouldn't be registered.
+		
+		With the force-loading feature, Needlr automatically discovers that FeatureA
+		has [GenerateTypeRegistry] and emits typeof() calls to ensure it loads.
+		-->
+		<ProjectReference Include="..\TransitiveDemo.FeatureA\TransitiveDemo.FeatureA.csproj" />
+		<ProjectReference Include="..\TransitiveDemo.FeatureB\TransitiveDemo.FeatureB.csproj" />
+	</ItemGroup>
+</Project>
