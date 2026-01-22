@@ -5,6 +5,27 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.6] - 2026-01-21
+
+### Added
+- **Automatic Assembly Force-Loading**: Source generator now automatically discovers all referenced assemblies with `[GenerateTypeRegistry]` and emits `typeof()` calls to ensure they are loaded at startup
+  - Solves the issue where transitive dependencies with plugins were not discovered because their assemblies never loaded
+  - Generated `ForceLoadReferencedAssemblies()` method uses `typeof(AssemblyName.Generated.TypeRegistry).Assembly` for AOT-safe assembly loading
+  - Assemblies are loaded in alphabetical order by default
+- **`[NeedlrAssemblyOrder]` Attribute**: Optional attribute to control the order assemblies are loaded during startup
+  - `First` property: Array of assembly names to load first (in order)
+  - `Last` property: Array of assembly names to load last (in order)
+  - All other assemblies load alphabetically between First and Last
+  - Useful when plugins have dependencies on other plugins being registered first
+- **NDLRCOR003 Analyzer**: Detects when `[DeferToContainer]` attribute is placed in generated code (which won't work due to source generator isolation)
+  - Reports error with guidance to move the attribute to original hand-written source file
+
+### Fixed
+- **Plugin Discovery Bug**: Fixed issue where plugins in transitive dependencies were not discovered when using source generation
+  - Root cause: Module initializers only run when their assembly is loaded by the CLR
+  - If no code directly references types from an assembly, it never loads
+  - Solution: Auto-discovery and force-loading ensures all Needlr-enabled assemblies load
+
 ## [0.0.2-alpha.5] - 2026-01-21
 
 ### Added

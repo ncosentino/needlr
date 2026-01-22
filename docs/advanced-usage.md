@@ -800,6 +800,78 @@ When plugin projects contain internal types, the host application's generator ca
 
 The generator emits error `NDLRGEN002` if it detects internal plugin types in a referenced assembly without `[GenerateTypeRegistry]`, helping you identify projects that need the attribute.
 
+## Assembly Loading Control
+
+### Automatic Assembly Loading
+
+When using source generation, Needlr automatically discovers all referenced assemblies that have `[GenerateTypeRegistry]` and ensures they are loaded at startup. This is critical because:
+
+- **Module initializers only run when an assembly is loaded** - If your code never directly references a type from an assembly, that assembly never loads
+- **Transitive dependencies** - Plugin assemblies referenced by your project but never directly used in code would be invisible to the type registry
+
+Needlr solves this by generating a `ForceLoadReferencedAssemblies()` method that uses `typeof()` to force assembly loading:
+
+```csharp
+// Generated in NeedlrSourceGenBootstrap.g.cs
+[MethodImpl(MethodImplOptions.NoInlining)]
+private static void ForceLoadReferencedAssemblies()
+{
+    _ = typeof(global::MyApp.Features.Logging.Generated.TypeRegistry).Assembly;
+    _ = typeof(global::MyApp.Features.Scheduling.Generated.TypeRegistry).Assembly;
+    // ... all discovered assemblies with [GenerateTypeRegistry]
+}
+```
+
+This is fully AOT-compatible - `typeof()` is resolved at compile time.
+
+### Controlling Assembly Load Order with [NeedlrAssemblyOrder]
+
+By default, referenced assemblies are loaded in alphabetical order. If you need specific assemblies to load before or after others (e.g., when plugins have dependencies on other plugins being registered first), use the `[NeedlrAssemblyOrder]` attribute:
+
+```csharp
+using NexusLabs.Needlr.Generators;
+
+// In your host application's assembly attributes
+[assembly: GenerateTypeRegistry]
+[assembly: NeedlrAssemblyOrder(
+    First = new[] { "MyApp.Features.Logging", "MyApp.Features.Configuration" },
+    Last = new[] { "MyApp.Features.Health" })]
+```
+
+**How ordering works:**
+1. Assemblies in `First` are loaded first, in the order specified
+2. All other discovered assemblies are loaded alphabetically
+3. Assemblies in `Last` are loaded last, in the order specified
+
+**Example scenario:** Your `AuthenticationPlugin` needs `ILogger` which is registered by `LoggingPlugin`:
+
+```csharp
+[assembly: GenerateTypeRegistry]
+[assembly: NeedlrAssemblyOrder(
+    First = new[] { "MyApp.Features.Logging" })]  // Logging loads first
+
+namespace MyApp.Bootstrap;
+
+public class Startup
+{
+    // AuthenticationPlugin can now safely depend on ILogger being registered
+}
+```
+
+### When You Don't Need Assembly Order
+
+You typically don't need `[NeedlrAssemblyOrder]` when:
+
+- Plugins don't have inter-dependencies during registration
+- You're using the default registration which handles most scenarios
+- All plugin configuration happens at runtime (not during registration)
+
+You DO need `[NeedlrAssemblyOrder]` when:
+
+- A plugin's `Configure()` method calls `GetRequiredService<T>()` and `T` is registered by another plugin
+- You have strict initialization order requirements
+- Debugging issues where plugins fail because their dependencies aren't registered yet
+
 ## Working with Other Source Generators
 
 When using Needlr with other source generators that modify your types (such as generators that add constructors to partial classes), you may encounter scenarios where Needlr's generator cannot see the constructor that will be added by another generator.

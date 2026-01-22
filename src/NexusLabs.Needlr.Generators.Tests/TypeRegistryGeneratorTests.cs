@@ -913,4 +913,470 @@ namespace TestApp
         Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
     }
 #pragma warning restore xUnit1051
+
+    #region Assembly Force-Loading Tests
+
+    [Fact]
+    public void Generator_WithReferencedAssemblyHavingGenerateTypeRegistry_GeneratesForceLoadMethod()
+    {
+        // This test simulates having a referenced assembly with [GenerateTypeRegistry]
+        // We need to create a fake referenced assembly that has the attribute
+        
+        var referencedAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""ReferencedLib"" })]
+
+namespace ReferencedLib
+{
+    public class ReferencedService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithReferencedAssembly(referencedAssemblySource, mainAssemblySource);
+
+        // Should generate ForceLoadReferencedAssemblies method
+        Assert.Contains("ForceLoadReferencedAssemblies", mainGeneratedCode);
+        Assert.Contains("MethodImpl(MethodImplOptions.NoInlining)", mainGeneratedCode);
+        Assert.Contains("typeof(global::ReferencedLib.Generated.TypeRegistry).Assembly", mainGeneratedCode);
+    }
+
+    [Fact]
+    public void Generator_WithNoReferencedAssembliesHavingGenerateTypeRegistry_DoesNotGenerateForceLoadMethod()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""TestApp"" })]
+
+namespace TestApp
+{
+    public class MyService { }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Should NOT generate ForceLoadReferencedAssemblies method when no referenced assemblies have [GenerateTypeRegistry]
+        Assert.DoesNotContain("ForceLoadReferencedAssemblies", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithNeedlrAssemblyOrderFirst_GeneratesAssembliesInCorrectOrder()
+    {
+        var referencedAssembly1Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Alpha"" })]
+
+namespace Lib.Alpha
+{
+    public class AlphaService { }
+}";
+
+        var referencedAssembly2Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Zulu"" })]
+
+namespace Lib.Zulu
+{
+    public class ZuluService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+[assembly: NeedlrAssemblyOrder(First = new[] { ""Lib.Zulu"" })]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithMultipleReferencedAssemblies(
+            new[] { ("Lib.Alpha", referencedAssembly1Source), ("Lib.Zulu", referencedAssembly2Source) },
+            mainAssemblySource,
+            "MainApp");
+
+        // Zulu should appear BEFORE Alpha in the generated code (First takes precedence over alphabetical)
+        var zuluIndex = mainGeneratedCode.IndexOf("Lib.Zulu.Generated.TypeRegistry");
+        var alphaIndex = mainGeneratedCode.IndexOf("Lib.Alpha.Generated.TypeRegistry");
+        
+        Assert.True(zuluIndex >= 0, "Lib.Zulu should be in the generated code");
+        Assert.True(alphaIndex >= 0, "Lib.Alpha should be in the generated code");
+        Assert.True(zuluIndex < alphaIndex, "Lib.Zulu (in First) should come before Lib.Alpha (alphabetical)");
+    }
+
+    [Fact]
+    public void Generator_WithNeedlrAssemblyOrderLast_GeneratesAssembliesInCorrectOrder()
+    {
+        var referencedAssembly1Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Alpha"" })]
+
+namespace Lib.Alpha
+{
+    public class AlphaService { }
+}";
+
+        var referencedAssembly2Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Beta"" })]
+
+namespace Lib.Beta
+{
+    public class BetaService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+[assembly: NeedlrAssemblyOrder(Last = new[] { ""Lib.Alpha"" })]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithMultipleReferencedAssemblies(
+            new[] { ("Lib.Alpha", referencedAssembly1Source), ("Lib.Beta", referencedAssembly2Source) },
+            mainAssemblySource,
+            "MainApp");
+
+        // Alpha should appear AFTER Beta (Last takes precedence, Beta is alphabetically before Alpha without override)
+        var alphaIndex = mainGeneratedCode.IndexOf("Lib.Alpha.Generated.TypeRegistry");
+        var betaIndex = mainGeneratedCode.IndexOf("Lib.Beta.Generated.TypeRegistry");
+        
+        Assert.True(alphaIndex >= 0, "Lib.Alpha should be in the generated code");
+        Assert.True(betaIndex >= 0, "Lib.Beta should be in the generated code");
+        Assert.True(betaIndex < alphaIndex, "Lib.Beta (alphabetical) should come before Lib.Alpha (in Last)");
+    }
+
+    [Fact]
+    public void Generator_WithNeedlrAssemblyOrderFirstAndLast_GeneratesAssembliesInCorrectOrder()
+    {
+        var assembly1Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Alpha"" })]
+
+namespace Lib.Alpha
+{
+    public class AlphaService { }
+}";
+
+        var assembly2Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Beta"" })]
+
+namespace Lib.Beta
+{
+    public class BetaService { }
+}";
+
+        var assembly3Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Gamma"" })]
+
+namespace Lib.Gamma
+{
+    public class GammaService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+[assembly: NeedlrAssemblyOrder(First = new[] { ""Lib.Gamma"" }, Last = new[] { ""Lib.Alpha"" })]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithMultipleReferencedAssemblies(
+            new[] { ("Lib.Alpha", assembly1Source), ("Lib.Beta", assembly2Source), ("Lib.Gamma", assembly3Source) },
+            mainAssemblySource,
+            "MainApp");
+
+        // Order should be: Gamma (First), Beta (alphabetical middle), Alpha (Last)
+        var gammaIndex = mainGeneratedCode.IndexOf("Lib.Gamma.Generated.TypeRegistry");
+        var betaIndex = mainGeneratedCode.IndexOf("Lib.Beta.Generated.TypeRegistry");
+        var alphaIndex = mainGeneratedCode.IndexOf("Lib.Alpha.Generated.TypeRegistry");
+        
+        Assert.True(gammaIndex >= 0, "Lib.Gamma should be in the generated code");
+        Assert.True(betaIndex >= 0, "Lib.Beta should be in the generated code");
+        Assert.True(alphaIndex >= 0, "Lib.Alpha should be in the generated code");
+        Assert.True(gammaIndex < betaIndex, "Lib.Gamma (First) should come before Lib.Beta");
+        Assert.True(betaIndex < alphaIndex, "Lib.Beta should come before Lib.Alpha (Last)");
+    }
+
+    [Fact]
+    public void Generator_ForceLoadIncludesRuntimeCompilerServicesUsing()
+    {
+        var referencedAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""ReferencedLib"" })]
+
+namespace ReferencedLib
+{
+    public class ReferencedService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithReferencedAssembly(referencedAssemblySource, mainAssemblySource);
+
+        // Should include the using for MethodImpl attribute
+        Assert.Contains("using System.Runtime.CompilerServices;", mainGeneratedCode);
+    }
+
+    private (string referencedGeneratedCode, string mainGeneratedCode) RunGeneratorWithReferencedAssembly(
+        string referencedSource, 
+        string mainSource)
+    {
+        var attributeSource = GetStandardAttributeSource();
+
+        // Step 1: Run generator on the referenced library (don't emit, just get generated code)
+        var referencedSyntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(attributeSource),
+            CSharpSyntaxTree.ParseText(referencedSource)
+        };
+
+        var referencedCompilation = CSharpCompilation.Create(
+            "ReferencedLib",
+            referencedSyntaxTrees,
+            Basic.Reference.Assemblies.Net90.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var referencedGenerator = new TypeRegistryGenerator();
+        var referencedDriver = CSharpGeneratorDriver.Create(referencedGenerator);
+
+        referencedDriver = (CSharpGeneratorDriver)referencedDriver.RunGeneratorsAndUpdateCompilation(
+            referencedCompilation,
+            out var referencedOutputCompilation,
+            out _);
+
+        var referencedGeneratedCode = string.Join("\n\n", 
+            referencedOutputCompilation.SyntaxTrees
+                .Where(t => t.FilePath.EndsWith(".g.cs"))
+                .Select(t => t.GetText().ToString()));
+
+        // Step 2: Create a fake metadata reference that represents the referenced assembly with [GenerateTypeRegistry]
+        // We use the original compilation (before generation) to create a reference, then manually inject the attribute
+        var referencedAssemblyStream = new System.IO.MemoryStream();
+        var emitResult = referencedCompilation.Emit(referencedAssemblyStream);
+        Assert.True(emitResult.Success, $"Referenced library compilation failed: {string.Join(", ", emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
+        referencedAssemblyStream.Position = 0;
+        var referencedMetadataReference = MetadataReference.CreateFromStream(referencedAssemblyStream);
+
+        // Step 3: Compile the main assembly with the referenced library
+        var mainSyntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(attributeSource),
+            CSharpSyntaxTree.ParseText(mainSource)
+        };
+
+        var mainCompilation = CSharpCompilation.Create(
+            "MainApp",
+            mainSyntaxTrees,
+            Basic.Reference.Assemblies.Net90.References.All.Append(referencedMetadataReference),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var mainGenerator = new TypeRegistryGenerator();
+        var mainDriver = CSharpGeneratorDriver.Create(mainGenerator);
+
+        mainDriver = (CSharpGeneratorDriver)mainDriver.RunGeneratorsAndUpdateCompilation(
+            mainCompilation,
+            out var mainOutputCompilation,
+            out _);
+
+        var mainGeneratedCode = string.Join("\n\n", 
+            mainOutputCompilation.SyntaxTrees
+                .Where(t => t.FilePath.EndsWith(".g.cs"))
+                .Select(t => t.GetText().ToString()));
+
+        return (referencedGeneratedCode, mainGeneratedCode);
+    }
+
+    private (string[] referencedGeneratedCodes, string mainGeneratedCode) RunGeneratorWithMultipleReferencedAssemblies(
+        (string assemblyName, string source)[] referencedAssemblies,
+        string mainSource,
+        string mainAssemblyName)
+    {
+        var attributeSource = GetStandardAttributeSource();
+        var referencedCodes = new List<string>();
+        var metadataReferences = new List<MetadataReference>(Basic.Reference.Assemblies.Net90.References.All);
+
+        foreach (var (assemblyName, source) in referencedAssemblies)
+        {
+            var syntaxTrees = new[]
+            {
+                CSharpSyntaxTree.ParseText(attributeSource),
+                CSharpSyntaxTree.ParseText(source)
+            };
+
+            // Compile without generator to create a minimal reference assembly
+            var compilation = CSharpCompilation.Create(
+                assemblyName,
+                syntaxTrees,
+                Basic.Reference.Assemblies.Net90.References.All,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            // Run generator to get the generated code (for inspection)
+            var generator = new TypeRegistryGenerator();
+            var driver = CSharpGeneratorDriver.Create(generator);
+
+            driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+                compilation,
+                out var outputCompilation,
+                out _);
+
+            var generatedCode = string.Join("\n\n", 
+                outputCompilation.SyntaxTrees
+                    .Where(t => t.FilePath.EndsWith(".g.cs"))
+                    .Select(t => t.GetText().ToString()));
+            referencedCodes.Add(generatedCode);
+
+            // Create reference from original compilation (without generated code)
+            var stream = new System.IO.MemoryStream();
+            var emitResult = compilation.Emit(stream);
+            Assert.True(emitResult.Success, $"Referenced library {assemblyName} compilation failed: {string.Join(", ", emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
+            stream.Position = 0;
+            metadataReferences.Add(MetadataReference.CreateFromStream(stream));
+        }
+
+        // Compile main assembly
+        var mainSyntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(attributeSource),
+            CSharpSyntaxTree.ParseText(mainSource)
+        };
+
+        var mainCompilation = CSharpCompilation.Create(
+            mainAssemblyName,
+            mainSyntaxTrees,
+            metadataReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var mainGenerator = new TypeRegistryGenerator();
+        var mainDriver = CSharpGeneratorDriver.Create(mainGenerator);
+
+        mainDriver = (CSharpGeneratorDriver)mainDriver.RunGeneratorsAndUpdateCompilation(
+            mainCompilation,
+            out var mainOutputCompilation,
+            out _);
+
+        var mainGeneratedCode = string.Join("\n\n", 
+            mainOutputCompilation.SyntaxTrees
+                .Where(t => t.FilePath.EndsWith(".g.cs"))
+                .Select(t => t.GetText().ToString()));
+
+        return (referencedCodes.ToArray(), mainGeneratedCode);
+    }
+
+    private static string GetStandardAttributeSource() => @"
+namespace NexusLabs.Needlr.Generators
+{
+    [System.AttributeUsage(System.AttributeTargets.Assembly)]
+    public sealed class GenerateTypeRegistryAttribute : System.Attribute
+    {
+        public string[]? IncludeNamespacePrefixes { get; set; }
+        public bool IncludeSelf { get; set; } = true;
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Assembly)]
+    public sealed class NeedlrAssemblyOrderAttribute : System.Attribute
+    {
+        public string[]? First { get; set; }
+        public string[]? Last { get; set; }
+    }
+
+    public enum InjectableLifetime
+    {
+        Singleton = 0,
+        Scoped = 1,
+        Transient = 2
+    }
+
+    public readonly struct InjectableTypeInfo
+    {
+        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime, System.Func<System.IServiceProvider, object>? factory)
+        {
+            Type = type;
+            Interfaces = interfaces;
+            Lifetime = lifetime;
+            Factory = factory;
+        }
+
+        public System.Type Type { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
+        public InjectableLifetime? Lifetime { get; }
+        public System.Func<System.IServiceProvider, object>? Factory { get; }
+    }
+
+    public readonly struct PluginTypeInfo
+    {
+        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
+        {
+            PluginType = pluginType;
+            PluginInterfaces = pluginInterfaces;
+            Factory = factory;
+        }
+
+        public System.Type PluginType { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
+        public System.Func<object> Factory { get; }
+    }
+
+    public static class NeedlrSourceGenBootstrap
+    {
+        public static void Register(
+            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+        {
+        }
+    }
+}
+
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class DeferToContainerAttribute : System.Attribute
+    {
+        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes)
+        {
+            ConstructorParameterTypes = constructorParameterTypes ?? System.Array.Empty<System.Type>();
+        }
+
+        public System.Type[] ConstructorParameterTypes { get; }
+    }
+}";
+
+    #endregion
 }
