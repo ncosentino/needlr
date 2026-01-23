@@ -1,6 +1,5 @@
 using NexusLabs.Needlr.Injection.Reflection.Loaders;
 using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
-using NexusLabs.Needlr.Injection.Reflection.Sorters;
 using NexusLabs.Needlr.Injection.Reflection.TypeFilterers;
 using NexusLabs.Needlr.Injection.Reflection.TypeRegistrars;
 

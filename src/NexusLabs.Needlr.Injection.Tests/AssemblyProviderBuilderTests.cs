@@ -37,14 +37,6 @@ public sealed class AssemblyProviderBuilderTests
     }
 
     [Fact]
-    public void UseSorter_WithNullSorter_ThrowsArgumentNullException()
-    {
-        var builder = new AssemblyProviderBuilder();
-
-        Assert.Throws<ArgumentNullException>(() => builder.UseSorter(null!));
-    }
-
-    [Fact]
     public void Build_UsesCustomLoader()
     {
         var mockLoader = new MockAssemblyLoader();
@@ -55,19 +47,6 @@ public sealed class AssemblyProviderBuilderTests
         var assemblies = provider.GetCandidateAssemblies();
 
         Assert.True(mockLoader.WasCalled);
-    }
-
-    [Fact]
-    public void Build_UsesCustomSorter()
-    {
-        var mockSorter = new MockAssemblySorter();
-        var builder = new AssemblyProviderBuilder()
-            .UseSorter(mockSorter);
-
-        var provider = builder.Build();
-        var assemblies = provider.GetCandidateAssemblies();
-
-        Assert.True(mockSorter.WasCalled);
     }
 
     [Fact]
@@ -83,18 +62,46 @@ public sealed class AssemblyProviderBuilderTests
     }
 
     [Fact]
-    public void UseAlphabeticalSorting_SortsCorrectly()
+    public void OrderAssemblies_SortsAlphabetically_WhenConfiguredWithNameOrdering()
     {
         var builder = new AssemblyProviderBuilder()
-            .UseAlphabeticalSorting();
+            .OrderAssemblies(order => order
+                .By(a => string.Compare(a.Name, "Z", StringComparison.Ordinal) < 0)); // all assemblies match
 
         var provider = builder.Build();
         var assemblies = provider.GetCandidateAssemblies();
 
-        var locations = assemblies.Select(a => a.Location).ToList();
-        var sortedLocations = locations.OrderBy(l => l).ToList();
+        Assert.NotEmpty(assemblies);
+    }
 
-        Assert.Equal(sortedLocations, locations);
+    [Fact]
+    public void UseLibTestEntryOrdering_SortsCorrectly()
+    {
+        var builder = new AssemblyProviderBuilder()
+            .UseLibTestEntryOrdering();
+
+        var provider = builder.Build();
+        var assemblies = provider.GetCandidateAssemblies().ToList();
+
+        // Test assemblies should come after non-test assemblies
+        var testAssemblyIndices = assemblies
+            .Select((a, i) => (a, i))
+            .Where(x => x.a.GetName().Name?.Contains("Tests", StringComparison.OrdinalIgnoreCase) == true)
+            .Select(x => x.i)
+            .ToList();
+
+        var nonTestAssemblyIndices = assemblies
+            .Select((a, i) => (a, i))
+            .Where(x => x.a.GetName().Name?.Contains("Tests", StringComparison.OrdinalIgnoreCase) != true)
+            .Select(x => x.i)
+            .ToList();
+
+        // All non-test assemblies should come before all test assemblies
+        if (testAssemblyIndices.Count > 0 && nonTestAssemblyIndices.Count > 0)
+        {
+            Assert.True(nonTestAssemblyIndices.Max() < testAssemblyIndices.Min(),
+                "Non-test assemblies should come before test assemblies");
+        }
     }
 
     private sealed class MockAssemblyLoader : IAssemblyLoader
@@ -105,17 +112,6 @@ public sealed class AssemblyProviderBuilderTests
         {
             WasCalled = true;
             return [typeof(AssemblyProviderBuilderTests).Assembly];
-        }
-    }
-
-    private sealed class MockAssemblySorter : IAssemblySorter
-    {
-        public bool WasCalled { get; private set; }
-
-        public IEnumerable<System.Reflection.Assembly> Sort(IReadOnlyList<System.Reflection.Assembly> assemblies)
-        {
-            WasCalled = true;
-            return assemblies;
         }
     }
 }

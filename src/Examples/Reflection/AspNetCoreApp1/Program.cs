@@ -10,7 +10,7 @@ var webApplication = new Syringe()
         .MatchingAssemblies(x =>
             x.Contains("NexusLabs", StringComparison.OrdinalIgnoreCase) ||
             x.Contains("AspNetCoreApp1", StringComparison.OrdinalIgnoreCase))
-        .UseLibTestEntrySorting()
+        .UseLibTestEntryOrdering()
         .Build())
     .UsingAdditionalAssemblies(additionalAssemblies: [])
     .ForWebApplication()

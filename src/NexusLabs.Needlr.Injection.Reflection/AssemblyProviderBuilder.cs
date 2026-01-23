@@ -1,5 +1,5 @@
-﻿using NexusLabs.Needlr.Injection.Reflection.Loaders;
-using NexusLabs.Needlr.Injection.Reflection.Sorters;
+﻿using NexusLabs.Needlr.Injection.AssemblyOrdering;
+using NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -17,12 +17,12 @@ namespace NexusLabs.Needlr.Injection.Reflection;
 public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
 {
     private IAssemblyLoader _assemblyLoader;
-    private IAssemblySorter _assemblySorter;
+    private AssemblyOrderBuilder? _assemblyOrder;
 
     public AssemblyProviderBuilder()
     {
         _assemblyLoader = new ReflectionAssemblyLoader();
-        _assemblySorter = new ReflectionAssemblySorter();
+        _assemblyOrder = null; // No ordering by default - use discovery order
     }
 
     public AssemblyProviderBuilder UseLoader(IAssemblyLoader loader)
@@ -32,10 +32,13 @@ public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
         return this;
     }
 
-    public AssemblyProviderBuilder UseSorter(IAssemblySorter sorter)
+    /// <inheritdoc />
+    public AssemblyProviderBuilder OrderAssemblies(Action<AssemblyOrderBuilder> configure)
     {
-        ArgumentNullException.ThrowIfNull(sorter);
-        _assemblySorter = sorter;
+        ArgumentNullException.ThrowIfNull(configure);
+        var builder = new AssemblyOrderBuilder();
+        configure(builder);
+        _assemblyOrder = builder;
         return this;
     }
 
@@ -43,7 +46,7 @@ public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
     {
         return new AssemblyProvider(
             _assemblyLoader,
-            _assemblySorter);
+            _assemblyOrder);
     }
 
     private sealed class AssemblyProvider : IAssemblyProvider
@@ -52,16 +55,20 @@ public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
 
         public AssemblyProvider(
             IAssemblyLoader assemblyLoader,
-            IAssemblySorter assemblySorter)
+            AssemblyOrderBuilder? assemblyOrder)
         {
             ArgumentNullException.ThrowIfNull(assemblyLoader);
-            ArgumentNullException.ThrowIfNull(assemblySorter);
 
             _lazyAssemblies = new(() =>
             {
                 var assemblies = assemblyLoader.LoadAssemblies(continueOnAssemblyError: true);
-                var sortedAssemblies = assemblySorter.Sort(assemblies).ToArray();
-                return sortedAssemblies;
+                
+                if (assemblyOrder != null)
+                {
+                    return assemblyOrder.Sort(assemblies);
+                }
+
+                return assemblies;
             });
         }
 

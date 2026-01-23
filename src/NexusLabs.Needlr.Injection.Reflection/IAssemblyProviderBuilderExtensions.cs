@@ -1,13 +1,12 @@
-﻿using NexusLabs.Needlr.Injection.Reflection.Loaders;
-using NexusLabs.Needlr.Injection.Reflection.Sorters;
-using NexusLabs.Needlr.Injection.Sorters;
+﻿using NexusLabs.Needlr.Injection.AssemblyOrdering;
+using NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection.Reflection;
 
 /// <summary>
-/// Extension methods for <see cref="IAssemblyProviderBuilder"/> providing fluent configuration of assembly loading and sorting.
+/// Extension methods for <see cref="IAssemblyProviderBuilder"/> providing fluent configuration of assembly loading and ordering.
 /// </summary>
 public static class IAssemblyProviderBuilderExtensions
 {
@@ -146,57 +145,31 @@ public static class IAssemblyProviderBuilderExtensions
     }
 
     /// <summary>
-    /// Configures the builder to sort assemblies alphabetically by their location path.
-    /// </summary>
-    /// <param name="builder">The assembly provider builder to configure.</param>
-    /// <returns>The configured assembly provider builder with alphabetical sorting enabled.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public static IAssemblyProviderBuilder UseAlphabeticalSorting(
-        this IAssemblyProviderBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        return builder.UseSorter(new AlphabeticalAssemblySorter());
-    }
-
-    /// <summary>
-    /// Configures the builder to use a custom sorting callback for ordering assemblies.
-    /// The callback receives the loaded assemblies and should return them in the desired order.
-    /// </summary>
-    /// <param name="builder">The assembly provider builder to configure.</param>
-    /// <param name="sortCallback">A function that takes a list of assemblies and returns them in the desired order.</param>
-    /// <returns>The configured assembly provider builder with custom sorting enabled.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="sortCallback"/> is null.</exception>
-    /// <example>
-    /// <code>
-    /// builder.UseSortingCallback(assemblies => assemblies.OrderBy(a => a.GetName().Name));
-    /// </code>
-    /// </example>
-    public static IAssemblyProviderBuilder UseSortingCallback(
-        this IAssemblyProviderBuilder builder,
-        Func<IReadOnlyList<Assembly>, IEnumerable<Assembly>> sortCallback)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(sortCallback);
-        var sorter = new AssemblySorter(
-            new ReflectionAssemblySorter(),
-            sortCallback);
-        return builder.UseSorter(sorter);
-    }
-
-    /// <summary>
-    /// Configures the builder to sort assemblies in a specific order: libraries first, then test assemblies, then entry point executables.
+    /// Configures the builder to sort assemblies in a specific order: libraries first, then executables, then test assemblies.
     /// Test assemblies are identified by having "Tests" in their name (case-insensitive).
     /// Libraries are .dll files, and entry points are .exe files.
     /// </summary>
     /// <param name="builder">The assembly provider builder to configure.</param>
-    /// <returns>The configured assembly provider builder with lib-test-entry sorting enabled.</returns>
-    public static IAssemblyProviderBuilder UseLibTestEntrySorting(
+    /// <returns>The configured assembly provider builder with lib-test-entry ordering enabled.</returns>
+    /// <example>
+    /// <code>
+    /// builder.UseLibTestEntryOrdering();
+    /// // Equivalent to:
+    /// builder.OrderAssemblies(order => order
+    ///     .By(a => a.Location.EndsWith(".dll") &amp;&amp; !a.Name.Contains("Tests"))
+    ///     .ThenBy(a => a.Location.EndsWith(".exe"))
+    ///     .ThenBy(a => a.Name.Contains("Tests")));
+    /// </code>
+    /// </example>
+    public static IAssemblyProviderBuilder UseLibTestEntryOrdering(
         this IAssemblyProviderBuilder builder)
     {
-        return builder.UseSorter(new LibTestEntryAssemblySorter(
-            a => a.GetName().Name?.Contains("Tests", StringComparison.OrdinalIgnoreCase) == true,
-            a => a.Location.EndsWith(".dll", StringComparison.OrdinalIgnoreCase),
-            a => a.Location.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)));
+        ArgumentNullException.ThrowIfNull(builder);
+        return builder.OrderAssemblies(order => order
+            .By(a => a.Location.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
+                     && !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))
+            .ThenBy(a => a.Location.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>
