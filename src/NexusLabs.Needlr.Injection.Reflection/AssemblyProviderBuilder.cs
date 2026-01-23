@@ -42,6 +42,18 @@ public sealed class AssemblyProviderBuilder : IAssemblyProviderBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures assembly ordering using a pre-built order builder.
+    /// </summary>
+    /// <param name="orderBuilder">The pre-configured order builder.</param>
+    /// <returns>The builder for chaining.</returns>
+    public AssemblyProviderBuilder OrderAssemblies(AssemblyOrderBuilder orderBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(orderBuilder);
+        _assemblyOrder = orderBuilder;
+        return this;
+    }
+
     public IAssemblyProvider Build()
     {
         return new AssemblyProvider(

@@ -165,6 +165,13 @@ public static class IAssemblyProviderBuilderExtensions
         this IAssemblyProviderBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        
+        if (builder is AssemblyProviderBuilder apb)
+        {
+            return apb.OrderAssemblies(AssemblyOrder.LibTestEntry());
+        }
+        
+        // Fallback for other implementations - use the action overload
         return builder.OrderAssemblies(order => order
             .By(a => a.Location.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
                      && !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))

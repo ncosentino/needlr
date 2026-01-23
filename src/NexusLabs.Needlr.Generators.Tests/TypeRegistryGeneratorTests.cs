@@ -495,75 +495,21 @@ namespace TestApp
 
     private static string RunGenerator(string source)
     {
-        // Create the attribute source with InjectableLifetime enum and PluginTypeInfo
-        var attributeSource = @"
-namespace NexusLabs.Needlr.Generators
-{
-    [System.AttributeUsage(System.AttributeTargets.Assembly)]
-    public sealed class GenerateTypeRegistryAttribute : System.Attribute
-    {
-        public string[]? IncludeNamespacePrefixes { get; set; }
-        public bool IncludeSelf { get; set; } = true;
-    }
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-    public enum InjectableLifetime
-    {
-        Singleton = 0,
-        Scoped = 1,
-        Transient = 2
-    }
-
-    public readonly struct InjectableTypeInfo
-    {
-        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces)
-            : this(type, interfaces, null) { }
-
-        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime)
-        {
-            Type = type;
-            Interfaces = interfaces;
-            Lifetime = lifetime;
-        }
-
-        public System.Type Type { get; }
-        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
-        public InjectableLifetime? Lifetime { get; }
-    }
-
-    public readonly struct PluginTypeInfo
-    {
-        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
-        {
-            PluginType = pluginType;
-            PluginInterfaces = pluginInterfaces;
-            Factory = factory;
-        }
-
-        public System.Type PluginType { get; }
-        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
-        public System.Func<object> Factory { get; }
-    }
-
-    public static class NeedlrSourceGenBootstrap
-    {
-        public static void Register(
-            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
-        {
-        }
-    }
-}";
-
-        var syntaxTrees = new[]
-        {
-            CSharpSyntaxTree.ParseText(attributeSource),
-            CSharpSyntaxTree.ParseText(source)
-        };
+        // Use the REAL attribute assemblies instead of mocking them
+        var references = Basic.Reference.Assemblies.Net90.References.All
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
+            })
+            .ToArray();
 
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            syntaxTrees,
-            Basic.Reference.Assemblies.Net90.References.All,
+            new[] { syntaxTree },
+            references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var generator = new TypeRegistryGenerator();
@@ -746,87 +692,21 @@ namespace TestApp
 
     private static string RunGeneratorWithDeferToContainer(string source)
     {
-        var attributeSource = @"
-namespace NexusLabs.Needlr.Generators
-{
-    [System.AttributeUsage(System.AttributeTargets.Assembly)]
-    public sealed class GenerateTypeRegistryAttribute : System.Attribute
-    {
-        public string[]? IncludeNamespacePrefixes { get; set; }
-        public bool IncludeSelf { get; set; } = true;
-    }
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-    public enum InjectableLifetime
-    {
-        Singleton = 0,
-        Scoped = 1,
-        Transient = 2
-    }
-
-    public readonly struct InjectableTypeInfo
-    {
-        public InjectableTypeInfo(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, InjectableLifetime? lifetime, System.Func<System.IServiceProvider, object>? factory)
-        {
-            Type = type;
-            Interfaces = interfaces;
-            Lifetime = lifetime;
-            Factory = factory;
-        }
-
-        public System.Type Type { get; }
-        public System.Collections.Generic.IReadOnlyList<System.Type> Interfaces { get; }
-        public InjectableLifetime? Lifetime { get; }
-        public System.Func<System.IServiceProvider, object>? Factory { get; }
-    }
-
-    public readonly struct PluginTypeInfo
-    {
-        public PluginTypeInfo(System.Type pluginType, System.Collections.Generic.IReadOnlyList<System.Type> pluginInterfaces, System.Func<object> factory)
-        {
-            PluginType = pluginType;
-            PluginInterfaces = pluginInterfaces;
-            Factory = factory;
-        }
-
-        public System.Type PluginType { get; }
-        public System.Collections.Generic.IReadOnlyList<System.Type> PluginInterfaces { get; }
-        public System.Func<object> Factory { get; }
-    }
-
-    public static class NeedlrSourceGenBootstrap
-    {
-        public static void Register(
-            System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
-        {
-        }
-    }
-}
-
-namespace NexusLabs.Needlr
-{
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public sealed class DeferToContainerAttribute : System.Attribute
-    {
-        public DeferToContainerAttribute(params System.Type[] constructorParameterTypes)
-        {
-            ConstructorParameterTypes = constructorParameterTypes ?? System.Array.Empty<System.Type>();
-        }
-
-        public System.Type[] ConstructorParameterTypes { get; }
-    }
-}";
-
-        var syntaxTrees = new[]
-        {
-            CSharpSyntaxTree.ParseText(attributeSource),
-            CSharpSyntaxTree.ParseText(source)
-        };
+        // Use the REAL attribute assemblies instead of mocking them
+        var references = Basic.Reference.Assemblies.Net90.References.All
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
+            })
+            .ToArray();
 
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            syntaxTrees,
-            Basic.Reference.Assemblies.Net90.References.All,
+            new[] { syntaxTree },
+            references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var generator = new TypeRegistryGenerator();
