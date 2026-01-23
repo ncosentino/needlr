@@ -185,7 +185,7 @@ Plugins are executed in the order they're discovered, which follows the assembly
 var webApp = new Syringe()
     .UsingSourceGen()  // or .UsingReflection()
     .UsingAssemblyProvider(builder => builder
-        .UseLibTestEntrySorting() // Libraries → Tests → Entry assembly
+        .UseLibTestEntryOrdering() // Libraries → Executables → Tests
         .Build())
     .ForWebApplication()
     .BuildWebApplication();

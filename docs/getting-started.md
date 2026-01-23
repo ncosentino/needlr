@@ -232,7 +232,7 @@ var serviceProvider = new Syringe()
         .MatchingAssemblies(x => 
             x.Contains("MyCompany") || 
             x.Contains("MyApp"))
-        .UseLibTestEntrySorting()  // Sort assemblies appropriately
+        .UseLibTestEntryOrdering()  // Sort assemblies appropriately
         .Build())
     .BuildServiceProvider();
 ```

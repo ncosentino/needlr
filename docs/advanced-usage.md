@@ -541,7 +541,7 @@ var webApp = new Syringe()
     .UsingScrutorTypeRegistrar()
     .UsingAssemblyProvider(builder => builder
         .MatchingAssemblies(x => x.Contains("MyApp"))
-        .UseLibTestEntrySorting()
+        .UseLibTestEntryOrdering()
         .Build())
     .ForWebApplication()
     .UsingOptions(() => CreateWebApplicationOptions

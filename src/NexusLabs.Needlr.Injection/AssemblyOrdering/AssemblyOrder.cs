@@ -26,7 +26,6 @@ public static class AssemblyOrder
 
     /// <summary>
     /// Creates a preset ordering: libraries first, then executables, tests last.
-    /// Equivalent to the old UseLibTestEntrySorting().
     /// Uses file location to distinguish DLLs from EXEs.
     /// </summary>
     /// <returns>A builder configured with lib-test-entry ordering.</returns>
