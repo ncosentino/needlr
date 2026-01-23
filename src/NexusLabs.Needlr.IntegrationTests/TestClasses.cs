@@ -693,8 +693,8 @@ public interface IRecordService
 }
 
 /// <summary>
-/// A record that implements an interface - should NOT be auto-registered.
-/// Records are DTOs/value objects, not services.
+/// A record that implements an interface - should NOT be auto-registered as a service,
+/// but SHOULD be discoverable as a plugin via IPluginFactory.
 /// </summary>
 public record RecordServiceImplementation(string Data) : IRecordService
 {
@@ -702,7 +702,7 @@ public record RecordServiceImplementation(string Data) : IRecordService
 }
 
 /// <summary>
-/// A record with required members - should NOT be auto-registered.
+/// A record with required members - should NOT be auto-registered or discoverable as plugin.
 /// </summary>
 public record RecordWithRequiredMembers : IRecordService
 {
@@ -722,5 +722,24 @@ public sealed class ClassServiceImplementation : IRecordService
 {
     public string GetData() => "ClassService";
 }
+
+#endregion
+
+#region Record Plugin Discovery Tests
+
+/// <summary>
+/// Base record for plugin discovery tests - similar to CacheConfiguration pattern.
+/// </summary>
+public abstract record PluginConfigurationRecord(string Name);
+
+/// <summary>
+/// Concrete record plugin A - should be discoverable via IPluginFactory.
+/// </summary>
+public sealed record PluginConfigurationRecordA() : PluginConfigurationRecord("RecordA");
+
+/// <summary>
+/// Concrete record plugin B - should be discoverable via IPluginFactory.
+/// </summary>
+public sealed record PluginConfigurationRecordB() : PluginConfigurationRecord("RecordB");
 
 #endregion

@@ -83,8 +83,11 @@ namespace TestNamespace
     }
 
     [Fact]
-    public void IsPluginType_PlainRecord_ReturnsFalse()
+    public void IsPluginType_PlainRecord_ReturnsTrue()
     {
+        // Records with parameterless constructors ARE valid plugins
+        // They can be discovered via IPluginFactory.CreatePluginsFromAssemblies<T>()
+        // They are just excluded from IsInjectableType (auto-registration into DI)
         var source = @"
 namespace TestNamespace
 {
@@ -95,12 +98,13 @@ namespace TestNamespace
 
         var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
 
-        Assert.False(result);
+        Assert.True(result);
     }
 
     [Fact]
     public void IsPluginType_RecordWithRequiredProperty_ReturnsFalse()
     {
+        // Records with required members that aren't satisfied by constructor are excluded
         var source = @"
 namespace TestNamespace
 {

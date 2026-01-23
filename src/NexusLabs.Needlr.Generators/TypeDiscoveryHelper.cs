@@ -510,9 +510,8 @@ internal static class TypeDiscoveryHelper
         if (typeSymbol.TypeParameters.Length > 0)
             return false;
 
-        // Records are NEVER auto-registered as plugins - they are DTOs/value objects, not services
-        if (typeSymbol.IsRecord)
-            return false;
+        // NOTE: Records ARE allowed as plugins (they are classes with parameterless constructors).
+        // Records are excluded from IsInjectableType (auto-registration) but not from plugin discovery.
 
         // Must have a parameterless constructor
         if (!HasParameterlessConstructor(typeSymbol))
@@ -777,9 +776,9 @@ internal static class TypeDiscoveryHelper
         if (typeSymbol.TypeParameters.Length > 0)
             return false;
 
-        // Records are NEVER auto-registered as plugins - they are DTOs/value objects, not services
-        if (typeSymbol.IsRecord)
-            return false;
+        // NOTE: Records ARE allowed as plugins (they are classes with parameterless constructors).
+        // Records are excluded from IsInjectableType (auto-registration) but not from plugin discovery.
+        // Use case: CacheConfiguration records can be discovered via IPluginFactory.CreatePluginsFromAssemblies<T>()
 
         // Must have a parameterless constructor
         if (!HasParameterlessConstructor(typeSymbol))
