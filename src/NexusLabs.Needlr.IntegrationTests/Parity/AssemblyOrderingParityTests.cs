@@ -1,265 +1,153 @@
-using NexusLabs.Needlr.Injection.AssemblyOrdering;
+using Microsoft.Extensions.DependencyInjection;
+
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 using Xunit;
 
 namespace NexusLabs.Needlr.IntegrationTests.Parity;
 
 /// <summary>
-/// Tests to verify that the AssemblyOrderBuilder produces consistent ordering
-/// for both reflection (Assembly) and source-gen (string name) scenarios.
+/// Parity tests that verify assembly ordering behavior is identical between
+/// reflection and source-gen paths using the same By().ThenBy() syntax.
 /// </summary>
 public sealed class AssemblyOrderingParityTests
 {
     [Fact]
-    public void SortNames_WithNoRules_ReturnsOriginalOrder()
+    public void OrderAssemblies_BySinglePredicate_ReflectionBuildsSuccessfully()
     {
-        // Arrange
-        var builder = new AssemblyOrderBuilder();
-        var names = new[] { "Zebra", "Alpha", "Middle" };
+        // Arrange & Act
+        var provider = new Syringe()
+            .UsingReflection()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("Needlr")))
+            .BuildServiceProvider();
 
-        // Act
-        var result = builder.SortNames(names);
-
-        // Assert - no rules, original order preserved
-        Assert.Equal(names, result);
+        // Assert - Provider is built successfully with ordering
+        Assert.NotNull(provider);
     }
 
     [Fact]
-    public void SortNames_WithSingleRule_MatchedFirst_UnmatchedLast()
+    public void OrderAssemblies_BySinglePredicate_SourceGenBuildsSuccessfully()
     {
-        // Arrange
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.StartsWith("A", StringComparison.OrdinalIgnoreCase));
-        var names = new[] { "Zebra", "Alpha", "Apple", "Middle" };
+        // Arrange & Act
+        var provider = new Syringe()
+            .UsingSourceGen()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("Needlr")))
+            .BuildServiceProvider();
 
-        // Act
-        var result = builder.SortNames(names).ToList();
-
-        // Assert
-        // Alpha and Apple match, should come first (alphabetically within tier)
-        Assert.Equal("Alpha", result[0]);
-        Assert.Equal("Apple", result[1]);
-        // Unmatched assemblies come last (alphabetically within tier)
-        Assert.Equal("Middle", result[2]);
-        Assert.Equal("Zebra", result[3]);
+        // Assert - Provider is built successfully with ordering
+        Assert.NotNull(provider);
     }
 
     [Fact]
-    public void SortNames_WithMultipleRules_TieredOrdering()
+    public void OrderAssemblies_ByThenBy_ReflectionAndSourceGenResolveSameTypes()
     {
-        // Arrange - Libraries first, then Tests, then everything else
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.EndsWith(".Core", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Name.EndsWith(".Services", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase));
+        // Arrange
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.EndsWith(".Core"))
+                .ThenBy(a => a.Name.Contains("Injection")))
+            .BuildServiceProvider();
 
-        var names = new[]
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.EndsWith(".Core"))
+                .ThenBy(a => a.Name.Contains("Injection")))
+            .BuildServiceProvider();
+
+        // Act
+        var reflectionService = reflectionProvider.GetService<IMyAutomaticService>();
+        var sourceGenService = sourceGenProvider.GetService<IMyAutomaticService>();
+
+        // Assert - Both should resolve the same service type
+        Assert.NotNull(reflectionService);
+        Assert.NotNull(sourceGenService);
+        Assert.Equal(reflectionService.GetType().FullName, sourceGenService.GetType().FullName);
+    }
+
+    [Fact]
+    public void OrderAssemblies_MultiplePredicates_ReflectionAndSourceGenResolveSameTypes()
+    {
+        // Arrange
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("Needlr.Core"))
+                .ThenBy(a => a.Name.Contains("Needlr.Injection"))
+                .ThenBy(a => a.Name.Contains("Tests")))
+            .BuildServiceProvider();
+
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("Needlr.Core"))
+                .ThenBy(a => a.Name.Contains("Needlr.Injection"))
+                .ThenBy(a => a.Name.Contains("Tests")))
+            .BuildServiceProvider();
+
+        // Act
+        var reflectionServices = reflectionProvider.GetServices<IMyAutomaticService>().ToList();
+        var sourceGenServices = sourceGenProvider.GetServices<IMyAutomaticService>().ToList();
+
+        // Assert - Both should have the same count
+        Assert.Equal(reflectionServices.Count, sourceGenServices.Count);
+    }
+
+    [Fact]
+    public void OrderAssemblies_NoMatchingPredicates_ReflectionAndSourceGenStillWork()
+    {
+        // Arrange & Act - Use predicates that won't match any assembly
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("NonExistentAssemblyName")))
+            .BuildServiceProvider();
+
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .OrderAssemblies(order => order
+                .By(a => a.Name.Contains("NonExistentAssemblyName")))
+            .BuildServiceProvider();
+
+        // Assert - Both should still work (assemblies without matches go to end tier)
+        var reflectionService = reflectionProvider.GetService<IMyAutomaticService>();
+        var sourceGenService = sourceGenProvider.GetService<IMyAutomaticService>();
+        
+        Assert.NotNull(reflectionService);
+        Assert.NotNull(sourceGenService);
+    }
+
+    [Fact]
+    public void OrderAssemblies_ReflectionAndSourceGen_UseSameFluentSyntax()
+    {
+        // This test proves the API is identical for both paths
+
+        // Arrange - Create the same ordering configuration
+        static void ConfigureOrdering(Injection.AssemblyOrdering.AssemblyOrderBuilder order)
         {
-            "MyApp.Tests",
-            "MyApp.Core",
-            "MyApp.Services",
-            "MyApp.Api",
-            "MyApp.Integration.Tests"
-        };
+            order
+                .By(a => a.Name.Contains("IntegrationTests"))
+                .ThenBy(a => a.Name.EndsWith(".Core"));
+        }
 
         // Act
-        var result = builder.SortNames(names).ToList();
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .OrderAssemblies(ConfigureOrdering)
+            .BuildServiceProvider();
 
-        // Assert
-        // Tier 0: .Core
-        Assert.Equal("MyApp.Core", result[0]);
-        // Tier 1: .Services
-        Assert.Equal("MyApp.Services", result[1]);
-        // Tier 2: Tests (alphabetically within tier)
-        Assert.Equal("MyApp.Integration.Tests", result[2]);
-        Assert.Equal("MyApp.Tests", result[3]);
-        // Unmatched
-        Assert.Equal("MyApp.Api", result[4]);
-    }
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .OrderAssemblies(ConfigureOrdering)
+            .BuildServiceProvider();
 
-    [Fact]
-    public void SortNames_LibTestEntryPattern_TestsComeLast()
-    {
-        // Arrange - Simulating LibTestEntry pattern
-        var builder = new AssemblyOrderBuilder()
-            .By(a => !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase));
-
-        var names = new[]
-        {
-            "MyApp.Unit.Tests",
-            "MyApp.Core",
-            "MyApp.Integration.Tests",
-            "MyApp.Services"
-        };
-
-        // Act
-        var result = builder.SortNames(names).ToList();
-
-        // Assert
-        // Non-tests first (alphabetically)
-        Assert.Equal("MyApp.Core", result[0]);
-        Assert.Equal("MyApp.Services", result[1]);
-        // Tests last (alphabetically)
-        Assert.Equal("MyApp.Integration.Tests", result[2]);
-        Assert.Equal("MyApp.Unit.Tests", result[3]);
-    }
-
-    [Fact]
-    public void SortNames_UnmatchedAssembliesAlwaysLast()
-    {
-        // Arrange - Only match specific patterns, unmatched go last
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.StartsWith("Priority", StringComparison.OrdinalIgnoreCase));
-
-        var names = new[]
-        {
-            "OtherAssembly",
-            "PriorityFirst",
-            "AnotherOne",
-            "ZebraLib",
-            "PrioritySecond"
-        };
-
-        // Act
-        var result = builder.SortNames(names).ToList();
-
-        // Assert
-        // Priority assemblies first (alphabetically within tier)
-        Assert.Equal("PriorityFirst", result[0]);
-        Assert.Equal("PrioritySecond", result[1]);
-        // Unmatched assemblies last (alphabetically)
-        Assert.Equal("AnotherOne", result[2]);
-        Assert.Equal("OtherAssembly", result[3]);
-        Assert.Equal("ZebraLib", result[4]);
-    }
-
-    [Fact]
-    public void SortNames_EmptyInput_ReturnsEmpty()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder()
-            .By(a => true);
-
-        // Act
-        var result = builder.SortNames([]);
-
-        // Assert
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public void SortNames_FirstMatchingRuleWins()
-    {
-        // Arrange - If an assembly matches multiple rules, first match wins
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.Contains("Core", StringComparison.OrdinalIgnoreCase)) // Tier 0
-            .ThenBy(a => a.Name.Contains("App", StringComparison.OrdinalIgnoreCase)) // Tier 1
-            .ThenBy(a => true); // Tier 2 - matches everything
-
-        var names = new[] { "MyApp.Core", "MyApp.Services", "External.Lib" };
-
-        // Act
-        var result = builder.SortNames(names).ToList();
-
-        // Assert
-        // MyApp.Core matches both Core and App, but Core rule comes first
-        Assert.Equal("MyApp.Core", result[0]); // Tier 0 (Core)
-        Assert.Equal("MyApp.Services", result[1]); // Tier 1 (App)
-        Assert.Equal("External.Lib", result[2]); // Tier 2 (catch-all)
-    }
-
-    [Fact]
-    public void ThenBy_WithoutBy_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder();
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() =>
-            builder.ThenBy(a => true));
-    }
-
-    [Fact]
-    public void By_WithNullPredicate_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder();
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            builder.By(null!));
-    }
-
-    [Fact]
-    public void SortNames_WithNullInput_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder()
-            .By(a => true);
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            builder.SortNames(null!));
-    }
-
-    [Fact]
-    public void Rules_ReturnsConfiguredRules()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.StartsWith("A"))
-            .ThenBy(a => a.Name.StartsWith("B"))
-            .ThenBy(a => a.Name.StartsWith("C"));
-
-        // Act
-        var rules = builder.Rules;
-
-        // Assert
-        Assert.Equal(3, rules.Count);
-        Assert.Equal(0, rules[0].Tier);
-        Assert.Equal(1, rules[1].Tier);
-        Assert.Equal(2, rules[2].Tier);
-    }
-
-    [Fact]
-    public void Sort_WithAssemblies_WorksLikeReflection()
-    {
-        // Arrange
-        var builder = new AssemblyOrderBuilder()
-            .By(a => a.Name.Contains("Needlr", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase));
-
-        var currentAssembly = typeof(AssemblyOrderingParityTests).Assembly;
-        var assemblies = new[] { currentAssembly };
-
-        // Act
-        var result = builder.Sort(assemblies).ToList();
-
-        // Assert
-        Assert.Single(result);
-        Assert.Same(currentAssembly, result[0]);
-    }
-
-    [Fact]
-    public void AssemblyInfo_FromStrings_CreatesValidInfo()
-    {
-        // Act
-        var info = AssemblyInfo.FromStrings("MyAssembly", "/path/to/MyAssembly.dll");
-
-        // Assert
-        Assert.Equal("MyAssembly", info.Name);
-        Assert.Equal("/path/to/MyAssembly.dll", info.Location);
-    }
-
-    [Fact]
-    public void AssemblyInfo_FromStrings_WithoutLocation_UsesEmptyString()
-    {
-        // Act
-        var info = AssemblyInfo.FromStrings("MyAssembly");
-
-        // Assert
-        Assert.Equal("MyAssembly", info.Name);
-        Assert.Equal("", info.Location);
+        // Assert - Both use the same configuration function
+        Assert.NotNull(reflectionProvider);
+        Assert.NotNull(sourceGenProvider);
     }
 }

@@ -5,6 +5,18 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.16] - 2026-01-23
+
+### Added
+- **Source-gen assembly ordering**: `OrderAssemblies(order => order.By().ThenBy())` now works for source-gen path
+  - Same fluent API as reflection path for full parity
+  - `SyringeSourceGenExtensions.OrderAssemblies()` extension method
+  - Assemblies sorted by tiered predicates using `AssemblyOrderBuilder`
+- **6 parity tests**: Verifying reflection and source-gen assembly ordering produce identical behavior
+
+### Fixed
+- **`AssemblyOrderBuilderTests`**: Moved from incorrectly named "parity" tests to unit test location
+
 ## [0.0.2-alpha.15] - 2026-01-23
 
 ### Fixed

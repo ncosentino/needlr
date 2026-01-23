@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection.AssemblyOrdering;
 
 namespace NexusLabs.Needlr.Injection.SourceGen.Loaders;
 
@@ -32,6 +33,21 @@ public sealed class GeneratedAssemblyProvider : IAssemblyProvider
     public GeneratedAssemblyProvider(
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypesProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypesProvider)
+        : this(injectableTypesProvider, pluginTypesProvider, assemblyOrder: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeneratedAssemblyProvider"/> class
+    /// with optional assembly ordering.
+    /// </summary>
+    /// <param name="injectableTypesProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypesProvider">A function that returns the plugin types.</param>
+    /// <param name="assemblyOrder">Optional assembly order builder for sorting assemblies.</param>
+    public GeneratedAssemblyProvider(
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypesProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypesProvider,
+        AssemblyOrderBuilder? assemblyOrder)
     {
         ArgumentNullException.ThrowIfNull(injectableTypesProvider);
         ArgumentNullException.ThrowIfNull(pluginTypesProvider);
@@ -57,7 +73,15 @@ public sealed class GeneratedAssemblyProvider : IAssemblyProvider
                     assemblies.Add(info.PluginType.Assembly);
                 }
 
-                return assemblies.ToList();
+                var assemblyList = assemblies.ToList();
+
+                // Apply ordering if configured
+                if (assemblyOrder != null)
+                {
+                    return assemblyOrder.Sort(assemblyList);
+                }
+
+                return assemblyList;
             }
             catch (NotSupportedException)
             {
