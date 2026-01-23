@@ -23,7 +23,28 @@ Needlr's source generator automatically:
 
 1. **Discovers** all referenced assemblies with `[GenerateTypeRegistry]`
 2. **Generates** `typeof()` calls to force those assemblies to load
-3. **Respects** `[NeedlrAssemblyOrder]` for controlling load order
+3. **Loads** assemblies in alphabetical order by default
+
+## Controlling Assembly Order
+
+Assembly ordering is configured at the Syringe level using the same expression-based API for both reflection and source-gen:
+
+```csharp
+new Syringe()
+    .UsingSourceGen()
+    .UsingAssemblyProvider(builder => builder
+        .OrderAssemblies(order => order
+            .By(a => a.Name.StartsWith("TransitiveDemo.FeatureA")))  // FeatureA first
+        .Build())
+    .ForWebApplication()
+    .BuildWebApplication();
+```
+
+Or use the built-in preset:
+
+```csharp
+.UseLibTestEntryOrdering()  // Libraries → Executables → Tests
+```
 
 ## Project Structure
 
@@ -75,16 +96,6 @@ private static void ForceLoadReferencedAssemblies()
 ```
 
 This ensures both assemblies load before any plugins are executed.
-
-## Controlling Order with [NeedlrAssemblyOrder]
-
-In `GeneratorAssemblyInfo.cs`, we use:
-
-```csharp
-[assembly: NeedlrAssemblyOrder(First = new[] { "TransitiveDemo.FeatureA" })]
-```
-
-This ensures FeatureA loads before FeatureB. While alphabetical order happens to work here, the attribute makes the dependency explicit and protects against future refactoring.
 
 ## AOT Compatibility
 

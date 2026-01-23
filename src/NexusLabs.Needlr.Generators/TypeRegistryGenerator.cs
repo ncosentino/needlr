@@ -71,11 +71,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading
-            var referencedAssemblies = DiscoverReferencedAssembliesWithTypeRegistry(compilation);
-            var assemblyOrder = GetAssemblyOrderInfo(compilation);
-            var orderedAssemblies = OrderAssemblies(referencedAssemblies, assemblyOrder);
+            // Note: Order of force-loading doesn't matter; ordering is applied at service registration time
+            var referencedAssemblies = DiscoverReferencedAssembliesWithTypeRegistry(compilation)
+                .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, orderedAssemblies);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate SignalR hub registrations if any were discovered
@@ -650,155 +651,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         
         return result;
-    }
-
-    /// <summary>
-    /// Gets the [NeedlrAssemblyOrder] attribute info from the current compilation.
-    /// </summary>
-    private static AssemblyOrderInfo GetAssemblyOrderInfo(Compilation compilation)
-    {
-        const string attributeName = "NexusLabs.Needlr.Generators.NeedlrAssemblyOrderAttribute";
-        
-        foreach (var attribute in compilation.Assembly.GetAttributes())
-        {
-            var attrClass = attribute.AttributeClass;
-            if (attrClass == null)
-                continue;
-                
-            if (attrClass.ToDisplayString() == attributeName)
-            {
-                int preset = 0; // None
-                string[]? first = null;
-                string[]? last = null;
-                
-                foreach (var namedArg in attribute.NamedArguments)
-                {
-                    switch (namedArg.Key)
-                    {
-                        case "Preset":
-                            if (namedArg.Value.Value is int presetValue)
-                            {
-                                preset = presetValue;
-                            }
-                            break;
-                            
-                        case "First":
-                            if (!namedArg.Value.IsNull && namedArg.Value.Values.Length > 0)
-                            {
-                                first = namedArg.Value.Values
-                                    .Where(v => v.Value is string)
-                                    .Select(v => (string)v.Value!)
-                                    .ToArray();
-                            }
-                            break;
-                            
-                        case "Last":
-                            if (!namedArg.Value.IsNull && namedArg.Value.Values.Length > 0)
-                            {
-                                last = namedArg.Value.Values
-                                    .Where(v => v.Value is string)
-                                    .Select(v => (string)v.Value!)
-                                    .ToArray();
-                            }
-                            break;
-                    }
-                }
-                
-                return new AssemblyOrderInfo(preset, first, last);
-            }
-        }
-        
-        return new AssemblyOrderInfo(0, null, null);
-    }
-
-    /// <summary>
-    /// Orders assemblies according to the assembly order info.
-    /// If a preset is specified, it takes precedence over First/Last.
-    /// </summary>
-    private static IReadOnlyList<string> OrderAssemblies(IReadOnlyList<string> assemblies, AssemblyOrderInfo orderInfo)
-    {
-        // Handle presets first (they take precedence)
-        // Preset values: 0 = None, 1 = TestsLast, 2 = Alphabetical
-        switch (orderInfo.Preset)
-        {
-            case 1: // TestsLast
-                return OrderAssembliesTestsLast(assemblies);
-            case 2: // Alphabetical
-                return assemblies.OrderBy(a => a, StringComparer.OrdinalIgnoreCase).ToList();
-        }
-        
-        // Fall through to First/Last explicit ordering
-        var firstSet = new HashSet<string>(orderInfo.First ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-        var lastSet = new HashSet<string>(orderInfo.Last ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-        
-        var result = new List<string>();
-        
-        // Add First assemblies in order (only if they exist in the discovered assemblies)
-        if (orderInfo.First != null)
-        {
-            foreach (var name in orderInfo.First)
-            {
-                if (assemblies.Any(a => string.Equals(a, name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    result.Add(name);
-                }
-            }
-        }
-        
-        // Add middle assemblies (not in First or Last) alphabetically
-        var middle = assemblies
-            .Where(a => !firstSet.Contains(a) && !lastSet.Contains(a))
-            .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        result.AddRange(middle);
-        
-        // Add Last assemblies in order (only if they exist in the discovered assemblies)
-        if (orderInfo.Last != null)
-        {
-            foreach (var name in orderInfo.Last)
-            {
-                if (assemblies.Any(a => string.Equals(a, name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    result.Add(name);
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /// <summary>
-    /// Orders assemblies with non-test assemblies first, test assemblies last.
-    /// Matches the behavior of AssemblyOrder.TestsLast() in the injection library.
-    /// </summary>
-    private static IReadOnlyList<string> OrderAssembliesTestsLast(IReadOnlyList<string> assemblies)
-    {
-        var nonTests = assemblies
-            .Where(a => !a.Contains("Tests", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-            
-        var tests = assemblies
-            .Where(a => a.Contains("Tests", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-            
-        nonTests.AddRange(tests);
-        return nonTests;
-    }
-
-    private readonly struct AssemblyOrderInfo
-    {
-        public AssemblyOrderInfo(int preset, string[]? first, string[]? last)
-        {
-            Preset = preset;
-            First = first;
-            Last = last;
-        }
-
-        public int Preset { get; }
-        public string[]? First { get; }
-        public string[]? Last { get; }
     }
 
     private readonly struct AttributeInfo

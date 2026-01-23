@@ -131,9 +131,9 @@ var provider = new Syringe()
 The `IAssemblyProvider` determines which assemblies are scanned for types:
 
 ```csharp
-var provider = new AssembyProviderBuilder()
+var provider = new AssemblyProviderBuilder()
     .MatchingAssemblies(x => x.Contains("MyApp"))
-    .UseLibTestEntrySorting()
+    .UseLibTestEntryOrdering()
     .Build();
 ```
 
@@ -399,10 +399,19 @@ Filter assemblies to improve performance:
 
 ### 4. Order Matters
 
-Use assembly sorting for predictable registration order:
+Use assembly ordering for predictable registration order:
 
 ```csharp
-.UseLibTestEntrySorting()  // Libraries → Tests → Entry
+.UseLibTestEntryOrdering()  // Libraries → Executables → Tests
+```
+
+Or use the expression-based API for custom ordering:
+
+```csharp
+.OrderAssemblies(order => order
+    .By(a => a.Name.StartsWith("Core"))      // Core assemblies first
+    .ThenBy(a => a.Name.StartsWith("Feature")) // Then features
+    .ThenBy(a => a.Name.Contains("Tests")))   // Tests last
 ```
 
 ### 5. Plugin Organization

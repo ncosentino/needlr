@@ -8,10 +8,15 @@ using NexusLabs.Needlr.Generators;
 // [GenerateTypeRegistry] and generate their own type registries.
 [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "TransitiveDemo.Host" })]
 
-// OPTIONAL: Use NeedlrAssemblyOrder to control load order if needed.
-// In this case, FeatureA must load before FeatureB because FeatureB's plugin
-// depends on ICoreLogger which is registered by FeatureA's plugin.
-// 
-// The default alphabetical order (FeatureA before FeatureB) happens to work,
-// but we demonstrate the attribute here for explicitness.
-[assembly: NeedlrAssemblyOrder(First = new[] { "TransitiveDemo.FeatureA" })]
+// NOTE: Assembly ordering is now configured at the Syringe level using the
+// same expression-based API for both reflection and source-gen. For example:
+//
+//   new Syringe()
+//       .UsingSourceGen()
+//       .UsingAssemblyProvider(builder => builder
+//           .OrderAssemblies(order => order
+//               .By(a => a.Name.StartsWith("TransitiveDemo.FeatureA")))
+//           .Build())
+//       ...
+//
+// The default alphabetical order (FeatureA before FeatureB) works for this demo.
