@@ -3,9 +3,8 @@ using NexusLabs.Needlr.Generators;
 // This assembly hosts the application and triggers source generation.
 // It references both FeatureA and FeatureB, but only uses FeatureB types in code.
 // 
-// IMPORTANT: We use IncludeSelf = false because this Host assembly doesn't define
-// any injectable types itself. The feature assemblies each have their own
-// [GenerateTypeRegistry] and generate their own type registries.
+// We use IncludeNamespacePrefixes to filter which types are included in the
+// generated type registry for this assembly.
 [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "TransitiveDemo.Host" })]
 
 // NOTE: Assembly ordering is now configured at the Syringe level using the
