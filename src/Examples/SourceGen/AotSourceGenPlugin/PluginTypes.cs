@@ -39,7 +39,27 @@ public sealed class ManualService : IManualService
     public string Echo(string value) => $"manual:{value}";
 }
 
-public sealed class DecoratedWeatherProvider(IWeatherProvider inner) : IWeatherProvider
+/// <summary>
+/// Decorator using [DecoratorFor] attribute - automatically wired by Needlr.
+/// Order = 1 means this is applied first (closest to the original WeatherProvider).
+/// </summary>
+[DecoratorFor<IWeatherProvider>(Order = 1)]
+public sealed class LoggingWeatherDecorator(IWeatherProvider inner) : IWeatherProvider
+{
+    public string GetForecast()
+    {
+        Console.WriteLine("[LoggingWeatherDecorator] Fetching forecast...");
+        return inner.GetForecast();
+    }
+}
+
+/// <summary>
+/// Second decorator using [DecoratorFor] attribute.
+/// Order = 2 means this wraps LoggingWeatherDecorator.
+/// Resolution chain: PrefixWeatherDecorator → LoggingWeatherDecorator → WeatherProvider
+/// </summary>
+[DecoratorFor<IWeatherProvider>(Order = 2)]
+public sealed class PrefixWeatherDecorator(IWeatherProvider inner) : IWeatherProvider
 {
     public string GetForecast() => $"[decorated] {inner.GetForecast()}";
 }

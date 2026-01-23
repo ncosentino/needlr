@@ -2,6 +2,14 @@
 
 /// <summary>
 /// This is a decorator for the <see cref="IMyService"/> interface.
+/// 
+/// This example uses [DoNotAutoRegister] and manual wiring via AddDecorator.
+/// For simpler automatic wiring, use [DecoratorFor&lt;IMyService&gt;] instead:
+/// 
+/// <code>
+/// [DecoratorFor&lt;IMyService&gt;(Order = 1)]
+/// public sealed class MyDecorator(IMyService wrapped) : IMyService { ... }
+/// </code>
 /// </summary>
 /// <param name="_wrapped">This will get provided by the dependency injection framework.</param>
 [DoNotAutoRegister]

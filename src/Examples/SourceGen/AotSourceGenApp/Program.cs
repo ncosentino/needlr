@@ -2,18 +2,15 @@ using AotSourceGenPlugin;
 
 using Microsoft.AspNetCore.Mvc;
 
-using NexusLabs.Needlr;
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
 
 using System.Text.Json.Serialization;
 
+// Decorators are automatically applied via [DecoratorFor<T>] attributes in AotSourceGenPlugin
+// See: LoggingWeatherDecorator (Order=1) and PrefixWeatherDecorator (Order=2)
 var app = new Syringe()
-    .UsingPostPluginRegistrationCallback(services =>
-    {
-        services.AddDecorator<IWeatherProvider, DecoratedWeatherProvider>();
-    })
     .UsingSourceGen()
     .ForWebApplication()
     .UsingOptions(() => CreateWebApplicationOptions.Default.UsingCliArgs(args))
