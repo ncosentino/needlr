@@ -100,13 +100,15 @@ public sealed class DecoratorForAttributeParityTests
             .UsingSourceGen()
             .BuildServiceProvider();
 
-        // Act - Try to resolve the decorator types directly (they shouldn't be registered as self)
+        // Act - Resolve the decorator type directly as its concrete type
         var reflectionDecorators = reflectionProvider.GetServices<DecoratorForFirstDecorator>().ToList();
         var sourceGenDecorators = sourceGenProvider.GetServices<DecoratorForFirstDecorator>().ToList();
 
-        // Assert - Both should have the decorator registered as self
-        // (decorators ARE registered as themselves, just not as the interface they decorate)
-        Assert.Equal(reflectionDecorators.Count, sourceGenDecorators.Count);
+        // Assert - Decorators ARE registered as themselves (just not as the interface they decorate).
+        // This is because they are valid injectable types with a constructor.
+        // Both paths should register exactly 1 instance of the concrete decorator type.
+        Assert.Single(reflectionDecorators);
+        Assert.Single(sourceGenDecorators);
     }
 
     [Fact]
