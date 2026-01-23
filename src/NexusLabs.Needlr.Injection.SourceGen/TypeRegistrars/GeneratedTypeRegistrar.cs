@@ -76,11 +76,21 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
         {
             // Use pre-computed lifetime - no reflection needed
             // The source generator only emits types with valid lifetimes
-            if (typeInfo.Lifetime.HasValue)
+            if (!typeInfo.Lifetime.HasValue)
             {
-                var lifetime = ConvertLifetime(typeInfo.Lifetime.Value);
-                RegisterTypeAsSelfWithInterfaces(services, typeInfo, lifetime);
+                continue;
             }
+
+            var type = typeInfo.Type;
+
+            // Check if type is excluded via Except<T>() or Except(predicate)
+            if (typeFilterer.IsTypeExcluded(type))
+            {
+                continue;
+            }
+
+            var serviceLifetime = ConvertLifetime(typeInfo.Lifetime.Value);
+            RegisterTypeAsSelfWithInterfaces(services, typeInfo, serviceLifetime);
         }
     }
 

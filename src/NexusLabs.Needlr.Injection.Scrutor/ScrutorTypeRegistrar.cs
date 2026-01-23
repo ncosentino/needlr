@@ -27,6 +27,7 @@ public sealed class ScrutorTypeRegistrar : ITypeRegistrar
             .AddClasses(classes =>
                 classes
                     .WithoutAttribute<DoNotAutoRegisterAttribute>()
+                    .Where(type => !typeFilterer.IsTypeExcluded(type))
                     .Where(type => typeFilterer.IsInjectableScopedType(type)),
                 publicOnly: false)
             .AsSelfWithInterfaces()
@@ -38,6 +39,7 @@ public sealed class ScrutorTypeRegistrar : ITypeRegistrar
             .AddClasses(classes =>
                 classes
                     .WithoutAttribute<DoNotAutoRegisterAttribute>()
+                    .Where(type => !typeFilterer.IsTypeExcluded(type))
                     .Where(type => typeFilterer.IsInjectableTransientType(type)),
                 publicOnly: false)
             .AsSelfWithInterfaces()
@@ -49,6 +51,7 @@ public sealed class ScrutorTypeRegistrar : ITypeRegistrar
             .AddClasses(classes =>
                 classes
                     .WithoutAttribute<DoNotAutoRegisterAttribute>()
+                    .Where(type => !typeFilterer.IsTypeExcluded(type))
                     .Where(type => typeFilterer.IsInjectableSingletonType(type)),
                 publicOnly: false)
             .AsSelfWithInterfaces()

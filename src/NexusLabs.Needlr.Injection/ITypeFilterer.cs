@@ -15,4 +15,12 @@ public interface ITypeFilterer
 
     bool IsInjectableSingletonType(
         Type type);
+
+    /// <summary>
+    /// Determines whether a type should be excluded from registration.
+    /// Used by source-gen registrars where lifetimes are pre-computed.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type should be excluded; otherwise false.</returns>
+    bool IsTypeExcluded(Type type) => false;
 }

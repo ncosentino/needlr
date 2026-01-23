@@ -16,7 +16,8 @@ public static class ITypeFiltererExtensionMethods
             typeFilterer,
             (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
             (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
+            exclusionPredicate: t => t.IsAssignableTo(typeof(T)));
     }
 
     public static ITypeFilterer Except(
@@ -30,7 +31,8 @@ public static class ITypeFiltererExtensionMethods
             typeFilterer,
             (filter, t) => filter(t) && !predicate(t),
             (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) && !predicate(t));
+            (filter, t) => filter(t) && !predicate(t),
+            exclusionPredicate: predicate);
     }
 
     public static ITypeFilterer UsingOnlyAsScoped<T>(

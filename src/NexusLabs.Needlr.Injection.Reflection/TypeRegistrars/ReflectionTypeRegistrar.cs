@@ -29,6 +29,12 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
 
         foreach (var type in allTypes)
         {
+            // Check if type is excluded via Except<T>() or Except(predicate)
+            if (typeFilterer.IsTypeExcluded(type))
+            {
+                continue;
+            }
+
             if (typeFilterer.IsInjectableSingletonType(type))
             {
                 RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Singleton);

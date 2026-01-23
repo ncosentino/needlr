@@ -10,12 +10,14 @@ public sealed class TypeFilterDecorator : ITypeFilterer
     private readonly Func<Predicate<Type>, Type, bool> _scopedTypeFilterer;
     private readonly Func<Predicate<Type>, Type, bool> _transientTypeFilter;
     private readonly Func<Predicate<Type>, Type, bool> _singletonTypeFilter;
+    private readonly Predicate<Type>? _exclusionPredicate;
 
     public TypeFilterDecorator(
         ITypeFilterer innerFilterer,
         Func<Predicate<Type>, Type, bool> scopedTypeFilterer,
         Func<Predicate<Type>, Type, bool> transientTypeFilterer,
-        Func<Predicate<Type>, Type, bool> singletonTypeFilter)
+        Func<Predicate<Type>, Type, bool> singletonTypeFilter,
+        Predicate<Type>? exclusionPredicate = null)
     {
         ArgumentNullException.ThrowIfNull(innerFilterer);
         ArgumentNullException.ThrowIfNull(scopedTypeFilterer);
@@ -26,6 +28,7 @@ public sealed class TypeFilterDecorator : ITypeFilterer
         _scopedTypeFilterer = scopedTypeFilterer;
         _transientTypeFilter = transientTypeFilterer;
         _singletonTypeFilter = singletonTypeFilter;
+        _exclusionPredicate = exclusionPredicate;
     }
 
     /// <inheritdoc />
@@ -45,4 +48,17 @@ public sealed class TypeFilterDecorator : ITypeFilterer
         => _singletonTypeFilter.Invoke(
             _innerFilterer.IsInjectableSingletonType, 
             type);
+
+    /// <inheritdoc />
+    public bool IsTypeExcluded(Type type)
+    {
+        // Check our exclusion predicate first
+        if (_exclusionPredicate?.Invoke(type) == true)
+        {
+            return true;
+        }
+
+        // Delegate to inner filterer
+        return _innerFilterer.IsTypeExcluded(type);
+    }
 }
