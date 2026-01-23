@@ -75,11 +75,17 @@ jobs:
 
     - name: Deploy Coverage Report to GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        mkdir -p pages-deploy/coverage
+        cp .github/pages/index.html pages-deploy/
+        cp -r coverage/report/* pages-deploy/coverage/
+
+    - name: Publish to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coverage/report
-        destination_dir: coverage
+        publish_dir: ./pages-deploy
 
     - name: Update Coverage Badge JSON
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
