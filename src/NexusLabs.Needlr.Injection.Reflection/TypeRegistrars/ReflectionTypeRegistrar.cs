@@ -24,6 +24,7 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
         var allTypes = assemblies
             .SelectMany(assembly => GetAllTypes(assembly))
             .Where(type => type is not null)
+            .Where(type => type.IsClass && !type.IsAbstract) // Only concrete classes
             .Where(type => !HasDoNotAutoRegisterAttribute(type))
             .ToList();
 

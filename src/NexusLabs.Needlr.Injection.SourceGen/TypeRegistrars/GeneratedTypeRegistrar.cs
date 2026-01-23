@@ -89,18 +89,34 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
                 continue;
             }
 
-            var serviceLifetime = ConvertLifetime(typeInfo.Lifetime.Value);
+            // Get effective lifetime, allowing type filterer to override pre-computed lifetime
+            // This enables UsingOnlyAsTransient<T>(), UsingOnlyAsSingleton<T>(), etc.
+            var defaultLifetime = ConvertToFiltererLifetime(typeInfo.Lifetime.Value);
+            var effectiveLifetime = typeFilterer.GetEffectiveLifetime(type, defaultLifetime);
+            var serviceLifetime = ConvertToServiceLifetime(effectiveLifetime);
+            
             RegisterTypeAsSelfWithInterfaces(services, typeInfo, serviceLifetime);
         }
     }
 
-    private static ServiceLifetime ConvertLifetime(InjectableLifetime lifetime)
+    private static TypeFiltererLifetime ConvertToFiltererLifetime(InjectableLifetime lifetime)
     {
         return lifetime switch
         {
-            InjectableLifetime.Singleton => ServiceLifetime.Singleton,
-            InjectableLifetime.Scoped => ServiceLifetime.Scoped,
-            InjectableLifetime.Transient => ServiceLifetime.Transient,
+            InjectableLifetime.Singleton => TypeFiltererLifetime.Singleton,
+            InjectableLifetime.Scoped => TypeFiltererLifetime.Scoped,
+            InjectableLifetime.Transient => TypeFiltererLifetime.Transient,
+            _ => TypeFiltererLifetime.Singleton
+        };
+    }
+
+    private static ServiceLifetime ConvertToServiceLifetime(TypeFiltererLifetime lifetime)
+    {
+        return lifetime switch
+        {
+            TypeFiltererLifetime.Singleton => ServiceLifetime.Singleton,
+            TypeFiltererLifetime.Scoped => ServiceLifetime.Scoped,
+            TypeFiltererLifetime.Transient => ServiceLifetime.Transient,
             _ => ServiceLifetime.Singleton
         };
     }

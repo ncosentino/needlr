@@ -134,8 +134,10 @@ public sealed class GeneratedTypeRegistrarTests
 
     private sealed class AllowAllTypeFilterer : ITypeFilterer
     {
-        public bool IsInjectableScopedType(Type type) => true;
-        public bool IsInjectableTransientType(Type type) => true;
-        public bool IsInjectableSingletonType(Type type) => true;
+        // These methods return false to indicate no explicit lifetime preference
+        // The registrar should use the pre-computed lifetime from InjectableTypeInfo
+        public bool IsInjectableScopedType(Type type) => false;
+        public bool IsInjectableTransientType(Type type) => false;
+        public bool IsInjectableSingletonType(Type type) => false;
     }
 }
