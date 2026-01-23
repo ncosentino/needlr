@@ -667,6 +667,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 
             if (attrClass.ToDisplayString() == attributeName)
             {
+                int preset = 0; // None
                 string[]? first = null;
                 string[]? last = null;
                 
@@ -674,6 +675,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     switch (namedArg.Key)
                     {
+                        case "Preset":
+                            if (namedArg.Value.Value is int presetValue)
+                            {
+                                preset = presetValue;
+                            }
+                            break;
+                            
                         case "First":
                             if (!namedArg.Value.IsNull && namedArg.Value.Values.Length > 0)
                             {
@@ -696,19 +704,30 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     }
                 }
                 
-                return new AssemblyOrderInfo(first, last);
+                return new AssemblyOrderInfo(preset, first, last);
             }
         }
         
-        return new AssemblyOrderInfo(null, null);
+        return new AssemblyOrderInfo(0, null, null);
     }
 
     /// <summary>
     /// Orders assemblies according to the assembly order info.
-    /// First[] assemblies come first (in order), then alphabetical, then Last[] assemblies (in order).
+    /// If a preset is specified, it takes precedence over First/Last.
     /// </summary>
     private static IReadOnlyList<string> OrderAssemblies(IReadOnlyList<string> assemblies, AssemblyOrderInfo orderInfo)
     {
+        // Handle presets first (they take precedence)
+        // Preset values: 0 = None, 1 = TestsLast, 2 = Alphabetical
+        switch (orderInfo.Preset)
+        {
+            case 1: // TestsLast
+                return OrderAssembliesTestsLast(assemblies);
+            case 2: // Alphabetical
+                return assemblies.OrderBy(a => a, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+        
+        // Fall through to First/Last explicit ordering
         var firstSet = new HashSet<string>(orderInfo.First ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         var lastSet = new HashSet<string>(orderInfo.Last ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         
@@ -748,14 +767,36 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return result;
     }
 
+    /// <summary>
+    /// Orders assemblies with non-test assemblies first, test assemblies last.
+    /// Matches the behavior of AssemblyOrder.TestsLast() in the injection library.
+    /// </summary>
+    private static IReadOnlyList<string> OrderAssembliesTestsLast(IReadOnlyList<string> assemblies)
+    {
+        var nonTests = assemblies
+            .Where(a => !a.Contains("Tests", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+            
+        var tests = assemblies
+            .Where(a => a.Contains("Tests", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+            
+        nonTests.AddRange(tests);
+        return nonTests;
+    }
+
     private readonly struct AssemblyOrderInfo
     {
-        public AssemblyOrderInfo(string[]? first, string[]? last)
+        public AssemblyOrderInfo(int preset, string[]? first, string[]? last)
         {
+            Preset = preset;
             First = first;
             Last = last;
         }
 
+        public int Preset { get; }
         public string[]? First { get; }
         public string[]? Last { get; }
     }

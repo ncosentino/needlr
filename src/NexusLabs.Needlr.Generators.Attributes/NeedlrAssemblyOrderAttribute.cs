@@ -14,9 +14,8 @@ namespace NexusLabs.Needlr.Generators;
 /// assemblies must be loaded before or after others.
 /// </para>
 /// <para>
-/// Assembly names specified in <see cref="First"/> are loaded first, in order.
-/// Assembly names specified in <see cref="Last"/> are loaded last, in order.
-/// All other discovered assemblies are loaded alphabetically between them.
+/// You can use <see cref="Preset"/> for common ordering patterns, or use
+/// <see cref="First"/> and <see cref="Last"/> for explicit control.
 /// </para>
 /// <para>
 /// This attribute is completely optional. If not specified, all assemblies
@@ -25,10 +24,13 @@ namespace NexusLabs.Needlr.Generators;
 /// </remarks>
 /// <example>
 /// <code>
-/// // Load logging first, health checks last
+/// // Use a preset ordering (tests loaded last)
 /// [assembly: GenerateTypeRegistry]
+/// [assembly: NeedlrAssemblyOrder(Preset = AssemblyOrderPreset.TestsLast)]
+/// 
+/// // Or use explicit ordering
 /// [assembly: NeedlrAssemblyOrder(
-///     First = new[] { "MyApp.Features.Logging", "MyApp.Features.Configuration" },
+///     First = new[] { "MyApp.Features.Logging" },
 ///     Last = new[] { "MyApp.Features.Health" })]
 /// </code>
 /// </example>
@@ -36,11 +38,18 @@ namespace NexusLabs.Needlr.Generators;
 public sealed class NeedlrAssemblyOrderAttribute : Attribute
 {
     /// <summary>
+    /// Gets or sets the preset ordering to use.
+    /// When set, this takes precedence over <see cref="First"/> and <see cref="Last"/>.
+    /// </summary>
+    public AssemblyOrderPreset Preset { get; set; } = AssemblyOrderPreset.None;
+
+    /// <summary>
     /// Gets or sets the assembly names that should be loaded first, in order.
     /// </summary>
     /// <remarks>
     /// These assemblies are loaded before all other auto-discovered assemblies.
     /// The order within this array is preserved.
+    /// Ignored if <see cref="Preset"/> is set to a value other than <see cref="AssemblyOrderPreset.None"/>.
     /// </remarks>
     public string[]? First { get; set; }
 
@@ -50,6 +59,33 @@ public sealed class NeedlrAssemblyOrderAttribute : Attribute
     /// <remarks>
     /// These assemblies are loaded after all other auto-discovered assemblies.
     /// The order within this array is preserved.
+    /// Ignored if <see cref="Preset"/> is set to a value other than <see cref="AssemblyOrderPreset.None"/>.
     /// </remarks>
     public string[]? Last { get; set; }
+}
+
+/// <summary>
+/// Predefined assembly ordering presets for source generation.
+/// These match the presets available in <c>AssemblyOrder</c> for reflection scenarios.
+/// </summary>
+public enum AssemblyOrderPreset
+{
+    /// <summary>
+    /// No preset - use <see cref="NeedlrAssemblyOrderAttribute.First"/> and 
+    /// <see cref="NeedlrAssemblyOrderAttribute.Last"/> for explicit ordering,
+    /// or alphabetical if neither is specified.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// Non-test assemblies first, test assemblies last.
+    /// Equivalent to <c>AssemblyOrder.TestsLast()</c> in reflection scenarios.
+    /// </summary>
+    TestsLast = 1,
+
+    /// <summary>
+    /// Alphabetical ordering by assembly name.
+    /// Equivalent to <c>AssemblyOrder.Alphabetical()</c> in reflection scenarios.
+    /// </summary>
+    Alphabetical = 2
 }

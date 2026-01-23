@@ -1202,6 +1202,67 @@ namespace MainApp
     }
 
     [Fact]
+    public void Generator_WithNeedlrAssemblyOrderPresetTestsLast_OrdersTestAssembliesLast()
+    {
+        var assembly1Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Core"" })]
+
+namespace Lib.Core
+{
+    public class CoreService { }
+}";
+
+        var assembly2Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Core.Tests"" })]
+
+namespace Lib.Core.Tests
+{
+    public class TestService { }
+}";
+
+        var assembly3Source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Lib.Features"" })]
+
+namespace Lib.Features
+{
+    public class FeatureService { }
+}";
+
+        var mainAssemblySource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
+[assembly: NeedlrAssemblyOrder(Preset = 1)]
+
+namespace MainApp
+{
+    public class MainService { }
+}";
+
+        var (_, mainGeneratedCode) = RunGeneratorWithMultipleReferencedAssemblies(
+            new[] { ("Lib.Core", assembly1Source), ("Lib.Core.Tests", assembly2Source), ("Lib.Features", assembly3Source) },
+            mainAssemblySource,
+            "MainApp");
+
+        // Order should be: Core, Features (non-tests alphabetically), then Core.Tests (tests)
+        var coreIndex = mainGeneratedCode.IndexOf("Lib.Core.Generated.TypeRegistry");
+        var testsIndex = mainGeneratedCode.IndexOf("Lib.Core.Tests.Generated.TypeRegistry");
+        var featuresIndex = mainGeneratedCode.IndexOf("Lib.Features.Generated.TypeRegistry");
+        
+        Assert.True(coreIndex >= 0, "Lib.Core should be in the generated code");
+        Assert.True(testsIndex >= 0, "Lib.Core.Tests should be in the generated code");
+        Assert.True(featuresIndex >= 0, "Lib.Features should be in the generated code");
+        Assert.True(coreIndex < featuresIndex, "Lib.Core should come before Lib.Features (alphabetical non-tests)");
+        Assert.True(featuresIndex < testsIndex, "Lib.Features should come before Lib.Core.Tests (tests come last)");
+    }
+
+    [Fact]
     public void Generator_ForceLoadIncludesRuntimeCompilerServicesUsing()
     {
         var referencedAssemblySource = @"
@@ -1388,8 +1449,16 @@ namespace NexusLabs.Needlr.Generators
     [System.AttributeUsage(System.AttributeTargets.Assembly)]
     public sealed class NeedlrAssemblyOrderAttribute : System.Attribute
     {
+        public int Preset { get; set; } = 0;
         public string[]? First { get; set; }
         public string[]? Last { get; set; }
+    }
+
+    public enum AssemblyOrderPreset
+    {
+        None = 0,
+        TestsLast = 1,
+        Alphabetical = 2
     }
 
     public enum InjectableLifetime

@@ -27,6 +27,7 @@ public static class AssemblyOrder
     /// <summary>
     /// Creates a preset ordering: libraries first, then executables, tests last.
     /// Equivalent to the old UseLibTestEntrySorting().
+    /// Uses file location to distinguish DLLs from EXEs.
     /// </summary>
     /// <returns>A builder configured with lib-test-entry ordering.</returns>
     public static AssemblyOrderBuilder LibTestEntry() =>
@@ -34,6 +35,16 @@ public static class AssemblyOrder
             .By(a => a.Location.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
                      && !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))
             .ThenBy(a => a.Location.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Creates a preset ordering: non-test assemblies first, tests last.
+    /// Use this for source-gen scenarios where only assembly names are available.
+    /// </summary>
+    /// <returns>A builder configured with tests-last ordering by name.</returns>
+    public static AssemblyOrderBuilder TestsLast() =>
+        Create()
+            .By(a => !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))
             .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
