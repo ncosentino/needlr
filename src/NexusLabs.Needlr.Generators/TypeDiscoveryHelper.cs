@@ -76,7 +76,52 @@ internal static class TypeDiscoveryHelper
         if (HasDoNotAutoRegisterAttribute(typeSymbol))
             return false;
 
+        // Exclude types with required members that can't be set via constructor
+        // These would cause compilation errors: "Required member 'X' must be set"
+        if (HasUnsatisfiedRequiredMembers(typeSymbol))
+            return false;
+
         return true;
+    }
+
+    /// <summary>
+    /// Checks if a type has required members that aren't satisfied by any constructor
+    /// with [SetsRequiredMembers] attribute.
+    /// </summary>
+    private static bool HasUnsatisfiedRequiredMembers(INamedTypeSymbol typeSymbol)
+    {
+        // Check if any constructor has [SetsRequiredMembers] attribute
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.IsStatic)
+                continue;
+
+            // If a constructor has [SetsRequiredMembers], it handles all required members
+            foreach (var attr in ctor.GetAttributes())
+            {
+                if (attr.AttributeClass?.Name == "SetsRequiredMembersAttribute" ||
+                    attr.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute")
+                {
+                    return false; // This constructor handles required members
+                }
+            }
+        }
+
+        // Check for required properties (including inherited)
+        var currentType = typeSymbol;
+        while (currentType != null)
+        {
+            foreach (var member in currentType.GetMembers())
+            {
+                if (member is IPropertySymbol property && property.IsRequired)
+                    return true;
+                if (member is IFieldSymbol field && field.IsRequired)
+                    return true;
+            }
+            currentType = currentType.BaseType;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -730,6 +775,11 @@ internal static class TypeDiscoveryHelper
 
         // Must have a parameterless constructor
         if (!HasParameterlessConstructor(typeSymbol))
+            return false;
+
+        // Exclude types with required members that can't be set via constructor
+        // These would cause compilation errors: "Required member 'X' must be set"
+        if (HasUnsatisfiedRequiredMembers(typeSymbol))
             return false;
 
         return true;

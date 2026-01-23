@@ -791,4 +791,126 @@ namespace TestNamespace
             Basic.Reference.Assemblies.Net90.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
+
+    [Fact]
+    public void IsInjectableType_WithRequiredProperty_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithRequiredProperty
+    {
+        public required string Name { get; set; }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithRequiredProperty");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsInjectableType_WithRequiredField_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithRequiredField
+    {
+        public required string name;
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithRequiredField");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsInjectableType_WithRequiredPropertyAndSetsRequiredMembersConstructor_ReturnsTrue()
+    {
+        var source = @"
+using System.Diagnostics.CodeAnalysis;
+
+namespace TestNamespace
+{
+    public class ServiceWithSetsRequiredMembers
+    {
+        public required string Name { get; set; }
+
+        [SetsRequiredMembers]
+        public ServiceWithSetsRequiredMembers()
+        {
+            Name = ""default"";
+        }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithSetsRequiredMembers");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsInjectableType_WithInheritedRequiredProperty_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class BaseWithRequired
+    {
+        public required string Name { get; set; }
+    }
+
+    public class DerivedService : BaseWithRequired
+    {
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.DerivedService");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPluginType_WithRequiredProperty_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IPlugin { }
+
+    public class PluginWithRequiredProperty : IPlugin
+    {
+        public required string Config { get; set; }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.PluginWithRequiredProperty");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsInjectableType_WithNoRequiredMembers_ReturnsTrue()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithOptionalProperty
+    {
+        public string? Name { get; set; }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithOptionalProperty");
+
+        var result = TypeDiscoveryHelper.IsInjectableType(typeSymbol);
+
+        Assert.True(result);
+    }
 }
