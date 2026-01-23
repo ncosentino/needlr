@@ -1,4 +1,5 @@
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -34,6 +35,18 @@ public sealed class SyringeAspNetExtensionsTests
         Syringe syringe = null!;
 
         Assert.Throws<ArgumentNullException>(() => syringe.BuildWebApplication());
+    }
+
+    [Fact]
+    public void BuildWebApplication_DirectOnSyringe_BuildsWebApplication()
+    {
+        // This tests the shortcut: syringe.BuildWebApplication() 
+        // which internally calls syringe.ForWebApplication().BuildWebApplication()
+        var syringe = new Syringe().UsingReflection();
+
+        var result = syringe.BuildWebApplication();
+
+        Assert.NotNull(result);
     }
 }
 
