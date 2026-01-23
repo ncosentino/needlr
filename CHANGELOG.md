@@ -5,6 +5,12 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.15] - 2026-01-23
+
+### Fixed
+- **Plugin discovery**: Records with parameterless constructors ARE now discoverable via `IPluginFactory.CreatePluginsFromAssemblies<T>()` (fixes CacheConfiguration pattern)
+- **Auto-registration**: Records are still correctly excluded from `IsInjectableType` (not auto-registered into DI container)
+
 ## [0.0.2-alpha.14] - 2026-01-23
 
 ### Added
