@@ -156,6 +156,205 @@ public sealed class GeneratedPluginFactoryTests
         Assert.Equal(2, plugins.Count);
     }
 
+    #region CreatePlugins (No Assembly Filter) Tests
+
+    [Fact]
+    public void CreatePlugins_ReturnsMatchingPlugins()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            []);
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePlugins<ITestPlugin>().ToList();
+
+        Assert.Single(plugins);
+        Assert.IsType<TestPlugin>(plugins[0]);
+    }
+
+    [Fact]
+    public void CreatePlugins_FiltersNonMatchingPluginTypes()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            []);
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePlugins<IOtherPlugin>().ToList();
+
+        Assert.Empty(plugins);
+    }
+
+    [Fact]
+    public void CreatePlugins_WithMultiplePlugins_ReturnsAll()
+    {
+        var plugin1 = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            []);
+        var plugin2 = new PluginTypeInfo(
+            typeof(AnotherTestPlugin),
+            [typeof(ITestPlugin)],
+            () => new AnotherTestPlugin(),
+            []);
+
+        var factory = new GeneratedPluginFactory(() => [plugin1, plugin2]);
+
+        var plugins = factory.CreatePlugins<ITestPlugin>().ToList();
+
+        Assert.Equal(2, plugins.Count);
+    }
+
+    [Fact]
+    public void CreatePlugins_WithEmptyProvider_ReturnsEmpty()
+    {
+        var factory = new GeneratedPluginFactory(() => []);
+
+        var plugins = factory.CreatePlugins<ITestPlugin>().ToList();
+
+        Assert.Empty(plugins);
+    }
+
+    #endregion
+
+    #region CreatePluginsWithAttribute (No Assembly Filter) Tests
+
+    [Fact]
+    public void CreatePluginsWithAttribute_ReturnsPluginsWithAttribute()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            [typeof(TestAttribute)]);
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePluginsWithAttribute<TestAttribute>().ToList();
+
+        Assert.Single(plugins);
+    }
+
+    [Fact]
+    public void CreatePluginsWithAttribute_FiltersPluginsWithoutAttribute()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            []); // No attributes
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePluginsWithAttribute<TestAttribute>().ToList();
+
+        Assert.Empty(plugins);
+    }
+
+    [Fact]
+    public void CreatePluginsWithAttribute_WithMultiplePlugins_ReturnsOnlyAttributedOnes()
+    {
+        var plugin1 = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            [typeof(TestAttribute)]);
+        var plugin2 = new PluginTypeInfo(
+            typeof(AnotherTestPlugin),
+            [typeof(ITestPlugin)],
+            () => new AnotherTestPlugin(),
+            []); // No attribute
+
+        var factory = new GeneratedPluginFactory(() => [plugin1, plugin2]);
+
+        var plugins = factory.CreatePluginsWithAttribute<TestAttribute>().ToList();
+
+        Assert.Single(plugins);
+    }
+
+    #endregion
+
+    #region CreatePlugins<TPlugin, TAttribute> (No Assembly Filter) Tests
+
+    [Fact]
+    public void CreatePlugins_WithTypeAndAttribute_ReturnsMatchingPlugins()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            [typeof(TestAttribute)]);
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePlugins<ITestPlugin, TestAttribute>().ToList();
+
+        Assert.Single(plugins);
+    }
+
+    [Fact]
+    public void CreatePlugins_WithTypeAndAttribute_FiltersNonMatchingType()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            [typeof(TestAttribute)]);
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePlugins<IOtherPlugin, TestAttribute>().ToList();
+
+        Assert.Empty(plugins);
+    }
+
+    [Fact]
+    public void CreatePlugins_WithTypeAndAttribute_FiltersNonMatchingAttribute()
+    {
+        var pluginInfo = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            []); // No attribute
+
+        var factory = new GeneratedPluginFactory(() => [pluginInfo]);
+
+        var plugins = factory.CreatePlugins<ITestPlugin, TestAttribute>().ToList();
+
+        Assert.Empty(plugins);
+    }
+
+    [Fact]
+    public void CreatePlugins_WithTypeAndAttribute_RequiresBothToMatch()
+    {
+        var plugin1 = new PluginTypeInfo(
+            typeof(TestPlugin),
+            [typeof(ITestPlugin)],
+            () => new TestPlugin(),
+            [typeof(TestAttribute)]); // Has both
+        var plugin2 = new PluginTypeInfo(
+            typeof(AnotherTestPlugin),
+            [typeof(ITestPlugin)],
+            () => new AnotherTestPlugin(),
+            []); // Has type but not attribute
+
+        var factory = new GeneratedPluginFactory(() => [plugin1, plugin2]);
+
+        var plugins = factory.CreatePlugins<ITestPlugin, TestAttribute>().ToList();
+
+        Assert.Single(plugins);
+        Assert.IsType<TestPlugin>(plugins[0]);
+    }
+
+    #endregion
+
     private interface ITestPlugin { }
     private interface IOtherPlugin { }
 
