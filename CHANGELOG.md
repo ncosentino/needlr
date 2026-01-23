@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Non-generic `AddDecorator(Type, Type)` overload**: For runtime decorator application
 
 ### Fixed
+- **Source generation**: Records are now correctly excluded from `IsPluginType` (records were never intended to be auto-registered as plugins or injectables)
 - **Source generation**: Types with `required` members are now excluded from automatic registration (cannot be instantiated by DI container without setter access)
 - **Source generation**: Types with `[SetsRequiredMembers]` constructor are still included (constructor satisfies all required members)
 

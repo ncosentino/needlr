@@ -83,6 +83,41 @@ namespace TestNamespace
     }
 
     [Fact]
+    public void IsPluginType_PlainRecord_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IPlugin { }
+    public record RecordPlugin : IPlugin;
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.RecordPlugin");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsPluginType_RecordWithRequiredProperty_ReturnsFalse()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IPlugin { }
+    public record RecordPlugin : IPlugin
+    {
+        public required string Name { get; init; }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.RecordPlugin");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.False(result);
+    }
+
+    [Fact]
     public void IsInjectableType_NestedClass_ReturnsFalse()
     {
         var source = @"

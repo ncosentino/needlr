@@ -510,6 +510,10 @@ internal static class TypeDiscoveryHelper
         if (typeSymbol.TypeParameters.Length > 0)
             return false;
 
+        // Records are NEVER auto-registered as plugins - they are DTOs/value objects, not services
+        if (typeSymbol.IsRecord)
+            return false;
+
         // Must have a parameterless constructor
         if (!HasParameterlessConstructor(typeSymbol))
             return false;
@@ -771,6 +775,10 @@ internal static class TypeDiscoveryHelper
         // Exclude open generic types (type definitions with type parameters like MyClass<T>)
         // These cannot be instantiated directly and would produce invalid typeof() expressions
         if (typeSymbol.TypeParameters.Length > 0)
+            return false;
+
+        // Records are NEVER auto-registered as plugins - they are DTOs/value objects, not services
+        if (typeSymbol.IsRecord)
             return false;
 
         // Must have a parameterless constructor
