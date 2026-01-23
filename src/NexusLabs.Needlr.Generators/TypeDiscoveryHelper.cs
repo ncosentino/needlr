@@ -24,6 +24,7 @@ internal static class TypeDiscoveryHelper
     private const string DoNotInjectAttributeFullName = "NexusLabs.Needlr.DoNotInjectAttribute";
     private const string DeferToContainerAttributeName = "DeferToContainerAttribute";
     private const string DeferToContainerAttributeFullName = "NexusLabs.Needlr.DeferToContainerAttribute";
+    private const string DecoratorForAttributePrefix = "NexusLabs.Needlr.DecoratorForAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -1187,5 +1188,97 @@ internal static class TypeDiscoveryHelper
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Result of decorator discovery.
+    /// </summary>
+    public readonly struct DecoratorInfo
+    {
+        public DecoratorInfo(string decoratorTypeName, string serviceTypeName, int order)
+        {
+            DecoratorTypeName = decoratorTypeName;
+            ServiceTypeName = serviceTypeName;
+            Order = order;
+        }
+
+        public string DecoratorTypeName { get; }
+        public string ServiceTypeName { get; }
+        public int Order { get; }
+    }
+
+    /// <summary>
+    /// Gets all DecoratorFor&lt;T&gt; attributes applied to a type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>A list of decorator info for each DecoratorFor attribute found.</returns>
+    public static IReadOnlyList<DecoratorInfo> GetDecoratorForAttributes(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<DecoratorInfo>();
+
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass is null)
+                continue;
+
+            // Check if this is a generic DecoratorForAttribute<T>
+            if (!attrClass.IsGenericType)
+                continue;
+
+            var unboundTypeName = attrClass.ConstructedFrom?.ToDisplayString();
+            if (unboundTypeName is null || !unboundTypeName.StartsWith(DecoratorForAttributePrefix, StringComparison.Ordinal))
+                continue;
+
+            // Get the service type from the generic type argument
+            if (attrClass.TypeArguments.Length != 1)
+                continue;
+
+            var serviceType = attrClass.TypeArguments[0] as INamedTypeSymbol;
+            if (serviceType is null)
+                continue;
+
+            var serviceTypeName = GetFullyQualifiedName(serviceType);
+            var decoratorTypeName = GetFullyQualifiedName(typeSymbol);
+
+            // Get the Order property value
+            int order = 0;
+            foreach (var namedArg in attribute.NamedArguments)
+            {
+                if (namedArg.Key == "Order" && namedArg.Value.Value is int orderValue)
+                {
+                    order = orderValue;
+                    break;
+                }
+            }
+
+            result.Add(new DecoratorInfo(decoratorTypeName, serviceTypeName, order));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Checks if a type has any DecoratorFor&lt;T&gt; attributes.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has at least one DecoratorFor attribute.</returns>
+    public static bool HasDecoratorForAttribute(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass is null)
+                continue;
+
+            if (!attrClass.IsGenericType)
+                continue;
+
+            var unboundTypeName = attrClass.ConstructedFrom?.ToDisplayString();
+            if (unboundTypeName is not null && unboundTypeName.StartsWith(DecoratorForAttributePrefix, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 }

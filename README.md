@@ -20,7 +20,7 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 - **Plugin System**: Extensible architecture for modular applications
 - **Multiple Type Registrars**: Built-in support for default registration and Scrutor-based scanning
 - **Flexible Filtering**: Control which types get registered automatically
-- **Decorator Pattern Support**: Built-in support for service decoration with `AddDecorator` extension
+- **Decorator Pattern Support**: Automatic decorator wiring with `[DecoratorFor<T>]` attribute, plus manual `AddDecorator` extension
 - **Post-Build Plugins**: Execute configuration after the main service collection has been built
 - **Configuration Integration**: Automatic IConfiguration registration and support
 - **Assembly Provider**: Flexible assembly scanning with filtering and sorting options
@@ -374,6 +374,70 @@ serviceProvider.GetRequiredService<IMyService>().DoSomething();
 ```
 
 The `AddDecorator` extension automatically wraps the existing service registration with the decorator, preserving the original service's lifetime.
+
+### Automatic Decorators with `[DecoratorFor<T>]` (Recommended)
+
+The simplest way to implement decorators is using the `[DecoratorFor<TService>]` attribute. Needlr automatically discovers and wires up decorators at startup:
+
+```csharp
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
+
+public interface IMyService
+{
+    string GetValue();
+}
+
+public class MyService : IMyService
+{
+    public string GetValue() => "Original";
+}
+
+// Decorator applied first (closest to original service)
+[DecoratorFor<IMyService>(Order = 1)]
+public class LoggingDecorator : IMyService
+{
+    private readonly IMyService _inner;
+    
+    public LoggingDecorator(IMyService inner) => _inner = inner;
+    
+    public string GetValue()
+    {
+        Console.WriteLine("Calling GetValue...");
+        return _inner.GetValue();
+    }
+}
+
+// Decorator applied second (wraps the logging decorator)
+[DecoratorFor<IMyService>(Order = 2)]
+public class CachingDecorator : IMyService
+{
+    private readonly IMyService _inner;
+    private string? _cached;
+    
+    public CachingDecorator(IMyService inner) => _inner = inner;
+    
+    public string GetValue() => _cached ??= _inner.GetValue();
+}
+
+// Usage - decorators are automatically discovered and applied
+var serviceProvider = new Syringe()
+    .UsingSourceGen()  // or .UsingReflection()
+    .BuildServiceProvider();
+
+var result = serviceProvider.GetRequiredService<IMyService>().GetValue();
+// Output: "Calling GetValue..."
+// result = "Original"
+// Chain: CachingDecorator → LoggingDecorator → MyService
+```
+
+**Key points:**
+- Lower `Order` values are applied first (closer to the original service)
+- Higher `Order` values wrap outer layers
+- No plugin or manual registration needed
+- Works with both source generation and reflection
+- A class can decorate multiple services using multiple `[DecoratorFor<T>]` attributes
 
 ## Plugin System
 

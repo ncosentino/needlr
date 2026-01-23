@@ -97,6 +97,12 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
             
             RegisterTypeAsSelfWithInterfaces(services, typeInfo, serviceLifetime);
         }
+
+        // Apply decorators from the source generator
+        if (NeedlrSourceGenBootstrap.TryGetDecoratorApplier(out var decoratorApplier) && decoratorApplier is not null)
+        {
+            decoratorApplier(services);
+        }
     }
 
     private static TypeFiltererLifetime ConvertToFiltererLifetime(InjectableLifetime lifetime)

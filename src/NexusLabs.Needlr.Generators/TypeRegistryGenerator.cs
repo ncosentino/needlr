@@ -143,13 +143,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var pluginTypes = new List<DiscoveredPlugin>();
         var hubRegistrations = new List<DiscoveredHubRegistration>();
         var kernelPlugins = new List<DiscoveredKernelPlugin>();
+        var decorators = new List<DiscoveredDecorator>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -157,7 +158,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -187,7 +188,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, inaccessibleTypes, missingTypeRegistryPlugins);
+        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins);
     }
 
     private static void CollectTypesFromAssembly(
@@ -197,6 +198,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredPlugin> pluginTypes,
         List<DiscoveredHubRegistration> hubRegistrations,
         List<DiscoveredKernelPlugin> kernelPlugins,
+        List<DiscoveredDecorator> decorators,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -217,6 +219,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     inaccessibleTypes.Add(new InaccessibleType(typeName, assembly.Name));
                 }
                 continue; // Skip further processing for inaccessible types
+            }
+
+            // Check for DecoratorFor<T> attributes
+            var decoratorInfos = TypeDiscoveryHelper.GetDecoratorForAttributes(typeSymbol);
+            foreach (var decoratorInfo in decoratorInfos)
+            {
+                decorators.Add(new DiscoveredDecorator(
+                    decoratorInfo.DecoratorTypeName,
+                    decoratorInfo.ServiceTypeName,
+                    decoratorInfo.Order,
+                    assembly.Name));
             }
 
             // Check for injectable types
@@ -285,6 +298,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
+        builder.AppendLine("using NexusLabs.Needlr;");
         builder.AppendLine("using NexusLabs.Needlr.Generators;");
         builder.AppendLine();
         builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
@@ -313,6 +327,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// </summary>");
         builder.AppendLine("    /// <returns>A read-only list of plugin type information.</returns>");
         builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
+
+        builder.AppendLine();
+        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators);
+
         builder.AppendLine("}");
 
         return builder.ToString();
@@ -327,6 +345,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System.Runtime.CompilerServices;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
         builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
@@ -346,7 +366,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         
         builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
-        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes);");
+        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes,");
+        builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services));");
         builder.AppendLine("    }");
 
         // Generate ForceLoadReferencedAssemblies method if needed
@@ -471,6 +492,40 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine("    ];");
+    }
+
+    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators)
+    {
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Applies all discovered decorators to the service collection.");
+        builder.AppendLine("    /// Decorators are applied in order, with lower Order values applied first (closer to the original service).");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to apply decorators to.</param>");
+        builder.AppendLine("    public static void ApplyDecorators(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        if (decorators.Count == 0)
+        {
+            builder.AppendLine("        // No decorators discovered");
+        }
+        else
+        {
+            // Group decorators by service type and order by Order property
+            var decoratorsByService = decorators
+                .GroupBy(d => d.ServiceTypeName)
+                .OrderBy(g => g.Key);
+
+            foreach (var serviceGroup in decoratorsByService)
+            {
+                builder.AppendLine($"        // Decorators for {serviceGroup.Key}");
+                foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
+                {
+                    builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}, from {decorator.AssemblyName}");
+                }
+            }
+        }
+
+        builder.AppendLine("    }");
     }
 
     private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName)
@@ -727,6 +782,22 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public bool IsStatic { get; }
     }
 
+    private readonly struct DiscoveredDecorator
+    {
+        public DiscoveredDecorator(string decoratorTypeName, string serviceTypeName, int order, string assemblyName)
+        {
+            DecoratorTypeName = decoratorTypeName;
+            ServiceTypeName = serviceTypeName;
+            Order = order;
+            AssemblyName = assemblyName;
+        }
+
+        public string DecoratorTypeName { get; }
+        public string ServiceTypeName { get; }
+        public int Order { get; }
+        public string AssemblyName { get; }
+    }
+
     private readonly struct InaccessibleType
     {
         public InaccessibleType(string typeName, string assemblyName)
@@ -758,6 +829,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             IReadOnlyList<DiscoveredPlugin> pluginTypes,
             IReadOnlyList<DiscoveredHubRegistration> hubRegistrations,
             IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins,
+            IReadOnlyList<DiscoveredDecorator> decorators,
             IReadOnlyList<InaccessibleType> inaccessibleTypes,
             IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins)
         {
@@ -765,6 +837,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             PluginTypes = pluginTypes;
             HubRegistrations = hubRegistrations;
             KernelPlugins = kernelPlugins;
+            Decorators = decorators;
             InaccessibleTypes = inaccessibleTypes;
             MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
         }
@@ -773,6 +846,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public IReadOnlyList<DiscoveredPlugin> PluginTypes { get; }
         public IReadOnlyList<DiscoveredHubRegistration> HubRegistrations { get; }
         public IReadOnlyList<DiscoveredKernelPlugin> KernelPlugins { get; }
+        public IReadOnlyList<DiscoveredDecorator> Decorators { get; }
         public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
         public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
     }

@@ -10,7 +10,7 @@ namespace NexusLabs.Needlr.Generators;
 /// </summary>
 /// <remarks>
 /// The source generator emits a module initializer in the host assembly that calls
-/// <see cref="Register"/> with the generated TypeRegistry providers.
+/// one of the Register overloads with the generated TypeRegistry providers.
 /// Needlr runtime can then discover generated registries without any runtime reflection.
 /// </remarks>
 public static class NeedlrSourceGenBootstrap
@@ -19,14 +19,17 @@ public static class NeedlrSourceGenBootstrap
     {
         public Registration(
             Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+            Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+            Action<object>? decoratorApplier = null)
         {
             InjectableTypeProvider = injectableTypeProvider;
             PluginTypeProvider = pluginTypeProvider;
+            DecoratorApplier = decoratorApplier;
         }
 
         public Func<IReadOnlyList<InjectableTypeInfo>> InjectableTypeProvider { get; }
         public Func<IReadOnlyList<PluginTypeInfo>> PluginTypeProvider { get; }
+        public Action<object>? DecoratorApplier { get; }
     }
 
     private static readonly object _gate = new object();
@@ -43,12 +46,29 @@ public static class NeedlrSourceGenBootstrap
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        Register(injectableTypeProvider, pluginTypeProvider, (Action<object>?)null);
+    }
+
+    /// <summary>
+    /// Registers the generated type, plugin, and decorator providers for this application.
+    /// </summary>
+    /// <param name="injectableTypeProvider">Provider for injectable types.</param>
+    /// <param name="pluginTypeProvider">Provider for plugin types.</param>
+    /// <param name="decoratorApplier">
+    /// Action that applies decorators to the service collection. 
+    /// The parameter is an IServiceCollection, but typed as object to avoid dependency on Microsoft.Extensions.DependencyInjection in this assembly.
+    /// </param>
+    public static void Register(
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        Action<object>? decoratorApplier)
+    {
         if (injectableTypeProvider is null) throw new ArgumentNullException(nameof(injectableTypeProvider));
         if (pluginTypeProvider is null) throw new ArgumentNullException(nameof(pluginTypeProvider));
 
         lock (_gate)
         {
-            _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider));
+            _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider, decoratorApplier));
             _cachedCombined = null;
         }
     }
@@ -88,6 +108,41 @@ public static class NeedlrSourceGenBootstrap
         }
     }
 
+    /// <summary>
+    /// Gets the decorator applier (if any).
+    /// </summary>
+    /// <param name="decoratorApplier">
+    /// Action that applies decorators to the service collection.
+    /// The parameter is an IServiceCollection, but typed as object to avoid dependency on Microsoft.Extensions.DependencyInjection in this assembly.
+    /// </param>
+    /// <returns>True if a decorator applier is registered.</returns>
+    public static bool TryGetDecoratorApplier(out Action<object>? decoratorApplier)
+    {
+        var local = _asyncLocalOverride.Value;
+        if (local is not null)
+        {
+            decoratorApplier = local.DecoratorApplier;
+            return decoratorApplier is not null;
+        }
+
+        lock (_gate)
+        {
+            if (_registrations.Count == 0)
+            {
+                decoratorApplier = null;
+                return false;
+            }
+
+            if (_cachedCombined is null)
+            {
+                _cachedCombined = Combine(_registrations);
+            }
+
+            decoratorApplier = _cachedCombined.DecoratorApplier;
+            return decoratorApplier is not null;
+        }
+    }
+
     internal static IDisposable BeginTestScope(
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
@@ -120,6 +175,7 @@ public static class NeedlrSourceGenBootstrap
         // Snapshot the current registrations to avoid capturing a mutable List.
         var injectableProviders = registrations.Select(r => r.InjectableTypeProvider).ToArray();
         var pluginProviders = registrations.Select(r => r.PluginTypeProvider).ToArray();
+        var decoratorAppliers = registrations.Where(r => r.DecoratorApplier is not null).Select(r => r.DecoratorApplier!).ToArray();
 
         IReadOnlyList<InjectableTypeInfo> GetInjectableTypes()
         {
@@ -159,6 +215,16 @@ public static class NeedlrSourceGenBootstrap
             return result;
         }
 
-        return new Registration(GetInjectableTypes, GetPluginTypes);
+        Action<object>? combinedDecoratorApplier = decoratorAppliers.Length > 0
+            ? services =>
+            {
+                foreach (var applier in decoratorAppliers)
+                {
+                    applier(services);
+                }
+            }
+            : null;
+
+        return new Registration(GetInjectableTypes, GetPluginTypes, combinedDecoratorApplier);
     }
 }

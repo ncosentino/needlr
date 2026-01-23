@@ -146,9 +146,69 @@ var serviceProvider = new Syringe()
 
 ## Complex Decorator Patterns
 
-### Nested Decorators
+### Nested Decorators with Attributes (Recommended)
 
-Apply multiple decorators in sequence:
+The simplest way to apply multiple decorators is using the `[DecoratorFor<T>]` attribute:
+
+```csharp
+// Base service - registered automatically
+public class DataService : IDataService
+{
+    public async Task<Data> GetDataAsync()
+    {
+        return await FetchFromDatabase();
+    }
+}
+
+// Caching decorator - Order 1 means closest to original
+[DecoratorFor<IDataService>(Order = 1)]
+public class CachingDataService : IDataService
+{
+    private readonly IDataService _inner;
+    private readonly IMemoryCache _cache;
+    
+    public CachingDataService(IDataService inner, IMemoryCache cache)
+    {
+        _inner = inner;
+        _cache = cache;
+    }
+    
+    public async Task<Data> GetDataAsync()
+    {
+        return await _cache.GetOrCreateAsync("data", 
+            async entry => await _inner.GetDataAsync());
+    }
+}
+
+// Logging decorator - Order 2 wraps the caching decorator
+[DecoratorFor<IDataService>(Order = 2)]
+public class LoggingDataService : IDataService
+{
+    private readonly IDataService _inner;
+    private readonly ILogger<LoggingDataService> _logger;
+    
+    public LoggingDataService(IDataService inner, ILogger<LoggingDataService> logger)
+    {
+        _inner = inner;
+        _logger = logger;
+    }
+    
+    public async Task<Data> GetDataAsync()
+    {
+        _logger.LogInformation("Fetching data...");
+        var data = await _inner.GetDataAsync();
+        _logger.LogInformation($"Fetched {data.Count} items");
+        return data;
+    }
+}
+
+// No plugin needed! Resolution produces:
+// LoggingDataService → CachingDataService → DataService
+```
+
+### Nested Decorators (Manual)
+
+For more control, apply decorators manually in a plugin:
 
 ```csharp
 // Base service

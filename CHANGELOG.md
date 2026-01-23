@@ -5,6 +5,20 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`[DecoratorFor<TService>]` attribute**: Automatic decorator wiring without manual plugin registration
+  - Apply to a class to automatically configure it as a decorator for the specified service
+  - `Order` property controls decoration sequence (lower = closer to original service)
+  - Works with both source generation and reflection
+  - Multiple decorators per service supported with ordering
+  - A class can decorate multiple services using multiple attributes
+- **Non-generic `AddDecorator(Type, Type)` overload**: For runtime decorator application
+
+### Changed
+- **CI/CD**: Added GitHub-native code coverage reporting with badges and GitHub Pages reports
+
 ## [0.0.2-alpha.13] - 2026-01-23
 
 ### Added

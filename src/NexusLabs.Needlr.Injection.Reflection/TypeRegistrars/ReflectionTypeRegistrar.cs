@@ -49,6 +49,61 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
                 RegisterTypeAsSelfWithInterfaces(services, type, ServiceLifetime.Scoped);
             }
         }
+
+        // Apply decorators discovered via [DecoratorFor<T>] attributes
+        ApplyDecoratorForAttributes(services, allTypes);
+    }
+
+    /// <summary>
+    /// Discovers and applies decorators marked with [DecoratorFor&lt;T&gt;] attributes.
+    /// </summary>
+    private static void ApplyDecoratorForAttributes(IServiceCollection services, List<Type> allTypes)
+    {
+        var decoratorInfos = new List<(Type DecoratorType, Type ServiceType, int Order)>();
+
+        foreach (var type in allTypes)
+        {
+            foreach (var attribute in type.GetCustomAttributes(inherit: false))
+            {
+                var attrType = attribute.GetType();
+                if (!attrType.IsGenericType)
+                    continue;
+
+                var genericTypeDef = attrType.GetGenericTypeDefinition();
+                if (genericTypeDef.FullName?.StartsWith("NexusLabs.Needlr.DecoratorForAttribute`1", StringComparison.Ordinal) != true)
+                    continue;
+
+                // Get the service type from the generic type argument
+                var serviceType = attrType.GetGenericArguments()[0];
+
+                // Get the Order property value
+                var orderProperty = attrType.GetProperty("Order");
+                var order = orderProperty?.GetValue(attribute) as int? ?? 0;
+
+                decoratorInfos.Add((type, serviceType, order));
+            }
+        }
+
+        // Group by service type and apply in order
+        var decoratorsByService = decoratorInfos
+            .GroupBy(d => d.ServiceType)
+            .OrderBy(g => g.Key.FullName);
+
+        foreach (var serviceGroup in decoratorsByService)
+        {
+            foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
+            {
+                try
+                {
+                    services.AddDecorator(decorator.ServiceType, decorator.DecoratorType);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Service not registered - skip this decorator
+                    // This can happen if the base service wasn't registered (e.g., excluded)
+                }
+            }
+        }
     }
 
     private static Type[] GetAllTypes(Assembly assembly)

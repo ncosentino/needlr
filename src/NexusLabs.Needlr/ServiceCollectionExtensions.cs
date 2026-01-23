@@ -70,6 +70,57 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Decorates an existing service registration with a decorator type, preserving the original service's lifetime.
+    /// The decorator must implement the service interface and take the service interface as a constructor parameter.
+    /// Works with both interfaces and class types.
+    /// </summary>
+    /// <param name="services">The service collection to modify.</param>
+    /// <param name="serviceType">The service type (interface or class) to decorate.</param>
+    /// <param name="decoratorType">The decorator type that implements the service type.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when services, serviceType, or decoratorType is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when no service registration is found for the service type.</exception>
+    /// <example>
+    /// <code>
+    /// // Register the original service
+    /// services.AddScoped&lt;IMyService, MyService&gt;();
+    /// 
+    /// // Decorate it while preserving the scoped lifetime
+    /// services.AddDecorator(typeof(IMyService), typeof(MyServiceDecorator));
+    /// </code>
+    /// </example>
+    public static IServiceCollection AddDecorator(
+        this IServiceCollection services,
+        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type decoratorType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(serviceType);
+        ArgumentNullException.ThrowIfNull(decoratorType);
+
+        // Find the existing service registration
+        var existingDescriptor = services
+            .LastOrDefault(d => d.ServiceType == serviceType)
+            ?? throw new InvalidOperationException(
+                $"No service registration found for type {serviceType.Name}. " +
+                $"Please register the service before decorating it.");
+        services.Remove(existingDescriptor);
+
+        // Create a new registration with the same lifetime that uses the decorator
+        var decoratedDescriptor = new ServiceDescriptor(
+            serviceType,
+            provider =>
+            {
+                var originalService = CreateOriginalService(provider, existingDescriptor, serviceType);
+                return ActivatorUtilities.CreateInstance(provider, decoratorType, originalService!);
+            },
+            existingDescriptor.Lifetime);
+
+        services.Add(decoratedDescriptor);
+        return services;
+    }
+
+    /// <summary>
     /// Gets detailed information about all registered services.
     /// </summary>
     /// <param name="serviceCollection">The service provider to inspect.</param>
@@ -169,5 +220,25 @@ public static class ServiceCollectionExtensions
         }
         
         throw new InvalidOperationException($"Unable to create instance of service {typeof(TService).Name} from the original descriptor.");
+    }
+
+    private static object CreateOriginalService(IServiceProvider provider, ServiceDescriptor originalDescriptor, Type serviceType)
+    {
+        if (originalDescriptor.ImplementationFactory is not null)
+        {
+            return originalDescriptor.ImplementationFactory(provider);
+        }
+        
+        if (originalDescriptor.ImplementationInstance is not null)
+        {
+            return originalDescriptor.ImplementationInstance;
+        }
+        
+        if (originalDescriptor.ImplementationType is not null)
+        {
+            return ActivatorUtilities.CreateInstance(provider, originalDescriptor.ImplementationType);
+        }
+        
+        throw new InvalidOperationException($"Unable to create instance of service {serviceType.Name} from the original descriptor.");
     }
 }

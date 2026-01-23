@@ -325,6 +325,40 @@ Needlr automatically determines appropriate lifetimes based on:
 
 ## Decorator Pattern
 
+### Automatic Decorators with `[DecoratorFor<T>]` (Recommended)
+
+The simplest approach - decorate classes with the attribute and Needlr handles the rest:
+
+```csharp
+public interface IService { string GetValue(); }
+public class ServiceImpl : IService { public string GetValue() => "Original"; }
+
+[DecoratorFor<IService>(Order = 1)]
+public class LoggingDecorator : IService
+{
+    private readonly IService _inner;
+    public LoggingDecorator(IService inner) => _inner = inner;
+    public string GetValue()
+    {
+        Console.WriteLine("Logging...");
+        return _inner.GetValue();
+    }
+}
+
+[DecoratorFor<IService>(Order = 2)]
+public class CachingDecorator : IService
+{
+    private readonly IService _inner;
+    private string? _cached;
+    public CachingDecorator(IService inner) => _inner = inner;
+    public string GetValue() => _cached ??= _inner.GetValue();
+}
+```
+
+- **Order property**: Lower values are applied first (closest to original)
+- **Result chain**: CachingDecorator → LoggingDecorator → ServiceImpl
+- Works with both source generation and reflection
+
 ### Manual Decoration
 
 ```csharp
