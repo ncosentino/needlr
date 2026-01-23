@@ -182,7 +182,10 @@ namespace TestApp
         var generatedCode = RunGenerator(source);
 
         Assert.Contains("ConcreteService", generatedCode);
-        Assert.DoesNotContain("AbstractService", generatedCode);
+        // AbstractService should not be registered as a standalone injectable type
+        // but it MAY appear as a base type reference for ConcreteService
+        // Check that it's not in the injectable types array directly
+        Assert.DoesNotContain("new InjectableTypeInfo(typeof(global::TestApp.AbstractService)", generatedCode);
     }
 
     [Fact]

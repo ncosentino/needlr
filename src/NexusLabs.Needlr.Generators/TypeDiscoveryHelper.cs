@@ -313,14 +313,19 @@ internal static class TypeDiscoveryHelper
 
     private static bool IsSystemInterface(INamedTypeSymbol interfaceSymbol)
     {
-        var ns = interfaceSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+        return IsSystemType(interfaceSymbol);
+    }
 
-        // Skip interfaces from system assemblies
+    private static bool IsSystemType(INamedTypeSymbol typeSymbol)
+    {
+        var ns = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+
+        // Skip types from system assemblies
         if (ns.StartsWith("System", StringComparison.Ordinal))
             return true;
 
         // Check if from mscorlib or similar
-        var assembly = interfaceSymbol.ContainingAssembly;
+        var assembly = typeSymbol.ContainingAssembly;
         if (assembly != null)
         {
             var assemblyName = assembly.Name;
@@ -730,15 +735,16 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
-    /// Gets the plugin interfaces implemented by a type.
-    /// Plugin interfaces are interfaces in non-System namespaces.
+    /// Gets the plugin base types (interfaces and base classes) for a type.
+    /// Plugin base types are non-System interfaces and non-System/non-object base classes.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
-    /// <returns>A list of plugin interface symbols.</returns>
+    /// <returns>A list of plugin base type symbols (interfaces and base classes).</returns>
     public static IReadOnlyList<INamedTypeSymbol> GetPluginInterfaces(INamedTypeSymbol typeSymbol)
     {
         var result = new List<INamedTypeSymbol>();
 
+        // Add non-system interfaces
         foreach (var iface in typeSymbol.AllInterfaces)
         {
             if (iface.IsUnboundGenericType)
@@ -748,6 +754,20 @@ internal static class TypeDiscoveryHelper
                 continue;
 
             result.Add(iface);
+        }
+
+        // Add non-system base classes (walking up the hierarchy)
+        var baseType = typeSymbol.BaseType;
+        while (baseType != null)
+        {
+            // Stop at System.Object or System types
+            if (IsSystemType(baseType))
+                break;
+
+            // Skip abstract types that can't be instantiated directly
+            // but include them as they represent the plugin contract
+            result.Add(baseType);
+            baseType = baseType.BaseType;
         }
 
         return result;

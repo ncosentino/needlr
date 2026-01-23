@@ -471,3 +471,35 @@ public sealed class RegularServiceImpl : INonExcludableService
 public sealed class MixedExcludableService : IExcludableService, INonExcludableService
 {
 }
+
+#region Base Class Plugin Discovery Tests
+
+/// <summary>
+/// Abstract base class for plugin discovery tests (like CacheConfiguration pattern).
+/// This has NO interfaces - only base class inheritance.
+/// </summary>
+public abstract record PluginConfigurationBase(string Name);
+
+/// <summary>
+/// Concrete plugin configuration A - should be discoverable via base class.
+/// </summary>
+public sealed record PluginConfigurationA() : PluginConfigurationBase("ConfigA");
+
+/// <summary>
+/// Concrete plugin configuration B - should be discoverable via base class.
+/// </summary>
+public sealed record PluginConfigurationB() : PluginConfigurationBase("ConfigB");
+
+/// <summary>
+/// Abstract intermediate class to test multi-level inheritance.
+/// </summary>
+public abstract record SpecializedPluginConfigurationBase(string Name, int Priority) 
+    : PluginConfigurationBase(Name);
+
+/// <summary>
+/// Concrete plugin with multi-level base class inheritance.
+/// </summary>
+public sealed record SpecializedPluginConfigurationC() 
+    : SpecializedPluginConfigurationBase("ConfigC", 10);
+
+#endregion
