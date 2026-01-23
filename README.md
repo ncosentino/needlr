@@ -2,6 +2,10 @@
 
 # Needlr
 
+[![CI](https://github.com/nexus-labs/needlr/actions/workflows/ci.yml/badge.svg)](https://github.com/nexus-labs/needlr/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nexus-labs/needlr/main/.github/badges/coverage.json)](https://nexus-labs.github.io/needlr/coverage/)
+[![NuGet](https://img.shields.io/nuget/v/NexusLabs.Needlr.svg)](https://www.nuget.org/packages/NexusLabs.Needlr)
+
 Needlr is an opinionated fluent dependency injection library for .NET that provides automatic service registration and web application setup through a simple, discoverable API. It's designed to minimize boilerplate code by defaulting to registering types from scanned assemblies automatically.
 
 **Needlr is source-generation-first**: The default approach uses compile-time source generation for AOT compatibility and optimal performance. Reflection-based discovery is available as an explicit opt-in for dynamic scenarios.
