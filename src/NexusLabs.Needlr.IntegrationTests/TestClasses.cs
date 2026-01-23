@@ -681,3 +681,46 @@ public sealed class AttributeDecorator : IManualAndAttributeDecoratorService
 }
 
 #endregion
+
+#region Record Exclusion Tests
+
+/// <summary>
+/// Interface for testing record exclusion from auto-registration.
+/// </summary>
+public interface IRecordService
+{
+    string GetData();
+}
+
+/// <summary>
+/// A record that implements an interface - should NOT be auto-registered.
+/// Records are DTOs/value objects, not services.
+/// </summary>
+public record RecordServiceImplementation(string Data) : IRecordService
+{
+    public string GetData() => Data;
+}
+
+/// <summary>
+/// A record with required members - should NOT be auto-registered.
+/// </summary>
+public record RecordWithRequiredMembers : IRecordService
+{
+    public required string Data { get; init; }
+    public string GetData() => Data;
+}
+
+/// <summary>
+/// A simple record with no interface - should NOT be auto-registered.
+/// </summary>
+public record SimpleDataRecord(string Name, int Value);
+
+/// <summary>
+/// A class service (not a record) - SHOULD be auto-registered for comparison.
+/// </summary>
+public sealed class ClassServiceImplementation : IRecordService
+{
+    public string GetData() => "ClassService";
+}
+
+#endregion
