@@ -1,12 +1,10 @@
-﻿using NexusLabs.Needlr.Injection.AssemblyOrdering;
-using NexusLabs.Needlr.Injection.Reflection.Loaders;
-
-using System.Reflection;
+﻿using NexusLabs.Needlr.Injection.Reflection.Loaders;
 
 namespace NexusLabs.Needlr.Injection.Reflection;
 
 /// <summary>
-/// Extension methods for <see cref="IAssemblyProviderBuilder"/> providing fluent configuration of assembly loading and ordering.
+/// Extension methods for <see cref="IAssemblyProviderBuilder"/> providing fluent configuration of assembly loading.
+/// For assembly ordering, use <c>SyringeExtensions.OrderAssemblies</c> instead.
 /// </summary>
 public static class IAssemblyProviderBuilderExtensions
 {
@@ -142,41 +140,6 @@ public static class IAssemblyProviderBuilderExtensions
         return builder.UseLoader(new FileMatchAssemblyLoader(
             directories,
             fileFilter));
-    }
-
-    /// <summary>
-    /// Configures the builder to sort assemblies in a specific order: libraries first, then executables, then test assemblies.
-    /// Test assemblies are identified by having "Tests" in their name (case-insensitive).
-    /// Libraries are .dll files, and entry points are .exe files.
-    /// </summary>
-    /// <param name="builder">The assembly provider builder to configure.</param>
-    /// <returns>The configured assembly provider builder with lib-test-entry ordering enabled.</returns>
-    /// <example>
-    /// <code>
-    /// builder.UseLibTestEntryOrdering();
-    /// // Equivalent to:
-    /// builder.OrderAssemblies(order => order
-    ///     .By(a => a.Location.EndsWith(".dll") &amp;&amp; !a.Name.Contains("Tests"))
-    ///     .ThenBy(a => a.Location.EndsWith(".exe"))
-    ///     .ThenBy(a => a.Name.Contains("Tests")));
-    /// </code>
-    /// </example>
-    public static IAssemblyProviderBuilder UseLibTestEntryOrdering(
-        this IAssemblyProviderBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        
-        if (builder is AssemblyProviderBuilder apb)
-        {
-            return apb.OrderAssemblies(AssemblyOrder.LibTestEntry());
-        }
-        
-        // Fallback for other implementations - use the action overload
-        return builder.OrderAssemblies(order => order
-            .By(a => a.Location.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
-                     && !a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Location.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(a => a.Name.Contains("Tests", StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>

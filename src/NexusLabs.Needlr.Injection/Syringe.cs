@@ -29,6 +29,7 @@ public sealed record Syringe
     internal IPluginFactory? PluginFactory { get; init; }
     internal Func<ITypeRegistrar, ITypeFilterer, IPluginFactory, IServiceCollectionPopulator>? ServiceCollectionPopulatorFactory { get; init; }
     internal IAssemblyProvider? AssemblyProvider { get; init; }
+    internal AssemblyOrdering.AssemblyOrderBuilder? AssemblyOrder { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
     
@@ -137,7 +138,7 @@ public sealed record Syringe
     }
 
     /// <summary>
-    /// Gets the configured assembly provider.
+    /// Gets the configured assembly provider, with ordering applied if configured.
     /// </summary>
     /// <exception cref="InvalidOperationException">
     /// Thrown if no assembly provider is configured. Use <c>.UsingSourceGen()</c>, <c>.UsingReflection()</c>,
@@ -145,10 +146,18 @@ public sealed record Syringe
     /// </exception>
     public IAssemblyProvider GetOrCreateAssemblyProvider()
     {
-        return AssemblyProvider ?? throw new InvalidOperationException(
+        var provider = AssemblyProvider ?? throw new InvalidOperationException(
             "No AssemblyProvider configured. Add a reference to NexusLabs.Needlr.Injection.SourceGen and call .UsingSourceGen(), " +
             "or add NexusLabs.Needlr.Injection.Reflection and call .UsingReflection(), " +
             "or add NexusLabs.Needlr.Injection.Bundle for automatic fallback behavior.");
+
+        // Apply ordering if configured
+        if (AssemblyOrder != null)
+        {
+            return new OrderedAssemblyProvider(provider, AssemblyOrder);
+        }
+
+        return provider;
     }
 
     /// <summary>

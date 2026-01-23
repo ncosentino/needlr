@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr.Injection.AssemblyOrdering;
+
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -190,6 +192,83 @@ public static class SyringeExtensions
         {
             services.AddDecorator<TService, TDecorator>();
         });
+    }
+
+    /// <summary>
+    /// Configures assembly ordering using expression-based rules.
+    /// Assemblies are sorted into tiers based on the first matching rule.
+    /// Unmatched assemblies are placed last.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="configure">Action to configure the ordering rules.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// new Syringe()
+    ///     .UsingReflection()  // or .UsingSourceGen()
+    ///     .OrderAssemblies(order => order
+    ///         .By(a => a.Name.EndsWith(".Core"))
+    ///         .ThenBy(a => a.Name.Contains("Services"))
+    ///         .ThenBy(a => a.Name.Contains("Tests")))
+    ///     .BuildServiceProvider();
+    /// </code>
+    /// </example>
+    public static Syringe OrderAssemblies(
+        this Syringe syringe,
+        Action<AssemblyOrderBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new AssemblyOrderBuilder();
+        configure(builder);
+        return syringe with { AssemblyOrder = builder };
+    }
+
+    /// <summary>
+    /// Configures assembly ordering using a pre-built order builder.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="orderBuilder">The pre-configured order builder.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// new Syringe()
+    ///     .UsingSourceGen()
+    ///     .OrderAssemblies(AssemblyOrder.LibTestEntry())
+    ///     .BuildServiceProvider();
+    /// </code>
+    /// </example>
+    public static Syringe OrderAssemblies(
+        this Syringe syringe,
+        AssemblyOrderBuilder orderBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(orderBuilder);
+
+        return syringe with { AssemblyOrder = orderBuilder };
+    }
+
+    /// <summary>
+    /// Configures assembly ordering: libraries first, then executables, tests last.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static Syringe UseLibTestEntryOrdering(this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.OrderAssemblies(AssemblyOrder.LibTestEntry());
+    }
+
+    /// <summary>
+    /// Configures assembly ordering: non-test assemblies first, tests last.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static Syringe UseTestsLastOrdering(this Syringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.OrderAssemblies(AssemblyOrder.TestsLast());
     }
 
     /// <summary>
