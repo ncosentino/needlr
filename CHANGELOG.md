@@ -5,6 +5,23 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.9] - 2026-01-22
+
+### Added
+- **Duplicate Plugin Prevention**: Framework-level deduplication ensures each plugin type executes only once, even if discovered multiple times
+  - Applies to all plugin types: `IWebApplicationPlugin`, `IWebApplicationBuilderPlugin`, `IServiceCollectionPlugin`, `IPostBuildServiceCollectionPlugin`, and `IHostApplicationBuilderPlugin`
+  - Prevents duplicate route registration, middleware configuration, and service registration
+  - Tests added to verify deduplication behavior
+
+### Fixed
+- **Carter routes registered twice**: Removed Carter-specific idempotency guards since framework now handles deduplication
+  - `CarterWebApplicationBuilderPlugin` and `CarterWebApplicationPlugin` simplified back to single responsibility
+
+## [0.0.2-alpha.8] - 2026-01-22
+
+### Added
+- **Carter end-to-end HTTP tests**: Added `CarterEndToEndTests` for full HTTP request/response testing of Carter modules
+
 ## [0.0.2-alpha.7] - 2026-01-22
 
 ### Added

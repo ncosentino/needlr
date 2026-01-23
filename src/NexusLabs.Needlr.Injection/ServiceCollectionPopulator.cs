@@ -70,8 +70,16 @@ public sealed class ServiceCollectionPopulator : IServiceCollectionPopulator
             candidateAssemblies,
             _pluginFactory);
 
+        var executedPluginTypes = new HashSet<Type>();
         foreach (var serviceCollectionPlugin in _pluginFactory.CreatePluginsFromAssemblies<IServiceCollectionPlugin>(candidateAssemblies))
         {
+            var pluginType = serviceCollectionPlugin.GetType();
+            if (!executedPluginTypes.Add(pluginType))
+            {
+                // Skip duplicate plugin instances of the same type
+                continue;
+            }
+
             serviceCollectionPlugin.Configure(options);
         }
 

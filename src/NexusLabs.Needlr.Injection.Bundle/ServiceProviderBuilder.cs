@@ -139,8 +139,16 @@ public sealed class ServiceProviderBuilder : IServiceProviderBuilder
             candidateAssemblies,
             pluginFactory);
 
+        var executedPluginTypes = new HashSet<Type>();
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(candidateAssemblies))
         {
+            var pluginType = plugin.GetType();
+            if (!executedPluginTypes.Add(pluginType))
+            {
+                // Skip duplicate plugin instances of the same type
+                continue;
+            }
+
             plugin.Configure(options);
         }
     }

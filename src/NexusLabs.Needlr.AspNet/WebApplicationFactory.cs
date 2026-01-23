@@ -97,10 +97,22 @@ public sealed class WebApplicationFactory(
             webApplication,
             assembliesToLoadFrom,
             pluginFactory);
+
+        // Deduplicate by plugin type to prevent the same plugin from running twice
+        var executedPluginTypes = new HashSet<Type>();
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IWebApplicationPlugin>(
             assembliesToLoadFrom))
         {
-            logger.LogInformation("Configuring web application plugin '{PluginName}'...", plugin.GetType().Name);
+            var pluginType = plugin.GetType();
+            if (!executedPluginTypes.Add(pluginType))
+            {
+                logger.LogDebug(
+                    "Skipping duplicate web application plugin '{PluginName}' - already executed.",
+                    pluginType.Name);
+                continue;
+            }
+
+            logger.LogInformation("Configuring web application plugin '{PluginName}'...", pluginType.Name);
             plugin.Configure(options);
         }
 
@@ -125,10 +137,22 @@ public sealed class WebApplicationFactory(
             assembliesToLoadFrom,
             logger,
             pluginFactory);
+
+        // Deduplicate by plugin type to prevent the same plugin from running twice
+        var executedPluginTypes = new HashSet<Type>();
         foreach (var plugin in pluginFactory.CreatePluginsFromAssemblies<IWebApplicationBuilderPlugin>(
             assembliesToLoadFrom))
         {
-            logger.LogInformation("Configuring web application builder plugin '{PluginName}'...", plugin.GetType().Name);
+            var pluginType = plugin.GetType();
+            if (!executedPluginTypes.Add(pluginType))
+            {
+                logger.LogDebug(
+                    "Skipping duplicate web application builder plugin '{PluginName}' - already executed.",
+                    pluginType.Name);
+                continue;
+            }
+
+            logger.LogInformation("Configuring web application builder plugin '{PluginName}'...", pluginType.Name);
             plugin.Configure(options);
         }
 

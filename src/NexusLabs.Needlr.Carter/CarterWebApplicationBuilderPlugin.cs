@@ -1,7 +1,5 @@
 ﻿using Carter;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.AspNet;
@@ -18,13 +16,6 @@ public sealed class CarterWebApplicationBuilderPlugin : IWebApplicationBuilderPl
     public void Configure(WebApplicationBuilderPluginOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-
-        // Check if Carter has already been configured to prevent duplicate registration
-        if (options.Builder.Services.Any(s => s.ServiceType == typeof(CarterConfigurator)))
-        {
-            options.Logger.LogDebug("Carter services already configured, skipping duplicate registration.");
-            return;
-        }
 
         options.Logger.LogInformation("Configuring Carter services...");
         options.Builder.Services.AddCarter();
