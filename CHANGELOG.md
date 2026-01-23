@@ -5,6 +5,56 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.13] - 2026-01-23
+
+### Added
+- **Expression-based Assembly Ordering API**: New unified API for ordering assemblies that works for both reflection and source-gen
+  - `OrderAssemblies(order => order.By(...).ThenBy(...))` fluent builder
+  - `AssemblyOrderBuilder` with tiered matching - assemblies go in first matching tier, unmatched always last
+  - `AssemblyInfo` abstraction for expressions to work with both runtime assemblies and compile-time strings
+  - Presets: `AssemblyOrder.LibTestEntry()`, `AssemblyOrder.TestsLast()`, `AssemblyOrder.Alphabetical()`
+- **`UseLibTestEntryOrdering()` extension method**: Replaces `UseLibTestEntrySorting()` with consistent naming
+
+### Changed
+- **BREAKING**: `UseSorter()` removed from `IAssemblyProviderBuilder` - use `OrderAssemblies()` instead
+- **BREAKING**: `UseAlphabeticalSorting()` removed - use `OrderAssemblies(order => order.By(a => true))` or `AssemblyOrder.Alphabetical()`
+- **BREAKING**: `UseLibTestEntrySorting()` renamed to `UseLibTestEntryOrdering()`
+
+### Removed
+- **BREAKING**: `NeedlrAssemblyOrderAttribute` removed - assembly ordering is now configured at Syringe level
+  - Was: `[assembly: NeedlrAssemblyOrder(First = new[] { "..." })]`
+  - Now: `.OrderAssemblies(order => order.By(a => a.Name.StartsWith("...")))`
+- **BREAKING**: `IAssemblySorter` interface and implementations removed
+  - `AlphabeticalAssemblySorter`, `LibTestEntryAssemblySorter`, `ReflectionAssemblySorter` all removed
+
+### Fixed
+- **`UsingOnlyAsTransient<T>()` not working with source-gen**: `GeneratedTypeRegistrar` now respects lifetime overrides from `ITypeFilterer`
+  - Added `GetEffectiveLifetime()` to `ITypeFilterer` interface
+  - Source-gen registrar now checks filterer before using pre-computed lifetime
+
+## [0.0.2-alpha.12] - 2026-01-23
+
+### Fixed
+- **Base class plugin discovery**: Source generator now discovers plugins that inherit from abstract base classes (not just interfaces)
+  - `GetPluginInterfaces()` now walks the base class hierarchy in addition to interfaces
+  - Fixes issue where `CacheConfiguration` and similar abstract record-based plugins were not discovered
+
+## [0.0.2-alpha.11] - 2026-01-22
+
+### Fixed  
+- **`Except<T>()` not working with source-gen**: `GeneratedTypeRegistrar` now checks `IsTypeExcluded()` on the type filterer
+  - Added `IsTypeExcluded()` method to `ITypeFilterer` interface
+  - All registrars (Generated, Reflection, Scrutor) now respect type exclusions
+  - Fixes duplicate route registration when using `Except<ICarterModule>()`
+
+## [0.0.2-alpha.10] - 2026-01-22
+
+### Added
+- **`IPluginFactory` in plugin options**: All plugin option types now include access to `IPluginFactory`
+  - `WebApplicationBuilderPluginOptions.PluginFactory`
+  - `ServiceCollectionPluginOptions.PluginFactory`
+  - Enables plugins to discover and instantiate other plugins at configuration time
+
 ## [0.0.2-alpha.9] - 2026-01-22
 
 ### Added
