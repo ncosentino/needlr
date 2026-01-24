@@ -12,6 +12,8 @@ namespace NexusLabs.Needlr;
 /// </para>
 /// <para>
 /// Interceptors are resolved from the DI container and can have their own dependencies.
+/// They are automatically excluded from Needlr's auto-registration because they are
+/// internal infrastructure resolved by generated proxy classes, not by user code.
 /// </para>
 /// </remarks>
 /// <example>
@@ -42,6 +44,7 @@ namespace NexusLabs.Needlr;
 /// }
 /// </code>
 /// </example>
+[DoNotAutoRegister]
 public interface IMethodInterceptor
 {
     /// <summary>

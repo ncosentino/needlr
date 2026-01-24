@@ -788,7 +788,6 @@ public interface IMultiInterceptedService
 /// <summary>
 /// A logging interceptor that captures method calls for testing.
 /// </summary>
-[DoNotAutoRegister]
 public sealed class TestLoggingInterceptor : IMethodInterceptor
 {
     private readonly List<string> _log = new();
@@ -807,7 +806,6 @@ public sealed class TestLoggingInterceptor : IMethodInterceptor
 /// <summary>
 /// An interceptor that modifies return values.
 /// </summary>
-[DoNotAutoRegister]
 public sealed class TestModifyingInterceptor : IMethodInterceptor
 {
     public async ValueTask<object?> InterceptAsync(IMethodInvocation invocation)
@@ -824,7 +822,6 @@ public sealed class TestModifyingInterceptor : IMethodInterceptor
 /// <summary>
 /// An interceptor that wraps results with order info.
 /// </summary>
-[DoNotAutoRegister]
 public sealed class TestOrderedInterceptor1 : IMethodInterceptor
 {
     public async ValueTask<object?> InterceptAsync(IMethodInvocation invocation)
@@ -841,7 +838,6 @@ public sealed class TestOrderedInterceptor1 : IMethodInterceptor
 /// <summary>
 /// Second ordered interceptor for testing chain order.
 /// </summary>
-[DoNotAutoRegister]
 public sealed class TestOrderedInterceptor2 : IMethodInterceptor
 {
     public async ValueTask<object?> InterceptAsync(IMethodInvocation invocation)
