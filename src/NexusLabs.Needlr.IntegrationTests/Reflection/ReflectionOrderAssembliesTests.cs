@@ -12,7 +12,7 @@ namespace NexusLabs.Needlr.IntegrationTests.Reflection;
 /// </summary>
 public sealed class ReflectionOrderAssembliesTests
 {
-    private static Syringe CreateSyringeWithMultipleAssemblies()
+    private static ConfiguredSyringe CreateSyringeWithMultipleAssemblies()
     {
         // UsingReflection must come first, then override with custom assembly provider
         return new Syringe()

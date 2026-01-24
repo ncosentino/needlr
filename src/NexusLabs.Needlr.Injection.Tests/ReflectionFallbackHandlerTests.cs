@@ -30,6 +30,7 @@ public sealed class ReflectionFallbackHandlerTests
     {
         // Arrange
         var syringe = new Syringe()
+            .UsingReflection()
             .WithReflectionFallbackHandler(ReflectionFallbackHandlers.ThrowException);
 
         // Simulate no source-gen by explicitly setting the fallback handler
@@ -119,6 +120,7 @@ public sealed class ReflectionFallbackHandlerTests
         };
 
         var syringe = new Syringe()
+            .UsingReflection()
             .WithReflectionFallbackHandler(handler);
 
         // For this test, we manually invoke through the context factory
@@ -136,7 +138,8 @@ public sealed class ReflectionFallbackHandlerTests
     public void WithReflectionFallbackHandler_NullHandler_ThrowsArgumentNullException()
     {
         // Arrange
-        var syringe = new Syringe();
+        var syringe = new Syringe()
+            .UsingReflection();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
@@ -184,12 +187,12 @@ public sealed class ReflectionFallbackHandlerTests
         // and the handler is NOT invoked (because components are explicitly set).
         
         var syringe = new Syringe()
+            .UsingReflection()  // Explicitly configure reflection
             .WithReflectionFallbackHandler(ctx =>
             {
                 fallbackCount++;
                 componentNames.Add(ctx.ComponentName);
-            })
-            .UsingReflection();  // Explicitly configure reflection
+            });
 
         // Act
         _ = syringe.GetOrCreateTypeRegistrar();
@@ -228,6 +231,7 @@ public sealed class ReflectionFallbackHandlerTests
         var handlerInvoked = false;
 
         var syringe = new Syringe()
+            .UsingReflection()
             .WithReflectionFallbackHandler(_ => handlerInvoked = true)
             .UsingReflectionTypeRegistrar()
             .UsingReflectionTypeFilterer()
@@ -256,8 +260,8 @@ public sealed class ReflectionFallbackHandlerTests
             () => []);
 
         var syringe = new Syringe()
-            .WithReflectionFallbackHandler(_ => handlerInvoked = true)
-            .UsingSourceGen();  // Use source gen configuration
+            .UsingSourceGen()  // Use source gen configuration
+            .WithReflectionFallbackHandler(_ => handlerInvoked = true);
 
         // Act
         _ = syringe.GetOrCreateTypeRegistrar();

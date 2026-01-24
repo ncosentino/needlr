@@ -90,12 +90,12 @@ public static class HostApplicationBuilderNeedlrExtensions
     /// </example>
     public static HostApplicationBuilder UseNeedlrDiscovery(
         this HostApplicationBuilder builder,
-        Syringe? syringe = null,
+        ConfiguredSyringe syringe,
         ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(syringe);
 
-        syringe ??= new Syringe();
         logger ??= NullLogger.Instance;
 
         var typeRegistrar = syringe.GetOrCreateTypeRegistrar();

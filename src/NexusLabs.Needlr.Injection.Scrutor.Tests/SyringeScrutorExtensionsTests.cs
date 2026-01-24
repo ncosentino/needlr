@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.Injection.Reflection;
+
 using Xunit;
 
 namespace NexusLabs.Needlr.Injection.Scrutor.Tests;
@@ -8,7 +10,7 @@ public sealed class SyringeScrutorExtensionsTests
     public void UsingScrutorTypeRegistrar_ReturnsSyringeWithScrutorRegistrar()
     {
         // Arrange
-        var syringe = new Syringe();
+        var syringe = new Syringe().UsingReflection();
 
         // Act
         var result = syringe.UsingScrutorTypeRegistrar();
@@ -22,7 +24,7 @@ public sealed class SyringeScrutorExtensionsTests
     public void UsingScrutorTypeRegistrar_ThrowsOnNullSyringe()
     {
         // Arrange
-        Syringe? syringe = null;
+        ConfiguredSyringe? syringe = null;
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => syringe!.UsingScrutorTypeRegistrar());
@@ -33,6 +35,7 @@ public sealed class SyringeScrutorExtensionsTests
     {
         // Arrange & Act
         var syringe = new Syringe()
+            .UsingReflection()
             .UsingScrutorTypeRegistrar()
             .UsingAdditionalAssemblies([typeof(SyringeScrutorExtensionsTests).Assembly]);
 
@@ -44,7 +47,7 @@ public sealed class SyringeScrutorExtensionsTests
     public void UsingScrutorTypeRegistrar_MultipleCallsSucceed()
     {
         // Arrange
-        var syringe = new Syringe();
+        var syringe = new Syringe().UsingReflection();
 
         // Act - calling multiple times should just replace the registrar
         var result = syringe

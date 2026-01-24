@@ -1,4 +1,5 @@
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 using Xunit;
 
@@ -9,7 +10,7 @@ public sealed class SyringeHostingExtensionsTests
     [Fact]
     public void ForHost_ReturnsHostSyringe()
     {
-        var syringe = new Syringe();
+        var syringe = new Syringe().UsingReflection();
         var hostSyringe = syringe.ForHost();
 
         Assert.NotNull(hostSyringe);
@@ -19,14 +20,14 @@ public sealed class SyringeHostingExtensionsTests
     [Fact]
     public void ForHost_WithNullSyringe_ThrowsArgumentNullException()
     {
-        Syringe? syringe = null;
+        ConfiguredSyringe? syringe = null;
         Assert.Throws<ArgumentNullException>(() => syringe!.ForHost());
     }
 
     [Fact]
     public void BuildHost_WithNullSyringe_ThrowsArgumentNullException()
     {
-        Syringe? syringe = null;
+        ConfiguredSyringe? syringe = null;
         Assert.Throws<ArgumentNullException>(() => syringe!.BuildHost());
     }
 
@@ -34,6 +35,7 @@ public sealed class SyringeHostingExtensionsTests
     public void ForHost_ChainedFromReflection_WorksCorrectly()
     {
         var hostSyringe = new Syringe()
+            .UsingReflection()
             .ForHost();
 
         Assert.NotNull(hostSyringe);

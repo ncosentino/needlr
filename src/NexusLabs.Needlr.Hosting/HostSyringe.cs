@@ -7,17 +7,15 @@ namespace NexusLabs.Needlr.Hosting;
 
 /// <summary>
 /// Provides a fluent API for configuring and building host applications using Needlr.
-/// Wraps a base Syringe with additional host functionality.
+/// Wraps a ConfiguredSyringe with additional host functionality.
 /// </summary>
 /// <example>
 /// Creating and configuring a HostSyringe:
 /// <code>
-/// // Method 1: Transition from base Syringe (source-gen by default)
+/// // Transition from ConfiguredSyringe
 /// var hostSyringe = new Syringe()
+///     .UsingReflection()
 ///     .ForHost();
-/// 
-/// // Method 2: Default constructor
-/// var hostSyringe = new HostSyringe();
 /// 
 /// // Build and run the host
 /// var host = hostSyringe
@@ -36,7 +34,7 @@ namespace NexusLabs.Needlr.Hosting;
 [DoNotAutoRegister]
 public sealed record HostSyringe
 {
-    internal Syringe BaseSyringe { get; init; } = new();
+    internal ConfiguredSyringe BaseSyringe { get; init; }
     internal Func<CreateHostOptions>? OptionsFactory { get; init; }
     internal Func<IServiceProviderBuilder, IServiceCollectionPopulator, IHostFactory>? HostFactoryCreator { get; init; }
     internal Action<HostApplicationBuilder, CreateHostOptions>? ConfigureCallback { get; init; }
@@ -44,31 +42,18 @@ public sealed record HostSyringe
     /// <summary>
     /// Initializes a new instance of the <see cref="HostSyringe"/> class.
     /// </summary>
-    /// <param name="baseSyringe">The base syringe to wrap.</param>
+    /// <param name="baseSyringe">The configured syringe to wrap.</param>
     /// <example>
     /// <code>
-    /// var baseSyringe = new Syringe();
+    /// var configuredSyringe = new Syringe().UsingReflection();
     /// 
-    /// var hostSyringe = new HostSyringe(baseSyringe);
+    /// var hostSyringe = new HostSyringe(configuredSyringe);
     /// </code>
     /// </example>
-    public HostSyringe(Syringe baseSyringe)
+    public HostSyringe(ConfiguredSyringe baseSyringe)
     {
         ArgumentNullException.ThrowIfNull(baseSyringe);
         BaseSyringe = baseSyringe;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HostSyringe"/> class with default settings.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// var hostSyringe = new HostSyringe();
-    /// var host = hostSyringe.BuildHost();
-    /// </code>
-    /// </example>
-    public HostSyringe()
-    {
     }
 
     /// <summary>
@@ -78,6 +63,7 @@ public sealed record HostSyringe
     /// <example>
     /// <code>
     /// var host = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingScrutorTypeRegistrar()
     ///     .ForHost()
     ///     .UsingOptions(() => CreateHostOptions.Default
@@ -135,6 +121,7 @@ public sealed record HostSyringe
     ///     .Build();
     /// 
     /// var serviceProvider = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingScrutorTypeRegistrar()
     ///     .ForHost()
     ///     .BuildServiceProvider(config);

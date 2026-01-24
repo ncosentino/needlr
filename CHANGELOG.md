@@ -5,6 +5,30 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **BREAKING: ConfiguredSyringe API**: `Syringe` no longer has `BuildServiceProvider()`. You must call a strategy method first:
+  - `new Syringe().UsingReflection()` → returns `ConfiguredSyringe`
+  - `new Syringe().UsingSourceGen()` → returns `ConfiguredSyringe`
+  - `new Syringe().UsingAutoConfiguration()` → returns `ConfiguredSyringe`
+  - `ConfiguredSyringe` has `BuildServiceProvider()`, `ForHost()`, `ForWebApplication()`, etc.
+- All `SyringeExtensions` methods now operate on `ConfiguredSyringe` (e.g., `WithVerification`, `UsingAdditionalAssemblies`)
+- This prevents runtime crashes from misconfigured syringes by making incorrect usage a compile-time error
+
+### Migration Guide
+```csharp
+// Before (could crash at runtime if strategy not set)
+new Syringe().BuildServiceProvider(config);
+
+// After (compile-time enforced)
+new Syringe().UsingReflection().BuildServiceProvider(config);
+// or
+new Syringe().UsingSourceGen().BuildServiceProvider(config);
+// or  
+new Syringe().UsingAutoConfiguration().BuildServiceProvider(config);
+```
+
 ## [0.0.2-alpha.16] - 2026-01-24
 
 ### Added

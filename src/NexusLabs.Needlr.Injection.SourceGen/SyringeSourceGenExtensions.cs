@@ -38,11 +38,11 @@ public static class SyringeSourceGenExtensions
     /// </para>
     /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance with all source-generated components.</returns>
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown if no source-generated type providers are registered via NeedlrSourceGenBootstrap.
     /// </exception>
-    public static Syringe UsingSourceGen(this Syringe syringe)
+    public static ConfiguredSyringe UsingSourceGen(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
@@ -53,17 +53,21 @@ public static class SyringeSourceGenExtensions
                 "[assembly: GenerateTypeRegistry(...)] and references NexusLabs.Needlr.Generators.");
         }
 
-        return syringe.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+        return new ConfiguredSyringe(syringe).UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
     }
 
     /// <summary>
     /// Configures the syringe with all generated components for zero-reflection operation.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <remarks>
+    /// This is a strategy method that creates a ConfiguredSyringe. Use this when you have
+    /// explicit type providers (e.g., from generated code) rather than using the bootstrap.
+    /// </remarks>
+    /// <param name="syringe">The base syringe to configure.</param>
     /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
     /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
-    /// <returns>A new configured syringe instance with all source-generated components.</returns>
-    public static Syringe UsingGeneratedComponents(
+    /// <returns>A configured syringe with all source-generated components.</returns>
+    public static ConfiguredSyringe UsingGeneratedComponents(
         this Syringe syringe,
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
@@ -72,24 +76,52 @@ public static class SyringeSourceGenExtensions
         ArgumentNullException.ThrowIfNull(injectableTypeProvider);
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
 
-        return syringe
-            .UsingGeneratedTypeRegistrar(injectableTypeProvider)
-            .UsingGeneratedTypeFilterer(injectableTypeProvider)
-            .UsingGeneratedPluginFactory(pluginTypeProvider)
-            .UsingGeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider)
-            .UsingServiceProviderBuilderFactory(
-                (populator, assemblyProvider, _) => 
-                    new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider));
+        return new ConfiguredSyringe(syringe) with
+        {
+            TypeRegistrar = new GeneratedTypeRegistrar(injectableTypeProvider),
+            TypeFilterer = new GeneratedTypeFilterer(injectableTypeProvider),
+            PluginFactory = new GeneratedPluginFactory(pluginTypeProvider),
+            AssemblyProvider = new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider),
+            ServiceProviderBuilderFactory = (populator, assemblyProvider, _) => 
+                new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider)
+        };
+    }
+
+    /// <summary>
+    /// Configures the syringe with all generated components for zero-reflection operation.
+    /// </summary>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
+    /// <returns>A configured syringe with all source-generated components.</returns>
+    public static ConfiguredSyringe UsingGeneratedComponents(
+        this ConfiguredSyringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(injectableTypeProvider);
+        ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+
+        return syringe with
+        {
+            TypeRegistrar = new GeneratedTypeRegistrar(injectableTypeProvider),
+            TypeFilterer = new GeneratedTypeFilterer(injectableTypeProvider),
+            PluginFactory = new GeneratedPluginFactory(pluginTypeProvider),
+            AssemblyProvider = new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider),
+            ServiceProviderBuilderFactory = (populator, assemblyProvider, _) => 
+                new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider)
+        };
     }
 
     /// <summary>
     /// Configures the syringe to use the generated type registrar.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="typeProvider">A function that returns the injectable types.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingGeneratedTypeRegistrar(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingGeneratedTypeRegistrar(
+        this ConfiguredSyringe syringe,
         Func<IReadOnlyList<InjectableTypeInfo>> typeProvider)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -100,11 +132,11 @@ public static class SyringeSourceGenExtensions
     /// <summary>
     /// Configures the syringe to use the generated type filterer.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="typeProvider">A function that returns the injectable types.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingGeneratedTypeFilterer(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingGeneratedTypeFilterer(
+        this ConfiguredSyringe syringe,
         Func<IReadOnlyList<InjectableTypeInfo>> typeProvider)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -115,11 +147,11 @@ public static class SyringeSourceGenExtensions
     /// <summary>
     /// Configures the syringe to use the generated plugin factory.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="pluginProvider">A function that returns the plugin types.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingGeneratedPluginFactory(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingGeneratedPluginFactory(
+        this ConfiguredSyringe syringe,
         Func<IReadOnlyList<PluginTypeInfo>> pluginProvider)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -130,12 +162,12 @@ public static class SyringeSourceGenExtensions
     /// <summary>
     /// Configures the syringe to use the generated assembly provider.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
     /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe UsingGeneratedAssemblyProvider(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingGeneratedAssemblyProvider(
+        this ConfiguredSyringe syringe,
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {

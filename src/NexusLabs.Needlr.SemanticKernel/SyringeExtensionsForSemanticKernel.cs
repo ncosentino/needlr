@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace NexusLabs.Needlr.SemanticKernel;
 
 /// <summary>
-/// Extension methods for <see cref="Syringe"/> that enable registering
+/// Extension methods for <see cref="ConfiguredSyringe"/> that enable registering
 /// Semantic Kernel infrastructure (namely <see cref="IKernelFactory"/>)
 /// as part of the Needlr build pipeline.
 /// </summary>
@@ -31,10 +31,10 @@ public static class SyringeExtensionsForSemanticKernel
     /// <see cref="SemanticKernelSyringe"/> instance.
     /// </summary>
     /// <param name="syringe">
-    /// The <see cref="Syringe"/> to augment with the registration.
+    /// The <see cref="ConfiguredSyringe"/> to augment with the registration.
     /// </param>
     /// <returns>
-    /// A new <see cref="Syringe"/> instance containing the registration.
+    /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="syringe"/> is <see langword="null"/>.
@@ -44,13 +44,13 @@ public static class SyringeExtensionsForSemanticKernel
     /// </remarks>
     /// <example>
     /// <code>
-    /// var syringe = new Syringe().UsingSemanticKernel();
+    /// var syringe = new Syringe().UsingReflection().UsingSemanticKernel();
     /// </code>
     /// </example>
     [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
     [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
-    public static Syringe UsingSemanticKernel(
-        this Syringe syringe)
+    public static ConfiguredSyringe UsingSemanticKernel(
+        this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingSemanticKernel(syringe => syringe);
@@ -61,7 +61,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// <see cref="SemanticKernelSyringe"/> instance.
     /// </summary>
     /// <param name="syringe">
-    /// The <see cref="Syringe"/> to augment with the registration.
+    /// The <see cref="ConfiguredSyringe"/> to augment with the registration.
     /// </param>
     /// <param name="configure">
     /// A delegate that receives a pre-initialized <see cref="SemanticKernelSyringe"/>
@@ -69,7 +69,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// returns the configured instance used to build the kernel factory.
     /// </param>
     /// <returns>
-    /// A new <see cref="Syringe"/> instance containing the registration.
+    /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="syringe"/> or <paramref name="configure"/> is <see langword="null"/>.
@@ -81,6 +81,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// <example>
     /// <code>
     /// var syringe = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingSemanticKernel(sk =&gt; sk with
     ///     {
     ///         // e.g., add plugins or configure options requiring the provider
@@ -90,8 +91,8 @@ public static class SyringeExtensionsForSemanticKernel
     /// </example>
     [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
     [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
-    public static Syringe UsingSemanticKernel(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingSemanticKernel(
+        this ConfiguredSyringe syringe,
         Func<SemanticKernelSyringe, SemanticKernelSyringe> configure)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -117,7 +118,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// created by the supplied delegate.
     /// </summary>
     /// <param name="syringe">
-    /// The <see cref="Syringe"/> to augment with the registration.
+    /// The <see cref="ConfiguredSyringe"/> to augment with the registration.
     /// </param>
     /// <param name="configure">
     /// A factory that creates a fully-configured <see cref="SemanticKernelSyringe"/>
@@ -125,7 +126,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// not need the service provider.
     /// </param>
     /// <returns>
-    /// A new <see cref="Syringe"/> instance containing the registration.
+    /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="syringe"/> or <paramref name="configure"/> is <see langword="null"/>.
@@ -133,6 +134,7 @@ public static class SyringeExtensionsForSemanticKernel
     /// <example>
     /// <code>
     /// var syringe = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingSemanticKernel(() =&gt; new SemanticKernelSyringe
     ///     {
     ///         // Initialize without requiring the service provider
@@ -142,8 +144,8 @@ public static class SyringeExtensionsForSemanticKernel
     /// </example>
     [RequiresUnreferencedCode("Semantic Kernel uses reflection to discover [KernelFunction] methods.")]
     [RequiresDynamicCode("Semantic Kernel uses reflection APIs that require dynamic code generation.")]
-    public static Syringe UsingSemanticKernel(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingSemanticKernel(
+        this ConfiguredSyringe syringe,
         Func<SemanticKernelSyringe> configure)
     {
         ArgumentNullException.ThrowIfNull(syringe);

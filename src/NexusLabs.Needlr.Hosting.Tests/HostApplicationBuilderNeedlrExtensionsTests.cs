@@ -105,9 +105,10 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
     {
         // Arrange
         HostApplicationBuilder builder = null!;
+        var syringe = new Syringe().UsingReflection();
         
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => builder.UseNeedlrDiscovery());
+        Assert.Throws<ArgumentNullException>(() => builder.UseNeedlrDiscovery(syringe));
     }
 
     [Fact]

@@ -13,7 +13,7 @@ public sealed class SyringeAspNetExtensionsTests
     [Fact]
     public void ForWebApplication_WithNullSyringe_ThrowsArgumentNullException()
     {
-        Syringe syringe = null!;
+        ConfiguredSyringe syringe = null!;
 
         Assert.Throws<ArgumentNullException>(() => syringe.ForWebApplication());
     }
@@ -21,7 +21,7 @@ public sealed class SyringeAspNetExtensionsTests
     [Fact]
     public void ForWebApplication_WithValidSyringe_ReturnsWebApplicationSyringe()
     {
-        var syringe = new Syringe();
+        var syringe = new Syringe().UsingReflection();
 
         var result = syringe.ForWebApplication();
 
@@ -32,7 +32,7 @@ public sealed class SyringeAspNetExtensionsTests
     [Fact]
     public void BuildWebApplication_WithNullSyringe_ThrowsArgumentNullException()
     {
-        Syringe syringe = null!;
+        ConfiguredSyringe syringe = null!;
 
         Assert.Throws<ArgumentNullException>(() => syringe.BuildWebApplication());
     }
@@ -67,7 +67,7 @@ public sealed class WebApplicationSyringeExtensionsTests
     [Fact]
     public void UsingOptions_WithNullFactory_ThrowsArgumentNullException()
     {
-        var syringe = new WebApplicationSyringe();
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
 
         Assert.Throws<ArgumentNullException>(() =>
             syringe.UsingOptions(null!));
@@ -76,7 +76,7 @@ public sealed class WebApplicationSyringeExtensionsTests
     [Fact]
     public void UsingOptions_WithValidFactory_ReturnsConfiguredSyringe()
     {
-        var syringe = new WebApplicationSyringe();
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
         var options = CreateWebApplicationOptions.Default.UsingApplicationName("TestApp");
 
         var result = syringe.UsingOptions(() => options);
@@ -98,7 +98,7 @@ public sealed class WebApplicationSyringeExtensionsTests
     [Fact]
     public void UsingWebApplicationFactory_WithNullFactory_ThrowsArgumentNullException()
     {
-        var syringe = new WebApplicationSyringe();
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
 
         Assert.Throws<ArgumentNullException>(() =>
             syringe.UsingWebApplicationFactory(null!));
@@ -116,7 +116,7 @@ public sealed class WebApplicationSyringeExtensionsTests
     [Fact]
     public void UsingConfigurationCallback_WithNullCallback_ThrowsArgumentNullException()
     {
-        var syringe = new WebApplicationSyringe();
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
 
         Assert.Throws<ArgumentNullException>(() =>
             syringe.UsingConfigurationCallback(null!));
@@ -125,7 +125,7 @@ public sealed class WebApplicationSyringeExtensionsTests
     [Fact]
     public void UsingConfigurationCallback_WithValidCallback_ReturnsConfiguredSyringe()
     {
-        var syringe = new WebApplicationSyringe();
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
         var callbackInvoked = false;
 
         var result = syringe.UsingConfigurationCallback((builder, options) =>

@@ -29,28 +29,29 @@ public static class SyringeReflectionExtensions
     /// to their reflection-based implementations. Not compatible with AOT/trimming.
     /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance with all reflection-based components.</returns>
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
     [RequiresUnreferencedCode("Enables reflection-based type discovery. Not compatible with AOT/trimming.")]
-    public static Syringe UsingReflection(this Syringe syringe)
+    public static ConfiguredSyringe UsingReflection(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
-        return syringe
-            .UsingReflectionTypeRegistrar()
-            .UsingReflectionTypeFilterer()
-            .UsingReflectionPluginFactory()
-            .UsingReflectionAssemblyProvider()
-            .UsingServiceProviderBuilderFactory(
-                (populator, assemblyProvider, additionalAssemblies) => 
-                    new ReflectionServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies));
+        return new ConfiguredSyringe(syringe) with
+        {
+            TypeRegistrar = new ReflectionTypeRegistrar(),
+            TypeFilterer = new ReflectionTypeFilterer(),
+            PluginFactory = new ReflectionPluginFactory(),
+            AssemblyProvider = new AssemblyProviderBuilder().Build(),
+            ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
+                new ReflectionServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
+        };
     }
 
     /// <summary>
     /// Configures the syringe to use the reflection-based type registrar.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <returns>A new configured syringe instance.</returns>
     [RequiresUnreferencedCode("ReflectionTypeRegistrar uses reflection to discover types.")]
-    public static Syringe UsingReflectionTypeRegistrar(this Syringe syringe)
+    public static ConfiguredSyringe UsingReflectionTypeRegistrar(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingTypeRegistrar(new ReflectionTypeRegistrar());
@@ -59,10 +60,10 @@ public static class SyringeReflectionExtensions
     /// <summary>
     /// Configures the syringe to use the reflection-based type filterer.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <returns>A new configured syringe instance.</returns>
     [RequiresUnreferencedCode("ReflectionTypeFilterer uses reflection to analyze constructors.")]
-    public static Syringe UsingReflectionTypeFilterer(this Syringe syringe)
+    public static ConfiguredSyringe UsingReflectionTypeFilterer(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingTypeFilterer(new ReflectionTypeFilterer());
@@ -71,10 +72,10 @@ public static class SyringeReflectionExtensions
     /// <summary>
     /// Configures the syringe to use the reflection-based plugin factory.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <returns>A new configured syringe instance.</returns>
     [RequiresUnreferencedCode("ReflectionPluginFactory uses reflection to discover and instantiate plugins.")]
-    public static Syringe UsingReflectionPluginFactory(this Syringe syringe)
+    public static ConfiguredSyringe UsingReflectionPluginFactory(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingPluginFactory(new ReflectionPluginFactory());
@@ -83,10 +84,10 @@ public static class SyringeReflectionExtensions
     /// <summary>
     /// Configures the syringe to use the reflection-based assembly provider.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <returns>A new configured syringe instance.</returns>
     [RequiresUnreferencedCode("AssemblyProviderBuilder uses reflection to load assemblies.")]
-    public static Syringe UsingReflectionAssemblyProvider(this Syringe syringe)
+    public static ConfiguredSyringe UsingReflectionAssemblyProvider(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.UsingAssemblyProvider(new AssemblyProviderBuilder().Build());
@@ -95,12 +96,12 @@ public static class SyringeReflectionExtensions
     /// <summary>
     /// Configures the syringe to use a custom assembly provider built with the builder pattern.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="configure">A function to configure the assembly provider builder.</param>
     /// <returns>A new configured syringe instance.</returns>
     [RequiresUnreferencedCode("AssemblyProviderBuilder uses reflection to load assemblies.")]
-    public static Syringe UsingAssemblyProvider(
-        this Syringe syringe,
+    public static ConfiguredSyringe UsingAssemblyProvider(
+        this ConfiguredSyringe syringe,
         Func<IAssemblyProviderBuilder, IAssemblyProvider> configure)
     {
         ArgumentNullException.ThrowIfNull(syringe);
@@ -113,11 +114,11 @@ public static class SyringeReflectionExtensions
     /// <summary>
     /// Configures a handler to be invoked when reflection-based components are used as fallback.
     /// </summary>
-    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="handler">The handler to invoke when reflection fallback occurs.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static Syringe WithReflectionFallbackHandler(
-        this Syringe syringe,
+    public static ConfiguredSyringe WithReflectionFallbackHandler(
+        this ConfiguredSyringe syringe,
         Action<ReflectionFallbackContext> handler)
     {
         ArgumentNullException.ThrowIfNull(syringe);

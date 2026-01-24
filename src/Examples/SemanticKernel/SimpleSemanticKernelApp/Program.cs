@@ -3,9 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
 using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.SemanticKernel;
 
 var kernel = new Syringe()
+    .UsingReflection()
     .UsingSemanticKernel(syringe => syringe
         .Configure(opts =>
         {

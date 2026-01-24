@@ -4,13 +4,14 @@ using NexusLabs.Needlr.Injection;
 namespace NexusLabs.Needlr.AspNet;
 
 /// <summary>
-/// Extension methods for configuring <see cref="Syringe"/> instances with ASP.NET Core functionality.
+/// Extension methods for configuring <see cref="ConfiguredSyringe"/> instances with ASP.NET Core functionality.
 /// </summary>
 /// <example>
 /// Source-gen first (recommended for AOT/trimming):
 /// <code>
 /// // With module initializer bootstrap (automatic):
 /// var webApplication = new Syringe()
+///     .UsingSourceGen()
 ///     .ForWebApplication()
 ///     .BuildWebApplication();
 /// 
@@ -30,13 +31,14 @@ namespace NexusLabs.Needlr.AspNet;
 public static class SyringeAspNetExtensions
 {
     /// <summary>
-    /// Transitions the syringe to web application mode, enabling web-specific configuration.
+    /// Transitions the configured syringe to web application mode, enabling web-specific configuration.
     /// </summary>
-    /// <param name="syringe">The syringe to transition.</param>
+    /// <param name="syringe">The configured syringe to transition.</param>
     /// <returns>A new web application syringe instance.</returns>
     /// <example>
     /// <code>
     /// var webAppSyringe = new Syringe()
+    ///     .UsingReflection()
     ///     .ForWebApplication(); // Transition to web application mode
     /// 
     /// // Now you can use web-specific methods
@@ -45,7 +47,7 @@ public static class SyringeAspNetExtensions
     ///     .BuildWebApplication();
     /// </code>
     /// </example>
-    public static WebApplicationSyringe ForWebApplication(this Syringe syringe)
+    public static WebApplicationSyringe ForWebApplication(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return new WebApplicationSyringe(syringe);
@@ -54,18 +56,19 @@ public static class SyringeAspNetExtensions
     /// <summary>
     /// Builds a web application with the configured settings using the default WebApplicationFactory.
     /// </summary>
-    /// <param name="syringe">The syringe to build from.</param>
+    /// <param name="syringe">The configured syringe to build from.</param>
     /// <returns>The configured <see cref="WebApplication"/>.</returns>
     /// <example>
     /// <code>
     /// // Direct build without additional web configuration
     /// var webApplication = new Syringe()
+    ///     .UsingReflection()
     ///     .BuildWebApplication();
     /// 
     /// await webApplication.RunAsync();
     /// </code>
     /// </example>
-    public static WebApplication BuildWebApplication(this Syringe syringe)
+    public static WebApplication BuildWebApplication(this ConfiguredSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
         return syringe.ForWebApplication().BuildWebApplication();

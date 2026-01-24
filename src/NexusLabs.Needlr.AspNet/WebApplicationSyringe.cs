@@ -6,17 +6,15 @@ namespace NexusLabs.Needlr.AspNet;
 
 /// <summary>
 /// Provides a fluent API for configuring and building web applications using Needlr.
-/// Wraps a base Syringe with additional web application functionality.
+/// Wraps a ConfiguredSyringe with additional web application functionality.
 /// </summary>
 /// <example>
 /// Creating and configuring a WebApplicationSyringe:
 /// <code>
-/// // Method 1: Transition from base Syringe (source-gen by default)
+/// // Method 1: Transition from ConfiguredSyringe
 /// var webAppSyringe = new Syringe()
+///     .UsingReflection()
 ///     .ForWebApplication();
-/// 
-/// // Method 2: Default constructor
-/// var webAppSyringe = new WebApplicationSyringe();
 /// 
 /// // Build and run the web application
 /// var webApp = webAppSyringe
@@ -35,7 +33,7 @@ namespace NexusLabs.Needlr.AspNet;
 [DoNotAutoRegister]
 public sealed record WebApplicationSyringe
 {
-    internal Syringe BaseSyringe { get; init; } = new();
+    internal ConfiguredSyringe BaseSyringe { get; init; }
     internal Func<CreateWebApplicationOptions>? OptionsFactory { get; init; }
     internal Func<IServiceProviderBuilder, IServiceCollectionPopulator, IWebApplicationFactory>? WebApplicationFactoryCreator { get; init; }
     internal Action<WebApplicationBuilder, CreateWebApplicationOptions>? ConfigureCallback { get; init; }
@@ -43,31 +41,18 @@ public sealed record WebApplicationSyringe
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationSyringe"/> class.
     /// </summary>
-    /// <param name="baseSyringe">The base syringe to wrap.</param>
+    /// <param name="baseSyringe">The configured syringe to wrap.</param>
     /// <example>
     /// <code>
-    /// var baseSyringe = new Syringe();
+    /// var configuredSyringe = new Syringe().UsingReflection();
     /// 
-    /// var webAppSyringe = new WebApplicationSyringe(baseSyringe);
+    /// var webAppSyringe = new WebApplicationSyringe(configuredSyringe);
     /// </code>
     /// </example>
-    public WebApplicationSyringe(Syringe baseSyringe)
+    public WebApplicationSyringe(ConfiguredSyringe baseSyringe)
     {
         ArgumentNullException.ThrowIfNull(baseSyringe);
         BaseSyringe = baseSyringe;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WebApplicationSyringe"/> class with default settings.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// var webAppSyringe = new WebApplicationSyringe();
-    /// var webApp = webAppSyringe.BuildWebApplication();
-    /// </code>
-    /// </example>
-    public WebApplicationSyringe()
-    {
     }
 
     /// <summary>
@@ -77,6 +62,7 @@ public sealed record WebApplicationSyringe
     /// <example>
     /// <code>
     /// var webApplication = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingScrutorTypeRegistrar()
     ///     .ForWebApplication()
     ///     .UsingOptions(() => CreateWebApplicationOptions.Default
@@ -137,6 +123,7 @@ public sealed record WebApplicationSyringe
     ///     .Build();
     /// 
     /// var serviceProvider = new Syringe()
+    ///     .UsingReflection()
     ///     .UsingScrutorTypeRegistrar()
     ///     .ForWebApplication()
     ///     .BuildServiceProvider(config);

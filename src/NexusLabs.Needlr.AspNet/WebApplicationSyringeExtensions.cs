@@ -11,7 +11,7 @@ namespace NexusLabs.Needlr.AspNet;
 /// </summary>
 /// <remarks>
 /// Remember to use base <see cref="Syringe"/> extension methods BEFORE calling 
-/// <seealso cref="SyringeAspNetExtensions.ForWebApplication(Syringe)"/>.
+/// <seealso cref="SyringeAspNetExtensions.ForWebApplication(ConfiguredSyringe)"/>.
 /// </remarks>
 /// <example>
 /// Complete web application configuration:

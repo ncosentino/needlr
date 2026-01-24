@@ -36,24 +36,30 @@ public static class SyringeBundleExtensions
     /// </para>
     /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance.</returns>
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "Reflection components are only used when source-gen is not available.")]
-    public static Syringe UsingAutoConfiguration(this Syringe syringe)
+    public static ConfiguredSyringe UsingAutoConfiguration(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        // Always set the service provider builder factory - it handles the source-gen vs reflection detection
-        var result = syringe.UsingServiceProviderBuilderFactory(
-            (populator, assemblyProvider, additionalAssemblies) => 
-                new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies));
-
         if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
         {
-            return result.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+            var configured = new ConfiguredSyringe(syringe) with
+            {
+                ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
+                    new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
+            };
+            return configured.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
         }
 
-        return result.UsingReflection();
+        // Fallback to reflection
+        var reflectionSyringe = syringe.UsingReflection();
+        return reflectionSyringe with
+        {
+            ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
+                new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
+        };
     }
 
     /// <summary>
@@ -61,23 +67,23 @@ public static class SyringeBundleExtensions
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
     /// <param name="onFallback">Called when reflection fallback occurs. Can be used for logging or to throw.</param>
-    /// <returns>A new configured syringe instance.</returns>
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "Reflection components are only used when source-gen is not available.")]
-    public static Syringe WithFallbackBehavior(
+    public static ConfiguredSyringe WithFallbackBehavior(
         this Syringe syringe,
         Action<ReflectionFallbackContext>? onFallback)
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        // Always set the service provider builder factory
-        var result = syringe.UsingServiceProviderBuilderFactory(
-            (populator, assemblyProvider, additionalAssemblies) => 
-                new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies));
-
         if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
         {
-            return result.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+            var configured = new ConfiguredSyringe(syringe) with
+            {
+                ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
+                    new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
+            };
+            return configured.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
         }
 
         // Invoke fallback handler if provided
@@ -86,7 +92,12 @@ public static class SyringeBundleExtensions
             onFallback(ReflectionFallbackHandlers.CreateTypeRegistrarContext());
         }
 
-        return result.UsingReflection();
+        var reflectionSyringe = syringe.UsingReflection();
+        return reflectionSyringe with
+        {
+            ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
+                new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
+        };
     }
 
     /// <summary>
@@ -97,8 +108,8 @@ public static class SyringeBundleExtensions
     /// If no source-generated providers are registered, an <see cref="InvalidOperationException"/> is thrown.
     /// </remarks>
     /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance.</returns>
-    public static Syringe WithFastFailOnReflection(this Syringe syringe)
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
+    public static ConfiguredSyringe WithFastFailOnReflection(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
@@ -109,10 +120,10 @@ public static class SyringeBundleExtensions
     /// Configures the syringe to log warnings when reflection fallback occurs.
     /// </summary>
     /// <param name="syringe">The syringe to configure.</param>
-    /// <returns>A new configured syringe instance.</returns>
+    /// <returns>A configured syringe ready for further configuration and building.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "Reflection components are only used when source-gen is not available.")]
-    public static Syringe WithFallbackLogging(this Syringe syringe)
+    public static ConfiguredSyringe WithFallbackLogging(this Syringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
