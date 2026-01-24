@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection.AssemblyOrdering;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.Injection;
@@ -183,7 +184,7 @@ public static class SyringeExtensions
     /// <typeparam name="TDecorator">The decorator type that implements TService.</typeparam>
     /// <param name="syringe">The configured syringe to update.</param>
     /// <returns>A new configured syringe instance.</returns>
-    public static ConfiguredSyringe AddDecorator<TService, TDecorator>(
+    public static ConfiguredSyringe AddDecorator<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDecorator>(
         this ConfiguredSyringe syringe)
         where TDecorator : class, TService
     {

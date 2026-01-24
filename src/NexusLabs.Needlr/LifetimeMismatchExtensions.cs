@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr;
@@ -58,7 +59,11 @@ public static class LifetimeMismatchExtensions
             }
             
             // Analyze constructor dependencies
+            // Note: descriptor.ImplementationType from MS.DI doesn't have DynamicallyAccessedMembers annotation,
+            // but constructor metadata is typically preserved for DI-registered types.
+#pragma warning disable IL2072 // Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call
             var dependencies = GetConstructorDependencies(descriptor.ImplementationType);
+#pragma warning restore IL2072
             
             foreach (var dependencyType in dependencies)
             {
@@ -96,7 +101,8 @@ public static class LifetimeMismatchExtensions
         return lookup;
     }
 
-    private static IEnumerable<Type> GetConstructorDependencies(Type implementationType)
+    private static IEnumerable<Type> GetConstructorDependencies(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         // Get the constructor that the DI container would use (longest parameter list)
         var constructors = implementationType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);

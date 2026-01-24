@@ -21,12 +21,20 @@ public sealed class AssemblyInfo
     /// <summary>
     /// Creates an AssemblyInfo from a runtime Assembly.
     /// </summary>
+    /// <remarks>
+    /// Note: In single-file published apps, Assembly.Location returns an empty string.
+    /// This is expected behavior and the Location property will be empty in those scenarios.
+    /// </remarks>
     public static AssemblyInfo FromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
+        // Note: Assembly.Location returns empty string in single-file apps.
+        // This is documented behavior and acceptable - Location is optional.
+#pragma warning disable IL3000 // 'Assembly.Location' always returns empty string for single-file apps
         return new AssemblyInfo(
             assembly.GetName().Name ?? string.Empty,
             assembly.Location);
+#pragma warning restore IL3000
     }
 
     /// <summary>

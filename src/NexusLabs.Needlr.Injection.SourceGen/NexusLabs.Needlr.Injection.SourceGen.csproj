@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <Description>Source-generation-based implementations for Needlr dependency injection. Use this package for AOT/trimming-compatible scenarios.</Description>
+    <!-- Enable AOT/trim analyzers to catch issues at build time, not publish time -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
