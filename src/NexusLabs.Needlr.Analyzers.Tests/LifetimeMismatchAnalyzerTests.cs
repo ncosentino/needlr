@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NexusLabs.Needlr.Analyzers.Tests;
 
-public sealed class LifestyleMismatchAnalyzerTests
+public sealed class LifetimeMismatchAnalyzerTests
 {
     private const string NeedlrAttributes = @"
 namespace NexusLabs.Needlr
@@ -45,7 +45,7 @@ public class SingletonService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };
@@ -69,7 +69,7 @@ public class ScopedService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };
@@ -96,7 +96,7 @@ public class TransientService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };
@@ -120,11 +120,11 @@ public class SingletonService
 }
 " + NeedlrAttributes;
 
-        var expected = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(0)
             .WithArguments("SingletonService", "Singleton", "ScopedDependency", "Scoped");
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             ExpectedDiagnostics = { expected }
@@ -149,11 +149,11 @@ public class SingletonService
 }
 " + NeedlrAttributes;
 
-        var expected = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(0)
             .WithArguments("SingletonService", "Singleton", "TransientDependency", "Transient");
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             ExpectedDiagnostics = { expected }
@@ -178,11 +178,11 @@ public class ScopedService
 }
 " + NeedlrAttributes;
 
-        var expected = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(0)
             .WithArguments("ScopedService", "Scoped", "TransientDependency", "Transient");
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             ExpectedDiagnostics = { expected }
@@ -204,11 +204,11 @@ public class ScopedDependency { }
 public class SingletonService({|#0:ScopedDependency dep|});
 " + NeedlrAttributes;
 
-        var expected = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(0)
             .WithArguments("SingletonService", "Singleton", "ScopedDependency", "Scoped");
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             ExpectedDiagnostics = { expected }
@@ -236,14 +236,14 @@ public class SingletonService
 }
 " + NeedlrAttributes;
 
-        var expected1 = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected1 = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(0)
             .WithArguments("SingletonService", "Singleton", "ScopedDep", "Scoped");
-        var expected2 = new DiagnosticResult(DiagnosticIds.LifestyleMismatch, DiagnosticSeverity.Warning)
+        var expected2 = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
             .WithLocation(1)
             .WithArguments("SingletonService", "Singleton", "TransientDep", "Transient");
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             ExpectedDiagnostics = { expected1, expected2 }
@@ -268,7 +268,7 @@ public class RegularService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };
@@ -292,7 +292,7 @@ public class SingletonService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };
@@ -316,7 +316,7 @@ public abstract class AbstractService
 }
 " + NeedlrAttributes;
 
-        var test = new CSharpAnalyzerTest<LifestyleMismatchAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
         };

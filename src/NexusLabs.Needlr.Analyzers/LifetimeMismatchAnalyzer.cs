@@ -8,8 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace NexusLabs.Needlr.Analyzers;
 
 /// <summary>
-/// Analyzer that detects lifestyle mismatches in service registrations.
-/// A lifestyle mismatch occurs when a longer-lived service depends on a shorter-lived service.
+/// Analyzer that detects lifetime mismatches in service registrations.
+/// A lifetime mismatch occurs when a longer-lived service depends on a shorter-lived service.
 /// </summary>
 /// <remarks>
 /// Examples of mismatches:
@@ -18,7 +18,7 @@ namespace NexusLabs.Needlr.Analyzers;
 /// - Scoped depends on Transient → captive dependency
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class LifestyleMismatchAnalyzer : DiagnosticAnalyzer
+public sealed class LifetimeMismatchAnalyzer : DiagnosticAnalyzer
 {
     // Lifetime ranking: higher number = longer lifetime
     private enum LifetimeRank
@@ -30,7 +30,7 @@ public sealed class LifestyleMismatchAnalyzer : DiagnosticAnalyzer
     }
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(DiagnosticDescriptors.LifestyleMismatch);
+        ImmutableArray.Create(DiagnosticDescriptors.LifetimeMismatch);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -124,7 +124,7 @@ public sealed class LifestyleMismatchAnalyzer : DiagnosticAnalyzer
             if ((int)consumerLifetime > (int)dependencyLifetime)
             {
                 var diagnostic = Diagnostic.Create(
-                    DiagnosticDescriptors.LifestyleMismatch,
+                    DiagnosticDescriptors.LifetimeMismatch,
                     parameter.GetLocation(),
                     consumerSymbol.Name,
                     GetLifetimeName(consumerLifetime),

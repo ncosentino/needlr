@@ -29,9 +29,9 @@ public static class DiagnosticIds
     public const string GlobalNamespaceTypeNotDiscovered = "NDLRCOR004";
 
     /// <summary>
-    /// NDLRCOR005: Lifestyle mismatch - longer-lived service depends on shorter-lived service.
+    /// NDLRCOR005: Lifetime mismatch - longer-lived service depends on shorter-lived service.
     /// </summary>
-    public const string LifestyleMismatch = "NDLRCOR005";
+    public const string LifetimeMismatch = "NDLRCOR005";
 
     /// <summary>
     /// NDLRCOR006: Circular dependency detected in service registration.

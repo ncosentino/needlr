@@ -49,7 +49,7 @@ public sealed class SyringeVerificationIntegrationTests
         });
 
         Assert.NotEmpty(ex.Issues);
-        Assert.Contains(ex.Issues, i => i.Type == VerificationIssueType.LifestyleMismatch);
+        Assert.Contains(ex.Issues, i => i.Type == VerificationIssueType.LifetimeMismatch);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class SyringeVerificationIntegrationTests
             .UsingReflection()
             .WithVerification(new VerificationOptions
             {
-                LifestyleMismatchBehavior = VerificationBehavior.Warn,
+                LifetimeMismatchBehavior = VerificationBehavior.Warn,
                 IssueReporter = issue => warnings.Add(issue)
             })
             .UsingPostPluginRegistrationCallback(services =>
@@ -80,7 +80,7 @@ public sealed class SyringeVerificationIntegrationTests
         // Assert
         Assert.Null(exception);
         Assert.NotEmpty(warnings);
-        Assert.Contains(warnings, w => w.Type == VerificationIssueType.LifestyleMismatch);
+        Assert.Contains(warnings, w => w.Type == VerificationIssueType.LifetimeMismatch);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public sealed class SyringeVerificationIntegrationTests
         var syringe = new Syringe()
             .UsingReflection()
             .WithVerification(opts => opts
-                .OnLifestyleMismatch(VerificationBehavior.Throw)
+                .OnLifetimeMismatch(VerificationBehavior.Throw)
                 .OnCircularDependency(VerificationBehavior.Throw))
             .UsingPostPluginRegistrationCallback(services =>
             {
@@ -147,7 +147,7 @@ public sealed class SyringeVerificationIntegrationTests
                 services.AddSingleton<ISingletonService, SingletonDependsOnScoped>();
             });
 
-        // Act & Assert - should throw because OnLifestyleMismatch is Throw
+        // Act & Assert - should throw because OnLifetimeMismatch is Throw
         Assert.Throws<ContainerVerificationException>(() =>
         {
             syringe.BuildServiceProvider();
@@ -162,7 +162,7 @@ public sealed class SyringeVerificationIntegrationTests
         var syringe = new Syringe()
             .UsingReflection()
             .WithVerification(opts => opts
-                .OnLifestyleMismatch(VerificationBehavior.Warn)
+                .OnLifetimeMismatch(VerificationBehavior.Warn)
                 .ReportIssuesTo(issue => reportedIssues.Add(issue)))
             .UsingPostPluginRegistrationCallback(services =>
             {
@@ -176,7 +176,7 @@ public sealed class SyringeVerificationIntegrationTests
 
         // Assert
         Assert.Single(reportedIssues);
-        Assert.Equal(VerificationIssueType.LifestyleMismatch, reportedIssues[0].Type);
+        Assert.Equal(VerificationIssueType.LifetimeMismatch, reportedIssues[0].Type);
     }
 
     [Fact]

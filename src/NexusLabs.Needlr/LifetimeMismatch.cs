@@ -5,7 +5,7 @@ using System.Text;
 namespace NexusLabs.Needlr;
 
 /// <summary>
-/// Represents a lifestyle mismatch where a longer-lived service depends on a shorter-lived service.
+/// Represents a lifetime mismatch where a longer-lived service depends on a shorter-lived service.
 /// This is also known as a "captive dependency" and can lead to unexpected behavior.
 /// </summary>
 /// <param name="ConsumerServiceType">The service type that has the dependency.</param>
@@ -13,7 +13,7 @@ namespace NexusLabs.Needlr;
 /// <param name="ConsumerLifetime">The lifetime of the consumer service.</param>
 /// <param name="DependencyServiceType">The service type being depended upon.</param>
 /// <param name="DependencyLifetime">The lifetime of the dependency.</param>
-public sealed record LifestyleMismatch(
+public sealed record LifetimeMismatch(
     Type ConsumerServiceType,
     Type? ConsumerImplementationType,
     ServiceLifetime ConsumerLifetime,
@@ -29,7 +29,7 @@ public sealed record LifestyleMismatch(
         var sb = new StringBuilder();
         var consumerName = ConsumerImplementationType?.Name ?? ConsumerServiceType.Name;
         
-        sb.AppendLine($"┌─ Lifestyle Mismatch");
+        sb.AppendLine($"┌─ Lifetime Mismatch");
         sb.AppendLine($"│  {ConsumerServiceType.Name} ({ConsumerLifetime})");
         sb.AppendLine($"│    └─ depends on ─▶ {DependencyServiceType.Name} ({DependencyLifetime})");
         sb.AppendLine($"│");

@@ -25,17 +25,17 @@ public static class ServiceCollectionVerificationExtensions
 
         var issues = new List<VerificationIssue>();
 
-        // Check for lifestyle mismatches
-        if (options.LifestyleMismatchBehavior != VerificationBehavior.Silent)
+        // Check for lifetime mismatches
+        if (options.LifetimeMismatchBehavior != VerificationBehavior.Silent)
         {
-            var mismatches = services.DetectLifestyleMismatches();
+            var mismatches = services.DetectLifetimeMismatches();
             foreach (var mismatch in mismatches)
             {
                 issues.Add(new VerificationIssue(
-                    Type: VerificationIssueType.LifestyleMismatch,
-                    Message: $"Lifestyle mismatch: {mismatch.ConsumerServiceType.Name} ({mismatch.ConsumerLifetime}) depends on {mismatch.DependencyServiceType.Name} ({mismatch.DependencyLifetime})",
+                    Type: VerificationIssueType.LifetimeMismatch,
+                    Message: $"Lifetime mismatch: {mismatch.ConsumerServiceType.Name} ({mismatch.ConsumerLifetime}) depends on {mismatch.DependencyServiceType.Name} ({mismatch.DependencyLifetime})",
                     DetailedMessage: mismatch.ToDetailedString(),
-                    ConfiguredBehavior: options.LifestyleMismatchBehavior)
+                    ConfiguredBehavior: options.LifetimeMismatchBehavior)
                 {
                     InvolvedTypes = [mismatch.ConsumerServiceType, mismatch.DependencyServiceType]
                 });
@@ -63,17 +63,17 @@ public static class ServiceCollectionVerificationExtensions
 
         var issues = new List<VerificationIssue>();
 
-        // Check for lifestyle mismatches
-        if (options.LifestyleMismatchBehavior != VerificationBehavior.Silent)
+        // Check for lifetime mismatches
+        if (options.LifetimeMismatchBehavior != VerificationBehavior.Silent)
         {
-            var mismatches = services.DetectLifestyleMismatches();
+            var mismatches = services.DetectLifetimeMismatches();
             foreach (var mismatch in mismatches)
             {
                 issues.Add(new VerificationIssue(
-                    Type: VerificationIssueType.LifestyleMismatch,
-                    Message: $"Lifestyle mismatch: {mismatch.ConsumerServiceType.Name} ({mismatch.ConsumerLifetime}) depends on {mismatch.DependencyServiceType.Name} ({mismatch.DependencyLifetime})",
+                    Type: VerificationIssueType.LifetimeMismatch,
+                    Message: $"Lifetime mismatch: {mismatch.ConsumerServiceType.Name} ({mismatch.ConsumerLifetime}) depends on {mismatch.DependencyServiceType.Name} ({mismatch.DependencyLifetime})",
                     DetailedMessage: mismatch.ToDetailedString(),
-                    ConfiguredBehavior: options.LifestyleMismatchBehavior)
+                    ConfiguredBehavior: options.LifetimeMismatchBehavior)
                 {
                     InvolvedTypes = [mismatch.ConsumerServiceType, mismatch.DependencyServiceType]
                 });

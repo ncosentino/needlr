@@ -5,19 +5,19 @@ using System.Reflection;
 namespace NexusLabs.Needlr;
 
 /// <summary>
-/// Extension methods for detecting lifestyle mismatches (captive dependencies) in service registrations.
+/// Extension methods for detecting lifetime mismatches (captive dependencies) in service registrations.
 /// </summary>
-public static class LifestyleMismatchExtensions
+public static class LifetimeMismatchExtensions
 {
     /// <summary>
-    /// Detects lifestyle mismatches (captive dependencies) in the service collection.
-    /// A lifestyle mismatch occurs when a longer-lived service depends on a shorter-lived service.
+    /// Detects lifetime mismatches (captive dependencies) in the service collection.
+    /// A lifetime mismatch occurs when a longer-lived service depends on a shorter-lived service.
     /// </summary>
     /// <param name="services">The service collection to analyze.</param>
-    /// <returns>A list of detected lifestyle mismatches.</returns>
+    /// <returns>A list of detected lifetime mismatches.</returns>
     /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
     /// <remarks>
-    /// <para>Lifestyle hierarchy (from longest to shortest):</para>
+    /// <para>Lifetime hierarchy (from longest to shortest):</para>
     /// <list type="bullet">
     /// <item>Singleton (lives for entire application lifetime)</item>
     /// <item>Scoped (lives for the scope/request lifetime)</item>
@@ -32,11 +32,11 @@ public static class LifestyleMismatchExtensions
     /// Factory registrations cannot be analyzed and are skipped.
     /// </para>
     /// </remarks>
-    public static IReadOnlyList<LifestyleMismatch> DetectLifestyleMismatches(this IServiceCollection services)
+    public static IReadOnlyList<LifetimeMismatch> DetectLifetimeMismatches(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         
-        var mismatches = new List<LifestyleMismatch>();
+        var mismatches = new List<LifetimeMismatch>();
         
         // Build a lookup of service type -> lifetime
         var lifetimeLookup = BuildLifetimeLookup(services);
@@ -70,7 +70,7 @@ public static class LifestyleMismatchExtensions
                 
                 if (IsLifetimeMismatch(consumerLifetime, dependencyLifetime))
                 {
-                    mismatches.Add(new LifestyleMismatch(
+                    mismatches.Add(new LifetimeMismatch(
                         ConsumerServiceType: descriptor.ServiceType,
                         ConsumerImplementationType: descriptor.ImplementationType,
                         ConsumerLifetime: consumerLifetime,
@@ -118,7 +118,7 @@ public static class LifestyleMismatchExtensions
     }
 
     /// <summary>
-    /// Determines if there is a lifestyle mismatch between a consumer and its dependency.
+    /// Determines if there is a lifetime mismatch between a consumer and its dependency.
     /// </summary>
     /// <param name="consumerLifetime">The lifetime of the consuming service.</param>
     /// <param name="dependencyLifetime">The lifetime of the dependency.</param>

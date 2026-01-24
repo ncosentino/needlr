@@ -8,10 +8,10 @@ namespace NexusLabs.Needlr;
 public sealed record VerificationOptions
 {
     /// <summary>
-    /// Gets or sets the behavior when lifestyle mismatches are detected.
+    /// Gets or sets the behavior when lifetime mismatches are detected.
     /// Default is <see cref="VerificationBehavior.Warn"/>.
     /// </summary>
-    public VerificationBehavior LifestyleMismatchBehavior { get; init; } = VerificationBehavior.Warn;
+    public VerificationBehavior LifetimeMismatchBehavior { get; init; } = VerificationBehavior.Warn;
 
     /// <summary>
     /// Gets or sets the behavior when circular dependencies are detected.
@@ -26,7 +26,7 @@ public sealed record VerificationOptions
     public Action<VerificationIssue>? IssueReporter { get; init; }
 
     /// <summary>
-    /// Default verification options - warns on lifestyle mismatches, throws on circular dependencies.
+    /// Default verification options - warns on lifetime mismatches, throws on circular dependencies.
     /// </summary>
     public static VerificationOptions Default => new();
 
@@ -35,7 +35,7 @@ public sealed record VerificationOptions
     /// </summary>
     public static VerificationOptions Strict => new()
     {
-        LifestyleMismatchBehavior = VerificationBehavior.Throw,
+        LifetimeMismatchBehavior = VerificationBehavior.Throw,
         CircularDependencyBehavior = VerificationBehavior.Throw
     };
 
@@ -44,7 +44,7 @@ public sealed record VerificationOptions
     /// </summary>
     public static VerificationOptions Disabled => new()
     {
-        LifestyleMismatchBehavior = VerificationBehavior.Silent,
+        LifetimeMismatchBehavior = VerificationBehavior.Silent,
         CircularDependencyBehavior = VerificationBehavior.Silent
     };
 }
@@ -93,7 +93,7 @@ public enum VerificationIssueType
     /// <summary>
     /// A longer-lived service depends on a shorter-lived service.
     /// </summary>
-    LifestyleMismatch,
+    LifetimeMismatch,
 
     /// <summary>
     /// A circular dependency was detected in the dependency graph.

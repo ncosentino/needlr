@@ -298,7 +298,7 @@ public static class SyringeExtensions
     ///     .UsingSourceGen()
     ///     .WithVerification(new VerificationOptions
     ///     {
-    ///         LifestyleMismatchBehavior = VerificationBehavior.Throw,
+    ///         LifetimeMismatchBehavior = VerificationBehavior.Throw,
     ///         IssueReporter = issue => logger.LogWarning(issue.Message)
     ///     })
     ///     .BuildServiceProvider();

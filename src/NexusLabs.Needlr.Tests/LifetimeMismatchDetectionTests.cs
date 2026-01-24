@@ -5,13 +5,13 @@ using Xunit;
 namespace NexusLabs.Needlr.Tests;
 
 /// <summary>
-/// Tests for lifestyle mismatch detection (captive dependency detection).
-/// A lifestyle mismatch occurs when a longer-lived service depends on a shorter-lived service.
+/// Tests for lifetime mismatch detection (captive dependency detection).
+/// A lifetime mismatch occurs when a longer-lived service depends on a shorter-lived service.
 /// </summary>
-public sealed class LifestyleMismatchDetectionTests
+public sealed class LifetimeMismatchDetectionTests
 {
     [Fact]
-    public void DetectLifestyleMismatches_SingletonDependsOnScoped_ReturnsMismatch()
+    public void DetectLifetimeMismatches_SingletonDependsOnScoped_ReturnsMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -19,7 +19,7 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddSingleton<ISingletonService, SingletonWithScopedDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         var mismatch = Assert.Single(mismatches);
@@ -30,7 +30,7 @@ public sealed class LifestyleMismatchDetectionTests
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_SingletonDependsOnTransient_ReturnsMismatch()
+    public void DetectLifetimeMismatches_SingletonDependsOnTransient_ReturnsMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -38,7 +38,7 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddSingleton<ISingletonService, SingletonWithTransientDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         var mismatch = Assert.Single(mismatches);
@@ -47,7 +47,7 @@ public sealed class LifestyleMismatchDetectionTests
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_ScopedDependsOnTransient_ReturnsMismatch()
+    public void DetectLifetimeMismatches_ScopedDependsOnTransient_ReturnsMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -55,7 +55,7 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddScoped<IScopedService, ScopedWithTransientDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         var mismatch = Assert.Single(mismatches);
@@ -64,7 +64,7 @@ public sealed class LifestyleMismatchDetectionTests
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_SingletonDependsOnSingleton_NoMismatch()
+    public void DetectLifetimeMismatches_SingletonDependsOnSingleton_NoMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -72,14 +72,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddSingleton<ISingletonService, SingletonWithSingletonDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_ScopedDependsOnSingleton_NoMismatch()
+    public void DetectLifetimeMismatches_ScopedDependsOnSingleton_NoMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -87,14 +87,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddScoped<IScopedService, ScopedWithSingletonDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_ScopedDependsOnScoped_NoMismatch()
+    public void DetectLifetimeMismatches_ScopedDependsOnScoped_NoMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -102,14 +102,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddScoped<IScopedService, ScopedWithScopedDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_TransientDependsOnAnything_NoMismatch()
+    public void DetectLifetimeMismatches_TransientDependsOnAnything_NoMismatch()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -118,14 +118,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddTransient<ITransientService, TransientWithMixedDependencies>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_MultipleMismatches_ReturnsAll()
+    public void DetectLifetimeMismatches_MultipleMismatches_ReturnsAll()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -134,14 +134,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddSingleton<ISingletonService, SingletonWithMultipleBadDependencies>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert
         Assert.Equal(2, mismatches.Count);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_ChainedMismatches_DetectsAll()
+    public void DetectLifetimeMismatches_ChainedMismatches_DetectsAll()
     {
         // Arrange - A (Singleton) -> B (Scoped) -> C (Transient)
         var services = new ServiceCollection();
@@ -150,14 +150,14 @@ public sealed class LifestyleMismatchDetectionTests
         services.AddSingleton<ISingletonService, SingletonWithScopedDependency>();
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert - should detect both: Singleton->Scoped and Scoped->Transient
         Assert.Equal(2, mismatches.Count);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_FactoryRegistration_IsSkipped()
+    public void DetectLifetimeMismatches_FactoryRegistration_IsSkipped()
     {
         // Arrange - Factory registrations can't be analyzed for dependencies
         var services = new ServiceCollection();
@@ -166,14 +166,14 @@ public sealed class LifestyleMismatchDetectionTests
             sp.GetRequiredService<IScopedDependency>()));
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert - Can't detect mismatch in factory, so empty
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_UnregisteredDependency_IsSkipped()
+    public void DetectLifetimeMismatches_UnregisteredDependency_IsSkipped()
     {
         // Arrange - Dependency not registered, can't determine its lifetime
         var services = new ServiceCollection();
@@ -181,27 +181,27 @@ public sealed class LifestyleMismatchDetectionTests
         // IScopedDependency is NOT registered
 
         // Act
-        var mismatches = services.DetectLifestyleMismatches();
+        var mismatches = services.DetectLifetimeMismatches();
 
         // Assert - Can't determine lifetime of unregistered service
         Assert.Empty(mismatches);
     }
 
     [Fact]
-    public void DetectLifestyleMismatches_NullServiceCollection_ThrowsArgumentNullException()
+    public void DetectLifetimeMismatches_NullServiceCollection_ThrowsArgumentNullException()
     {
         // Arrange
         IServiceCollection? services = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => services!.DetectLifestyleMismatches());
+        Assert.Throws<ArgumentNullException>(() => services!.DetectLifetimeMismatches());
     }
 
     [Fact]
-    public void LifestyleMismatch_ToDetailedString_IncludesAllInfo()
+    public void LifetimeMismatch_ToDetailedString_IncludesAllInfo()
     {
         // Arrange
-        var mismatch = new LifestyleMismatch(
+        var mismatch = new LifetimeMismatch(
             ConsumerServiceType: typeof(ISingletonService),
             ConsumerImplementationType: typeof(SingletonWithScopedDependency),
             ConsumerLifetime: ServiceLifetime.Singleton,

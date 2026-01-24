@@ -63,11 +63,11 @@ public static class DiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRCOR004.md");
 
     /// <summary>
-    /// NDLRCOR005: Lifestyle mismatch - longer-lived service depends on shorter-lived service.
+    /// NDLRCOR005: Lifetime mismatch - longer-lived service depends on shorter-lived service.
     /// </summary>
-    public static readonly DiagnosticDescriptor LifestyleMismatch = new(
-        id: DiagnosticIds.LifestyleMismatch,
-        title: "Lifestyle mismatch: longer-lived service depends on shorter-lived service",
+    public static readonly DiagnosticDescriptor LifetimeMismatch = new(
+        id: DiagnosticIds.LifetimeMismatch,
+        title: "Lifetime mismatch: longer-lived service depends on shorter-lived service",
         messageFormat: "'{0}' is registered as {1} but depends on '{2}' which is registered as {3}. This causes a captive dependency.",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,

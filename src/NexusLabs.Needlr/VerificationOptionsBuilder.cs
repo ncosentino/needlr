@@ -5,16 +5,16 @@ namespace NexusLabs.Needlr;
 /// </summary>
 public sealed class VerificationOptionsBuilder
 {
-    private VerificationBehavior _lifestyleMismatchBehavior = VerificationBehavior.Warn;
+    private VerificationBehavior _lifetimeMismatchBehavior = VerificationBehavior.Warn;
     private VerificationBehavior _circularDependencyBehavior = VerificationBehavior.Throw;
     private Action<VerificationIssue>? _issueReporter;
 
     /// <summary>
-    /// Sets the behavior when lifestyle mismatches are detected.
+    /// Sets the behavior when lifetime mismatches are detected.
     /// </summary>
-    public VerificationOptionsBuilder OnLifestyleMismatch(VerificationBehavior behavior)
+    public VerificationOptionsBuilder OnLifetimeMismatch(VerificationBehavior behavior)
     {
-        _lifestyleMismatchBehavior = behavior;
+        _lifetimeMismatchBehavior = behavior;
         return this;
     }
 
@@ -41,7 +41,7 @@ public sealed class VerificationOptionsBuilder
     /// </summary>
     public VerificationOptionsBuilder Strict()
     {
-        _lifestyleMismatchBehavior = VerificationBehavior.Throw;
+        _lifetimeMismatchBehavior = VerificationBehavior.Throw;
         _circularDependencyBehavior = VerificationBehavior.Throw;
         return this;
     }
@@ -51,7 +51,7 @@ public sealed class VerificationOptionsBuilder
     /// </summary>
     public VerificationOptionsBuilder Disabled()
     {
-        _lifestyleMismatchBehavior = VerificationBehavior.Silent;
+        _lifetimeMismatchBehavior = VerificationBehavior.Silent;
         _circularDependencyBehavior = VerificationBehavior.Silent;
         return this;
     }
@@ -61,7 +61,7 @@ public sealed class VerificationOptionsBuilder
     /// </summary>
     public VerificationOptions Build() => new()
     {
-        LifestyleMismatchBehavior = _lifestyleMismatchBehavior,
+        LifetimeMismatchBehavior = _lifetimeMismatchBehavior,
         CircularDependencyBehavior = _circularDependencyBehavior,
         IssueReporter = _issueReporter
     };

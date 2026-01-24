@@ -36,9 +36,9 @@ public class ServiceCollectionVerificationTests
 
     public class ValidSingleton : ISingletonService { }
 
-    // Test: Default behavior warns on lifestyle mismatch (doesn't throw)
+    // Test: Default behavior warns on lifetime mismatch (doesn't throw)
     [Fact]
-    public void Verify_WithLifestyleMismatch_DefaultBehaviorWarns()
+    public void Verify_WithLifetimeMismatch_DefaultBehaviorWarns()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -48,7 +48,7 @@ public class ServiceCollectionVerificationTests
         var warnings = new List<VerificationIssue>();
         var options = new VerificationOptions
         {
-            LifestyleMismatchBehavior = VerificationBehavior.Warn,
+            LifetimeMismatchBehavior = VerificationBehavior.Warn,
             IssueReporter = issue => warnings.Add(issue)
         };
 
@@ -61,12 +61,12 @@ public class ServiceCollectionVerificationTests
         // Assert
         Assert.Null(exception);
         Assert.Single(warnings);
-        Assert.Equal(VerificationIssueType.LifestyleMismatch, warnings[0].Type);
+        Assert.Equal(VerificationIssueType.LifetimeMismatch, warnings[0].Type);
     }
 
-    // Test: Strict mode throws on lifestyle mismatch
+    // Test: Strict mode throws on lifetime mismatch
     [Fact]
-    public void Verify_WithLifestyleMismatch_StrictModeThrows()
+    public void Verify_WithLifetimeMismatch_StrictModeThrows()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -80,14 +80,14 @@ public class ServiceCollectionVerificationTests
         });
 
         Assert.Single(ex.Issues);
-        Assert.Equal(VerificationIssueType.LifestyleMismatch, ex.Issues[0].Type);
+        Assert.Equal(VerificationIssueType.LifetimeMismatch, ex.Issues[0].Type);
         Assert.Contains("ISingletonService", ex.Issues[0].Message);
         Assert.Contains("IScopedService", ex.Issues[0].Message);
     }
 
     // Test: Silent mode doesn't warn or throw
     [Fact]
-    public void Verify_WithLifestyleMismatch_SilentModeNoAction()
+    public void Verify_WithLifetimeMismatch_SilentModeNoAction()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -97,7 +97,7 @@ public class ServiceCollectionVerificationTests
         var warnings = new List<VerificationIssue>();
         var options = new VerificationOptions
         {
-            LifestyleMismatchBehavior = VerificationBehavior.Silent,
+            LifetimeMismatchBehavior = VerificationBehavior.Silent,
             IssueReporter = issue => warnings.Add(issue)
         };
 
@@ -124,7 +124,7 @@ public class ServiceCollectionVerificationTests
         var reported = new List<VerificationIssue>();
         var options = new VerificationOptions
         {
-            LifestyleMismatchBehavior = VerificationBehavior.Warn,
+            LifetimeMismatchBehavior = VerificationBehavior.Warn,
             IssueReporter = issue => reported.Add(issue)
         };
 
@@ -168,7 +168,7 @@ public class ServiceCollectionVerificationTests
         var reported = new List<VerificationIssue>();
         var options = new VerificationOptions
         {
-            LifestyleMismatchBehavior = VerificationBehavior.Warn,
+            LifetimeMismatchBehavior = VerificationBehavior.Warn,
             IssueReporter = issue => reported.Add(issue)
         };
 
@@ -211,7 +211,7 @@ public class ServiceCollectionVerificationTests
 
         // Assert
         Assert.Contains("issue(s)", report);
-        Assert.Contains("LifestyleMismatch", report);
+        Assert.Contains("LifetimeMismatch", report);
     }
 
     // Test: ContainerVerificationException contains all issues
@@ -221,8 +221,8 @@ public class ServiceCollectionVerificationTests
         // Arrange
         var issues = new List<VerificationIssue>
         {
-            new(VerificationIssueType.LifestyleMismatch, "Issue 1", "Details 1", VerificationBehavior.Throw),
-            new(VerificationIssueType.LifestyleMismatch, "Issue 2", "Details 2", VerificationBehavior.Throw)
+            new(VerificationIssueType.LifetimeMismatch, "Issue 1", "Details 1", VerificationBehavior.Throw),
+            new(VerificationIssueType.LifetimeMismatch, "Issue 2", "Details 2", VerificationBehavior.Throw)
         };
 
         // Act
@@ -230,7 +230,7 @@ public class ServiceCollectionVerificationTests
 
         // Assert
         Assert.Equal(2, ex.Issues.Count);
-        Assert.Contains("2 LifestyleMismatch issue(s)", ex.Message);
+        Assert.Contains("2 LifetimeMismatch issue(s)", ex.Message);
     }
 
     // Test: Exception message is descriptive
@@ -240,7 +240,7 @@ public class ServiceCollectionVerificationTests
         // Arrange
         var issues = new List<VerificationIssue>
         {
-            new(VerificationIssueType.LifestyleMismatch, "Singleton depends on Scoped", "...", VerificationBehavior.Throw)
+            new(VerificationIssueType.LifetimeMismatch, "Singleton depends on Scoped", "...", VerificationBehavior.Throw)
         };
 
         // Act
@@ -248,7 +248,7 @@ public class ServiceCollectionVerificationTests
 
         // Assert
         Assert.Contains("Container verification failed", ex.Message);
-        Assert.Contains("LifestyleMismatch", ex.Message);
+        Assert.Contains("LifetimeMismatch", ex.Message);
     }
 
     // Test: Verify returns same IServiceCollection for chaining
