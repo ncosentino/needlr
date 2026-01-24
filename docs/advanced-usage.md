@@ -1079,3 +1079,92 @@ var app = new Syringe()
 
 // Both cache providers are correctly registered with their dependencies resolved
 ```
+
+## Debugging Service Registrations
+
+Needlr provides diagnostic tools to help you understand and debug your service registrations.
+
+### Dumping All Registrations
+
+Use the `Dump()` extension method to get a formatted view of all registrations:
+
+```csharp
+using NexusLabs.Needlr;
+
+var services = new ServiceCollection();
+services.AddTransient<IMyService, MyService>();
+services.AddSingleton<ICache, MemoryCache>();
+services.AddScoped<IDbContext, AppDbContext>();
+
+// Dump all registrations to console
+Console.WriteLine(services.Dump());
+```
+
+Output:
+```
+═══ Service Registrations (3 registrations) ═══
+
+┌─ ICache
+│  Lifetime: Singleton
+│  Implementation: MemoryCache
+└─
+
+┌─ IDbContext
+│  Lifetime: Scoped
+│  Implementation: AppDbContext
+└─
+
+┌─ IMyService
+│  Lifetime: Transient
+│  Implementation: MyService
+└─
+```
+
+### Filtering and Grouping
+
+Use `DumpOptions` to filter and organize the output:
+
+```csharp
+// Only show singletons
+Console.WriteLine(services.Dump(new DumpOptions 
+{ 
+    LifetimeFilter = ServiceLifetime.Singleton 
+}));
+
+// Group by lifetime
+Console.WriteLine(services.Dump(new DumpOptions 
+{ 
+    GroupByLifetime = true 
+}));
+
+// Filter by service type
+Console.WriteLine(services.Dump(new DumpOptions 
+{ 
+    ServiceTypeFilter = t => t.Namespace?.Contains("MyApp") == true 
+}));
+```
+
+### Detailed Registration Info
+
+Get detailed information about a specific registration:
+
+```csharp
+var registrations = services.GetServiceRegistrations();
+foreach (var reg in registrations)
+{
+    Console.WriteLine(reg.ToDetailedString());
+}
+```
+
+### Dumping from ServiceProvider
+
+You can also dump from a built service provider (requires `IServiceCollection` to be registered):
+
+```csharp
+var provider = new Syringe()
+    .UsingSourceGen()
+    .BuildServiceProvider();
+
+// Needlr automatically registers IServiceCollection, so Dump() works
+Console.WriteLine(provider.Dump());
+```

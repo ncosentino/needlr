@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
+using System.Text;
+
 namespace NexusLabs.Needlr;
 
 public readonly record struct ServiceRegistrationInfo(
@@ -43,4 +45,61 @@ public readonly record struct ServiceRegistrationInfo(
     /// <see langword="null"/> (unless metadata reflects the instance's type indirectly).
     /// </summary>
     public bool HasInstance => ServiceDescriptor.ImplementationInstance is not null;
+
+    /// <summary>
+    /// Returns a detailed, formatted string representation of this registration
+    /// suitable for debugging and diagnostics.
+    /// </summary>
+    /// <returns>A multi-line formatted string with registration details.</returns>
+    public string ToDetailedString()
+    {
+        var sb = new StringBuilder();
+        var serviceTypeName = FormatTypeName(ServiceType);
+        
+        sb.AppendLine($"┌─ {serviceTypeName}");
+        sb.AppendLine($"│  Lifetime: {Lifetime}");
+        
+        if (HasInstance)
+        {
+            var instanceType = ServiceDescriptor.ImplementationInstance?.GetType();
+            sb.AppendLine($"│  Implementation: Instance ({FormatTypeName(instanceType)})");
+        }
+        else if (HasFactory)
+        {
+            sb.AppendLine($"│  Implementation: Factory");
+        }
+        else if (ImplementationType is not null)
+        {
+            sb.AppendLine($"│  Implementation: {FormatTypeName(ImplementationType)}");
+        }
+        
+        sb.Append($"└─");
+        
+        return sb.ToString();
+    }
+
+    private static string FormatTypeName(Type? type)
+    {
+        if (type is null)
+        {
+            return "<unknown>";
+        }
+
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        if (type.IsGenericTypeDefinition)
+        {
+            // Open generic: IGenericService<> 
+            var baseName = type.Name.Split('`')[0];
+            return $"{baseName}<>";
+        }
+
+        // Closed generic: IGenericService<String>
+        var genericBaseName = type.Name.Split('`')[0];
+        var genericArgs = string.Join(", ", type.GetGenericArguments().Select(FormatTypeName));
+        return $"{genericBaseName}<{genericArgs}>";
+    }
 }
