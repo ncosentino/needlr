@@ -78,6 +78,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName);
                 spc.AddSource("SemanticKernelPlugins.g.cs", SourceText.From(kernelPluginsText, Encoding.UTF8));
             }
+
+            // Generate interceptor proxy classes if any were discovered
+            if (discoveryResult.InterceptedServices.Count > 0)
+            {
+                var interceptorProxiesText = GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName);
+                spc.AddSource("InterceptorProxies.g.cs", SourceText.From(interceptorProxiesText, Encoding.UTF8));
+            }
         });
     }
 
@@ -134,13 +141,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var hubRegistrations = new List<DiscoveredHubRegistration>();
         var kernelPlugins = new List<DiscoveredKernelPlugin>();
         var decorators = new List<DiscoveredDecorator>();
+        var interceptedServices = new List<DiscoveredInterceptedService>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -148,7 +156,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -178,7 +186,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins);
+        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices);
     }
 
     private static void CollectTypesFromAssembly(
@@ -189,6 +197,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredHubRegistration> hubRegistrations,
         List<DiscoveredKernelPlugin> kernelPlugins,
         List<DiscoveredDecorator> decorators,
+        List<DiscoveredInterceptedService> interceptedServices,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -220,6 +229,40 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     decoratorInfo.ServiceTypeName,
                     decoratorInfo.Order,
                     assembly.Name));
+            }
+
+            // Check for Intercept attributes and collect intercepted services
+            if (TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol))
+            {
+                var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
+                if (lifetime.HasValue)
+                {
+                    var classLevelInterceptors = TypeDiscoveryHelper.GetInterceptAttributes(typeSymbol);
+                    var methodLevelInterceptors = TypeDiscoveryHelper.GetMethodLevelInterceptAttributes(typeSymbol);
+                    var methods = TypeDiscoveryHelper.GetInterceptedMethods(typeSymbol, classLevelInterceptors, methodLevelInterceptors);
+
+                    if (methods.Count > 0)
+                    {
+                        var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                        var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                        var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                        
+                        // Collect all unique interceptor types
+                        var allInterceptorTypes = classLevelInterceptors
+                            .Concat(methodLevelInterceptors)
+                            .Select(i => i.InterceptorTypeName)
+                            .Distinct()
+                            .ToArray();
+
+                        interceptedServices.Add(new DiscoveredInterceptedService(
+                            typeName,
+                            interfaceNames,
+                            assembly.Name,
+                            lifetime.Value,
+                            methods.ToArray(),
+                            allInterceptorTypes));
+                    }
+                }
             }
 
             // Check for injectable types
@@ -634,6 +677,293 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
+    private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+
+        builder.AppendLine("// <auto-generated/>");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine("using System.Reflection;");
+        builder.AppendLine("using System.Threading.Tasks;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine("using NexusLabs.Needlr;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate each proxy class
+        foreach (var service in interceptedServices)
+        {
+            GenerateInterceptorProxyClass(builder, service);
+            builder.AppendLine();
+        }
+
+        // Generate the registration helper
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Helper class for registering intercepted services.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine("public static class InterceptorRegistrations");
+        builder.AppendLine("{");
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all intercepted services and their proxies.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    public static void RegisterInterceptedServices(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var service in interceptedServices)
+        {
+            var proxyTypeName = GetProxyTypeName(service.TypeName);
+            var lifetime = service.Lifetime switch
+            {
+                GeneratorLifetime.Singleton => "Singleton",
+                GeneratorLifetime.Scoped => "Scoped",
+                GeneratorLifetime.Transient => "Transient",
+                _ => "Scoped"
+            };
+
+            // Register all interceptor types
+            foreach (var interceptorType in service.AllInterceptorTypeNames)
+            {
+                builder.AppendLine($"        // Register interceptor: {interceptorType}");
+                builder.AppendLine($"        if (!services.Any(d => d.ServiceType == typeof({interceptorType})))");
+                builder.AppendLine($"            services.Add{lifetime}<{interceptorType}>();");
+            }
+
+            // Register the actual implementation type
+            builder.AppendLine($"        // Register actual implementation");
+            builder.AppendLine($"        services.Add{lifetime}<{service.TypeName}>();");
+
+            // Register proxy for each interface
+            foreach (var iface in service.InterfaceNames)
+            {
+                builder.AppendLine($"        // Register proxy for {iface}");
+                builder.AppendLine($"        services.Add{lifetime}<{iface}>(sp => new {proxyTypeName}(");
+                builder.AppendLine($"            sp.GetRequiredService<{service.TypeName}>(),");
+                builder.AppendLine($"            sp));");
+            }
+        }
+
+        builder.AppendLine("    }");
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets the number of intercepted services discovered at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine($"    public static int Count => {interceptedServices.Count};");
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    private static void GenerateInterceptorProxyClass(StringBuilder builder, DiscoveredInterceptedService service)
+    {
+        var proxyTypeName = GetProxyTypeName(service.TypeName);
+        var shortTypeName = GetShortTypeName(service.TypeName);
+
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// Interceptor proxy for {service.TypeName}.");
+        builder.AppendLine("/// Routes method calls through configured interceptors.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+
+        // Implement all interfaces
+        builder.Append($"internal sealed class {proxyTypeName}");
+        if (service.InterfaceNames.Length > 0)
+        {
+            builder.Append(" : ");
+            builder.Append(string.Join(", ", service.InterfaceNames));
+        }
+        builder.AppendLine();
+        builder.AppendLine("{");
+
+        // Fields
+        builder.AppendLine($"    private readonly {service.TypeName} _target;");
+        builder.AppendLine("    private readonly IServiceProvider _serviceProvider;");
+        builder.AppendLine();
+
+        // Static MethodInfo fields for each method
+        var methodIndex = 0;
+        foreach (var method in service.Methods)
+        {
+            builder.AppendLine($"    private static readonly MethodInfo _method{methodIndex} = typeof({method.InterfaceTypeName}).GetMethod(nameof({method.InterfaceTypeName}.{method.Name}))!;");
+            methodIndex++;
+        }
+        builder.AppendLine();
+
+        // Constructor
+        builder.AppendLine($"    public {proxyTypeName}({service.TypeName} target, IServiceProvider serviceProvider)");
+        builder.AppendLine("    {");
+        builder.AppendLine("        _target = target ?? throw new ArgumentNullException(nameof(target));");
+        builder.AppendLine("        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));");
+        builder.AppendLine("    }");
+        builder.AppendLine();
+
+        // Generate each method
+        methodIndex = 0;
+        foreach (var method in service.Methods)
+        {
+            GenerateInterceptedMethod(builder, method, methodIndex, service.TypeName);
+            methodIndex++;
+        }
+
+        builder.AppendLine("}");
+    }
+
+    private static void GenerateInterceptedMethod(StringBuilder builder, TypeDiscoveryHelper.InterceptedMethodInfo method, int methodIndex, string targetTypeName)
+    {
+        var parameterList = method.GetParameterList();
+        var argumentList = method.GetArgumentList();
+
+        builder.AppendLine($"    public {method.ReturnType} {method.Name}({parameterList})");
+        builder.AppendLine("    {");
+
+        // Build interceptor chain
+        var interceptorCount = method.InterceptorTypeNames.Length;
+        builder.AppendLine($"        var interceptors = new IMethodInterceptor[{interceptorCount}];");
+        for (var i = 0; i < interceptorCount; i++)
+        {
+            builder.AppendLine($"        interceptors[{i}] = _serviceProvider.GetRequiredService<{method.InterceptorTypeNames[i]}>();");
+        }
+        builder.AppendLine();
+
+        // Create arguments array
+        if (method.Parameters.Count > 0)
+        {
+            builder.AppendLine($"        var args = new object?[] {{ {string.Join(", ", method.Parameters.Select(p => p.Name))} }};");
+        }
+        else
+        {
+            builder.AppendLine("        var args = Array.Empty<object?>();");
+        }
+        builder.AppendLine();
+
+        // Build the proceed chain - start from innermost (actual call) and wrap outward
+        builder.AppendLine("        // Build the interceptor chain from inside out");
+        builder.AppendLine("        Func<ValueTask<object?>> proceed = async () =>");
+        builder.AppendLine("        {");
+
+        if (method.IsVoid)
+        {
+            builder.AppendLine($"            _target.{method.Name}({argumentList});");
+            builder.AppendLine("            return null;");
+        }
+        else if (method.IsAsync)
+        {
+            // Check if the return type is Task<T> or ValueTask<T> (has a result)
+            var hasResult = !method.ReturnType.Equals("global::System.Threading.Tasks.Task", StringComparison.Ordinal) &&
+                           !method.ReturnType.Equals("global::System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
+            
+            if (hasResult)
+            {
+                builder.AppendLine($"            var result = await _target.{method.Name}({argumentList});");
+                builder.AppendLine("            return result;");
+            }
+            else
+            {
+                builder.AppendLine($"            await _target.{method.Name}({argumentList});");
+                builder.AppendLine("            return null;");
+            }
+        }
+        else
+        {
+            builder.AppendLine($"            var result = _target.{method.Name}({argumentList});");
+            builder.AppendLine("            return result;");
+        }
+
+        builder.AppendLine("        };");
+        builder.AppendLine();
+
+        // Wrap each interceptor, from last to first (so first interceptor is outermost)
+        builder.AppendLine("        for (var i = interceptors.Length - 1; i >= 0; i--)");
+        builder.AppendLine("        {");
+        builder.AppendLine("            var interceptor = interceptors[i];");
+        builder.AppendLine("            var nextProceed = proceed;");
+        builder.AppendLine($"            proceed = () => interceptor.InterceptAsync(new MethodInvocation(_target, _method{methodIndex}, args, nextProceed));");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+
+        // Invoke the chain and return the result
+        if (method.IsVoid)
+        {
+            builder.AppendLine("        proceed().AsTask().GetAwaiter().GetResult();");
+        }
+        else if (method.IsAsync)
+        {
+            var hasResult = !method.ReturnType.Equals("global::System.Threading.Tasks.Task", StringComparison.Ordinal) &&
+                           !method.ReturnType.Equals("global::System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
+            
+            if (hasResult)
+            {
+                // Extract the inner type from Task<T> or ValueTask<T>
+                var innerType = ExtractGenericTypeArgument(method.ReturnType);
+                if (method.ReturnType.StartsWith("global::System.Threading.Tasks.ValueTask<", StringComparison.Ordinal))
+                {
+                    builder.AppendLine($"        return new {method.ReturnType}(proceed().AsTask().ContinueWith(t => ({innerType})t.Result!));");
+                }
+                else
+                {
+                    // Task<T>
+                    builder.AppendLine($"        return proceed().AsTask().ContinueWith(t => ({innerType})t.Result!);");
+                }
+            }
+            else
+            {
+                // Task or ValueTask without result
+                if (method.ReturnType.StartsWith("global::System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
+                {
+                    builder.AppendLine("        return new global::System.Threading.Tasks.ValueTask(proceed().AsTask());");
+                }
+                else
+                {
+                    builder.AppendLine("        return proceed().AsTask();");
+                }
+            }
+        }
+        else
+        {
+            // Synchronous with return value
+            builder.AppendLine($"        return ({method.ReturnType})proceed().AsTask().GetAwaiter().GetResult()!;");
+        }
+
+        builder.AppendLine("    }");
+        builder.AppendLine();
+    }
+
+    private static string GetProxyTypeName(string fullyQualifiedTypeName)
+    {
+        var shortName = GetShortTypeName(fullyQualifiedTypeName);
+        return $"{shortName}_InterceptorProxy";
+    }
+
+    private static string GetShortTypeName(string fullyQualifiedTypeName)
+    {
+        // Remove global:: prefix and get just the type name
+        var name = fullyQualifiedTypeName;
+        if (name.StartsWith("global::", StringComparison.Ordinal))
+            name = name.Substring(8);
+        
+        var lastDot = name.LastIndexOf('.');
+        return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+    }
+
+    private static string ExtractGenericTypeArgument(string genericTypeName)
+    {
+        // Extract T from Task<T> or ValueTask<T>
+        var openBracket = genericTypeName.IndexOf('<');
+        var closeBracket = genericTypeName.LastIndexOf('>');
+        if (openBracket >= 0 && closeBracket > openBracket)
+        {
+            return genericTypeName.Substring(openBracket + 1, closeBracket - openBracket - 1);
+        }
+        return "object";
+    }
+
     /// <summary>
     /// Sanitizes an assembly name to be a valid C# identifier for use in namespaces.
     /// </summary>
@@ -821,7 +1151,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins,
             IReadOnlyList<DiscoveredDecorator> decorators,
             IReadOnlyList<InaccessibleType> inaccessibleTypes,
-            IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins)
+            IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
+            IReadOnlyList<DiscoveredInterceptedService> interceptedServices)
         {
             InjectableTypes = injectableTypes;
             PluginTypes = pluginTypes;
@@ -830,6 +1161,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             Decorators = decorators;
             InaccessibleTypes = inaccessibleTypes;
             MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
+            InterceptedServices = interceptedServices;
         }
 
         public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -839,5 +1171,32 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public IReadOnlyList<DiscoveredDecorator> Decorators { get; }
         public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
         public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
+        public IReadOnlyList<DiscoveredInterceptedService> InterceptedServices { get; }
+    }
+
+    private readonly struct DiscoveredInterceptedService
+    {
+        public DiscoveredInterceptedService(
+            string typeName,
+            string[] interfaceNames,
+            string assemblyName,
+            GeneratorLifetime lifetime,
+            TypeDiscoveryHelper.InterceptedMethodInfo[] methods,
+            string[] allInterceptorTypeNames)
+        {
+            TypeName = typeName;
+            InterfaceNames = interfaceNames;
+            AssemblyName = assemblyName;
+            Lifetime = lifetime;
+            Methods = methods;
+            AllInterceptorTypeNames = allInterceptorTypeNames;
+        }
+
+        public string TypeName { get; }
+        public string[] InterfaceNames { get; }
+        public string AssemblyName { get; }
+        public GeneratorLifetime Lifetime { get; }
+        public TypeDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
+        public string[] AllInterceptorTypeNames { get; }
     }
 }
