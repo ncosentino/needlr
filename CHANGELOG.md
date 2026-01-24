@@ -5,12 +5,7 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.2-alpha.17] - 2026-01-24
-
-### Fixed
-- **TypeRegistry generator not detecting `[GenerateTypeRegistry]` attribute**: `ForAttributeWithMetadataName` doesn't work for assembly-level attributes. Changed to use `compilation.Assembly.GetAttributes()` directly, which correctly detects `[assembly: GenerateTypeRegistry(...)]` attributes.
-
-## [0.0.2-alpha.16] - 2026-01-23
+## [0.0.2-alpha.16] - 2026-01-24
 
 ### Added
 - **Source-gen assembly ordering**: `OrderAssemblies(order => order.By().ThenBy())` now works for source-gen path
@@ -20,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **6 parity tests**: Verifying reflection and source-gen assembly ordering produce identical behavior
 
 ### Fixed
+- **TypeRegistry generator not detecting `[GenerateTypeRegistry]` attribute**: `ForAttributeWithMetadataName` doesn't work for assembly-level attributes. Changed to use `compilation.Assembly.GetAttributes()` directly, which correctly detects `[assembly: GenerateTypeRegistry(...)]` attributes.
 - **`AssemblyOrderBuilderTests`**: Moved from incorrectly named "parity" tests to unit test location
 
 ## [0.0.2-alpha.15] - 2026-01-23
