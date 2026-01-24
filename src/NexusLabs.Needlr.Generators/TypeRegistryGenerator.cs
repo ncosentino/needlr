@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 using System.Text;
@@ -17,35 +16,22 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Find assemblies marked with [GenerateTypeRegistry]
-        var attributeProvider = context.SyntaxProvider
-            .ForAttributeWithMetadataName(
-                GenerateTypeRegistryAttributeName,
-                predicate: static (node, _) => node is CompilationUnitSyntax,
-                transform: static (ctx, _) => GetAttributeInfo(ctx))
-            .Where(static info => info.HasValue)
-            .Select(static (info, _) => info!.Value);
-
-        // Combine with compilation to get access to all referenced assemblies
-        var compilationAndAttributes = context.CompilationProvider
-            .Combine(attributeProvider.Collect());
-
-        // Generate the TypeRegistry source
-        context.RegisterSourceOutput(compilationAndAttributes, static (spc, source) =>
+        // ForAttributeWithMetadataName doesn't work for assembly-level attributes.
+        // Instead, we register directly on the compilation provider and check
+        // compilation.Assembly.GetAttributes() for [GenerateTypeRegistry].
+        context.RegisterSourceOutput(context.CompilationProvider, static (spc, compilation) =>
         {
-            var (compilation, attributes) = source;
-
-            if (attributes.IsEmpty)
+            var attributeInfo = GetAttributeInfoFromCompilation(compilation);
+            if (attributeInfo == null)
                 return;
 
-            // Use the first attribute (only one should be present per assembly)
-            var attributeInfo = attributes[0];
+            var info = attributeInfo.Value;
             var assemblyName = compilation.AssemblyName ?? "Generated";
 
             var discoveryResult = DiscoverTypes(
                 compilation,
-                attributeInfo.NamespacePrefixes,
-                attributeInfo.IncludeSelf);
+                info.NamespacePrefixes,
+                info.IncludeSelf);
 
             // Report errors for inaccessible internal types in referenced assemblies
             foreach (var inaccessibleType in discoveryResult.InaccessibleTypes)
@@ -95,11 +81,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         });
     }
 
-    private static AttributeInfo? GetAttributeInfo(GeneratorAttributeSyntaxContext context)
+    private static AttributeInfo? GetAttributeInfoFromCompilation(Compilation compilation)
     {
-        foreach (var attribute in context.Attributes)
+        // Get assembly-level attributes directly from the compilation
+        foreach (var attribute in compilation.Assembly.GetAttributes())
         {
-            if (attribute.AttributeClass?.ToDisplayString() != GenerateTypeRegistryAttributeName)
+            var attrClassName = attribute.AttributeClass?.ToDisplayString();
+            
+            // Check if this is our attribute (various name format possibilities)
+            if (attrClassName != GenerateTypeRegistryAttributeName)
                 continue;
 
             string[]? namespacePrefixes = null;
