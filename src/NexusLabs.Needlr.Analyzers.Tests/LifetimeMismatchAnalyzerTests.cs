@@ -25,7 +25,21 @@ namespace NexusLabs.Needlr
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public class RegisterAsAttribute : System.Attribute
     {
-        public RegisterAsAttribute(int lifetime) { }
+        public RegisterAsAttribute(ServiceLifetime lifetime) { }
+        public RegisterAsAttribute(System.Type serviceType, ServiceLifetime lifetime = ServiceLifetime.Transient) { }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public class AutoRegisterAttribute : System.Attribute
+    {
+        public ServiceLifetime Lifetime { get; set; } = ServiceLifetime.Transient;
+    }
+
+    public enum ServiceLifetime
+    {
+        Singleton = 0,
+        Scoped = 1,
+        Transient = 2
     }
 }";
 
@@ -319,6 +333,147 @@ public abstract class AbstractService
         var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
         {
             TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    // === Source-gen parity tests for RegisterAs and AutoRegister ===
+
+    [Fact]
+    public async Task Warning_WhenRegisterAsSingletonDependsOnScoped()
+    {
+        var code = @"
+using NexusLabs.Needlr;
+
+[Scoped]
+public class ScopedDependency { }
+
+[RegisterAs(ServiceLifetime.Singleton)]
+public class SingletonService
+{
+    public SingletonService({|#0:ScopedDependency dep|}) { }
+}
+" + NeedlrAttributes;
+
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
+            .WithLocation(0)
+            .WithArguments("SingletonService", "Singleton", "ScopedDependency", "Scoped");
+
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics = { expected }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoWarning_WhenRegisterAsScopedDependsOnSingleton()
+    {
+        var code = @"
+using NexusLabs.Needlr;
+
+[Singleton]
+public class SingletonDependency { }
+
+[RegisterAs(typeof(IScopedService), ServiceLifetime.Scoped)]
+public class ScopedService : IScopedService
+{
+    public ScopedService(SingletonDependency dep) { }
+}
+
+public interface IScopedService { }
+" + NeedlrAttributes;
+
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Warning_WhenAutoRegisterSingletonDependsOnTransient()
+    {
+        var code = @"
+using NexusLabs.Needlr;
+
+[Transient]
+public class TransientDependency { }
+
+[AutoRegister(Lifetime = ServiceLifetime.Singleton)]
+public class SingletonService
+{
+    public SingletonService({|#0:TransientDependency dep|}) { }
+}
+" + NeedlrAttributes;
+
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
+            .WithLocation(0)
+            .WithArguments("SingletonService", "Singleton", "TransientDependency", "Transient");
+
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics = { expected }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoWarning_WhenAutoRegisterTransientDependsOnSingleton()
+    {
+        var code = @"
+using NexusLabs.Needlr;
+
+[Singleton]
+public class SingletonDependency { }
+
+[AutoRegister(Lifetime = ServiceLifetime.Transient)]
+public class TransientService
+{
+    public TransientService(SingletonDependency dep) { }
+}
+" + NeedlrAttributes;
+
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Warning_MixedAttributes_RegisterAsAndSingleton()
+    {
+        var code = @"
+using NexusLabs.Needlr;
+
+// Dependency uses simple [Scoped] attribute
+[Scoped]
+public class ScopedDependency { }
+
+// Consumer uses [RegisterAs] with Singleton
+[RegisterAs(ServiceLifetime.Singleton)]
+public class MixedService
+{
+    public MixedService({|#0:ScopedDependency dep|}) { }
+}
+" + NeedlrAttributes;
+
+        var expected = new DiagnosticResult(DiagnosticIds.LifetimeMismatch, DiagnosticSeverity.Warning)
+            .WithLocation(0)
+            .WithArguments("MixedService", "Singleton", "ScopedDependency", "Scoped");
+
+        var test = new CSharpAnalyzerTest<LifetimeMismatchAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics = { expected }
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);

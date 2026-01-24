@@ -1,4 +1,4 @@
-# NDLRCOR005: Lifestyle mismatch - longer-lived service depends on shorter-lived service
+# NDLRCOR005: Lifetime mismatch - longer-lived service depends on shorter-lived service
 
 ## Cause
 
@@ -14,7 +14,7 @@ In dependency injection, services have three standard lifetimes:
 | **Scoped** | 1 | One instance per scope (e.g., per HTTP request) |
 | **Singleton** | 2 | Single instance for application lifetime |
 
-A **lifestyle mismatch** occurs when a longer-lived service depends on a shorter-lived one:
+A **lifetime mismatch** occurs when a longer-lived service depends on a shorter-lived one:
 
 ```csharp
 // ⚠️ NDLRCOR005: Singleton depends on Scoped

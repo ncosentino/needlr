@@ -1173,9 +1173,9 @@ Console.WriteLine(provider.Dump());
 
 Needlr provides verification APIs to detect common configuration issues at startup.
 
-### Detecting Lifestyle Mismatches
+### Detecting Lifetime Mismatches
 
-A lifestyle mismatch (also called "captive dependency") occurs when a longer-lived service depends on a shorter-lived service. For example, a Singleton that depends on a Scoped service will "capture" that scoped instance, causing it to live for the entire application lifetime instead of the intended scope.
+A lifetime mismatch (also called "captive dependency") occurs when a longer-lived service depends on a shorter-lived service. For example, a Singleton that depends on a Scoped service will "capture" that scoped instance, causing it to live for the entire application lifetime instead of the intended scope.
 
 ```csharp
 using NexusLabs.Needlr;
@@ -1185,7 +1185,7 @@ services.AddScoped<IDbContext, AppDbContext>();        // Scoped
 services.AddSingleton<ICacheService, CacheService>();  // Singleton depends on IDbContext
 
 // Detect mismatches
-var mismatches = services.DetectLifestyleMismatches();
+var mismatches = services.DetectLifetimeMismatches();
 
 foreach (var mismatch in mismatches)
 {
@@ -1195,7 +1195,7 @@ foreach (var mismatch in mismatches)
 
 Output:
 ```
-┌─ Lifestyle Mismatch
+┌─ Lifetime Mismatch
 │  ICacheService (Singleton)
 │    └─ depends on ─▶ IDbContext (Scoped)
 │
@@ -1206,7 +1206,7 @@ Output:
 └─
 ```
 
-### Lifestyle Hierarchy
+### Lifetime Hierarchy
 
 From longest to shortest lifetime:
 1. **Singleton** - Lives for entire application lifetime
@@ -1237,7 +1237,7 @@ services.Verify(VerificationOptions.Disabled);
 // Custom configuration
 services.Verify(new VerificationOptions
 {
-    LifestyleMismatchBehavior = VerificationBehavior.Throw,
+    LifetimeMismatchBehavior = VerificationBehavior.Throw,
     CircularDependencyBehavior = VerificationBehavior.Warn,
     IssueReporter = issue => logger.LogWarning(issue.Message)
 });
@@ -1255,7 +1255,7 @@ if (!result.IsValid)
     Console.WriteLine(result.ToDetailedReport());
     // ❌ Container verification found 2 issue(s):
     // 
-    // [LifestyleMismatch] Lifestyle mismatch: ICacheService (Singleton) depends on IDbContext (Scoped)
+    // [LifetimeMismatch] Lifetime mismatch: ICacheService (Singleton) depends on IDbContext (Scoped)
     // ...
 }
 
@@ -1267,7 +1267,7 @@ result.ThrowIfInvalid();
 
 Needlr includes Roslyn analyzers that detect issues at compile time:
 
-- **[NDLRCOR005](analyzers/NDLRCOR005.md)**: Lifestyle mismatch warnings
+- **[NDLRCOR005](analyzers/NDLRCOR005.md)**: Lifetime mismatch warnings
 - **[NDLRCOR006](analyzers/NDLRCOR006.md)**: Circular dependency errors
 
 These analyzers work with Needlr's registration attributes (`[Singleton]`, `[Scoped]`, `[Transient]`, `[RegisterAs]`).

@@ -12,7 +12,7 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR002](NDLRCOR002.md) | Warning | Plugin has constructor dependencies |
 | [NDLRCOR003](NDLRCOR003.md) | Error | [DeferToContainer] attribute in generated code is ignored |
 | [NDLRCOR004](NDLRCOR004.md) | Warning | Injectable type in global namespace may not be discovered |
-| [NDLRCOR005](NDLRCOR005.md) | Warning | Lifestyle mismatch: longer-lived service depends on shorter-lived service |
+| [NDLRCOR005](NDLRCOR005.md) | Warning | Lifetime mismatch: longer-lived service depends on shorter-lived service |
 | [NDLRCOR006](NDLRCOR006.md) | Error | Circular dependency detected |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)

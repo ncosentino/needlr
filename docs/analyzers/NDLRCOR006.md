@@ -207,5 +207,5 @@ However, if you're using `Lazy<T>` or `Func<T>` to intentionally break the cycle
 ## See Also
 
 - [Advanced Usage - Container Verification](../advanced-usage.md#container-verification)
-- [NDLRCOR005: Lifestyle mismatch](NDLRCOR005.md)
+- [NDLRCOR005: Lifetime mismatch](NDLRCOR005.md)
 - [Martin Fowler: Inversion of Control Containers](https://martinfowler.com/articles/injection.html)
