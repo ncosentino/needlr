@@ -5,6 +5,11 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.17] - 2026-01-24
+
+### Fixed
+- **TypeRegistry generator not detecting `[GenerateTypeRegistry]` attribute**: `ForAttributeWithMetadataName` doesn't work for assembly-level attributes. Changed to use `compilation.Assembly.GetAttributes()` directly, which correctly detects `[assembly: GenerateTypeRegistry(...)]` attributes.
+
 ## [0.0.2-alpha.16] - 2026-01-23
 
 ### Added
