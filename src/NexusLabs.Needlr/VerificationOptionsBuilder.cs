@@ -1,0 +1,68 @@
+namespace NexusLabs.Needlr;
+
+/// <summary>
+/// Builder for creating <see cref="VerificationOptions"/> with a fluent API.
+/// </summary>
+public sealed class VerificationOptionsBuilder
+{
+    private VerificationBehavior _lifestyleMismatchBehavior = VerificationBehavior.Warn;
+    private VerificationBehavior _circularDependencyBehavior = VerificationBehavior.Throw;
+    private Action<VerificationIssue>? _issueReporter;
+
+    /// <summary>
+    /// Sets the behavior when lifestyle mismatches are detected.
+    /// </summary>
+    public VerificationOptionsBuilder OnLifestyleMismatch(VerificationBehavior behavior)
+    {
+        _lifestyleMismatchBehavior = behavior;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the behavior when circular dependencies are detected.
+    /// </summary>
+    public VerificationOptionsBuilder OnCircularDependency(VerificationBehavior behavior)
+    {
+        _circularDependencyBehavior = behavior;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a custom reporter for verification issues.
+    /// </summary>
+    public VerificationOptionsBuilder ReportIssuesTo(Action<VerificationIssue> reporter)
+    {
+        _issueReporter = reporter;
+        return this;
+    }
+
+    /// <summary>
+    /// Throws on any verification issue.
+    /// </summary>
+    public VerificationOptionsBuilder Strict()
+    {
+        _lifestyleMismatchBehavior = VerificationBehavior.Throw;
+        _circularDependencyBehavior = VerificationBehavior.Throw;
+        return this;
+    }
+
+    /// <summary>
+    /// Disables all verification.
+    /// </summary>
+    public VerificationOptionsBuilder Disabled()
+    {
+        _lifestyleMismatchBehavior = VerificationBehavior.Silent;
+        _circularDependencyBehavior = VerificationBehavior.Silent;
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the configured <see cref="VerificationOptions"/>.
+    /// </summary>
+    public VerificationOptions Build() => new()
+    {
+        LifestyleMismatchBehavior = _lifestyleMismatchBehavior,
+        CircularDependencyBehavior = _circularDependencyBehavior,
+        IssueReporter = _issueReporter
+    };
+}

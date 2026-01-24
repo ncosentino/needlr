@@ -27,4 +27,14 @@ public static class DiagnosticIds
     /// NDLRCOR004: Injectable type in global namespace may not be discovered.
     /// </summary>
     public const string GlobalNamespaceTypeNotDiscovered = "NDLRCOR004";
+
+    /// <summary>
+    /// NDLRCOR005: Lifestyle mismatch - longer-lived service depends on shorter-lived service.
+    /// </summary>
+    public const string LifestyleMismatch = "NDLRCOR005";
+
+    /// <summary>
+    /// NDLRCOR006: Circular dependency detected in service registration.
+    /// </summary>
+    public const string CircularDependency = "NDLRCOR006";
 }

@@ -1168,3 +1168,106 @@ var provider = new Syringe()
 // Needlr automatically registers IServiceCollection, so Dump() works
 Console.WriteLine(provider.Dump());
 ```
+
+## Container Verification
+
+Needlr provides verification APIs to detect common configuration issues at startup.
+
+### Detecting Lifestyle Mismatches
+
+A lifestyle mismatch (also called "captive dependency") occurs when a longer-lived service depends on a shorter-lived service. For example, a Singleton that depends on a Scoped service will "capture" that scoped instance, causing it to live for the entire application lifetime instead of the intended scope.
+
+```csharp
+using NexusLabs.Needlr;
+
+var services = new ServiceCollection();
+services.AddScoped<IDbContext, AppDbContext>();        // Scoped
+services.AddSingleton<ICacheService, CacheService>();  // Singleton depends on IDbContext
+
+// Detect mismatches
+var mismatches = services.DetectLifestyleMismatches();
+
+foreach (var mismatch in mismatches)
+{
+    Console.WriteLine(mismatch.ToDetailedString());
+}
+```
+
+Output:
+```
+┌─ Lifestyle Mismatch
+│  ICacheService (Singleton)
+│    └─ depends on ─▶ IDbContext (Scoped)
+│
+│  Problem: Singleton service will capture Scoped dependency
+│  Fix: Change ICacheService to Scoped,
+│       or change IDbContext to Singleton,
+│       or inject IServiceScopeFactory instead.
+└─
+```
+
+### Lifestyle Hierarchy
+
+From longest to shortest lifetime:
+1. **Singleton** - Lives for entire application lifetime
+2. **Scoped** - Lives for the scope/request lifetime  
+3. **Transient** - New instance every time
+
+A mismatch is detected when a service depends on another with a shorter lifetime:
+- ❌ Singleton → Scoped (mismatch)
+- ❌ Singleton → Transient (mismatch)
+- ❌ Scoped → Transient (mismatch)
+- ✅ Scoped → Singleton (ok)
+- ✅ Transient → anything (ok)
+
+### Automatic Verification with Verify()
+
+Use the `Verify()` extension method to automatically detect and handle issues:
+
+```csharp
+// Throws ContainerVerificationException on issues (strict mode)
+services.Verify(VerificationOptions.Strict);
+
+// Warns to console but doesn't throw (default behavior)
+services.Verify();
+
+// Disable verification (silent mode)
+services.Verify(VerificationOptions.Disabled);
+
+// Custom configuration
+services.Verify(new VerificationOptions
+{
+    LifestyleMismatchBehavior = VerificationBehavior.Throw,
+    CircularDependencyBehavior = VerificationBehavior.Warn,
+    IssueReporter = issue => logger.LogWarning(issue.Message)
+});
+```
+
+### Getting Detailed Diagnostics
+
+Use `VerifyWithDiagnostics()` to get a result object instead of throwing:
+
+```csharp
+var result = services.VerifyWithDiagnostics();
+
+if (!result.IsValid)
+{
+    Console.WriteLine(result.ToDetailedReport());
+    // ❌ Container verification found 2 issue(s):
+    // 
+    // [LifestyleMismatch] Lifestyle mismatch: ICacheService (Singleton) depends on IDbContext (Scoped)
+    // ...
+}
+
+// Or throw if needed
+result.ThrowIfInvalid();
+```
+
+### Compile-Time Detection
+
+Needlr includes Roslyn analyzers that detect issues at compile time:
+
+- **[NDLRCOR005](analyzers/NDLRCOR005.md)**: Lifestyle mismatch warnings
+- **[NDLRCOR006](analyzers/NDLRCOR006.md)**: Circular dependency errors
+
+These analyzers work with Needlr's registration attributes (`[Singleton]`, `[Scoped]`, `[Transient]`, `[RegisterAs]`).

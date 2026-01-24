@@ -272,6 +272,66 @@ public static class SyringeExtensions
     }
 
     /// <summary>
+    /// Configures verification options for the syringe.
+    /// Verification runs automatically during <see cref="Syringe.BuildServiceProvider"/>.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="options">The verification options to use.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    /// <example>
+    /// <code>
+    /// // Strict mode - throw on any issue
+    /// new Syringe()
+    ///     .UsingSourceGen()
+    ///     .WithVerification(VerificationOptions.Strict)
+    ///     .BuildServiceProvider();
+    /// 
+    /// // Disable verification
+    /// new Syringe()
+    ///     .UsingSourceGen()
+    ///     .WithVerification(VerificationOptions.Disabled)
+    ///     .BuildServiceProvider();
+    /// 
+    /// // Custom configuration
+    /// new Syringe()
+    ///     .UsingSourceGen()
+    ///     .WithVerification(new VerificationOptions
+    ///     {
+    ///         LifestyleMismatchBehavior = VerificationBehavior.Throw,
+    ///         IssueReporter = issue => logger.LogWarning(issue.Message)
+    ///     })
+    ///     .BuildServiceProvider();
+    /// </code>
+    /// </example>
+    public static Syringe WithVerification(
+        this Syringe syringe,
+        VerificationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(options);
+
+        return syringe with { VerificationOptions = options };
+    }
+
+    /// <summary>
+    /// Configures verification options using a builder action.
+    /// </summary>
+    /// <param name="syringe">The syringe to configure.</param>
+    /// <param name="configure">An action to configure the verification options.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static Syringe WithVerification(
+        this Syringe syringe,
+        Action<VerificationOptionsBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new VerificationOptionsBuilder();
+        configure(builder);
+        return syringe with { VerificationOptions = builder.Build() };
+    }
+
+    /// <summary>
     /// Builds a service provider with default configuration.
     /// </summary>
     /// <param name="syringe">The syringe to build from.</param>

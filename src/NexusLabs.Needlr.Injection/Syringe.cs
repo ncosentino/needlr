@@ -32,6 +32,7 @@ public sealed record Syringe
     internal AssemblyOrdering.AssemblyOrderBuilder? AssemblyOrder { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
+    internal VerificationOptions? VerificationOptions { get; init; }
     
     /// <summary>
     /// Factory for creating <see cref="IServiceProviderBuilder"/> instances.
@@ -40,11 +41,15 @@ public sealed record Syringe
 
     /// <summary>
     /// Builds a service provider with the configured settings.
+    /// Automatically runs container verification based on <see cref="VerificationOptions"/>.
     /// </summary>
     /// <param name="config">The configuration to use for building the service provider.</param>
     /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown if required components (TypeRegistrar, TypeFilterer, PluginFactory, AssemblyProvider) are not configured.
+    /// </exception>
+    /// <exception cref="ContainerVerificationException">
+    /// Thrown if verification issues are detected and the configured behavior is <see cref="VerificationBehavior.Throw"/>.
     /// </exception>
     public IServiceProvider BuildServiceProvider(
         IConfiguration config)
@@ -56,6 +61,13 @@ public sealed record Syringe
         var assemblyProvider = GetOrCreateAssemblyProvider();
         var additionalAssemblies = AdditionalAssemblies ?? [];
         var callbacks = PostPluginRegistrationCallbacks ?? [];
+        var verificationOptions = VerificationOptions ?? VerificationOptions.Default;
+
+        // Add verification as a post-plugin callback
+        var callbacksWithVerification = new List<Action<IServiceCollection>>(callbacks)
+        {
+            services => RunVerification(services, verificationOptions)
+        };
 
         var serviceProviderBuilder = GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
@@ -65,7 +77,62 @@ public sealed record Syringe
         return serviceProviderBuilder.Build(
             services: new ServiceCollection(),
             config: config,
-            postPluginRegistrationCallbacks: callbacks);
+            postPluginRegistrationCallbacks: callbacksWithVerification);
+    }
+
+    private static void RunVerification(IServiceCollection services, VerificationOptions options)
+    {
+        var issues = new List<VerificationIssue>();
+
+        // Check for lifestyle mismatches
+        if (options.LifestyleMismatchBehavior != VerificationBehavior.Silent)
+        {
+            var mismatches = services.DetectLifestyleMismatches();
+            foreach (var mismatch in mismatches)
+            {
+                issues.Add(new VerificationIssue(
+                    Type: VerificationIssueType.LifestyleMismatch,
+                    Message: $"Lifestyle mismatch: {mismatch.ConsumerServiceType.Name} ({mismatch.ConsumerLifetime}) depends on {mismatch.DependencyServiceType.Name} ({mismatch.DependencyLifetime})",
+                    DetailedMessage: mismatch.ToDetailedString(),
+                    ConfiguredBehavior: options.LifestyleMismatchBehavior)
+                {
+                    InvolvedTypes = [mismatch.ConsumerServiceType, mismatch.DependencyServiceType]
+                });
+            }
+        }
+
+        // Process issues based on configured behavior
+        var issuesByBehavior = issues.GroupBy(i => i.ConfiguredBehavior);
+        
+        foreach (var group in issuesByBehavior)
+        {
+            switch (group.Key)
+            {
+                case VerificationBehavior.Warn:
+                    foreach (var issue in group)
+                    {
+                        if (options.IssueReporter is not null)
+                        {
+                            options.IssueReporter(issue);
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"[Needlr Warning] {issue.Message}");
+                            Console.Error.WriteLine(issue.DetailedMessage);
+                            Console.Error.WriteLine();
+                        }
+                    }
+                    break;
+
+                case VerificationBehavior.Throw:
+                    var throwableIssues = group.ToList();
+                    if (throwableIssues.Count > 0)
+                    {
+                        throw new ContainerVerificationException(throwableIssues);
+                    }
+                    break;
+            }
+        }
     }
         
     /// <summary>

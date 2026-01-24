@@ -61,4 +61,31 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Types in the global namespace are not matched by namespace prefix filters. Either move the type to a namespace that matches your IncludeNamespacePrefixes, or add an empty string (\"\") to IncludeNamespacePrefixes to include global namespace types.",
         helpLinkUri: HelpLinkBase + "NDLRCOR004.md");
+
+    /// <summary>
+    /// NDLRCOR005: Lifestyle mismatch - longer-lived service depends on shorter-lived service.
+    /// </summary>
+    public static readonly DiagnosticDescriptor LifestyleMismatch = new(
+        id: DiagnosticIds.LifestyleMismatch,
+        title: "Lifestyle mismatch: longer-lived service depends on shorter-lived service",
+        messageFormat: "'{0}' is registered as {1} but depends on '{2}' which is registered as {3}. This causes a captive dependency.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "A longer-lived service (e.g., Singleton) depending on a shorter-lived service (e.g., Scoped or Transient) creates a 'captive dependency' where the shorter-lived service is held beyond its intended lifetime. This can cause stale data, memory leaks, or concurrency issues. Consider changing the lifetimes or using a factory pattern.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR005.md");
+
+    /// <summary>
+    /// NDLRCOR006: Circular dependency detected in service registration.
+    /// </summary>
+    public static readonly DiagnosticDescriptor CircularDependency = new(
+        id: DiagnosticIds.CircularDependency,
+        title: "Circular dependency detected",
+        messageFormat: "Circular dependency detected: {0}. This will cause a runtime exception when resolving the service.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A circular dependency occurs when a service directly or indirectly depends on itself. This will cause a StackOverflowException or InvalidOperationException at runtime. Break the cycle by introducing a factory, lazy injection, or redesigning the dependencies.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR006.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }
