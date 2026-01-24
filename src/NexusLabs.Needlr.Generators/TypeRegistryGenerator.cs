@@ -362,7 +362,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
 
         builder.AppendLine();
-        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators);
+        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, safeAssemblyName);
 
         builder.AppendLine("}");
 
@@ -527,34 +527,44 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators)
+    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName)
     {
         builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Applies all discovered decorators to the service collection.");
+        builder.AppendLine("    /// Applies all discovered decorators and interceptors to the service collection.");
         builder.AppendLine("    /// Decorators are applied in order, with lower Order values applied first (closer to the original service).");
         builder.AppendLine("    /// </summary>");
         builder.AppendLine("    /// <param name=\"services\">The service collection to apply decorators to.</param>");
         builder.AppendLine("    public static void ApplyDecorators(IServiceCollection services)");
         builder.AppendLine("    {");
 
-        if (decorators.Count == 0)
+        if (decorators.Count == 0 && !hasInterceptors)
         {
-            builder.AppendLine("        // No decorators discovered");
+            builder.AppendLine("        // No decorators or interceptors discovered");
         }
         else
         {
-            // Group decorators by service type and order by Order property
-            var decoratorsByService = decorators
-                .GroupBy(d => d.ServiceTypeName)
-                .OrderBy(g => g.Key);
-
-            foreach (var serviceGroup in decoratorsByService)
+            if (decorators.Count > 0)
             {
-                builder.AppendLine($"        // Decorators for {serviceGroup.Key}");
-                foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
+                // Group decorators by service type and order by Order property
+                var decoratorsByService = decorators
+                    .GroupBy(d => d.ServiceTypeName)
+                    .OrderBy(g => g.Key);
+
+                foreach (var serviceGroup in decoratorsByService)
                 {
-                    builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}, from {decorator.AssemblyName}");
+                    builder.AppendLine($"        // Decorators for {serviceGroup.Key}");
+                    foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
+                    {
+                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}, from {decorator.AssemblyName}");
+                    }
                 }
+            }
+
+            if (hasInterceptors)
+            {
+                builder.AppendLine();
+                builder.AppendLine("        // Register intercepted services with their proxies");
+                builder.AppendLine($"        global::{safeAssemblyName}.Generated.InterceptorRegistrations.RegisterInterceptedServices(services);");
             }
         }
 
