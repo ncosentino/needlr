@@ -88,4 +88,30 @@ public static class DiagnosticDescriptors
         description: "A circular dependency occurs when a service directly or indirectly depends on itself. This will cause a StackOverflowException or InvalidOperationException at runtime. Break the cycle by introducing a factory, lazy injection, or redesigning the dependencies.",
         helpLinkUri: HelpLinkBase + "NDLRCOR006.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRCOR007: Intercept attribute type must implement IMethodInterceptor.
+    /// </summary>
+    public static readonly DiagnosticDescriptor InterceptTypeMustImplementInterface = new(
+        id: DiagnosticIds.InterceptTypeMustImplementInterface,
+        title: "Intercept type must implement IMethodInterceptor",
+        messageFormat: "Type '{0}' used in [Intercept] attribute does not implement IMethodInterceptor",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The type specified in an [Intercept] or [Intercept<T>] attribute must implement IMethodInterceptor. Interceptors must implement this interface to intercept method calls.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR007.md");
+
+    /// <summary>
+    /// NDLRCOR008: [Intercept] applied to class without interfaces.
+    /// </summary>
+    public static readonly DiagnosticDescriptor InterceptOnClassWithoutInterfaces = new(
+        id: DiagnosticIds.InterceptOnClassWithoutInterfaces,
+        title: "[Intercept] applied to class without interfaces",
+        messageFormat: "Class '{0}' has [Intercept] attribute but does not implement any interfaces. Interceptors require interface-based resolution.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Interceptors work by generating a proxy class that implements the service's interfaces. If the class doesn't implement any interfaces, the interceptor cannot be applied. Add an interface to the class or remove the [Intercept] attribute.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR008.md");
 }

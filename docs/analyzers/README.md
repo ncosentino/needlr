@@ -14,6 +14,8 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR004](NDLRCOR004.md) | Warning | Injectable type in global namespace may not be discovered |
 | [NDLRCOR005](NDLRCOR005.md) | Warning | Lifetime mismatch: longer-lived service depends on shorter-lived service |
 | [NDLRCOR006](NDLRCOR006.md) | Error | Circular dependency detected |
+| [NDLRCOR007](NDLRCOR007.md) | Error | Intercept type must implement IMethodInterceptor |
+| [NDLRCOR008](NDLRCOR008.md) | Warning | [Intercept] applied to class without interfaces |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 

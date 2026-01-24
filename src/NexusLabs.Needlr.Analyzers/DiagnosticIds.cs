@@ -37,4 +37,14 @@ public static class DiagnosticIds
     /// NDLRCOR006: Circular dependency detected in service registration.
     /// </summary>
     public const string CircularDependency = "NDLRCOR006";
+
+    /// <summary>
+    /// NDLRCOR007: Intercept attribute type must implement IMethodInterceptor.
+    /// </summary>
+    public const string InterceptTypeMustImplementInterface = "NDLRCOR007";
+
+    /// <summary>
+    /// NDLRCOR008: [Intercept] applied to class without interfaces.
+    /// </summary>
+    public const string InterceptOnClassWithoutInterfaces = "NDLRCOR008";
 }
