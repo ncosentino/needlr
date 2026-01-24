@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr;
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace AotSourceGenConsolePlugin;
@@ -92,5 +94,130 @@ internal sealed class ConsolePostBuildPlugin : IPostBuildServiceCollectionPlugin
 
         var report = options.Provider.GetRequiredService<IConsoleReport>();
         Console.WriteLine("ConsolePostBuildPlugin report:\n" + report.BuildReport());
+    }
+}
+
+/// <summary>
+/// Interceptor that logs method entry/exit with timing information.
+/// Unlike decorators, this single class works for ANY service and ANY method.
+/// </summary>
+public sealed class TimingInterceptor : IMethodInterceptor
+{
+    public async ValueTask<object?> InterceptAsync(IMethodInvocation invocation)
+    {
+        var typeName = invocation.Target.GetType().Name;
+        var sw = Stopwatch.StartNew();
+        Console.WriteLine($"[Timing] → {typeName}.{invocation.Method.Name}");
+        
+        try
+        {
+            var result = await invocation.ProceedAsync();
+            Console.WriteLine($"[Timing] ← {typeName}.{invocation.Method.Name} ({sw.ElapsedMilliseconds}ms)");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Timing] ✗ {typeName}.{invocation.Method.Name} FAILED ({sw.ElapsedMilliseconds}ms): {ex.Message}");
+            throw;
+        }
+    }
+}
+
+/// <summary>
+/// Interceptor that caches method results based on method name and arguments.
+/// Demonstrates how interceptors can add caching to any service without modifying it.
+/// </summary>
+public sealed class CachingInterceptor : IMethodInterceptor
+{
+    private readonly ConcurrentDictionary<string, object?> _cache = new();
+
+    public async ValueTask<object?> InterceptAsync(IMethodInvocation invocation)
+    {
+        var typeName = invocation.Target.GetType().Name;
+        var args = invocation.Arguments.Length > 0 
+            ? string.Join(",", invocation.Arguments.Select(a => a?.ToString() ?? "null"))
+            : "";
+        var cacheKey = $"{typeName}.{invocation.Method.Name}({args})";
+
+        if (_cache.TryGetValue(cacheKey, out var cached))
+        {
+            Console.WriteLine($"[Cache] HIT: {cacheKey}");
+            return cached;
+        }
+
+        Console.WriteLine($"[Cache] MISS: {cacheKey}");
+        var result = await invocation.ProceedAsync();
+        _cache[cacheKey] = result;
+        return result;
+    }
+}
+/// <summary>
+/// Service interface for demonstrating interceptors.
+/// </summary>
+public interface IDataService
+{
+    string GetData(string key);
+    Task<int> ComputeAsync(int value);
+    void LogMessage(string message);
+}
+
+/// <summary>
+/// Service with class-level interceptors applied.
+/// TimingInterceptor (Order=1) runs first (outermost), CachingInterceptor (Order=2) runs second.
+/// Call flow: Timing → Caching → actual method
+/// </summary>
+[Intercept<TimingInterceptor>(Order = 1)]
+[Intercept<CachingInterceptor>(Order = 2)]
+internal sealed class DataService : IDataService
+{
+    public string GetData(string key)
+    {
+        Thread.Sleep(50);
+        return $"Data for '{key}' at {DateTime.Now:HH:mm:ss.fff}";
+    }
+
+    public async Task<int> ComputeAsync(int value)
+    {
+        await Task.Delay(100);
+        return value * 2;
+    }
+
+    public void LogMessage(string message)
+    {
+        Console.WriteLine($"[DataService] {message}");
+    }
+}
+
+/// <summary>
+/// Service interface for demonstrating method-level interceptors.
+/// </summary>
+public interface ICalculatorService
+{
+    int Add(int a, int b);
+    int Multiply(int a, int b);
+    int Divide(int a, int b);
+}
+
+/// <summary>
+/// Service with method-level interceptors - only specific methods are intercepted.
+/// This demonstrates selective interception where timing is only applied to expensive operations.
+/// </summary>
+internal sealed class CalculatorService : ICalculatorService
+{
+    public int Add(int a, int b) => a + b;
+
+    [Intercept<TimingInterceptor>]
+    public int Multiply(int a, int b)
+    {
+        Thread.Sleep(30);
+        return a * b;
+    }
+
+    [Intercept<TimingInterceptor>]
+    [Intercept<CachingInterceptor>]
+    public int Divide(int a, int b)
+    {
+        Thread.Sleep(20);
+        return a / b;
     }
 }

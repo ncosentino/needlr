@@ -1497,9 +1497,7 @@ internal static class TypeDiscoveryHelper
                     interceptors.AddRange(methodInterceptors);
                 }
 
-                if (interceptors.Count == 0)
-                    continue;
-
+                // Always include the method - even if no interceptors, the proxy needs to forward the call
                 var methodInfo = new InterceptedMethodInfo(
                     methodSymbol.Name,
                     GetMethodReturnType(methodSymbol),

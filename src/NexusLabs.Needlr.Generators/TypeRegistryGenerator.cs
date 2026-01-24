@@ -833,6 +833,22 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine($"    public {method.ReturnType} {method.Name}({parameterList})");
         builder.AppendLine("    {");
 
+        // If no interceptors, just forward directly to target
+        if (method.InterceptorTypeNames.Length == 0)
+        {
+            if (method.IsVoid)
+            {
+                builder.AppendLine($"        _target.{method.Name}({argumentList});");
+            }
+            else
+            {
+                builder.AppendLine($"        return _target.{method.Name}({argumentList});");
+            }
+            builder.AppendLine("    }");
+            builder.AppendLine();
+            return;
+        }
+
         // Build interceptor chain
         var interceptorCount = method.InterceptorTypeNames.Length;
         builder.AppendLine($"        var interceptors = new IMethodInterceptor[{interceptorCount}];");
