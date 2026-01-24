@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 01/24/2026 - 00:28:54 |
-| Coverage date: | 01/24/2026 - 00:28:28 - 01/24/2026 - 00:28:51 |
+| Generated on: | 01/24/2026 - 03:53:31 |
+| Coverage date: | 01/24/2026 - 03:53:05 - 01/24/2026 - 03:53:28 |
 | Parser: | MultiReport (14x Cobertura) |
 | Assemblies: | 16 |
 | Classes: | 97 |
 | Files: | 96 |
-| **Line coverage:** | 87.8% (3246 of 3696) |
-| Covered lines: | 3246 |
+| **Line coverage:** | 87.7% (3236 of 3686) |
+| Covered lines: | 3236 |
 | Uncovered lines: | 450 |
-| Coverable lines: | 3696 |
-| Total lines: | 11408 |
+| Coverable lines: | 3686 |
+| Total lines: | 11398 |
 | **Branch coverage:** | 78.6% (1256 of 1596) |
 | Covered branches: | 1256 |
 | Total branches: | 1596 |
@@ -85,14 +85,14 @@
 |NexusLabs.Needlr.Extensions.Logging.PostBuildServiceCollectionPluginOptions<br/>Extensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 75.1%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 74.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**75.1%**|**74.8%**|
+|**NexusLabs.Needlr.Generators**|**74.9%**|**74.8%**|
 |NexusLabs.Needlr.Generators.DiagnosticDescriptors|100%||
 |NexusLabs.Needlr.Generators.TypeDiscoveryHelper|75.2%|73.2%|
-|NexusLabs.Needlr.Generators.TypeRegistryGenerator|74.1%|80.1%|
+|NexusLabs.Needlr.Generators.TypeRegistryGenerator|73.6%|80.1%|
 
 </details>
 <details><summary>NexusLabs.Needlr.Generators.Attributes - 89%</summary>
