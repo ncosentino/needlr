@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Default breadcrumb level if not specified by consumer -->
+    <NeedlrBreadcrumbLevel Condition="'$(NeedlrBreadcrumbLevel)' == ''">Minimal</NeedlrBreadcrumbLevel>
+  </PropertyGroup>
+
+  <!-- Expose MSBuild properties to source generators via CompilerVisibleProperty -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="NeedlrBreadcrumbLevel" />
+    <CompilerVisibleProperty Include="ProjectDir" />
+  </ItemGroup>
+</Project>

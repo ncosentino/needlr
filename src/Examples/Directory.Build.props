@@ -1,0 +1,21 @@
+<Project>
+  <!-- 
+    Example demonstrating centralized breadcrumb configuration.
+    
+    Setting NeedlrBreadcrumbLevel here applies to ALL projects under this folder.
+    Individual projects can override this if needed.
+    
+    Options: None, Minimal, Verbose
+    Default (if not set): Minimal
+  -->
+  <PropertyGroup>
+    <NeedlrBreadcrumbLevel>Verbose</NeedlrBreadcrumbLevel>
+  </PropertyGroup>
+  
+  <!-- 
+    Import Needlr generator props for all example projects using ProjectReference.
+    Using $(MSBuildThisFileDirectory) to get the correct path regardless of project nesting.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props" 
+          Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props')" />
+</Project>

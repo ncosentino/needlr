@@ -16,17 +16,28 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Combine compilation with analyzer config options to read MSBuild properties
+        var compilationAndOptions = context.CompilationProvider
+            .Combine(context.AnalyzerConfigOptionsProvider);
+
         // ForAttributeWithMetadataName doesn't work for assembly-level attributes.
         // Instead, we register directly on the compilation provider and check
         // compilation.Assembly.GetAttributes() for [GenerateTypeRegistry].
-        context.RegisterSourceOutput(context.CompilationProvider, static (spc, compilation) =>
+        context.RegisterSourceOutput(compilationAndOptions, static (spc, source) =>
         {
+            var (compilation, configOptions) = source;
+            
             var attributeInfo = GetAttributeInfoFromCompilation(compilation);
             if (attributeInfo == null)
                 return;
 
             var info = attributeInfo.Value;
             var assemblyName = compilation.AssemblyName ?? "Generated";
+            
+            // Read breadcrumb level from MSBuild property
+            var breadcrumbLevel = GetBreadcrumbLevel(configOptions);
+            var projectDirectory = GetProjectDirectory(configOptions);
+            var breadcrumbs = new BreadcrumbWriter(breadcrumbLevel);
 
             var discoveryResult = DiscoverTypes(
                 compilation,
@@ -53,7 +64,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     missingPlugin.TypeName));
             }
 
-            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName);
+            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading
@@ -62,30 +73,57 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate SignalR hub registrations if any were discovered
             if (discoveryResult.HubRegistrations.Count > 0)
             {
-                var hubRegistrationsText = GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName);
+                var hubRegistrationsText = GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName, breadcrumbs);
                 spc.AddSource("SignalRHubRegistrations.g.cs", SourceText.From(hubRegistrationsText, Encoding.UTF8));
             }
 
             // Generate SemanticKernel plugin type registry if any were discovered
             if (discoveryResult.KernelPlugins.Count > 0)
             {
-                var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName);
+                var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName, breadcrumbs);
                 spc.AddSource("SemanticKernelPlugins.g.cs", SourceText.From(kernelPluginsText, Encoding.UTF8));
             }
 
             // Generate interceptor proxy classes if any were discovered
             if (discoveryResult.InterceptedServices.Count > 0)
             {
-                var interceptorProxiesText = GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName);
+                var interceptorProxiesText = GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("InterceptorProxies.g.cs", SourceText.From(interceptorProxiesText, Encoding.UTF8));
             }
         });
+    }
+    
+    private static BreadcrumbLevel GetBreadcrumbLevel(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        if (configOptions.GlobalOptions.TryGetValue("build_property.NeedlrBreadcrumbLevel", out var levelStr) &&
+            !string.IsNullOrWhiteSpace(levelStr))
+        {
+            if (levelStr.Equals("None", StringComparison.OrdinalIgnoreCase))
+                return BreadcrumbLevel.None;
+            if (levelStr.Equals("Verbose", StringComparison.OrdinalIgnoreCase))
+                return BreadcrumbLevel.Verbose;
+        }
+        
+        // Default to Minimal
+        return BreadcrumbLevel.Minimal;
+    }
+    
+    private static string? GetProjectDirectory(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        // Try to get the project directory from MSBuild properties
+        if (configOptions.GlobalOptions.TryGetValue("build_property.ProjectDir", out var projectDir) &&
+            !string.IsNullOrWhiteSpace(projectDir))
+        {
+            return projectDir.TrimEnd('/', '\\');
+        }
+        
+        return null;
     }
 
     private static AttributeInfo? GetAttributeInfoFromCompilation(Compilation compilation)
@@ -224,11 +262,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var decoratorInfos = TypeDiscoveryHelper.GetDecoratorForAttributes(typeSymbol);
             foreach (var decoratorInfo in decoratorInfos)
             {
+                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
                 decorators.Add(new DiscoveredDecorator(
                     decoratorInfo.DecoratorTypeName,
                     decoratorInfo.ServiceTypeName,
                     decoratorInfo.Order,
-                    assembly.Name));
+                    assembly.Name,
+                    sourceFilePath));
             }
 
             // Check for Intercept attributes and collect intercepted services
@@ -253,6 +293,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                             .Select(i => i.InterceptorTypeName)
                             .Distinct()
                             .ToArray();
+                        
+                        var interceptedSourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
                         interceptedServices.Add(new DiscoveredInterceptedService(
                             typeName,
@@ -260,7 +302,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                             assembly.Name,
                             lifetime.Value,
                             methods.ToArray(),
-                            allInterceptorTypes));
+                            allInterceptorTypes,
+                            interceptedSourceFilePath));
                     }
                 }
             }
@@ -279,8 +322,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // Check for [DeferToContainer] attribute - use declared types instead of discovered constructors
                     var deferredParams = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
                     var constructorParams = deferredParams ?? TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol) ?? [];
+                    
+                    // Get source file path for breadcrumbs (null for external assemblies)
+                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams.ToArray()));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams.ToArray(), sourceFilePath));
                 }
             }
 
@@ -293,8 +339,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = pluginInterfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     var attributeNames = TypeDiscoveryHelper.GetPluginAttributes(typeSymbol).ToArray();
+                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames));
+                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames, sourceFilePath));
                 }
             }
 
@@ -318,12 +365,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
     }
 
-    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName)
+    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
-        builder.AppendLine("// <auto-generated/>");
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System;");
@@ -344,9 +391,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("public static class TypeRegistry");
         builder.AppendLine("{");
 
-        GenerateInjectableTypesArray(builder, discoveryResult.InjectableTypes);
+        GenerateInjectableTypesArray(builder, discoveryResult.InjectableTypes, breadcrumbs, projectDirectory);
         builder.AppendLine();
-        GeneratePluginTypesArray(builder, discoveryResult.PluginTypes);
+        GeneratePluginTypesArray(builder, discoveryResult.PluginTypes, breadcrumbs, projectDirectory);
 
         builder.AppendLine();
         builder.AppendLine("    /// <summary>");
@@ -362,19 +409,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
 
         builder.AppendLine();
-        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, safeAssemblyName);
+        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
 
         builder.AppendLine("}");
 
         return builder.ToString();
     }
 
-    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies)
+    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
-        builder.AppendLine("// <auto-generated/>");
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Source-Gen Bootstrap");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System.Runtime.CompilerServices;");
@@ -433,7 +480,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static void GenerateInjectableTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredType> types)
+    private static void GenerateInjectableTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredType> types, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    private static readonly InjectableTypeInfo[] _types =");
         builder.AppendLine("    [");
@@ -442,10 +489,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         foreach (var group in typesByAssembly)
         {
-            builder.AppendLine($"        // From {group.Key}");
+            breadcrumbs.WriteInlineComment(builder, "        ", $"From {group.Key}");
 
             foreach (var type in group.OrderBy(t => t.TypeName))
             {
+                // Write breadcrumb for this type
+                if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
+                {
+                    var sourcePath = type.SourceFilePath != null 
+                        ? BreadcrumbWriter.GetRelativeSourcePath(type.SourceFilePath, projectDirectory)
+                        : $"[{type.AssemblyName}]";
+                    var interfaces = type.InterfaceNames.Length > 0 
+                        ? string.Join(", ", type.InterfaceNames.Select(i => i.Split('.').Last()))
+                        : "none";
+                    
+                    breadcrumbs.WriteVerboseBox(builder, "        ",
+                        $"{type.TypeName.Split('.').Last()} → {interfaces}",
+                        $"Source: {sourcePath}",
+                        $"Lifetime: {type.Lifetime}");
+                }
+
                 builder.Append($"        new(typeof({type.TypeName}), ");
 
                 // Interfaces
@@ -480,7 +543,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GeneratePluginTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredPlugin> plugins)
+    private static void GeneratePluginTypesArray(StringBuilder builder, IReadOnlyList<DiscoveredPlugin> plugins, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    private static readonly PluginTypeInfo[] _plugins =");
         builder.AppendLine("    [");
@@ -489,10 +552,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         foreach (var group in pluginsByAssembly)
         {
-            builder.AppendLine($"        // From {group.Key}");
+            breadcrumbs.WriteInlineComment(builder, "        ", $"From {group.Key}");
 
             foreach (var plugin in group.OrderBy(p => p.TypeName))
             {
+                // Write verbose breadcrumb for this plugin
+                if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
+                {
+                    var sourcePath = plugin.SourceFilePath != null 
+                        ? BreadcrumbWriter.GetRelativeSourcePath(plugin.SourceFilePath, projectDirectory)
+                        : $"[{plugin.AssemblyName}]";
+                    var interfaces = plugin.InterfaceNames.Length > 0 
+                        ? string.Join(", ", plugin.InterfaceNames.Select(i => i.Split('.').Last()))
+                        : "none";
+                    
+                    breadcrumbs.WriteVerboseBox(builder, "        ",
+                        $"Plugin: {plugin.TypeName.Split('.').Last()}",
+                        $"Source: {sourcePath}",
+                        $"Implements: {interfaces}");
+                }
+
                 builder.Append($"        new(typeof({plugin.TypeName}), ");
 
                 // Interfaces
@@ -527,7 +606,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName)
+    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Applies all discovered decorators and interceptors to the service collection.");
@@ -539,7 +618,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         if (decorators.Count == 0 && !hasInterceptors)
         {
-            builder.AppendLine("        // No decorators or interceptors discovered");
+            breadcrumbs.WriteInlineComment(builder, "        ", "No decorators or interceptors discovered");
         }
         else
         {
@@ -552,10 +631,36 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
                 foreach (var serviceGroup in decoratorsByService)
                 {
-                    builder.AppendLine($"        // Decorators for {serviceGroup.Key}");
+                    // Write verbose breadcrumb for decorator chain
+                    if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
+                    {
+                        var chainItems = serviceGroup.OrderBy(d => d.Order).ToList();
+                        var lines = new List<string>
+                        {
+                            "Resolution order (outer → inner → target):"
+                        };
+                        for (int i = 0; i < chainItems.Count; i++)
+                        {
+                            var dec = chainItems[i];
+                            var sourcePath = dec.SourceFilePath != null 
+                                ? BreadcrumbWriter.GetRelativeSourcePath(dec.SourceFilePath, projectDirectory)
+                                : $"[{dec.AssemblyName}]";
+                            lines.Add($"  {i + 1}. {dec.DecoratorTypeName.Split('.').Last()} (Order={dec.Order}) ← {sourcePath}");
+                        }
+                        lines.Add($"Triggered by: [DecoratorFor<{serviceGroup.Key.Split('.').Last()}>] attributes");
+                        
+                        breadcrumbs.WriteVerboseBox(builder, "        ",
+                            $"Decorator Chain: {serviceGroup.Key.Split('.').Last()}",
+                            lines.ToArray());
+                    }
+                    else
+                    {
+                        breadcrumbs.WriteInlineComment(builder, "        ", $"Decorators for {serviceGroup.Key}");
+                    }
+
                     foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
                     {
-                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}, from {decorator.AssemblyName}");
+                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}");
                     }
                 }
             }
@@ -563,7 +668,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (hasInterceptors)
             {
                 builder.AppendLine();
-                builder.AppendLine("        // Register intercepted services with their proxies");
+                breadcrumbs.WriteInlineComment(builder, "        ", "Register intercepted services with their proxies");
                 builder.AppendLine($"        global::{safeAssemblyName}.Generated.InterceptorRegistrations.RegisterInterceptedServices(services);");
             }
         }
@@ -571,12 +676,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    }");
     }
 
-    private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName)
+    private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName, BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
-        builder.AppendLine("// <auto-generated/>");
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SignalR Hub Registrations");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using Microsoft.AspNetCore.Builder;");
@@ -617,12 +722,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins, string assemblyName)
+    private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins, string assemblyName, BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
-        builder.AppendLine("// <auto-generated/>");
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SemanticKernel Plugins");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System;");
@@ -687,12 +792,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName)
+    private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
 
-        builder.AppendLine("// <auto-generated/>");
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Interceptor Proxies");
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System;");
@@ -709,7 +814,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Generate each proxy class
         foreach (var service in interceptedServices)
         {
-            GenerateInterceptorProxyClass(builder, service);
+            GenerateInterceptorProxyClass(builder, service, breadcrumbs, projectDirectory);
             builder.AppendLine();
         }
 
@@ -741,7 +846,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Register all interceptor types
             foreach (var interceptorType in service.AllInterceptorTypeNames)
             {
-                builder.AppendLine($"        // Register interceptor: {interceptorType}");
+                breadcrumbs.WriteInlineComment(builder, "        ", $"Register interceptor: {interceptorType.Split('.').Last()}");
                 builder.AppendLine($"        if (!services.Any(d => d.ServiceType == typeof({interceptorType})))");
                 builder.AppendLine($"            services.Add{lifetime}<{interceptorType}>();");
             }
@@ -771,10 +876,45 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static void GenerateInterceptorProxyClass(StringBuilder builder, DiscoveredInterceptedService service)
+    private static void GenerateInterceptorProxyClass(StringBuilder builder, DiscoveredInterceptedService service, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var proxyTypeName = GetProxyTypeName(service.TypeName);
         var shortTypeName = GetShortTypeName(service.TypeName);
+
+        // Write verbose breadcrumb for interceptor proxy
+        if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
+        {
+            var sourcePath = service.SourceFilePath != null 
+                ? BreadcrumbWriter.GetRelativeSourcePath(service.SourceFilePath, projectDirectory)
+                : $"[{service.AssemblyName}]";
+            
+            var interceptorsList = service.AllInterceptorTypeNames
+                .Select((t, i) => $"  {i + 1}. {t.Split('.').Last()}")
+                .ToArray();
+            
+            var proxiedMethods = service.Methods
+                .Where(m => m.InterceptorTypeNames.Length > 0)
+                .Select(m => m.Name)
+                .ToArray();
+            var forwardedMethods = service.Methods
+                .Where(m => m.InterceptorTypeNames.Length == 0)
+                .Select(m => m.Name)
+                .ToArray();
+
+            var lines = new List<string>
+            {
+                $"Source: {sourcePath}",
+                $"Target Interface: {string.Join(", ", service.InterfaceNames.Select(i => i.Split('.').Last()))}",
+                "Interceptors (execution order):"
+            };
+            lines.AddRange(interceptorsList);
+            lines.Add($"Methods proxied: {(proxiedMethods.Length > 0 ? string.Join(", ", proxiedMethods) : "none")}");
+            lines.Add($"Methods forwarded: {(forwardedMethods.Length > 0 ? string.Join(", ", forwardedMethods) : "none")}");
+            
+            breadcrumbs.WriteVerboseBox(builder, "",
+                $"Interceptor Proxy: {shortTypeName}",
+                lines.ToArray());
+        }
 
         builder.AppendLine("/// <summary>");
         builder.AppendLine($"/// Interceptor proxy for {service.TypeName}.");
@@ -818,17 +958,28 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         methodIndex = 0;
         foreach (var method in service.Methods)
         {
-            GenerateInterceptedMethod(builder, method, methodIndex, service.TypeName);
+            GenerateInterceptedMethod(builder, method, methodIndex, service.TypeName, breadcrumbs);
             methodIndex++;
         }
 
         builder.AppendLine("}");
     }
 
-    private static void GenerateInterceptedMethod(StringBuilder builder, TypeDiscoveryHelper.InterceptedMethodInfo method, int methodIndex, string targetTypeName)
+    private static void GenerateInterceptedMethod(StringBuilder builder, TypeDiscoveryHelper.InterceptedMethodInfo method, int methodIndex, string targetTypeName, BreadcrumbWriter breadcrumbs)
     {
         var parameterList = method.GetParameterList();
         var argumentList = method.GetArgumentList();
+
+        // Write breadcrumb for method
+        if (method.InterceptorTypeNames.Length > 0)
+        {
+            var interceptorNames = string.Join(" → ", method.InterceptorTypeNames.Select(t => t.Split('.').Last()));
+            breadcrumbs.WriteInlineComment(builder, "    ", $"{method.Name}: {interceptorNames}");
+        }
+        else
+        {
+            breadcrumbs.WriteInlineComment(builder, "    ", $"{method.Name}: direct forward (no interceptors)");
+        }
 
         builder.AppendLine($"    public {method.ReturnType} {method.Name}({parameterList})");
         builder.AppendLine("    {");
@@ -1068,13 +1219,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, string[] constructorParameterTypes)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, string[] constructorParameterTypes, string? sourceFilePath = null)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             Lifetime = lifetime;
             ConstructorParameterTypes = constructorParameterTypes;
+            SourceFilePath = sourceFilePath;
         }
 
         public string TypeName { get; }
@@ -1082,22 +1234,25 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string AssemblyName { get; }
         public GeneratorLifetime Lifetime { get; }
         public string[] ConstructorParameterTypes { get; }
+        public string? SourceFilePath { get; }
     }
 
     private readonly struct DiscoveredPlugin
     {
-        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames)
+        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames, string? sourceFilePath = null)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             AttributeNames = attributeNames;
+            SourceFilePath = sourceFilePath;
         }
 
         public string TypeName { get; }
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
         public string[] AttributeNames { get; }
+        public string? SourceFilePath { get; }
     }
 
     private readonly struct DiscoveredHubRegistration
@@ -1130,18 +1285,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredDecorator
     {
-        public DiscoveredDecorator(string decoratorTypeName, string serviceTypeName, int order, string assemblyName)
+        public DiscoveredDecorator(string decoratorTypeName, string serviceTypeName, int order, string assemblyName, string? sourceFilePath = null)
         {
             DecoratorTypeName = decoratorTypeName;
             ServiceTypeName = serviceTypeName;
             Order = order;
             AssemblyName = assemblyName;
+            SourceFilePath = sourceFilePath;
         }
 
         public string DecoratorTypeName { get; }
         public string ServiceTypeName { get; }
         public int Order { get; }
         public string AssemblyName { get; }
+        public string? SourceFilePath { get; }
     }
 
     private readonly struct InaccessibleType
@@ -1208,7 +1365,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             string assemblyName,
             GeneratorLifetime lifetime,
             TypeDiscoveryHelper.InterceptedMethodInfo[] methods,
-            string[] allInterceptorTypeNames)
+            string[] allInterceptorTypeNames,
+            string? sourceFilePath = null)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
@@ -1216,6 +1374,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             Lifetime = lifetime;
             Methods = methods;
             AllInterceptorTypeNames = allInterceptorTypeNames;
+            SourceFilePath = sourceFilePath;
         }
 
         public string TypeName { get; }
@@ -1224,5 +1383,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public GeneratorLifetime Lifetime { get; }
         public TypeDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
         public string[] AllInterceptorTypeNames { get; }
+        public string? SourceFilePath { get; }
     }
 }
