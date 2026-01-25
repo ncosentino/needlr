@@ -111,3 +111,47 @@ public sealed class KeyedServicesRegistrationPlugin : IServiceCollectionPlugin
         options.Services.AddKeyedSingleton<IPaymentProcessor, BackupPaymentProcessor>("backup");
     }
 }
+
+// ====== [Keyed] attribute test classes ======
+
+/// <summary>
+/// Interface for cache providers.
+/// </summary>
+public interface ICacheProvider
+{
+    string Name { get; }
+}
+
+/// <summary>
+/// Redis cache implementation registered with [Keyed("redis")].
+/// </summary>
+[Keyed("redis")]
+public sealed class RedisCacheProvider : ICacheProvider
+{
+    public string Name => "redis";
+}
+
+/// <summary>
+/// Memory cache implementation registered with [Keyed("memory")].
+/// </summary>
+[Keyed("memory")]
+public sealed class MemoryCacheProvider : ICacheProvider
+{
+    public string Name => "memory";
+}
+
+/// <summary>
+/// Service that depends on a keyed cache provider via [FromKeyedServices].
+/// </summary>
+public sealed class ServiceWithKeyedCacheDependency
+{
+    private readonly ICacheProvider _cache;
+
+    public ServiceWithKeyedCacheDependency(
+        [FromKeyedServices("redis")] ICacheProvider cache)
+    {
+        _cache = cache;
+    }
+
+    public string GetCacheName() => _cache.Name;
+}

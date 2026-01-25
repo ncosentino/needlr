@@ -25,6 +25,8 @@ internal static class TypeDiscoveryHelper
     private const string DeferToContainerAttributeName = "DeferToContainerAttribute";
     private const string DeferToContainerAttributeFullName = "NexusLabs.Needlr.DeferToContainerAttribute";
     private const string DecoratorForAttributePrefix = "NexusLabs.Needlr.DecoratorForAttribute";
+    private const string KeyedAttributeName = "KeyedAttribute";
+    private const string KeyedAttributeFullName = "NexusLabs.Needlr.KeyedAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -1169,6 +1171,41 @@ internal static class TypeDiscoveryHelper
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Gets the service keys from [Keyed] attributes on a type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>Array of service keys, or empty array if no [Keyed] attributes found.</returns>
+    public static string[] GetKeyedServiceKeys(INamedTypeSymbol typeSymbol)
+    {
+        var keys = new List<string>();
+
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            var fullName = attributeClass.ToDisplayString();
+
+            if (name == KeyedAttributeName || fullName == KeyedAttributeFullName)
+            {
+                // Extract the key from the constructor argument
+                if (attribute.ConstructorArguments.Length > 0)
+                {
+                    var keyArg = attribute.ConstructorArguments[0];
+                    if (keyArg.Value is string keyValue)
+                    {
+                        keys.Add(keyValue);
+                    }
+                }
+            }
+        }
+
+        return keys.ToArray();
     }
 
     /// <summary>

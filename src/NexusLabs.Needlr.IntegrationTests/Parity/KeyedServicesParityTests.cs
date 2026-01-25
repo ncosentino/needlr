@@ -86,4 +86,30 @@ public sealed class KeyedServicesParityTests
         Assert.Equal("primary", generatedService.GetPrimaryProcessorName());
         Assert.Equal("backup", generatedService.GetBackupProcessorName());
     }
+
+    [Fact]
+    public void SourceGen_KeyedAttribute_RegistersKeyedService()
+    {
+        // Arrange - RedisCacheProvider has [Keyed("redis")] attribute
+        var generatedProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        // Act - Resolve keyed service directly
+        var redisCache = generatedProvider.GetKeyedService<ICacheProvider>("redis");
+        var memoryCache = generatedProvider.GetKeyedService<ICacheProvider>("memory");
+
+        // Also verify consumer with [FromKeyedServices] works
+        var consumer = generatedProvider.GetService<ServiceWithKeyedCacheDependency>();
+
+        // Assert - Keyed services are registered from [Keyed] attributes
+        Assert.NotNull(redisCache);
+        Assert.NotNull(memoryCache);
+        Assert.Equal("redis", redisCache.Name);
+        Assert.Equal("memory", memoryCache.Name);
+        
+        // Consumer can resolve keyed dependency
+        Assert.NotNull(consumer);
+        Assert.Equal("redis", consumer.GetCacheName());
+    }
 }

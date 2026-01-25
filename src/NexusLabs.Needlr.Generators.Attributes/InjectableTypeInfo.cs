@@ -69,11 +69,31 @@ public readonly struct InjectableTypeInfo
     /// When provided, enables AOT-compatible instantiation without runtime reflection.
     /// </param>
     public InjectableTypeInfo(Type type, IReadOnlyList<Type> interfaces, InjectableLifetime? lifetime, Func<IServiceProvider, object>? factory)
+        : this(type, interfaces, lifetime, factory, Array.Empty<string>())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="InjectableTypeInfo"/> with keyed service support.
+    /// </summary>
+    /// <param name="type">The concrete implementation type.</param>
+    /// <param name="interfaces">The interfaces implemented by the type that should be registered.</param>
+    /// <param name="lifetime">The pre-computed service lifetime, or null if not determined.</param>
+    /// <param name="factory">
+    /// A factory delegate that creates an instance of the type using the service provider.
+    /// When provided, enables AOT-compatible instantiation without runtime reflection.
+    /// </param>
+    /// <param name="serviceKeys">
+    /// The service keys from [Keyed] attributes. When provided, the type will be registered
+    /// as a keyed service in addition to its normal registration.
+    /// </param>
+    public InjectableTypeInfo(Type type, IReadOnlyList<Type> interfaces, InjectableLifetime? lifetime, Func<IServiceProvider, object>? factory, IReadOnlyList<string> serviceKeys)
     {
         Type = type;
         Interfaces = interfaces;
         Lifetime = lifetime;
         Factory = factory;
+        ServiceKeys = serviceKeys;
     }
 
     /// <summary>
@@ -112,6 +132,22 @@ public readonly struct InjectableTypeInfo
     /// </para>
     /// </remarks>
     public Func<IServiceProvider, object>? Factory { get; }
+
+    /// <summary>
+    /// Gets the service keys from [Keyed] attributes on this type.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When service keys are present, the type will be registered as a keyed service
+    /// in addition to its normal registration. Consumers can then resolve the specific
+    /// implementation using <c>[FromKeyedServices("key")]</c> on constructor parameters.
+    /// </para>
+    /// <para>
+    /// A type can have multiple keys, resulting in multiple keyed registrations for
+    /// the same implementation.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<string> ServiceKeys { get; }
 }
 
 /// <summary>

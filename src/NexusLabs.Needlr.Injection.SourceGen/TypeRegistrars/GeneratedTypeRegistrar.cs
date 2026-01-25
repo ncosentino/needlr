@@ -164,5 +164,29 @@ public sealed class GeneratedTypeRegistrar : ITypeRegistrar
                 services.Add(new ServiceDescriptor(interfaceType, factory, lifetime));
             }
         }
+
+        // Register keyed services from [Keyed] attributes
+        foreach (var serviceKey in typeInfo.ServiceKeys)
+        {
+            // Register keyed self
+            services.Add(new ServiceDescriptor(type, serviceKey, (sp, _) => factory(sp), lifetime));
+
+            // Register keyed interfaces
+            foreach (var interfaceType in typeInfo.Interfaces)
+            {
+                if (lifetime == ServiceLifetime.Singleton)
+                {
+                    services.Add(new ServiceDescriptor(
+                        interfaceType,
+                        serviceKey,
+                        (sp, _) => sp.GetRequiredService(type),
+                        lifetime));
+                }
+                else
+                {
+                    services.Add(new ServiceDescriptor(interfaceType, serviceKey, (sp, _) => factory(sp), lifetime));
+                }
+            }
+        }
     }
 }

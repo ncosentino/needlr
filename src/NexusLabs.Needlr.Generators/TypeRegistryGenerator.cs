@@ -352,7 +352,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // Get source file path for breadcrumbs (null for external assemblies)
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, sourceFilePath));
+                    // Get [Keyed] attribute keys
+                    var serviceKeys = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
+
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath));
                 }
             }
 
@@ -565,7 +568,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                             : $"sp.GetRequiredService<{p.TypeName}>()");
                     builder.Append(string.Join(", ", parameterExpressions));
                 }
-                builder.AppendLine(")),");
+                builder.Append("), ");
+
+                // Service keys from [Keyed] attributes
+                if (type.ServiceKeys.Length == 0)
+                {
+                    builder.AppendLine("Array.Empty<string>()),");
+                }
+                else
+                {
+                    builder.Append("[");
+                    builder.Append(string.Join(", ", type.ServiceKeys.Select(k => $"\"{EscapeStringLiteral(k)}\"")));
+                    builder.AppendLine("]),");
+                }
             }
         }
 
@@ -1661,13 +1676,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string? sourceFilePath = null)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             Lifetime = lifetime;
             ConstructorParameters = constructorParameters;
+            ServiceKeys = serviceKeys;
             SourceFilePath = sourceFilePath;
         }
 
@@ -1676,6 +1692,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string AssemblyName { get; }
         public GeneratorLifetime Lifetime { get; }
         public TypeDiscoveryHelper.ConstructorParameterInfo[] ConstructorParameters { get; }
+        /// <summary>
+        /// Service keys from [Keyed] attributes on this type.
+        /// </summary>
+        public string[] ServiceKeys { get; }
         public string? SourceFilePath { get; }
 
         /// <summary>
@@ -1687,6 +1707,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         /// True if any constructor parameters are keyed services.
         /// </summary>
         public bool HasKeyedParameters => ConstructorParameters.Any(p => p.IsKeyed);
+
+        /// <summary>
+        /// True if this type has [Keyed] attributes for keyed registration.
+        /// </summary>
+        public bool IsKeyed => ServiceKeys.Length > 0;
     }
 
     private readonly struct DiscoveredPlugin
