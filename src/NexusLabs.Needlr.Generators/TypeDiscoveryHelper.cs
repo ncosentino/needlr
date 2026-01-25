@@ -1072,6 +1072,106 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Represents a constructor parameter with optional keyed service information.
+    /// </summary>
+    public readonly struct ConstructorParameterInfo
+    {
+        public ConstructorParameterInfo(string typeName, string? serviceKey = null)
+        {
+            TypeName = typeName;
+            ServiceKey = serviceKey;
+        }
+
+        /// <summary>
+        /// The fully qualified type name of the parameter.
+        /// </summary>
+        public string TypeName { get; }
+
+        /// <summary>
+        /// The service key from [FromKeyedServices] attribute, or null if not a keyed service.
+        /// </summary>
+        public string? ServiceKey { get; }
+
+        /// <summary>
+        /// True if this parameter should be resolved as a keyed service.
+        /// </summary>
+        public bool IsKeyed => ServiceKey is not null;
+    }
+
+    /// <summary>
+    /// Gets the parameters of the best injectable constructor for a type, including keyed service info.
+    /// Returns the first constructor where all parameters are injectable types.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to analyze.</param>
+    /// <returns>
+    /// A list of constructor parameter info, or null if no injectable constructor was found.
+    /// </returns>
+    public static IReadOnlyList<ConstructorParameterInfo>? GetBestConstructorParametersWithKeys(INamedTypeSymbol typeSymbol)
+    {
+        const string FromKeyedServicesAttributeName = "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
+
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.IsStatic)
+                continue;
+
+            if (ctor.DeclaredAccessibility != Accessibility.Public)
+                continue;
+
+            var parameters = ctor.Parameters;
+
+            // Parameterless constructor - no parameters needed
+            if (parameters.Length == 0)
+                return Array.Empty<ConstructorParameterInfo>();
+
+            // Single parameter of same type (copy constructor) - skip
+            if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
+                continue;
+
+            // Check if all parameters are injectable
+            if (!AllParametersAreInjectable(parameters))
+                continue;
+
+            // This constructor is good - collect parameter info with keyed service keys
+            var parameterInfos = new ConstructorParameterInfo[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var param = parameters[i];
+                var typeName = GetFullyQualifiedNameForType(param.Type);
+                string? serviceKey = null;
+
+                // Check for [FromKeyedServices("key")] attribute
+                foreach (var attr in param.GetAttributes())
+                {
+                    var attrClass = attr.AttributeClass;
+                    if (attrClass is null)
+                        continue;
+
+                    var attrFullName = attrClass.ToDisplayString();
+                    if (attrFullName == FromKeyedServicesAttributeName)
+                    {
+                        // Extract the key from the constructor argument
+                        if (attr.ConstructorArguments.Length > 0)
+                        {
+                            var keyArg = attr.ConstructorArguments[0];
+                            if (keyArg.Value is string keyValue)
+                            {
+                                serviceKey = keyValue;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                parameterInfos[i] = new ConstructorParameterInfo(typeName, serviceKey);
+            }
+            return parameterInfos;
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Tries to extract hub registration info from an IHubRegistrationPlugin implementation.
     /// Returns null if the type doesn't implement IHubRegistrationPlugin or if the values can't be determined at compile time.
     /// </summary>

@@ -142,4 +142,18 @@ public static class DiagnosticDescriptors
         description: "No types implementing the interface were found in the source-generated type registry. This may indicate missing registrations, or implementations may be registered via reflection at runtime. Use .editorconfig to suppress if intentional.",
         helpLinkUri: HelpLinkBase + "NDLRCOR010.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRCOR011: [FromKeyedServices] references a key with no known registration.
+    /// </summary>
+    public static readonly DiagnosticDescriptor KeyedServiceUnknownKey = new(
+        id: DiagnosticIds.KeyedServiceUnknownKey,
+        title: "[FromKeyedServices] references unknown key",
+        messageFormat: "Keyed service '{0}' with key \"{1}\" has no known registration. If registered via plugin or reflection, this is expected.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "The keyed service reference was not found in source-generated registrations. Keyed services are typically registered via IServiceCollectionPlugin, which the analyzer cannot validate. Use .editorconfig to suppress if intentional.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR011.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }

@@ -57,4 +57,9 @@ public static class DiagnosticIds
     /// NDLRCOR010: IEnumerable&lt;T&gt; has no implementations discovered by source generation.
     /// </summary>
     public const string CollectionResolutionEmpty = "NDLRCOR010";
+
+    /// <summary>
+    /// NDLRCOR011: [FromKeyedServices] references a key with no known registration.
+    /// </summary>
+    public const string KeyedServiceUnknownKey = "NDLRCOR011";
 }

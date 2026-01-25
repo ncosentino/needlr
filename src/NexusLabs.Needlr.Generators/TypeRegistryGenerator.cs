@@ -338,12 +338,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     
                     // Check for [DeferToContainer] attribute - use declared types instead of discovered constructors
                     var deferredParams = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
-                    var constructorParams = deferredParams ?? TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol) ?? [];
+                    TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParams;
+                    if (deferredParams != null)
+                    {
+                        // DeferToContainer doesn't support keyed services - convert to simple params
+                        constructorParams = deferredParams.Select(t => new TypeDiscoveryHelper.ConstructorParameterInfo(t)).ToArray();
+                    }
+                    else
+                    {
+                        constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
+                    }
                     
                     // Get source file path for breadcrumbs (null for external assemblies)
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams.ToArray(), sourceFilePath));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, sourceFilePath));
                 }
             }
 
@@ -548,10 +557,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 builder.Append("sp => new ");
                 builder.Append(type.TypeName);
                 builder.Append("(");
-                if (type.ConstructorParameterTypes.Length > 0)
+                if (type.ConstructorParameters.Length > 0)
                 {
-                    var parameterExpressions = type.ConstructorParameterTypes
-                        .Select(p => $"sp.GetRequiredService<{p}>()");
+                    var parameterExpressions = type.ConstructorParameters
+                        .Select(p => p.IsKeyed 
+                            ? $"sp.GetRequiredKeyedService<{p.TypeName}>(\"{EscapeStringLiteral(p.ServiceKey!)}\")"
+                            : $"sp.GetRequiredService<{p.TypeName}>()");
                     builder.Append(string.Join(", ", parameterExpressions));
                 }
                 builder.AppendLine(")),");
@@ -1649,13 +1660,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredType
     {
-        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, string[] constructorParameterTypes, string? sourceFilePath = null)
+        public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string? sourceFilePath = null)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             Lifetime = lifetime;
-            ConstructorParameterTypes = constructorParameterTypes;
+            ConstructorParameters = constructorParameters;
             SourceFilePath = sourceFilePath;
         }
 
@@ -1663,8 +1674,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string[] InterfaceNames { get; }
         public string AssemblyName { get; }
         public GeneratorLifetime Lifetime { get; }
-        public string[] ConstructorParameterTypes { get; }
+        public TypeDiscoveryHelper.ConstructorParameterInfo[] ConstructorParameters { get; }
         public string? SourceFilePath { get; }
+
+        /// <summary>
+        /// Gets the constructor parameter types (for backward compatibility with existing code paths).
+        /// </summary>
+        public string[] ConstructorParameterTypes => ConstructorParameters.Select(p => p.TypeName).ToArray();
+
+        /// <summary>
+        /// True if any constructor parameters are keyed services.
+        /// </summary>
+        public bool HasKeyedParameters => ConstructorParameters.Any(p => p.IsKeyed);
     }
 
     private readonly struct DiscoveredPlugin
