@@ -2,11 +2,23 @@
   <PropertyGroup>
     <!-- Default breadcrumb level if not specified by consumer -->
     <NeedlrBreadcrumbLevel Condition="'$(NeedlrBreadcrumbLevel)' == ''">Minimal</NeedlrBreadcrumbLevel>
+    
+    <!-- Enable diagnostic file generation (true/false). Default: false -->
+    <NeedlrDiagnostics Condition="'$(NeedlrDiagnostics)' == ''">false</NeedlrDiagnostics>
+    
+    <!-- Directory for diagnostic output files. Default set in .targets where OutputPath is resolved -->
+    <NeedlrDiagnosticsPath Condition="'$(NeedlrDiagnosticsPath)' == ''"></NeedlrDiagnosticsPath>
+    
+    <!-- Filter diagnostics to specific types (comma-separated fully qualified names). Default: empty (all types) -->
+    <NeedlrDiagnosticsFilter Condition="'$(NeedlrDiagnosticsFilter)' == ''"></NeedlrDiagnosticsFilter>
   </PropertyGroup>
 
   <!-- Expose MSBuild properties to source generators via CompilerVisibleProperty -->
   <ItemGroup>
     <CompilerVisibleProperty Include="NeedlrBreadcrumbLevel" />
+    <CompilerVisibleProperty Include="NeedlrDiagnostics" />
+    <CompilerVisibleProperty Include="NeedlrDiagnosticsPath" />
+    <CompilerVisibleProperty Include="NeedlrDiagnosticsFilter" />
     <CompilerVisibleProperty Include="ProjectDir" />
   </ItemGroup>
 </Project>

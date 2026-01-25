@@ -32,6 +32,8 @@
     <None Include="$(OutputPath)\NexusLabs.Needlr.Generators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
     <!-- Pack the .props file for MSBuild property exposure -->
     <None Include="build\NexusLabs.Needlr.Generators.props" Pack="true" PackagePath="build" Visible="false" />
+    <!-- Pack the .targets file for diagnostic file extraction -->
+    <None Include="build\NexusLabs.Needlr.Generators.targets" Pack="true" PackagePath="build" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

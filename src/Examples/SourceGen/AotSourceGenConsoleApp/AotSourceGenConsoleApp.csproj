@@ -30,7 +30,14 @@
 		<!-- Emit generated files for debugging -->
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+
+		<!-- Enable Needlr diagnostics - generates DependencyGraph.md, LifetimeSummary.md, RegistrationIndex.md -->
+		<NeedlrDiagnostics>true</NeedlrDiagnostics>
+		<NeedlrBreadcrumbLevel>Verbose</NeedlrBreadcrumbLevel>
 	</PropertyGroup>
+
+	<!-- Import Needlr targets for diagnostic file extraction (auto-imported when using NuGet package) -->
+	<Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration" />

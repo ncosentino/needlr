@@ -1,0 +1,102 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Needlr Diagnostic File Extraction Target
+    
+    When NeedlrDiagnostics=true, the source generator creates NeedlrDiagnostics.g.cs 
+    with const string fields containing markdown content.
+    
+    This target runs after the build to extract those strings and write .md files.
+  -->
+  
+  <Target Name="NeedlrWriteDiagnosticFiles" 
+          AfterTargets="Build" 
+          Condition="'$(NeedlrDiagnostics)' == 'true'">
+    
+    <!-- 
+      Find the generated diagnostics file. 
+      CompilerGeneratedFilesOutputPath defaults to $(BaseIntermediateOutputPath)Generated\ but can be customized.
+      We try both the custom path and the default location.
+    -->
+    <PropertyGroup>
+      <_NeedlrGeneratedPath Condition="'$(CompilerGeneratedFilesOutputPath)' != ''">$(CompilerGeneratedFilesOutputPath)</_NeedlrGeneratedPath>
+      <_NeedlrGeneratedPath Condition="'$(_NeedlrGeneratedPath)' == ''">$(BaseIntermediateOutputPath)Generated</_NeedlrGeneratedPath>
+      <_NeedlrDiagnosticsSourceFile>$(_NeedlrGeneratedPath)\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.TypeRegistryGenerator\NeedlrDiagnostics.g.cs</_NeedlrDiagnosticsSourceFile>
+      <!-- Default output path to bin folder if not specified -->
+      <_NeedlrDiagnosticsOutputPath Condition="'$(NeedlrDiagnosticsPath)' != ''">$(NeedlrDiagnosticsPath)</_NeedlrDiagnosticsOutputPath>
+      <_NeedlrDiagnosticsOutputPath Condition="'$(_NeedlrDiagnosticsOutputPath)' == ''">$(OutputPath)NeedlrDiagnostics</_NeedlrDiagnosticsOutputPath>
+    </PropertyGroup>
+    
+    <!-- Ensure output directory exists -->
+    <MakeDir Directories="$(_NeedlrDiagnosticsOutputPath)" Condition="!Exists('$(_NeedlrDiagnosticsOutputPath)')" />
+    
+    <!-- Extract markdown content from generated source file -->
+    <NeedlrExtractDiagnostics 
+        SourceFile="$(_NeedlrDiagnosticsSourceFile)"
+        OutputDirectory="$(_NeedlrDiagnosticsOutputPath)"
+        Condition="Exists('$(_NeedlrDiagnosticsSourceFile)')" />
+    
+    <Message Importance="high" 
+             Text="Needlr diagnostics written to $(_NeedlrDiagnosticsOutputPath)" 
+             Condition="Exists('$(_NeedlrDiagnosticsOutputPath)')" />
+  </Target>
+  
+  <!-- Inline task to extract diagnostic content from the generated source file -->
+  <UsingTask TaskName="NeedlrExtractDiagnostics" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourceFile ParameterType="System.String" Required="true" />
+      <OutputDirectory ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+try
+{
+    if (!File.Exists(SourceFile))
+    {
+        Log.LogMessage(MessageImportance.Normal, "NeedlrDiagnostics.g.cs not found: " + SourceFile);
+        return true;
+    }
+    
+    var sourceContent = File.ReadAllText(SourceFile);
+    
+    // Ensure output directory exists
+    Directory.CreateDirectory(OutputDirectory);
+    
+    // Extract each diagnostic field using regex to find verbatim string literals
+    // Pattern: public const string FieldName = @"...content...";
+    var fields = new[] { "DependencyGraph", "LifetimeSummary", "RegistrationIndex" };
+    foreach (var fieldName in fields)
+    {
+        // Match pattern: public const string FieldName = @"content";
+        var pattern = @"public\s+const\s+string\s+" + fieldName + @"\s*=\s*@""([^""]*(?:""""[^""]*)*)"";";
+        var match = Regex.Match(sourceContent, pattern, RegexOptions.Singleline);
+        
+        if (match.Success)
+        {
+            // Unescape the verbatim string (doubled quotes become single quotes)
+            var content = match.Groups[1].Value.Replace("\"\"", "\"");
+            var filePath = Path.Combine(OutputDirectory, fieldName + ".md");
+            File.WriteAllText(filePath, content);
+            Log.LogMessage(MessageImportance.Normal, "Wrote " + filePath);
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, "Field " + fieldName + " not found in source file.");
+        }
+    }
+    
+    return true;
+}
+catch (Exception ex)
+{
+    Log.LogWarning("Needlr diagnostic extraction failed: " + ex.Message);
+    return true; // Don't fail the build
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

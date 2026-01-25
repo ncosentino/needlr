@@ -223,3 +223,119 @@ If an invalid value is specified, Needlr defaults to `Minimal`:
 - `InvalidLevel` → defaults to `Minimal`
 - Empty string → defaults to `Minimal`
 - Whitespace only → defaults to `Minimal`
+
+## Compile-Time Diagnostics
+
+In addition to inline breadcrumbs, Needlr can generate separate diagnostic files at build time. These files provide higher-level views of your dependency injection configuration without cluttering your generated code.
+
+### Enabling Diagnostics
+
+Add the `NeedlrDiagnostics` property to your project:
+
+```xml
+<PropertyGroup>
+  <NeedlrDiagnostics>true</NeedlrDiagnostics>
+</PropertyGroup>
+```
+
+This generates three markdown files in your build output folder (e.g., `bin/Debug/net10.0/NeedlrDiagnostics/`):
+
+| File | Description |
+|------|-------------|
+| `DependencyGraph.md` | Mermaid diagram showing service dependencies |
+| `LifetimeSummary.md` | Breakdown of Singleton/Scoped/Transient registrations |
+| `RegistrationIndex.md` | Complete index of all services, decorators, and plugins |
+
+### Custom Output Path
+
+Specify a custom output directory (relative paths are resolved from the project directory):
+
+```xml
+<PropertyGroup>
+  <NeedlrDiagnostics>true</NeedlrDiagnostics>
+  <NeedlrDiagnosticsPath>docs/diagnostics</NeedlrDiagnosticsPath>
+</PropertyGroup>
+```
+
+### Filtering Types
+
+Filter diagnostics to specific types (comma-separated fully qualified names):
+
+```xml
+<PropertyGroup>
+  <NeedlrDiagnostics>true</NeedlrDiagnostics>
+  <NeedlrDiagnosticsFilter>MyApp.OrderService,MyApp.PaymentService</NeedlrDiagnosticsFilter>
+</PropertyGroup>
+```
+
+### Example Output
+
+#### DependencyGraph.md
+
+```markdown
+# Needlr Dependency Graph
+
+Generated: 2026-01-25 10:00:00 UTC
+Assembly: MyApp
+
+## Service Dependencies
+
+\`\`\`mermaid
+graph TD
+    subgraph Singleton
+        Logger["Logger"]
+        ConfigService["ConfigService"]
+    end
+    subgraph Scoped
+        OrderService["OrderService"]
+    end
+    OrderService --> Logger
+    OrderService --> ConfigService
+\`\`\`
+```
+
+#### LifetimeSummary.md
+
+```markdown
+# Needlr Lifetime Summary
+
+Generated: 2026-01-25 10:00:00 UTC
+Assembly: MyApp
+
+| Lifetime | Count | Percentage |
+|----------|-------|------------|
+| Singleton | 5 | 50.0% |
+| Scoped | 3 | 30.0% |
+| Transient | 2 | 20.0% |
+| **Total** | **10** | **100%** |
+```
+
+#### RegistrationIndex.md
+
+```markdown
+# Needlr Registration Index
+
+Generated: 2026-01-25 10:00:00 UTC
+Assembly: MyApp
+
+## Services (10)
+
+| # | Interface | Implementation | Lifetime | Source |
+|---|-----------|----------------|----------|--------|
+| 1 | ILogger | Logger | Singleton | Services/Logger.cs |
+| 2 | IOrderService | OrderService | Scoped | Services/OrderService.cs |
+
+## Decorators (2)
+
+| Service | Decorator Chain |
+|---------|-----------------|
+| IOrderService | LoggingDecorator → CachingDecorator |
+```
+
+### Configuration Properties Summary
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `NeedlrDiagnostics` | `false` | Enable diagnostic file generation |
+| `NeedlrDiagnosticsPath` | `$(OutputPath)NeedlrDiagnostics` | Output directory (defaults to bin folder) |
+| `NeedlrDiagnosticsFilter` | (all) | Comma-separated type names to include |
