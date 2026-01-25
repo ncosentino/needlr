@@ -340,8 +340,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaceNames = pluginInterfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     var attributeNames = TypeDiscoveryHelper.GetPluginAttributes(typeSymbol).ToArray();
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                    var order = TypeDiscoveryHelper.GetPluginOrder(typeSymbol);
 
-                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames, sourceFilePath));
+                    pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames, sourceFilePath, order));
                 }
             }
 
@@ -548,13 +549,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    private static readonly PluginTypeInfo[] _plugins =");
         builder.AppendLine("    [");
 
-        var pluginsByAssembly = plugins.GroupBy(p => p.AssemblyName).OrderBy(g => g.Key);
+        // Sort plugins by Order first, then by TypeName for determinism
+        var sortedPlugins = plugins
+            .OrderBy(p => p.Order)
+            .ThenBy(p => p.TypeName, StringComparer.Ordinal)
+            .ToList();
+
+        // Group for breadcrumb display, but maintain the sorted order
+        var pluginsByAssembly = sortedPlugins.GroupBy(p => p.AssemblyName).OrderBy(g => g.Key);
 
         foreach (var group in pluginsByAssembly)
         {
             breadcrumbs.WriteInlineComment(builder, "        ", $"From {group.Key}");
 
-            foreach (var plugin in group.OrderBy(p => p.TypeName))
+            // Maintain order within assembly group
+            foreach (var plugin in group.OrderBy(p => p.Order).ThenBy(p => p.TypeName, StringComparer.Ordinal))
             {
                 // Write verbose breadcrumb for this plugin
                 if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
@@ -565,11 +574,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaces = plugin.InterfaceNames.Length > 0 
                         ? string.Join(", ", plugin.InterfaceNames.Select(i => i.Split('.').Last()))
                         : "none";
+                    var orderInfo = plugin.Order != 0 ? $"Order: {plugin.Order}" : "Order: 0 (default)";
                     
                     breadcrumbs.WriteVerboseBox(builder, "        ",
                         $"Plugin: {plugin.TypeName.Split('.').Last()}",
                         $"Source: {sourcePath}",
-                        $"Implements: {interfaces}");
+                        $"Implements: {interfaces}",
+                        orderInfo);
+                }
+                else if (breadcrumbs.Level == BreadcrumbLevel.Minimal && plugin.Order != 0)
+                {
+                    // Show order in minimal mode only if non-default
+                    breadcrumbs.WriteInlineComment(builder, "        ", $"{plugin.TypeName.Split('.').Last()} (Order: {plugin.Order})");
                 }
 
                 builder.Append($"        new(typeof({plugin.TypeName}), ");
@@ -592,14 +608,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // Attributes
                 if (plugin.AttributeNames.Length == 0)
                 {
-                    builder.AppendLine("Array.Empty<Type>()),");
+                    builder.Append("Array.Empty<Type>(), ");
                 }
                 else
                 {
                     builder.Append("[");
                     builder.Append(string.Join(", ", plugin.AttributeNames.Select(a => $"typeof({a})")));
-                    builder.AppendLine("]),");
+                    builder.Append("], ");
                 }
+
+                // Order
+                builder.AppendLine($"{plugin.Order}),");
             }
         }
 
@@ -1239,13 +1258,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private readonly struct DiscoveredPlugin
     {
-        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames, string? sourceFilePath = null)
+        public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames, string? sourceFilePath = null, int order = 0)
         {
             TypeName = typeName;
             InterfaceNames = interfaceNames;
             AssemblyName = assemblyName;
             AttributeNames = attributeNames;
             SourceFilePath = sourceFilePath;
+            Order = order;
         }
 
         public string TypeName { get; }
@@ -1253,6 +1273,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public string AssemblyName { get; }
         public string[] AttributeNames { get; }
         public string? SourceFilePath { get; }
+        public int Order { get; }
     }
 
     private readonly struct DiscoveredHubRegistration

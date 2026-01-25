@@ -20,6 +20,11 @@ namespace NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 /// <item>The <c>[assembly: GenerateTypeRegistry(...)]</c> attribute</item>
 /// </list>
 /// </para>
+/// <para>
+/// Plugins are sorted by their <see cref="PluginTypeInfo.Order"/> value (lower first),
+/// then alphabetically by fully qualified type name for deterministic execution order.
+/// Sorting is performed once during initialization.
+/// </para>
 /// </remarks>
 [DoNotAutoRegister]
 public sealed class GeneratedPluginFactory : IPluginFactory
@@ -41,7 +46,11 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         bool allowAllWhenAssembliesEmpty = false)
     {
         ArgumentNullException.ThrowIfNull(pluginProvider);
-        _lazyPlugins = new(() => pluginProvider.Invoke().ToArray());
+        // Sort once during initialization - filtering maintains relative order
+        _lazyPlugins = new(() => pluginProvider.Invoke()
+            .OrderBy(info => info.Order)
+            .ThenBy(info => info.PluginType.FullName, StringComparer.Ordinal)
+            .ToArray());
         _allowAllWhenAssembliesEmpty = allowAllWhenAssembliesEmpty;
     }
 
@@ -50,17 +59,17 @@ public sealed class GeneratedPluginFactory : IPluginFactory
     /// </summary>
     /// <typeparam name="TPlugin">The plugin interface or base type to search for.</typeparam>
     /// <returns>An enumerable of instantiated plugins implementing <typeparamref name="TPlugin"/>.</returns>
+    /// <remarks>
+    /// Plugins are returned in order by their <see cref="PluginTypeInfo.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </remarks>
     public IEnumerable<TPlugin> CreatePlugins<TPlugin>()
         where TPlugin : class
     {
         var pluginType = typeof(TPlugin);
-        foreach (var info in _lazyPlugins.Value)
-        {
-            if (!pluginType.IsAssignableFrom(info.PluginType))
-                continue;
-
-            yield return (TPlugin)info.Factory();
-        }
+        return _lazyPlugins.Value
+            .Where(info => pluginType.IsAssignableFrom(info.PluginType))
+            .Select(info => (TPlugin)info.Factory());
     }
 
     /// <inheritdoc />
@@ -71,12 +80,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var p in CreatePlugins<TPlugin>())
-            {
-                yield return p;
-            }
-
-            yield break;
+            return CreatePlugins<TPlugin>();
         }
 
         var assemblySet = assemblyList
@@ -85,20 +89,18 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .ToHashSet(StringComparer.Ordinal)!;
 
         var pluginType = typeof(TPlugin);
-        foreach (var info in _lazyPlugins.Value)
-        {
-            // Check if this plugin is from one of the specified assemblies
-            var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
-                continue;
+        return _lazyPlugins.Value
+            .Where(info =>
+            {
+                // Check if this plugin is from one of the specified assemblies
+                var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
+                if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
+                    return false;
 
-            // Check if plugin implements the requested type
-            if (!pluginType.IsAssignableFrom(info.PluginType))
-                continue;
-
-            // Use the pre-compiled factory delegate instead of Activator.CreateInstance
-            yield return (TPlugin)info.Factory();
-        }
+                // Check if plugin implements the requested type
+                return pluginType.IsAssignableFrom(info.PluginType);
+            })
+            .Select(info => (TPlugin)info.Factory());
     }
 
     /// <summary>
@@ -106,16 +108,16 @@ public sealed class GeneratedPluginFactory : IPluginFactory
     /// </summary>
     /// <typeparam name="TAttribute">The attribute type to search for in the type hierarchy.</typeparam>
     /// <returns>An enumerable of instantiated plugins decorated with <typeparamref name="TAttribute"/>.</returns>
+    /// <remarks>
+    /// Plugins are returned in order by their <see cref="PluginTypeInfo.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </remarks>
     public IEnumerable<object> CreatePluginsWithAttribute<TAttribute>()
         where TAttribute : Attribute
     {
-        foreach (var info in _lazyPlugins.Value)
-        {
-            if (!info.HasAttribute<TAttribute>())
-                continue;
-
-            yield return info.Factory();
-        }
+        return _lazyPlugins.Value
+            .Where(info => info.HasAttribute<TAttribute>())
+            .Select(info => info.Factory());
     }
 
     /// <inheritdoc />
@@ -126,12 +128,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var p in CreatePluginsWithAttribute<TAttribute>())
-            {
-                yield return p;
-            }
-
-            yield break;
+            return CreatePluginsWithAttribute<TAttribute>();
         }
 
         var assemblySet = assemblyList
@@ -139,19 +136,18 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .Where(n => n is not null)
             .ToHashSet(StringComparer.Ordinal)!;
 
-        foreach (var info in _lazyPlugins.Value)
-        {
-            // Check if this plugin is from one of the specified assemblies
-            var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
-                continue;
+        return _lazyPlugins.Value
+            .Where(info =>
+            {
+                // Check if this plugin is from one of the specified assemblies
+                var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
+                if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
+                    return false;
 
-            // Use pre-computed attribute info - no reflection needed
-            if (!info.HasAttribute<TAttribute>())
-                continue;
-
-            yield return info.Factory();
-        }
+                // Use pre-computed attribute info - no reflection needed
+                return info.HasAttribute<TAttribute>();
+            })
+            .Select(info => info.Factory());
     }
 
     /// <summary>
@@ -164,22 +160,18 @@ public sealed class GeneratedPluginFactory : IPluginFactory
     /// An enumerable of instantiated plugins implementing <typeparamref name="TPlugin"/> and 
     /// decorated with <typeparamref name="TAttribute"/>.
     /// </returns>
+    /// <remarks>
+    /// Plugins are returned in order by their <see cref="PluginTypeInfo.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </remarks>
     public IEnumerable<TPlugin> CreatePlugins<TPlugin, TAttribute>()
         where TPlugin : class
         where TAttribute : Attribute
     {
         var pluginType = typeof(TPlugin);
-
-        foreach (var info in _lazyPlugins.Value)
-        {
-            if (!pluginType.IsAssignableFrom(info.PluginType))
-                continue;
-
-            if (!info.HasAttribute<TAttribute>())
-                continue;
-
-            yield return (TPlugin)info.Factory();
-        }
+        return _lazyPlugins.Value
+            .Where(info => pluginType.IsAssignableFrom(info.PluginType) && info.HasAttribute<TAttribute>())
+            .Select(info => (TPlugin)info.Factory());
     }
 
     /// <inheritdoc />
@@ -191,12 +183,7 @@ public sealed class GeneratedPluginFactory : IPluginFactory
         var assemblyList = assemblies as IReadOnlyCollection<Assembly> ?? assemblies.ToArray();
         if (_allowAllWhenAssembliesEmpty && assemblyList.Count == 0)
         {
-            foreach (var p in CreatePlugins<TPlugin, TAttribute>())
-            {
-                yield return p;
-            }
-
-            yield break;
+            return CreatePlugins<TPlugin, TAttribute>();
         }
 
         var assemblySet = assemblyList
@@ -205,21 +192,20 @@ public sealed class GeneratedPluginFactory : IPluginFactory
             .ToHashSet(StringComparer.Ordinal)!;
 
         var pluginType = typeof(TPlugin);
-        foreach (var info in _lazyPlugins.Value)
-        {
-            // Check if this plugin is from one of the specified assemblies
-            var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
-            if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
-                continue;
+        return _lazyPlugins.Value
+            .Where(info =>
+            {
+                // Check if this plugin is from one of the specified assemblies
+                var pluginAssemblyName = info.PluginType.Assembly.GetName().Name;
+                if (pluginAssemblyName is null || !assemblySet.Contains(pluginAssemblyName))
+                    return false;
 
-            if (!pluginType.IsAssignableFrom(info.PluginType))
-                continue;
+                if (!pluginType.IsAssignableFrom(info.PluginType))
+                    return false;
 
-            // Use pre-computed attribute info - no reflection needed
-            if (!info.HasAttribute<TAttribute>())
-                continue;
-
-            yield return (TPlugin)info.Factory();
-        }
+                // Use pre-computed attribute info - no reflection needed
+                return info.HasAttribute<TAttribute>();
+            })
+            .Select(info => (TPlugin)info.Factory());
     }
 }

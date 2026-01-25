@@ -19,8 +19,14 @@ public sealed class ReflectionPluginFactory : IPluginFactory
 {
     /// <inheritdoc />
     /// <remarks>
+    /// <para>
     /// Only non-abstract, non-generic classes assignable to <typeparamref name="TPlugin"/> are instantiated.
     /// Types that cannot be loaded from an assembly are skipped.
+    /// </para>
+    /// <para>
+    /// Plugins are sorted by their <see cref="PluginOrderAttribute.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </para>
     /// </remarks>
     public IEnumerable<TPlugin> CreatePluginsFromAssemblies<TPlugin>(
         IEnumerable<Assembly> assemblies)
@@ -28,14 +34,23 @@ public sealed class ReflectionPluginFactory : IPluginFactory
     {
         return GetTypesFromAssemblies(assemblies)
             .Where(t => IsValidPluginType(t) && t.IsAssignableTo(typeof(TPlugin)))
-            .Select(CreateInstance<TPlugin>);
+            .Select(t => (Type: t, Order: GetPluginOrder(t)))
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Type.FullName, StringComparer.Ordinal)
+            .Select(x => CreateInstance<TPlugin>(x.Type));
     }
 
     /// <inheritdoc />
     /// <remarks>
+    /// <para>
     /// Only non-abstract, non-generic classes decorated with <typeparamref name="TAttribute"/> are instantiated.
     /// Types that cannot be loaded from an assembly are skipped. The attribute is searched in the type hierarchy
     /// using inheritance.
+    /// </para>
+    /// <para>
+    /// Plugins are sorted by their <see cref="PluginOrderAttribute.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </para>
     /// </remarks>
     public IEnumerable<object> CreatePluginsWithAttributeFromAssemblies<TAttribute>(
         IEnumerable<Assembly> assemblies)
@@ -45,15 +60,24 @@ public sealed class ReflectionPluginFactory : IPluginFactory
             .Where(t => 
                 IsValidPluginType(t) && 
                 HasAttribute<TAttribute>(t))
-            .Select(CreateInstance);
+            .Select(t => (Type: t, Order: GetPluginOrder(t)))
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Type.FullName, StringComparer.Ordinal)
+            .Select(x => CreateInstance(x.Type));
     }
 
     /// <inheritdoc />
     /// <remarks>
+    /// <para>
     /// Only non-abstract, non-generic classes assignable to <typeparamref name="TPlugin"/> 
     /// and decorated with <typeparamref name="TAttribute"/> are instantiated.
     /// Types that cannot be loaded from an assembly are skipped. The attribute is 
     /// searched in the type hierarchy using inheritance.
+    /// </para>
+    /// <para>
+    /// Plugins are sorted by their <see cref="PluginOrderAttribute.Order"/> value (lower first),
+    /// then alphabetically by fully qualified type name for deterministic execution order.
+    /// </para>
     /// </remarks>
     public IEnumerable<TPlugin> CreatePluginsFromAssemblies<TPlugin, TAttribute>(
         IEnumerable<Assembly> assemblies)
@@ -65,7 +89,10 @@ public sealed class ReflectionPluginFactory : IPluginFactory
                 IsValidPluginType(t) && 
                 t.IsAssignableTo(typeof(TPlugin)) && 
                 HasAttribute<TAttribute>(t))
-            .Select(CreateInstance<TPlugin>);
+            .Select(t => (Type: t, Order: GetPluginOrder(t)))
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Type.FullName, StringComparer.Ordinal)
+            .Select(x => CreateInstance<TPlugin>(x.Type));
     }
 
     /// <summary>
@@ -125,6 +152,17 @@ public sealed class ReflectionPluginFactory : IPluginFactory
     private static bool HasAttribute<TAttribute>(Type type) where TAttribute : Attribute
     {
         return type.GetCustomAttribute<TAttribute>(inherit: true) is not null;
+    }
+
+    /// <summary>
+    /// Gets the plugin execution order from the <see cref="PluginOrderAttribute"/>.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>The order value, or 0 if no attribute is present.</returns>
+    private static int GetPluginOrder(Type type)
+    {
+        var attr = type.GetCustomAttribute<PluginOrderAttribute>(inherit: false);
+        return attr?.Order ?? 0;
     }
 
     /// <summary>

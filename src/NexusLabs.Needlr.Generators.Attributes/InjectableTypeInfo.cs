@@ -130,7 +130,7 @@ public readonly struct PluginTypeInfo
     /// <param name="pluginInterfaces">The plugin interfaces implemented by the type.</param>
     /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
     public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory)
-        : this(pluginType, pluginInterfaces, factory, Array.Empty<Type>())
+        : this(pluginType, pluginInterfaces, factory, Array.Empty<Type>(), 0)
     {
     }
 
@@ -142,11 +142,25 @@ public readonly struct PluginTypeInfo
     /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
     /// <param name="attributes">The attribute types applied to the plugin type.</param>
     public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory, IReadOnlyList<Type> attributes)
+        : this(pluginType, pluginInterfaces, factory, attributes, 0)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="PluginTypeInfo"/> with execution order.
+    /// </summary>
+    /// <param name="pluginType">The concrete plugin type.</param>
+    /// <param name="pluginInterfaces">The plugin interfaces implemented by the type.</param>
+    /// <param name="factory">A factory delegate that creates an instance of the plugin.</param>
+    /// <param name="attributes">The attribute types applied to the plugin type.</param>
+    /// <param name="order">The execution order. Lower values execute first.</param>
+    public PluginTypeInfo(Type pluginType, IReadOnlyList<Type> pluginInterfaces, Func<object> factory, IReadOnlyList<Type> attributes, int order)
     {
         PluginType = pluginType;
         PluginInterfaces = pluginInterfaces;
         Factory = factory;
         Attributes = attributes;
+        Order = order;
     }
 
     /// <summary>
@@ -173,6 +187,23 @@ public readonly struct PluginTypeInfo
     /// reflection via <c>GetCustomAttribute</c> at runtime.
     /// </remarks>
     public IReadOnlyList<Type> Attributes { get; }
+
+    /// <summary>
+    /// Gets the execution order for this plugin. Lower values execute first.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Plugins with lower order values are executed before those with higher values.
+    /// The default order is 0. Use negative values for plugins that must run early
+    /// (e.g., infrastructure setup) and positive values for plugins that must run
+    /// late (e.g., validation, cleanup).
+    /// </para>
+    /// <para>
+    /// When multiple plugins have the same order, they are sorted alphabetically
+    /// by their fully qualified type name for deterministic execution.
+    /// </para>
+    /// </remarks>
+    public int Order { get; }
 
     /// <summary>
     /// Checks if the plugin has an attribute of the specified type.
