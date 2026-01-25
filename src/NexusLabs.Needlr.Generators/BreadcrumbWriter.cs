@@ -88,23 +88,33 @@ internal sealed class BreadcrumbWriter
         if (absolutePath == null || absolutePath.Length == 0)
             return "[unknown]";
 
+        // Normalize path separators for cross-platform compatibility
+        var normalizedPath = absolutePath.Replace("\\", "/");
+
         if (projectDirectory == null || projectDirectory.Length == 0)
         {
-            // Fallback to just the filename
-            return System.IO.Path.GetFileName(absolutePath);
+            // Fallback to just the filename - use LastIndexOf for cross-platform
+            var lastSlash = normalizedPath.LastIndexOf('/');
+            return lastSlash >= 0 ? normalizedPath.Substring(lastSlash + 1) : normalizedPath;
         }
 
+        var normalizedProjectDir = projectDirectory.Replace("\\", "/");
+        // Ensure project dir doesn't end with slash for consistent comparison
+        if (normalizedProjectDir.EndsWith("/"))
+            normalizedProjectDir = normalizedProjectDir.Substring(0, normalizedProjectDir.Length - 1);
+
         // Try to make it relative
-        if (absolutePath.StartsWith(projectDirectory, StringComparison.OrdinalIgnoreCase))
+        if (normalizedPath.StartsWith(normalizedProjectDir, StringComparison.OrdinalIgnoreCase))
         {
-            var relative = absolutePath.Substring(projectDirectory.Length);
-            if (relative.StartsWith("/") || relative.StartsWith("\\"))
+            var relative = normalizedPath.Substring(normalizedProjectDir.Length);
+            if (relative.StartsWith("/"))
                 relative = relative.Substring(1);
-            return relative.Replace("\\", "/");
+            return relative;
         }
 
         // Couldn't make relative, just return filename
-        return System.IO.Path.GetFileName(absolutePath);
+        var lastSlashFallback = normalizedPath.LastIndexOf('/');
+        return lastSlashFallback >= 0 ? normalizedPath.Substring(lastSlashFallback + 1) : normalizedPath;
     }
 
     private static string PadRight(string text, int totalWidth)
