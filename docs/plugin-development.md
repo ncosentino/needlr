@@ -179,12 +179,118 @@ var webApp = new Syringe()
 
 ## Plugin Execution Order
 
-Plugins are executed in the order they're discovered, which follows the assembly sorting configuration:
+Plugins are executed in a deterministic order based on two factors:
+
+1. **Plugin Order Attribute** - Explicit ordering via `[PluginOrder]`
+2. **Type Name** - Alphabetical sorting when orders are equal
+
+### Using the PluginOrder Attribute
+
+Use the `[PluginOrder]` attribute to control when your plugin executes relative to others:
+
+```csharp
+using NexusLabs.Needlr;
+
+// Executes first - negative values run before default (0)
+[PluginOrder(-100)]
+public class DatabaseMigrationPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        // Run migrations before other plugins register services
+        options.Services.AddDbContext<MyDbContext>();
+    }
+}
+
+// Executes at default order (0) - no attribute needed
+public class BusinessLogicPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        // Normal service registration
+        options.Services.AddScoped<IOrderService, OrderService>();
+    }
+}
+
+// Executes last - positive values run after default (0)
+[PluginOrder(100)]
+public class ValidationPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        // Validate all registrations are complete
+    }
+}
+```
+
+### Order Values
+
+| Order Range | Typical Use Case |
+|-------------|------------------|
+| -100 to -50 | Infrastructure setup (database, logging, configuration) |
+| -50 to -1 | Core services that others depend on |
+| 0 (default) | Normal business logic plugins |
+| 1 to 50 | Plugins that depend on other registrations |
+| 50 to 100 | Validation, cleanup, and finalization |
+
+### Same-Order Determinism
+
+When multiple plugins have the same order value, they are sorted alphabetically by their fully qualified type name. This ensures deterministic execution across builds:
+
+```csharp
+// Both have Order = 0, so they execute alphabetically
+public class AuditPlugin : IServiceCollectionPlugin { }      // Executes first
+public class ZipCodePlugin : IServiceCollectionPlugin { }    // Executes second
+```
+
+### Works with All Plugin Types
+
+The `[PluginOrder]` attribute works with all Needlr plugin interfaces:
+
+```csharp
+// IServiceCollectionPlugin
+[PluginOrder(-50)]
+public class EarlyServicePlugin : IServiceCollectionPlugin { }
+
+// IWebApplicationBuilderPlugin
+[PluginOrder(10)]
+public class MiddlewareSetupPlugin : IWebApplicationBuilderPlugin { }
+
+// IWebApplicationPlugin
+[PluginOrder(100)]
+public class FinalEndpointPlugin : IWebApplicationPlugin { }
+
+// IHostApplicationBuilderPlugin
+[PluginOrder(-100)]
+public class HostSetupPlugin : IHostApplicationBuilderPlugin { }
+```
+
+### Parity Between Reflection and Source Generation
+
+Plugin ordering works identically whether you use reflection or source generation:
+
+```csharp
+// Both produce the same plugin execution order
+var reflectionApp = new Syringe()
+    .UsingReflection()
+    .ForWebApplication()
+    .BuildWebApplication();
+
+var sourceGenApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .BuildWebApplication();
+```
+
+### Assembly Filtering
+
+You can also control which assemblies are scanned for plugins:
 
 ```csharp
 var webApp = new Syringe()
     .UsingSourceGen()  // or .UsingReflection()
     .UsingAssemblyProvider(builder => builder
+        .MatchingAssemblies(x => x.Contains("MyCompany.Plugins"))
         .UseLibTestEntryOrdering() // Libraries → Executables → Tests
         .Build())
     .ForWebApplication()
@@ -192,6 +298,8 @@ var webApp = new Syringe()
 ```
 
 ### Execution Timeline
+
+Within each lifecycle phase, plugins are sorted by `[PluginOrder]` then by type name:
 
 1. **IServiceCollectionPlugin** - During service registration
 2. **IPostBuildServiceCollectionPlugin** - After service provider is built

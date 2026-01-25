@@ -300,7 +300,20 @@ public class MyAppPlugin : IWebApplicationPlugin
 
 Plugins are automatically discovered and registered:
 - Scanned from assemblies like other types
-- Instantiated and executed in order
+- Sorted by `[PluginOrder]` attribute (lower values first)
+- Plugins with same order are sorted alphabetically by type name
+- Executed in deterministic order
+
+```csharp
+// Control plugin execution order
+[PluginOrder(-100)]  // Executes first
+public class InfrastructurePlugin : IServiceCollectionPlugin { }
+
+[PluginOrder(100)]   // Executes last
+public class ValidationPlugin : IServiceCollectionPlugin { }
+```
+
+See [Plugin Development Guide](plugin-development.md) for full ordering documentation.
 
 NOTE: The `[DoNotAutoRegister]` attribute is used for dynamically discovering 
 and registering types, but it is not applicable for plugins. In fact, by
