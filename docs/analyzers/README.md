@@ -16,6 +16,8 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR006](NDLRCOR006.md) | Error | Circular dependency detected |
 | [NDLRCOR007](NDLRCOR007.md) | Error | Intercept type must implement IMethodInterceptor |
 | [NDLRCOR008](NDLRCOR008.md) | Warning | [Intercept] applied to class without interfaces |
+| [NDLRCOR009](NDLRCOR009.md) | Info | Lazy<T> references undiscovered type |
+| [NDLRCOR010](NDLRCOR010.md) | Info | IEnumerable<T> has no discovered implementations |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 
@@ -62,6 +64,40 @@ Or suppress in your project file for the entire project:
   <NoWarn>$(NoWarn);NDLRCOR002</NoWarn>
 </PropertyGroup>
 ```
+
+Or configure severity in `.editorconfig` (recommended):
+
+```ini
+# .editorconfig
+[*.cs]
+# Disable a diagnostic
+dotnet_diagnostic.NDLRCOR009.severity = none
+
+# Promote to warning
+dotnet_diagnostic.NDLRCOR010.severity = warning
+
+# Promote to error
+dotnet_diagnostic.NDLRCOR005.severity = error
+```
+
+## Resolution Validation Analyzers
+
+NDLRCOR009 and NDLRCOR010 are **resolution validation analyzers** that help catch potential issues with `Lazy<T>` and `IEnumerable<T>` injection patterns.
+
+These analyzers:
+- Only activate when `[assembly: GenerateTypeRegistry]` is present
+- Default to `Info` severity (non-blocking)
+- Can be promoted to `Warning` or `Error` via `.editorconfig`
+
+To see which analyzers are active in your project, enable diagnostics output:
+
+```xml
+<PropertyGroup>
+  <NeedlrDiagnostics>true</NeedlrDiagnostics>
+</PropertyGroup>
+```
+
+This generates `AnalyzerStatus.md` in your output directory showing all analyzers and their current severity.
 
 ## Configuration
 

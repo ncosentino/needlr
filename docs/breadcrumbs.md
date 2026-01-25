@@ -339,3 +339,66 @@ Assembly: MyApp
 | `NeedlrDiagnostics` | `false` | Enable diagnostic file generation |
 | `NeedlrDiagnosticsPath` | `$(OutputPath)NeedlrDiagnostics` | Output directory (defaults to bin folder) |
 | `NeedlrDiagnosticsFilter` | (all) | Comma-separated type names to include |
+
+## Analyzer Status
+
+When diagnostics are enabled, Needlr also generates `AnalyzerStatus.md` showing which analyzers are active and their current severity. This provides a single place to understand what compile-time protection is enabled for your project.
+
+### Example AnalyzerStatus.md
+
+```markdown
+# Needlr Analyzer Status
+
+Generated: 2026-01-25 10:00:00 UTC
+
+## Active Analyzers
+
+| ID | Name | Status | Default Severity | Description |
+|:---|:-----|:-------|:-----------------|:------------|
+| NDLRCOR001 | Reflection in AOT | ⚪ Conditional | Error | Detects reflection APIs in AOT projects |
+| NDLRCOR005 | Lifetime Mismatch | ✅ Active | Warning | Detects captive dependencies |
+| NDLRCOR009 | Lazy Resolution | ✅ Active | Info | Lazy<T> references undiscovered type |
+| NDLRCOR010 | Collection Resolution | ✅ Active | Info | IEnumerable<T> has no implementations |
+
+## Mode
+
+**Source Generation**: Enabled (GenerateTypeRegistry detected)
+
+## Configuration
+
+Analyzer severity can be configured via `.editorconfig`:
+
+\`\`\`ini
+# Example: Suppress Lazy resolution warnings
+dotnet_diagnostic.NDLRCOR009.severity = none
+
+# Example: Promote to warning
+dotnet_diagnostic.NDLRCOR009.severity = warning
+\`\`\`
+```
+
+### Understanding Analyzer Status
+
+| Status | Meaning |
+|--------|---------|
+| ✅ Active | Analyzer is running and checking your code |
+| ⚪ Conditional | Analyzer only activates under certain conditions (e.g., AOT projects) |
+| ❌ Disabled | Analyzer is disabled via configuration |
+
+### Configuring Analyzers
+
+Use `.editorconfig` to adjust analyzer severity:
+
+```ini
+# .editorconfig in your project root
+[*.cs]
+
+# Disable resolution validation (if using reflection)
+dotnet_diagnostic.NDLRCOR009.severity = none
+dotnet_diagnostic.NDLRCOR010.severity = none
+
+# Promote lifetime mismatch to error
+dotnet_diagnostic.NDLRCOR005.severity = error
+```
+
+See [Analyzers Documentation](analyzers/README.md) for the complete list of available analyzers.
