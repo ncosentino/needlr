@@ -56,11 +56,11 @@ public sealed class LifetimeMismatchAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        // Get the lifetime of this class from attributes
-        var consumerLifetime = GetLifetimeFromAttributes(classSymbol);
+        // Get the lifetime of this class from attributes, defaulting to Singleton for injectable types
+        var consumerLifetime = GetLifetimeFromType(classSymbol);
         if (consumerLifetime == LifetimeRank.Unknown)
         {
-            return; // Not a registered service or unknown lifetime
+            return; // Not an injectable type
         }
 
         // Find constructors and analyze their parameters
@@ -114,10 +114,10 @@ public sealed class LifetimeMismatchAnalyzer : DiagnosticAnalyzer
             }
 
             // Get the lifetime of the dependency type
-            var dependencyLifetime = GetLifetimeFromServiceType(parameterType);
+            var dependencyLifetime = GetLifetimeFromType(parameterType);
             if (dependencyLifetime == LifetimeRank.Unknown)
             {
-                continue; // Unknown lifetime, skip
+                continue; // Unknown lifetime (interface or non-injectable type), skip
             }
 
             // Check for mismatch: consumer lifetime > dependency lifetime
@@ -136,51 +136,35 @@ public sealed class LifetimeMismatchAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    /// <summary>
+    /// Gets the lifetime for a type, defaulting to Singleton for injectable concrete classes.
+    /// </summary>
+    private static LifetimeRank GetLifetimeFromType(INamedTypeSymbol typeSymbol)
+    {
+        // Check for explicit lifetime attributes first
+        var explicitLifetime = GetLifetimeFromAttributes(typeSymbol);
+        if (explicitLifetime != LifetimeRank.Unknown)
+        {
+            return explicitLifetime;
+        }
+
+        // For concrete classes, default to Singleton (matching Needlr's default behavior)
+        if (typeSymbol.TypeKind == TypeKind.Class && !typeSymbol.IsAbstract)
+        {
+            return LifetimeRank.Singleton;
+        }
+
+        // For interfaces and abstract types, we cannot determine lifetime statically
+        return LifetimeRank.Unknown;
+    }
+
     private static LifetimeRank GetLifetimeFromAttributes(INamedTypeSymbol typeSymbol)
     {
         foreach (var attribute in typeSymbol.GetAttributes())
         {
             var attributeName = attribute.AttributeClass?.Name;
 
-            // Check for RegisterAsAttribute with lifetime parameter
-            if (attributeName is "RegisterAsAttribute" or "RegisterAs")
-            {
-                // First constructor argument is typically the lifetime
-                if (attribute.ConstructorArguments.Length > 0)
-                {
-                    var arg = attribute.ConstructorArguments[0];
-                    if (arg.Type?.Name == "ServiceLifetime" && arg.Value is int lifetimeValue)
-                    {
-                        return lifetimeValue switch
-                        {
-                            0 => LifetimeRank.Singleton,
-                            1 => LifetimeRank.Scoped,
-                            2 => LifetimeRank.Transient,
-                            _ => LifetimeRank.Unknown
-                        };
-                    }
-                }
-
-                // Check named arguments
-                foreach (var namedArg in attribute.NamedArguments)
-                {
-                    if (namedArg.Key == "Lifetime" && namedArg.Value.Value is int namedLifetimeValue)
-                    {
-                        return namedLifetimeValue switch
-                        {
-                            0 => LifetimeRank.Singleton,
-                            1 => LifetimeRank.Scoped,
-                            2 => LifetimeRank.Transient,
-                            _ => LifetimeRank.Unknown
-                        };
-                    }
-                }
-
-                // Default to Transient if no lifetime specified
-                return LifetimeRank.Transient;
-            }
-
-            // Check for specific lifetime attributes
+            // Check for specific lifetime attributes (the only real lifetime attributes in Needlr)
             if (attributeName is "SingletonAttribute" or "Singleton")
             {
                 return LifetimeRank.Singleton;
@@ -195,44 +179,8 @@ public sealed class LifetimeMismatchAnalyzer : DiagnosticAnalyzer
             {
                 return LifetimeRank.Transient;
             }
-
-            // Check for AutoRegister with lifetime
-            if (attributeName is "AutoRegisterAttribute" or "AutoRegister")
-            {
-                foreach (var namedArg in attribute.NamedArguments)
-                {
-                    if (namedArg.Key == "Lifetime" && namedArg.Value.Value is int autoRegLifetimeValue)
-                    {
-                        return autoRegLifetimeValue switch
-                        {
-                            0 => LifetimeRank.Singleton,
-                            1 => LifetimeRank.Scoped,
-                            2 => LifetimeRank.Transient,
-                            _ => LifetimeRank.Unknown
-                        };
-                    }
-                }
-            }
         }
 
-        return LifetimeRank.Unknown;
-    }
-
-    private static LifetimeRank GetLifetimeFromServiceType(INamedTypeSymbol serviceType)
-    {
-        // For interfaces/abstract types, we need to find implementations
-        // This simplified approach only checks direct type attributes
-        // Full implementation would use compilation-level analysis
-
-        // First, check if the type itself has lifetime attributes (concrete type)
-        var directLifetime = GetLifetimeFromAttributes(serviceType);
-        if (directLifetime != LifetimeRank.Unknown)
-        {
-            return directLifetime;
-        }
-
-        // For interfaces, we cannot reliably determine lifetime at syntax level
-        // The runtime verification will catch these cases
         return LifetimeRank.Unknown;
     }
 

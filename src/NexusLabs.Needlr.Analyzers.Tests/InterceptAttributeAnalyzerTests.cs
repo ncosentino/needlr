@@ -9,36 +9,8 @@ namespace NexusLabs.Needlr.Analyzers.Tests;
 
 public sealed class InterceptAttributeAnalyzerTests
 {
-    private const string NeedlrTypes = @"
-namespace NexusLabs.Needlr
-{
-    public interface IMethodInterceptor
-    {
-        System.Threading.Tasks.ValueTask<object?> InterceptAsync(IMethodInvocation invocation);
-    }
-
-    public interface IMethodInvocation
-    {
-        object Target { get; }
-        System.Reflection.MethodInfo Method { get; }
-        object?[] Arguments { get; }
-        System.Type[] GenericArguments { get; }
-        System.Threading.Tasks.ValueTask<object?> ProceedAsync();
-    }
-
-    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple = true)]
-    public class InterceptAttribute : System.Attribute
-    {
-        public InterceptAttribute(System.Type interceptorType) { }
-        public int Order { get; set; }
-    }
-
-    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple = true)]
-    public class InterceptAttribute<TInterceptor> : System.Attribute where TInterceptor : IMethodInterceptor
-    {
-        public int Order { get; set; }
-    }
-}";
+    // Use shared test attributes that match the real package
+    private static string Attributes => NeedlrTestAttributes.Interceptors;
 
     [Fact]
     public async Task NoError_WhenInterceptorImplementsInterface()
@@ -64,7 +36,7 @@ public class LoggingInterceptor : IMethodInterceptor
         return invocation.ProceedAsync();
     }
 }
-" + NeedlrTypes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<InterceptAttributeAnalyzer, DefaultVerifier>
         {
@@ -95,7 +67,7 @@ public class NotAnInterceptor
 {
     public void DoSomething() { }
 }
-" + NeedlrTypes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<InterceptAttributeAnalyzer, DefaultVerifier>
         {
@@ -130,7 +102,7 @@ public class LoggingInterceptor : IMethodInterceptor
         return invocation.ProceedAsync();
     }
 }
-" + NeedlrTypes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<InterceptAttributeAnalyzer, DefaultVerifier>
         {
@@ -173,7 +145,7 @@ public class TimingInterceptor : IMethodInterceptor
         return invocation.ProceedAsync();
     }
 }
-" + NeedlrTypes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<InterceptAttributeAnalyzer, DefaultVerifier>
         {
@@ -204,7 +176,7 @@ public class LoggingInterceptor : IMethodInterceptor
         return invocation.ProceedAsync();
     }
 }
-" + NeedlrTypes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<InterceptAttributeAnalyzer, DefaultVerifier>
         {

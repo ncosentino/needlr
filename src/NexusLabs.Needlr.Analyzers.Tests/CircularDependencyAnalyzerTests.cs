@@ -10,38 +10,8 @@ namespace NexusLabs.Needlr.Analyzers.Tests;
 
 public sealed class CircularDependencyAnalyzerTests
 {
-    private const string NeedlrAttributes = @"
-namespace NexusLabs.Needlr
-{
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class SingletonAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class ScopedAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class TransientAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class RegisterAsAttribute : System.Attribute
-    {
-        public RegisterAsAttribute(ServiceLifetime lifetime) { }
-        public RegisterAsAttribute(System.Type serviceType, ServiceLifetime lifetime = ServiceLifetime.Transient) { }
-    }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class AutoRegisterAttribute : System.Attribute
-    {
-        public ServiceLifetime Lifetime { get; set; } = ServiceLifetime.Transient;
-    }
-
-    public enum ServiceLifetime
-    {
-        Singleton = 0,
-        Scoped = 1,
-        Transient = 2
-    }
-}";
+    // Use shared test attributes that match the real package
+    private static string Attributes => NeedlrTestAttributes.Core;
 
     [Fact]
     public async Task NoError_WhenNoCycle()
@@ -63,7 +33,7 @@ public class ServiceC
 {
     public ServiceC(ServiceB b) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
         {
@@ -92,7 +62,7 @@ public class {|#0:ServiceB|}
 {
     public ServiceB(ServiceA a) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
             .WithLocation(0)
@@ -132,7 +102,7 @@ public class {|#0:ServiceC|}
 {
     public ServiceC(ServiceA a) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
             .WithLocation(0)
@@ -161,7 +131,7 @@ public class ServiceB
 {
     public ServiceB(ServiceA a) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
         {
@@ -185,7 +155,7 @@ public class ServiceA
 {
     public ServiceA(ServiceB b) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
         {
@@ -206,7 +176,7 @@ public class ServiceA { }
 
 [Scoped]
 public class ServiceB(ServiceA a);
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
         {
@@ -229,133 +199,7 @@ public class ServiceA(ServiceB b);
 
 [Scoped]
 public class {|#0:ServiceB|}(ServiceA a);
-" + NeedlrAttributes;
-
-        var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
-            .WithLocation(0)
-            .WithArguments("ServiceA → ServiceB → ServiceA");
-
-        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
-        {
-            TestCode = code,
-            ExpectedDiagnostics = { expected }
-        };
-
-        await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    // === Source-gen parity tests for RegisterAs and AutoRegister ===
-
-    [Fact]
-    public async Task Error_WhenRegisterAsCycle()
-    {
-        var code = @"
-using NexusLabs.Needlr;
-
-[RegisterAs(ServiceLifetime.Singleton)]
-public class ServiceA
-{
-    public ServiceA(ServiceB b) { }
-}
-
-[RegisterAs(ServiceLifetime.Singleton)]
-public class {|#0:ServiceB|}
-{
-    public ServiceB(ServiceA a) { }
-}
-" + NeedlrAttributes;
-
-        var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
-            .WithLocation(0)
-            .WithArguments("ServiceA → ServiceB → ServiceA");
-
-        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
-        {
-            TestCode = code,
-            ExpectedDiagnostics = { expected }
-        };
-
-        await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task Error_WhenAutoRegisterCycle()
-    {
-        var code = @"
-using NexusLabs.Needlr;
-
-[AutoRegister(Lifetime = ServiceLifetime.Scoped)]
-public class ServiceA
-{
-    public ServiceA(ServiceB b) { }
-}
-
-[AutoRegister(Lifetime = ServiceLifetime.Scoped)]
-public class {|#0:ServiceB|}
-{
-    public ServiceB(ServiceA a) { }
-}
-" + NeedlrAttributes;
-
-        var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
-            .WithLocation(0)
-            .WithArguments("ServiceA → ServiceB → ServiceA");
-
-        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
-        {
-            TestCode = code,
-            ExpectedDiagnostics = { expected }
-        };
-
-        await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task NoError_WhenRegisterAsNoCycle()
-    {
-        var code = @"
-using NexusLabs.Needlr;
-
-[RegisterAs(typeof(IServiceA), ServiceLifetime.Singleton)]
-public class ServiceA : IServiceA { }
-
-[RegisterAs(ServiceLifetime.Scoped)]
-public class ServiceB
-{
-    public ServiceB(ServiceA a) { }
-}
-
-public interface IServiceA { }
-" + NeedlrAttributes;
-
-        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
-        {
-            TestCode = code
-        };
-
-        await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task Error_MixedAttributes_CycleWithRegisterAsAndScoped()
-    {
-        var code = @"
-using NexusLabs.Needlr;
-
-// Uses simple [Scoped] attribute
-[Scoped]
-public class ServiceA
-{
-    public ServiceA(ServiceB b) { }
-}
-
-// Uses [RegisterAs] attribute
-[RegisterAs(ServiceLifetime.Singleton)]
-public class {|#0:ServiceB|}
-{
-    public ServiceB(ServiceA a) { }
-}
-" + NeedlrAttributes;
+" + Attributes;
 
         var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
             .WithLocation(0)

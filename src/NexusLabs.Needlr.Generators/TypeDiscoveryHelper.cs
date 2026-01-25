@@ -27,6 +27,12 @@ internal static class TypeDiscoveryHelper
     private const string DecoratorForAttributePrefix = "NexusLabs.Needlr.DecoratorForAttribute";
     private const string KeyedAttributeName = "KeyedAttribute";
     private const string KeyedAttributeFullName = "NexusLabs.Needlr.KeyedAttribute";
+    private const string SingletonAttributeName = "SingletonAttribute";
+    private const string SingletonAttributeFullName = "NexusLabs.Needlr.SingletonAttribute";
+    private const string ScopedAttributeName = "ScopedAttribute";
+    private const string ScopedAttributeFullName = "NexusLabs.Needlr.ScopedAttribute";
+    private const string TransientAttributeName = "TransientAttribute";
+    private const string TransientAttributeFullName = "NexusLabs.Needlr.TransientAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -648,8 +654,8 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
-    /// Determines the injectable lifetime for a type by analyzing its constructors.
-    /// This mirrors the logic in ReflectionTypeFilterer.IsInjectableSingletonType.
+    /// Determines the injectable lifetime for a type by analyzing its attributes and constructors.
+    /// Checks for explicit lifetime attributes first, then falls back to Singleton if injectable.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to analyze.</param>
     /// <returns>The determined lifetime, or null if the type is not injectable.</returns>
@@ -666,7 +672,7 @@ internal static class TypeDiscoveryHelper
         // Types with [DeferToContainer] are always injectable as Singleton
         // (the attribute declares constructor params that will be added by another generator)
         if (HasDeferToContainerAttribute(typeSymbol))
-            return GeneratorLifetime.Singleton;
+            return GetExplicitLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
 
         // Get all instance constructors
         var constructors = typeSymbol.InstanceConstructors;
@@ -681,7 +687,7 @@ internal static class TypeDiscoveryHelper
 
             // Parameterless constructor is always valid
             if (parameters.Length == 0)
-                return GeneratorLifetime.Singleton;
+                return GetExplicitLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
 
             // Single parameter of same type (copy constructor) - not injectable
             if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
@@ -689,6 +695,33 @@ internal static class TypeDiscoveryHelper
 
             // Check if all parameters are injectable types
             if (AllParametersAreInjectable(parameters))
+                return GetExplicitLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the explicit lifetime from attributes if specified.
+    /// </summary>
+    private static GeneratorLifetime? GetExplicitLifetime(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            var fullName = attributeClass.ToDisplayString();
+
+            if (name == TransientAttributeName || fullName == TransientAttributeFullName)
+                return GeneratorLifetime.Transient;
+
+            if (name == ScopedAttributeName || fullName == ScopedAttributeFullName)
+                return GeneratorLifetime.Scoped;
+
+            if (name == SingletonAttributeName || fullName == SingletonAttributeFullName)
                 return GeneratorLifetime.Singleton;
         }
 

@@ -10,28 +10,8 @@ namespace NexusLabs.Needlr.Analyzers.Tests;
 
 public sealed class GlobalNamespaceTypeAnalyzerTests
 {
-    private const string NeedlrAttributes = @"
-namespace NexusLabs.Needlr.Generators
-{
-    [System.AttributeUsage(System.AttributeTargets.Assembly)]
-    public sealed class GenerateTypeRegistryAttribute : System.Attribute
-    {
-        public string[]? IncludeNamespacePrefixes { get; set; }
-        public bool IncludeSelf { get; set; } = true;
-    }
-}
-
-namespace NexusLabs.Needlr
-{
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public sealed class SingletonAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public sealed class DoNotInjectAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface)]
-    public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
-}";
+    // Use shared test attributes that match the real package
+    private static string Attributes => NeedlrTestAttributes.All;
 
     [Fact]
     public async Task NoWarning_WhenNoPrefixesSet()
@@ -43,7 +23,7 @@ using NexusLabs.Needlr.Generators;
 
 // Global namespace type - should be included when no prefixes set
 public class GlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -63,7 +43,7 @@ using NexusLabs.Needlr.Generators;
 
 // Global namespace type - should be included because empty string prefix is set
 public class GlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -86,7 +66,7 @@ namespace MyCompany.Services
     // Namespaced type - not affected by this analyzer
     public class NamespacedService { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -108,7 +88,7 @@ using NexusLabs.Needlr.Generators;
 // Global namespace but marked DoNotInject
 [DoNotInject]
 public class GlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -130,7 +110,7 @@ using NexusLabs.Needlr.Generators;
 // Global namespace but marked DoNotAutoRegister
 [DoNotAutoRegister]
 public class GlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -146,7 +126,7 @@ public class GlobalService { }
         var code = @"
 // No [GenerateTypeRegistry] attribute - not using Needlr source gen
 public class GlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -166,7 +146,7 @@ using NexusLabs.Needlr.Generators;
 
 // Abstract types are not injectable
 public abstract class AbstractGlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -186,7 +166,7 @@ using NexusLabs.Needlr.Generators;
 
 // Interfaces are not injectable as concrete types
 public interface IGlobalService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -208,7 +188,7 @@ public interface IService { }
 
 // Global namespace type implementing interface - likely injectable
 public class {|#0:GlobalService|} : IService { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -236,7 +216,7 @@ using NexusLabs.Needlr.Generators;
 // Global namespace type with [Singleton] attribute
 [Singleton]
 public class {|#0:GlobalSingletonService|} { }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {
@@ -270,7 +250,7 @@ public class {|#0:GlobalConfiguration|}
 {
     public GlobalConfiguration(MyCompany.IConfiguration config) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<GlobalNamespaceTypeAnalyzer, DefaultVerifier>
         {

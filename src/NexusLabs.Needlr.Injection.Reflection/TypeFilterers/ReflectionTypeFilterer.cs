@@ -15,39 +15,43 @@ public sealed class ReflectionTypeFilterer : ITypeFilterer
 {
     /// <inheritdoc />
     public bool IsInjectableScopedType(Type type)
-        => false;
+        => IsInjectableType(type) && type.GetCustomAttribute<ScopedAttribute>(inherit: true) is not null;
 
     /// <inheritdoc />
     public bool IsInjectableTransientType(Type type)
-        => false;
+        => IsInjectableType(type) && type.GetCustomAttribute<TransientAttribute>(inherit: true) is not null;
 
     /// <inheritdoc />
-    public bool IsInjectableSingletonType(
-        Type type)
+    public bool IsInjectableSingletonType(Type type)
+    {
+        if (!IsInjectableType(type))
+            return false;
+
+        // Explicit [Singleton] attribute or no lifetime attribute (default)
+        var hasSingleton = type.GetCustomAttribute<SingletonAttribute>(inherit: true) is not null;
+        var hasScoped = type.GetCustomAttribute<ScopedAttribute>(inherit: true) is not null;
+        var hasTransient = type.GetCustomAttribute<TransientAttribute>(inherit: true) is not null;
+
+        return hasSingleton || (!hasScoped && !hasTransient);
+    }
+
+    private static bool IsInjectableType(Type type)
     {
         if (!TypeFiltering.IsConcreteType(type))
-        {
             return false;
-        }
 
         if (type.GetCustomAttribute<DoNotInjectAttribute>(inherit: true) is not null)
-        {
             return false;
-        }
 
         var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var ctor in ctors)
         {
             var parameters = ctor.GetParameters();
             if (parameters.Length == 0)
-            {
                 return true;
-            }
 
             if (parameters.Length == 1 && parameters[0].ParameterType == type)
-            {
                 return false;
-            }
 
             if (parameters.All(p =>
                 !p.ParameterType.IsAssignableTo(typeof(MulticastDelegate)) &&

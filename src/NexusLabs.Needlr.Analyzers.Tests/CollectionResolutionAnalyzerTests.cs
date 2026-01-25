@@ -9,31 +9,8 @@ namespace NexusLabs.Needlr.Analyzers.Tests;
 
 public sealed class CollectionResolutionAnalyzerTests
 {
-    private const string NeedlrAttributes = @"
-namespace NexusLabs.Needlr
-{
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class SingletonAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class ScopedAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class TransientAttribute : System.Attribute { }
-
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class DoNotInjectAttribute : System.Attribute { }
-}
-
-namespace NexusLabs.Needlr.Generators
-{
-    [System.AttributeUsage(System.AttributeTargets.Assembly)]
-    public class GenerateTypeRegistryAttribute : System.Attribute
-    {
-        public string[]? IncludeNamespacePrefixes { get; set; }
-        public bool IncludeSelf { get; set; } = true;
-    }
-}";
+    // Use shared test attributes that match the real package
+    private static string Attributes => NeedlrTestAttributes.All;
 
     [Fact]
     public async Task NoWarning_WhenGenerateTypeRegistryNotPresent()
@@ -77,7 +54,7 @@ public class Consumer
 {
     public Consumer(IEnumerable<IPlugin> plugins) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
@@ -103,7 +80,7 @@ public class Consumer
 {
     public Consumer({|#0:IEnumerable<IMissingPlugin>|} plugins) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
@@ -133,7 +110,7 @@ public class Consumer
 {
     public Consumer(IEnumerable<IDisposable> disposables) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
@@ -158,7 +135,7 @@ public class Consumer
 {
     public Consumer(IEnumerable<MyService> services) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
@@ -187,7 +164,7 @@ public class Consumer
 {
     public Consumer({|#0:IEnumerable<IPlugin>|} plugins) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
@@ -224,7 +201,7 @@ public class Consumer
 {
     public Consumer(IEnumerable<IPlugin> plugins) { }
 }
-" + NeedlrAttributes;
+" + Attributes;
 
         var test = new CSharpAnalyzerTest<CollectionResolutionAnalyzer, DefaultVerifier>
         {
