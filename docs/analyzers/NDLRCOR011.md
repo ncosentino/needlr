@@ -1,75 +1,68 @@
-# NDLRCOR011: Keyed Service Usage
+# NDLRCOR011: Keyed Service Unknown Key
 
 ## Cause
 
-A constructor parameter uses `[FromKeyedServices("key")]` to resolve a keyed service dependency.
+A constructor parameter uses `[FromKeyedServices("key")]` to resolve a keyed service,
+but no `[Keyed("key")]` registration was found in the compilation.
 
 ## Rule Description
 
-When using source generation with `[assembly: GenerateTypeRegistry]`, Needlr detects parameters annotated with `[FromKeyedServices]`. This analyzer provides informational tracking of keyed service usage patterns in your codebase.
+When using source generation with `[assembly: GenerateTypeRegistry]`, Needlr validates
+that `[FromKeyedServices("key")]` parameters reference keys that are statically discoverable.
 
 ```csharp
-// ℹ️ NDLRCOR011: Parameter 'processor' uses keyed service resolution with key "primary"
+// ℹ️ NDLRCOR011: No registration found for key "unknown"
 public class PaymentHandler(
-    [FromKeyedServices("primary")] IPaymentProcessor processor)
+    [FromKeyedServices("unknown")] IPaymentProcessor processor)
 {
-    // Resolved via GetRequiredKeyedService<IPaymentProcessor>("primary")
 }
 ```
 
 This is an **informational diagnostic** (not a warning or error) because:
-- Keyed services are typically registered at runtime via `IServiceCollectionPlugin`
-- The analyzer cannot validate that the key is actually registered
-- Both source-gen and reflection paths support keyed services
+- Keys may be registered at runtime via `IServiceCollectionPlugin`
+- The analyzer only validates statically-discoverable `[Keyed]` registrations
 
-## How Keyed Services Work
+## How to Fix
 
-The source generator correctly handles `[FromKeyedServices]` and generates appropriate resolution code:
+### Option 1: Add [Keyed] Attribute
+
+Register the service with a matching key:
 
 ```csharp
-// Generated factory lambda
-services.AddSingleton<PaymentHandler>(sp => new PaymentHandler(
-    sp.GetRequiredKeyedService<IPaymentProcessor>("primary")));
+[Keyed("primary")]
+public class StripeProcessor : IPaymentProcessor { }
+
+// ✅ Now validated - "primary" key is discovered
+public class PaymentHandler(
+    [FromKeyedServices("primary")] IPaymentProcessor processor)
+{
+}
 ```
 
-### Registering Keyed Services
+### Option 2: Register via Plugin (Suppress Diagnostic)
 
-Register keyed services via a plugin:
+If registering via plugin, suppress the diagnostic:
 
 ```csharp
-public class PaymentServicesPlugin : IServiceCollectionPlugin
+// Plugin registers keyed services at runtime
+public class PaymentPlugin : IServiceCollectionPlugin
 {
-    public void Configure(IServiceCollection services)
+    public void Configure(ServiceCollectionPluginOptions options)
     {
-        services.AddKeyedSingleton<IPaymentProcessor, StripeProcessor>("primary");
-        services.AddKeyedSingleton<IPaymentProcessor, PayPalProcessor>("backup");
+        options.Services.AddKeyedSingleton<IPaymentProcessor, StripeProcessor>("primary");
     }
 }
-```
 
-### Mixed Keyed and Non-Keyed Parameters
-
-The generator handles constructors with both keyed and non-keyed parameters:
-
-```csharp
-public class OrderProcessor(
-    [FromKeyedServices("primary")] IPaymentProcessor payment,
-    ILogger<OrderProcessor> logger)  // Non-keyed - uses GetRequiredService
+// Suppress because key is registered via plugin
+#pragma warning disable NDLRCOR011
+public class PaymentHandler(
+    [FromKeyedServices("primary")] IPaymentProcessor processor)
+#pragma warning restore NDLRCOR011
 {
 }
 ```
 
-## How to Use This Diagnostic
-
-### Track Keyed Service Usage
-
-Use the diagnostic to maintain awareness of keyed service patterns:
-- Find all usages: Search for NDLRCOR011 in your IDE
-- Review dependencies: Ensure matching registrations exist in plugins
-
-### Suppress If Not Needed
-
-If you don't need keyed service tracking:
+### Option 3: Project-Wide Suppression
 
 ```ini
 # .editorconfig
@@ -77,15 +70,14 @@ If you don't need keyed service tracking:
 dotnet_diagnostic.NDLRCOR011.severity = none
 ```
 
-### Promote to Warning
+## Validation Logic
 
-For stricter validation (manual review of keyed service registrations):
+The analyzer:
+1. Collects all `[Keyed("key")]` attributes from classes in the compilation
+2. Collects all `[FromKeyedServices("key")]` parameters
+3. Reports diagnostic when a key is not found in discovered registrations
 
-```ini
-# .editorconfig
-[*.cs]
-dotnet_diagnostic.NDLRCOR011.severity = warning
-```
+Keys registered via plugins cannot be validated at compile time.
 
 ## When This Analyzer Activates
 
@@ -103,16 +95,7 @@ This analyzer only runs when:
 | `error` | Fail the build |
 | `none` | Disable completely |
 
-## Limitations
-
-This analyzer **cannot** validate:
-- Whether the keyed service is actually registered
-- Whether the key value matches a registration
-- Lifetime compatibility of keyed dependencies
-
-Keyed services are registered at runtime via plugins, so compile-time validation of keys and lifetimes is not possible. The existing `LifetimeMismatchAnalyzer` (NDLRCOR005) validates lifetimes for statically-discovered services.
-
 ## See Also
 
-- [Keyed Services](../keyed-services.md) - How keyed services work in Needlr
-- [AnalyzerStatus.md](../breadcrumbs.md#analyzer-status) - View all active analyzers in diagnostics output
+- [Keyed Attribute](../attributes/Keyed.md) - Static keyed service registration
+- [AnalyzerStatus.md](../breadcrumbs.md#analyzer-status) - View all active analyzers

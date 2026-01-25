@@ -36,7 +36,7 @@ public sealed class KeyedServiceResolutionAnalyzerTests
     }
 
     [Fact]
-    public async Task KeyedService_WithSourceGenEnabled_ReportsDiagnostic()
+    public async Task KeyedService_UnknownKey_ReportsDiagnostic()
     {
         var source = """
             using System;
@@ -73,6 +73,117 @@ public sealed class KeyedServiceResolutionAnalyzerTests
         var expected = VerifyAnalyzer.Diagnostic(DiagnosticIds.KeyedServiceUnknownKey)
             .WithLocation(0)
             .WithArguments("IPaymentProcessor", "primary");
+
+        await VerifyAnalyzer.VerifyAnalyzerAsync(source, expected);
+    }
+
+    [Fact]
+    public async Task KeyedService_KnownKey_NoDiagnostic()
+    {
+        var source = """
+            using System;
+            using Microsoft.Extensions.DependencyInjection;
+            
+            [assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry]
+            
+            namespace Microsoft.Extensions.DependencyInjection
+            {
+                [AttributeUsage(AttributeTargets.Parameter)]
+                public sealed class FromKeyedServicesAttribute : Attribute
+                {
+                    public FromKeyedServicesAttribute(object key) => Key = key;
+                    public object Key { get; }
+                }
+            }
+            
+            namespace NexusLabs.Needlr.Generators
+            {
+                public sealed class GenerateTypeRegistryAttribute : Attribute { }
+            }
+            
+            namespace NexusLabs.Needlr
+            {
+                [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+                public sealed class KeyedAttribute : Attribute
+                {
+                    public KeyedAttribute(string key) => Key = key;
+                    public string Key { get; }
+                }
+            }
+            
+            namespace TestNamespace
+            {
+                public interface IPaymentProcessor { }
+                
+                // This registers "primary" key
+                [NexusLabs.Needlr.Keyed("primary")]
+                public sealed class StripeProcessor : IPaymentProcessor { }
+                
+                public sealed class OrderService
+                {
+                    // No diagnostic - "primary" key is discovered from StripeProcessor
+                    public OrderService([FromKeyedServices("primary")] IPaymentProcessor processor) { }
+                }
+            }
+            """;
+
+        await VerifyAnalyzer.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task KeyedService_SomeKnown_SomeUnknown_OnlyReportsUnknown()
+    {
+        var source = """
+            using System;
+            using Microsoft.Extensions.DependencyInjection;
+            
+            [assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry]
+            
+            namespace Microsoft.Extensions.DependencyInjection
+            {
+                [AttributeUsage(AttributeTargets.Parameter)]
+                public sealed class FromKeyedServicesAttribute : Attribute
+                {
+                    public FromKeyedServicesAttribute(object key) => Key = key;
+                    public object Key { get; }
+                }
+            }
+            
+            namespace NexusLabs.Needlr.Generators
+            {
+                public sealed class GenerateTypeRegistryAttribute : Attribute { }
+            }
+            
+            namespace NexusLabs.Needlr
+            {
+                [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+                public sealed class KeyedAttribute : Attribute
+                {
+                    public KeyedAttribute(string key) => Key = key;
+                    public string Key { get; }
+                }
+            }
+            
+            namespace TestNamespace
+            {
+                public interface IPaymentProcessor { }
+                
+                [NexusLabs.Needlr.Keyed("primary")]
+                public sealed class StripeProcessor : IPaymentProcessor { }
+                
+                public sealed class PaymentService
+                {
+                    public PaymentService(
+                        [FromKeyedServices("primary")] IPaymentProcessor primary,
+                        {|#0:[FromKeyedServices("backup")] IPaymentProcessor backup|}) { }
+                }
+            }
+            """;
+
+        // Only "backup" should report - "primary" is discovered from StripeProcessor
+        var expected = VerifyAnalyzer.Diagnostic(DiagnosticIds.KeyedServiceUnknownKey)
+            .WithLocation(0)
+            .WithArguments("IPaymentProcessor", "backup");
 
         await VerifyAnalyzer.VerifyAnalyzerAsync(source, expected);
     }
@@ -152,7 +263,7 @@ public sealed class KeyedServiceResolutionAnalyzerTests
     }
 
     [Fact]
-    public async Task MultipleKeyedServices_ReportsMultipleDiagnostics()
+    public async Task MultipleUnknownKeyedServices_ReportsMultipleDiagnostics()
     {
         var source = """
             using System;
@@ -199,7 +310,7 @@ public sealed class KeyedServiceResolutionAnalyzerTests
     }
 
     [Fact]
-    public async Task MixedKeyedAndUnkeyed_OnlyReportsKeyed()
+    public async Task MixedKeyedAndUnkeyed_OnlyReportsUnknownKeyed()
     {
         var source = """
             using System;

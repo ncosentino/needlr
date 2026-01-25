@@ -532,11 +532,25 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaces = type.InterfaceNames.Length > 0 
                         ? string.Join(", ", type.InterfaceNames.Select(i => i.Split('.').Last()))
                         : "none";
+                    var keysInfo = type.ServiceKeys.Length > 0
+                        ? $"Keys: {string.Join(", ", type.ServiceKeys.Select(k => $"\"{k}\""))}"
+                        : null;
                     
-                    breadcrumbs.WriteVerboseBox(builder, "        ",
-                        $"{type.TypeName.Split('.').Last()} → {interfaces}",
-                        $"Source: {sourcePath}",
-                        $"Lifetime: {type.Lifetime}");
+                    if (keysInfo != null)
+                    {
+                        breadcrumbs.WriteVerboseBox(builder, "        ",
+                            $"{type.TypeName.Split('.').Last()} → {interfaces}",
+                            $"Source: {sourcePath}",
+                            $"Lifetime: {type.Lifetime}",
+                            keysInfo);
+                    }
+                    else
+                    {
+                        breadcrumbs.WriteVerboseBox(builder, "        ",
+                            $"{type.TypeName.Split('.').Last()} → {interfaces}",
+                            $"Source: {sourcePath}",
+                            $"Lifetime: {type.Lifetime}");
+                    }
                 }
 
                 builder.Append($"        new(typeof({type.TypeName}), ");
@@ -1210,6 +1224,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var interfaces = string.Join(", ", plugin.InterfaceNames.Select(GetShortTypeName));
                 sb.AppendLine($"| {plugin.Order} | {GetShortTypeName(plugin.TypeName)} | {interfaces} |");
+            }
+            sb.AppendLine();
+        }
+
+        // Keyed Services section
+        var keyedTypes = types.Where(t => t.ServiceKeys.Length > 0).ToList();
+        if (keyedTypes.Any())
+        {
+            sb.AppendLine($"## Keyed Services ({keyedTypes.Sum(t => t.ServiceKeys.Length)})");
+            sb.AppendLine();
+            sb.AppendLine("| Key | Interface | Implementation | Lifetime |");
+            sb.AppendLine("|-----|-----------|----------------|----------|");
+
+            foreach (var type in keyedTypes.OrderBy(t => t.TypeName))
+            {
+                foreach (var key in type.ServiceKeys)
+                {
+                    var iface = type.InterfaceNames.FirstOrDefault() ?? "-";
+                    sb.AppendLine($"| `\"{key}\"` | {GetShortTypeName(iface)} | {GetShortTypeName(type.TypeName)} | {type.Lifetime} |");
+                }
             }
             sb.AppendLine();
         }
