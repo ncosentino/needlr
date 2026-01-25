@@ -1237,7 +1237,7 @@ namespace TestApp
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(new[]
             {
                 MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
@@ -1284,7 +1284,7 @@ namespace TestApp
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(new[]
             {
                 MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),

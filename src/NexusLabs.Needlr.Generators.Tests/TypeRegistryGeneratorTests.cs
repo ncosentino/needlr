@@ -498,7 +498,7 @@ namespace TestApp
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
         // Use the REAL attribute assemblies instead of mocking them
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(new[]
             {
                 MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
@@ -695,7 +695,7 @@ namespace TestApp
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
         // Use the REAL attribute assemblies instead of mocking them
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(new[]
             {
                 MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
@@ -752,7 +752,7 @@ namespace NexusLabs.Needlr
         var needlrCompilation = CSharpCompilation.Create(
             "NexusLabs.Needlr",
             new[] { CSharpSyntaxTree.ParseText(needlrSource) },
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var needlrAssemblyStream = new System.IO.MemoryStream();
@@ -839,7 +839,7 @@ namespace TestApp
             CSharpSyntaxTree.ParseText(appSource)
         };
 
-        var references = Basic.Reference.Assemblies.Net90.References.All.Append(needlrReference).ToList();
+        var references = Basic.Reference.Assemblies.Net100.References.All.Append(needlrReference).ToList();
 
         var compilation = CSharpCompilation.Create(
             "TestApp",
@@ -969,7 +969,7 @@ namespace MainApp
         var referencedCompilation = CSharpCompilation.Create(
             "ReferencedLib",
             referencedSyntaxTrees,
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var referencedGenerator = new TypeRegistryGenerator();
@@ -1003,7 +1003,7 @@ namespace MainApp
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
             mainSyntaxTrees,
-            Basic.Reference.Assemblies.Net90.References.All.Append(referencedMetadataReference),
+            Basic.Reference.Assemblies.Net100.References.All.Append(referencedMetadataReference),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var mainGenerator = new TypeRegistryGenerator();
@@ -1029,7 +1029,7 @@ namespace MainApp
     {
         var attributeSource = GetStandardAttributeSource();
         var referencedCodes = new List<string>();
-        var metadataReferences = new List<MetadataReference>(Basic.Reference.Assemblies.Net90.References.All);
+        var metadataReferences = new List<MetadataReference>(Basic.Reference.Assemblies.Net100.References.All);
 
         foreach (var (assemblyName, source) in referencedAssemblies)
         {
@@ -1043,7 +1043,7 @@ namespace MainApp
             var compilation = CSharpCompilation.Create(
                 assemblyName,
                 syntaxTrees,
-                Basic.Reference.Assemblies.Net90.References.All,
+                Basic.Reference.Assemblies.Net100.References.All,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             // Run generator to get the generated code (for inspection)

@@ -43,7 +43,7 @@ namespace NexusLabs.Needlr
         var pluginCompilation = CSharpCompilation.Create(
             "TestPlugin",
             [CSharpSyntaxTree.ParseText(pluginSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Ensure no compilation errors
@@ -65,7 +65,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(pluginCompilation.ToMetadataReference())
             .ToArray();
@@ -127,7 +127,7 @@ namespace NexusLabs.Needlr
         var pluginCompilation = CSharpCompilation.Create(
             "TestPlugin",
             [CSharpSyntaxTree.ParseText(pluginSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Create the "host" assembly with [GenerateTypeRegistry]
@@ -143,7 +143,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(pluginCompilation.ToMetadataReference())
             .ToArray();
@@ -214,7 +214,7 @@ namespace NexusLabs.Needlr.Generators
         var pluginCompilation = CSharpCompilation.Create(
             "TestPlugin",
             [CSharpSyntaxTree.ParseText(pluginSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Create the "host" assembly with [GenerateTypeRegistry]
@@ -230,7 +230,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(pluginCompilation.ToMetadataReference())
             .ToArray();
@@ -275,7 +275,7 @@ namespace TestPlugin
         var pluginCompilation = CSharpCompilation.Create(
             "TestPlugin",
             [CSharpSyntaxTree.ParseText(pluginSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Create the "host" assembly with [GenerateTypeRegistry]
@@ -291,7 +291,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(pluginCompilation.ToMetadataReference())
             .ToArray();

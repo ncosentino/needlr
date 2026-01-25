@@ -296,7 +296,7 @@ namespace NexusLabs.Needlr.Generators
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees,
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var generator = new TypeRegistryGenerator();

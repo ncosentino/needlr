@@ -827,7 +827,7 @@ namespace TestNamespace
         return CSharpCompilation.Create(
             "TestAssembly",
             [syntaxTree],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 

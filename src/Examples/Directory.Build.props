@@ -1,4 +1,7 @@
 <Project>
+  <!-- Import parent Directory.Build.props first to inherit TargetFramework, etc. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  
   <!-- 
     Example demonstrating centralized breadcrumb configuration.
     

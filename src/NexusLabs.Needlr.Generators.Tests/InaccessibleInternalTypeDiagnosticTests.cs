@@ -28,7 +28,7 @@ namespace ReferencedLib
         var referencedCompilation = CSharpCompilation.Create(
             "ReferencedLib",
             [CSharpSyntaxTree.ParseText(referencedSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Ensure the referenced compilation has no errors
@@ -50,7 +50,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(referencedCompilation.ToMetadataReference())
             .ToArray();
@@ -100,7 +100,7 @@ namespace ReferencedLib
         var referencedCompilation = CSharpCompilation.Create(
             "ReferencedLib",
             [CSharpSyntaxTree.ParseText(referencedSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Create the "host" assembly that references it
@@ -116,7 +116,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(referencedCompilation.ToMetadataReference())
             .ToArray();
@@ -170,7 +170,7 @@ namespace TestApp
                 CSharpSyntaxTree.ParseText(attributeSource),
                 CSharpSyntaxTree.ParseText(source)
             ],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Run the generator
@@ -204,7 +204,7 @@ namespace OtherLib
         var referencedCompilation = CSharpCompilation.Create(
             "OtherLib",
             [CSharpSyntaxTree.ParseText(referencedSource)],
-            Basic.Reference.Assemblies.Net90.References.All,
+            Basic.Reference.Assemblies.Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Create the "host" assembly that references it but scans a different namespace
@@ -220,7 +220,7 @@ namespace HostApp
 
         var attributeSource = GetAttributeSource();
 
-        var references = Basic.Reference.Assemblies.Net90.References.All
+        var references = Basic.Reference.Assemblies.Net100.References.All
             .Cast<MetadataReference>()
             .Append(referencedCompilation.ToMetadataReference())
             .ToArray();
