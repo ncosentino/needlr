@@ -114,4 +114,32 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Interceptors work by generating a proxy class that implements the service's interfaces. If the class doesn't implement any interfaces, the interceptor cannot be applied. Add an interface to the class or remove the [Intercept] attribute.",
         helpLinkUri: HelpLinkBase + "NDLRCOR008.md");
+
+    /// <summary>
+    /// NDLRCOR009: Lazy&lt;T&gt; references type not discovered by source generation.
+    /// </summary>
+    public static readonly DiagnosticDescriptor LazyResolutionUnknown = new(
+        id: DiagnosticIds.LazyResolutionUnknown,
+        title: "Lazy<T> references undiscovered type",
+        messageFormat: "Type '{0}' in Lazy<{0}> was not discovered by source generation. If registered via reflection, this is expected.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "The type parameter in Lazy<T> was not found in the source-generated type registry. This may indicate a missing registration, or the type may be registered via reflection at runtime. Use .editorconfig to suppress if intentional.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR009.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRCOR010: IEnumerable&lt;T&gt; has no implementations discovered.
+    /// </summary>
+    public static readonly DiagnosticDescriptor CollectionResolutionEmpty = new(
+        id: DiagnosticIds.CollectionResolutionEmpty,
+        title: "IEnumerable<T> has no discovered implementations",
+        messageFormat: "No implementations of '{0}' were discovered by source generation. The collection will be empty unless registered via reflection.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "No types implementing the interface were found in the source-generated type registry. This may indicate missing registrations, or implementations may be registered via reflection at runtime. Use .editorconfig to suppress if intentional.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR010.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }

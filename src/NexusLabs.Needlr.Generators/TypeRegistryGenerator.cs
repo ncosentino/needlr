@@ -953,6 +953,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var registrationIndexContent = GenerateRegistrationIndexMarkdown(discoveryResult, assemblyName, projectDirectory, timestamp, options.TypeFilter);
         builder.AppendLine("    /// <summary>RegistrationIndex.md content</summary>");
         builder.AppendLine($"    public const string RegistrationIndex = @\"{EscapeVerbatimStringLiteral(registrationIndexContent)}\";");
+        builder.AppendLine();
+
+        var analyzerStatusContent = GenerateAnalyzerStatusMarkdown(timestamp);
+        builder.AppendLine("    /// <summary>AnalyzerStatus.md content</summary>");
+        builder.AppendLine($"    public const string AnalyzerStatus = @\"{EscapeVerbatimStringLiteral(analyzerStatusContent)}\";");
 
         builder.AppendLine("}");
 
@@ -1182,6 +1187,49 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
             sb.AppendLine();
         }
+
+        return sb.ToString();
+    }
+
+    private static string GenerateAnalyzerStatusMarkdown(string timestamp)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("# Needlr Analyzer Status");
+        sb.AppendLine();
+        sb.AppendLine($"Generated: {timestamp} UTC");
+        sb.AppendLine();
+        sb.AppendLine("## Active Analyzers");
+        sb.AppendLine();
+        sb.AppendLine("| ID | Name | Status | Default Severity | Description |");
+        sb.AppendLine("|:---|:-----|:-------|:-----------------|:------------|");
+        sb.AppendLine("| NDLRCOR001 | Reflection in AOT | ⚪ Conditional | Error | Detects reflection APIs in AOT projects |");
+        sb.AppendLine("| NDLRCOR002 | Plugin Constructor | ✅ Active | Warning | Plugins should have parameterless constructors |");
+        sb.AppendLine("| NDLRCOR003 | DeferToContainer in Generated | ✅ Active | Error | [DeferToContainer] must be on user code |");
+        sb.AppendLine("| NDLRCOR004 | Global Namespace Type | ✅ Active | Warning | Types in global namespace may not be discovered |");
+        sb.AppendLine("| NDLRCOR005 | Lifetime Mismatch | ✅ Active | Warning | Detects captive dependencies |");
+        sb.AppendLine("| NDLRCOR006 | Circular Dependency | ✅ Active | Error | Detects circular service dependencies |");
+        sb.AppendLine("| NDLRCOR007 | Intercept Type | ✅ Active | Error | Intercept type must implement IMethodInterceptor |");
+        sb.AppendLine("| NDLRCOR008 | Intercept Without Interface | ✅ Active | Warning | [Intercept] requires interface-based class |");
+        sb.AppendLine("| NDLRCOR009 | Lazy Resolution | ✅ Active | Info | Lazy<T> references undiscovered type |");
+        sb.AppendLine("| NDLRCOR010 | Collection Resolution | ✅ Active | Info | IEnumerable<T> has no implementations |");
+        sb.AppendLine();
+        sb.AppendLine("## Mode");
+        sb.AppendLine();
+        sb.AppendLine("**Source Generation**: Enabled (GenerateTypeRegistry detected)");
+        sb.AppendLine();
+        sb.AppendLine("## Configuration");
+        sb.AppendLine();
+        sb.AppendLine("Analyzer severity can be configured via `.editorconfig`:");
+        sb.AppendLine();
+        sb.AppendLine("```ini");
+        sb.AppendLine("# Example: Suppress Lazy resolution warnings");
+        sb.AppendLine("dotnet_diagnostic.NDLRCOR009.severity = none");
+        sb.AppendLine();
+        sb.AppendLine("# Example: Promote to warning");
+        sb.AppendLine("dotnet_diagnostic.NDLRCOR009.severity = warning");
+        sb.AppendLine("```");
+        sb.AppendLine();
 
         return sb.ToString();
     }

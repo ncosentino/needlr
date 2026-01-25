@@ -47,4 +47,14 @@ public static class DiagnosticIds
     /// NDLRCOR008: [Intercept] applied to class without interfaces.
     /// </summary>
     public const string InterceptOnClassWithoutInterfaces = "NDLRCOR008";
+
+    /// <summary>
+    /// NDLRCOR009: Lazy&lt;T&gt; references type not discovered by source generation.
+    /// </summary>
+    public const string LazyResolutionUnknown = "NDLRCOR009";
+
+    /// <summary>
+    /// NDLRCOR010: IEnumerable&lt;T&gt; has no implementations discovered by source generation.
+    /// </summary>
+    public const string CollectionResolutionEmpty = "NDLRCOR010";
 }

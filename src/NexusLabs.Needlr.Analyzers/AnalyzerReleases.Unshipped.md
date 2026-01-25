@@ -11,3 +11,5 @@ NDLRCOR005 | NexusLabs.Needlr | Warning | LifetimeMismatchAnalyzer, Lifetime mis
 NDLRCOR006 | NexusLabs.Needlr | Error | CircularDependencyAnalyzer, Circular dependency detected
 NDLRCOR007 | NexusLabs.Needlr | Error | InterceptAttributeAnalyzer, Intercept type must implement IMethodInterceptor
 NDLRCOR008 | NexusLabs.Needlr | Warning | InterceptAttributeAnalyzer, [Intercept] applied to class without interfaces
+NDLRCOR009 | NexusLabs.Needlr | Info | LazyResolutionAnalyzer, Lazy<T> references undiscovered type
+NDLRCOR010 | NexusLabs.Needlr | Info | CollectionResolutionAnalyzer, IEnumerable<T> has no discovered implementations

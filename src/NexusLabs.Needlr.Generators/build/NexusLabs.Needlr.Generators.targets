@@ -67,7 +67,7 @@ try
     
     // Extract each diagnostic field using regex to find verbatim string literals
     // Pattern: public const string FieldName = @"...content...";
-    var fields = new[] { "DependencyGraph", "LifetimeSummary", "RegistrationIndex" };
+    var fields = new[] { "DependencyGraph", "LifetimeSummary", "RegistrationIndex", "AnalyzerStatus" };
     foreach (var fieldName in fields)
     {
         // Match pattern: public const string FieldName = @"content";
