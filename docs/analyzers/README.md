@@ -18,6 +18,7 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR008](NDLRCOR008.md) | Warning | [Intercept] applied to class without interfaces |
 | [NDLRCOR009](NDLRCOR009.md) | Info | Lazy<T> references undiscovered type |
 | [NDLRCOR010](NDLRCOR010.md) | Info | IEnumerable<T> has no discovered implementations |
+| [NDLRCOR011](NDLRCOR011.md) | Info | [FromKeyedServices] keyed service usage tracking |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 
@@ -82,12 +83,18 @@ dotnet_diagnostic.NDLRCOR005.severity = error
 
 ## Resolution Validation Analyzers
 
-NDLRCOR009 and NDLRCOR010 are **resolution validation analyzers** that help catch potential issues with `Lazy<T>` and `IEnumerable<T>` injection patterns.
+NDLRCOR009, NDLRCOR010, and NDLRCOR011 are **resolution validation analyzers** that help catch potential issues with service resolution patterns.
 
 These analyzers:
 - Only activate when `[assembly: GenerateTypeRegistry]` is present
 - Default to `Info` severity (non-blocking)
 - Can be promoted to `Warning` or `Error` via `.editorconfig`
+
+| Analyzer | Purpose |
+|----------|---------|
+| NDLRCOR009 | Validates `Lazy<T>` references discoverable types |
+| NDLRCOR010 | Validates `IEnumerable<T>` has implementations |
+| NDLRCOR011 | Tracks `[FromKeyedServices]` keyed service usage |
 
 To see which analyzers are active in your project, enable diagnostics output:
 

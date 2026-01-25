@@ -1224,6 +1224,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine("| NDLRCOR008 | Intercept Without Interface | ✅ Active | Warning | [Intercept] requires interface-based class |");
         sb.AppendLine("| NDLRCOR009 | Lazy Resolution | ✅ Active | Info | Lazy<T> references undiscovered type |");
         sb.AppendLine("| NDLRCOR010 | Collection Resolution | ✅ Active | Info | IEnumerable<T> has no implementations |");
+        sb.AppendLine("| NDLRCOR011 | Keyed Service Usage | ✅ Active | Info | Tracks [FromKeyedServices] parameter usage |");
         sb.AppendLine();
         sb.AppendLine("## Mode");
         sb.AppendLine();
