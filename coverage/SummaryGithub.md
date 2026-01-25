@@ -3,30 +3,30 @@
 
 |||
 |:---|:---|
-| Generated on: | 01/24/2026 - 23:05:28 |
-| Coverage date: | 01/24/2026 - 23:05:00 - 01/24/2026 - 23:05:25 |
+| Generated on: | 01/25/2026 - 09:23:16 |
+| Coverage date: | 01/25/2026 - 09:22:45 - 01/25/2026 - 09:23:13 |
 | Parser: | MultiReport (14x Cobertura) |
-| Assemblies: | 16 |
-| Classes: | 114 |
-| Files: | 110 |
-| **Line coverage:** | 88.4% (4150 of 4690) |
-| Covered lines: | 4150 |
-| Uncovered lines: | 540 |
-| Coverable lines: | 4690 |
-| Total lines: | 14057 |
-| **Branch coverage:** | 79.7% (1645 of 2063) |
-| Covered branches: | 1645 |
-| Total branches: | 2063 |
+| Assemblies: | 15 |
+| Classes: | 106 |
+| Files: | 102 |
+| **Line coverage:** | 88.3% (4071 of 4606) |
+| Covered lines: | 4071 |
+| Uncovered lines: | 535 |
+| Coverable lines: | 4606 |
+| Total lines: | 13420 |
+| **Branch coverage:** | 79.5% (1707 of 2145) |
+| Covered branches: | 1707 |
+| Total branches: | 2145 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>NexusLabs.Needlr - 92%</summary>
+<details><summary>NexusLabs.Needlr - 92.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr**|**92%**|**86.8%**|
+|**NexusLabs.Needlr**|**92.1%**|**86.8%**|
 |NexusLabs.Needlr.ContainerVerificationException|100%|100%|
 |NexusLabs.Needlr.DecoratorForAttribute`1|50%||
 |NexusLabs.Needlr.DeferToContainerAttribute|100%|100%|
@@ -37,6 +37,7 @@
 |NexusLabs.Needlr.LifetimeMismatch|100%|50%|
 |NexusLabs.Needlr.LifetimeMismatchExtensions|95.1%|90.9%|
 |NexusLabs.Needlr.MethodInvocation|100%|91.6%|
+|NexusLabs.Needlr.PluginOrderAttribute|100%||
 |NexusLabs.Needlr.PostBuildServiceCollectionPluginOptions|80%||
 |NexusLabs.Needlr.ServiceCollectionExtensions|88%|63.6%|
 |NexusLabs.Needlr.ServiceCollectionPluginOptions|60%||
@@ -65,23 +66,6 @@
 |NexusLabs.Needlr.Analyzers.ReflectionInAotProjectAnalyzer|92%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AspNet - 89.5%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**NexusLabs.Needlr.AspNet**|**89.5%**|**82.1%**|
-|NexusLabs.Needlr.AspNet.CreateWebApplicationOptions|35.8%|0%|
-|NexusLabs.Needlr.AspNet.CreateWebApplicationOptionsExtensions|100%||
-|NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions|80%|100%|
-|NexusLabs.Needlr.AspNet.ServiceCollectionBuilderExtensions|100%||
-|NexusLabs.Needlr.AspNet.SyringeAspNetExtensions|100%||
-|NexusLabs.Needlr.AspNet.WebApplicationBuilderPluginOptions|80%||
-|NexusLabs.Needlr.AspNet.WebApplicationFactory|100%|100%|
-|NexusLabs.Needlr.AspNet.WebApplicationPluginOptions|100%||
-|NexusLabs.Needlr.AspNet.WebApplicationSyringe|96.6%|90%|
-|NexusLabs.Needlr.AspNet.WebApplicationSyringeExtensions|88.8%||
-
-</details>
 <details><summary>NexusLabs.Needlr.Carter - 100%</summary>
 
 |**Name**|**Line**|**Branch**|
@@ -101,25 +85,26 @@
 |NexusLabs.Needlr.Extensions.Logging.PostBuildServiceCollectionPluginOptions<br/>Extensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 79.7%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 80.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**79.7%**|**76.7%**|
+|**NexusLabs.Needlr.Generators**|**80.1%**|**76.2%**|
+|NexusLabs.Needlr.Generators.BreadcrumbWriter|91.4%|83.3%|
 |NexusLabs.Needlr.Generators.DiagnosticDescriptors|100%||
-|NexusLabs.Needlr.Generators.TypeDiscoveryHelper|79.1%|75.9%|
-|NexusLabs.Needlr.Generators.TypeRegistryGenerator|79.7%|78.9%|
+|NexusLabs.Needlr.Generators.TypeDiscoveryHelper|78.6%|75.3%|
+|NexusLabs.Needlr.Generators.TypeRegistryGenerator|80.1%|77.1%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 89%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 89.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**89%**|**59.3%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**89.4%**|**59.3%**|
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|84.6%||
 |NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|93.3%|62.5%|
-|NexusLabs.Needlr.Generators.PluginTypeInfo|75%|50%|
+|NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
 
 </details>
 <details><summary>NexusLabs.Needlr.Hosting - 93.1%</summary>
@@ -169,17 +154,17 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 92.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**92.9%**|**86.7%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.1%**|**88.6%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|94.7%|100%|
+|NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackHandlers|100%|75%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionServiceProviderBuilder|90.4%|70%|
@@ -197,14 +182,14 @@
 |NexusLabs.Needlr.Injection.Scrutor.SyringeScrutorExtensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.SourceGen - 85.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.SourceGen - 88%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.SourceGen**|**85.9%**|**88.6%**|
+|**NexusLabs.Needlr.Injection.SourceGen**|**88%**|**90.5%**|
 |NexusLabs.Needlr.Injection.SourceGen.GeneratedServiceProviderBuilder|81.3%|75%|
 |NexusLabs.Needlr.Injection.SourceGen.Loaders.GeneratedAssemblyProvider|94.2%|100%|
-|NexusLabs.Needlr.Injection.SourceGen.PluginFactories.GeneratedPluginFactory|91.4%|85.5%|
+|NexusLabs.Needlr.Injection.SourceGen.PluginFactories.GeneratedPluginFactory|97.5%|88.3%|
 |NexusLabs.Needlr.Injection.SourceGen.SyringeSourceGenExtensions|61.3%|50%|
 |NexusLabs.Needlr.Injection.SourceGen.TypeFilterers.GeneratedTypeFilterer|100%|100%|
 |NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars.GeneratedTypeRegistrar|91.4%|93.3%|
