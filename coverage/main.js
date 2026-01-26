@@ -241,16 +241,17 @@ var assemblies = [
     "name": "NexusLabs.Needlr.Analyzers",
     "classes": [
       { "name": "NexusLabs.Needlr.Analyzers.CircularDependencyAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_CircularDependencyAnalyzer.html", "cl": 110, "ucl": 8, "cal": 118, "tl": 267, "cb": 45, "tb": 60, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_CollectionResolutionAnalyzer.html", "cl": 99, "ucl": 6, "cal": 105, "tl": 171, "cb": 83, "tb": 104, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_CollectionResolutionAnalyzer.html", "cl": 84, "ucl": 5, "cal": 89, "tl": 142, "cb": 34, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.DeferToContainerInGeneratedCodeAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_DeferToContainerInGeneratedCodeAnalyzer.html", "cl": 53, "ucl": 4, "cal": 57, "tl": 173, "cb": 40, "tb": 50, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.DiagnosticDescriptors", "rp": "NexusLabs.Needlr.Analyzers_DiagnosticDescriptors.html", "cl": 103, "ucl": 0, "cal": 103, "tl": 159, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.GlobalNamespaceTypeAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_GlobalNamespaceTypeAnalyzer.html", "cl": 84, "ucl": 2, "cal": 86, "tl": 157, "cb": 61, "tb": 70, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.InterceptAttributeAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_InterceptAttributeAnalyzer.html", "cl": 53, "ucl": 2, "cal": 55, "tl": 146, "cb": 34, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.KeyedServiceResolutionAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_KeyedServiceResolutionAnalyzer.html", "cl": 97, "ucl": 1, "cal": 98, "tl": 199, "cb": 54, "tb": 60, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_LazyResolutionAnalyzer.html", "cl": 107, "ucl": 6, "cal": 113, "tl": 177, "cb": 85, "tb": 106, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_LazyResolutionAnalyzer.html", "cl": 92, "ucl": 5, "cal": 97, "tl": 148, "cb": 36, "tb": 44, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.LifetimeMismatchAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_LifetimeMismatchAnalyzer.html", "cl": 68, "ucl": 4, "cal": 72, "tl": 194, "cb": 46, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_PluginConstructorDependenciesAnalyzer.html", "cl": 43, "ucl": 13, "cal": 56, "tl": 142, "cb": 21, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Analyzers.ReflectionInAotProjectAnalyzer", "rp": "NexusLabs.Needlr.Analyzers_ReflectionInAotProjectAnalyzer.html", "cl": 69, "ucl": 6, "cal": 75, "tl": 140, "cb": 26, "tb": 30, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "rp": "NexusLabs.Needlr.Analyzers_TypeDiscoveryHelper.html", "cl": 61, "ucl": 41, "cal": 102, "tl": 266, "cb": 61, "tb": 120, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.Carter",
@@ -271,8 +272,9 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.BreadcrumbWriter", "rp": "NexusLabs.Needlr.Generators_BreadcrumbWriter.html", "cl": 43, "ucl": 4, "cal": 47, "tl": 126, "cb": 25, "tb": 30, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DiagnosticDescriptors", "rp": "NexusLabs.Needlr.Generators_DiagnosticDescriptors.html", "cl": 18, "ucl": 0, "cal": 18, "tl": 55, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DiagnosticOptions", "rp": "NexusLabs.Needlr.Generators_DiagnosticOptions.html", "cl": 25, "ucl": 0, "cal": 25, "tl": 74, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "cl": 518, "ucl": 156, "cal": 674, "tl": 1878, "cb": 465, "tb": 635, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "cl": 433, "ucl": 147, "cal": 580, "tl": 1675, "cb": 364, "tb": 519, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "rp": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "cl": 891, "ucl": 207, "cal": 1098, "tl": 1901, "cb": 289, "tb": 388, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.2.html", "cl": 93, "ucl": 9, "cal": 102, "tl": 266, "cb": 104, "tb": 120, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.Generators.Attributes",
@@ -326,7 +328,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Reflection_AssemblyProviderBuilder.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 60, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions", "rp": "NexusLabs.Needlr.Injection.Reflection_IAssemblyProviderBuilderExtensions.html", "cl": 23, "ucl": 12, "cal": 35, "tl": 153, "cb": 4, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader", "rp": "NexusLabs.Needlr.Injection.Reflection_AllAssembliesLoader.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 27, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "rp": "NexusLabs.Needlr.Injection.Reflection_FileMatchAssemblyLoader.html", "cl": 37, "ucl": 0, "cal": 37, "tl": 64, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "rp": "NexusLabs.Needlr.Injection.Reflection_FileMatchAssemblyLoader.html", "cl": 36, "ucl": 1, "cal": 37, "tl": 64, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionAssemblyLoader.html", "cl": 13, "ucl": 0, "cal": 13, "tl": 37, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFactory", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionPluginFactory.html", "cl": 47, "ucl": 2, "cal": 49, "tl": 188, "cb": 46, "tb": 46, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionFallbackContext.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 30, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -394,31 +396,37 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetBestConstructorParameters(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetBestConstructorParameters(...)", "fileIndex": 0, "line": 1004,
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Analyzers_TypeDiscoveryHelper.html", "methodName": "IsSystemType(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsSystemType(...)", "fileIndex": 0, "line": 244,
     "metrics": [
       { "value": 272, "exceeded": true },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetHubRegistrationInfo(Microsoft.CodeAnalysis.INamedTypeSymbol,Microsoft.CodeAnalysis.Compilation,System.Boolean)", "methodShortName": "TryGetHubRegistrationInfo(...)", "fileIndex": 0, "line": 1257,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetBestConstructorParameters(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetBestConstructorParameters(...)", "fileIndex": 0, "line": 801,
+    "metrics": [
+      { "value": 272, "exceeded": true },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetHubRegistrationInfo(Microsoft.CodeAnalysis.INamedTypeSymbol,Microsoft.CodeAnalysis.Compilation,System.Boolean)", "methodShortName": "TryGetHubRegistrationInfo(...)", "fileIndex": 0, "line": 1054,
     "metrics": [
       { "value": 241, "exceeded": true },
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsInheritedAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsInheritedAttribute(...)", "fileIndex": 0, "line": 973,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsInheritedAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsInheritedAttribute(...)", "fileIndex": 0, "line": 770,
     "metrics": [
       { "value": 156, "exceeded": true },
       { "value": 12, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "HasDecoratorForAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "HasDecoratorForAttribute(...)", "fileIndex": 0, "line": 1495,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "HasDecoratorForAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "HasDecoratorForAttribute(...)", "fileIndex": 0, "line": 1292,
     "metrics": [
       { "value": 156, "exceeded": true },
       { "value": 12, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetPropertyStringValue(Microsoft.CodeAnalysis.IPropertySymbol,Microsoft.CodeAnalysis.Compilation)", "methodShortName": "TryGetPropertyStringValue(...)", "fileIndex": 0, "line": 1301,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetPropertyStringValue(Microsoft.CodeAnalysis.IPropertySymbol,Microsoft.CodeAnalysis.Compilation)", "methodShortName": "TryGetPropertyStringValue(...)", "fileIndex": 0, "line": 1098,
     "metrics": [
       { "value": 110, "exceeded": true },
       { "value": 10, "exceeded": false },
@@ -430,28 +438,28 @@ var riskHotspots = [
       { "value": 14, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetPluginAttributes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetPluginAttributes(...)", "fileIndex": 0, "line": 916,
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Analyzers_TypeDiscoveryHelper.html", "methodName": "IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsAccessibleFromGeneratedCode(...)", "fileIndex": 0, "line": 203,
+    "metrics": [
+      { "value": 97, "exceeded": true },
+      { "value": 18, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetPluginAttributes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetPluginAttributes(...)", "fileIndex": 0, "line": 713,
     "metrics": [
       { "value": 73, "exceeded": true },
       { "value": 30, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetPropertyTypeValue(Microsoft.CodeAnalysis.IPropertySymbol,Microsoft.CodeAnalysis.Compilation)", "methodShortName": "TryGetPropertyTypeValue(...)", "fileIndex": 0, "line": 1327,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetPropertyTypeValue(Microsoft.CodeAnalysis.IPropertySymbol,Microsoft.CodeAnalysis.Compilation)", "methodShortName": "TryGetPropertyTypeValue(...)", "fileIndex": 0, "line": 1124,
     "metrics": [
       { "value": 72, "exceeded": true },
       { "value": 8, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_CollectionResolutionAnalyzer.html", "methodName": "IsDiscoverableClass(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsDiscoverableClass(...)", "fileIndex": 0, "line": 137,
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Analyzers_TypeDiscoveryHelper.html", "methodName": "IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsInjectableType(...)", "fileIndex": 0, "line": 25,
     "metrics": [
-      { "value": 63, "exceeded": true },
-      { "value": 62, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_LazyResolutionAnalyzer.html", "methodName": "IsDiscoverableClass(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsDiscoverableClass(...)", "fileIndex": 0, "line": 143,
-    "metrics": [
-      { "value": 63, "exceeded": true },
-      { "value": 62, "exceeded": true },
+      { "value": 60, "exceeded": true },
+      { "value": 26, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "CollectTypesFromAssembly(Microsoft.CodeAnalysis.IAssemblySymbol,System.Collections.Generic.IReadOnlyList`1<System.String>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredType>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredPlugin>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredHubRegistration>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredKernelPlugin>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredDecorator>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveredInterceptedService>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.TypeRegistryGenerator/InaccessibleType>,Microsoft.CodeAnalysis.Compilation,System.Boolean)", "methodShortName": "CollectTypesFromAssembly(...)", "fileIndex": 0, "line": 260,
@@ -466,19 +474,25 @@ var riskHotspots = [
       { "value": 14, "exceeded": false },
     ]},
   {
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Analyzers_TypeDiscoveryHelper.html", "methodName": "HasUnsatisfiedRequiredMembers(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "HasUnsatisfiedRequiredMembers(...)", "fileIndex": 0, "line": 81,
+    "metrics": [
+      { "value": 51, "exceeded": true },
+      { "value": 26, "exceeded": true },
+    ]},
+  {
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_PluginConstructorDependenciesAnalyzer.html", "methodName": "ImplementsPluginInterface(Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax,Microsoft.CodeAnalysis.SemanticModel)", "methodShortName": "ImplementsPluginInterface(...)", "fileIndex": 0, "line": 88,
     "metrics": [
       { "value": 42, "exceeded": true },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetNeedlrPluginInterfaceName(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetNeedlrPluginInterfaceName(...)", "fileIndex": 0, "line": 598,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetNeedlrPluginInterfaceName(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetNeedlrPluginInterfaceName(...)", "fileIndex": 0, "line": 395,
     "metrics": [
       { "value": 42, "exceeded": true },
       { "value": 6, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsPubliclyAccessible(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsPubliclyAccessible(...)", "fileIndex": 0, "line": 641,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsPubliclyAccessible(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsPubliclyAccessible(...)", "fileIndex": 0, "line": 438,
     "metrics": [
       { "value": 42, "exceeded": true },
       { "value": 6, "exceeded": false },
@@ -502,7 +516,7 @@ var riskHotspots = [
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "WouldBeInjectableIgnoringAccessibility(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "WouldBeInjectableIgnoringAccessibility(...)", "fileIndex": 0, "line": 454,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "WouldBeInjectableIgnoringAccessibility(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "WouldBeInjectableIgnoringAccessibility(...)", "fileIndex": 0, "line": 251,
     "metrics": [
       { "value": 35, "exceeded": true },
       { "value": 24, "exceeded": true },
@@ -526,13 +540,13 @@ var riskHotspots = [
       { "value": 22, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetBestConstructorParametersWithKeys(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetBestConstructorParametersWithKeys(...)", "fileIndex": 0, "line": 1148,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetBestConstructorParametersWithKeys(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetBestConstructorParametersWithKeys(...)", "fileIndex": 0, "line": 945,
     "metrics": [
       { "value": 31, "exceeded": true },
       { "value": 26, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_LazyResolutionAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 25,
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_LazyResolutionAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 27,
     "metrics": [
       { "value": 28, "exceeded": false },
       { "value": 28, "exceeded": true },
@@ -550,21 +564,21 @@ var riskHotspots = [
       { "value": 28, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsInjectableType(...)", "fileIndex": 0, "line": 46,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "GenerateDependencyGraphMarkdown(NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveryResult,System.String,System.String,System.Collections.Generic.HashSet`1<System.String>)", "methodShortName": "GenerateDependencyGraphMarkdown(...)", "fileIndex": 0, "line": 1009,
+    "metrics": [
+      { "value": 29, "exceeded": false },
+      { "value": 26, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.2.html", "methodName": "IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsInjectableType(...)", "fileIndex": 0, "line": 25,
     "metrics": [
       { "value": 27, "exceeded": false },
       { "value": 26, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "HasUnsatisfiedRequiredMembers(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "HasUnsatisfiedRequiredMembers(...)", "fileIndex": 0, "line": 102,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.2.html", "methodName": "HasUnsatisfiedRequiredMembers(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "HasUnsatisfiedRequiredMembers(...)", "fileIndex": 0, "line": 81,
     "metrics": [
       { "value": 26, "exceeded": false },
-      { "value": 26, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "GenerateDependencyGraphMarkdown(NexusLabs.Needlr.Generators.TypeRegistryGenerator/DiscoveryResult,System.String,System.String,System.Collections.Generic.HashSet`1<System.String>)", "methodShortName": "GenerateDependencyGraphMarkdown(...)", "fileIndex": 0, "line": 1009,
-    "metrics": [
-      { "value": 29, "exceeded": false },
       { "value": 26, "exceeded": true },
     ]},
   {
@@ -574,7 +588,7 @@ var riskHotspots = [
       { "value": 26, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_CollectionResolutionAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 25,
+    "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_CollectionResolutionAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 27,
     "metrics": [
       { "value": 24, "exceeded": false },
       { "value": 24, "exceeded": true },
@@ -610,13 +624,13 @@ var riskHotspots = [
       { "value": 22, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "HasKernelFunctions(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "HasKernelFunctions(...)", "fileIndex": 0, "line": 1057,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "HasKernelFunctions(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "HasKernelFunctions(...)", "fileIndex": 0, "line": 854,
     "metrics": [
       { "value": 23, "exceeded": false },
       { "value": 22, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetDecoratorForAttributes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetDecoratorForAttributes(...)", "fileIndex": 0, "line": 1444,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetDecoratorForAttributes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetDecoratorForAttributes(...)", "fileIndex": 0, "line": 1241,
     "metrics": [
       { "value": 22, "exceeded": false },
       { "value": 22, "exceeded": true },
@@ -640,7 +654,7 @@ var riskHotspots = [
       { "value": 20, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetInterceptorType(Microsoft.CodeAnalysis.AttributeData)", "methodShortName": "TryGetInterceptorType(...)", "fileIndex": 0, "line": 1689,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "TryGetInterceptorType(Microsoft.CodeAnalysis.AttributeData)", "methodShortName": "TryGetInterceptorType(...)", "fileIndex": 0, "line": 1486,
     "metrics": [
       { "value": 20, "exceeded": false },
       { "value": 20, "exceeded": true },
@@ -682,19 +696,13 @@ var riskHotspots = [
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "MatchesNamespacePrefix(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Collections.Generic.IReadOnlyList`1<System.String>)", "methodShortName": "MatchesNamespacePrefix(...)", "fileIndex": 0, "line": 251,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "MatchesNamespacePrefix(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Collections.Generic.IReadOnlyList`1<System.String>)", "methodShortName": "MatchesNamespacePrefix(...)", "fileIndex": 0, "line": 162,
     "metrics": [
       { "value": 18, "exceeded": false },
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsAccessibleFromGeneratedCode(...)", "fileIndex": 0, "line": 409,
-    "metrics": [
-      { "value": 28, "exceeded": false },
-      { "value": 18, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "DetermineLifetime(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "DetermineLifetime(...)", "fileIndex": 0, "line": 665,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "DetermineLifetime(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "DetermineLifetime(...)", "fileIndex": 0, "line": 462,
     "metrics": [
       { "value": 18, "exceeded": false },
       { "value": 18, "exceeded": true },
@@ -703,6 +711,12 @@ var riskHotspots = [
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "GetAttributeInfoFromCompilation(Microsoft.CodeAnalysis.Compilation)", "methodShortName": "GetAttributeInfoFromCompilation(...)", "fileIndex": 0, "line": 149,
     "metrics": [
       { "value": 18, "exceeded": false },
+      { "value": 18, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.2.html", "methodName": "IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsAccessibleFromGeneratedCode(...)", "fileIndex": 0, "line": 203,
+    "metrics": [
+      { "value": 28, "exceeded": false },
       { "value": 18, "exceeded": true },
     ]},
   {
@@ -736,31 +750,31 @@ var riskHotspots = [
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsSystemType(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsSystemType(...)", "fileIndex": 0, "line": 375,
-    "metrics": [
-      { "value": 16, "exceeded": false },
-      { "value": 16, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetExplicitLifetime(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetExplicitLifetime(...)", "fileIndex": 0, "line": 709,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetExplicitLifetime(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetExplicitLifetime(...)", "fileIndex": 0, "line": 506,
     "metrics": [
       { "value": 17, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsPluginType(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsPluginType(...)", "fileIndex": 0, "line": 791,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "IsPluginType(Microsoft.CodeAnalysis.INamedTypeSymbol,System.Boolean)", "methodShortName": "IsPluginType(...)", "fileIndex": 0, "line": 588,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetDeferToContainerParameterTypes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetDeferToContainerParameterTypes(...)", "fileIndex": 0, "line": 1383,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.html", "methodName": "GetDeferToContainerParameterTypes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetDeferToContainerParameterTypes(...)", "fileIndex": 0, "line": 1180,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 20,
+    "metrics": [
+      { "value": 16, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_TypeDiscoveryHelper.2.html", "methodName": "IsSystemType(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsSystemType(...)", "fileIndex": 0, "line": 244,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
