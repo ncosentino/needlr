@@ -26,6 +26,11 @@
     <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
   </ItemGroup>
 
+  <!-- Include shared Roslyn utilities as source (compiled into this assembly) -->
+  <ItemGroup>
+    <Compile Include="..\NexusLabs.Needlr.Roslyn.Shared\TypeDiscoveryHelper.cs" Link="Shared\TypeDiscoveryHelper.cs" />
+  </ItemGroup>
+
   <!-- Pack the generator and attributes together -->
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

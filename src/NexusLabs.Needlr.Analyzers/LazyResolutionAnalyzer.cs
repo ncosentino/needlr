@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+using NexusLabs.Needlr.Roslyn.Shared;
+
 namespace NexusLabs.Needlr.Analyzers;
 
 /// <summary>
@@ -137,41 +139,10 @@ public sealed class LazyResolutionAnalyzer : DiagnosticAnalyzer
         pendingDiagnostics.Add((parameter.Type.GetLocation(), innerType));
     }
 
+    /// <summary>
+    /// Uses the shared TypeDiscoveryHelper to determine if a type is discoverable.
+    /// This ensures consistency with the source generator's logic.
+    /// </summary>
     private static bool IsDiscoverableClass(INamedTypeSymbol typeSymbol)
-    {
-        // Skip non-class types
-        if (typeSymbol.TypeKind != TypeKind.Class)
-            return false;
-
-        // Skip abstract classes
-        if (typeSymbol.IsAbstract)
-            return false;
-
-        // Check for exclusion attributes
-        foreach (var attr in typeSymbol.GetAttributes())
-        {
-            var name = attr.AttributeClass?.Name;
-            if (name is "DoNotInjectAttribute" or "DoNotInject" or
-                        "DoNotAutoRegisterAttribute" or "DoNotAutoRegister")
-            {
-                return false;
-            }
-        }
-
-        // Check for explicit registration attributes
-        foreach (var attr in typeSymbol.GetAttributes())
-        {
-            var name = attr.AttributeClass?.Name;
-            if (name is "SingletonAttribute" or "Singleton" or
-                        "ScopedAttribute" or "Scoped" or
-                        "TransientAttribute" or "Transient" or
-                        "KeyedAttribute" or "Keyed")
-            {
-                return true;
-            }
-        }
-
-        // Classes with interfaces are auto-discovered by Needlr
-        return typeSymbol.AllInterfaces.Length > 0;
-    }
+        => TypeDiscoveryHelper.IsInjectableType(typeSymbol, isCurrentAssembly: true);
 }
