@@ -159,8 +159,7 @@ public sealed class CollectionResolutionAnalyzer : DiagnosticAnalyzer
             if (name is "SingletonAttribute" or "Singleton" or
                         "ScopedAttribute" or "Scoped" or
                         "TransientAttribute" or "Transient" or
-                        "RegisterAsAttribute" or "RegisterAs" or
-                        "AutoRegisterAttribute" or "AutoRegister")
+                        "KeyedAttribute" or "Keyed")
             {
                 return true;
             }
