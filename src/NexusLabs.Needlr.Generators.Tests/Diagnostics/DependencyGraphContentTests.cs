@@ -6,6 +6,80 @@ namespace NexusLabs.Needlr.Generators.Tests.Diagnostics;
 
 public sealed class DependencyGraphContentTests
 {
+    #region Decorator Chain Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsDecoratorChainsSection()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IOrderService { }
+    public class OrderService : IOrderService { }
+
+    [DecoratorFor<IOrderService>(Order = 1)]
+    public class LoggingDecorator : IOrderService
+    {
+        public LoggingDecorator(IOrderService inner) { }
+    }
+
+    [DecoratorFor<IOrderService>(Order = 2)]
+    public class CachingDecorator : IOrderService
+    {
+        public CachingDecorator(IOrderService inner) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Decorator Chains", content);
+        Assert.Contains("graph LR", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsDecoratorChainOrder()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IOrderService { }
+    public class OrderService : IOrderService { }
+
+    [DecoratorFor<IOrderService>(Order = 1)]
+    public class LoggingDecorator : IOrderService
+    {
+        public LoggingDecorator(IOrderService inner) { }
+    }
+
+    [DecoratorFor<IOrderService>(Order = 2)]
+    public class CachingDecorator : IOrderService
+    {
+        public CachingDecorator(IOrderService inner) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        // Should show CachingDecorator (order 2) -> LoggingDecorator (order 1) -> OrderService
+        Assert.Contains("CachingDecorator", content);
+        Assert.Contains("LoggingDecorator", content);
+        Assert.Contains("OrderService", content);
+        // Chain arrows should be present
+        Assert.Contains("-->", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {

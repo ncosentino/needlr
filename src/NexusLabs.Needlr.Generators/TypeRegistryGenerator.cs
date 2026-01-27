@@ -1400,6 +1400,59 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine("```");
         sb.AppendLine();
 
+        // Decorator chains section
+        if (discovery.Decorators.Any())
+        {
+            sb.AppendLine("## Decorator Chains");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph LR");
+
+            // Group decorators by service type
+            var decoratorsByService = discovery.Decorators
+                .GroupBy(d => d.ServiceTypeName)
+                .OrderBy(g => g.Key);
+
+            foreach (var serviceGroup in decoratorsByService)
+            {
+                var serviceShortName = GetShortTypeName(serviceGroup.Key);
+                var orderedDecorators = serviceGroup.OrderByDescending(d => d.Order).ToList();
+
+                // Find the underlying implementation for this service
+                var implementation = types.FirstOrDefault(t =>
+                    t.InterfaceNames.Any(i => GetShortTypeName(i) == serviceShortName) &&
+                    !discovery.Decorators.Any(d => GetShortTypeName(d.DecoratorTypeName) == GetShortTypeName(t.TypeName)));
+
+                // Build the chain: highest order decorator -> ... -> lowest order decorator -> implementation
+                for (int i = 0; i < orderedDecorators.Count; i++)
+                {
+                    var decorator = orderedDecorators[i];
+                    var decoratorId = GetMermaidNodeId(decorator.DecoratorTypeName);
+                    var decoratorName = GetShortTypeName(decorator.DecoratorTypeName);
+
+                    // Add node definition
+                    sb.AppendLine($"    {decoratorId}[[\"{decoratorName}\"]]");
+
+                    // Add edge to next decorator or implementation
+                    if (i < orderedDecorators.Count - 1)
+                    {
+                        var nextDecorator = orderedDecorators[i + 1];
+                        sb.AppendLine($"    {decoratorId} --> {GetMermaidNodeId(nextDecorator.DecoratorTypeName)}");
+                    }
+                    else if (implementation.TypeName != null)
+                    {
+                        var implId = GetMermaidNodeId(implementation.TypeName);
+                        var implName = GetShortTypeName(implementation.TypeName);
+                        sb.AppendLine($"    {implId}[\"{implName}\"]");
+                        sb.AppendLine($"    {decoratorId} --> {implId}");
+                    }
+                }
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
