@@ -1568,6 +1568,30 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        // Complexity metrics section
+        sb.AppendLine("## Complexity Metrics");
+        sb.AppendLine();
+        sb.AppendLine("| Metric | Value |");
+        sb.AppendLine("|--------|-------|");
+
+        sb.AppendLine($"| Total Services | {types.Count} |");
+
+        // Calculate max dependency depth using BFS
+        var maxDepth = CalculateMaxDependencyDepth(types);
+        sb.AppendLine($"| Max Dependency Depth | {maxDepth} |");
+
+        // Calculate hub services (services that appear as dependencies in 3+ other services)
+        var hubServices = CalculateHubServices(types, 3);
+        sb.AppendLine($"| Hub Services (≥3 dependents) | {hubServices.Count} |");
+
+        if (hubServices.Any())
+        {
+            sb.AppendLine();
+            sb.AppendLine("**Hub Services:** " + string.Join(", ", hubServices.Select(h => $"{GetShortTypeName(h.TypeName)} ({h.DependentCount})")));
+        }
+
+        sb.AppendLine();
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
@@ -1969,6 +1993,101 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return name.StartsWith("global::", StringComparison.Ordinal) 
             ? name.Substring(8) 
             : name;
+    }
+
+    private static int CalculateMaxDependencyDepth(IReadOnlyList<DiscoveredType> types)
+    {
+        if (types.Count == 0) return 0;
+
+        // Build a lookup from interface/type name to the type that provides it
+        var providerLookup = new Dictionary<string, DiscoveredType>(StringComparer.Ordinal);
+        foreach (var type in types)
+        {
+            providerLookup[GetShortTypeName(type.TypeName)] = type;
+            foreach (var iface in type.InterfaceNames)
+                providerLookup[GetShortTypeName(iface)] = type;
+        }
+
+        // Calculate depth for each type using memoization
+        var depthCache = new Dictionary<string, int>(StringComparer.Ordinal);
+        int maxDepth = 0;
+
+        foreach (var type in types)
+        {
+            var depth = GetDepth(type, providerLookup, depthCache, new HashSet<string>());
+            if (depth > maxDepth) maxDepth = depth;
+        }
+
+        return maxDepth;
+    }
+
+    private static int GetDepth(DiscoveredType type, Dictionary<string, DiscoveredType> providerLookup, Dictionary<string, int> cache, HashSet<string> visiting)
+    {
+        var key = GetShortTypeName(type.TypeName);
+        
+        if (cache.TryGetValue(key, out var cached))
+            return cached;
+
+        // Cycle detection
+        if (!visiting.Add(key))
+            return 0;
+
+        int maxChildDepth = 0;
+        foreach (var dep in type.ConstructorParameterTypes)
+        {
+            var depShort = GetShortTypeName(dep);
+            if (providerLookup.TryGetValue(depShort, out var depType))
+            {
+                var childDepth = GetDepth(depType, providerLookup, cache, visiting);
+                if (childDepth > maxChildDepth)
+                    maxChildDepth = childDepth;
+            }
+        }
+
+        visiting.Remove(key);
+        var result = maxChildDepth + 1;
+        cache[key] = result;
+        return result;
+    }
+
+    private static List<(string TypeName, int DependentCount)> CalculateHubServices(IReadOnlyList<DiscoveredType> types, int minDependents)
+    {
+        // Count how many times each type/interface appears as a dependency
+        var dependentCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var type in types)
+        {
+            foreach (var dep in type.ConstructorParameterTypes)
+            {
+                var depShort = GetShortTypeName(dep);
+                if (!dependentCounts.ContainsKey(depShort))
+                    dependentCounts[depShort] = 0;
+                dependentCounts[depShort]++;
+            }
+        }
+
+        // Find types that are depended upon by minDependents or more services
+        var hubs = new List<(string TypeName, int DependentCount)>();
+        foreach (var type in types)
+        {
+            var shortName = GetShortTypeName(type.TypeName);
+            var count = 0;
+
+            // Check if this type's name or any of its interfaces is depended upon
+            if (dependentCounts.TryGetValue(shortName, out var c1))
+                count += c1;
+
+            foreach (var iface in type.InterfaceNames)
+            {
+                if (dependentCounts.TryGetValue(GetShortTypeName(iface), out var c2))
+                    count += c2;
+            }
+
+            if (count >= minDependents)
+                hubs.Add((type.TypeName, count));
+        }
+
+        return hubs.OrderByDescending(h => h.DependentCount).ToList();
     }
 
     private static string GetMermaidNodeId(string typeName)

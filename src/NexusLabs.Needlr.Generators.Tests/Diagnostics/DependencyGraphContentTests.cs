@@ -299,6 +299,91 @@ namespace TestApp
 
     #endregion
 
+    #region Complexity Metrics Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsComplexityMetricsSection()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IOrderService { }
+    public class OrderService : IOrderService { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Complexity Metrics", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsMaxDepth()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ILogger { }
+    public class Logger : ILogger { }
+
+    public interface IRepository { }
+    public class Repository : IRepository
+    {
+        public Repository(ILogger logger) { }
+    }
+
+    public interface IOrderService { }
+    public class OrderService : IOrderService
+    {
+        public OrderService(IRepository repo) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("Max Dependency Depth", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsHubServices()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ILogger { }
+    public class Logger : ILogger { }
+
+    public interface IService1 { }
+    public class Service1 : IService1 { public Service1(ILogger logger) { } }
+
+    public interface IService2 { }
+    public class Service2 : IService2 { public Service2(ILogger logger) { } }
+
+    public interface IService3 { }
+    public class Service3 : IService3 { public Service3(ILogger logger) { } }
+
+    public interface IService4 { }
+    public class Service4 : IService4 { public Service4(ILogger logger) { } }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("Hub Services", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {
