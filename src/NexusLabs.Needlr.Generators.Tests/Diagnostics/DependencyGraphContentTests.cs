@@ -244,9 +244,36 @@ namespace TestApp
 
         var content = GetDiagnosticContent(source, "DependencyGraph");
 
-        Assert.Contains("Connection", content);
-        // Hexagon shape uses {{name}}
-        Assert.Contains("{{", content);
+        // Source type (product) shown with hexagon shape
+        Assert.Contains("{{\"Connection\"}}", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsFactoryProducesRelationship()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Generators.Attributes;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        // Shows the generated factory with regular shape
+        Assert.Contains("ConnectionFactory[\"ConnectionFactory\"]", content);
+        // Shows produces relationship
+        Assert.Contains("-.->|produces|", content);
     }
 
     #endregion
@@ -741,6 +768,79 @@ namespace TestApp
         var content = GetDiagnosticContent(source, "RegistrationIndex");
 
         Assert.DoesNotContain("## Referenced Plugin Assemblies", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ReferencedAssembliesShowsFactoryProducesEdge()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        // Should show factory→product relationship in Referenced Plugin Assemblies section
+        Assert.Contains("-.->|produces|", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ConsolidatedFactorySectionIncludesPluginFactories()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        // Should show consolidated Factory Services section with plugin factory
+        Assert.Contains("## Factory Services", content);
+        Assert.Contains("ConnectionFactory", content);
     }
 
     #endregion

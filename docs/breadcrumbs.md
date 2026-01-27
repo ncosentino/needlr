@@ -291,14 +291,19 @@ graph TD
     subgraph Singleton["MyApp.Plugins - Singleton"]
         OrderHandler["OrderHandler"]
         PaymentHandler["PaymentHandler"]
+        Connection{{"Connection"}}
+        ConnectionFactory["ConnectionFactory"]
     end
     PaymentHandler --> OrderHandler
+    ConnectionFactory -.->|produces| Connection
 \`\`\`
 
 | Service | Lifetime | Interfaces |
 |---------|----------|------------|
 | OrderHandler | Singleton | IHandler<Order> |
 | PaymentHandler | Singleton | IHandler<Payment> |
+| Connection | Singleton | IConnection |
+| ConnectionFactory | Singleton | IConnectionFactory |
 
 ## Service Dependencies
 
@@ -352,13 +357,20 @@ graph TD
 
 ## Factory Services
 
-Highlights types with `[GenerateFactory]` using hexagon shape:
+Shows all factory→product relationships from host and referenced assemblies:
 
 \`\`\`mermaid
-graph TD
+graph LR
+    ConnectionFactory["ConnectionFactory"]
     Connection{{"Connection"}}
+    ConnectionFactory -.->|produces| Connection
+    HttpClientFactory["HttpClientFactory"]
     HttpClient{{"HttpClient"}}
+    HttpClientFactory -.->|produces| HttpClient
 \`\`\`
+
+> Note: This section aggregates factories from the host assembly and all referenced plugin assemblies
+> with `[GenerateTypeRegistry]`. Hexagon shapes indicate factory-produced types.
 
 ## Interface Mapping
 

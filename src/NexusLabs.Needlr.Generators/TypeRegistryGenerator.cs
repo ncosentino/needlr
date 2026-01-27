@@ -1423,6 +1423,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     }
                 }
 
+                // Show factory→product edges (dotted arrows)
+                var factorySources = refTypes.Where(t => t.HasFactory).ToList();
+                foreach (var source in factorySources)
+                {
+                    var factoryName = source.ShortName + "Factory";
+                    var matchingFactory = refTypes.FirstOrDefault(t => t.ShortName == factoryName);
+                    if (matchingFactory.FullName != null)
+                    {
+                        sb.AppendLine($"    {GetMermaidNodeId(matchingFactory.FullName)} -.->|produces| {GetMermaidNodeId(source.FullName)}");
+                    }
+                }
+
                 sb.AppendLine("```");
                 sb.AppendLine();
 
@@ -1608,21 +1620,49 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        // Factory services section
+        // Factory services section (aggregates host and plugin factories)
         var factories = FilterFactories(discovery.Factories, typeFilter);
-        if (factories.Any())
+        var pluginFactories = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.HasFactory).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (factories.Any() || pluginFactories.Any())
         {
             sb.AppendLine("## Factory Services");
             sb.AppendLine();
             sb.AppendLine("```mermaid");
-            sb.AppendLine("graph TD");
+            sb.AppendLine("graph LR");
 
+            // Host factories
             foreach (var factory in factories.OrderBy(f => f.TypeName))
             {
-                var nodeId = GetMermaidNodeId(factory.TypeName);
-                var nodeName = GetShortTypeName(factory.TypeName);
-                // Use hexagon shape for factories: nodeId{{"name"}}
-                sb.AppendLine($"    {nodeId}{{{{\"{nodeName}\"}}}}");
+                var sourceNodeId = GetMermaidNodeId(factory.TypeName);
+                var sourceName = GetShortTypeName(factory.TypeName);
+                var factoryNodeId = sourceNodeId + "Factory";
+                var factoryName = sourceName + "Factory";
+
+                // Generated factory with regular shape
+                sb.AppendLine($"    {factoryNodeId}[\"{factoryName}\"]");
+                // Source type (product) with hexagon shape
+                sb.AppendLine($"    {sourceNodeId}{{{{\"{sourceName}\"}}}}");
+                // Edge showing factory produces the type (dotted arrow)
+                sb.AppendLine($"    {factoryNodeId} -.->|produces| {sourceNodeId}");
+            }
+
+            // Plugin factories
+            foreach (var (assembly, type) in pluginFactories.OrderBy(f => f.Type.ShortName))
+            {
+                var sourceNodeId = GetMermaidNodeId(type.FullName);
+                var sourceName = type.ShortName;
+                var factoryNodeId = sourceNodeId + "Factory";
+                var factoryName = sourceName + "Factory";
+
+                // Generated factory with regular shape
+                sb.AppendLine($"    {factoryNodeId}[\"{factoryName}\"]");
+                // Source type (product) with hexagon shape
+                sb.AppendLine($"    {sourceNodeId}{{{{\"{sourceName}\"}}}}");
+                // Edge showing factory produces the type (dotted arrow)
+                sb.AppendLine($"    {factoryNodeId} -.->|produces| {sourceNodeId}");
             }
 
             sb.AppendLine("```");
@@ -2615,8 +2655,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 
                 foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
                 {
-                    // Check if it's a registerable type (injectable or plugin)
-                    if (!TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
+                    // Check if it's a registerable type (injectable, plugin, or factory source)
+                    var hasFactoryAttr = TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
+                    if (!hasFactoryAttr &&
+                        !TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
                         !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
                         continue;
 
@@ -2630,7 +2672,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         .ToArray() ?? Array.Empty<string>();
                     var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol);
                     var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
-                    var hasFactory = TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
                     var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
                     var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
 
@@ -2642,7 +2683,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         dependencies,
                         isDecorator,
                         isPlugin,
-                        hasFactory,
+                        hasFactoryAttr,
                         keyedValue));
                 }
 
