@@ -476,4 +476,272 @@ namespace TestApp
         Assert.Contains("ILogger", content);
         Assert.Contains("-->", content);
     }
+
+    #region Referenced TypeRegistry Assemblies Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsReferencedTypeRegistryAssembliesSection()
+    {
+        // This test verifies that when a host assembly references a plugin assembly
+        // with [GenerateTypeRegistry], the diagnostics show that reference
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IPluginService { }
+    public class PluginService : IPluginService { }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        Assert.Contains("## Referenced Plugin Assemblies", content);
+        Assert.Contains("MyPlugin", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsMultipleReferencedAssemblies()
+    {
+        var content = GetDiagnosticContentWithMultipleReferencedAssemblies(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSources: new[]
+            {
+                (@"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginA
+{
+    public interface IServiceA { }
+    public class ServiceA : IServiceA { }
+}", "PluginAssemblyA"),
+                (@"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginB
+{
+    public interface IServiceB { }
+    public class ServiceB : IServiceB { }
+}", "PluginAssemblyB")
+            },
+            fieldName: "DependencyGraph");
+
+        Assert.Contains("## Referenced Plugin Assemblies", content);
+        Assert.Contains("PluginAssemblyA", content);
+        Assert.Contains("PluginAssemblyB", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_OmitsReferencedAssembliesSectionWhenNone()
+    {
+        // When there are no referenced assemblies with [GenerateTypeRegistry],
+        // the section should not appear
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyService { }
+    public class MyService : IMyService { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.DoesNotContain("## Referenced Plugin Assemblies", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ReferencedAssembliesShowsPluginTypes()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IPluginService { }
+    public class PluginService : IPluginService { }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        // Should show plugin types in the referenced assembly section
+        Assert.Contains("PluginService", content);
+        Assert.Contains("IPluginService", content);
+    }
+
+    [Fact]
+    public void LifetimeSummary_ShowsReferencedPluginAssembliesSection()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IPluginService { }
+    public class PluginService : IPluginService { }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "LifetimeSummary");
+
+        Assert.Contains("## Referenced Plugin Assemblies", content);
+        Assert.Contains("MyPlugin", content);
+        Assert.Contains("Singleton", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_ShowsReferencedPluginAssembliesSection()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IPluginService { }
+    public class PluginService : IPluginService { }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "RegistrationIndex");
+
+        Assert.Contains("## Referenced Plugin Assemblies", content);
+        Assert.Contains("MyPlugin", content);
+        Assert.Contains("PluginService", content);
+        Assert.Contains("IPluginService", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_ShowsPluginTypeCount()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IPluginService { }
+    public class PluginService : IPluginService { }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "RegistrationIndex");
+
+        // Should show the service count in the header
+        Assert.Contains("MyPlugin (1 services)", content);
+    }
+
+    [Fact]
+    public void LifetimeSummary_OmitsPluginSectionWhenNone()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyService { }
+    public class MyService : IMyService { }
+}";
+
+        var content = GetDiagnosticContent(source, "LifetimeSummary");
+
+        Assert.DoesNotContain("## Referenced Plugin Assemblies", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_OmitsPluginSectionWhenNone()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IMyService { }
+    public class MyService : IMyService { }
+}";
+
+        var content = GetDiagnosticContent(source, "RegistrationIndex");
+
+        Assert.DoesNotContain("## Referenced Plugin Assemblies", content);
+    }
+
+    #endregion
 }

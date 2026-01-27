@@ -118,6 +118,114 @@ internal static class DiagnosticTestHelpers
             .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
             .ToArray();
     }
+
+    /// <summary>
+    /// Gets diagnostic content from a host assembly that references a plugin assembly with [GenerateTypeRegistry].
+    /// </summary>
+    public static string GetDiagnosticContentWithReferencedAssembly(
+        string hostSource,
+        string pluginSource,
+        string pluginAssemblyName,
+        string fieldName)
+    {
+        return GetDiagnosticContentWithMultipleReferencedAssemblies(
+            hostSource,
+            new[] { (pluginSource, pluginAssemblyName) },
+            fieldName);
+    }
+
+    /// <summary>
+    /// Gets diagnostic content from a host assembly that references multiple plugin assemblies.
+    /// </summary>
+    public static string GetDiagnosticContentWithMultipleReferencedAssemblies(
+        string hostSource,
+        (string Source, string AssemblyName)[] pluginSources,
+        string fieldName)
+    {
+        // First, compile each plugin assembly
+        var pluginReferences = new List<MetadataReference>();
+        
+        foreach (var (source, assemblyName) in pluginSources)
+        {
+            var pluginTree = CSharpSyntaxTree.ParseText(source);
+            var pluginRefs = Basic.Reference.Assemblies.Net100.References.All
+                .Concat(new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
+                })
+                .ToArray();
+
+            var pluginCompilation = CSharpCompilation.Create(
+                assemblyName,
+                new[] { pluginTree },
+                pluginRefs,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            // Create an in-memory reference from the plugin compilation
+            using var ms = new System.IO.MemoryStream();
+            var emitResult = pluginCompilation.Emit(ms);
+            if (!emitResult.Success)
+            {
+                var errors = string.Join("\n", emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+                throw new InvalidOperationException($"Plugin compilation failed: {errors}");
+            }
+            ms.Seek(0, System.IO.SeekOrigin.Begin);
+            pluginReferences.Add(MetadataReference.CreateFromStream(ms));
+        }
+
+        // Now compile the host assembly with references to the plugins
+        var hostTree = CSharpSyntaxTree.ParseText(hostSource);
+        var hostReferences = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
+            })
+            .Concat(pluginReferences)
+            .ToArray();
+
+        var hostCompilation = CSharpCompilation.Create(
+            "HostAssembly",
+            new[] { hostTree },
+            hostReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+        var optionsProvider = new TestAnalyzerConfigOptionsProvider("true", null, null);
+
+        var driver = CSharpGeneratorDriver.Create(
+            generators: new[] { generator.AsSourceGenerator() },
+            additionalTexts: Array.Empty<AdditionalText>(),
+            parseOptions: (CSharpParseOptions)hostTree.Options,
+            optionsProvider: optionsProvider);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            hostCompilation,
+            out var outputCompilation,
+            out var diagnostics);
+
+        var diagnosticsFile = outputCompilation.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
+            .FirstOrDefault(f => f.FilePath.Contains("NeedlrDiagnostics"));
+
+        if (diagnosticsFile == null)
+        {
+            return string.Empty;
+        }
+
+        var pattern = $@"public\s+const\s+string\s+{fieldName}\s*=\s*@""([^""]*(?:""""[^""]*)*)""";
+        var match = System.Text.RegularExpressions.Regex.Match(diagnosticsFile.Content, pattern,
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+
+        if (match.Success)
+        {
+            return match.Groups[1].Value.Replace("\"\"", "\"");
+        }
+
+        return string.Empty;
+    }
 }
 
 public sealed record GeneratedFile(string FilePath, string Content);

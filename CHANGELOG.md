@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Enhanced Dependency Graph Visualization**: The `DependencyGraph.md` diagnostic output now includes 6 additional sections:
+- **Enhanced Dependency Graph Visualization**: The `DependencyGraph.md` diagnostic output now includes 7 additional sections:
+  - **Referenced Plugin Assemblies**: Full visualization of types from referenced assemblies with `[GenerateTypeRegistry]`, including Mermaid diagrams, dependency edges, and interface mappings
   - **Decorator Chains**: Mermaid diagram showing decorator wrapping order (highest to lowest Order)
   - **Keyed Service Clusters**: Groups services by their `[Keyed]` attribute values as subgraphs
   - **Plugin Assembly Boundaries**: Shows plugins grouped by their source assembly

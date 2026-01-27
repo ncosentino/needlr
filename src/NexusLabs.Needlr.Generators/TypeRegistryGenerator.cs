@@ -108,7 +108,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var diagnosticOptions = GetDiagnosticOptions(configOptions);
             if (diagnosticOptions.Enabled)
             {
-                var diagnosticsText = GenerateDiagnosticsSource(discoveryResult, assemblyName, projectDirectory, diagnosticOptions);
+                var referencedAssemblyTypes = DiscoverReferencedAssemblyTypesForDiagnostics(compilation);
+                var diagnosticsText = GenerateDiagnosticsSource(discoveryResult, assemblyName, projectDirectory, diagnosticOptions, referencedAssemblies, referencedAssemblyTypes);
                 spc.AddSource("NeedlrDiagnostics.g.cs", SourceText.From(diagnosticsText, Encoding.UTF8));
             }
         });
@@ -1285,7 +1286,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return char.ToLowerInvariant(name[0]) + name.Substring(1);
     }
 
-    private static string GenerateDiagnosticsSource(DiscoveryResult discoveryResult, string assemblyName, string? projectDirectory, DiagnosticOptions options)
+    private static string GenerateDiagnosticsSource(DiscoveryResult discoveryResult, string assemblyName, string? projectDirectory, DiagnosticOptions options, IReadOnlyList<string> referencedTypeRegistryAssemblies, Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
@@ -1313,17 +1314,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
 
         // Generate all three diagnostic outputs when enabled
-        var dependencyGraphContent = GenerateDependencyGraphMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter);
+        var dependencyGraphContent = GenerateDependencyGraphMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter, referencedTypeRegistryAssemblies, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>DependencyGraph.md content</summary>");
         builder.AppendLine($"    public const string DependencyGraph = @\"{EscapeVerbatimStringLiteral(dependencyGraphContent)}\";");
         builder.AppendLine();
 
-        var lifetimeSummaryContent = GenerateLifetimeSummaryMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter);
+        var lifetimeSummaryContent = GenerateLifetimeSummaryMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>LifetimeSummary.md content</summary>");
         builder.AppendLine($"    public const string LifetimeSummary = @\"{EscapeVerbatimStringLiteral(lifetimeSummaryContent)}\";");
         builder.AppendLine();
 
-        var registrationIndexContent = GenerateRegistrationIndexMarkdown(discoveryResult, assemblyName, projectDirectory, timestamp, options.TypeFilter);
+        var registrationIndexContent = GenerateRegistrationIndexMarkdown(discoveryResult, assemblyName, projectDirectory, timestamp, options.TypeFilter, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>RegistrationIndex.md content</summary>");
         builder.AppendLine($"    public const string RegistrationIndex = @\"{EscapeVerbatimStringLiteral(registrationIndexContent)}\";");
         builder.AppendLine();
@@ -1337,7 +1338,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateDependencyGraphMarkdown(DiscoveryResult discovery, string assemblyName, string timestamp, HashSet<string> typeFilter)
+    private static string GenerateDependencyGraphMarkdown(DiscoveryResult discovery, string assemblyName, string timestamp, HashSet<string> typeFilter, IReadOnlyList<string> referencedTypeRegistryAssemblies, Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes)
     {
         var sb = new StringBuilder();
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
@@ -1347,6 +1348,95 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine($"Generated: {timestamp} UTC");
         sb.AppendLine($"Assembly: {assemblyName}");
         sb.AppendLine();
+
+        // Show referenced TypeRegistry assemblies with their types
+        if (referencedAssemblyTypes.Count > 0)
+        {
+            sb.AppendLine("## Referenced Plugin Assemblies");
+            sb.AppendLine();
+            sb.AppendLine("Types from referenced assemblies with `[GenerateTypeRegistry]`:");
+            sb.AppendLine();
+
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            {
+                var refAsm = kvp.Key;
+                var refTypes = kvp.Value;
+                
+                sb.AppendLine($"### {refAsm}");
+                sb.AppendLine();
+                sb.AppendLine("```mermaid");
+                sb.AppendLine("graph TD");
+
+                // Group by lifetime
+                var refSingletons = refTypes.Where(t => t.Lifetime == GeneratorLifetime.Singleton).ToList();
+                var refScopeds = refTypes.Where(t => t.Lifetime == GeneratorLifetime.Scoped).ToList();
+                var refTransients = refTypes.Where(t => t.Lifetime == GeneratorLifetime.Transient).ToList();
+
+                if (refSingletons.Any())
+                {
+                    sb.AppendLine($"    subgraph Singleton[\"{refAsm} - Singleton\"]");
+                    foreach (var type in refSingletons)
+                    {
+                        var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
+                        var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
+                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                    }
+                    sb.AppendLine("    end");
+                }
+                if (refScopeds.Any())
+                {
+                    sb.AppendLine($"    subgraph Scoped[\"{refAsm} - Scoped\"]");
+                    foreach (var type in refScopeds)
+                    {
+                        var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
+                        var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
+                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                    }
+                    sb.AppendLine("    end");
+                }
+                if (refTransients.Any())
+                {
+                    sb.AppendLine($"    subgraph Transient[\"{refAsm} - Transient\"]");
+                    foreach (var type in refTransients)
+                    {
+                        var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
+                        var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
+                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                    }
+                    sb.AppendLine("    end");
+                }
+
+                // Show dependency edges within this assembly
+                var refTypeNames = new HashSet<string>(refTypes.Select(t => t.ShortName), StringComparer.Ordinal);
+                foreach (var type in refTypes)
+                {
+                    foreach (var dep in type.Dependencies)
+                    {
+                        var depShort = GetShortTypeName(dep);
+                        var matchingType = refTypes.FirstOrDefault(t =>
+                            t.ShortName == depShort ||
+                            t.Interfaces.Any(i => GetShortTypeName(i) == depShort));
+                        if (matchingType.FullName != null)
+                        {
+                            sb.AppendLine($"    {GetMermaidNodeId(type.FullName)} --> {GetMermaidNodeId(matchingType.FullName)}");
+                        }
+                    }
+                }
+
+                sb.AppendLine("```");
+                sb.AppendLine();
+
+                // Show summary table for this assembly
+                sb.AppendLine($"| Service | Lifetime | Interfaces |");
+                sb.AppendLine($"|---------|----------|------------|");
+                foreach (var type in refTypes.OrderBy(t => t.ShortName))
+                {
+                    var interfaces = type.Interfaces.Any() ? string.Join(", ", type.Interfaces.Select(GetShortTypeName)) : "-";
+                    sb.AppendLine($"| {type.ShortName} | {type.Lifetime} | {interfaces} |");
+                }
+                sb.AppendLine();
+            }
+        }
 
         var singletons = types.Where(t => t.Lifetime == GeneratorLifetime.Singleton).ToList();
         var scopeds = types.Where(t => t.Lifetime == GeneratorLifetime.Scoped).ToList();
@@ -1609,7 +1699,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    private static string GenerateLifetimeSummaryMarkdown(DiscoveryResult discovery, string assemblyName, string timestamp, HashSet<string> typeFilter)
+    private static string GenerateLifetimeSummaryMarkdown(DiscoveryResult discovery, string assemblyName, string timestamp, HashSet<string> typeFilter, Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes)
     {
         var sb = new StringBuilder();
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
@@ -1624,6 +1714,36 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine($"Generated: {timestamp} UTC");
         sb.AppendLine($"Assembly: {assemblyName}");
         sb.AppendLine();
+
+        // Referenced plugin assemblies lifetime breakdown
+        if (referencedAssemblyTypes.Count > 0)
+        {
+            sb.AppendLine("## Referenced Plugin Assemblies");
+            sb.AppendLine();
+
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            {
+                var refAsm = kvp.Key;
+                var refTypes = kvp.Value;
+                var refSingletons = refTypes.Count(t => t.Lifetime == GeneratorLifetime.Singleton);
+                var refScopeds = refTypes.Count(t => t.Lifetime == GeneratorLifetime.Scoped);
+                var refTransients = refTypes.Count(t => t.Lifetime == GeneratorLifetime.Transient);
+                var refTotal = refTypes.Count;
+
+                sb.AppendLine($"### {refAsm}");
+                sb.AppendLine();
+                sb.AppendLine("| Lifetime | Count | % |");
+                sb.AppendLine("|----------|-------|---|");
+                if (refTotal > 0)
+                {
+                    sb.AppendLine($"| Singleton | {refSingletons} | {Percentage(refSingletons, refTotal)}% |");
+                    sb.AppendLine($"| Scoped | {refScopeds} | {Percentage(refScopeds, refTotal)}% |");
+                    sb.AppendLine($"| Transient | {refTransients} | {Percentage(refTransients, refTotal)}% |");
+                    sb.AppendLine($"| **Total** | **{refTotal}** | 100% |");
+                }
+                sb.AppendLine();
+            }
+        }
 
         sb.AppendLine("## Registration Counts");
         sb.AppendLine();
@@ -1675,7 +1795,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    private static string GenerateRegistrationIndexMarkdown(DiscoveryResult discovery, string assemblyName, string? projectDirectory, string timestamp, HashSet<string> typeFilter)
+    private static string GenerateRegistrationIndexMarkdown(DiscoveryResult discovery, string assemblyName, string? projectDirectory, string timestamp, HashSet<string> typeFilter, Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes)
     {
         var sb = new StringBuilder();
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
@@ -1687,6 +1807,33 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine($"Generated: {timestamp} UTC");
         sb.AppendLine($"Assembly: {assemblyName}");
         sb.AppendLine();
+
+        // Referenced plugin assemblies services
+        if (referencedAssemblyTypes.Count > 0)
+        {
+            sb.AppendLine("## Referenced Plugin Assemblies");
+            sb.AppendLine();
+
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            {
+                var refAsm = kvp.Key;
+                var refTypes = kvp.Value;
+
+                sb.AppendLine($"### {refAsm} ({refTypes.Count} services)");
+                sb.AppendLine();
+                sb.AppendLine("| # | Interface | Implementation | Lifetime |");
+                sb.AppendLine("|---|-----------|----------------|----------|");
+
+                var index = 1;
+                foreach (var type in refTypes.OrderBy(t => t.ShortName))
+                {
+                    var iface = type.Interfaces.FirstOrDefault() ?? "-";
+                    sb.AppendLine($"| {index} | {GetShortTypeName(iface)} | {type.ShortName} | {type.Lifetime} |");
+                    index++;
+                }
+                sb.AppendLine();
+            }
+        }
 
         // Services table
         sb.AppendLine($"## Services ({types.Count})");
@@ -2443,6 +2590,105 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         
         return result;
+    }
+
+    /// <summary>
+    /// Discovers types from referenced assemblies with [GenerateTypeRegistry] for diagnostics purposes.
+    /// Unlike the main discovery, this includes internal types since we're just showing them in diagnostics.
+    /// </summary>
+    private static Dictionary<string, List<DiagnosticTypeInfo>> DiscoverReferencedAssemblyTypesForDiagnostics(Compilation compilation)
+    {
+        var result = new Dictionary<string, List<DiagnosticTypeInfo>>();
+        
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
+            {
+                // Skip the current assembly
+                if (SymbolEqualityComparer.Default.Equals(assemblySymbol, compilation.Assembly))
+                    continue;
+                    
+                if (!TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
+                    continue;
+
+                var assemblyTypes = new List<DiagnosticTypeInfo>();
+                
+                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
+                {
+                    // Check if it's a registerable type (injectable or plugin)
+                    if (!TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
+                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                        continue;
+
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var shortName = typeSymbol.Name;
+                    var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol)
+                        .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
+                        .ToArray();
+                    var dependencies = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol)?
+                        .ToArray() ?? Array.Empty<string>();
+                    var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol);
+                    var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
+                    var hasFactory = TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
+                    var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
+                    var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
+
+                    assemblyTypes.Add(new DiagnosticTypeInfo(
+                        typeName,
+                        shortName,
+                        lifetime,
+                        interfaces,
+                        dependencies,
+                        isDecorator,
+                        isPlugin,
+                        hasFactory,
+                        keyedValue));
+                }
+
+                if (assemblyTypes.Count > 0)
+                {
+                    result[assemblySymbol.Name] = assemblyTypes;
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    private readonly struct DiagnosticTypeInfo
+    {
+        public DiagnosticTypeInfo(
+            string fullName,
+            string shortName,
+            GeneratorLifetime lifetime,
+            string[] interfaces,
+            string[] dependencies,
+            bool isDecorator,
+            bool isPlugin,
+            bool hasFactory,
+            string? keyedValue)
+        {
+            FullName = fullName;
+            ShortName = shortName;
+            Lifetime = lifetime;
+            Interfaces = interfaces;
+            Dependencies = dependencies;
+            IsDecorator = isDecorator;
+            IsPlugin = isPlugin;
+            HasFactory = hasFactory;
+            KeyedValue = keyedValue;
+        }
+
+        public string FullName { get; }
+        public string ShortName { get; }
+        public GeneratorLifetime Lifetime { get; }
+        public string[] Interfaces { get; }
+        public string[] Dependencies { get; }
+        public bool IsDecorator { get; }
+        public bool IsPlugin { get; }
+        public bool HasFactory { get; }
+        public string? KeyedValue { get; }
     }
 
     private readonly struct AttributeInfo

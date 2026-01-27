@@ -280,6 +280,26 @@ The dependency graph now includes rich visualization sections:
 Generated: 2026-01-25 10:00:00 UTC
 Assembly: MyApp
 
+## Referenced Plugin Assemblies
+
+Types from referenced assemblies with `[GenerateTypeRegistry]`:
+
+### MyApp.Plugins
+
+\`\`\`mermaid
+graph TD
+    subgraph Singleton["MyApp.Plugins - Singleton"]
+        OrderHandler["OrderHandler"]
+        PaymentHandler["PaymentHandler"]
+    end
+    PaymentHandler --> OrderHandler
+\`\`\`
+
+| Service | Lifetime | Interfaces |
+|---------|----------|------------|
+| OrderHandler | Singleton | IHandler<Order> |
+| PaymentHandler | Singleton | IHandler<Payment> |
+
 ## Service Dependencies
 
 \`\`\`mermaid
