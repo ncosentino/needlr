@@ -221,3 +221,114 @@ internal sealed class CalculatorService : ICalculatorService
         return a / b;
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTORY DELEGATES DEMO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// <summary>
+/// Interface for a database connection that requires a runtime connection string.
+/// </summary>
+public interface IDatabaseConnection
+{
+    string ConnectionString { get; }
+    string Query(string sql);
+}
+
+/// <summary>
+/// Database connection that requires both injectable dependencies (logger) and
+/// a runtime parameter (connection string). Uses [GenerateFactory] to create a factory.
+/// 
+/// The generator creates:
+/// - IDatabaseConnectionFactory with Create(string connectionString)
+/// - Func&lt;string, DatabaseConnection&gt;
+/// </summary>
+[GenerateFactory]
+public sealed class DatabaseConnection : IDatabaseConnection
+{
+    private readonly IConsoleTimeProvider _timeProvider;
+
+    public string ConnectionString { get; }
+
+    public DatabaseConnection(IConsoleTimeProvider timeProvider, string connectionString)
+    {
+        _timeProvider = timeProvider;
+        ConnectionString = connectionString;
+    }
+
+    public string Query(string sql)
+    {
+        return $"[{_timeProvider.GetNow():HH:mm:ss}] Executed on '{ConnectionString}': {sql}";
+    }
+}
+
+/// <summary>
+/// Interface for a request handler that processes requests with a correlation ID.
+/// </summary>
+public interface IRequestHandler
+{
+    Guid CorrelationId { get; }
+    string Handle(string request);
+}
+
+/// <summary>
+/// Request handler that uses [GenerateFactory&lt;IRequestHandler&gt;] so the factory
+/// returns the interface type instead of the concrete class. This enables mocking
+/// both the factory AND the returned instances in tests.
+/// 
+/// The generator creates:
+/// - IRequestHandlerFactory with Create(Guid correlationId) returning IRequestHandler
+/// - Func&lt;Guid, IRequestHandler&gt;
+/// </summary>
+[GenerateFactory<IRequestHandler>]
+public sealed class RequestHandler : IRequestHandler
+{
+    private readonly IConfiguration _config;
+
+    public Guid CorrelationId { get; }
+
+    public RequestHandler(IConfiguration config, Guid correlationId)
+    {
+        _config = config;
+        CorrelationId = correlationId;
+    }
+
+    public string Handle(string request)
+    {
+        var prefix = _config["RequestPrefix"] ?? "REQ";
+        return $"[{prefix}:{CorrelationId:N}] Handled: {request}";
+    }
+}
+
+/// <summary>
+/// Service with multiple constructors - each gets its own factory overload.
+/// Demonstrates the flexibility of factory generation with constructor overloading.
+/// </summary>
+[GenerateFactory]
+public sealed class ReportGenerator
+{
+    private readonly IConsoleTimeProvider _timeProvider;
+
+    public string Title { get; }
+    public int? MaxItems { get; }
+
+    public ReportGenerator(IConsoleTimeProvider timeProvider, string title)
+    {
+        _timeProvider = timeProvider;
+        Title = title;
+        MaxItems = null;
+    }
+
+    public ReportGenerator(IConsoleTimeProvider timeProvider, string title, int maxItems)
+    {
+        _timeProvider = timeProvider;
+        Title = title;
+        MaxItems = maxItems;
+    }
+
+    public string Generate()
+    {
+        var limit = MaxItems.HasValue ? $" (max {MaxItems})" : "";
+        return $"Report '{Title}'{limit} generated at {_timeProvider.GetNow():HH:mm:ss}";
+    }
+}

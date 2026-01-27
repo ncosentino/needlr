@@ -103,3 +103,47 @@ Console.WriteLine("── Divide(100, 5) again - should be cached ──");
 var quotient2 = calculator.Divide(100, 5);
 Console.WriteLine($"Result: {quotient2}");
 Console.WriteLine();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FACTORY DELEGATES DEMO
+// ─────────────────────────────────────────────────────────────────────────────
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine("FACTORY DELEGATES DEMO");
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine();
+
+// [GenerateFactory] creates both IFactory and Func<> for types with mixed params
+// DatabaseConnection has injectable IConsoleTimeProvider + runtime connectionString
+
+Console.WriteLine("── Using IDatabaseConnectionFactory ──");
+var dbFactory = provider.GetRequiredService<AotSourceGenConsolePlugin.Generated.IDatabaseConnectionFactory>();
+var prodDb = dbFactory.Create("Server=prod;Database=app");
+var testDb = dbFactory.Create("Server=localhost;Database=test");
+
+Console.WriteLine($"Prod query: {prodDb.Query("SELECT * FROM users")}");
+Console.WriteLine($"Test query: {testDb.Query("SELECT * FROM orders")}");
+Console.WriteLine();
+
+Console.WriteLine("── Using Func<string, DatabaseConnection> ──");
+var dbFunc = provider.GetRequiredService<Func<string, DatabaseConnection>>();
+var devDb = dbFunc("Server=dev;Database=sandbox");
+Console.WriteLine($"Dev query: {devDb.Query("SELECT 1")}");
+Console.WriteLine();
+
+// [GenerateFactory<IRequestHandler>] returns the interface type, enabling mocking
+Console.WriteLine("── Using Func<Guid, IRequestHandler> (returns interface) ──");
+var handlerFunc = provider.GetRequiredService<Func<Guid, IRequestHandler>>();
+var correlationId = Guid.NewGuid();
+IRequestHandler handler = handlerFunc(correlationId);
+Console.WriteLine($"Handler type: {handler.GetType().Name}");
+Console.WriteLine($"Handler result: {handler.Handle("Process payment")}");
+Console.WriteLine();
+
+// Multiple constructors = multiple factory overloads
+Console.WriteLine("── Using IReportGeneratorFactory with multiple Create overloads ──");
+var reportFactory = provider.GetRequiredService<AotSourceGenConsolePlugin.Generated.IReportGeneratorFactory>();
+var simpleReport = reportFactory.Create("Sales Summary");
+var limitedReport = reportFactory.Create("Top Products", 10);
+Console.WriteLine(simpleReport.Generate());
+Console.WriteLine(limitedReport.Generate());
+Console.WriteLine();
