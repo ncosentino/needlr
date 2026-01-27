@@ -250,6 +250,11 @@ public sealed class DatabaseConnection : IDatabaseConnection
 
     public string ConnectionString { get; }
 
+    /// <summary>
+    /// Creates a new database connection.
+    /// </summary>
+    /// <param name="timeProvider">The time provider for timestamps.</param>
+    /// <param name="connectionString">The database connection string (e.g., "Server=localhost;Database=app").</param>
     public DatabaseConnection(IConsoleTimeProvider timeProvider, string connectionString)
     {
         _timeProvider = timeProvider;
@@ -287,6 +292,11 @@ public sealed class RequestHandler : IRequestHandler
 
     public Guid CorrelationId { get; }
 
+    /// <summary>
+    /// Creates a new request handler.
+    /// </summary>
+    /// <param name="config">The application configuration.</param>
+    /// <param name="correlationId">Unique identifier for tracing this request across services.</param>
     public RequestHandler(IConfiguration config, Guid correlationId)
     {
         _config = config;
@@ -312,6 +322,11 @@ public sealed class ReportGenerator
     public string Title { get; }
     public int? MaxItems { get; }
 
+    /// <summary>
+    /// Creates a basic report generator.
+    /// </summary>
+    /// <param name="timeProvider">The time provider for timestamps.</param>
+    /// <param name="title">The title to display at the top of the report.</param>
     public ReportGenerator(IConsoleTimeProvider timeProvider, string title)
     {
         _timeProvider = timeProvider;
@@ -319,6 +334,12 @@ public sealed class ReportGenerator
         MaxItems = null;
     }
 
+    /// <summary>
+    /// Creates a report generator with a maximum item limit.
+    /// </summary>
+    /// <param name="timeProvider">The time provider for timestamps.</param>
+    /// <param name="title">The title to display at the top of the report.</param>
+    /// <param name="maxItems">Maximum number of items to include in the report.</param>
     public ReportGenerator(IConsoleTimeProvider timeProvider, string title, int maxItems)
     {
         _timeProvider = timeProvider;

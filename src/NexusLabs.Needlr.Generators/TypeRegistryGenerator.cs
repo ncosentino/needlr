@@ -1097,10 +1097,37 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }));
 
             builder.AppendLine($"    /// <summary>Creates a new instance of {factory.SimpleTypeName}.</summary>");
+            
+            // Add <param> tags for documented runtime parameters
+            foreach (var param in ctor.RuntimeParameters)
+            {
+                if (!string.IsNullOrWhiteSpace(param.DocumentationComment))
+                {
+                    var paramName = param.ParameterName ?? ToCamelCase(GetSimpleTypeName(param.TypeName));
+                    var escapedDoc = EscapeXmlContent(param.DocumentationComment!);
+                    builder.AppendLine($"    /// <param name=\"{paramName}\">{escapedDoc}</param>");
+                }
+            }
+            
             builder.AppendLine($"    {factory.ReturnTypeName} Create({runtimeParamList});");
         }
 
         builder.AppendLine("}");
+    }
+
+    /// <summary>
+    /// Escapes special XML characters in documentation content.
+    /// </summary>
+    private static string EscapeXmlContent(string content)
+    {
+        // The content from GetDocumentationCommentXml() is already parsed,
+        // so entities like &lt; are already decoded. We need to re-encode them.
+        return content
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&apos;");
     }
 
     private static void GenerateFactoryImplementation(StringBuilder builder, DiscoveredFactory factory, BreadcrumbWriter breadcrumbs, string? projectDirectory)

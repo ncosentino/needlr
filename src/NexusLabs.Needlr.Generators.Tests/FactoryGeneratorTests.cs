@@ -472,9 +472,215 @@ namespace TestApp
 
     #endregion
 
+    #region XML Documentation Tests
+
+    [Fact]
+    public void Generator_WithDocumentedConstructorParams_IncludesParamDocsInFactory()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        /// <summary>
+        /// Creates a new MyService.
+        /// </summary>
+        /// <param name=""dep"">The dependency to inject.</param>
+        /// <param name=""connectionString"">The database connection string.</param>
+        /// <param name=""timeout"">The timeout in seconds.</param>
+        public MyService(IDependency dep, string connectionString, int timeout) { }
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDocs(source);
+
+        // Should include param documentation for runtime parameters
+        Assert.Contains(@"<param name=""connectionString"">The database connection string.</param>", generatedCode);
+        Assert.Contains(@"<param name=""timeout"">The timeout in seconds.</param>", generatedCode);
+        // Should NOT include injectable param docs (they're not in Create method)
+        Assert.DoesNotContain(@"<param name=""dep"">", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithPartialDocumentation_IncludesOnlyDocumentedParams()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        /// <summary>
+        /// Creates a service.
+        /// </summary>
+        /// <param name=""connectionString"">The connection string to use.</param>
+        public MyService(IDependency dep, string connectionString, int undocumentedParam) { }
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDocs(source);
+
+        // Should include documented param
+        Assert.Contains(@"<param name=""connectionString"">The connection string to use.</param>", generatedCode);
+        // Undocumented param should not have <param> tag
+        Assert.DoesNotContain(@"<param name=""undocumentedParam"">", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithNoDocumentation_GeneratesWithoutParamTags()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        public MyService(IDependency dep, string connectionString) { }
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDocs(source);
+
+        // Should still generate factory
+        Assert.Contains("IMyServiceFactory", generatedCode);
+        // Should have summary but no param tags
+        Assert.Contains("/// <summary>Creates a new instance of MyService.</summary>", generatedCode);
+        Assert.DoesNotContain(@"<param name=""connectionString"">", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithMultipleConstructors_IncludesDocsForEach()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        /// <summary>Creates with connection string.</summary>
+        /// <param name=""dep"">The dependency.</param>
+        /// <param name=""connectionString"">Primary connection.</param>
+        public MyService(IDependency dep, string connectionString) { }
+
+        /// <summary>Creates with connection and timeout.</summary>
+        /// <param name=""dep"">The dependency.</param>
+        /// <param name=""connectionString"">Primary connection.</param>
+        /// <param name=""timeout"">Timeout value.</param>
+        public MyService(IDependency dep, string connectionString, int timeout) { }
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDocs(source);
+
+        // Both constructors should have their docs
+        Assert.Contains(@"<param name=""connectionString"">Primary connection.</param>", generatedCode);
+        Assert.Contains(@"<param name=""timeout"">Timeout value.</param>", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithSpecialXmlChars_EscapesCorrectly()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        /// <summary>Creates service.</summary>
+        /// <param name=""dep"">The dependency.</param>
+        /// <param name=""filter"">Filter expression using &lt;T&gt; syntax.</param>
+        public MyService(IDependency dep, string filter) { }
+    }
+}";
+
+        var generatedCode = RunGeneratorWithDocs(source);
+
+        // Should preserve XML escaping
+        Assert.Contains(@"<param name=""filter"">Filter expression using &lt;T&gt; syntax.</param>", generatedCode);
+    }
+
+    #endregion
+
     private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(GenerateFactoryAttribute).Assembly.Location),
+            })
+            .ToArray();
+
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            new[] { syntaxTree },
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out var diagnostics);
+
+        var generatedTrees = outputCompilation.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .OrderBy(t => t.FilePath)
+            .ToList();
+
+        if (generatedTrees.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+    }
+
+    private static string RunGeneratorWithDocs(string source)
+    {
+        // Parse with documentation mode to enable XML doc extraction
+        var parseOptions = new CSharpParseOptions(documentationMode: DocumentationMode.Parse);
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
 
         var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(new[]

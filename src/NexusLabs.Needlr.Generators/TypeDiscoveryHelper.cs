@@ -910,11 +910,12 @@ internal static class TypeDiscoveryHelper
     /// </summary>
     public readonly struct ConstructorParameterInfo
     {
-        public ConstructorParameterInfo(string typeName, string? serviceKey = null, string? parameterName = null)
+        public ConstructorParameterInfo(string typeName, string? serviceKey = null, string? parameterName = null, string? documentationComment = null)
         {
             TypeName = typeName;
             ServiceKey = serviceKey;
             ParameterName = parameterName;
+            DocumentationComment = documentationComment;
         }
 
         /// <summary>
@@ -931,6 +932,11 @@ internal static class TypeDiscoveryHelper
         /// The original parameter name from the constructor (used for factory generation).
         /// </summary>
         public string? ParameterName { get; }
+
+        /// <summary>
+        /// XML documentation comment for this parameter, extracted from the constructor's XML docs.
+        /// </summary>
+        public string? DocumentationComment { get; }
 
         /// <summary>
         /// True if this parameter should be resolved as a keyed service.
@@ -1767,23 +1773,27 @@ internal static class TypeDiscoveryHelper
             if (ctor.DeclaredAccessibility != Accessibility.Public)
                 continue;
 
+            // Extract XML documentation for parameters
+            var paramDocs = GetConstructorParameterDocumentation(ctor);
+
             var injectableParams = new List<ConstructorParameterInfo>();
             var runtimeParams = new List<ConstructorParameterInfo>();
 
             foreach (var param in ctor.Parameters)
             {
                 var typeName = param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                paramDocs.TryGetValue(param.Name, out var docComment);
 
                 if (IsInjectableParameterType(param.Type))
                 {
                     // Check for [FromKeyedServices] attribute
                     var serviceKey = GetFromKeyedServicesKey(param);
-                    var paramInfo = new ConstructorParameterInfo(typeName, serviceKey, param.Name);
+                    var paramInfo = new ConstructorParameterInfo(typeName, serviceKey, param.Name, docComment);
                     injectableParams.Add(paramInfo);
                 }
                 else
                 {
-                    var paramInfo = new ConstructorParameterInfo(typeName, null, param.Name);
+                    var paramInfo = new ConstructorParameterInfo(typeName, null, param.Name, docComment);
                     runtimeParams.Add(paramInfo);
                 }
             }
@@ -1796,6 +1806,45 @@ internal static class TypeDiscoveryHelper
                     injectableParams.ToArray(),
                     runtimeParams.ToArray()));
             }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Extracts parameter documentation from a constructor's XML documentation comments.
+    /// </summary>
+    private static Dictionary<string, string> GetConstructorParameterDocumentation(IMethodSymbol constructor)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        var xmlDoc = constructor.GetDocumentationCommentXml();
+        if (string.IsNullOrWhiteSpace(xmlDoc))
+            return result;
+
+        try
+        {
+            // Parse the XML documentation
+            var doc = System.Xml.Linq.XDocument.Parse(xmlDoc);
+            var paramElements = doc.Descendants("param");
+
+            foreach (var param in paramElements)
+            {
+                var nameAttr = param.Attribute("name");
+                if (nameAttr is null || string.IsNullOrWhiteSpace(nameAttr.Value))
+                    continue;
+
+                // Get the inner text/content of the param element
+                var content = param.Value?.Trim();
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    result[nameAttr.Value] = content!;
+                }
+            }
+        }
+        catch
+        {
+            // If XML parsing fails, return empty dictionary
         }
 
         return result;
