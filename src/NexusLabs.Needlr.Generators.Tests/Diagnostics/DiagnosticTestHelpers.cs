@@ -153,6 +153,8 @@ internal static class DiagnosticTestHelpers
                 {
                     MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(DecoratorForAttribute<>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(InterceptAttribute<>).Assembly.Location),
                 })
                 .ToArray();
 

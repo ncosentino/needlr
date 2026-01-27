@@ -1503,15 +1503,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         sb.AppendLine("```");
         sb.AppendLine();
 
-        // Decorator chains section
-        if (discovery.Decorators.Any())
+        // Decorator chains section (aggregates host and plugin decorators)
+        var pluginDecorators = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.IsDecorator).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (discovery.Decorators.Any() || pluginDecorators.Any())
         {
             sb.AppendLine("## Decorator Chains");
             sb.AppendLine();
             sb.AppendLine("```mermaid");
             sb.AppendLine("graph LR");
 
-            // Group decorators by service type
+            // Host decorators - group by service type
             var decoratorsByService = discovery.Decorators
                 .GroupBy(d => d.ServiceTypeName)
                 .OrderBy(g => g.Key);
@@ -1550,6 +1554,69 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         sb.AppendLine($"    {decoratorId} --> {implId}");
                     }
                 }
+            }
+
+            // Plugin decorators (we don't have chain order info, just show the decorator types)
+            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName))
+            {
+                var decoratorId = GetMermaidNodeId(type.FullName);
+                var decoratorName = type.ShortName;
+                sb.AppendLine($"    {decoratorId}[[\"{decoratorName}\"]]");
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
+        // Intercepted services section (aggregates host and plugin interceptors)
+        var interceptedServices = discovery.InterceptedServices.ToList();
+        var pluginInterceptors = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.HasInterceptorProxy).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (interceptedServices.Any() || pluginInterceptors.Any())
+        {
+            sb.AppendLine("## Intercepted Services");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph LR");
+
+            // Host intercepted services
+            foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
+            {
+                var targetId = GetMermaidNodeId(service.TypeName);
+                var targetName = GetShortTypeName(service.TypeName);
+                var proxyId = targetId + "_Proxy";
+                var proxyName = targetName + "_InterceptorProxy";
+
+                // Target service
+                sb.AppendLine($"    {targetId}[\"{targetName}\"]");
+                // Proxy with stadium shape
+                sb.AppendLine($"    {proxyId}[[\"{proxyName}\"]]");
+                // Edge showing proxy wraps target
+                sb.AppendLine($"    {proxyId} -.->|wraps| {targetId}");
+                
+                // Show interceptors applied
+                foreach (var interceptorType in service.AllInterceptorTypeNames)
+                {
+                    var interceptorId = GetMermaidNodeId(interceptorType);
+                    var interceptorName = GetShortTypeName(interceptorType);
+                    sb.AppendLine($"    {interceptorId}([[\"{interceptorName}\"]])");
+                    sb.AppendLine($"    {proxyId} --> {interceptorId}");
+                }
+            }
+
+            // Plugin intercepted services
+            foreach (var (assembly, type) in pluginInterceptors.OrderBy(x => x.Type.ShortName))
+            {
+                var targetId = GetMermaidNodeId(type.FullName);
+                var targetName = type.ShortName;
+                var proxyId = targetId + "_Proxy";
+                var proxyName = targetName + "_InterceptorProxy";
+
+                sb.AppendLine($"    {targetId}[\"{targetName}\"]");
+                sb.AppendLine($"    {proxyId}[[\"{proxyName}\"]]");
+                sb.AppendLine($"    {proxyId} -.->|wraps| {targetId}");
             }
 
             sb.AppendLine("```");
@@ -1901,24 +1968,103 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        // Decorators section
-        if (decorators.Any())
+        // Decorators section (aggregates host and plugin decorators)
+        var pluginDecorators = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.IsDecorator).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (decorators.Any() || pluginDecorators.Any())
         {
+            var totalCount = decorators.Count + pluginDecorators.Count;
+            sb.AppendLine($"## Decorators ({totalCount})");
+            sb.AppendLine();
+            sb.AppendLine("| Service | Decorator Chain | Assembly |");
+            sb.AppendLine("|---------|-----------------|----------|");
+
+            // Host decorators
             var decoratorsByTarget = decorators
                 .GroupBy(d => d.ServiceTypeName)
                 .OrderBy(g => g.Key);
-
-            sb.AppendLine($"## Decorators ({decorators.Count})");
-            sb.AppendLine();
-            sb.AppendLine("| Service | Decorator Chain |");
-            sb.AppendLine("|---------|-----------------|");
 
             foreach (var group in decoratorsByTarget)
             {
                 var chain = string.Join(" → ",
                     group.OrderBy(d => d.Order)
                          .Select(d => GetShortTypeName(d.DecoratorTypeName)));
-                sb.AppendLine($"| {GetShortTypeName(group.Key)} | {chain} |");
+                sb.AppendLine($"| {GetShortTypeName(group.Key)} | {chain} | (host) |");
+            }
+
+            // Plugin decorators
+            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName))
+            {
+                // For plugin decorators, we show them individually since we don't have chain info
+                var serviceName = type.Interfaces.FirstOrDefault() ?? "-";
+                sb.AppendLine($"| {GetShortTypeName(serviceName)} | {type.ShortName} | {assembly} |");
+            }
+            sb.AppendLine();
+        }
+
+        // Interceptors section (aggregates host and plugin interceptors)
+        var interceptedServices = discovery.InterceptedServices.ToList();
+        var pluginIntercepted = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.HasInterceptorProxy).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (interceptedServices.Any() || pluginIntercepted.Any())
+        {
+            var totalCount = interceptedServices.Count + pluginIntercepted.Count;
+            sb.AppendLine($"## Intercepted Services ({totalCount})");
+            sb.AppendLine();
+            sb.AppendLine("| Service | Interceptors | Proxy | Assembly |");
+            sb.AppendLine("|---------|--------------|-------|----------|");
+
+            // Host intercepted services
+            foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
+            {
+                var serviceName = GetShortTypeName(service.TypeName);
+                var interceptors = string.Join(", ", service.AllInterceptorTypeNames.Select(GetShortTypeName));
+                var proxyName = serviceName + "_InterceptorProxy";
+                sb.AppendLine($"| {serviceName} | {interceptors} | {proxyName} | (host) |");
+            }
+
+            // Plugin intercepted services
+            foreach (var (assembly, type) in pluginIntercepted.OrderBy(x => x.Type.ShortName))
+            {
+                var proxyName = type.ShortName + "_InterceptorProxy";
+                sb.AppendLine($"| {type.ShortName} | (see plugin) | {proxyName} | {assembly} |");
+            }
+            sb.AppendLine();
+        }
+
+        // Factories section (aggregates host and plugin factories)
+        var factories = discovery.Factories.ToList();
+        var pluginFactories = referencedAssemblyTypes
+            .SelectMany(kv => kv.Value.Where(t => t.HasFactory).Select(t => (Assembly: kv.Key, Type: t)))
+            .ToList();
+        
+        if (factories.Any() || pluginFactories.Any())
+        {
+            var totalCount = factories.Count + pluginFactories.Count;
+            sb.AppendLine($"## Factories ({totalCount})");
+            sb.AppendLine();
+            sb.AppendLine("| Source Type | Factory Interface | Generated Factory | Assembly |");
+            sb.AppendLine("|-------------|-------------------|-------------------|----------|");
+
+            // Host factories
+            foreach (var factory in factories.OrderBy(f => f.TypeName))
+            {
+                var sourceName = factory.SimpleTypeName;
+                var factoryInterface = "I" + sourceName + "Factory";
+                var factoryImpl = sourceName + "Factory";
+                sb.AppendLine($"| {sourceName} | {factoryInterface} | {factoryImpl} | (host) |");
+            }
+
+            // Plugin factories
+            foreach (var (assembly, type) in pluginFactories.OrderBy(x => x.Type.ShortName))
+            {
+                var factoryInterface = "I" + type.ShortName + "Factory";
+                var factoryImpl = type.ShortName + "Factory";
+                sb.AppendLine($"| {type.ShortName} | {factoryInterface} | {factoryImpl} | {assembly} |");
             }
             sb.AppendLine();
         }
@@ -2654,11 +2800,24 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
                 var assemblyTypes = new List<DiagnosticTypeInfo>();
                 
+                // First pass: collect intercepted service names so we can identify their proxies
+                var interceptedServiceNames = new HashSet<string>();
                 foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
                 {
-                    // Check if it's a registerable type (injectable, plugin, or factory source)
+                    if (TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol))
+                    {
+                        interceptedServiceNames.Add(typeSymbol.Name);
+                    }
+                }
+                
+                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
+                {
+                    // Check if it's a registerable type (injectable, plugin, factory source, or interceptor)
                     var hasFactoryAttr = TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
-                    if (!hasFactoryAttr &&
+                    var hasInterceptAttr = TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol);
+                    var isInterceptorProxy = typeSymbol.Name.EndsWith("_InterceptorProxy");
+                    
+                    if (!hasFactoryAttr && !hasInterceptAttr && !isInterceptorProxy &&
                         !TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
                         !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
                         continue;
@@ -2671,10 +2830,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         .ToArray();
                     var dependencies = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol)?
                         .ToArray() ?? Array.Empty<string>();
-                    var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol);
+                    var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) || 
+                                      TypeDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol);
                     var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
                     var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
                     var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
+                    
+                    // Check if this service has an interceptor proxy (its name + "_InterceptorProxy" exists)
+                    var hasInterceptorProxy = interceptedServiceNames.Contains(shortName);
 
                     assemblyTypes.Add(new DiagnosticTypeInfo(
                         typeName,
@@ -2685,7 +2848,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         isDecorator,
                         isPlugin,
                         hasFactoryAttr,
-                        keyedValue));
+                        keyedValue,
+                        isInterceptor: hasInterceptAttr,
+                        hasInterceptorProxy: hasInterceptorProxy));
                 }
 
                 if (assemblyTypes.Count > 0)

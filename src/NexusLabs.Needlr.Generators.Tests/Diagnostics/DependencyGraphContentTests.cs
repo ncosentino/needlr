@@ -843,5 +843,210 @@ namespace PluginLib
         Assert.Contains("ConnectionFactory", content);
     }
 
+    [Fact]
+    public void DependencyGraph_ConsolidatedDecoratorSectionIncludesPluginDecorators()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface ILogger { }
+    public class Logger : ILogger { }
+    
+    [DecoratorFor<ILogger>]
+    public class LoggingDecorator : ILogger
+    {
+        public LoggingDecorator(ILogger inner) { }
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        // Should show consolidated Decorator Chains section with plugin decorator
+        Assert.Contains("## Decorator Chains", content);
+        Assert.Contains("LoggingDecorator", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_InterceptedServicesSectionIncludesPluginInterceptors()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+using System.Threading.Tasks;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface ICalculator { int Add(int a, int b); }
+    
+    public class TimingInterceptor : IMethodInterceptor
+    {
+        public ValueTask<object?> InterceptAsync(IMethodInvocation invocation) => invocation.ProceedAsync();
+    }
+    
+    [Intercept<TimingInterceptor>]
+    [Scoped]
+    public class Calculator : ICalculator
+    {
+        public int Add(int a, int b) => a + b;
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "DependencyGraph");
+
+        // Should show Intercepted Services section
+        Assert.Contains("## Intercepted Services", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_FactoriesSectionIncludesPluginFactories()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "RegistrationIndex");
+
+        // Should show consolidated Factories section with plugin factory
+        Assert.Contains("## Factories", content);
+        Assert.Contains("ConnectionFactory", content);
+        Assert.Contains("MyPlugin", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_DecoratorsSectionIncludesPluginDecorators()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface ILogger { }
+    public class Logger : ILogger { }
+    
+    [DecoratorFor<ILogger>]
+    public class LoggingDecorator : ILogger
+    {
+        public LoggingDecorator(ILogger inner) { }
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "RegistrationIndex");
+
+        // Should show consolidated Decorators section with plugin decorator
+        Assert.Contains("## Decorators", content);
+        Assert.Contains("LoggingDecorator", content);
+        Assert.Contains("MyPlugin", content);
+    }
+
+    [Fact]
+    public void RegistrationIndex_InterceptorsSectionIncludesPluginInterceptors()
+    {
+        var content = GetDiagnosticContentWithReferencedAssembly(
+            hostSource: @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace HostApp
+{
+    public interface IHostService { }
+    public class HostService : IHostService { }
+}",
+            pluginSource: @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+using System.Threading.Tasks;
+
+[assembly: GenerateTypeRegistry]
+
+namespace PluginLib
+{
+    public interface ICalculator { int Add(int a, int b); }
+    
+    public class TimingInterceptor : IMethodInterceptor
+    {
+        public ValueTask<object?> InterceptAsync(IMethodInvocation invocation) => invocation.ProceedAsync();
+    }
+    
+    [Intercept<TimingInterceptor>]
+    [Scoped]
+    public class Calculator : ICalculator
+    {
+        public int Add(int a, int b) => a + b;
+    }
+}",
+            pluginAssemblyName: "MyPlugin",
+            fieldName: "RegistrationIndex");
+
+        // Should show consolidated Intercepted Services section
+        Assert.Contains("## Intercepted Services", content);
+    }
+
     #endregion
 }
