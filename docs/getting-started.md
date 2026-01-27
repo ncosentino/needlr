@@ -146,7 +146,7 @@ await webApplication.RunAsync();
 By default, Needlr automatically registers:
 - All non-nested non-abstract classes (public and internal) in scanned assemblies
 - Classes as both themselves and their interfaces
-- With appropriate lifetimes (Transient by default, Singleton based on filtering)
+- With Singleton lifetime by default (use `[Transient]` or `[Scoped]` attributes to override)
 
 By default, Needlr automatically dots NOT register:
 - Anything marked with the `[DoNotAutoRegister]` attribute
@@ -336,4 +336,6 @@ var webApplication = new Syringe()
 
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding
 - Explore [Plugin Development](plugin-development.md) to extend functionality
+- Discover [Factory Delegates](factories.md) for types with runtime parameters
+- Read about [Interceptors](interceptors.md) for cross-cutting concerns
 - See [Advanced Usage](advanced-usage.md) for complex scenarios
