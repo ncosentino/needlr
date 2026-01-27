@@ -251,6 +251,54 @@ namespace TestApp
 
     #endregion
 
+    #region Interface Implementation Mapping Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsInterfaceMappingSection()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IOrderService { }
+    public class OrderService : IOrderService { }
+
+    public interface IPaymentService { }
+    public class PaymentService : IPaymentService { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Interface Mapping", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsDottedInterfaceEdges()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IOrderService { }
+    public class OrderService : IOrderService { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        // Dotted edges use -.->
+        Assert.Contains("IOrderService", content);
+        Assert.Contains("OrderService", content);
+        Assert.Contains("-.->", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {

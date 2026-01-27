@@ -1539,6 +1539,35 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        // Interface mapping section
+        var typesWithInterfaces = types.Where(t => t.InterfaceNames.Length > 0).ToList();
+        if (typesWithInterfaces.Any())
+        {
+            sb.AppendLine("## Interface Mapping");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph LR");
+
+            foreach (var type in typesWithInterfaces.OrderBy(t => t.TypeName))
+            {
+                var implId = GetMermaidNodeId(type.TypeName);
+                var implName = GetShortTypeName(type.TypeName);
+                sb.AppendLine($"    {implId}[\"{implName}\"]");
+
+                foreach (var iface in type.InterfaceNames)
+                {
+                    var ifaceId = GetMermaidNodeId(iface);
+                    var ifaceName = GetShortTypeName(iface);
+                    // Interface uses rounded box, dotted edge points from interface to impl
+                    sb.AppendLine($"    {ifaceId}((\"{ifaceName}\"))");
+                    sb.AppendLine($"    {ifaceId} -.-> {implId}");
+                }
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
