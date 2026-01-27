@@ -1,0 +1,320 @@
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+
+namespace NexusLabs.Needlr.Generators.Models;
+
+/// <summary>
+/// Information about a discovered injectable type.
+/// </summary>
+internal readonly struct DiscoveredType
+{
+    public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        InterfaceNames = interfaceNames;
+        AssemblyName = assemblyName;
+        Lifetime = lifetime;
+        ConstructorParameters = constructorParameters;
+        ServiceKeys = serviceKeys;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public string TypeName { get; }
+    public string[] InterfaceNames { get; }
+    public string AssemblyName { get; }
+    public GeneratorLifetime Lifetime { get; }
+    public TypeDiscoveryHelper.ConstructorParameterInfo[] ConstructorParameters { get; }
+    /// <summary>
+    /// Service keys from [Keyed] attributes on this type.
+    /// </summary>
+    public string[] ServiceKeys { get; }
+    public string? SourceFilePath { get; }
+
+    /// <summary>
+    /// Gets the constructor parameter types (for backward compatibility with existing code paths).
+    /// </summary>
+    public string[] ConstructorParameterTypes => ConstructorParameters.Select(p => p.TypeName).ToArray();
+
+    /// <summary>
+    /// True if any constructor parameters are keyed services.
+    /// </summary>
+    public bool HasKeyedParameters => ConstructorParameters.Any(p => p.IsKeyed);
+
+    /// <summary>
+    /// True if this type has [Keyed] attributes for keyed registration.
+    /// </summary>
+    public bool IsKeyed => ServiceKeys.Length > 0;
+}
+
+/// <summary>
+/// Information about a discovered plugin type (implements INeedlrPlugin interfaces).
+/// </summary>
+internal readonly struct DiscoveredPlugin
+{
+    public DiscoveredPlugin(string typeName, string[] interfaceNames, string assemblyName, string[] attributeNames, string? sourceFilePath = null, int order = 0)
+    {
+        TypeName = typeName;
+        InterfaceNames = interfaceNames;
+        AssemblyName = assemblyName;
+        AttributeNames = attributeNames;
+        SourceFilePath = sourceFilePath;
+        Order = order;
+    }
+
+    public string TypeName { get; }
+    public string[] InterfaceNames { get; }
+    public string AssemblyName { get; }
+    public string[] AttributeNames { get; }
+    public string? SourceFilePath { get; }
+    public int Order { get; }
+}
+
+/// <summary>
+/// Information about a SignalR hub registration from a plugin.
+/// </summary>
+internal readonly struct DiscoveredHubRegistration
+{
+    public DiscoveredHubRegistration(string pluginTypeName, string hubTypeName, string hubPath)
+    {
+        PluginTypeName = pluginTypeName;
+        HubTypeName = hubTypeName;
+        HubPath = hubPath;
+    }
+
+    public string PluginTypeName { get; }
+    public string HubTypeName { get; }
+    public string HubPath { get; }
+}
+
+/// <summary>
+/// Information about a Semantic Kernel plugin type.
+/// </summary>
+internal readonly struct DiscoveredKernelPlugin
+{
+    public DiscoveredKernelPlugin(string typeName, string assemblyName, bool isStatic)
+    {
+        TypeName = typeName;
+        AssemblyName = assemblyName;
+        IsStatic = isStatic;
+    }
+
+    public string TypeName { get; }
+    public string AssemblyName { get; }
+    public bool IsStatic { get; }
+}
+
+/// <summary>
+/// Information about a closed-generic decorator (from [DecoratorFor&lt;T&gt;]).
+/// </summary>
+internal readonly struct DiscoveredDecorator
+{
+    public DiscoveredDecorator(string decoratorTypeName, string serviceTypeName, int order, string assemblyName, string? sourceFilePath = null)
+    {
+        DecoratorTypeName = decoratorTypeName;
+        ServiceTypeName = serviceTypeName;
+        Order = order;
+        AssemblyName = assemblyName;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public string DecoratorTypeName { get; }
+    public string ServiceTypeName { get; }
+    public int Order { get; }
+    public string AssemblyName { get; }
+    public string? SourceFilePath { get; }
+}
+
+/// <summary>
+/// Information about an open-generic decorator (from [OpenDecoratorFor(typeof(IHandler&lt;&gt;))]).
+/// </summary>
+internal readonly struct DiscoveredOpenDecorator
+{
+    public DiscoveredOpenDecorator(
+        INamedTypeSymbol decoratorType,
+        INamedTypeSymbol openGenericInterface,
+        int order,
+        string assemblyName,
+        string? sourceFilePath = null)
+    {
+        DecoratorType = decoratorType;
+        OpenGenericInterface = openGenericInterface;
+        Order = order;
+        AssemblyName = assemblyName;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public INamedTypeSymbol DecoratorType { get; }
+    public INamedTypeSymbol OpenGenericInterface { get; }
+    public int Order { get; }
+    public string AssemblyName { get; }
+    public string? SourceFilePath { get; }
+}
+
+/// <summary>
+/// Information about a type that would be injectable but is inaccessible (internal/private).
+/// </summary>
+internal readonly struct InaccessibleType
+{
+    public InaccessibleType(string typeName, string assemblyName)
+    {
+        TypeName = typeName;
+        AssemblyName = assemblyName;
+    }
+
+    public string TypeName { get; }
+    public string AssemblyName { get; }
+}
+
+/// <summary>
+/// Information about a plugin type from a referenced assembly that's missing [GenerateTypeRegistry].
+/// </summary>
+internal readonly struct MissingTypeRegistryPlugin
+{
+    public MissingTypeRegistryPlugin(string typeName, string assemblyName)
+    {
+        TypeName = typeName;
+        AssemblyName = assemblyName;
+    }
+
+    public string TypeName { get; }
+    public string AssemblyName { get; }
+}
+
+/// <summary>
+/// Information about an intercepted service (from [Intercept&lt;T&gt;]).
+/// </summary>
+internal readonly struct DiscoveredInterceptedService
+{
+    public DiscoveredInterceptedService(
+        string typeName,
+        string[] interfaceNames,
+        string assemblyName,
+        GeneratorLifetime lifetime,
+        TypeDiscoveryHelper.InterceptedMethodInfo[] methods,
+        string[] allInterceptorTypeNames,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        InterfaceNames = interfaceNames;
+        AssemblyName = assemblyName;
+        Lifetime = lifetime;
+        Methods = methods;
+        AllInterceptorTypeNames = allInterceptorTypeNames;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public string TypeName { get; }
+    public string[] InterfaceNames { get; }
+    public string AssemblyName { get; }
+    public GeneratorLifetime Lifetime { get; }
+    public TypeDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
+    public string[] AllInterceptorTypeNames { get; }
+    public string? SourceFilePath { get; }
+}
+
+/// <summary>
+/// Information about a factory-generated type (from [GenerateFactory]).
+/// </summary>
+internal readonly struct DiscoveredFactory
+{
+    public DiscoveredFactory(
+        string typeName,
+        string[] interfaceNames,
+        string assemblyName,
+        int generationMode,
+        TypeDiscoveryHelper.FactoryConstructorInfo[] constructors,
+        string? returnTypeName = null,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        InterfaceNames = interfaceNames;
+        AssemblyName = assemblyName;
+        GenerationMode = generationMode;
+        Constructors = constructors;
+        ReturnTypeOverride = returnTypeName;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public string TypeName { get; }
+    public string[] InterfaceNames { get; }
+    public string AssemblyName { get; }
+    /// <summary>Mode flags: 1=Func, 2=Interface, 3=All</summary>
+    public int GenerationMode { get; }
+    public TypeDiscoveryHelper.FactoryConstructorInfo[] Constructors { get; }
+    /// <summary>
+    /// If set, the factory Create() and Func return this type instead of the concrete type.
+    /// Used when [GenerateFactory&lt;T&gt;] is applied.
+    /// </summary>
+    public string? ReturnTypeOverride { get; }
+    public string? SourceFilePath { get; }
+
+    public bool GenerateFunc => (GenerationMode & 1) != 0;
+    public bool GenerateInterface => (GenerationMode & 2) != 0;
+
+    /// <summary>Gets the type that factory Create() and Func should return.</summary>
+    public string ReturnTypeName => ReturnTypeOverride ?? TypeName;
+
+    /// <summary>Gets just the type name without namespace (e.g., "MyService" from "global::TestApp.MyService").</summary>
+    public string SimpleTypeName
+    {
+        get
+        {
+            var parts = TypeName.Split('.');
+            return parts[parts.Length - 1];
+        }
+    }
+}
+
+/// <summary>
+/// Aggregated result of type discovery for an assembly.
+/// </summary>
+internal readonly struct DiscoveryResult
+{
+    public DiscoveryResult(
+        IReadOnlyList<DiscoveredType> injectableTypes,
+        IReadOnlyList<DiscoveredPlugin> pluginTypes,
+        IReadOnlyList<DiscoveredHubRegistration> hubRegistrations,
+        IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins,
+        IReadOnlyList<DiscoveredDecorator> decorators,
+        IReadOnlyList<InaccessibleType> inaccessibleTypes,
+        IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
+        IReadOnlyList<DiscoveredInterceptedService> interceptedServices,
+        IReadOnlyList<DiscoveredFactory> factories)
+    {
+        InjectableTypes = injectableTypes;
+        PluginTypes = pluginTypes;
+        HubRegistrations = hubRegistrations;
+        KernelPlugins = kernelPlugins;
+        Decorators = decorators;
+        InaccessibleTypes = inaccessibleTypes;
+        MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
+        InterceptedServices = interceptedServices;
+        Factories = factories;
+    }
+
+    public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
+    public IReadOnlyList<DiscoveredPlugin> PluginTypes { get; }
+    public IReadOnlyList<DiscoveredHubRegistration> HubRegistrations { get; }
+    public IReadOnlyList<DiscoveredKernelPlugin> KernelPlugins { get; }
+    public IReadOnlyList<DiscoveredDecorator> Decorators { get; }
+    public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
+    public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
+    public IReadOnlyList<DiscoveredInterceptedService> InterceptedServices { get; }
+    public IReadOnlyList<DiscoveredFactory> Factories { get; }
+}
+
+/// <summary>
+/// Information parsed from [GenerateTypeRegistry] attribute.
+/// </summary>
+internal readonly struct AttributeInfo
+{
+    public AttributeInfo(string[]? namespacePrefixes, bool includeSelf)
+    {
+        NamespacePrefixes = namespacePrefixes;
+        IncludeSelf = includeSelf;
+    }
+
+    public string[]? NamespacePrefixes { get; }
+    public bool IncludeSelf { get; }
+}
