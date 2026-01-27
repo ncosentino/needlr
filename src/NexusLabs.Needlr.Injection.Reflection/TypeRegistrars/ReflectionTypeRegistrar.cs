@@ -140,13 +140,25 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
         // Get constructor parameter types to detect decorator pattern
         var constructorParamTypes = GetConstructorParameterTypes(type);
 
-        // Register as interfaces (excluding system interfaces, generic type definitions, and decorator interfaces)
-        var interfaces = type.GetInterfaces()
-            .Where(i => !i.IsGenericTypeDefinition)
-            .Where(i => i.Assembly != typeof(object).Assembly) // Skip system interfaces
-            .Where(i => !i.Name.StartsWith("System.")) // Additional system interface filtering
-            .Where(i => !IsDecoratorInterface(i, constructorParamTypes)) // Skip decorator pattern interfaces
-            .ToList();
+        // Check for [RegisterAs<T>] attributes - if present, only register as those interfaces
+        var registerAsInterfaces = GetRegisterAsInterfaces(type);
+
+        List<Type> interfaces;
+        if (registerAsInterfaces.Count > 0)
+        {
+            // Only register as explicitly specified interfaces via [RegisterAs<T>]
+            interfaces = registerAsInterfaces;
+        }
+        else
+        {
+            // Register as interfaces (excluding system interfaces, generic type definitions, and decorator interfaces)
+            interfaces = type.GetInterfaces()
+                .Where(i => !i.IsGenericTypeDefinition)
+                .Where(i => i.Assembly != typeof(object).Assembly) // Skip system interfaces
+                .Where(i => !i.Name.StartsWith("System.")) // Additional system interface filtering
+                .Where(i => !IsDecoratorInterface(i, constructorParamTypes)) // Skip decorator pattern interfaces
+                .ToList();
+        }
 
         foreach (var interfaceType in interfaces)
         {
@@ -164,6 +176,31 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
                 services.Add(new ServiceDescriptor(interfaceType, type, lifetime));
             }
         }
+    }
+
+    /// <summary>
+    /// Gets interface types specified by [RegisterAs&lt;T&gt;] attributes on the type.
+    /// </summary>
+    private static List<Type> GetRegisterAsInterfaces(Type type)
+    {
+        var interfaces = new List<Type>();
+
+        foreach (var attribute in type.GetCustomAttributes(inherit: false))
+        {
+            var attrType = attribute.GetType();
+            if (!attrType.IsGenericType)
+                continue;
+
+            var genericTypeDef = attrType.GetGenericTypeDefinition();
+            if (genericTypeDef.FullName?.StartsWith("NexusLabs.Needlr.RegisterAsAttribute`1", StringComparison.Ordinal) != true)
+                continue;
+
+            // Get the interface type from the generic type argument
+            var interfaceType = attrType.GetGenericArguments()[0];
+            interfaces.Add(interfaceType);
+        }
+
+        return interfaces;
     }
 
     /// <summary>

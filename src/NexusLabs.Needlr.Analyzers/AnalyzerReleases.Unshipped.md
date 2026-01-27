@@ -5,3 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument must be implemented by class

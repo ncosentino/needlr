@@ -160,6 +160,20 @@ namespace NexusLabs.Needlr
 }";
 
     /// <summary>
+    /// RegisterAs attribute for explicit interface registration.
+    /// </summary>
+    public const string RegisterAs = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public sealed class RegisterAsAttribute<TInterface> : System.Attribute
+        where TInterface : class
+    {
+        public System.Type InterfaceType => typeof(TInterface);
+    }
+}";
+
+    /// <summary>
     /// All core attributes combined (Core + Keyed + GenerateTypeRegistry).
     /// </summary>
     public const string All = Core + Keyed + GenerateTypeRegistry;
@@ -173,4 +187,9 @@ namespace NexusLabs.Needlr
     /// All attributes including factory.
     /// </summary>
     public const string AllWithFactory = Core + Keyed + Factory + GenerateTypeRegistry;
+
+    /// <summary>
+    /// All attributes including RegisterAs.
+    /// </summary>
+    public const string AllWithRegisterAs = Core + Keyed + RegisterAs + GenerateTypeRegistry;
 }

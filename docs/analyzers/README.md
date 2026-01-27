@@ -22,6 +22,7 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR012](NDLRCOR012.md) | Warning | [GenerateFactory] all parameters are injectable |
 | [NDLRCOR013](NDLRCOR013.md) | Warning | [GenerateFactory] no parameters are injectable |
 | [NDLRCOR014](NDLRCOR014.md) | Error | [GenerateFactory<T>] type T not implemented by class |
+| [NDLRCOR015](NDLRCOR015.md) | Error | [RegisterAs<T>] type T not implemented by class |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 

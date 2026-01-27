@@ -1,4 +1,5 @@
 using AotSourceGenConsolePlugin;
+using AotSourceGenConsolePlugin.Generated;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -139,6 +140,9 @@ Console.WriteLine($"Handler type: {handler.GetType().Name}");
 Console.WriteLine($"Handler result: {handler.Handle("Process payment")}");
 Console.WriteLine();
 
+var handlerFactory = provider.GetRequiredService<IRequestHandlerFactory>();
+IRequestHandler requestHandler = handlerFactory.Create(Guid.NewGuid());
+
 // Multiple constructors = multiple factory overloads
 Console.WriteLine("── Using IReportGeneratorFactory with multiple Create overloads ──");
 var reportFactory = provider.GetRequiredService<AotSourceGenConsolePlugin.Generated.IReportGeneratorFactory>();
@@ -146,4 +150,38 @@ var simpleReport = reportFactory.Create("Sales Summary");
 var limitedReport = reportFactory.Create("Top Products", 10);
 Console.WriteLine(simpleReport.Generate());
 Console.WriteLine(limitedReport.Generate());
+Console.WriteLine();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REGISTER AS DEMO
+// ─────────────────────────────────────────────────────────────────────────────
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine("REGISTER AS DEMO");
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine();
+
+// FileService implements IFileReader, IFileWriter, and IFileDeleter
+// But with [RegisterAs<IFileReader>], only IFileReader is resolvable from DI
+
+Console.WriteLine("── FileService registered only as IFileReader ──");
+var fileReader = provider.GetService<IFileReader>();
+var fileWriter = provider.GetService<IFileWriter>();
+var fileDeleter = provider.GetService<IFileDeleter>();
+
+Console.WriteLine($"IFileReader resolved: {fileReader is not null} ({fileReader?.GetType().Name ?? "null"})");
+Console.WriteLine($"IFileWriter resolved: {fileWriter is not null}");
+Console.WriteLine($"IFileDeleter resolved: {fileDeleter is not null}");
+
+if (fileReader is not null)
+{
+    Console.WriteLine($"FileReader result: {fileReader.ReadFile("/data/config.json")}");
+}
+
+// The concrete type is still resolvable (always registered as self)
+Console.WriteLine();
+Console.WriteLine("── Concrete FileService is still resolvable ──");
+var fileService = provider.GetRequiredService<FileService>();
+Console.WriteLine($"Concrete type: {fileService.GetType().Name}");
+Console.WriteLine($"Via concrete - Read: {fileService.ReadFile("/data/users.json")}");
+fileService.WriteFile("/logs/app.log", "Application started");
 Console.WriteLine();

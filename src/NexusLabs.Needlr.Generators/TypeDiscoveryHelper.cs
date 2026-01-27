@@ -45,6 +45,8 @@ internal static class TypeDiscoveryHelper
     public static bool IsInjectableType(INamedTypeSymbol typeSymbol, bool isCurrentAssembly = false)
         => SharedHelper.IsInjectableType(typeSymbol, isCurrentAssembly);
 
+    private const string RegisterAsAttributePrefix = "NexusLabs.Needlr.RegisterAsAttribute";
+
     /// <summary>
     /// Gets the interfaces that should be registered for a type.
     /// </summary>
@@ -52,6 +54,13 @@ internal static class TypeDiscoveryHelper
     /// <returns>A list of interface symbols suitable for registration.</returns>
     public static IReadOnlyList<INamedTypeSymbol> GetRegisterableInterfaces(INamedTypeSymbol typeSymbol)
     {
+        // Check for [RegisterAs<T>] attributes - if present, only register as those interfaces
+        var registerAsInterfaces = GetRegisterAsInterfaces(typeSymbol);
+        if (registerAsInterfaces.Count > 0)
+        {
+            return registerAsInterfaces;
+        }
+
         var result = new List<INamedTypeSymbol>();
 
         // Get all constructor parameter types to detect decorator pattern
@@ -75,6 +84,39 @@ internal static class TypeDiscoveryHelper
                 continue;
 
             result.Add(iface);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets interface types specified by [RegisterAs&lt;T&gt;] attributes on the type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>A list of interface symbols from RegisterAs attributes.</returns>
+    public static IReadOnlyList<INamedTypeSymbol> GetRegisterAsInterfaces(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<INamedTypeSymbol>();
+
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass == null)
+                continue;
+
+            // Check for RegisterAsAttribute<T>
+            var attrFullName = attrClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (!attrFullName.StartsWith("global::" + RegisterAsAttributePrefix, StringComparison.Ordinal))
+                continue;
+
+            // Get the type argument
+            if (attrClass.IsGenericType && attrClass.TypeArguments.Length == 1)
+            {
+                if (attrClass.TypeArguments[0] is INamedTypeSymbol interfaceType)
+                {
+                    result.Add(interfaceType);
+                }
+            }
         }
 
         return result;

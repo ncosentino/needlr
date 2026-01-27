@@ -77,4 +77,9 @@ public static class DiagnosticIds
     /// NDLRCOR014: [GenerateFactory&lt;T&gt;] type argument must be an interface implemented by the class.
     /// </summary>
     public const string FactoryTypeArgNotImplemented = "NDLRCOR014";
+
+    /// <summary>
+    /// NDLRCOR015: [RegisterAs&lt;T&gt;] type argument must be an interface implemented by the class.
+    /// </summary>
+    public const string RegisterAsTypeArgNotImplemented = "NDLRCOR015";
 }

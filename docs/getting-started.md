@@ -191,6 +191,22 @@ public class ManuallyRegisteredService
 }
 ```
 
+### Controlling Interface Registration
+
+By default, classes are registered as all their interfaces. Use `[RegisterAs<T>]` for explicit control:
+
+```csharp
+public interface IReader { }
+public interface IWriter { }
+public interface ILogger { }
+
+// Only registered as IReader, not IWriter or ILogger
+[RegisterAs<IReader>]
+public class FileService : IReader, IWriter, ILogger { }
+```
+
+See [RegisterAs Documentation](register-as.md) for more details.
+
 ## Configuration Options
 
 ### Source Generation Configuration

@@ -195,4 +195,17 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "When using [GenerateFactory<T>], T must be an interface that the decorated class implements. The factory's Create() method and Func<> return T, so the class must be assignable to T.",
         helpLinkUri: HelpLinkBase + "NDLRCOR014.md");
+
+    /// <summary>
+    /// NDLRCOR015: [RegisterAs&lt;T&gt;] type argument must be an interface implemented by the class.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RegisterAsTypeArgNotImplemented = new(
+        id: DiagnosticIds.RegisterAsTypeArgNotImplemented,
+        title: "[RegisterAs<T>] type argument not implemented",
+        messageFormat: "Type '{0}' has [RegisterAs<{1}>] but does not implement '{1}'. The type argument must be an interface implemented by the class.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When using [RegisterAs<T>], T must be an interface that the decorated class implements. The class will only be registered as the specified interface, so it must actually implement it.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR015.md");
 }

@@ -353,3 +353,60 @@ public sealed class ReportGenerator
         return $"Report '{Title}'{limit} generated at {_timeProvider.GetNow():HH:mm:ss}";
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGISTER AS DEMO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// <summary>
+/// Public interface for file reading operations.
+/// </summary>
+public interface IFileReader
+{
+    string ReadFile(string path);
+}
+
+/// <summary>
+/// Internal interface for file writing - not exposed to consumers.
+/// </summary>
+public interface IFileWriter
+{
+    void WriteFile(string path, string content);
+}
+
+/// <summary>
+/// Internal interface for file deletion - not exposed to consumers.
+/// </summary>
+public interface IFileDeleter
+{
+    void DeleteFile(string path);
+}
+
+/// <summary>
+/// A comprehensive file service that implements multiple interfaces, but is
+/// only publicly registered as IFileReader using [RegisterAs&lt;IFileReader&gt;].
+/// 
+/// This demonstrates how to:
+/// - Implement multiple interfaces for internal use
+/// - Only expose specific interfaces to DI consumers
+/// - Control the public API surface of your services
+/// </summary>
+[RegisterAs<IFileReader>]
+public sealed class FileService : IFileReader, IFileWriter, IFileDeleter
+{
+    private readonly IConsoleTimeProvider _timeProvider;
+
+    public FileService(IConsoleTimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
+
+    public string ReadFile(string path) 
+        => $"[{_timeProvider.GetNow():HH:mm:ss}] Read content from '{path}'";
+
+    public void WriteFile(string path, string content) 
+        => Console.WriteLine($"[{_timeProvider.GetNow():HH:mm:ss}] Wrote to '{path}': {content}");
+
+    public void DeleteFile(string path) 
+        => Console.WriteLine($"[{_timeProvider.GetNow():HH:mm:ss}] Deleted '{path}'");
+}
