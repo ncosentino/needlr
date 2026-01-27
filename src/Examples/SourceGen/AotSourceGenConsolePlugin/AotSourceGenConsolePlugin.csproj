@@ -8,7 +8,14 @@
 		<!-- Emit generated files for debugging -->
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+
+		<!-- Enable Needlr diagnostics for visualization -->
+		<NeedlrDiagnostics>true</NeedlrDiagnostics>
+		<NeedlrBreadcrumbLevel>Verbose</NeedlrBreadcrumbLevel>
 	</PropertyGroup>
+
+	<!-- Import Needlr targets for diagnostic file extraction -->
+	<Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
