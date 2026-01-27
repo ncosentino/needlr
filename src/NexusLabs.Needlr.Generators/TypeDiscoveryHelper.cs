@@ -33,7 +33,7 @@ internal static class TypeDiscoveryHelper
     private const string TransientAttributeName = "TransientAttribute";
     private const string TransientAttributeFullName = "NexusLabs.Needlr.TransientAttribute";
     private const string GenerateFactoryAttributeName = "GenerateFactoryAttribute";
-    private const string GenerateFactoryAttributeFullName = "NexusLabs.Needlr.GenerateFactoryAttribute";
+    private const string GenerateFactoryAttributeFullName = "NexusLabs.Needlr.Generators.GenerateFactoryAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.

@@ -17,7 +17,7 @@ namespace NexusLabs.Needlr.Analyzers;
 public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
 {
     private const string GenerateFactoryAttributeName = "GenerateFactoryAttribute";
-    private const string NeedlrNamespace = "NexusLabs.Needlr";
+    private const string GeneratorsNamespace = "NexusLabs.Needlr.Generators";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
@@ -168,7 +168,7 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
         }
 
         var ns = attributeSymbol.ContainingNamespace?.ToString();
-        return ns == NeedlrNamespace;
+        return ns == GeneratorsNamespace;
     }
 
     private static bool IsInjectableParameterType(ITypeSymbol typeSymbol)

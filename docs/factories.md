@@ -5,7 +5,7 @@ When a class has constructor parameters that cannot be auto-injected (value type
 ## Basic Usage
 
 ```csharp
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 // This service has both injectable (ILogger) and runtime (connectionString) parameters
 [GenerateFactory]
@@ -175,7 +175,7 @@ using MyApp.Generated;  // Contains IDatabaseConnectionFactory, IReportGenerator
 ## Complete Example
 
 ```csharp
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 using MyApp.Generated;
 
 // Define your service with mixed parameters

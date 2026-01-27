@@ -338,6 +338,23 @@ Needlr automatically determines appropriate lifetimes based on:
 
 ## Decorator Pattern
 
+Decorators wrap a service to add behavior (logging, caching, retry, etc.) without modifying the original implementation.
+
+### Why Explicit `[DecoratorFor<T>]` Is Required
+
+Needlr requires explicit decorator registration rather than auto-detecting and wiring decorators. Here's why:
+
+**1. Ordering Ambiguity**
+When multiple decorators exist for the same service, the order matters significantly. `Cache(Log(Service))` behaves differently than `Log(Cache(Service))`. Without explicit ordering, Needlr would have to choose arbitrarily, leading to runtime surprises.
+
+**2. Intent Clarity**
+A class that implements `IFoo` and takes `IFoo` in its constructor *might* be a decorator, but it could also be a fallback wrapper, adapter, or composite meant for manual composition. The pattern is ambiguous.
+
+**3. Multiple Implementations**
+If you have `FooA : IFoo` and `FooB : IFoo`, should a decorator wrap both? Only one? The explicit attribute makes your intent clear.
+
+> **Note**: Needlr *does* auto-detect the decorator pattern to **exclude** such types from being registered as the interface they decorate (preventing circular dependencies). But **wiring** the decoration chain requires explicit opt-in.
+
 ### Automatic Decorators with `[DecoratorFor<T>]` (Recommended)
 
 The simplest approach - decorate classes with the attribute and Needlr handles the rest:

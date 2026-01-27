@@ -135,7 +135,7 @@ namespace NexusLabs.Needlr.Generators
     /// Factory generation attributes.
     /// </summary>
     public const string Factory = @"
-namespace NexusLabs.Needlr
+namespace NexusLabs.Needlr.Generators
 {
     [System.Flags]
     public enum FactoryGenerationMode

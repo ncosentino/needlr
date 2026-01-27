@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **BREAKING: `[GenerateFactory]` namespace change**: `[GenerateFactory]`, `[GenerateFactory<T>]`, and `FactoryGenerationMode` have moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
+  - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly
+  - Update imports: `using NexusLabs.Needlr;` → `using NexusLabs.Needlr.Generators;`
+
 - **BREAKING: ConfiguredSyringe API**: `Syringe` no longer has `BuildServiceProvider()`. You must call a strategy method first:
   - `new Syringe().UsingReflection()` → returns `ConfiguredSyringe`
   - `new Syringe().UsingSourceGen()` → returns `ConfiguredSyringe`

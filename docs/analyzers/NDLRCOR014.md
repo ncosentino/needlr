@@ -18,7 +18,7 @@ This error is raised when a class uses `[GenerateFactory<T>]` with a type parame
 ### Code that triggers the error
 
 ```csharp
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IRequestHandler { }
 public interface IMessageHandler { }

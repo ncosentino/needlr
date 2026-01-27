@@ -18,7 +18,7 @@ This warning is raised when a class marked with `[GenerateFactory]` has a constr
 ### Code that triggers the warning
 
 ```csharp
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 // ⚠️ NDLRCOR013: No parameters are injectable, factory provides low value
 [GenerateFactory]

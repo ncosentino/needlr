@@ -1,4 +1,6 @@
-namespace NexusLabs.Needlr;
+using System;
+
+namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
 /// Generates a factory for this type, allowing runtime parameters to be 
@@ -6,7 +8,8 @@ namespace NexusLabs.Needlr;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This is a source-generation only feature. Reflection mode ignores this attribute.
+/// This is a source-generation only feature. It requires the NexusLabs.Needlr.Generators
+/// package and has no effect when using reflection-based registration.
 /// </para>
 /// <para>
 /// When applied to a class with mixed injectable and non-injectable constructor parameters,
@@ -22,6 +25,8 @@ namespace NexusLabs.Needlr;
 /// </remarks>
 /// <example>
 /// <code>
+/// using NexusLabs.Needlr.Generators;
+/// 
 /// [GenerateFactory]
 /// public class MyService : IMyService
 /// {
@@ -53,7 +58,8 @@ public sealed class GenerateFactoryAttribute : Attribute
 /// </typeparam>
 /// <remarks>
 /// <para>
-/// This is a source-generation only feature. Reflection mode ignores this attribute.
+/// This is a source-generation only feature. It requires the NexusLabs.Needlr.Generators
+/// package and has no effect when using reflection-based registration.
 /// </para>
 /// <para>
 /// Use this generic variant when you need the factory to return an interface type for:
@@ -65,6 +71,8 @@ public sealed class GenerateFactoryAttribute : Attribute
 /// </remarks>
 /// <example>
 /// <code>
+/// using NexusLabs.Needlr.Generators;
+/// 
 /// [GenerateFactory&lt;IMyService&gt;]
 /// public class MyService : IMyService
 /// {

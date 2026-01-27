@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 using System.Collections.Concurrent;
 using System.Diagnostics;

@@ -17,7 +17,7 @@ public sealed class GenerateFactoryAttributeAnalyzerTests
     public async Task Warning_WhenAllParamsAreInjectable()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IDependency1 { }
 public interface IDependency2 { }
@@ -47,7 +47,7 @@ public class MyService
     public async Task NoWarning_WhenMixedParams()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IDependency { }
 
@@ -74,7 +74,7 @@ public class MyService
     public async Task Warning_WhenNoInjectableParams()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 [{|#0:GenerateFactory|}]
 public class MyService
@@ -101,7 +101,7 @@ public class MyService
     public async Task Warning_WhenNoConstructorParams()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 [{|#0:GenerateFactory|}]
 public class MyService
@@ -132,7 +132,7 @@ public class MyService
     public async Task Error_WhenTypeArgNotImplemented()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IMyService { }
 public interface IOtherService { }
@@ -162,7 +162,7 @@ public class MyService : IMyService
     public async Task NoError_WhenTypeArgIsImplemented()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IMyService { }
 public interface IDependency { }
@@ -186,7 +186,7 @@ public class MyService : IMyService
     public async Task NoError_WhenTypeArgIsBaseInterface()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IBaseService { }
 public interface IMyService : IBaseService { }
@@ -215,7 +215,7 @@ public class MyService : IMyService
     public async Task NoError_NonGenericWithMixedParams()
     {
         var code = @"
-using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
 
 public interface IDependency { }
 

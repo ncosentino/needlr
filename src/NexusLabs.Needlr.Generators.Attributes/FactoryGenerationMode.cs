@@ -1,4 +1,6 @@
-namespace NexusLabs.Needlr;
+using System;
+
+namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
 /// Controls what factory artifacts are generated for types marked with <see cref="GenerateFactoryAttribute"/>.

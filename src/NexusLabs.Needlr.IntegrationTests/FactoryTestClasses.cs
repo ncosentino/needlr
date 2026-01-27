@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.Generators;
+
 namespace NexusLabs.Needlr.IntegrationTests;
 
 // ============================================================================
