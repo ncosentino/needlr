@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Enhanced Dependency Graph Visualization**: The `DependencyGraph.md` diagnostic output now includes 6 additional sections:
+  - **Decorator Chains**: Mermaid diagram showing decorator wrapping order (highest to lowest Order)
+  - **Keyed Service Clusters**: Groups services by their `[Keyed]` attribute values as subgraphs
+  - **Plugin Assembly Boundaries**: Shows plugins grouped by their source assembly
+  - **Factory Services**: Highlights `[GenerateFactory]` types with hexagon node shape
+  - **Interface Mapping**: Shows interface-to-implementation relationships with dotted edges
+  - **Complexity Metrics**: Max dependency depth, hub services (≥3 dependents), total count
+  - See [Breadcrumbs documentation](docs/breadcrumbs.md) for details
+
 - **Open Generic Decorators**: New `[OpenDecoratorFor(typeof(IInterface<>))]` attribute for source-gen only
   - Automatically decorates all closed implementations of an open generic interface
   - Example: `[OpenDecoratorFor(typeof(IHandler<>))]` decorates `IHandler<Order>`, `IHandler<Payment>`, etc.

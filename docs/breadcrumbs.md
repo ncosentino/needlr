@@ -272,6 +272,8 @@ Filter diagnostics to specific types (comma-separated fully qualified names):
 
 #### DependencyGraph.md
 
+The dependency graph now includes rich visualization sections:
+
 ```markdown
 # Needlr Dependency Graph
 
@@ -292,6 +294,78 @@ graph TD
     OrderService --> Logger
     OrderService --> ConfigService
 \`\`\`
+
+## Decorator Chains
+
+Shows decorator wrapping order from outermost to innermost:
+
+\`\`\`mermaid
+graph LR
+    CachingDecorator[["CachingDecorator"]] --> LoggingDecorator[["LoggingDecorator"]] --> OrderService["OrderService"]
+\`\`\`
+
+## Keyed Services
+
+Groups services by their `[Keyed]` attribute values:
+
+\`\`\`mermaid
+graph TD
+    subgraph key_redis["redis"]
+        RedisCache["RedisCache"]
+    end
+    subgraph key_memory["memory"]
+        MemoryCache["MemoryCache"]
+    end
+\`\`\`
+
+## Plugin Assemblies
+
+Shows plugins grouped by their source assembly:
+
+\`\`\`mermaid
+graph TD
+    subgraph asm_MyApp_Plugins["MyApp.Plugins"]
+        OrderPlugin(["OrderPlugin"])
+        PaymentPlugin(["PaymentPlugin"])
+    end
+\`\`\`
+
+## Factory Services
+
+Highlights types with `[GenerateFactory]` using hexagon shape:
+
+\`\`\`mermaid
+graph TD
+    Connection{{"Connection"}}
+    HttpClient{{"HttpClient"}}
+\`\`\`
+
+## Interface Mapping
+
+Shows interface-to-implementation relationships with dotted edges:
+
+\`\`\`mermaid
+graph LR
+    IOrderService(("IOrderService")) -.-> OrderService["OrderService"]
+    ILogger(("ILogger")) -.-> Logger["Logger"]
+\`\`\`
+
+## Complexity Metrics
+
+| Metric | Value |
+|--------|-------|
+| Total Services | 15 |
+| Max Dependency Depth | 4 |
+| Hub Services (≥3 dependents) | 2 |
+
+**Hub Services:** Logger (8), ConfigService (5)
+
+## Dependency Details
+
+| Service | Lifetime | Dependencies |
+|---------|----------|--------------|
+| Logger | Singleton | - |
+| OrderService | Scoped | ILogger, IConfigService |
 ```
 
 #### LifetimeSummary.md
