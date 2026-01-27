@@ -73,7 +73,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate SignalR hub registrations if any were discovered
@@ -95,6 +95,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var interceptorProxiesText = GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("InterceptorProxies.g.cs", SourceText.From(interceptorProxiesText, Encoding.UTF8));
+            }
+
+            // Generate factory classes if any were discovered
+            if (discoveryResult.Factories.Count > 0)
+            {
+                var factoriesText = GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
+                spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
             }
 
             // Generate diagnostic output files if configured
@@ -197,13 +204,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var kernelPlugins = new List<DiscoveredKernelPlugin>();
         var decorators = new List<DiscoveredDecorator>();
         var interceptedServices = new List<DiscoveredInterceptedService>();
+        var factories = new List<DiscoveredFactory>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -211,7 +219,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -241,7 +249,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices);
+        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories);
     }
 
     private static void CollectTypesFromAssembly(
@@ -253,6 +261,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredKernelPlugin> kernelPlugins,
         List<DiscoveredDecorator> decorators,
         List<DiscoveredInterceptedService> interceptedServices,
+        List<DiscoveredFactory> factories,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -273,6 +282,32 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     inaccessibleTypes.Add(new InaccessibleType(typeName, assembly.Name));
                 }
                 continue; // Skip further processing for inaccessible types
+            }
+
+            // Check for [GenerateFactory] attribute - these types get factories instead of direct registration
+            if (TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol))
+            {
+                var factoryConstructors = TypeDiscoveryHelper.GetFactoryConstructors(typeSymbol);
+                if (factoryConstructors.Count > 0)
+                {
+                    // Has at least one constructor with runtime params - generate factory
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
+                    var generationMode = TypeDiscoveryHelper.GetFactoryGenerationMode(typeSymbol);
+                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+
+                    factories.Add(new DiscoveredFactory(
+                        typeName,
+                        interfaceNames,
+                        assembly.Name,
+                        generationMode,
+                        factoryConstructors.ToArray(),
+                        sourceFilePath));
+                    
+                    continue; // Don't add to injectable types - factory handles registration
+                }
+                // If no runtime params, fall through to normal registration (with warning in future analyzer)
             }
 
             // Check for DecoratorFor<T> attributes
@@ -446,7 +481,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs)
+    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
@@ -477,7 +512,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes,");
-        builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services));");
+        
+        // Generate the decorator/factory applier lambda
+        if (hasFactories)
+        {
+            builder.AppendLine("            services =>");
+            builder.AppendLine("            {");
+            builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services);");
+            builder.AppendLine($"                global::{safeAssemblyName}.Generated.FactoryRegistrations.RegisterFactories((IServiceCollection)services);");
+            builder.AppendLine("            });");
+        }
+        else
+        {
+            builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services));");
+        }
         builder.AppendLine("    }");
 
         // Generate ForceLoadReferencedAssemblies method if needed
@@ -950,6 +998,248 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("}");
 
         return builder.ToString();
+    }
+
+    private static string GenerateFactoriesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Factories");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate factory interfaces and implementations for each type
+        foreach (var factory in factories)
+        {
+            if (factory.GenerateInterface)
+            {
+                GenerateFactoryInterface(builder, factory, breadcrumbs, projectDirectory);
+                builder.AppendLine();
+                GenerateFactoryImplementation(builder, factory, breadcrumbs, projectDirectory);
+                builder.AppendLine();
+            }
+        }
+
+        // Generate the registration helper
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Helper class for registering factory types.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine("public static class FactoryRegistrations");
+        builder.AppendLine("{");
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all generated factories.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    public static void RegisterFactories(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var factory in factories)
+        {
+            breadcrumbs.WriteInlineComment(builder, "        ", $"Factory for {factory.SimpleTypeName}");
+
+            // Register Func<> for each constructor
+            if (factory.GenerateFunc)
+            {
+                foreach (var ctor in factory.Constructors)
+                {
+                    GenerateFuncRegistration(builder, factory, ctor, "        ");
+                }
+            }
+
+            // Register interface factory
+            if (factory.GenerateInterface)
+            {
+                var factoryInterfaceName = $"I{factory.SimpleTypeName}Factory";
+                var factoryImplName = $"{factory.SimpleTypeName}Factory";
+                builder.AppendLine($"        services.AddSingleton<global::{safeAssemblyName}.Generated.{factoryInterfaceName}, global::{safeAssemblyName}.Generated.{factoryImplName}>();");
+            }
+        }
+
+        builder.AppendLine("    }");
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets the number of factory types generated at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine($"    public static int Count => {factories.Count};");
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    private static void GenerateFactoryInterface(StringBuilder builder, DiscoveredFactory factory, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var factoryName = $"I{factory.SimpleTypeName}Factory";
+
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// Factory interface for creating instances of <see cref=\"{factory.TypeName}\"/>.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine($"public interface {factoryName}");
+        builder.AppendLine("{");
+
+        // Generate Create method for each constructor
+        foreach (var ctor in factory.Constructors)
+        {
+            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
+            {
+                var simpleTypeName = GetSimpleTypeName(p.TypeName);
+                return $"{p.TypeName} {p.ParameterName ?? ToCamelCase(simpleTypeName)}";
+            }));
+
+            builder.AppendLine($"    /// <summary>Creates a new instance of {factory.SimpleTypeName}.</summary>");
+            builder.AppendLine($"    {factory.TypeName} Create({runtimeParamList});");
+        }
+
+        builder.AppendLine("}");
+    }
+
+    private static void GenerateFactoryImplementation(StringBuilder builder, DiscoveredFactory factory, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var factoryInterfaceName = $"I{factory.SimpleTypeName}Factory";
+        var factoryImplName = $"{factory.SimpleTypeName}Factory";
+
+        // Collect all unique injectable parameters across all constructors
+        var allInjectableParams = factory.Constructors
+            .SelectMany(c => c.InjectableParameters)
+            .GroupBy(p => p.TypeName)
+            .Select(g => g.First())
+            .ToList();
+
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// Factory implementation for creating instances of <see cref=\"{factory.TypeName}\"/>.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine($"internal sealed class {factoryImplName} : {factoryInterfaceName}");
+        builder.AppendLine("{");
+
+        // Fields for injectable dependencies
+        foreach (var param in allInjectableParams)
+        {
+            var fieldName = "_" + ToCamelCase(GetSimpleTypeName(param.TypeName));
+            builder.AppendLine($"    private readonly {param.TypeName} {fieldName};");
+        }
+
+        builder.AppendLine();
+
+        // Constructor
+        var ctorParams = string.Join(", ", allInjectableParams.Select(p => $"{p.TypeName} {ToCamelCase(GetSimpleTypeName(p.TypeName))}"));
+        builder.AppendLine($"    public {factoryImplName}({ctorParams})");
+        builder.AppendLine("    {");
+        foreach (var param in allInjectableParams)
+        {
+            var fieldName = "_" + ToCamelCase(GetSimpleTypeName(param.TypeName));
+            var paramName = ToCamelCase(GetSimpleTypeName(param.TypeName));
+            builder.AppendLine($"        {fieldName} = {paramName};");
+        }
+        builder.AppendLine("    }");
+        builder.AppendLine();
+
+        // Create methods for each constructor
+        foreach (var ctor in factory.Constructors)
+        {
+            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
+            {
+                var paramName = p.ParameterName ?? ToCamelCase(GetSimpleTypeName(p.TypeName));
+                return $"{p.TypeName} {paramName}";
+            }));
+
+            builder.AppendLine($"    public {factory.TypeName} Create({runtimeParamList})");
+            builder.AppendLine("    {");
+            builder.Append($"        return new {factory.TypeName}(");
+
+            // Build constructor arguments - injectable first (from fields), then runtime
+            var allArgs = new List<string>();
+            foreach (var inj in ctor.InjectableParameters)
+            {
+                var fieldName = "_" + ToCamelCase(GetSimpleTypeName(inj.TypeName));
+                allArgs.Add(fieldName);
+            }
+            foreach (var rt in ctor.RuntimeParameters)
+            {
+                var paramName = rt.ParameterName ?? ToCamelCase(GetSimpleTypeName(rt.TypeName));
+                allArgs.Add(paramName);
+            }
+
+            builder.Append(string.Join(", ", allArgs));
+            builder.AppendLine(");");
+            builder.AppendLine("    }");
+        }
+
+        builder.AppendLine("}");
+    }
+
+    private static void GenerateFuncRegistration(StringBuilder builder, DiscoveredFactory factory, TypeDiscoveryHelper.FactoryConstructorInfo ctor, string indent)
+    {
+        // Build Func<TRuntime..., TService> type
+        var runtimeTypes = string.Join(", ", ctor.RuntimeParameters.Select(p => p.TypeName));
+        var funcType = $"Func<{runtimeTypes}, {factory.TypeName}>";
+
+        // Build the lambda
+        var runtimeParams = string.Join(", ", ctor.RuntimeParameters.Select(p => 
+            p.ParameterName ?? ToCamelCase(GetSimpleTypeName(p.TypeName))));
+
+        builder.AppendLine($"{indent}services.AddSingleton<{funcType}>(sp =>");
+        builder.AppendLine($"{indent}    ({runtimeParams}) => new {factory.TypeName}(");
+
+        // Build constructor call arguments
+        var allArgs = new List<string>();
+        foreach (var inj in ctor.InjectableParameters)
+        {
+            if (inj.IsKeyed)
+            {
+                allArgs.Add($"sp.GetRequiredKeyedService<{inj.TypeName}>(\"{EscapeStringLiteral(inj.ServiceKey!)}\")");
+            }
+            else
+            {
+                allArgs.Add($"sp.GetRequiredService<{inj.TypeName}>()");
+            }
+        }
+        foreach (var rt in ctor.RuntimeParameters)
+        {
+            allArgs.Add(rt.ParameterName ?? ToCamelCase(GetSimpleTypeName(rt.TypeName)));
+        }
+
+        for (int i = 0; i < allArgs.Count; i++)
+        {
+            var arg = allArgs[i];
+            var isLast = i == allArgs.Count - 1;
+            builder.AppendLine($"{indent}        {arg}{(isLast ? ")" : ",")}");
+        }
+        builder.AppendLine($"{indent});");
+
+        // Also register for each interface the type implements
+        foreach (var iface in factory.InterfaceNames)
+        {
+            var ifaceFuncType = $"Func<{runtimeTypes}, {iface}>";
+            builder.AppendLine($"{indent}services.AddSingleton<{ifaceFuncType}>(sp => sp.GetRequiredService<{funcType}>());");
+        }
+    }
+
+    private static string GetSimpleTypeName(string fullyQualifiedName)
+    {
+        // "global::System.String" -> "String"
+        var parts = fullyQualifiedName.Split('.');
+        return parts[parts.Length - 1];
+    }
+
+    private static string ToCamelCase(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+        
+        // Remove leading 'I' for interfaces
+        if (name.Length > 1 && name[0] == 'I' && char.IsUpper(name[1]))
+            name = name.Substring(1);
+        
+        return char.ToLowerInvariant(name[0]) + name.Substring(1);
     }
 
     private static string GenerateDiagnosticsSource(DiscoveryResult discoveryResult, string assemblyName, string? projectDirectory, DiagnosticOptions options)
@@ -1848,7 +2138,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             IReadOnlyList<DiscoveredDecorator> decorators,
             IReadOnlyList<InaccessibleType> inaccessibleTypes,
             IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
-            IReadOnlyList<DiscoveredInterceptedService> interceptedServices)
+            IReadOnlyList<DiscoveredInterceptedService> interceptedServices,
+            IReadOnlyList<DiscoveredFactory> factories)
         {
             InjectableTypes = injectableTypes;
             PluginTypes = pluginTypes;
@@ -1858,6 +2149,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             InaccessibleTypes = inaccessibleTypes;
             MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
             InterceptedServices = interceptedServices;
+            Factories = factories;
         }
 
         public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -1868,6 +2160,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
         public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
         public IReadOnlyList<DiscoveredInterceptedService> InterceptedServices { get; }
+        public IReadOnlyList<DiscoveredFactory> Factories { get; }
     }
 
     private readonly struct DiscoveredInterceptedService
@@ -1897,5 +2190,45 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         public TypeDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
         public string[] AllInterceptorTypeNames { get; }
         public string? SourceFilePath { get; }
+    }
+
+    private readonly struct DiscoveredFactory
+    {
+        public DiscoveredFactory(
+            string typeName,
+            string[] interfaceNames,
+            string assemblyName,
+            int generationMode,
+            TypeDiscoveryHelper.FactoryConstructorInfo[] constructors,
+            string? sourceFilePath = null)
+        {
+            TypeName = typeName;
+            InterfaceNames = interfaceNames;
+            AssemblyName = assemblyName;
+            GenerationMode = generationMode;
+            Constructors = constructors;
+            SourceFilePath = sourceFilePath;
+        }
+
+        public string TypeName { get; }
+        public string[] InterfaceNames { get; }
+        public string AssemblyName { get; }
+        /// <summary>Mode flags: 1=Func, 2=Interface, 3=All</summary>
+        public int GenerationMode { get; }
+        public TypeDiscoveryHelper.FactoryConstructorInfo[] Constructors { get; }
+        public string? SourceFilePath { get; }
+
+        public bool GenerateFunc => (GenerationMode & 1) != 0;
+        public bool GenerateInterface => (GenerationMode & 2) != 0;
+
+        /// <summary>Gets just the type name without namespace (e.g., "MyService" from "global::TestApp.MyService").</summary>
+        public string SimpleTypeName
+        {
+            get
+            {
+                var parts = TypeName.Split('.');
+                return parts[parts.Length - 1];
+            }
+        }
     }
 }

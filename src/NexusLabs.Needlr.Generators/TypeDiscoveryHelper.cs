@@ -32,6 +32,8 @@ internal static class TypeDiscoveryHelper
     private const string ScopedAttributeFullName = "NexusLabs.Needlr.ScopedAttribute";
     private const string TransientAttributeName = "TransientAttribute";
     private const string TransientAttributeFullName = "NexusLabs.Needlr.TransientAttribute";
+    private const string GenerateFactoryAttributeName = "GenerateFactoryAttribute";
+    private const string GenerateFactoryAttributeFullName = "NexusLabs.Needlr.GenerateFactoryAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -908,10 +910,11 @@ internal static class TypeDiscoveryHelper
     /// </summary>
     public readonly struct ConstructorParameterInfo
     {
-        public ConstructorParameterInfo(string typeName, string? serviceKey = null)
+        public ConstructorParameterInfo(string typeName, string? serviceKey = null, string? parameterName = null)
         {
             TypeName = typeName;
             ServiceKey = serviceKey;
+            ParameterName = parameterName;
         }
 
         /// <summary>
@@ -923,6 +926,11 @@ internal static class TypeDiscoveryHelper
         /// The service key from [FromKeyedServices] attribute, or null if not a keyed service.
         /// </summary>
         public string? ServiceKey { get; }
+
+        /// <summary>
+        /// The original parameter name from the constructor (used for factory generation).
+        /// </summary>
+        public string? ParameterName { get; }
 
         /// <summary>
         /// True if this parameter should be resolved as a keyed service.
@@ -1632,6 +1640,166 @@ internal static class TypeDiscoveryHelper
                 return prefix + p.Name;
             }));
         }
+    }
+
+    #endregion
+
+    #region Factory Generation
+
+    /// <summary>
+    /// Checks if a type has the [GenerateFactory] attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has [GenerateFactory]; otherwise, false.</returns>
+    public static bool HasGenerateFactoryAttribute(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            if (name == GenerateFactoryAttributeName)
+                return true;
+
+            var fullName = attributeClass.ToDisplayString();
+            if (fullName == GenerateFactoryAttributeFullName)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the factory generation mode from the [GenerateFactory] attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>The Mode value (1=Func, 2=Interface, 3=All), or 3 (All) if not specified.</returns>
+    public static int GetFactoryGenerationMode(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            var fullName = attributeClass.ToDisplayString();
+
+            if (name == GenerateFactoryAttributeName || fullName == GenerateFactoryAttributeFullName)
+            {
+                // Check named argument "Mode"
+                foreach (var namedArg in attribute.NamedArguments)
+                {
+                    if (namedArg.Key == "Mode" && namedArg.Value.Value is int modeValue)
+                    {
+                        return modeValue;
+                    }
+                }
+            }
+        }
+
+        return 3; // Default is All (Func | Interface)
+    }
+
+    /// <summary>
+    /// Partitions constructor parameters into injectable (DI-resolvable) and runtime (must be provided).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to analyze.</param>
+    /// <returns>A list of factory constructor infos, one for each viable constructor.</returns>
+    public static IReadOnlyList<FactoryConstructorInfo> GetFactoryConstructors(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<FactoryConstructorInfo>();
+
+        foreach (var ctor in typeSymbol.InstanceConstructors)
+        {
+            if (ctor.IsStatic)
+                continue;
+
+            if (ctor.DeclaredAccessibility != Accessibility.Public)
+                continue;
+
+            var injectableParams = new List<ConstructorParameterInfo>();
+            var runtimeParams = new List<ConstructorParameterInfo>();
+
+            foreach (var param in ctor.Parameters)
+            {
+                var typeName = param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+                if (IsInjectableParameterType(param.Type))
+                {
+                    // Check for [FromKeyedServices] attribute
+                    var serviceKey = GetFromKeyedServicesKey(param);
+                    var paramInfo = new ConstructorParameterInfo(typeName, serviceKey, param.Name);
+                    injectableParams.Add(paramInfo);
+                }
+                else
+                {
+                    var paramInfo = new ConstructorParameterInfo(typeName, null, param.Name);
+                    runtimeParams.Add(paramInfo);
+                }
+            }
+
+            // Only include constructors that have at least one runtime parameter
+            // (otherwise normal registration works fine)
+            if (runtimeParams.Count > 0)
+            {
+                result.Add(new FactoryConstructorInfo(
+                    injectableParams.ToArray(),
+                    runtimeParams.ToArray()));
+            }
+        }
+
+        return result;
+    }
+
+    private static string? GetFromKeyedServicesKey(IParameterSymbol param)
+    {
+        const string FromKeyedServicesAttributeName = "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
+
+        foreach (var attr in param.GetAttributes())
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass is null)
+                continue;
+
+            var attrFullName = attrClass.ToDisplayString();
+            if (attrFullName == FromKeyedServicesAttributeName)
+            {
+                // Extract the key from the constructor argument
+                if (attr.ConstructorArguments.Length > 0)
+                {
+                    var keyArg = attr.ConstructorArguments[0];
+                    if (keyArg.Value is string keyValue)
+                    {
+                        return keyValue;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Represents a constructor suitable for factory generation.
+    /// </summary>
+    public readonly struct FactoryConstructorInfo
+    {
+        public FactoryConstructorInfo(
+            ConstructorParameterInfo[] injectableParameters,
+            ConstructorParameterInfo[] runtimeParameters)
+        {
+            InjectableParameters = injectableParameters;
+            RuntimeParameters = runtimeParameters;
+        }
+
+        /// <summary>Parameters that can be resolved from the service provider.</summary>
+        public ConstructorParameterInfo[] InjectableParameters { get; }
+
+        /// <summary>Parameters that must be provided at factory call time.</summary>
+        public ConstructorParameterInfo[] RuntimeParameters { get; }
     }
 
     #endregion
