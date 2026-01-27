@@ -80,6 +80,66 @@ namespace TestApp
 
     #endregion
 
+    #region Keyed Service Cluster Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsKeyedServicesSection()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICache { }
+
+    [Keyed(""redis"")]
+    public class RedisCache : ICache { }
+
+    [Keyed(""memory"")]
+    public class MemoryCache : ICache { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Keyed Services", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_GroupsKeyedServicesByKey()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface ICache { }
+
+    [Keyed(""redis"")]
+    public class RedisCache : ICache { }
+
+    [Keyed(""redis"")]
+    public class RedisDistributedCache : ICache { }
+
+    [Keyed(""memory"")]
+    public class MemoryCache : ICache { }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("redis", content);
+        Assert.Contains("memory", content);
+        Assert.Contains("RedisCache", content);
+        Assert.Contains("MemoryCache", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {

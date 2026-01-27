@@ -1453,6 +1453,38 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        // Keyed services section
+        var keyedTypes = types.Where(t => t.IsKeyed).ToList();
+        if (keyedTypes.Any())
+        {
+            sb.AppendLine("## Keyed Services");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph TD");
+
+            // Group by service key
+            var typesByKey = keyedTypes
+                .SelectMany(t => t.ServiceKeys.Select(k => (Key: k, Type: t)))
+                .GroupBy(x => x.Key)
+                .OrderBy(g => g.Key);
+
+            foreach (var keyGroup in typesByKey)
+            {
+                var safeKey = SanitizeIdentifier(keyGroup.Key);
+                sb.AppendLine($"    subgraph key_{safeKey}[\"{keyGroup.Key}\"]");
+                foreach (var item in keyGroup.OrderBy(x => x.Type.TypeName))
+                {
+                    var nodeId = GetMermaidNodeId(item.Type.TypeName);
+                    var nodeName = GetShortTypeName(item.Type.TypeName);
+                    sb.AppendLine($"        {nodeId}[\"{nodeName}\"]");
+                }
+                sb.AppendLine("    end");
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
