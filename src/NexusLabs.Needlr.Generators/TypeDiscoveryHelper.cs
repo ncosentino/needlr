@@ -1659,6 +1659,7 @@ internal static class TypeDiscoveryHelper
             if (attributeClass == null)
                 continue;
 
+            // Check for non-generic GenerateFactoryAttribute
             var name = attributeClass.Name;
             if (name == GenerateFactoryAttributeName)
                 return true;
@@ -1666,6 +1667,15 @@ internal static class TypeDiscoveryHelper
             var fullName = attributeClass.ToDisplayString();
             if (fullName == GenerateFactoryAttributeFullName)
                 return true;
+
+            // Check for generic GenerateFactoryAttribute<T>
+            if (attributeClass.IsGenericType)
+            {
+                var originalDef = attributeClass.OriginalDefinition;
+                if (originalDef.Name == GenerateFactoryAttributeName || 
+                    originalDef.ToDisplayString().StartsWith(GenerateFactoryAttributeFullName + "<"))
+                    return true;
+            }
         }
 
         return false;
@@ -1687,7 +1697,12 @@ internal static class TypeDiscoveryHelper
             var name = attributeClass.Name;
             var fullName = attributeClass.ToDisplayString();
 
-            if (name == GenerateFactoryAttributeName || fullName == GenerateFactoryAttributeFullName)
+            bool isFactoryAttribute = name == GenerateFactoryAttributeName || 
+                                      fullName == GenerateFactoryAttributeFullName ||
+                                      (attributeClass.IsGenericType && 
+                                       attributeClass.OriginalDefinition.Name == GenerateFactoryAttributeName);
+
+            if (isFactoryAttribute)
             {
                 // Check named argument "Mode"
                 foreach (var namedArg in attribute.NamedArguments)
@@ -1701,6 +1716,38 @@ internal static class TypeDiscoveryHelper
         }
 
         return 3; // Default is All (Func | Interface)
+    }
+
+    /// <summary>
+    /// Gets the interface type from a generic [GenerateFactory&lt;T&gt;] attribute, if present.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>The fully qualified interface type name, or null if non-generic attribute is used.</returns>
+    public static string? GetFactoryReturnInterfaceType(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            // Check for generic GenerateFactoryAttribute<T>
+            if (attributeClass.IsGenericType)
+            {
+                var originalDef = attributeClass.OriginalDefinition;
+                if (originalDef.Name == GenerateFactoryAttributeName)
+                {
+                    // Extract the type argument
+                    var typeArg = attributeClass.TypeArguments.FirstOrDefault();
+                    if (typeArg != null)
+                    {
+                        return $"global::{typeArg.ToDisplayString()}";
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

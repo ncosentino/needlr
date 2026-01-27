@@ -323,4 +323,91 @@ public sealed class FactorySourceGenTests
         Assert.Equal("Test2", instance2.Name);
         Assert.Equal(60, instance2.Timeout);
     }
+
+    #region Generic Attribute Tests
+
+    [Fact]
+    public void Factory_GenericAttribute_FactoryInterfaceIsResolvable()
+    {
+        // Arrange
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        // Act
+        var factory = serviceProvider.GetService<IGenericFactoryServiceFactory>();
+
+        // Assert
+        Assert.NotNull(factory);
+    }
+
+    [Fact]
+    public void Factory_GenericAttribute_FuncReturnsInterface()
+    {
+        // Arrange
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        // Act - Func should return interface type, not concrete
+        var func = serviceProvider.GetService<Func<string, IGenericFactoryService>>();
+
+        // Assert
+        Assert.NotNull(func);
+    }
+
+    [Fact]
+    public void Factory_GenericAttribute_FuncConcreteTypeNotRegistered()
+    {
+        // Arrange
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        // Act - Func for concrete type should NOT be registered
+        var func = serviceProvider.GetService<Func<string, GenericFactoryService>>();
+
+        // Assert
+        Assert.Null(func);
+    }
+
+    [Fact]
+    public void Factory_GenericAttribute_FactoryCreateReturnsInterface()
+    {
+        // Arrange
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        var factory = serviceProvider.GetRequiredService<IGenericFactoryServiceFactory>();
+
+        // Act
+        IGenericFactoryService instance = factory.Create("my-config");
+
+        // Assert - Returns interface type that can be used polymorphically
+        Assert.NotNull(instance);
+        Assert.Equal("my-config", instance.Config);
+        Assert.NotNull(instance.Dependency);
+    }
+
+    [Fact]
+    public void Factory_GenericAttribute_FuncCreatesWorkingInstance()
+    {
+        // Arrange
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        var func = serviceProvider.GetRequiredService<Func<string, IGenericFactoryService>>();
+
+        // Act
+        IGenericFactoryService instance = func("func-config");
+
+        // Assert
+        Assert.NotNull(instance);
+        Assert.Equal("func-config", instance.Config);
+        Assert.NotNull(instance.Dependency);
+    }
+
+    #endregion
 }

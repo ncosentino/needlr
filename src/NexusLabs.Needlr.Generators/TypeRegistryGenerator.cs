@@ -295,6 +295,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     var generationMode = TypeDiscoveryHelper.GetFactoryGenerationMode(typeSymbol);
+                    var returnTypeOverride = TypeDiscoveryHelper.GetFactoryReturnInterfaceType(typeSymbol);
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
                     factories.Add(new DiscoveredFactory(
@@ -303,6 +304,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         assembly.Name,
                         generationMode,
                         factoryConstructors.ToArray(),
+                        returnTypeOverride,
                         sourceFilePath));
                     
                     continue; // Don't add to injectable types - factory handles registration
@@ -1095,7 +1097,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }));
 
             builder.AppendLine($"    /// <summary>Creates a new instance of {factory.SimpleTypeName}.</summary>");
-            builder.AppendLine($"    {factory.TypeName} Create({runtimeParamList});");
+            builder.AppendLine($"    {factory.ReturnTypeName} Create({runtimeParamList});");
         }
 
         builder.AppendLine("}");
@@ -1151,7 +1153,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 return $"{p.TypeName} {paramName}";
             }));
 
-            builder.AppendLine($"    public {factory.TypeName} Create({runtimeParamList})");
+            builder.AppendLine($"    public {factory.ReturnTypeName} Create({runtimeParamList})");
             builder.AppendLine("    {");
             builder.Append($"        return new {factory.TypeName}(");
 
@@ -1178,9 +1180,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private static void GenerateFuncRegistration(StringBuilder builder, DiscoveredFactory factory, TypeDiscoveryHelper.FactoryConstructorInfo ctor, string indent)
     {
-        // Build Func<TRuntime..., TService> type
+        // Build Func<TRuntime..., TReturn> type - uses ReturnTypeName (interface if generic attribute used)
         var runtimeTypes = string.Join(", ", ctor.RuntimeParameters.Select(p => p.TypeName));
-        var funcType = $"Func<{runtimeTypes}, {factory.TypeName}>";
+        var funcType = $"Func<{runtimeTypes}, {factory.ReturnTypeName}>";
 
         // Build the lambda
         var runtimeParams = string.Join(", ", ctor.RuntimeParameters.Select(p => 
@@ -1214,13 +1216,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             builder.AppendLine($"{indent}        {arg}{(isLast ? ")" : ",")}");
         }
         builder.AppendLine($"{indent});");
-
-        // Also register for each interface the type implements
-        foreach (var iface in factory.InterfaceNames)
-        {
-            var ifaceFuncType = $"Func<{runtimeTypes}, {iface}>";
-            builder.AppendLine($"{indent}services.AddSingleton<{ifaceFuncType}>(sp => sp.GetRequiredService<{funcType}>());");
-        }
     }
 
     private static string GetSimpleTypeName(string fullyQualifiedName)
@@ -2200,6 +2195,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             string assemblyName,
             int generationMode,
             TypeDiscoveryHelper.FactoryConstructorInfo[] constructors,
+            string? returnTypeName = null,
             string? sourceFilePath = null)
         {
             TypeName = typeName;
@@ -2207,6 +2203,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             AssemblyName = assemblyName;
             GenerationMode = generationMode;
             Constructors = constructors;
+            ReturnTypeOverride = returnTypeName;
             SourceFilePath = sourceFilePath;
         }
 
@@ -2216,10 +2213,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         /// <summary>Mode flags: 1=Func, 2=Interface, 3=All</summary>
         public int GenerationMode { get; }
         public TypeDiscoveryHelper.FactoryConstructorInfo[] Constructors { get; }
+        /// <summary>
+        /// If set, the factory Create() and Func return this type instead of the concrete type.
+        /// Used when [GenerateFactory&lt;T&gt;] is applied.
+        /// </summary>
+        public string? ReturnTypeOverride { get; }
         public string? SourceFilePath { get; }
 
         public bool GenerateFunc => (GenerationMode & 1) != 0;
         public bool GenerateInterface => (GenerationMode & 2) != 0;
+
+        /// <summary>Gets the type that factory Create() and Func should return.</summary>
+        public string ReturnTypeName => ReturnTypeOverride ?? TypeName;
 
         /// <summary>Gets just the type name without namespace (e.g., "MyService" from "global::TestApp.MyService").</summary>
         public string SimpleTypeName

@@ -381,10 +381,10 @@ namespace TestApp
 
     #endregion
 
-    #region Interface Registration Tests
+    #region Generic Attribute Tests
 
     [Fact]
-    public void Generator_WithImplementedInterface_GeneratesFuncForInterface()
+    public void Generator_WithNonGenericAttribute_FuncReturnsConcreteType()
     {
         var source = @"
 using NexusLabs.Needlr;
@@ -406,9 +406,68 @@ namespace TestApp
 
         var generatedCode = RunGenerator(source);
 
-        // Should generate Func for both concrete and interface
+        // Non-generic: Func returns concrete type
         Assert.Contains("Func<string, global::TestApp.MyService>", generatedCode);
+        // Should NOT auto-register Func for interface
+        Assert.DoesNotContain("Func<string, global::TestApp.IMyService>", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithGenericAttribute_FuncReturnsInterfaceType()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+    public interface IMyService { }
+
+    [GenerateFactory<IMyService>]
+    public class MyService : IMyService
+    {
+        public MyService(IDependency dep, string connectionString) { }
+    }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Generic: Func returns interface type
         Assert.Contains("Func<string, global::TestApp.IMyService>", generatedCode);
+        // Should NOT have concrete type in Func
+        Assert.DoesNotContain("Func<string, global::TestApp.MyService>", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithGenericAttribute_FactoryCreateReturnsInterfaceType()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+    public interface IMyService { }
+
+    [GenerateFactory<IMyService>]
+    public class MyService : IMyService
+    {
+        public MyService(IDependency dep, string connectionString) { }
+    }
+}";
+
+        var generatedCode = RunGenerator(source);
+
+        // Factory interface Create method returns interface
+        Assert.Contains("global::TestApp.IMyService Create(string connectionString);", generatedCode);
+        // Implementation also returns interface
+        Assert.Contains("public global::TestApp.IMyService Create(string connectionString)", generatedCode);
     }
 
     #endregion

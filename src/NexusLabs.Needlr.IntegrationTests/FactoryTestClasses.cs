@@ -113,3 +113,29 @@ public sealed class MultiConstructorFactoryService
         Timeout = timeout;
     }
 }
+
+/// <summary>
+/// Interface for testing generic factory attribute.
+/// </summary>
+public interface IGenericFactoryService
+{
+    IFactoryDependency Dependency { get; }
+    string Config { get; }
+}
+
+/// <summary>
+/// Service using the generic [GenerateFactory&lt;T&gt;] attribute.
+/// Factory Create() and Func will return IGenericFactoryService.
+/// </summary>
+[GenerateFactory<IGenericFactoryService>]
+public sealed class GenericFactoryService : IGenericFactoryService
+{
+    public IFactoryDependency Dependency { get; }
+    public string Config { get; }
+
+    public GenericFactoryService(IFactoryDependency dependency, string config)
+    {
+        Dependency = dependency;
+        Config = config;
+    }
+}
