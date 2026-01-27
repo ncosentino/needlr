@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Open Generic Decorators**: New `[OpenDecoratorFor(typeof(IInterface<>))]` attribute for source-gen only
+  - Automatically decorates all closed implementations of an open generic interface
+  - Example: `[OpenDecoratorFor(typeof(IHandler<>))]` decorates `IHandler<Order>`, `IHandler<Payment>`, etc.
+  - Supports `Order` property for multiple decorators
+  - Compile-time validation with NDLRGEN006, NDLRGEN007, NDLRGEN008 analyzers
+  - See [Open Generic Decorators documentation](docs/open-generic-decorators.md)
+
 ### Changed
 - **BREAKING: `[GenerateFactory]` namespace change**: `[GenerateFactory]`, `[GenerateFactory<T>]`, and `FactoryGenerationMode` have moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
   - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly

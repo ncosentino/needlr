@@ -91,4 +91,43 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "When using [GenerateFactory<T>], T must be an interface that the decorated class implements. The factory's Create() method and Func<> return T, so the class must be assignable to T.",
         helpLinkUri: HelpLinkBase + "NDLRGEN005.md");
+
+    /// <summary>
+    /// NDLRGEN006: [OpenDecoratorFor] type argument must be an open generic interface.
+    /// </summary>
+    public static readonly DiagnosticDescriptor OpenDecoratorTypeNotOpenGeneric = new(
+        id: "NDLRGEN006",
+        title: "[OpenDecoratorFor] type must be an open generic interface",
+        messageFormat: "Type argument '{0}' in [OpenDecoratorFor] is not an open generic interface: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [OpenDecoratorFor] attribute requires an open generic interface type. Use typeof(IInterface<>) syntax, not a closed generic like typeof(IInterface<string>) or a non-generic type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN006.md");
+
+    /// <summary>
+    /// NDLRGEN007: [OpenDecoratorFor] decorator class must be an open generic with matching arity.
+    /// </summary>
+    public static readonly DiagnosticDescriptor OpenDecoratorClassNotOpenGeneric = new(
+        id: "NDLRGEN007",
+        title: "[OpenDecoratorFor] decorator must be an open generic class",
+        messageFormat: "Class '{0}' with [OpenDecoratorFor({1})] must be an open generic class with {2} type parameter(s)",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When using [OpenDecoratorFor(typeof(IInterface<>))], the decorated class must also be an open generic with the same number of type parameters so it can be closed over each discovered implementation.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN007.md");
+
+    /// <summary>
+    /// NDLRGEN008: [OpenDecoratorFor] decorator class must implement the open generic interface.
+    /// </summary>
+    public static readonly DiagnosticDescriptor OpenDecoratorNotImplementingInterface = new(
+        id: "NDLRGEN008",
+        title: "[OpenDecoratorFor] decorator must implement the interface",
+        messageFormat: "Class '{0}' has [OpenDecoratorFor({1})] but does not implement '{1}'. The decorator must implement the interface it decorates.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A decorator must implement the same interface as the services it wraps. Ensure the class implements the open generic interface specified in [OpenDecoratorFor].",
+        helpLinkUri: HelpLinkBase + "NDLRGEN008.md");
 }

@@ -10,6 +10,10 @@ using System.Text.Json.Serialization;
 
 // Decorators are automatically applied via [DecoratorFor<T>] attributes in AotSourceGenPlugin
 // See: LoggingWeatherDecorator (Order=1) and PrefixWeatherDecorator (Order=2)
+//
+// Open Generic Decorators are also demonstrated via [OpenDecoratorFor(typeof(IMessageHandler<>))]
+// These automatically decorate ALL closed implementations of IMessageHandler<T>
+// Endpoints: /order/{id} and /notify/{message}
 var app = new Syringe()
     .UsingSourceGen()
     .ForWebApplication()
@@ -29,6 +33,7 @@ app.MapGet("/all", static ([FromServices] IWeatherProvider weather, [FromService
 
 Console.WriteLine("AotSourceGenApp running. Reflection disabled; demonstrating source-gen parity.");
 Console.WriteLine("Endpoints: /weather, /time, /manual/{value}, /all, /plugin-weather, /plugin-time, /plugin-manual/{value}");
+Console.WriteLine("Open Generic Decorator endpoints: /order/{id}, /notify/{message}");
 
 await app.RunAsync();
 

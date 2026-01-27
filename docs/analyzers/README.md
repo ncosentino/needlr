@@ -41,6 +41,9 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN003](NDLRGEN003.md) | Warning | [GenerateFactory] all parameters are injectable |
 | [NDLRGEN004](NDLRGEN004.md) | Warning | [GenerateFactory] no parameters are injectable |
 | [NDLRGEN005](NDLRGEN005.md) | Error | [GenerateFactory<T>] type T not implemented by class |
+| [NDLRGEN006](NDLRGEN006.md) | Error | [OpenDecoratorFor] type must be an open generic interface |
+| [NDLRGEN007](NDLRGEN007.md) | Error | [OpenDecoratorFor] decorator must be an open generic class |
+| [NDLRGEN008](NDLRGEN008.md) | Error | [OpenDecoratorFor] decorator must implement the interface |
 
 ## Diagnostic ID Naming Convention
 

@@ -203,6 +203,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var hubRegistrations = new List<DiscoveredHubRegistration>();
         var kernelPlugins = new List<DiscoveredKernelPlugin>();
         var decorators = new List<DiscoveredDecorator>();
+        var openDecorators = new List<DiscoveredOpenDecorator>();
         var interceptedServices = new List<DiscoveredInterceptedService>();
         var factories = new List<DiscoveredFactory>();
         var inaccessibleTypes = new List<InaccessibleType>();
@@ -211,7 +212,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -219,8 +220,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
+        }
+
+        // Expand open generic decorators into closed decorator registrations
+        if (openDecorators.Count > 0)
+        {
+            ExpandOpenDecorators(injectableTypes, openDecorators, decorators);
         }
 
         // Check for referenced assemblies with internal plugin types but no [GenerateTypeRegistry]
@@ -260,6 +267,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredHubRegistration> hubRegistrations,
         List<DiscoveredKernelPlugin> kernelPlugins,
         List<DiscoveredDecorator> decorators,
+        List<DiscoveredOpenDecorator> openDecorators,
         List<DiscoveredInterceptedService> interceptedServices,
         List<DiscoveredFactory> factories,
         List<InaccessibleType> inaccessibleTypes,
@@ -321,6 +329,19 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     decoratorInfo.DecoratorTypeName,
                     decoratorInfo.ServiceTypeName,
                     decoratorInfo.Order,
+                    assembly.Name,
+                    sourceFilePath));
+            }
+
+            // Check for OpenDecoratorFor attributes (source-gen only open generic decorators)
+            var openDecoratorInfos = TypeDiscoveryHelper.GetOpenDecoratorForAttributes(typeSymbol);
+            foreach (var openDecoratorInfo in openDecoratorInfos)
+            {
+                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                openDecorators.Add(new DiscoveredOpenDecorator(
+                    openDecoratorInfo.DecoratorType,
+                    openDecoratorInfo.OpenGenericInterface,
+                    openDecoratorInfo.Order,
                     assembly.Name,
                     sourceFilePath));
             }
@@ -1646,6 +1667,123 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                          .ToList();
     }
 
+    /// <summary>
+    /// Expands open generic decorators into concrete decorator registrations
+    /// for each discovered closed implementation of the open generic interface.
+    /// </summary>
+    private static void ExpandOpenDecorators(
+        IReadOnlyList<DiscoveredType> injectableTypes,
+        IReadOnlyList<DiscoveredOpenDecorator> openDecorators,
+        List<DiscoveredDecorator> decorators)
+    {
+        // Group injectable types by the open generic interfaces they implement
+        var interfaceImplementations = new Dictionary<INamedTypeSymbol, List<(INamedTypeSymbol closedInterface, DiscoveredType type)>>(SymbolEqualityComparer.Default);
+
+        foreach (var discoveredType in injectableTypes)
+        {
+            // We need to check each interface this type implements to see if it's a closed version of an open generic
+            foreach (var openDecorator in openDecorators)
+            {
+                // Check if this type implements the open generic interface
+                foreach (var interfaceName in discoveredType.InterfaceNames)
+                {
+                    // This is string-based matching - we need to match the interface name pattern
+                    // For example, if open generic is IHandler<> and the interface is IHandler<Order>, we should match
+                    var openGenericName = TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.OpenGenericInterface);
+                    
+                    // Extract the base name (before the <>)
+                    var openGenericBaseName = GetGenericBaseName(openGenericName);
+                    var interfaceBaseName = GetGenericBaseName(interfaceName);
+                    
+                    if (openGenericBaseName == interfaceBaseName)
+                    {
+                        // This interface is a closed version of the open generic
+                        // Create a closed decorator registration
+                        var closedDecoratorTypeName = CreateClosedGenericType(
+                            TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.DecoratorType),
+                            interfaceName,
+                            openGenericName);
+
+                        decorators.Add(new DiscoveredDecorator(
+                            closedDecoratorTypeName,
+                            interfaceName,
+                            openDecorator.Order,
+                            openDecorator.AssemblyName,
+                            openDecorator.SourceFilePath));
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extracts the base name from a generic type (e.g., "global::Namespace.IHandler{T}" becomes "global::Namespace.IHandler").
+    /// </summary>
+    private static string GetGenericBaseName(string typeName)
+    {
+        var angleBracketIndex = typeName.IndexOf('<');
+        return angleBracketIndex >= 0 ? typeName.Substring(0, angleBracketIndex) : typeName;
+    }
+
+    /// <summary>
+    /// Creates a closed generic type name from an open generic decorator and a closed interface.
+    /// For example: LoggingDecorator{T} + IHandler{Order} = LoggingDecorator{Order}
+    /// </summary>
+    private static string CreateClosedGenericType(string openDecoratorTypeName, string closedInterfaceName, string openInterfaceName)
+    {
+        // Extract the type arguments from the closed interface
+        var closedArgs = ExtractGenericArguments(closedInterfaceName);
+        
+        // Replace the type parameters in the open decorator with the closed arguments
+        var openDecoratorBaseName = GetGenericBaseName(openDecoratorTypeName);
+        
+        if (closedArgs.Length == 0)
+            return openDecoratorTypeName;
+        
+        return $"{openDecoratorBaseName}<{string.Join(", ", closedArgs)}>";
+    }
+
+    /// <summary>
+    /// Extracts the generic type arguments from a closed generic type name.
+    /// For example: "IHandler{Order, Payment}" returns ["Order", "Payment"]
+    /// </summary>
+    private static string[] ExtractGenericArguments(string typeName)
+    {
+        var angleBracketIndex = typeName.IndexOf('<');
+        if (angleBracketIndex < 0)
+            return Array.Empty<string>();
+
+        var argsStart = angleBracketIndex + 1;
+        var argsEnd = typeName.LastIndexOf('>');
+        if (argsEnd <= argsStart)
+            return Array.Empty<string>();
+
+        var argsString = typeName.Substring(argsStart, argsEnd - argsStart);
+        
+        // Handle nested generics by parsing with bracket depth tracking
+        var args = new List<string>();
+        var depth = 0;
+        var start = 0;
+        
+        for (int i = 0; i < argsString.Length; i++)
+        {
+            var c = argsString[i];
+            if (c == '<') depth++;
+            else if (c == '>') depth--;
+            else if (c == ',' && depth == 0)
+            {
+                args.Add(argsString.Substring(start, i - start).Trim());
+                start = i + 1;
+            }
+        }
+        
+        // Add the last argument
+        if (start < argsString.Length)
+            args.Add(argsString.Substring(start).Trim());
+        
+        return args.ToArray();
+    }
+
     private static string StripGlobalPrefix(string name)
     {
         return name.StartsWith("global::", StringComparison.Ordinal) 
@@ -2121,6 +2259,29 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         public string DecoratorTypeName { get; }
         public string ServiceTypeName { get; }
+        public int Order { get; }
+        public string AssemblyName { get; }
+        public string? SourceFilePath { get; }
+    }
+
+    private readonly struct DiscoveredOpenDecorator
+    {
+        public DiscoveredOpenDecorator(
+            INamedTypeSymbol decoratorType,
+            INamedTypeSymbol openGenericInterface,
+            int order,
+            string assemblyName,
+            string? sourceFilePath = null)
+        {
+            DecoratorType = decoratorType;
+            OpenGenericInterface = openGenericInterface;
+            Order = order;
+            AssemblyName = assemblyName;
+            SourceFilePath = sourceFilePath;
+        }
+
+        public INamedTypeSymbol DecoratorType { get; }
+        public INamedTypeSymbol OpenGenericInterface { get; }
         public int Order { get; }
         public string AssemblyName { get; }
         public string? SourceFilePath { get; }

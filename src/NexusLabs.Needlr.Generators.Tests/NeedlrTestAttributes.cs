@@ -178,6 +178,25 @@ namespace NexusLabs.Needlr.Generators
 }";
 
     /// <summary>
+    /// Open generic decorator attribute (source-gen only).
+    /// </summary>
+    public const string OpenDecorator = @"
+namespace NexusLabs.Needlr.Generators
+{
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public sealed class OpenDecoratorForAttribute : System.Attribute
+    {
+        public OpenDecoratorForAttribute(System.Type openGenericServiceType)
+        {
+            OpenGenericServiceType = openGenericServiceType;
+        }
+
+        public System.Type OpenGenericServiceType { get; }
+        public int Order { get; set; } = 0;
+    }
+}";
+
+    /// <summary>
     /// Core attributes plus interceptors (for interceptor tests).
     /// </summary>
     public const string CoreWithInterceptors = Core + Interceptors;
@@ -191,4 +210,9 @@ namespace NexusLabs.Needlr.Generators
     /// All attributes including factory (Core + Interceptors + Decorators + Factory).
     /// </summary>
     public const string AllWithFactory = Core + Interceptors + Decorators + Factory;
+
+    /// <summary>
+    /// All attributes including open decorator (Core + Interceptors + Decorators + OpenDecorator).
+    /// </summary>
+    public const string AllWithOpenDecorator = Core + Interceptors + Decorators + OpenDecorator;
 }
