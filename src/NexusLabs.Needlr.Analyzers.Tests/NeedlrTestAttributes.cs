@@ -132,6 +132,34 @@ namespace NexusLabs.Needlr.Generators
 }";
 
     /// <summary>
+    /// Factory generation attributes.
+    /// </summary>
+    public const string Factory = @"
+namespace NexusLabs.Needlr
+{
+    [System.Flags]
+    public enum FactoryGenerationMode
+    {
+        Func = 1,
+        Interface = 2,
+        All = Func | Interface
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GenerateFactoryAttribute : System.Attribute
+    {
+        public FactoryGenerationMode Mode { get; set; } = FactoryGenerationMode.All;
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GenerateFactoryAttribute<TInterface> : System.Attribute
+        where TInterface : class
+    {
+        public FactoryGenerationMode Mode { get; set; } = FactoryGenerationMode.All;
+    }
+}";
+
+    /// <summary>
     /// All core attributes combined (Core + Keyed + GenerateTypeRegistry).
     /// </summary>
     public const string All = Core + Keyed + GenerateTypeRegistry;
@@ -140,4 +168,9 @@ namespace NexusLabs.Needlr.Generators
     /// All attributes including interceptors.
     /// </summary>
     public const string AllWithInterceptors = Core + Keyed + Interceptors + GenerateTypeRegistry;
+
+    /// <summary>
+    /// All attributes including factory.
+    /// </summary>
+    public const string AllWithFactory = Core + Keyed + Factory + GenerateTypeRegistry;
 }
