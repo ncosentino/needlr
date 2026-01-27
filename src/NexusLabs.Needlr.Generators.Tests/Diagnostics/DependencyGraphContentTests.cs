@@ -140,6 +140,61 @@ namespace TestApp
 
     #endregion
 
+    #region Plugin Assembly Boundary Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsPluginAssembliesSection()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IPlugin : IConfigureRegistrations { }
+    public class MyPlugin : IPlugin 
+    {
+        public void ConfigureRegistrations(IRegistrationContext context) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Plugin Assemblies", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_GroupsPluginsByAssembly()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IPlugin : IConfigureRegistrations { }
+    public class OrderPlugin : IPlugin 
+    {
+        public void ConfigureRegistrations(IRegistrationContext context) { }
+    }
+    public class PaymentPlugin : IPlugin 
+    {
+        public void ConfigureRegistrations(IRegistrationContext context) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("OrderPlugin", content);
+        Assert.Contains("PaymentPlugin", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {

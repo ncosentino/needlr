@@ -1485,6 +1485,39 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        // Plugin assemblies section
+        var plugins = FilterPluginTypes(discovery.PluginTypes, typeFilter);
+        if (plugins.Any())
+        {
+            sb.AppendLine("## Plugin Assemblies");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph TD");
+
+            // Group plugins by assembly
+            var pluginsByAssembly = plugins
+                .GroupBy(p => p.AssemblyName)
+                .OrderBy(g => g.Key);
+
+            foreach (var asmGroup in pluginsByAssembly)
+            {
+                var safeAsm = SanitizeIdentifier(asmGroup.Key);
+                var shortAsm = GetShortTypeName(asmGroup.Key);
+                sb.AppendLine($"    subgraph asm_{safeAsm}[\"{shortAsm}\"]");
+                foreach (var plugin in asmGroup.OrderBy(p => p.TypeName))
+                {
+                    var nodeId = GetMermaidNodeId(plugin.TypeName);
+                    var nodeName = GetShortTypeName(plugin.TypeName);
+                    // Use stadium shape for plugins
+                    sb.AppendLine($"        {nodeId}([\"{nodeName}\"])");
+                }
+                sb.AppendLine("    end");
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
