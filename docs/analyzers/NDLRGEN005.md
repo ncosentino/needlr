@@ -1,11 +1,11 @@
-# NDLRCOR014: Factory generic type not implemented by class
+# NDLRGEN005: Factory generic type not implemented by class
 
 ## Diagnostic Info
 
 | Property | Value |
 |----------|-------|
-| ID | NDLRCOR014 |
-| Category | NexusLabs.Needlr.Core |
+| ID | NDLRGEN005 |
+| Category | NexusLabs.Needlr.Generators |
 | Severity | Error |
 | Enabled | Yes |
 
@@ -23,7 +23,7 @@ using NexusLabs.Needlr.Generators;
 public interface IRequestHandler { }
 public interface IMessageHandler { }
 
-// ❌ NDLRCOR014: MyHandler does not implement IMessageHandler
+// ❌ NDLRGEN005: MyHandler does not implement IMessageHandler
 [GenerateFactory<IMessageHandler>]
 public class MyHandler : IRequestHandler
 {
@@ -91,5 +91,5 @@ public interface IMyHandlerFactory
 ## See Also
 
 - [Factory Delegates](../factories.md)
-- [NDLRCOR012](NDLRCOR012.md) - All parameters injectable
-- [NDLRCOR013](NDLRCOR013.md) - No injectable parameters
+- [NDLRGEN003](NDLRGEN003.md) - All parameters injectable
+- [NDLRGEN004](NDLRGEN004.md) - No injectable parameters

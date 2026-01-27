@@ -52,4 +52,43 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Referenced assemblies with internal plugin types must have a [GenerateTypeRegistry] attribute to generate their own type registry. Without it, internal plugin types will not be discovered or registered. Alternatively, make the plugin type public so it can be discovered by the host assembly's generator.",
         helpLinkUri: HelpLinkBase + "NDLRGEN002.md");
+
+    /// <summary>
+    /// NDLRGEN003: [GenerateFactory] on type with all injectable parameters is unnecessary.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FactoryAllParamsInjectable = new(
+        id: "NDLRGEN003",
+        title: "[GenerateFactory] unnecessary - all parameters are injectable",
+        messageFormat: "Type '{0}' has [GenerateFactory] but all constructor parameters are injectable. Consider removing the attribute for normal registration.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The [GenerateFactory] attribute generates a factory for types with mixed injectable and runtime parameters. When all parameters can be injected by the container, a factory adds no value - the type should be registered normally.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN003.md");
+
+    /// <summary>
+    /// NDLRGEN004: [GenerateFactory] on type with no injectable parameters provides low value.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FactoryNoInjectableParams = new(
+        id: "NDLRGEN004",
+        title: "[GenerateFactory] has low value - no injectable parameters",
+        messageFormat: "Type '{0}' has [GenerateFactory] but no constructor parameters are injectable. The factory provides little benefit over direct instantiation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The [GenerateFactory] attribute is most useful when a type has a mix of injectable and runtime parameters. When no parameters can be injected, the factory is essentially a wrapper around 'new' with no DI benefit.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN004.md");
+
+    /// <summary>
+    /// NDLRGEN005: [GenerateFactory&lt;T&gt;] type argument must be an interface implemented by the class.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FactoryTypeArgNotImplemented = new(
+        id: "NDLRGEN005",
+        title: "[GenerateFactory<T>] type argument not implemented",
+        messageFormat: "Type '{0}' has [GenerateFactory<{1}>] but does not implement '{1}'. The type argument must be an interface implemented by the class.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When using [GenerateFactory<T>], T must be an interface that the decorated class implements. The factory's Create() method and Func<> return T, so the class must be assignable to T.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN005.md");
 }

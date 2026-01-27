@@ -1,11 +1,11 @@
-# NDLRCOR012: All factory parameters are injectable
+# NDLRGEN003: All factory parameters are injectable
 
 ## Diagnostic Info
 
 | Property | Value |
 |----------|-------|
-| ID | NDLRCOR012 |
-| Category | NexusLabs.Needlr.Core |
+| ID | NDLRGEN003 |
+| Category | NexusLabs.Needlr.Generators |
 | Severity | Warning |
 | Enabled | Yes |
 
@@ -20,7 +20,7 @@ This warning is raised when a class marked with `[GenerateFactory]` has a constr
 ```csharp
 using NexusLabs.Needlr.Generators;
 
-// ⚠️ NDLRCOR012: All parameters are injectable, factory provides no value
+// ⚠️ NDLRGEN003: All parameters are injectable, factory provides no value
 [GenerateFactory]
 public class MyService
 {
@@ -65,5 +65,5 @@ Factory generation adds code to your assembly. If all parameters can be auto-inj
 ## See Also
 
 - [Factory Delegates](../factories.md)
-- [NDLRCOR013](NDLRCOR013.md) - No injectable parameters
-- [NDLRCOR014](NDLRCOR014.md) - Invalid generic type parameter
+- [NDLRGEN004](NDLRGEN004.md) - No injectable parameters
+- [NDLRGEN005](NDLRGEN005.md) - Invalid generic type parameter

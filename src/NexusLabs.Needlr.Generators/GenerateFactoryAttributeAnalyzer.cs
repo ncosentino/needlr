@@ -1,17 +1,18 @@
 using System.Collections.Immutable;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace NexusLabs.Needlr.Analyzers;
+namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
 /// Analyzer that validates [GenerateFactory] and [GenerateFactory&lt;T&gt;] attribute usage:
-/// - NDLRCOR012: All constructor parameters are injectable (factory unnecessary)
-/// - NDLRCOR013: No constructor parameters are injectable (low value factory)
-/// - NDLRCOR014: Type argument T is not an interface implemented by the class
+/// - NDLRGEN003: All constructor parameters are injectable (factory unnecessary)
+/// - NDLRGEN004: No constructor parameters are injectable (low value factory)
+/// - NDLRGEN005: Type argument T is not an interface implemented by the class
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
@@ -54,7 +55,7 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
         if (classSymbol == null)
             return;
 
-        // NDLRCOR014: Check if generic type argument is implemented by the class
+        // NDLRGEN005: Check if generic type argument is implemented by the class
         if (attributeSymbol.IsGenericType && attributeSymbol.TypeArguments.Length == 1)
         {
             var typeArg = attributeSymbol.TypeArguments[0] as INamedTypeSymbol;
@@ -77,7 +78,7 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        // Analyze constructor parameters for NDLRCOR012 and NDLRCOR013
+        // Analyze constructor parameters for NDLRGEN003 and NDLRGEN004
         AnalyzeConstructorParameters(context, attributeSyntax, classSymbol);
     }
 
@@ -126,7 +127,7 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        // NDLRCOR012: All params are injectable - factory unnecessary
+        // NDLRGEN003: All params are injectable - factory unnecessary
         if (runtimeCount == 0)
         {
             var diagnostic = Diagnostic.Create(
@@ -136,7 +137,7 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
 
             context.ReportDiagnostic(diagnostic);
         }
-        // NDLRCOR013: No params are injectable - low value factory
+        // NDLRGEN004: No params are injectable - low value factory
         else if (injectableCount == 0)
         {
             var diagnostic = Diagnostic.Create(

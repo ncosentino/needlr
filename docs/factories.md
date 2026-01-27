@@ -148,9 +148,9 @@ Needlr includes analyzers to help with factory usage:
 
 | Diagnostic | Severity | Description |
 |------------|----------|-------------|
-| [NDLRCOR012](analyzers/NDLRCOR012.md) | Warning | All parameters are injectable - factory provides no value |
-| [NDLRCOR013](analyzers/NDLRCOR013.md) | Warning | No parameters are injectable - low value factory |
-| [NDLRCOR014](analyzers/NDLRCOR014.md) | Error | Generic type T in `[GenerateFactory<T>]` is not implemented by the class |
+| [NDLRGEN003](analyzers/NDLRGEN003.md) | Warning | All parameters are injectable - factory provides no value |
+| [NDLRGEN004](analyzers/NDLRGEN004.md) | Warning | No parameters are injectable - low value factory |
+| [NDLRGEN005](analyzers/NDLRGEN005.md) | Error | Generic type T in `[GenerateFactory<T>]` is not implemented by the class |
 
 ## Namespace
 

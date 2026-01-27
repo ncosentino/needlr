@@ -18,6 +18,3 @@ NDLRCOR008 | NexusLabs.Needlr | Warning | InterceptAttributeAnalyzer, [Intercept
 NDLRCOR009 | NexusLabs.Needlr | Info | LazyResolutionAnalyzer, Lazy<T> references undiscovered type
 NDLRCOR010 | NexusLabs.Needlr | Info | CollectionResolutionAnalyzer, IEnumerable<T> has no discovered implementations
 NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, [FromKeyedServices] references unknown key
-NDLRCOR012 | NexusLabs.Needlr | Warning | GenerateFactoryAttributeAnalyzer, [GenerateFactory] unnecessary - all parameters are injectable
-NDLRCOR013 | NexusLabs.Needlr | Warning | GenerateFactoryAttributeAnalyzer, [GenerateFactory] has low value - no injectable parameters
-NDLRCOR014 | NexusLabs.Needlr | Error | GenerateFactoryAttributeAnalyzer, [GenerateFactory<T>] type argument not implemented

@@ -64,21 +64,6 @@ public static class DiagnosticIds
     public const string KeyedServiceUnknownKey = "NDLRCOR011";
 
     /// <summary>
-    /// NDLRCOR012: [GenerateFactory] on type with all injectable parameters is unnecessary.
-    /// </summary>
-    public const string FactoryAllParamsInjectable = "NDLRCOR012";
-
-    /// <summary>
-    /// NDLRCOR013: [GenerateFactory] on type with no injectable parameters provides low value.
-    /// </summary>
-    public const string FactoryNoInjectableParams = "NDLRCOR013";
-
-    /// <summary>
-    /// NDLRCOR014: [GenerateFactory&lt;T&gt;] type argument must be an interface implemented by the class.
-    /// </summary>
-    public const string FactoryTypeArgNotImplemented = "NDLRCOR014";
-
-    /// <summary>
     /// NDLRCOR015: [RegisterAs&lt;T&gt;] type argument must be an interface implemented by the class.
     /// </summary>
     public const string RegisterAsTypeArgNotImplemented = "NDLRCOR015";

@@ -5,13 +5,19 @@ using Microsoft.CodeAnalysis.Testing;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.Analyzers.Tests;
+namespace NexusLabs.Needlr.Generators.Tests;
 
+/// <summary>
+/// Tests for GenerateFactoryAttributeAnalyzer diagnostics:
+/// - NDLRGEN003: All parameters injectable
+/// - NDLRGEN004: No injectable parameters
+/// - NDLRGEN005: Type argument not implemented
+/// </summary>
 public sealed class GenerateFactoryAttributeAnalyzerTests
 {
     private static string Attributes => NeedlrTestAttributes.AllWithFactory;
 
-    #region NDLRCOR012: All params injectable
+    #region NDLRGEN003: All params injectable
 
     [Fact]
     public async Task Warning_WhenAllParamsAreInjectable()
@@ -34,7 +40,7 @@ public class MyService
             TestCode = code,
             ExpectedDiagnostics =
             {
-                new DiagnosticResult(DiagnosticIds.FactoryAllParamsInjectable, Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+                new DiagnosticResult("NDLRGEN003", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
                     .WithLocation(0)
                     .WithArguments("MyService")
             }
@@ -68,7 +74,7 @@ public class MyService
 
     #endregion
 
-    #region NDLRCOR013: No injectable params
+    #region NDLRGEN004: No injectable params
 
     [Fact]
     public async Task Warning_WhenNoInjectableParams()
@@ -88,7 +94,7 @@ public class MyService
             TestCode = code,
             ExpectedDiagnostics =
             {
-                new DiagnosticResult(DiagnosticIds.FactoryNoInjectableParams, Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+                new DiagnosticResult("NDLRGEN004", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
                     .WithLocation(0)
                     .WithArguments("MyService")
             }
@@ -115,7 +121,7 @@ public class MyService
             TestCode = code,
             ExpectedDiagnostics =
             {
-                new DiagnosticResult(DiagnosticIds.FactoryNoInjectableParams, Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+                new DiagnosticResult("NDLRGEN004", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
                     .WithLocation(0)
                     .WithArguments("MyService")
             }
@@ -126,7 +132,7 @@ public class MyService
 
     #endregion
 
-    #region NDLRCOR014: Type argument not implemented
+    #region NDLRGEN005: Type argument not implemented
 
     [Fact]
     public async Task Error_WhenTypeArgNotImplemented()
@@ -149,7 +155,7 @@ public class MyService : IMyService
             TestCode = code,
             ExpectedDiagnostics =
             {
-                new DiagnosticResult(DiagnosticIds.FactoryTypeArgNotImplemented, Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+                new DiagnosticResult("NDLRGEN005", Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
                     .WithLocation(0)
                     .WithArguments("MyService", "IOtherService")
             }

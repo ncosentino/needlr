@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly
   - Update imports: `using NexusLabs.Needlr;` → `using NexusLabs.Needlr.Generators;`
 
+- **BREAKING: Factory analyzer diagnostic IDs renamed**: Factory-related analyzers moved to generators project with new IDs
+  - `NDLRCOR012` → `NDLRGEN003` (all params injectable)
+  - `NDLRCOR013` → `NDLRGEN004` (no injectable params)
+  - `NDLRCOR014` → `NDLRGEN005` (type arg not implemented)
+  - Update `.editorconfig` and `#pragma` directives if you've configured these
+
 - **BREAKING: ConfiguredSyringe API**: `Syringe` no longer has `BuildServiceProvider()`. You must call a strategy method first:
   - `new Syringe().UsingReflection()` → returns `ConfiguredSyringe`
   - `new Syringe().UsingSourceGen()` → returns `ConfiguredSyringe`

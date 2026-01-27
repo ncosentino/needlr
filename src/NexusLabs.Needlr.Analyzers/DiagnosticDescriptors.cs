@@ -158,45 +158,6 @@ public static class DiagnosticDescriptors
         customTags: WellKnownDiagnosticTags.CompilationEnd);
 
     /// <summary>
-    /// NDLRCOR012: [GenerateFactory] on type with all injectable parameters is unnecessary.
-    /// </summary>
-    public static readonly DiagnosticDescriptor FactoryAllParamsInjectable = new(
-        id: DiagnosticIds.FactoryAllParamsInjectable,
-        title: "[GenerateFactory] unnecessary - all parameters are injectable",
-        messageFormat: "Type '{0}' has [GenerateFactory] but all constructor parameters are injectable. Consider removing the attribute for normal registration.",
-        category: Category,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description: "The [GenerateFactory] attribute generates a factory for types with mixed injectable and runtime parameters. When all parameters can be injected by the container, a factory adds no value - the type should be registered normally.",
-        helpLinkUri: HelpLinkBase + "NDLRCOR012.md");
-
-    /// <summary>
-    /// NDLRCOR013: [GenerateFactory] on type with no injectable parameters provides low value.
-    /// </summary>
-    public static readonly DiagnosticDescriptor FactoryNoInjectableParams = new(
-        id: DiagnosticIds.FactoryNoInjectableParams,
-        title: "[GenerateFactory] has low value - no injectable parameters",
-        messageFormat: "Type '{0}' has [GenerateFactory] but no constructor parameters are injectable. The factory provides little benefit over direct instantiation.",
-        category: Category,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description: "The [GenerateFactory] attribute is most useful when a type has a mix of injectable and runtime parameters. When no parameters can be injected, the factory is essentially a wrapper around 'new' with no DI benefit.",
-        helpLinkUri: HelpLinkBase + "NDLRCOR013.md");
-
-    /// <summary>
-    /// NDLRCOR014: [GenerateFactory&lt;T&gt;] type argument must be an interface implemented by the class.
-    /// </summary>
-    public static readonly DiagnosticDescriptor FactoryTypeArgNotImplemented = new(
-        id: DiagnosticIds.FactoryTypeArgNotImplemented,
-        title: "[GenerateFactory<T>] type argument not implemented",
-        messageFormat: "Type '{0}' has [GenerateFactory<{1}>] but does not implement '{1}'. The type argument must be an interface implemented by the class.",
-        category: Category,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        description: "When using [GenerateFactory<T>], T must be an interface that the decorated class implements. The factory's Create() method and Func<> return T, so the class must be assignable to T.",
-        helpLinkUri: HelpLinkBase + "NDLRCOR014.md");
-
-    /// <summary>
     /// NDLRCOR015: [RegisterAs&lt;T&gt;] type argument must be an interface implemented by the class.
     /// </summary>
     public static readonly DiagnosticDescriptor RegisterAsTypeArgNotImplemented = new(

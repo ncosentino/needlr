@@ -1,11 +1,11 @@
-# NDLRCOR013: No factory parameters are injectable
+# NDLRGEN004: No factory parameters are injectable
 
 ## Diagnostic Info
 
 | Property | Value |
 |----------|-------|
-| ID | NDLRCOR013 |
-| Category | NexusLabs.Needlr.Core |
+| ID | NDLRGEN004 |
+| Category | NexusLabs.Needlr.Generators |
 | Severity | Warning |
 | Enabled | Yes |
 
@@ -20,7 +20,7 @@ This warning is raised when a class marked with `[GenerateFactory]` has a constr
 ```csharp
 using NexusLabs.Needlr.Generators;
 
-// ⚠️ NDLRCOR013: No parameters are injectable, factory provides low value
+// ⚠️ NDLRGEN004: No parameters are injectable, factory provides low value
 [GenerateFactory]
 public class ConnectionString
 {
@@ -71,14 +71,14 @@ You might intentionally want a factory for a type with no injectable dependencie
 - You prefer resolving factories from DI for consistency
 
 ```csharp
-#pragma warning disable NDLRCOR013
+#pragma warning disable NDLRGEN004
 [GenerateFactory]
 public class ConnectionString { /* ... */ }
-#pragma warning restore NDLRCOR013
+#pragma warning restore NDLRGEN004
 ```
 
 ## See Also
 
 - [Factory Delegates](../factories.md)
-- [NDLRCOR012](NDLRCOR012.md) - All parameters injectable
-- [NDLRCOR014](NDLRCOR014.md) - Invalid generic type parameter
+- [NDLRGEN003](NDLRGEN003.md) - All parameters injectable
+- [NDLRGEN005](NDLRGEN005.md) - Invalid generic type parameter
