@@ -195,6 +195,62 @@ namespace TestApp
 
     #endregion
 
+    #region Factory-Generated Services Tests
+
+    [Fact]
+    public void DependencyGraph_ShowsFactoriesSection()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Generators.Attributes;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("## Factory Services", content);
+    }
+
+    [Fact]
+    public void DependencyGraph_ShowsFactoryWithHexagonShape()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Generators.Attributes;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IConnection { }
+    
+    [GenerateFactory]
+    public class Connection : IConnection
+    {
+        public Connection(string connectionString) { }
+    }
+}";
+
+        var content = GetDiagnosticContent(source, "DependencyGraph");
+
+        Assert.Contains("Connection", content);
+        // Hexagon shape uses {{name}}
+        Assert.Contains("{{", content);
+    }
+
+    #endregion
+
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {

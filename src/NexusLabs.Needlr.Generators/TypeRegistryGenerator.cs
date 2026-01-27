@@ -1518,6 +1518,27 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        // Factory services section
+        var factories = FilterFactories(discovery.Factories, typeFilter);
+        if (factories.Any())
+        {
+            sb.AppendLine("## Factory Services");
+            sb.AppendLine();
+            sb.AppendLine("```mermaid");
+            sb.AppendLine("graph TD");
+
+            foreach (var factory in factories.OrderBy(f => f.TypeName))
+            {
+                var nodeId = GetMermaidNodeId(factory.TypeName);
+                var nodeName = GetShortTypeName(factory.TypeName);
+                // Use hexagon shape for factories: nodeId{{"name"}}
+                sb.AppendLine($"    {nodeId}{{{{\"{nodeName}\"}}}}");
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
         // Dependency details table
         sb.AppendLine("## Dependency Details");
         sb.AppendLine();
@@ -1783,6 +1804,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             filter.Contains(GetShortTypeName(d.ServiceTypeName)) ||
             filter.Contains(StripGlobalPrefix(d.ServiceTypeName)))
                          .ToList();
+    }
+
+    private static IReadOnlyList<DiscoveredFactory> FilterFactories(IReadOnlyList<DiscoveredFactory> factories, HashSet<string> filter)
+    {
+        if (filter == null || filter.Count == 0)
+            return factories;
+
+        return factories.Where(f => 
+            filter.Contains(f.TypeName) ||
+            filter.Contains(GetShortTypeName(f.TypeName)) ||
+            filter.Contains(StripGlobalPrefix(f.TypeName)))
+                        .ToList();
     }
 
     /// <summary>
