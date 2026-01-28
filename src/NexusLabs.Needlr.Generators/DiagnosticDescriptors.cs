@@ -212,17 +212,4 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "When ValidateMethod is specified but ValidateOnStart is not enabled, the validation method will never be invoked. Either enable ValidateOnStart or remove the ValidateMethod property.",
         helpLinkUri: HelpLinkBase + "NDLRGEN019.md");
-
-    /// <summary>
-    /// NDLRGEN021: [OptionsValidator] attribute is deprecated.
-    /// </summary>
-    public static readonly DiagnosticDescriptor OptionsValidatorDeprecated = new(
-        id: "NDLRGEN021",
-        title: "[OptionsValidator] is deprecated",
-        messageFormat: "[OptionsValidator] on method '{0}' is deprecated. Use convention-based 'Validate()' method or [Options(ValidateMethod = \"...\")] instead.",
-        category: Category,
-        defaultSeverity: DiagnosticSeverity.Info,
-        isEnabledByDefault: true,
-        description: "The [OptionsValidator] attribute is deprecated in favor of convention-based discovery. Simply name your method 'Validate' (or use ValidateMethod property to specify a custom name). The attribute still works but may be removed in a future version.",
-        helpLinkUri: HelpLinkBase + "NDLRGEN021.md");
 }

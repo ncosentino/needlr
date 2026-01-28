@@ -182,44 +182,6 @@ public sealed class OptionsValidatorUnifiedTests
 
     #endregion
 
-    #region Backward Compatibility - [OptionsValidator] Still Works
-
-    [Fact]
-    public void Generator_LegacyOptionsValidatorAttribute_StillWorks()
-    {
-        // Old [OptionsValidator] attribute should still work (deprecated but functional)
-        var source = """
-            using NexusLabs.Needlr.Generators;
-            using System.Collections.Generic;
-            
-            [assembly: GenerateTypeRegistry]
-            
-            namespace TestApp
-            {
-                [Options(ValidateOnStart = true)]
-                public class LegacyOptions
-                {
-                    public string Value { get; set; } = "";
-                    
-                    [OptionsValidator]  // Legacy attribute
-                    public IEnumerable<string> CustomValidate()
-                    {
-                        if (string.IsNullOrEmpty(Value))
-                            yield return "Value is required";
-                    }
-                }
-            }
-            """;
-
-        var generated = RunGenerator(source);
-
-        // Should still work
-        Assert.Contains("LegacyOptionsValidator", generated);
-        Assert.Contains("options.CustomValidate()", generated);
-    }
-
-    #endregion
-
     #region Phase 5B: External Validator Support
 
     [Fact]

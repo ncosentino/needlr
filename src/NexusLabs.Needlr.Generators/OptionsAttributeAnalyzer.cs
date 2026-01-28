@@ -25,7 +25,6 @@ namespace NexusLabs.Needlr.Generators;
 public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
 {
     private const string OptionsAttributeName = "OptionsAttribute";
-    private const string OptionsValidatorAttributeName = "OptionsValidatorAttribute";
     private const string GeneratorsNamespace = "NexusLabs.Needlr.Generators";
     private const string IOptionsValidatorName = "IOptionsValidator";
 
@@ -36,8 +35,7 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ValidateMethodNotFound,
             DiagnosticDescriptors.ValidateMethodWrongSignature,
             DiagnosticDescriptors.ValidatorWontRun,
-            DiagnosticDescriptors.ValidateMethodWontRun,
-            DiagnosticDescriptors.OptionsValidatorDeprecated);
+            DiagnosticDescriptors.ValidateMethodWontRun);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -54,19 +52,6 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
 
         if (attributeSymbol == null)
             return;
-
-        // Check for [OptionsValidator] deprecation (NDLRGEN021)
-        if (IsOptionsValidatorAttribute(attributeSymbol))
-        {
-            var methodDeclaration = attributeSyntax.Parent?.Parent as MethodDeclarationSyntax;
-            var methodName = methodDeclaration?.Identifier.Text ?? "unknown";
-
-            context.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticDescriptors.OptionsValidatorDeprecated,
-                attributeSyntax.GetLocation(),
-                methodName));
-            return;
-        }
 
         // Check if this is an [Options] attribute
         if (!IsOptionsAttribute(attributeSymbol))
@@ -201,15 +186,6 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             return false;
 
         return attributeClass.Name == OptionsAttributeName &&
-               attributeClass.ContainingNamespace?.ToDisplayString() == GeneratorsNamespace;
-    }
-
-    private static bool IsOptionsValidatorAttribute(INamedTypeSymbol? attributeClass)
-    {
-        if (attributeClass == null)
-            return false;
-
-        return attributeClass.Name == OptionsValidatorAttributeName &&
                attributeClass.ContainingNamespace?.ToDisplayString() == GeneratorsNamespace;
     }
 

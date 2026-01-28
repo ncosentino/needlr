@@ -100,6 +100,7 @@ public sealed class OptionsValidationTests
     [Fact]
     public void Generator_OptionsValidatorMethod_GeneratesValidatorClass()
     {
+        // Convention: method named "Validate" returning IEnumerable<ValidationError>
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -113,8 +114,8 @@ public sealed class OptionsValidationTests
                 {
                     public string ApiKey { get; set; } = "";
                     
-                    [OptionsValidator]
-                    public IEnumerable<string> Validate()
+                    // Convention: named "Validate", no attribute needed
+                    public IEnumerable<ValidationError> Validate()
                     {
                         if (!ApiKey.StartsWith("sk_"))
                             yield return "ApiKey must start with 'sk_'";
@@ -133,6 +134,7 @@ public sealed class OptionsValidationTests
     [Fact]
     public void Generator_OptionsValidatorMethod_RegistersValidator()
     {
+        // Convention: method named "Validate" returning IEnumerable<ValidationError>
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -146,8 +148,8 @@ public sealed class OptionsValidationTests
                 {
                     public string Key { get; set; } = "";
                     
-                    [OptionsValidator]
-                    public IEnumerable<string> Validate()
+                    // Convention: named "Validate", no attribute needed
+                    public IEnumerable<ValidationError> Validate()
                     {
                         if (string.IsNullOrEmpty(Key))
                             yield return "Key is required";
@@ -165,6 +167,7 @@ public sealed class OptionsValidationTests
     [Fact]
     public void Generator_StaticValidatorMethod_Works()
     {
+        // Static Validate method with options parameter (convention-based discovery)
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -178,8 +181,8 @@ public sealed class OptionsValidationTests
                 {
                     public int MaxItems { get; set; }
                     
-                    [OptionsValidator]
-                    public static IEnumerable<string> ValidateConfig(ConfigOptions options)
+                    // Convention: static method named "Validate" with options parameter
+                    public static IEnumerable<ValidationError> Validate(ConfigOptions options)
                     {
                         if (options.MaxItems < 0)
                             yield return "MaxItems cannot be negative";
@@ -191,6 +194,7 @@ public sealed class OptionsValidationTests
         var generated = RunGenerator(source);
 
         Assert.Contains("IValidateOptions<global::TestApp.ConfigOptions>", generated);
+        Assert.Contains("ConfigOptions.Validate(options)", generated);
     }
 
     #endregion

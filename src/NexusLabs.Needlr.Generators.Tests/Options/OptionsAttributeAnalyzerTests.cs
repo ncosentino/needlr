@@ -16,40 +16,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsAttributeAnalyzerTests
 {
-    #region NDLRGEN021: [OptionsValidator] Deprecation
-
-    [Fact]
-    public void Analyzer_OptionsValidatorAttribute_ReportsDeprecation()
-    {
-        var source = """
-            using NexusLabs.Needlr.Generators;
-            using System.Collections.Generic;
-            
-            namespace TestApp
-            {
-                [Options(ValidateOnStart = true)]
-                public class TestOptions
-                {
-                    public string Value { get; set; } = "";
-                    
-                    [OptionsValidator]
-                    public IEnumerable<string> CustomValidate()
-                    {
-                        yield break;
-                    }
-                }
-            }
-            """;
-
-        var diagnostics = RunAnalyzer(source);
-
-        var diagnostic = Assert.Single(diagnostics, d => d.Id == "NDLRGEN021");
-        Assert.Contains("CustomValidate", diagnostic.GetMessage());
-        Assert.Equal(DiagnosticSeverity.Info, diagnostic.Severity);
-    }
-
-    #endregion
-
     #region NDLRGEN018/019: Validator Won't Run Warnings
 
     [Fact]

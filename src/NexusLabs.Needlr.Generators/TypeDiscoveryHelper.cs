@@ -36,8 +36,6 @@ internal static class TypeDiscoveryHelper
     private const string GenerateFactoryAttributeFullName = "NexusLabs.Needlr.Generators.GenerateFactoryAttribute";
     private const string OptionsAttributeName = "OptionsAttribute";
     private const string OptionsAttributeFullName = "NexusLabs.Needlr.Generators.OptionsAttribute";
-    private const string OptionsValidatorAttributeName = "OptionsValidatorAttribute";
-    private const string OptionsValidatorAttributeFullName = "NexusLabs.Needlr.Generators.OptionsValidatorAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -2255,12 +2253,7 @@ internal static class TypeDiscoveryHelper
     /// <returns>Validator method info, or null if no validator method found.</returns>
     public static OptionsValidatorMethodInfo? FindValidationMethod(INamedTypeSymbol typeSymbol, string methodName = "Validate")
     {
-        // First, check for legacy [OptionsValidator] attribute
-        var legacyMethod = GetOptionsValidatorMethod(typeSymbol);
-        if (legacyMethod.HasValue)
-            return legacyMethod;
-
-        // Then, look for method by name (convention-based)
+        // Look for method by name (convention-based)
         foreach (var member in typeSymbol.GetMembers())
         {
             if (member is not IMethodSymbol method)
@@ -2297,38 +2290,7 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
-    /// Finds an [OptionsValidator] method on a type (legacy support).
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol to search.</param>
-    /// <returns>Validator method info, or null if no validator method found.</returns>
-    public static OptionsValidatorMethodInfo? GetOptionsValidatorMethod(INamedTypeSymbol typeSymbol)
-    {
-        foreach (var member in typeSymbol.GetMembers())
-        {
-            if (member is not IMethodSymbol method)
-                continue;
-
-            foreach (var attribute in method.GetAttributes())
-            {
-                var attributeClass = attribute.AttributeClass;
-                if (attributeClass == null)
-                    continue;
-
-                var name = attributeClass.Name;
-                var fullName = attributeClass.ToDisplayString();
-
-                if (name == OptionsValidatorAttributeName || fullName == OptionsValidatorAttributeFullName)
-                {
-                    return new OptionsValidatorMethodInfo(method.Name, method.IsStatic);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Information about an [OptionsValidator] method.
+    /// Information about a validation method.
     /// </summary>
     public readonly struct OptionsValidatorMethodInfo
     {

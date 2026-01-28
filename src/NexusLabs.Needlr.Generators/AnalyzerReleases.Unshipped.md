@@ -11,4 +11,3 @@ NDLRGEN016 | NexusLabs.Needlr.Generators | Error | OptionsAttributeAnalyzer, Val
 NDLRGEN017 | NexusLabs.Needlr.Generators | Error | OptionsAttributeAnalyzer, Validation method has wrong signature
 NDLRGEN018 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validator won't run
 NDLRGEN019 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validation method won't run
-NDLRGEN021 | NexusLabs.Needlr.Generators | Info | OptionsAttributeAnalyzer, [OptionsValidator] is deprecated
