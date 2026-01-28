@@ -7,8 +7,6 @@ namespace NexusLabs.Needlr.Generators.Tests;
 
 public sealed class FactoryGeneratorTests
 {
-    #region Detection Tests
-
     [Fact]
     public void Generator_WithGenerateFactoryAttribute_DetectsAttribute()
     {
@@ -60,13 +58,7 @@ namespace TestApp
 
         // Type should NOT be in injectable types (it's factory-only)
         Assert.DoesNotContain("new InjectableTypeInfo(typeof(global::TestApp.MyService)", generatedCode);
-    }
-
-    #endregion
-
-    #region Constructor Parameter Partitioning Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithMixedParams_PartitionsInjectableAndRuntime()
     {
         var source = @"
@@ -147,13 +139,7 @@ namespace TestApp
         Assert.DoesNotContain("IMyServiceFactory", generatedCode);
         // Should register normally instead (using shorthand constructor)
         Assert.Contains("new(typeof(global::TestApp.MyService)", generatedCode);
-    }
-
-    #endregion
-
-    #region Func Generation Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithModeAll_GeneratesFuncRegistration()
     {
         var source = @"
@@ -232,13 +218,7 @@ namespace TestApp
         // Should generate interface but NOT Func
         Assert.Contains("IMyServiceFactory", generatedCode);
         Assert.DoesNotContain("Func<string, global::TestApp.MyService>", generatedCode);
-    }
-
-    #endregion
-
-    #region Factory Interface Generation Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithModeAll_GeneratesFactoryInterface()
     {
         var source = @"
@@ -317,13 +297,7 @@ namespace TestApp
 
         // Factory should be registered as singleton (using TestAssembly as the generated namespace)
         Assert.Contains("AddSingleton<global::TestAssembly.Generated.IMyServiceFactory, global::TestAssembly.Generated.MyServiceFactory>", generatedCode);
-    }
-
-    #endregion
-
-    #region Multiple Constructor Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithMultipleConstructors_GeneratesMultipleCreateOverloads()
     {
         var source = @"
@@ -377,13 +351,7 @@ namespace TestApp
         // Should generate both Func types
         Assert.Contains("Func<string, global::TestApp.MyService>", generatedCode);
         Assert.Contains("Func<string, int, global::TestApp.MyService>", generatedCode);
-    }
-
-    #endregion
-
-    #region Generic Attribute Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithNonGenericAttribute_FuncReturnsConcreteType()
     {
         var source = @"
@@ -468,13 +436,7 @@ namespace TestApp
         Assert.Contains("global::TestApp.IMyService Create(string connectionString);", generatedCode);
         // Implementation also returns interface
         Assert.Contains("public global::TestApp.IMyService Create(string connectionString)", generatedCode);
-    }
-
-    #endregion
-
-    #region XML Documentation Tests
-
-    [Fact]
+    }    [Fact]
     public void Generator_WithDocumentedConstructorParams_IncludesParamDocsInFactory()
     {
         var source = @"
@@ -634,9 +596,6 @@ namespace TestApp
         // Should preserve XML escaping
         Assert.Contains(@"<param name=""filter"">Filter expression using &lt;T&gt; syntax.</param>", generatedCode);
     }
-
-    #endregion
-
     private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);

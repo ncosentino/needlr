@@ -868,9 +868,6 @@ namespace TestApp
         Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
     }
 #pragma warning restore xUnit1051
-
-    #region Assembly Force-Loading Tests
-
     [Fact]
     public void Generator_WithReferencedAssemblyHavingGenerateTypeRegistry_GeneratesForceLoadMethod()
     {
@@ -1167,7 +1164,4 @@ namespace NexusLabs.Needlr
 
         public System.Type[] ConstructorParameterTypes { get; }
     }
-}";
-
-    #endregion
-}
+}";}

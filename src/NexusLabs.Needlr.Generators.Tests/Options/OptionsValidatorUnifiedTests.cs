@@ -14,8 +14,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsValidatorUnifiedTests
 {
-    #region Convention-Based Discovery (Validate method)
-
     [Fact]
     public void Generator_ConventionValidateMethod_DiscoveredAutomatically()
     {
@@ -77,13 +75,7 @@ public sealed class OptionsValidatorUnifiedTests
         // Should still have ValidateOnStart chain but no custom validator class
         Assert.Contains("ValidateOnStart()", generated);
         Assert.DoesNotContain("SimpleOptionsValidator", generated);
-    }
-
-    #endregion
-
-    #region ValidateMethod Property
-
-    [Fact]
+    }    [Fact]
     public void Generator_ValidateMethodProperty_UsesCustomMethodName()
     {
         var source = """
@@ -142,13 +134,7 @@ public sealed class OptionsValidatorUnifiedTests
         var generated = RunGenerator(source);
 
         Assert.Contains("options.ValidateConnection()", generated);
-    }
-
-    #endregion
-
-    #region ValidationError with Implicit String Conversion
-
-    [Fact]
+    }    [Fact]
     public void Generator_ValidationErrorImplicitString_Works()
     {
         // The yield return "string" should work via implicit conversion
@@ -178,13 +164,7 @@ public sealed class OptionsValidatorUnifiedTests
 
         // Should compile and generate validator
         Assert.Contains("TestOptionsValidator", generated);
-    }
-
-    #endregion
-
-    #region Phase 5B: External Validator Support
-
-    [Fact]
+    }    [Fact]
     public void Generator_ExternalValidator_WithIOptionsValidator_GeneratesAdapter()
     {
         // External validator using IOptionsValidator<T>
@@ -327,13 +307,7 @@ public sealed class OptionsValidatorUnifiedTests
 
         // External validator should be registered in DI
         Assert.Contains("AddSingleton<global::TestApp.ShippingValidator>()", generated);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static string RunGenerator(string source)
+    }    private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
@@ -368,7 +342,4 @@ public sealed class OptionsValidatorUnifiedTests
         }
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }
-
-    #endregion
-}
+    }}

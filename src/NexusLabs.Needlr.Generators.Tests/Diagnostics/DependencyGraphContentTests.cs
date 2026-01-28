@@ -6,8 +6,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Diagnostics;
 
 public sealed class DependencyGraphContentTests
 {
-    #region Decorator Chain Tests
-
     [Fact]
     public void DependencyGraph_ShowsDecoratorChainsSection()
     {
@@ -76,13 +74,7 @@ namespace TestApp
         Assert.Contains("OrderService", content);
         // Chain arrows should be present
         Assert.Contains("-->", content);
-    }
-
-    #endregion
-
-    #region Keyed Service Cluster Tests
-
-    [Fact]
+    }    [Fact]
     public void DependencyGraph_ShowsKeyedServicesSection()
     {
         var source = @"
@@ -136,13 +128,7 @@ namespace TestApp
         Assert.Contains("memory", content);
         Assert.Contains("RedisCache", content);
         Assert.Contains("MemoryCache", content);
-    }
-
-    #endregion
-
-    #region Plugin Assembly Boundary Tests
-
-    [Fact]
+    }    [Fact]
     public void DependencyGraph_ShowsPluginAssembliesSection()
     {
         var source = @"
@@ -191,13 +177,7 @@ namespace TestApp
 
         Assert.Contains("OrderPlugin", content);
         Assert.Contains("PaymentPlugin", content);
-    }
-
-    #endregion
-
-    #region Factory-Generated Services Tests
-
-    [Fact]
+    }    [Fact]
     public void DependencyGraph_ShowsFactoriesSection()
     {
         var source = @"
@@ -274,13 +254,7 @@ namespace TestApp
         Assert.Contains("ConnectionFactory[\"ConnectionFactory\"]", content);
         // Shows produces relationship
         Assert.Contains("-.->|produces|", content);
-    }
-
-    #endregion
-
-    #region Interface Implementation Mapping Tests
-
-    [Fact]
+    }    [Fact]
     public void DependencyGraph_ShowsInterfaceMappingSection()
     {
         var source = @"
@@ -322,13 +296,7 @@ namespace TestApp
         Assert.Contains("IOrderService", content);
         Assert.Contains("OrderService", content);
         Assert.Contains("-.->", content);
-    }
-
-    #endregion
-
-    #region Complexity Metrics Tests
-
-    [Fact]
+    }    [Fact]
     public void DependencyGraph_ShowsComplexityMetricsSection()
     {
         var source = @"
@@ -408,9 +376,6 @@ namespace TestApp
 
         Assert.Contains("Hub Services", content);
     }
-
-    #endregion
-
     [Fact]
     public void DependencyGraph_ContainsMermaidHeader()
     {
@@ -503,9 +468,6 @@ namespace TestApp
         Assert.Contains("ILogger", content);
         Assert.Contains("-->", content);
     }
-
-    #region Referenced TypeRegistry Assemblies Tests
-
     [Fact]
     public void DependencyGraph_ShowsReferencedTypeRegistryAssembliesSection()
     {
@@ -1046,7 +1008,4 @@ namespace PluginLib
 
         // Should show consolidated Intercepted Services section
         Assert.Contains("## Intercepted Services", content);
-    }
-
-    #endregion
-}
+    }}

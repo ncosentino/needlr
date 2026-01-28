@@ -16,9 +16,6 @@ namespace NexusLabs.Needlr.Generators.Tests;
 public sealed class OpenDecoratorForAttributeAnalyzerTests
 {
     private static string Attributes => NeedlrTestAttributes.AllWithOpenDecorator;
-
-    #region NDLRGEN006: Type must be open generic interface
-
     [Fact]
     public async Task Error_WhenTypeIsNotGeneric()
     {
@@ -95,13 +92,7 @@ public class LoggingDecorator<T> : IHandler<T>
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region NDLRGEN007: Decorator must be open generic with matching arity
-
-    [Fact]
+    }    [Fact]
     public async Task Error_WhenDecoratorIsNotGeneric()
     {
         var code = @"
@@ -177,13 +168,7 @@ public class LoggingDecorator<TMessage, TResult> : IHandler<TMessage, TResult>
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region NDLRGEN008: Decorator must implement the interface
-
-    [Fact]
+    }    [Fact]
     public async Task Error_WhenDecoratorDoesNotImplementInterface()
     {
         var code = @"
@@ -234,13 +219,7 @@ public class LoggingDecorator<T> : IHandler<T>
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region Multiple decorators
-
-    [Fact]
+    }    [Fact]
     public async Task NoError_WhenMultipleOpenDecoratorsWithDifferentOrder()
     {
         var code = @"
@@ -269,7 +248,4 @@ public class CachingDecorator<T> : IHandler<T>
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-}
+    }}

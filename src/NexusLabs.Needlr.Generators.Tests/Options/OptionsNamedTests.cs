@@ -13,8 +13,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsNamedTests
 {
-    #region Basic Named Options
-
     [Fact]
     public void Generator_NamedOptions_GeneratesConfigureWithName()
     {
@@ -94,13 +92,7 @@ public sealed class OptionsNamedTests
         Assert.Contains("GetSection(\"Database\")", generated);  // Default inferred from DatabaseOptions
         Assert.Contains("\"Backup\"", generated);
         Assert.Contains("GetSection(\"Databases:Backup\")", generated);
-    }
-
-    #endregion
-
-    #region Named Options with Validation
-
-    [Fact]
+    }    [Fact]
     public void Generator_NamedOptionsWithValidation_UsesAddOptionsPattern()
     {
         var source = """
@@ -124,13 +116,7 @@ public sealed class OptionsNamedTests
         Assert.Contains("AddOptions<global::TestApp.ConnectionOptions>(\"Primary\")", generated);
         Assert.Contains("BindConfiguration(\"Connections:Primary\")", generated);
         Assert.Contains("ValidateOnStart()", generated);
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
+    }    [Fact]
     public void Generator_NameWithoutExplicitSection_InfersSectionName()
     {
         var source = """
@@ -153,13 +139,7 @@ public sealed class OptionsNamedTests
         // Should infer section name from class name but use explicit Name
         Assert.Contains("\"Custom\"", generated);
         Assert.Contains("GetSection(\"Cache\")", generated);  // Inferred from CacheSettings
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static string RunGenerator(string source)
+    }    private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
@@ -194,7 +174,4 @@ public sealed class OptionsNamedTests
         }
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }
-
-    #endregion
-}
+    }}

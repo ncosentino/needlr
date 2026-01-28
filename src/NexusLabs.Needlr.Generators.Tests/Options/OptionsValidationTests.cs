@@ -13,8 +13,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsValidationTests
 {
-    #region ValidateOnStart with DataAnnotations
-
     [Fact]
     public void Generator_ValidateOnStart_GeneratesAddOptionsPattern()
     {
@@ -91,13 +89,7 @@ public sealed class OptionsValidationTests
         Assert.Contains("Configure<global::TestApp.DatabaseOptions>", generated);
         Assert.DoesNotContain("AddOptions<", generated);
         Assert.DoesNotContain("ValidateOnStart", generated);
-    }
-
-    #endregion
-
-    #region OptionsValidator Method
-
-    [Fact]
+    }    [Fact]
     public void Generator_OptionsValidatorMethod_GeneratesValidatorClass()
     {
         // Convention: method named "Validate" returning IEnumerable<ValidationError>
@@ -195,13 +187,7 @@ public sealed class OptionsValidationTests
 
         Assert.Contains("IValidateOptions<global::TestApp.ConfigOptions>", generated);
         Assert.Contains("ConfigOptions.Validate(options)", generated);
-    }
-
-    #endregion
-
-    #region IOptionsValidator<T> Type Discovery
-
-    [Fact]
+    }    [Fact]
     public void Generator_SeparateValidatorType_IsDiscoveredAndRegistered()
     {
         var source = """
@@ -238,13 +224,7 @@ public sealed class OptionsValidationTests
 
         // Should discover and wire up the validator type
         Assert.Contains("PaymentOptionsValidator", generated);
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
+    }    [Fact]
     public void Generator_ValidateOnStartWithoutValidation_StillValidatesOnStart()
     {
         // ValidateOnStart without any validation attributes should still call ValidateOnStart
@@ -305,13 +285,7 @@ public sealed class OptionsValidationTests
         Assert.Contains("AddOptions<global::TestApp.OptionsA>", generated);
         Assert.Contains("AddOptions<global::TestApp.OptionsB>", generated);
         Assert.Contains("Configure<global::TestApp.OptionsC>", generated);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static string RunGenerator(string source)
+    }    private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
@@ -346,7 +320,4 @@ public sealed class OptionsValidationTests
         }
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }
-
-    #endregion
-}
+    }}

@@ -16,9 +16,6 @@ namespace NexusLabs.Needlr.Generators.Tests;
 public sealed class GenerateFactoryAttributeAnalyzerTests
 {
     private static string Attributes => NeedlrTestAttributes.AllWithFactory;
-
-    #region NDLRGEN003: All params injectable
-
     [Fact]
     public async Task Warning_WhenAllParamsAreInjectable()
     {
@@ -70,13 +67,7 @@ public class MyService
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region NDLRGEN004: No injectable params
-
-    [Fact]
+    }    [Fact]
     public async Task Warning_WhenNoInjectableParams()
     {
         var code = @"
@@ -128,13 +119,7 @@ public class MyService
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region NDLRGEN005: Type argument not implemented
-
-    [Fact]
+    }    [Fact]
     public async Task Error_WhenTypeArgNotImplemented()
     {
         var code = @"
@@ -211,13 +196,7 @@ public class MyService : IMyService
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-
-    #region Non-generic attribute still works
-
-    [Fact]
+    }    [Fact]
     public async Task NoError_NonGenericWithMixedParams()
     {
         var code = @"
@@ -238,7 +217,4 @@ public class MyService
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }
-
-    #endregion
-}
+    }}

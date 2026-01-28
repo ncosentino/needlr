@@ -12,8 +12,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsNestedTests
 {
-    #region Nested Detection Tests
-
     [Fact]
     public void Generator_NestedOptionsType_NotRegisteredSeparately()
     {
@@ -187,13 +185,7 @@ public sealed class OptionsNestedTests
         // (It may appear elsewhere as an injectable type, but not in RegisterOptions)
         var registerOptionsSection = ExtractRegisterOptionsMethod(generated);
         Assert.DoesNotContain("RegularClass", registerOptionsSection);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static string ExtractRegisterOptionsMethod(string generated)
+    }    private static string ExtractRegisterOptionsMethod(string generated)
     {
         // Extract just the RegisterOptions method body
         var startMarker = "public static void RegisterOptions(";
@@ -241,7 +233,4 @@ public sealed class OptionsNestedTests
         }
 
         return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }
-
-    #endregion
-}
+    }}

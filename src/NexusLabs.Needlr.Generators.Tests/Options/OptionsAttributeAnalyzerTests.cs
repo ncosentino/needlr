@@ -16,8 +16,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// </summary>
 public sealed class OptionsAttributeAnalyzerTests
 {
-    #region NDLRGEN018/019: Validator Won't Run Warnings
-
     [Fact]
     public void Analyzer_ValidatorWithoutValidateOnStart_ReportsWarning()
     {
@@ -77,13 +75,7 @@ public sealed class OptionsAttributeAnalyzerTests
         var diagnostic = Assert.Single(diagnostics, d => d.Id == "NDLRGEN019");
         Assert.Contains("CustomValidate", diagnostic.GetMessage());
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-    }
-
-    #endregion
-
-    #region NDLRGEN016: ValidateMethod Not Found
-
-    [Fact]
+    }    [Fact]
     public void Analyzer_ValidateMethodNotFound_ReportsError()
     {
         var source = """
@@ -135,13 +127,7 @@ public sealed class OptionsAttributeAnalyzerTests
         var diagnostic = Assert.Single(diagnostics, d => d.Id == "NDLRGEN016");
         Assert.Contains("NonExistentMethod", diagnostic.GetMessage());
         Assert.Contains("EmptyValidator", diagnostic.GetMessage());
-    }
-
-    #endregion
-
-    #region NDLRGEN015: Validator Type Mismatch
-
-    [Fact]
+    }    [Fact]
     public void Analyzer_ValidatorTypeMismatch_ReportsError()
     {
         var source = """
@@ -178,13 +164,7 @@ public sealed class OptionsAttributeAnalyzerTests
         Assert.Contains("WrongTypeValidator", diagnostic.GetMessage());
         Assert.Contains("OtherOptions", diagnostic.GetMessage());
         Assert.Contains("TestOptions", diagnostic.GetMessage());
-    }
-
-    #endregion
-
-    #region Valid Configurations (No Diagnostics)
-
-    [Fact]
+    }    [Fact]
     public void Analyzer_ValidConfiguration_NoDiagnostics()
     {
         var source = """
@@ -263,13 +243,7 @@ public sealed class OptionsAttributeAnalyzerTests
         var diagnostics = RunAnalyzer(source);
 
         Assert.Empty(diagnostics);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static Diagnostic[] RunAnalyzer(string source)
+    }    private static Diagnostic[] RunAnalyzer(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
@@ -291,7 +265,4 @@ public sealed class OptionsAttributeAnalyzerTests
         var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers);
 
         return compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result.ToArray();
-    }
-
-    #endregion
-}
+    }}
