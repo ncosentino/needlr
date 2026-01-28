@@ -130,4 +130,99 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "A decorator must implement the same interface as the services it wraps. Ensure the class implements the open generic interface specified in [OpenDecoratorFor].",
         helpLinkUri: HelpLinkBase + "NDLRGEN008.md");
+
+    // ============================================================================
+    // Options Validation Analyzers (NDLRGEN014-021)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN014: Validator type must implement IOptionsValidator&lt;T&gt; or have a valid Validate method.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidatorTypeMissingInterface = new(
+        id: "NDLRGEN014",
+        title: "Validator type has no validation method",
+        messageFormat: "Validator type '{0}' must have a Validate method. Implement IOptionsValidator<{1}> or add a 'Validate({1})' method.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When using Validator property on [Options], the specified type must have a valid validation method. Either implement IOptionsValidator<T> or add a method matching the expected signature.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN014.md");
+
+    /// <summary>
+    /// NDLRGEN015: Validator's generic type parameter doesn't match the options type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidatorTypeMismatch = new(
+        id: "NDLRGEN015",
+        title: "Validator type mismatch",
+        messageFormat: "Validator '{0}' validates '{1}' but is applied to options type '{2}'. The validator must be for the same type.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The Validator specified in [Options(Validator = ...)] must validate the same type as the options class it's applied to. Check that the IOptionsValidator<T> or validation method parameter matches the options type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN015.md");
+
+    /// <summary>
+    /// NDLRGEN016: ValidateMethod specified but method not found on target type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidateMethodNotFound = new(
+        id: "NDLRGEN016",
+        title: "Validation method not found",
+        messageFormat: "Method '{0}' not found on type '{1}'. Ensure the method exists and has the correct signature.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The ValidateMethod specified in [Options] must exist on the options type (or Validator type if specified). The method should return IEnumerable<ValidationError> or IEnumerable<string>.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN016.md");
+
+    /// <summary>
+    /// NDLRGEN017: Validation method has incorrect signature.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidateMethodWrongSignature = new(
+        id: "NDLRGEN017",
+        title: "Validation method has wrong signature",
+        messageFormat: "Method '{0}' on type '{1}' has wrong signature, expected {2}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Validation methods must return IEnumerable<ValidationError> or IEnumerable<string>. Instance methods on the options type should have no parameters. External validator methods should have one parameter of the options type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN017.md");
+
+    /// <summary>
+    /// NDLRGEN018: Validator specified but ValidateOnStart is false.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidatorWontRun = new(
+        id: "NDLRGEN018",
+        title: "Validator won't run",
+        messageFormat: "Validator '{0}' will not run because ValidateOnStart is false. Set ValidateOnStart = true to enable validation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "When Validator is specified but ValidateOnStart is not enabled, the validator will never be invoked. Either enable ValidateOnStart or remove the Validator property.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN018.md");
+
+    /// <summary>
+    /// NDLRGEN019: ValidateMethod specified but ValidateOnStart is false.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ValidateMethodWontRun = new(
+        id: "NDLRGEN019",
+        title: "Validation method won't run",
+        messageFormat: "ValidateMethod '{0}' will not run because ValidateOnStart is false. Set ValidateOnStart = true to enable validation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "When ValidateMethod is specified but ValidateOnStart is not enabled, the validation method will never be invoked. Either enable ValidateOnStart or remove the ValidateMethod property.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN019.md");
+
+    /// <summary>
+    /// NDLRGEN021: [OptionsValidator] attribute is deprecated.
+    /// </summary>
+    public static readonly DiagnosticDescriptor OptionsValidatorDeprecated = new(
+        id: "NDLRGEN021",
+        title: "[OptionsValidator] is deprecated",
+        messageFormat: "[OptionsValidator] on method '{0}' is deprecated. Use convention-based 'Validate()' method or [Options(ValidateMethod = \"...\")] instead.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "The [OptionsValidator] attribute is deprecated in favor of convention-based discovery. Simply name your method 'Validate' (or use ValidateMethod property to specify a custom name). The attribute still works but may be removed in a future version.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN021.md");
 }
