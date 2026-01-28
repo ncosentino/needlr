@@ -277,7 +277,8 @@ internal readonly struct DiscoveredOptions
         string? name,
         bool validateOnStart,
         string assemblyName,
-        string? sourceFilePath = null)
+        string? sourceFilePath = null,
+        OptionsValidatorInfo? validatorMethod = null)
     {
         TypeName = typeName;
         SectionName = sectionName;
@@ -285,6 +286,7 @@ internal readonly struct DiscoveredOptions
         ValidateOnStart = validateOnStart;
         AssemblyName = assemblyName;
         SourceFilePath = sourceFilePath;
+        ValidatorMethod = validatorMethod;
     }
 
     /// <summary>Fully qualified type name of the options class.</summary>
@@ -302,8 +304,32 @@ internal readonly struct DiscoveredOptions
     public string AssemblyName { get; }
     public string? SourceFilePath { get; }
 
+    /// <summary>Information about the [OptionsValidator] method, if present.</summary>
+    public OptionsValidatorInfo? ValidatorMethod { get; }
+
     /// <summary>True if this is a named options registration (not default).</summary>
     public bool IsNamed => Name != null;
+
+    /// <summary>True if this options type has a custom validator method.</summary>
+    public bool HasValidatorMethod => ValidatorMethod != null;
+}
+
+/// <summary>
+/// Information about an [OptionsValidator] method.
+/// </summary>
+internal readonly struct OptionsValidatorInfo
+{
+    public OptionsValidatorInfo(string methodName, bool isStatic)
+    {
+        MethodName = methodName;
+        IsStatic = isStatic;
+    }
+
+    /// <summary>Name of the validator method.</summary>
+    public string MethodName { get; }
+
+    /// <summary>True if the method is static.</summary>
+    public bool IsStatic { get; }
 }
 
 /// <summary>

@@ -105,6 +105,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
             }
 
+            // Generate options validator classes if any have [OptionsValidator] methods
+            var optionsWithValidators = discoveryResult.Options.Where(o => o.HasValidatorMethod).ToList();
+            if (optionsWithValidators.Count > 0)
+            {
+                var validatorsText = GenerateOptionsValidatorsSource(optionsWithValidators, assemblyName, breadcrumbs, projectDirectory);
+                spc.AddSource("OptionsValidators.g.cs", SourceText.From(validatorsText, Encoding.UTF8));
+            }
+
             // Generate diagnostic output files if configured
             var diagnosticOptions = GetDiagnosticOptions(configOptions);
             if (diagnosticOptions.Enabled)
@@ -309,6 +317,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var optionsAttrs = TypeDiscoveryHelper.GetOptionsAttributes(typeSymbol);
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
+                // Check for [OptionsValidator] method
+                var validatorMethodInfo = TypeDiscoveryHelper.GetOptionsValidatorMethod(typeSymbol);
+                OptionsValidatorInfo? validatorInfo = validatorMethodInfo.HasValue
+                    ? new OptionsValidatorInfo(validatorMethodInfo.Value.MethodName, validatorMethodInfo.Value.IsStatic)
+                    : null;
+
                 foreach (var optionsAttr in optionsAttrs)
                 {
                     // Infer section name if not provided
@@ -321,7 +335,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         optionsAttr.Name,
                         optionsAttr.ValidateOnStart,
                         assembly.Name,
-                        sourceFilePath));
+                        sourceFilePath,
+                        validatorInfo));
                 }
             }
 
@@ -537,7 +552,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (hasOptions)
         {
             builder.AppendLine();
-            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, breadcrumbs, projectDirectory);
+            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, safeAssemblyName, breadcrumbs, projectDirectory);
         }
 
         builder.AppendLine();
@@ -797,7 +812,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Registers all discovered options types with the service collection.");
@@ -818,7 +833,34 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var typeName = opt.TypeName;
                 
-                if (opt.IsNamed)
+                if (opt.ValidateOnStart)
+                {
+                    // Use AddOptions pattern for validation support
+                    // services.AddOptions<T>().BindConfiguration("Section").ValidateDataAnnotations().ValidateOnStart();
+                    builder.Append($"        services.AddOptions<{typeName}>");
+                    
+                    if (opt.IsNamed)
+                    {
+                        builder.Append($"(\"{opt.Name}\")");
+                    }
+                    else
+                    {
+                        builder.Append("()");
+                    }
+                    
+                    builder.Append($".BindConfiguration(\"{opt.SectionName}\")");
+                    builder.Append(".ValidateDataAnnotations()");
+                    builder.AppendLine(".ValidateOnStart();");
+
+                    // If there's a custom validator method, register the generated validator
+                    if (opt.HasValidatorMethod)
+                    {
+                        var shortTypeName = GetShortTypeName(typeName);
+                        var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
+                        builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+                    }
+                }
+                else if (opt.IsNamed)
                 {
                     // Named options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, "name", section)
                     builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, \"{opt.Name}\", configuration.GetSection(\"{opt.SectionName}\"));");
@@ -1174,6 +1216,70 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// </summary>");
         builder.AppendLine($"    public static int Count => {factories.Count};");
         builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    private static string GenerateOptionsValidatorsSource(IReadOnlyList<DiscoveredOptions> optionsWithValidators, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Options Validators");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.Options;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate validator class for each options type with a validator method
+        foreach (var opt in optionsWithValidators)
+        {
+            if (!opt.HasValidatorMethod || opt.ValidatorMethod == null)
+                continue;
+
+            var shortTypeName = GetShortTypeName(opt.TypeName);
+            var validatorClassName = shortTypeName + "Validator";
+
+            builder.AppendLine("/// <summary>");
+            builder.AppendLine($"/// Generated validator for <see cref=\"{opt.TypeName}\"/>.");
+            builder.AppendLine("/// Calls the [OptionsValidator] method on the options instance.");
+            builder.AppendLine("/// </summary>");
+            builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+            builder.AppendLine($"public sealed class {validatorClassName} : IValidateOptions<{opt.TypeName}>");
+            builder.AppendLine("{");
+            builder.AppendLine($"    public ValidateOptionsResult Validate(string? name, {opt.TypeName} options)");
+            builder.AppendLine("    {");
+            builder.AppendLine("        var errors = new List<string>();");
+
+            if (opt.ValidatorMethod.Value.IsStatic)
+            {
+                // Static method: SomeType.ValidateConfig(options)
+                builder.AppendLine($"        foreach (var error in {opt.TypeName}.{opt.ValidatorMethod.Value.MethodName}(options))");
+            }
+            else
+            {
+                // Instance method: options.Validate()
+                builder.AppendLine($"        foreach (var error in options.{opt.ValidatorMethod.Value.MethodName}())");
+            }
+
+            builder.AppendLine("        {");
+            builder.AppendLine("            errors.Add(error);");
+            builder.AppendLine("        }");
+            builder.AppendLine();
+            builder.AppendLine("        if (errors.Count > 0)");
+            builder.AppendLine("        {");
+            builder.AppendLine($"            return ValidateOptionsResult.Fail(errors);");
+            builder.AppendLine("        }");
+            builder.AppendLine();
+            builder.AppendLine("        return ValidateOptionsResult.Success;");
+            builder.AppendLine("    }");
+            builder.AppendLine("}");
+            builder.AppendLine();
+        }
 
         return builder.ToString();
     }
@@ -2841,6 +2947,28 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         
         var lastDot = name.LastIndexOf('.');
         return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+    }
+
+    /// <summary>
+    /// Gets the fully qualified validator class name for an options type.
+    /// E.g., "global::TestApp.StripeOptions" -> "global::TestApp.Generated.StripeOptionsValidator"
+    /// </summary>
+    private static string GetValidatorClassName(string optionsTypeName)
+    {
+        var shortName = GetShortTypeName(optionsTypeName);
+        
+        // Get namespace from fully qualified name
+        var name = optionsTypeName;
+        if (name.StartsWith("global::", StringComparison.Ordinal))
+            name = name.Substring(8);
+        
+        var lastDot = name.LastIndexOf('.');
+        var ns = lastDot >= 0 ? name.Substring(0, lastDot) : "";
+        
+        var validatorName = shortName + "Validator";
+        return string.IsNullOrEmpty(ns)
+            ? $"global::{validatorName}"
+            : $"global::{ns}.Generated.{validatorName}";
     }
 
     private static string ExtractGenericTypeArgument(string genericTypeName)
