@@ -2135,11 +2135,13 @@ internal static class TypeDiscoveryHelper
     /// </summary>
     public readonly struct OptionsAttributeInfo
     {
-        public OptionsAttributeInfo(string? sectionName, string? name, bool validateOnStart)
+        public OptionsAttributeInfo(string? sectionName, string? name, bool validateOnStart, string? validateMethod = null, INamedTypeSymbol? validatorType = null)
         {
             SectionName = sectionName;
             Name = name;
             ValidateOnStart = validateOnStart;
+            ValidateMethod = validateMethod;
+            ValidatorType = validatorType;
         }
 
         /// <summary>Explicit section name from attribute, or null to infer from class name.</summary>
@@ -2150,6 +2152,12 @@ internal static class TypeDiscoveryHelper
 
         /// <summary>Whether to validate options on startup.</summary>
         public bool ValidateOnStart { get; }
+
+        /// <summary>Custom validation method name, or null to use convention ("Validate").</summary>
+        public string? ValidateMethod { get; }
+
+        /// <summary>External validator type, or null to use the options class itself.</summary>
+        public INamedTypeSymbol? ValidatorType { get; }
     }
 
     /// <summary>
@@ -2209,6 +2217,8 @@ internal static class TypeDiscoveryHelper
             // Extract named arguments
             string? optionsName = null;
             bool validateOnStart = false;
+            string? validateMethod = null;
+            INamedTypeSymbol? validatorType = null;
 
             foreach (var namedArg in attribute.NamedArguments)
             {
@@ -2220,16 +2230,65 @@ internal static class TypeDiscoveryHelper
                 {
                     validateOnStart = v;
                 }
+                else if (namedArg.Key == "ValidateMethod" && namedArg.Value.Value is string vm)
+                {
+                    validateMethod = vm;
+                }
+                else if (namedArg.Key == "Validator" && namedArg.Value.Value is INamedTypeSymbol vt)
+                {
+                    validatorType = vt;
+                }
             }
 
-            result.Add(new OptionsAttributeInfo(sectionName, optionsName, validateOnStart));
+            result.Add(new OptionsAttributeInfo(sectionName, optionsName, validateOnStart, validateMethod, validatorType));
         }
 
         return result;
     }
 
     /// <summary>
-    /// Finds an [OptionsValidator] method on a type.
+    /// Finds a validation method on a type by convention or explicit name.
+    /// Looks for: 1) [OptionsValidator] attribute (legacy), 2) method by name (convention or explicit).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to search.</param>
+    /// <param name="methodName">The method name to look for (default: "Validate").</param>
+    /// <returns>Validator method info, or null if no validator method found.</returns>
+    public static OptionsValidatorMethodInfo? FindValidationMethod(INamedTypeSymbol typeSymbol, string methodName = "Validate")
+    {
+        // First, check for legacy [OptionsValidator] attribute
+        var legacyMethod = GetOptionsValidatorMethod(typeSymbol);
+        if (legacyMethod.HasValue)
+            return legacyMethod;
+
+        // Then, look for method by name (convention-based)
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is not IMethodSymbol method)
+                continue;
+
+            if (method.Name != methodName)
+                continue;
+
+            // Check signature: should return IEnumerable<string> or IEnumerable<ValidationError>
+            // and have no parameters (instance method) or one parameter (static method with options type)
+            if (method.Parameters.Length == 0 && !method.IsStatic)
+            {
+                // Instance method: T.Validate()
+                return new OptionsValidatorMethodInfo(method.Name, false);
+            }
+            
+            if (method.Parameters.Length == 1 && method.IsStatic)
+            {
+                // Static method: T.Validate(T options)
+                return new OptionsValidatorMethodInfo(method.Name, true);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds an [OptionsValidator] method on a type (legacy support).
     /// </summary>
     /// <param name="typeSymbol">The type symbol to search.</param>
     /// <returns>Validator method info, or null if no validator method found.</returns>

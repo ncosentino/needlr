@@ -278,7 +278,9 @@ internal readonly struct DiscoveredOptions
         bool validateOnStart,
         string assemblyName,
         string? sourceFilePath = null,
-        OptionsValidatorInfo? validatorMethod = null)
+        OptionsValidatorInfo? validatorMethod = null,
+        string? validateMethodOverride = null,
+        string? validatorTypeName = null)
     {
         TypeName = typeName;
         SectionName = sectionName;
@@ -287,6 +289,8 @@ internal readonly struct DiscoveredOptions
         AssemblyName = assemblyName;
         SourceFilePath = sourceFilePath;
         ValidatorMethod = validatorMethod;
+        ValidateMethodOverride = validateMethodOverride;
+        ValidatorTypeName = validatorTypeName;
     }
 
     /// <summary>Fully qualified type name of the options class.</summary>
@@ -304,14 +308,23 @@ internal readonly struct DiscoveredOptions
     public string AssemblyName { get; }
     public string? SourceFilePath { get; }
 
-    /// <summary>Information about the [OptionsValidator] method, if present.</summary>
+    /// <summary>Information about the validation method (discovered or specified).</summary>
     public OptionsValidatorInfo? ValidatorMethod { get; }
+
+    /// <summary>Custom validation method name override from [Options(ValidateMethod = "...")], or null to use convention.</summary>
+    public string? ValidateMethodOverride { get; }
+
+    /// <summary>External validator type name from [Options(Validator = typeof(...))], or null to use options class.</summary>
+    public string? ValidatorTypeName { get; }
 
     /// <summary>True if this is a named options registration (not default).</summary>
     public bool IsNamed => Name != null;
 
     /// <summary>True if this options type has a custom validator method.</summary>
     public bool HasValidatorMethod => ValidatorMethod != null;
+
+    /// <summary>True if an external validator type is specified.</summary>
+    public bool HasExternalValidator => ValidatorTypeName != null;
 }
 
 /// <summary>

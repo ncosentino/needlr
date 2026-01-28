@@ -109,9 +109,65 @@ public sealed class OptionsAttribute : Attribute
     /// </list>
     /// </para>
     /// <para>
-    /// For custom validation, implement a method with the <c>[OptionsValidator]</c> attribute
-    /// or create a class implementing <c>IOptionsValidator&lt;T&gt;</c>.
+    /// For custom validation, implement a <c>Validate()</c> method returning <c>IEnumerable&lt;ValidationError&gt;</c>,
+    /// or specify an external validator using the <see cref="Validator"/> property.
     /// </para>
     /// </remarks>
     public bool ValidateOnStart { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the validation method to use.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// By default (when null), the generator looks for a method named <c>Validate</c>.
+    /// Set this property to use a differently-named method.
+    /// </para>
+    /// <para>
+    /// The method must return <c>IEnumerable&lt;ValidationError&gt;</c> (or <c>IEnumerable&lt;string&gt;</c>
+    /// for backward compatibility) and take no parameters (for instance methods) or the options
+    /// type as a parameter (for static methods).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// [Options(ValidateOnStart = true, ValidateMethod = nameof(CheckConfig))]
+    /// public class MyOptions
+    /// {
+    ///     public IEnumerable&lt;ValidationError&gt; CheckConfig()
+    ///     {
+    ///         if (string.IsNullOrEmpty(Value))
+    ///             yield return "Value is required";
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    public string? ValidateMethod { get; set; }
+
+    /// <summary>
+    /// Gets or sets the external validator type to use.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set, validation is delegated to the specified type instead of a method on the options class.
+    /// The validator type must implement <c>IOptionsValidator&lt;T&gt;</c> or FluentValidation's
+    /// <c>AbstractValidator&lt;T&gt;</c> (if FluentValidation is referenced).
+    /// </para>
+    /// <para>
+    /// Can be combined with <see cref="ValidateMethod"/> to specify a custom method name on the
+    /// validator type (default is <c>Validate</c>).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// [Options(ValidateOnStart = true, Validator = typeof(MyOptionsValidator))]
+    /// public class MyOptions { ... }
+    /// 
+    /// public class MyOptionsValidator : IOptionsValidator&lt;MyOptions&gt;
+    /// {
+    ///     public IEnumerable&lt;ValidationError&gt; Validate(MyOptions options) { ... }
+    /// }
+    /// </code>
+    /// </example>
+    public Type? Validator { get; set; }
 }

@@ -317,17 +317,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var optionsAttrs = TypeDiscoveryHelper.GetOptionsAttributes(typeSymbol);
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                // Check for [OptionsValidator] method
-                var validatorMethodInfo = TypeDiscoveryHelper.GetOptionsValidatorMethod(typeSymbol);
-                OptionsValidatorInfo? validatorInfo = validatorMethodInfo.HasValue
-                    ? new OptionsValidatorInfo(validatorMethodInfo.Value.MethodName, validatorMethodInfo.Value.IsStatic)
-                    : null;
-
                 foreach (var optionsAttr in optionsAttrs)
                 {
+                    // Determine validator type and method
+                    var validatorTypeSymbol = optionsAttr.ValidatorType;
+                    var targetType = validatorTypeSymbol ?? typeSymbol; // Look for method on options class or external validator
+                    var methodName = optionsAttr.ValidateMethod ?? "Validate"; // Convention: "Validate"
+
+                    // Find validation method using convention-based discovery
+                    var validatorMethodInfo = TypeDiscoveryHelper.FindValidationMethod(targetType, methodName);
+                    OptionsValidatorInfo? validatorInfo = validatorMethodInfo.HasValue
+                        ? new OptionsValidatorInfo(validatorMethodInfo.Value.MethodName, validatorMethodInfo.Value.IsStatic)
+                        : null;
+
                     // Infer section name if not provided
                     var sectionName = optionsAttr.SectionName
                         ?? Helpers.OptionsNamingHelper.InferSectionName(typeSymbol.Name);
+
+                    var validatorTypeName = validatorTypeSymbol != null
+                        ? TypeDiscoveryHelper.GetFullyQualifiedName(validatorTypeSymbol)
+                        : null;
 
                     options.Add(new DiscoveredOptions(
                         typeName,
@@ -336,7 +345,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         optionsAttr.ValidateOnStart,
                         assembly.Name,
                         sourceFilePath,
-                        validatorInfo));
+                        validatorInfo,
+                        optionsAttr.ValidateMethod,
+                        validatorTypeName));
                 }
             }
 
@@ -1229,8 +1240,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
         builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine("using System.Linq;");
         builder.AppendLine();
         builder.AppendLine("using Microsoft.Extensions.Options;");
+        builder.AppendLine();
+        builder.AppendLine("using NexusLabs.Needlr.Generators;");
         builder.AppendLine();
         builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
@@ -1244,30 +1258,74 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var shortTypeName = GetShortTypeName(opt.TypeName);
             var validatorClassName = shortTypeName + "Validator";
 
+            // Determine which type has the validator method
+            var validatorTargetType = opt.HasExternalValidator ? opt.ValidatorTypeName! : opt.TypeName;
+
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// Generated validator for <see cref=\"{opt.TypeName}\"/>.");
-            builder.AppendLine("/// Calls the [OptionsValidator] method on the options instance.");
+            if (opt.HasExternalValidator)
+            {
+                builder.AppendLine($"/// Uses external validator <see cref=\"{validatorTargetType}\"/>.");
+            }
+            else
+            {
+                builder.AppendLine("/// Calls the validation method on the options instance.");
+            }
             builder.AppendLine("/// </summary>");
             builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
             builder.AppendLine($"public sealed class {validatorClassName} : IValidateOptions<{opt.TypeName}>");
             builder.AppendLine("{");
+
+            if (opt.HasExternalValidator && !opt.ValidatorMethod.Value.IsStatic)
+            {
+                // External validator needs to be injected for instance methods
+                builder.AppendLine($"    private readonly {validatorTargetType} _validator;");
+                builder.AppendLine();
+                builder.AppendLine($"    public {validatorClassName}({validatorTargetType} validator)");
+                builder.AppendLine("    {");
+                builder.AppendLine("        _validator = validator;");
+                builder.AppendLine("    }");
+                builder.AppendLine();
+            }
+
             builder.AppendLine($"    public ValidateOptionsResult Validate(string? name, {opt.TypeName} options)");
             builder.AppendLine("    {");
             builder.AppendLine("        var errors = new List<string>();");
 
-            if (opt.ValidatorMethod.Value.IsStatic)
+            // Generate the foreach to iterate errors
+            string validationCall;
+            if (opt.HasExternalValidator)
             {
-                // Static method: SomeType.ValidateConfig(options)
-                builder.AppendLine($"        foreach (var error in {opt.TypeName}.{opt.ValidatorMethod.Value.MethodName}(options))");
+                if (opt.ValidatorMethod.Value.IsStatic)
+                {
+                    // Static method on external type: ExternalValidator.ValidateMethod(options)
+                    validationCall = $"{validatorTargetType}.{opt.ValidatorMethod.Value.MethodName}(options)";
+                }
+                else
+                {
+                    // Instance method on external type: _validator.ValidateMethod(options)
+                    validationCall = $"_validator.{opt.ValidatorMethod.Value.MethodName}(options)";
+                }
+            }
+            else if (opt.ValidatorMethod.Value.IsStatic)
+            {
+                // Static method on options type: OptionsType.ValidateMethod(options)
+                validationCall = $"{opt.TypeName}.{opt.ValidatorMethod.Value.MethodName}(options)";
             }
             else
             {
-                // Instance method: options.Validate()
-                builder.AppendLine($"        foreach (var error in options.{opt.ValidatorMethod.Value.MethodName}())");
+                // Instance method on options type: options.ValidateMethod()
+                validationCall = $"options.{opt.ValidatorMethod.Value.MethodName}()";
             }
 
+            builder.AppendLine($"        foreach (var error in {validationCall})");
             builder.AppendLine("        {");
-            builder.AppendLine("            errors.Add(error);");
+            builder.AppendLine("            // Support both string and ValidationError (ValidationError.ToString() returns formatted message)");
+            builder.AppendLine("            var errorMessage = error?.ToString() ?? string.Empty;");
+            builder.AppendLine("            if (!string.IsNullOrEmpty(errorMessage))");
+            builder.AppendLine("            {");
+            builder.AppendLine("                errors.Add(errorMessage);");
+            builder.AppendLine("            }");
             builder.AppendLine("        }");
             builder.AppendLine();
             builder.AppendLine("        if (errors.Count > 0)");
