@@ -1,13 +1,12 @@
 // Example of options with startup validation
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 using NexusLabs.Needlr.Generators;
 
 namespace AotSourceGenConsolePlugin.Options;
 
 /// <summary>
-/// Options with DataAnnotations validation, validated at startup.
+/// Options with custom validation, validated at startup.
 /// </summary>
 [Options(ValidateOnStart = true)]
 public class StripeOptions
@@ -15,7 +14,6 @@ public class StripeOptions
     /// <summary>
     /// The Stripe API key. Must be provided.
     /// </summary>
-    [Required(ErrorMessage = "Stripe API key is required")]
     public string ApiKey { get; set; } = "";
 
     /// <summary>
@@ -25,11 +23,15 @@ public class StripeOptions
 
     /// <summary>
     /// Custom validator method called at startup.
+    /// Convention: just name it "Validate" - no attribute needed.
     /// </summary>
-    [OptionsValidator]
-    public IEnumerable<string> Validate()
+    public IEnumerable<ValidationError> Validate()
     {
-        if (!string.IsNullOrEmpty(ApiKey) && !ApiKey.StartsWith("sk_"))
+        if (string.IsNullOrEmpty(ApiKey))
+        {
+            yield return "Stripe API key is required";
+        }
+        else if (!ApiKey.StartsWith("sk_"))
         {
             yield return "ApiKey must start with 'sk_'";
         }

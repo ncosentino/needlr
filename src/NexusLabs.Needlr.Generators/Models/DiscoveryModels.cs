@@ -328,7 +328,7 @@ internal readonly struct DiscoveredOptions
 }
 
 /// <summary>
-/// Information about an [OptionsValidator] method.
+/// Information about a validation method.
 /// </summary>
 internal readonly struct OptionsValidatorInfo
 {

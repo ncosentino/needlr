@@ -2246,7 +2246,7 @@ internal static class TypeDiscoveryHelper
 
     /// <summary>
     /// Finds a validation method on a type by convention or explicit name.
-    /// Looks for: 1) [OptionsValidator] attribute (legacy), 2) method by name (convention or explicit).
+    /// Convention: method named "Validate" (or custom name via ValidateMethod property).
     /// </summary>
     /// <param name="typeSymbol">The type symbol to search.</param>
     /// <param name="methodName">The method name to look for (default: "Validate").</param>

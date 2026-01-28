@@ -19,7 +19,6 @@ namespace NexusLabs.Needlr.Generators;
 /// - NDLRGEN017: Validation method has wrong signature
 /// - NDLRGEN018: Validator won't run (ValidateOnStart = false)
 /// - NDLRGEN019: ValidateMethod won't run (ValidateOnStart = false)
-/// - NDLRGEN021: [OptionsValidator] deprecated
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer

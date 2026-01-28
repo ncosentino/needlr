@@ -105,7 +105,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
             }
 
-            // Generate options validator classes if any have [OptionsValidator] methods
+            // Generate options validator classes if any have validation methods
             var optionsWithValidators = discoveryResult.Options.Where(o => o.HasValidatorMethod).ToList();
             if (optionsWithValidators.Count > 0)
             {
