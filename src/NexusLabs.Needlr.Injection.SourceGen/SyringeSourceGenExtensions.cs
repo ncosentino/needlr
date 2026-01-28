@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 using NexusLabs.Needlr.Generators;
 using NexusLabs.Needlr.Injection.SourceGen.Loaders;
 using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
@@ -176,5 +179,42 @@ public static class SyringeSourceGenExtensions
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
         return syringe.UsingAssemblyProvider(
             new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider));
+    }
+
+    /// <summary>
+    /// Configures the syringe to register options from the generated TypeRegistry.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method accepts a delegate that matches the signature of the generated
+    /// <c>TypeRegistry.RegisterOptions</c> method. The options will be registered
+    /// when <see cref="ConfiguredSyringe.BuildServiceProvider(IConfiguration)"/> is called.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// var provider = new Syringe()
+    ///     .UsingGeneratedComponents(TypeRegistry.GetInjectableTypes, TypeRegistry.GetPluginTypes)
+    ///     .UsingGeneratedOptions(TypeRegistry.RegisterOptions)
+    ///     .BuildServiceProvider(configuration);
+    /// </code>
+    /// </para>
+    /// </remarks>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="registerOptions">
+    /// A delegate that registers options, typically <c>TypeRegistry.RegisterOptions</c>.
+    /// </param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static ConfiguredSyringe UsingGeneratedOptions(
+        this ConfiguredSyringe syringe,
+        Action<IServiceCollection, IConfiguration> registerOptions)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(registerOptions);
+
+        return syringe with
+        {
+            OptionsRegistration = registerOptions
+        };
     }
 }

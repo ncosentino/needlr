@@ -39,6 +39,12 @@ public sealed record ConfiguredSyringe
     internal VerificationOptions? VerificationOptions { get; init; }
     
     /// <summary>
+    /// Options registration callback for source-generated options.
+    /// Called during BuildServiceProvider with (services, configuration).
+    /// </summary>
+    internal Action<IServiceCollection, IConfiguration>? OptionsRegistration { get; init; }
+    
+    /// <summary>
     /// Factory for creating <see cref="IServiceProviderBuilder"/> instances.
     /// </summary>
     internal Func<IServiceCollectionPopulator, IAssemblyProvider, IReadOnlyList<Assembly>, IServiceProviderBuilder>? ServiceProviderBuilderFactory { get; init; }
@@ -92,11 +98,18 @@ public sealed record ConfiguredSyringe
         var callbacks = PostPluginRegistrationCallbacks ?? [];
         var verificationOptions = VerificationOptions ?? Needlr.VerificationOptions.Default;
 
-        // Add verification as a post-plugin callback
-        var callbacksWithVerification = new List<Action<IServiceCollection>>(callbacks)
+        // Build the list of post-plugin callbacks
+        var callbacksWithExtras = new List<Action<IServiceCollection>>(callbacks);
+        
+        // Add options registration if configured
+        if (OptionsRegistration != null)
         {
-            services => RunVerification(services, verificationOptions)
-        };
+            var optionsCallback = OptionsRegistration;
+            callbacksWithExtras.Add(services => optionsCallback(services, config));
+        }
+        
+        // Add verification as the final callback
+        callbacksWithExtras.Add(services => RunVerification(services, verificationOptions));
 
         var serviceProviderBuilder = GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
@@ -106,7 +119,7 @@ public sealed record ConfiguredSyringe
         return serviceProviderBuilder.Build(
             services: new ServiceCollection(),
             config: config,
-            postPluginRegistrationCallbacks: callbacksWithVerification);
+            postPluginRegistrationCallbacks: callbacksWithExtras);
     }
 
     private static void RunVerification(IServiceCollection services, VerificationOptions options)

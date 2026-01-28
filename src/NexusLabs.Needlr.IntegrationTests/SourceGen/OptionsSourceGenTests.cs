@@ -14,14 +14,25 @@ namespace NexusLabs.Needlr.IntegrationTests.SourceGen;
 
 /// <summary>
 /// Integration tests for [Options] attribute source generation.
-/// These tests verify the generated code actually works with real DI containers.
+/// These tests verify the generated code actually works with real DI containers
+/// using the proper Syringe fluent API.
 /// </summary>
 public sealed class OptionsSourceGenTests
 {
+    private static IServiceProvider BuildProvider(IConfiguration configuration)
+    {
+        return new Syringe()
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
+            .UsingGeneratedOptions(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
+            .BuildServiceProvider(configuration);
+    }
+
     [Fact]
     public void Options_CanResolveIOptions_WithConfigurationBinding()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -31,18 +42,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
+        var provider = BuildProvider(configuration);
 
-        // Register generated options
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
-
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<TestDatabaseOptions>>();
 
-        // Assert
         Assert.NotNull(options);
         Assert.Equal("Server=localhost;Database=TestDb", options.Value.ConnectionString);
         Assert.Equal(60, options.Value.CommandTimeout);
@@ -52,7 +55,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_CanResolveIOptionsSnapshot_ForScopedAccess()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -60,17 +62,11 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         using var scope = provider.CreateScope();
         var snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<TestDatabaseOptions>>();
 
-        // Assert
         Assert.NotNull(snapshot);
         Assert.Equal("Server=prod;Database=ProdDb", snapshot.Value.ConnectionString);
     }
@@ -78,7 +74,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_CanResolveIOptionsMonitor_ForChangeTracking()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -86,16 +81,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var monitor = provider.GetRequiredService<IOptionsMonitor<TestDatabaseOptions>>();
 
-        // Assert
         Assert.NotNull(monitor);
         Assert.Equal("Server=monitor;Database=MonitorDb", monitor.CurrentValue.ConnectionString);
     }
@@ -103,21 +92,14 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_UsesDefaultValues_WhenNotConfigured()
     {
-        // Arrange - empty configuration
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>())
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<TestDatabaseOptions>>();
 
-        // Assert - defaults from class definition
         Assert.Equal("", options.Value.ConnectionString);
         Assert.Equal(30, options.Value.CommandTimeout);
         Assert.True(options.Value.EnableRetry);
@@ -126,7 +108,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_WithCustomSectionName_BindsCorrectly()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -135,16 +116,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<CustomSectionOptions>>();
 
-        // Assert
         Assert.Equal("CustomValue", options.Value.Value);
         Assert.Equal(42, options.Value.Number);
     }
@@ -152,7 +127,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_NamedOptions_CanResolveMultipleConfigurations()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -163,19 +137,13 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         using var scope = provider.CreateScope();
         var snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<EndpointOptions>>();
         var apiOptions = snapshot.Get("Api");
         var adminOptions = snapshot.Get("Admin");
 
-        // Assert
         Assert.Equal("https://api.example.com", apiOptions.Url);
         Assert.Equal(30, apiOptions.Timeout);
         Assert.Equal("https://admin.example.com", adminOptions.Url);
@@ -183,23 +151,17 @@ public sealed class OptionsSourceGenTests
     }
 
     [Fact]
-    public void Options_WithValidation_ValidatesAtStartup()
+    public void Options_WithValidation_ValidatesOnAccess()
     {
-        // Arrange - invalid configuration (missing required field)
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ValidatedOptions:Name"] = "" // empty, should fail validation
+                ["ValidatedOptions:Name"] = ""
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act & Assert - accessing options should throw due to validation
         var options = provider.GetRequiredService<IOptions<ValidatedTestOptions>>();
         var exception = Assert.Throws<OptionsValidationException>(() => _ = options.Value);
         Assert.Contains("Name is required", exception.Message);
@@ -208,7 +170,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_WithValidation_PassesWhenValid()
     {
-        // Arrange - valid configuration
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -216,23 +177,16 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<ValidatedTestOptions>>();
 
-        // Assert - no exception, value is accessible
         Assert.Equal("ValidName", options.Value.Name);
     }
 
     [Fact]
     public void Options_WithExternalValidator_UsesValidatorType()
     {
-        // Arrange - invalid configuration
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -240,13 +194,8 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act & Assert
         var options = provider.GetRequiredService<IOptions<ExternallyValidatedOptions>>();
         var exception = Assert.Throws<OptionsValidationException>(() => _ = options.Value);
         Assert.Contains("Email", exception.Message);
@@ -255,7 +204,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_NestedConfiguration_BindsCorrectly()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -266,16 +214,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<NestedTestOptions>>();
 
-        // Assert
         Assert.NotNull(options.Value.Server);
         Assert.Equal("db.example.com", options.Value.Server.Host);
         Assert.Equal(5432, options.Value.Server.Port);
@@ -287,7 +229,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_ArrayConfiguration_BindsCorrectly()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -297,16 +238,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<ArrayTestOptions>>();
 
-        // Assert
         Assert.NotNull(options.Value.Tags);
         Assert.Equal(3, options.Value.Tags.Length);
         Assert.Equal("tag1", options.Value.Tags[0]);
@@ -317,7 +252,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_DictionaryConfiguration_BindsCorrectly()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -326,16 +260,10 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
+        var provider = BuildProvider(configuration);
 
-        var provider = services.BuildServiceProvider();
-
-        // Act
         var options = provider.GetRequiredService<IOptions<DictionaryTestOptions>>();
 
-        // Assert
         Assert.NotNull(options.Value.Settings);
         Assert.Equal(2, options.Value.Settings.Count);
         Assert.Equal("Value1", options.Value.Settings["Key1"]);
@@ -345,7 +273,6 @@ public sealed class OptionsSourceGenTests
     [Fact]
     public void Options_CanInjectIntoService()
     {
-        // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -353,51 +280,52 @@ public sealed class OptionsSourceGenTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
-        services.AddSingleton<ServiceWithOptions>();
-
-        var provider = services.BuildServiceProvider();
-
-        // Act
-        var service = provider.GetRequiredService<ServiceWithOptions>();
-
-        // Assert
-        Assert.Equal("Server=injected;Database=InjectedDb", service.GetConnectionString());
-    }
-
-    [Fact]
-    public void Options_Syringe_IntegratesWithGeneratedComponents()
-    {
-        // Arrange
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["TestDatabase:ConnectionString"] = "Server=syringe;Database=SyringeDb"
-            })
-            .Build();
-
-        // Act - use Syringe with configuration
         var provider = new Syringe()
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
+            .UsingGeneratedOptions(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
+            .UsingPostPluginRegistrationCallback(services =>
+                services.AddSingleton<ServiceWithOptions>())
             .BuildServiceProvider(configuration);
 
-        // Note: RegisterOptions needs to be called separately - test that pattern here
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions(services, configuration);
-        var optionsProvider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<ServiceWithOptions>();
 
-        // Assert
-        var options = optionsProvider.GetRequiredService<IOptions<TestDatabaseOptions>>();
-        Assert.Equal("Server=syringe;Database=SyringeDb", options.Value.ConnectionString);
+        Assert.Equal("Server=injected;Database=InjectedDb", service.GetConnectionString());
+    }
+
+    [Fact]
+    public void Options_VerifiesSyringeIntegration_EndToEnd()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["TestDatabase:ConnectionString"] = "Server=e2e;Database=EndToEnd",
+                ["TestDatabase:CommandTimeout"] = "120"
+            })
+            .Build();
+
+        var provider = new Syringe()
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
+            .UsingGeneratedOptions(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
+            .BuildServiceProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<TestDatabaseOptions>>();
+        var monitor = provider.GetRequiredService<IOptionsMonitor<TestDatabaseOptions>>();
+        
+        using var scope = provider.CreateScope();
+        var snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<TestDatabaseOptions>>();
+
+        Assert.Equal("Server=e2e;Database=EndToEnd", options.Value.ConnectionString);
+        Assert.Equal("Server=e2e;Database=EndToEnd", monitor.CurrentValue.ConnectionString);
+        Assert.Equal("Server=e2e;Database=EndToEnd", snapshot.Value.ConnectionString);
+        Assert.Equal(120, options.Value.CommandTimeout);
     }
 }
-
-// Test Options Classes
 
 [Options("TestDatabase")]
 public class TestDatabaseOptions
@@ -484,7 +412,6 @@ public class DictionaryTestOptions
     public Dictionary<string, string> Settings { get; set; } = new();
 }
 
-// Service that uses options via constructor injection
 public class ServiceWithOptions
 {
     private readonly IOptions<TestDatabaseOptions> _options;
