@@ -208,13 +208,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var openDecorators = new List<DiscoveredOpenDecorator>();
         var interceptedServices = new List<DiscoveredInterceptedService>();
         var factories = new List<DiscoveredFactory>();
+        var options = new List<DiscoveredOptions>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -222,7 +223,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -258,7 +259,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories);
+        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options);
     }
 
     private static void CollectTypesFromAssembly(
@@ -272,6 +273,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredOpenDecorator> openDecorators,
         List<DiscoveredInterceptedService> interceptedServices,
         List<DiscoveredFactory> factories,
+        List<DiscoveredOptions> options,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -292,6 +294,29 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     inaccessibleTypes.Add(new InaccessibleType(typeName, assembly.Name));
                 }
                 continue; // Skip further processing for inaccessible types
+            }
+
+            // Check for [Options] attribute
+            if (TypeDiscoveryHelper.HasOptionsAttribute(typeSymbol))
+            {
+                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                var optionsAttrs = TypeDiscoveryHelper.GetOptionsAttributes(typeSymbol);
+                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+
+                foreach (var optionsAttr in optionsAttrs)
+                {
+                    // Infer section name if not provided
+                    var sectionName = optionsAttr.SectionName
+                        ?? Helpers.OptionsNamingHelper.InferSectionName(typeSymbol.Name);
+
+                    options.Add(new DiscoveredOptions(
+                        typeName,
+                        sectionName,
+                        optionsAttr.Name,
+                        optionsAttr.ValidateOnStart,
+                        assembly.Name,
+                        sourceFilePath));
+                }
             }
 
             // Check for [GenerateFactory] attribute - these types get factories instead of direct registration
@@ -459,6 +484,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var hasOptions = discoveryResult.Options.Count > 0;
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry");
         builder.AppendLine("#nullable enable");
@@ -466,6 +492,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
         builder.AppendLine();
+        if (hasOptions)
+        {
+            builder.AppendLine("using Microsoft.Extensions.Configuration;");
+        }
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
         builder.AppendLine("using NexusLabs.Needlr;");
@@ -497,6 +527,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// </summary>");
         builder.AppendLine("    /// <returns>A read-only list of plugin type information.</returns>");
         builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
+
+        if (hasOptions)
+        {
+            builder.AppendLine();
+            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, breadcrumbs, projectDirectory);
+        }
 
         builder.AppendLine();
         GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
@@ -753,6 +789,43 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine("    ];");
+    }
+
+    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all discovered options types with the service collection.");
+        builder.AppendLine("    /// This binds configuration sections to strongly-typed options classes.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to configure.</param>");
+        builder.AppendLine("    /// <param name=\"configuration\">The configuration root to bind options from.</param>");
+        builder.AppendLine("    public static void RegisterOptions(IServiceCollection services, IConfiguration configuration)");
+        builder.AppendLine("    {");
+
+        if (options.Count == 0)
+        {
+            breadcrumbs.WriteInlineComment(builder, "        ", "No options types discovered");
+        }
+        else
+        {
+            foreach (var opt in options)
+            {
+                var typeName = opt.TypeName;
+                
+                if (opt.IsNamed)
+                {
+                    // Named options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, "name", section)
+                    builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, \"{opt.Name}\", configuration.GetSection(\"{opt.SectionName}\"));");
+                }
+                else
+                {
+                    // Default options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, section)
+                    builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, configuration.GetSection(\"{opt.SectionName}\"));");
+                }
+            }
+        }
+
+        builder.AppendLine("    }");
     }
 
     private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)

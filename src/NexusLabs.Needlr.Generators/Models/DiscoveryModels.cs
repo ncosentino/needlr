@@ -267,6 +267,46 @@ internal readonly struct DiscoveredFactory
 }
 
 /// <summary>
+/// Information about a discovered options type (from [Options]).
+/// </summary>
+internal readonly struct DiscoveredOptions
+{
+    public DiscoveredOptions(
+        string typeName,
+        string sectionName,
+        string? name,
+        bool validateOnStart,
+        string assemblyName,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        SectionName = sectionName;
+        Name = name;
+        ValidateOnStart = validateOnStart;
+        AssemblyName = assemblyName;
+        SourceFilePath = sourceFilePath;
+    }
+
+    /// <summary>Fully qualified type name of the options class.</summary>
+    public string TypeName { get; }
+
+    /// <summary>Configuration section name (e.g., "Database").</summary>
+    public string SectionName { get; }
+
+    /// <summary>Named options name (e.g., "Primary"), or null for default options.</summary>
+    public string? Name { get; }
+
+    /// <summary>Whether to validate options on startup.</summary>
+    public bool ValidateOnStart { get; }
+
+    public string AssemblyName { get; }
+    public string? SourceFilePath { get; }
+
+    /// <summary>True if this is a named options registration (not default).</summary>
+    public bool IsNamed => Name != null;
+}
+
+/// <summary>
 /// Aggregated result of type discovery for an assembly.
 /// </summary>
 internal readonly struct DiscoveryResult
@@ -280,7 +320,8 @@ internal readonly struct DiscoveryResult
         IReadOnlyList<InaccessibleType> inaccessibleTypes,
         IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
         IReadOnlyList<DiscoveredInterceptedService> interceptedServices,
-        IReadOnlyList<DiscoveredFactory> factories)
+        IReadOnlyList<DiscoveredFactory> factories,
+        IReadOnlyList<DiscoveredOptions> options)
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
@@ -291,6 +332,7 @@ internal readonly struct DiscoveryResult
         MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
         InterceptedServices = interceptedServices;
         Factories = factories;
+        Options = options;
     }
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -302,6 +344,7 @@ internal readonly struct DiscoveryResult
     public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
     public IReadOnlyList<DiscoveredInterceptedService> InterceptedServices { get; }
     public IReadOnlyList<DiscoveredFactory> Factories { get; }
+    public IReadOnlyList<DiscoveredOptions> Options { get; }
 }
 
 /// <summary>

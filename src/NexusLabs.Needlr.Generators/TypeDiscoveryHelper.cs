@@ -34,6 +34,8 @@ internal static class TypeDiscoveryHelper
     private const string TransientAttributeFullName = "NexusLabs.Needlr.TransientAttribute";
     private const string GenerateFactoryAttributeName = "GenerateFactoryAttribute";
     private const string GenerateFactoryAttributeFullName = "NexusLabs.Needlr.Generators.GenerateFactoryAttribute";
+    private const string OptionsAttributeName = "OptionsAttribute";
+    private const string OptionsAttributeFullName = "NexusLabs.Needlr.Generators.OptionsAttribute";
 
     /// <summary>
     /// Determines whether a type symbol represents a concrete injectable type.
@@ -2120,6 +2122,108 @@ internal static class TypeDiscoveryHelper
         }
 
         return 0; // Default order
+    }
+
+    #endregion
+
+    #region Options Attribute Detection
+
+    /// <summary>
+    /// Information extracted from an [Options] attribute.
+    /// </summary>
+    public readonly struct OptionsAttributeInfo
+    {
+        public OptionsAttributeInfo(string? sectionName, string? name, bool validateOnStart)
+        {
+            SectionName = sectionName;
+            Name = name;
+            ValidateOnStart = validateOnStart;
+        }
+
+        /// <summary>Explicit section name from attribute, or null to infer from class name.</summary>
+        public string? SectionName { get; }
+
+        /// <summary>Named options name (e.g., "Primary"), or null for default options.</summary>
+        public string? Name { get; }
+
+        /// <summary>Whether to validate options on startup.</summary>
+        public bool ValidateOnStart { get; }
+    }
+
+    /// <summary>
+    /// Checks if a type has the [Options] attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type has [Options]; otherwise, false.</returns>
+    public static bool HasOptionsAttribute(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            if (name == OptionsAttributeName)
+                return true;
+
+            var fullName = attributeClass.ToDisplayString();
+            if (fullName == OptionsAttributeFullName)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets all [Options] attribute data from a type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>A list of options attribute info for each [Options] on the type.</returns>
+    public static IReadOnlyList<OptionsAttributeInfo> GetOptionsAttributes(INamedTypeSymbol typeSymbol)
+    {
+        var result = new List<OptionsAttributeInfo>();
+
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass == null)
+                continue;
+
+            var name = attributeClass.Name;
+            var fullName = attributeClass.ToDisplayString();
+
+            if (name != OptionsAttributeName && fullName != OptionsAttributeFullName)
+                continue;
+
+            // Extract constructor argument (optional section name)
+            string? sectionName = null;
+            if (attribute.ConstructorArguments.Length > 0 &&
+                attribute.ConstructorArguments[0].Value is string section)
+            {
+                sectionName = section;
+            }
+
+            // Extract named arguments
+            string? optionsName = null;
+            bool validateOnStart = false;
+
+            foreach (var namedArg in attribute.NamedArguments)
+            {
+                if (namedArg.Key == "Name" && namedArg.Value.Value is string n)
+                {
+                    optionsName = n;
+                }
+                else if (namedArg.Key == "ValidateOnStart" && namedArg.Value.Value is bool v)
+                {
+                    validateOnStart = v;
+                }
+            }
+
+            result.Add(new OptionsAttributeInfo(sectionName, optionsName, validateOnStart));
+        }
+
+        return result;
     }
 
     #endregion
