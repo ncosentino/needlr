@@ -233,6 +233,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             ExpandOpenDecorators(injectableTypes, openDecorators, decorators);
         }
 
+        // Filter out nested options types (types used as properties in other options types)
+        if (options.Count > 1)
+        {
+            options = FilterNestedOptions(options, compilation);
+        }
+
         // Check for referenced assemblies with internal plugin types but no [GenerateTypeRegistry]
         var missingTypeRegistryPlugins = new List<MissingTypeRegistryPlugin>();
         foreach (var reference in compilation.References)
@@ -2276,6 +2282,67 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             filter.Contains(GetShortTypeName(f.TypeName)) ||
             filter.Contains(StripGlobalPrefix(f.TypeName)))
                         .ToList();
+    }
+
+    /// <summary>
+    /// Filters out nested options types.
+    /// A nested options type is one that is used as a property type in another options type.
+    /// These should not be registered separately - they are bound as part of their parent.
+    /// </summary>
+    private static List<DiscoveredOptions> FilterNestedOptions(List<DiscoveredOptions> options, Compilation compilation)
+    {
+        // Build a set of all options type names
+        var optionsTypeNames = new HashSet<string>(options.Select(o => o.TypeName));
+
+        // Find all options types that are used as properties in other options types
+        var nestedTypeNames = new HashSet<string>();
+
+        foreach (var opt in options)
+        {
+            // Find the type symbol for this options type
+            var typeSymbol = FindTypeSymbol(compilation, opt.TypeName);
+            if (typeSymbol == null)
+                continue;
+
+            // Check all properties of this type
+            foreach (var member in typeSymbol.GetMembers())
+            {
+                if (member is not IPropertySymbol property)
+                    continue;
+
+                // Skip non-class property types (primitives, structs, etc.)
+                if (property.Type is not INamedTypeSymbol propertyType)
+                    continue;
+
+                if (propertyType.TypeKind != TypeKind.Class)
+                    continue;
+
+                // Get the fully qualified name of the property type
+                var propertyTypeName = TypeDiscoveryHelper.GetFullyQualifiedName(propertyType);
+
+                // If this property type is also an [Options] type, mark it as nested
+                if (optionsTypeNames.Contains(propertyTypeName))
+                {
+                    nestedTypeNames.Add(propertyTypeName);
+                }
+            }
+        }
+
+        // Return only root options (those not used as properties in other options)
+        return options.Where(o => !nestedTypeNames.Contains(o.TypeName)).ToList();
+    }
+
+    /// <summary>
+    /// Finds a type symbol by its fully qualified name.
+    /// </summary>
+    private static INamedTypeSymbol? FindTypeSymbol(Compilation compilation, string fullyQualifiedName)
+    {
+        // Strip global:: prefix if present
+        var typeName = fullyQualifiedName.StartsWith("global::")
+            ? fullyQualifiedName.Substring(8)
+            : fullyQualifiedName;
+
+        return compilation.GetTypeByMetadataName(typeName);
     }
 
     /// <summary>
