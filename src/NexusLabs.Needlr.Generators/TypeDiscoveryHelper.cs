@@ -2270,17 +2270,26 @@ internal static class TypeDiscoveryHelper
                 continue;
 
             // Check signature: should return IEnumerable<string> or IEnumerable<ValidationError>
-            // and have no parameters (instance method) or one parameter (static method with options type)
+            // Supported signatures:
+            // 1. Instance method with no parameters: T.Validate() - for self-validation
+            // 2. Static method with one parameter: static T.Validate(TOptions options)
+            // 3. Instance method with one parameter: validator.Validate(TOptions options) - for external validators
             if (method.Parameters.Length == 0 && !method.IsStatic)
             {
-                // Instance method: T.Validate()
+                // Instance method: T.Validate() - self-validation on options class
                 return new OptionsValidatorMethodInfo(method.Name, false);
             }
             
             if (method.Parameters.Length == 1 && method.IsStatic)
             {
-                // Static method: T.Validate(T options)
+                // Static method: T.Validate(T options) - static validator
                 return new OptionsValidatorMethodInfo(method.Name, true);
+            }
+
+            if (method.Parameters.Length == 1 && !method.IsStatic)
+            {
+                // Instance method with parameter: validator.Validate(T options) - external validator
+                return new OptionsValidatorMethodInfo(method.Name, false);
             }
         }
 

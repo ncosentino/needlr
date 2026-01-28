@@ -220,6 +220,155 @@ public sealed class OptionsValidatorUnifiedTests
 
     #endregion
 
+    #region Phase 5B: External Validator Support
+
+    [Fact]
+    public void Generator_ExternalValidator_WithIOptionsValidator_GeneratesAdapter()
+    {
+        // External validator using IOptionsValidator<T>
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(PaymentOptionsValidator))]
+                public class PaymentOptions
+                {
+                    public string MerchantId { get; set; } = "";
+                }
+                
+                public class PaymentOptionsValidator : IOptionsValidator<PaymentOptions>
+                {
+                    public IEnumerable<ValidationError> Validate(PaymentOptions options)
+                    {
+                        if (string.IsNullOrEmpty(options.MerchantId))
+                            yield return "MerchantId is required";
+                    }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Should generate adapter that uses the external validator
+        Assert.Contains("PaymentOptionsValidator", generated);
+        Assert.Contains("IValidateOptions<global::TestApp.PaymentOptions>", generated);
+        // External validator needs DI injection (not static)
+        Assert.Contains("_validator.Validate(options)", generated);
+    }
+
+    [Fact]
+    public void Generator_ExternalValidator_WithCustomMethodName_UsesSpecifiedMethod()
+    {
+        // External validator with custom method name
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(OrderValidator), ValidateMethod = "CheckOrder")]
+                public class OrderOptions
+                {
+                    public decimal Amount { get; set; }
+                }
+                
+                public class OrderValidator
+                {
+                    public IEnumerable<ValidationError> CheckOrder(OrderOptions options)
+                    {
+                        if (options.Amount <= 0)
+                            yield return "Amount must be positive";
+                    }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Should call the custom method name on the external validator
+        Assert.Contains("_validator.CheckOrder(options)", generated);
+    }
+
+    [Fact]
+    public void Generator_ExternalValidator_StaticMethod_NoInjection()
+    {
+        // External validator with static method - no DI needed
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(InventoryValidator))]
+                public class InventoryOptions
+                {
+                    public int StockLevel { get; set; }
+                }
+                
+                public static class InventoryValidator
+                {
+                    public static IEnumerable<ValidationError> Validate(InventoryOptions options)
+                    {
+                        if (options.StockLevel < 0)
+                            yield return "Stock level cannot be negative";
+                    }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Should call static method directly without injection
+        Assert.Contains("InventoryValidator.Validate(options)", generated);
+        // Should NOT have constructor with validator parameter
+        Assert.DoesNotContain("_validator", generated);
+    }
+
+    [Fact]
+    public void Generator_ExternalValidator_Registered_ForInstanceMethods()
+    {
+        // When external validator has instance methods, it must be registered in DI
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(ShippingValidator))]
+                public class ShippingOptions
+                {
+                    public string Carrier { get; set; } = "";
+                }
+                
+                public class ShippingValidator
+                {
+                    public IEnumerable<ValidationError> Validate(ShippingOptions options)
+                    {
+                        if (string.IsNullOrEmpty(options.Carrier))
+                            yield return "Carrier is required";
+                    }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // External validator should be registered in DI
+        Assert.Contains("AddSingleton<global::TestApp.ShippingValidator>()", generated);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static string RunGenerator(string source)

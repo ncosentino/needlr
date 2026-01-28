@@ -840,6 +840,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         else
         {
+            // Track external validators to register (avoid duplicates)
+            var externalValidatorsToRegister = new HashSet<string>();
+
             foreach (var opt in options)
             {
                 var typeName = opt.TypeName;
@@ -869,6 +872,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         var shortTypeName = GetShortTypeName(typeName);
                         var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
                         builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+
+                        // If external validator with instance method, register it too
+                        if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
+                        {
+                            externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
+                        }
                     }
                 }
                 else if (opt.IsNamed)
@@ -881,6 +890,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // Default options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, section)
                     builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, configuration.GetSection(\"{opt.SectionName}\"));");
                 }
+            }
+
+            // Register external validators that have instance methods
+            foreach (var validatorType in externalValidatorsToRegister)
+            {
+                builder.AppendLine($"        services.AddSingleton<{validatorType}>();");
             }
         }
 
