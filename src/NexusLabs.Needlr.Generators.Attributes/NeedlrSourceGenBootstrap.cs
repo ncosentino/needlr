@@ -20,16 +20,19 @@ public static class NeedlrSourceGenBootstrap
         public Registration(
             Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
             Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
-            Action<object>? decoratorApplier = null)
+            Action<object>? decoratorApplier = null,
+            Action<object, object>? optionsRegistrar = null)
         {
             InjectableTypeProvider = injectableTypeProvider;
             PluginTypeProvider = pluginTypeProvider;
             DecoratorApplier = decoratorApplier;
+            OptionsRegistrar = optionsRegistrar;
         }
 
         public Func<IReadOnlyList<InjectableTypeInfo>> InjectableTypeProvider { get; }
         public Func<IReadOnlyList<PluginTypeInfo>> PluginTypeProvider { get; }
         public Action<object>? DecoratorApplier { get; }
+        public Action<object, object>? OptionsRegistrar { get; }
     }
 
     private static readonly object _gate = new object();
@@ -63,12 +66,34 @@ public static class NeedlrSourceGenBootstrap
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
         Action<object>? decoratorApplier)
     {
+        Register(injectableTypeProvider, pluginTypeProvider, decoratorApplier, null);
+    }
+
+    /// <summary>
+    /// Registers the generated type, plugin, decorator, and options providers for this application.
+    /// </summary>
+    /// <param name="injectableTypeProvider">Provider for injectable types.</param>
+    /// <param name="pluginTypeProvider">Provider for plugin types.</param>
+    /// <param name="decoratorApplier">
+    /// Action that applies decorators to the service collection. 
+    /// The parameter is an IServiceCollection, but typed as object to avoid dependency on Microsoft.Extensions.DependencyInjection in this assembly.
+    /// </param>
+    /// <param name="optionsRegistrar">
+    /// Action that registers options with the service collection and configuration.
+    /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
+    /// </param>
+    public static void Register(
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        Action<object>? decoratorApplier,
+        Action<object, object>? optionsRegistrar)
+    {
         if (injectableTypeProvider is null) throw new ArgumentNullException(nameof(injectableTypeProvider));
         if (pluginTypeProvider is null) throw new ArgumentNullException(nameof(pluginTypeProvider));
 
         lock (_gate)
         {
-            _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider, decoratorApplier));
+            _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider, decoratorApplier, optionsRegistrar));
             _cachedCombined = null;
         }
     }
@@ -143,6 +168,41 @@ public static class NeedlrSourceGenBootstrap
         }
     }
 
+    /// <summary>
+    /// Gets the options registrar (if any).
+    /// </summary>
+    /// <param name="optionsRegistrar">
+    /// Action that registers options with the service collection and configuration.
+    /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
+    /// </param>
+    /// <returns>True if an options registrar is registered.</returns>
+    public static bool TryGetOptionsRegistrar(out Action<object, object>? optionsRegistrar)
+    {
+        var local = _asyncLocalOverride.Value;
+        if (local is not null)
+        {
+            optionsRegistrar = local.OptionsRegistrar;
+            return optionsRegistrar is not null;
+        }
+
+        lock (_gate)
+        {
+            if (_registrations.Count == 0)
+            {
+                optionsRegistrar = null;
+                return false;
+            }
+
+            if (_cachedCombined is null)
+            {
+                _cachedCombined = Combine(_registrations);
+            }
+
+            optionsRegistrar = _cachedCombined.OptionsRegistrar;
+            return optionsRegistrar is not null;
+        }
+    }
+
     internal static IDisposable BeginTestScope(
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
@@ -176,6 +236,7 @@ public static class NeedlrSourceGenBootstrap
         var injectableProviders = registrations.Select(r => r.InjectableTypeProvider).ToArray();
         var pluginProviders = registrations.Select(r => r.PluginTypeProvider).ToArray();
         var decoratorAppliers = registrations.Where(r => r.DecoratorApplier is not null).Select(r => r.DecoratorApplier!).ToArray();
+        var optionsRegistrars = registrations.Where(r => r.OptionsRegistrar is not null).Select(r => r.OptionsRegistrar!).ToArray();
 
         IReadOnlyList<InjectableTypeInfo> GetInjectableTypes()
         {
@@ -225,6 +286,16 @@ public static class NeedlrSourceGenBootstrap
             }
             : null;
 
-        return new Registration(GetInjectableTypes, GetPluginTypes, combinedDecoratorApplier);
+        Action<object, object>? combinedOptionsRegistrar = optionsRegistrars.Length > 0
+            ? (services, config) =>
+            {
+                foreach (var registrar in optionsRegistrars)
+                {
+                    registrar(services, config);
+                }
+            }
+            : null;
+
+        return new Registration(GetInjectableTypes, GetPluginTypes, combinedDecoratorApplier, combinedOptionsRegistrar);
     }
 }

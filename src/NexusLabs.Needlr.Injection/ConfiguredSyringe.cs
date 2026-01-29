@@ -39,12 +39,6 @@ public sealed record ConfiguredSyringe
     internal VerificationOptions? VerificationOptions { get; init; }
     
     /// <summary>
-    /// Options registration callback for source-generated options.
-    /// Called during BuildServiceProvider with (services, configuration).
-    /// </summary>
-    internal Action<IServiceCollection, IConfiguration>? OptionsRegistration { get; init; }
-    
-    /// <summary>
     /// Factory for creating <see cref="IServiceProviderBuilder"/> instances.
     /// </summary>
     internal Func<IServiceCollectionPopulator, IAssemblyProvider, IReadOnlyList<Assembly>, IServiceProviderBuilder>? ServiceProviderBuilderFactory { get; init; }
@@ -101,11 +95,10 @@ public sealed record ConfiguredSyringe
         // Build the list of post-plugin callbacks
         var callbacksWithExtras = new List<Action<IServiceCollection>>(callbacks);
         
-        // Add options registration if configured
-        if (OptionsRegistration != null)
+        // Auto-register options from source-generated bootstrap
+        if (NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar != null)
         {
-            var optionsCallback = OptionsRegistration;
-            callbacksWithExtras.Add(services => optionsCallback(services, config));
+            callbacksWithExtras.Add(services => optionsRegistrar(services, config));
         }
         
         // Add verification as the final callback

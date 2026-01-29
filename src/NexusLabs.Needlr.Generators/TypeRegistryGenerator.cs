@@ -74,7 +74,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate SignalR hub registrations if any were discovered
@@ -574,7 +574,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories)
+    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = SanitizeIdentifier(assemblyName);
@@ -584,6 +584,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
         builder.AppendLine("using System.Runtime.CompilerServices;");
         builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.Configuration;");
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
         builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
@@ -613,11 +614,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             builder.AppendLine("            {");
             builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services);");
             builder.AppendLine($"                global::{safeAssemblyName}.Generated.FactoryRegistrations.RegisterFactories((IServiceCollection)services);");
-            builder.AppendLine("            });");
+            builder.AppendLine("            },");
         }
         else
         {
-            builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services));");
+            builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services),");
+        }
+        
+        // Generate the options registrar lambda
+        if (hasOptions)
+        {
+            builder.AppendLine($"            (services, config) => global::{safeAssemblyName}.Generated.TypeRegistry.RegisterOptions((IServiceCollection)services, (IConfiguration)config));");
+        }
+        else
+        {
+            builder.AppendLine("            null);");
         }
         builder.AppendLine("    }");
 

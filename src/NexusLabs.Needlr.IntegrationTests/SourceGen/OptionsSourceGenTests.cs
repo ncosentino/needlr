@@ -25,8 +25,6 @@ public sealed class OptionsSourceGenTests
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
-            .UsingGeneratedOptions(
-                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
             .BuildServiceProvider(configuration);
     }
 
@@ -284,8 +282,6 @@ public sealed class OptionsSourceGenTests
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
-            .UsingGeneratedOptions(
-                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
             .UsingPostPluginRegistrationCallback(services =>
                 services.AddSingleton<ServiceWithOptions>())
             .BuildServiceProvider(configuration);
@@ -310,8 +306,6 @@ public sealed class OptionsSourceGenTests
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
-            .UsingGeneratedOptions(
-                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.RegisterOptions)
             .BuildServiceProvider(configuration);
 
         var options = provider.GetRequiredService<IOptions<TestDatabaseOptions>>();
