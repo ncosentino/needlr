@@ -80,14 +80,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Generate SignalR hub registrations if any were discovered
             if (discoveryResult.HubRegistrations.Count > 0)
             {
-                var hubRegistrationsText = GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName, breadcrumbs);
+                var hubRegistrationsText = CodeGen.SignalRCodeGenerator.GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName, breadcrumbs);
                 spc.AddSource("SignalRHubRegistrations.g.cs", SourceText.From(hubRegistrationsText, Encoding.UTF8));
             }
 
             // Generate SemanticKernel plugin type registry if any were discovered
             if (discoveryResult.KernelPlugins.Count > 0)
             {
-                var kernelPluginsText = GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName, breadcrumbs);
+                var kernelPluginsText = CodeGen.SemanticKernelCodeGenerator.GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName, breadcrumbs);
                 spc.AddSource("SemanticKernelPlugins.g.cs", SourceText.From(kernelPluginsText, Encoding.UTF8));
             }
 
@@ -993,121 +993,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    }");
     }
 
-    private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName, BreadcrumbWriter breadcrumbs)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SignalR Hub Registrations");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using Microsoft.AspNetCore.Builder;");
-        builder.AppendLine("using Microsoft.AspNetCore.SignalR;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine("/// Compile-time generated SignalR hub registrations.");
-        builder.AppendLine("/// This eliminates the need for runtime reflection to call MapHub&lt;T&gt;().");
-        builder.AppendLine("/// </summary>");
-        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
-        builder.AppendLine("public static class SignalRHubRegistrations");
-        builder.AppendLine("{");
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Registers all discovered SignalR hubs with the web application.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"app\">The web application to configure.</param>");
-        builder.AppendLine("    /// <returns>The web application for chaining.</returns>");
-        builder.AppendLine("    public static WebApplication MapGeneratedHubs(this WebApplication app)");
-        builder.AppendLine("    {");
-
-        foreach (var hub in hubRegistrations)
-        {
-            builder.AppendLine($"        // From {hub.PluginTypeName}");
-            builder.AppendLine($"        app.MapHub<{hub.HubTypeName}>(\"{hub.HubPath}\");");
-        }
-
-        builder.AppendLine("        return app;");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets the number of hub registrations discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {hubRegistrations.Count};");
-        builder.AppendLine("}");
-
-        return builder.ToString();
-    }
-
-    private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins, string assemblyName, BreadcrumbWriter breadcrumbs)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SemanticKernel Plugins");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System;");
-        builder.AppendLine("using System.Collections.Generic;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine("/// Compile-time generated registry of SemanticKernel plugin types.");
-        builder.AppendLine("/// This eliminates the need for runtime reflection to discover [KernelFunction] methods.");
-        builder.AppendLine("/// </summary>");
-        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
-        builder.AppendLine("public static class SemanticKernelPlugins");
-        builder.AppendLine("{");
-
-        // Generate static type array
-        var staticPlugins = kernelPlugins.Where(p => p.IsStatic).ToList();
-        var instancePlugins = kernelPlugins.Where(p => !p.IsStatic).ToList();
-
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets all static types with [KernelFunction] methods discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    public static IReadOnlyList<Type> StaticPluginTypes { get; } = new Type[]");
-        builder.AppendLine("    {");
-        foreach (var plugin in staticPlugins)
-        {
-            builder.AppendLine($"        typeof({plugin.TypeName}), // From {plugin.AssemblyName}");
-        }
-        builder.AppendLine("    };");
-        builder.AppendLine();
-
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets all instance types with [KernelFunction] methods discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    public static IReadOnlyList<Type> InstancePluginTypes { get; } = new Type[]");
-        builder.AppendLine("    {");
-        foreach (var plugin in instancePlugins)
-        {
-            builder.AppendLine($"        typeof({plugin.TypeName}), // From {plugin.AssemblyName}");
-        }
-        builder.AppendLine("    };");
-        builder.AppendLine();
-
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets all types with [KernelFunction] methods discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    public static IReadOnlyList<Type> AllPluginTypes { get; } = new Type[]");
-        builder.AppendLine("    {");
-        foreach (var plugin in kernelPlugins)
-        {
-            builder.AppendLine($"        typeof({plugin.TypeName}), // From {plugin.AssemblyName}");
-        }
-        builder.AppendLine("    };");
-        builder.AppendLine();
-
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets the number of plugin types discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {kernelPlugins.Count};");
-        builder.AppendLine("}");
-
-        return builder.ToString();
-    }
 
     private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
