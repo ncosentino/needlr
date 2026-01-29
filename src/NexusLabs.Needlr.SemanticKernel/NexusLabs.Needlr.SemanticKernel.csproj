@@ -7,6 +7,31 @@
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <!-- Main generator for TypeRegistry generation -->
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
   </ItemGroup>
-	
+
+  <!-- Include SemanticKernel generators in the NuGet package -->
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.SemanticKernel.Generators\NexusLabs.Needlr.SemanticKernel.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.SemanticKernel.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.SemanticKernel.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="..\NexusLabs.Needlr.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
 </Project>

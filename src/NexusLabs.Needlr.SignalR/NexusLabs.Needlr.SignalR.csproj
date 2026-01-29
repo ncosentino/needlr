@@ -3,12 +3,20 @@
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
-    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <!-- Main generator for TypeRegistry generation -->
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
   </ItemGroup>
 
-  <!-- Include SignalR analyzers in the NuGet package -->
+  <!-- Include SignalR generators and analyzers in the NuGet package -->
   <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.SignalR.Generators\NexusLabs.Needlr.SignalR.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
     <ProjectReference Include="..\NexusLabs.Needlr.SignalR.Analyzers\NexusLabs.Needlr.SignalR.Analyzers.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
@@ -16,7 +24,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.SignalR.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.SignalR.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
     <None Include="..\NexusLabs.Needlr.SignalR.Analyzers\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.SignalR.Analyzers.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="..\NexusLabs.Needlr.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"
           Visible="false" />

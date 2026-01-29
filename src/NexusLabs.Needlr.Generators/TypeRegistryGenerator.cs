@@ -77,20 +77,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
-            // Generate SignalR hub registrations if any were discovered
-            if (discoveryResult.HubRegistrations.Count > 0)
-            {
-                var hubRegistrationsText = CodeGen.SignalRCodeGenerator.GenerateSignalRHubRegistrationsSource(discoveryResult.HubRegistrations, assemblyName, breadcrumbs);
-                spc.AddSource("SignalRHubRegistrations.g.cs", SourceText.From(hubRegistrationsText, Encoding.UTF8));
-            }
-
-            // Generate SemanticKernel plugin type registry if any were discovered
-            if (discoveryResult.KernelPlugins.Count > 0)
-            {
-                var kernelPluginsText = CodeGen.SemanticKernelCodeGenerator.GenerateSemanticKernelPluginsSource(discoveryResult.KernelPlugins, assemblyName, breadcrumbs);
-                spc.AddSource("SemanticKernelPlugins.g.cs", SourceText.From(kernelPluginsText, Encoding.UTF8));
-            }
-
             // Generate interceptor proxy classes if any were discovered
             if (discoveryResult.InterceptedServices.Count > 0)
             {
@@ -210,8 +196,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     {
         var injectableTypes = new List<DiscoveredType>();
         var pluginTypes = new List<DiscoveredPlugin>();
-        var hubRegistrations = new List<DiscoveredHubRegistration>();
-        var kernelPlugins = new List<DiscoveredKernelPlugin>();
         var decorators = new List<DiscoveredDecorator>();
         var openDecorators = new List<DiscoveredOpenDecorator>();
         var interceptedServices = new List<DiscoveredInterceptedService>();
@@ -223,7 +207,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -231,7 +215,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -273,7 +257,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, hubRegistrations, kernelPlugins, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options);
+        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options);
     }
 
     private static void CollectTypesFromAssembly(
@@ -281,8 +265,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         IReadOnlyList<string>? namespacePrefixes,
         List<DiscoveredType> injectableTypes,
         List<DiscoveredPlugin> pluginTypes,
-        List<DiscoveredHubRegistration> hubRegistrations,
-        List<DiscoveredKernelPlugin> kernelPlugins,
         List<DiscoveredDecorator> decorators,
         List<DiscoveredOpenDecorator> openDecorators,
         List<DiscoveredInterceptedService> interceptedServices,
@@ -493,22 +475,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for IHubRegistrationPlugin implementations
-            var hubInfo = TypeDiscoveryHelper.TryGetHubRegistrationInfo(typeSymbol, compilation, isCurrentAssembly);
-            if (hubInfo.HasValue)
-            {
-                hubRegistrations.Add(new DiscoveredHubRegistration(
-                    TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol),
-                    hubInfo.Value.HubTypeName,
-                    hubInfo.Value.HubPath));
-            }
+            // NOTE: SignalR hub discovery is now handled by NexusLabs.Needlr.SignalR.Generators
 
             // Check for SemanticKernel plugin types (classes/statics with [KernelFunction] methods)
-            if (TypeDiscoveryHelper.HasKernelFunctions(typeSymbol, isCurrentAssembly))
-            {
-                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                var isStatic = typeSymbol.IsStatic;
-                kernelPlugins.Add(new DiscoveredKernelPlugin(typeName, assembly.Name, isStatic));
-            }
+            // NOTE: SemanticKernel plugin discovery is now handled by NexusLabs.Needlr.SemanticKernel.Generators
         }
     }
 

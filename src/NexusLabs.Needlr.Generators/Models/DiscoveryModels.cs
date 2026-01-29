@@ -71,40 +71,6 @@ internal readonly struct DiscoveredPlugin
 }
 
 /// <summary>
-/// Information about a SignalR hub registration from a plugin.
-/// </summary>
-internal readonly struct DiscoveredHubRegistration
-{
-    public DiscoveredHubRegistration(string pluginTypeName, string hubTypeName, string hubPath)
-    {
-        PluginTypeName = pluginTypeName;
-        HubTypeName = hubTypeName;
-        HubPath = hubPath;
-    }
-
-    public string PluginTypeName { get; }
-    public string HubTypeName { get; }
-    public string HubPath { get; }
-}
-
-/// <summary>
-/// Information about a Semantic Kernel plugin type.
-/// </summary>
-internal readonly struct DiscoveredKernelPlugin
-{
-    public DiscoveredKernelPlugin(string typeName, string assemblyName, bool isStatic)
-    {
-        TypeName = typeName;
-        AssemblyName = assemblyName;
-        IsStatic = isStatic;
-    }
-
-    public string TypeName { get; }
-    public string AssemblyName { get; }
-    public bool IsStatic { get; }
-}
-
-/// <summary>
 /// Information about a closed-generic decorator (from [DecoratorFor&lt;T&gt;]).
 /// </summary>
 internal readonly struct DiscoveredDecorator
@@ -353,8 +319,6 @@ internal readonly struct DiscoveryResult
     public DiscoveryResult(
         IReadOnlyList<DiscoveredType> injectableTypes,
         IReadOnlyList<DiscoveredPlugin> pluginTypes,
-        IReadOnlyList<DiscoveredHubRegistration> hubRegistrations,
-        IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins,
         IReadOnlyList<DiscoveredDecorator> decorators,
         IReadOnlyList<InaccessibleType> inaccessibleTypes,
         IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
@@ -364,8 +328,6 @@ internal readonly struct DiscoveryResult
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
-        HubRegistrations = hubRegistrations;
-        KernelPlugins = kernelPlugins;
         Decorators = decorators;
         InaccessibleTypes = inaccessibleTypes;
         MissingTypeRegistryPlugins = missingTypeRegistryPlugins;
@@ -376,8 +338,6 @@ internal readonly struct DiscoveryResult
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
     public IReadOnlyList<DiscoveredPlugin> PluginTypes { get; }
-    public IReadOnlyList<DiscoveredHubRegistration> HubRegistrations { get; }
-    public IReadOnlyList<DiscoveredKernelPlugin> KernelPlugins { get; }
     public IReadOnlyList<DiscoveredDecorator> Decorators { get; }
     public IReadOnlyList<InaccessibleType> InaccessibleTypes { get; }
     public IReadOnlyList<MissingTypeRegistryPlugin> MissingTypeRegistryPlugins { get; }
