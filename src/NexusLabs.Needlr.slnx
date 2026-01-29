@@ -4,6 +4,13 @@
     <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
   </Folder>
+  <Folder Name="/Generators/">
+    <Project Path="NexusLabs.Needlr.FluentValidation.Generators/NexusLabs.Needlr.FluentValidation.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <Project Path="NexusLabs.Needlr.SemanticKernel.Generators/NexusLabs.Needlr.SemanticKernel.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.SignalR.Generators/NexusLabs.Needlr.SignalR.Generators.csproj" />
+  </Folder>
   <Folder Name="/Examples/" />
   <Folder Name="/Examples/Bundle/">
     <Project Path="Examples/Bundle/BundleExampleApp/BundleExampleApp.csproj" />
@@ -11,15 +18,15 @@
   </Folder>
   <Folder Name="/Examples/SourceGen/">
     <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
-    <Project Path="Examples/SourceGen/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
     <Project Path="Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />
     <Project Path="Examples/SourceGen/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
+    <Project Path="Examples/SourceGen/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
     <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/TransitiveDependencyDemo/">
-    <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.Host/TransitiveDemo.Host.csproj" />
     <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureA/TransitiveDemo.FeatureA.csproj" />
     <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureB/TransitiveDemo.FeatureB.csproj" />
+    <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.Host/TransitiveDemo.Host.csproj" />
   </Folder>
   <Folder Name="/Examples/Reflection/">
     <Project Path="Examples/Reflection/AspNetCoreApp1/AspNetCoreApp1.csproj" />
@@ -35,12 +42,12 @@
   <Folder Name="/Examples/Hosting/">
   </Folder>
   <Folder Name="/Examples/Hosting/Reflection/">
-    <Project Path="Examples/Hosting/Reflection/WorkerServiceExample/WorkerServiceExample.csproj" />
     <Project Path="Examples/Hosting/Reflection/HostBuilderIntegrationExample/HostBuilderIntegrationExample.csproj" />
+    <Project Path="Examples/Hosting/Reflection/WorkerServiceExample/WorkerServiceExample.csproj" />
   </Folder>
   <Folder Name="/Examples/Hosting/SourceGen/">
-    <Project Path="Examples/Hosting/SourceGen/WorkerServiceSourceGen/WorkerServiceSourceGen.csproj" />
     <Project Path="Examples/Hosting/SourceGen/HostBuilderIntegrationSourceGen/HostBuilderIntegrationSourceGen.csproj" />
+    <Project Path="Examples/Hosting/SourceGen/WorkerServiceSourceGen/WorkerServiceSourceGen.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../CLAUDE.md" />
@@ -56,8 +63,11 @@
     <Project Path="NexusLabs.Needlr.AspNet.Tests/NexusLabs.Needlr.AspNet.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter.Tests/NexusLabs.Needlr.Carter.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Extensions.Logging.Tests/NexusLabs.Needlr.Extensions.Logging.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.FluentValidation.IntegrationTests/NexusLabs.Needlr.FluentValidation.IntegrationTests.csproj" />
+    <Project Path="NexusLabs.Needlr.FluentValidation.Tests/NexusLabs.Needlr.FluentValidation.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Generators.Tests/NexusLabs.Needlr.Generators.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Hosting.Tests/NexusLabs.Needlr.Hosting.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Injection.Bundle.Tests/NexusLabs.Needlr.Injection.Bundle.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests/NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Tests/NexusLabs.Needlr.Injection.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.IntegrationTests/NexusLabs.Needlr.IntegrationTests.csproj" />
@@ -69,21 +79,18 @@
   <Folder Name="/Benchmarks/">
     <Project Path="NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj" />
   </Folder>
+  <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
   <Project Path="NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet.csproj" />
-  <Project Path="NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting.csproj" />
   <Project Path="NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
-  <Project Path="NexusLabs.Needlr.FluentValidation.Tests/NexusLabs.Needlr.FluentValidation.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.FluentValidation/NexusLabs.Needlr.FluentValidation.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
-  <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
-  <Project Path="NexusLabs.Needlr.Injection.Bundle.Tests/NexusLabs.Needlr.Injection.Bundle.Tests.csproj" />
+  <Project Path="NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting.csproj" />
+  <Project Path="NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Bundle/NexusLabs.Needlr.Injection.Bundle.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.csproj" />
-  <Project Path="NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.csproj" />
+  <Project Path="NexusLabs.Needlr.Roslyn.Shared/NexusLabs.Needlr.Roslyn.Shared.csproj" />
   <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
   <Project Path="NexusLabs.Needlr.SignalR/NexusLabs.Needlr.SignalR.csproj" />
-  <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
 </Solution>
