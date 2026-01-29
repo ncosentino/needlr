@@ -1,6 +1,7 @@
 // Copyright (c) NexusLabs. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -116,11 +117,16 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             var targetType = validatorType ?? classSymbol;
             var methodName = validateMethod ?? "Validate";
 
+            // Check if validator is recognized by an extension (e.g., FluentValidation)
+            // If so, skip our method signature checks - the extension handles it
+            var isRecognizedByExtension = validatorType != null && IsRecognizedByValidatorProvider(validatorType, context.Compilation);
+
             // Find the validation method
             var validationMethod = FindValidationMethod(targetType, methodName);
 
             // NDLRGEN016: Method not found
-            if (validationMethod == null)
+            // Skip if validator is recognized by an extension - they have their own method signatures
+            if (validationMethod == null && !isRecognizedByExtension)
             {
                 // Only report if ValidateMethod was explicitly specified or Validator was specified
                 // (convention-based discovery is optional - no method is OK if not specified)
@@ -133,7 +139,7 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
                         targetType.Name));
                 }
             }
-            else
+            else if (validationMethod != null && !isRecognizedByExtension)
             {
                 // NDLRGEN017: Check method signature
                 var signatureError = ValidateMethodSignature(validationMethod, classSymbol, validatorType != null);
@@ -163,8 +169,8 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
                 }
             }
 
-            // NDLRGEN014: Check if validator implements IOptionsValidator<T>
-            if (validatorType != null && validationMethod == null)
+            // NDLRGEN014: Check if validator implements IOptionsValidator<T> or is recognized by an extension
+            if (validatorType != null && validationMethod == null && !isRecognizedByExtension)
             {
                 var implementsInterface = ImplementsIOptionsValidator(validatorType, classSymbol);
                 if (!implementsInterface)
@@ -258,6 +264,50 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        return false;
+    }
+
+    private static bool IsRecognizedByValidatorProvider(INamedTypeSymbol validatorType, Compilation compilation)
+    {
+        // Collect all ValidatorProvider attributes from all referenced assemblies
+        var validatorBaseTypes = new HashSet<string>();
+
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol assemblySymbol)
+                continue;
+
+            foreach (var attr in assemblySymbol.GetAttributes())
+            {
+                if (attr.AttributeClass?.Name != "ValidatorProviderAttribute")
+                    continue;
+                if (attr.AttributeClass.ContainingNamespace?.ToDisplayString() != GeneratorsNamespace)
+                    continue;
+
+                if (attr.ConstructorArguments.Length > 0 &&
+                    attr.ConstructorArguments[0].Value is string baseTypeName)
+                {
+                    validatorBaseTypes.Add(baseTypeName);
+                }
+            }
+        }
+
+        // Check if validatorType inherits from any recognized base
+        return validatorBaseTypes.Any(baseTypeName =>
+            InheritsFromByMetadataName(validatorType, baseTypeName));
+    }
+
+    private static bool InheritsFromByMetadataName(INamedTypeSymbol type, string metadataName)
+    {
+        var current = type.BaseType;
+        while (current != null)
+        {
+            var fullName = current.OriginalDefinition.ContainingNamespace?.ToDisplayString() + "." +
+                           current.OriginalDefinition.MetadataName;
+            if (fullName == metadataName)
+                return true;
+            current = current.BaseType;
+        }
         return false;
     }
 }

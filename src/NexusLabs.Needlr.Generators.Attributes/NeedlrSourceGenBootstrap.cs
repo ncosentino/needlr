@@ -37,6 +37,7 @@ public static class NeedlrSourceGenBootstrap
 
     private static readonly object _gate = new object();
     private static readonly List<Registration> _registrations = new List<Registration>();
+    private static readonly List<Action<object, object>> _extensionRegistrars = new List<Action<object, object>>();
 
     private static readonly AsyncLocal<Registration?> _asyncLocalOverride = new AsyncLocal<Registration?>();
 
@@ -94,6 +95,29 @@ public static class NeedlrSourceGenBootstrap
         lock (_gate)
         {
             _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider, decoratorApplier, optionsRegistrar));
+            _cachedCombined = null;
+        }
+    }
+
+    /// <summary>
+    /// Registers an extension that provides additional service registrations.
+    /// Extensions are invoked after the main options registrar during BuildServiceProvider.
+    /// </summary>
+    /// <param name="extensionRegistrar">
+    /// Action that registers extension services with the service collection and configuration.
+    /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
+    /// </param>
+    /// <remarks>
+    /// Use this method from extension package module initializers to register additional services.
+    /// For example, FluentValidation can register its validators without modifying core Needlr.
+    /// </remarks>
+    public static void RegisterExtension(Action<object, object> extensionRegistrar)
+    {
+        if (extensionRegistrar is null) throw new ArgumentNullException(nameof(extensionRegistrar));
+
+        lock (_gate)
+        {
+            _extensionRegistrars.Add(extensionRegistrar);
             _cachedCombined = null;
         }
     }
@@ -200,6 +224,36 @@ public static class NeedlrSourceGenBootstrap
 
             optionsRegistrar = _cachedCombined.OptionsRegistrar;
             return optionsRegistrar is not null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the combined extension registrar (if any extensions are registered).
+    /// </summary>
+    /// <param name="extensionRegistrar">
+    /// Combined action that invokes all registered extensions.
+    /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
+    /// </param>
+    /// <returns>True if any extension registrars are registered.</returns>
+    public static bool TryGetExtensionRegistrar(out Action<object, object>? extensionRegistrar)
+    {
+        lock (_gate)
+        {
+            if (_extensionRegistrars.Count == 0)
+            {
+                extensionRegistrar = null;
+                return false;
+            }
+
+            var registrars = _extensionRegistrars.ToArray();
+            extensionRegistrar = (services, config) =>
+            {
+                foreach (var registrar in registrars)
+                {
+                    registrar(services, config);
+                }
+            };
+            return true;
         }
     }
 

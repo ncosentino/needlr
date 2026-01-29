@@ -101,6 +101,12 @@ public sealed record ConfiguredSyringe
             callbacksWithExtras.Add(services => optionsRegistrar(services, config));
         }
         
+        // Auto-register extensions (e.g., FluentValidation) from source-generated bootstrap
+        if (NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetExtensionRegistrar(out var extensionRegistrar) && extensionRegistrar != null)
+        {
+            callbacksWithExtras.Add(services => extensionRegistrar(services, config));
+        }
+        
         // Add verification as the final callback
         callbacksWithExtras.Add(services => RunVerification(services, verificationOptions));
 
