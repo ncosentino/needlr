@@ -515,7 +515,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
         var hasOptions = discoveryResult.Options.Count > 0;
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry");
@@ -577,7 +577,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Source-Gen Bootstrap");
         builder.AppendLine("#nullable enable");
@@ -660,7 +660,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             
             foreach (var referencedAssembly in referencedAssemblies)
             {
-                var safeRefAssemblyName = SanitizeIdentifier(referencedAssembly);
+                var safeRefAssemblyName = GeneratorHelpers.SanitizeIdentifier(referencedAssembly);
                 builder.AppendLine($"        _ = typeof(global::{safeRefAssemblyName}.Generated.TypeRegistry).Assembly;");
             }
             
@@ -740,7 +740,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     var parameterExpressions = type.ConstructorParameters
                         .Select(p => p.IsKeyed 
-                            ? $"sp.GetRequiredKeyedService<{p.TypeName}>(\"{EscapeStringLiteral(p.ServiceKey!)}\")"
+                            ? $"sp.GetRequiredKeyedService<{p.TypeName}>(\"{GeneratorHelpers.EscapeStringLiteral(p.ServiceKey!)}\")"
                             : $"sp.GetRequiredService<{p.TypeName}>()");
                     builder.Append(string.Join(", ", parameterExpressions));
                 }
@@ -754,7 +754,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 else
                 {
                     builder.Append("[");
-                    builder.Append(string.Join(", ", type.ServiceKeys.Select(k => $"\"{EscapeStringLiteral(k)}\"")));
+                    builder.Append(string.Join(", ", type.ServiceKeys.Select(k => $"\"{GeneratorHelpers.EscapeStringLiteral(k)}\"")));
                     builder.AppendLine("]),");
                 }
             }
@@ -890,7 +890,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // If there's a custom validator method, register the generated validator
                     if (opt.HasValidatorMethod)
                     {
-                        var shortTypeName = GetShortTypeName(typeName);
+                        var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
                         var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
                         builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
 
@@ -996,7 +996,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateSignalRHubRegistrationsSource(IReadOnlyList<DiscoveredHubRegistration> hubRegistrations, string assemblyName, BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SignalR Hub Registrations");
         builder.AppendLine("#nullable enable");
@@ -1042,7 +1042,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateSemanticKernelPluginsSource(IReadOnlyList<DiscoveredKernelPlugin> kernelPlugins, string assemblyName, BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr SemanticKernel Plugins");
         builder.AppendLine("#nullable enable");
@@ -1112,7 +1112,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Interceptor Proxies");
         builder.AppendLine("#nullable enable");
@@ -1151,7 +1151,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         foreach (var service in interceptedServices)
         {
-            var proxyTypeName = GetProxyTypeName(service.TypeName);
+            var proxyTypeName = GeneratorHelpers.GetProxyTypeName(service.TypeName);
             var lifetime = service.Lifetime switch
             {
                 GeneratorLifetime.Singleton => "Singleton",
@@ -1196,7 +1196,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateFactoriesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Factories");
         builder.AppendLine("#nullable enable");
@@ -1270,7 +1270,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static string GenerateOptionsValidatorsSource(IReadOnlyList<DiscoveredOptions> optionsWithValidators, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Options Validators");
         builder.AppendLine("#nullable enable");
@@ -1291,7 +1291,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (!opt.HasValidatorMethod || opt.ValidatorMethod == null)
                 continue;
 
-            var shortTypeName = GetShortTypeName(opt.TypeName);
+            var shortTypeName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
             var validatorClassName = shortTypeName + "Validator";
 
             // Determine which type has the validator method
@@ -1394,8 +1394,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
             {
-                var simpleTypeName = GetSimpleTypeName(p.TypeName);
-                return $"{p.TypeName} {p.ParameterName ?? ToCamelCase(simpleTypeName)}";
+                var simpleTypeName = GeneratorHelpers.GetSimpleTypeName(p.TypeName);
+                return $"{p.TypeName} {p.ParameterName ?? GeneratorHelpers.ToCamelCase(simpleTypeName)}";
             }));
 
             builder.AppendLine($"    /// <summary>Creates a new instance of {factory.SimpleTypeName}.</summary>");
@@ -1405,8 +1405,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 if (!string.IsNullOrWhiteSpace(param.DocumentationComment))
                 {
-                    var paramName = param.ParameterName ?? ToCamelCase(GetSimpleTypeName(param.TypeName));
-                    var escapedDoc = EscapeXmlContent(param.DocumentationComment!);
+                    var paramName = param.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
+                    var escapedDoc = GeneratorHelpers.EscapeXmlContent(param.DocumentationComment!);
                     builder.AppendLine($"    /// <param name=\"{paramName}\">{escapedDoc}</param>");
                 }
             }
@@ -1415,21 +1415,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine("}");
-    }
-
-    /// <summary>
-    /// Escapes special XML characters in documentation content.
-    /// </summary>
-    private static string EscapeXmlContent(string content)
-    {
-        // The content from GetDocumentationCommentXml() is already parsed,
-        // so entities like &lt; are already decoded. We need to re-encode them.
-        return content
-            .Replace("&", "&amp;")
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;")
-            .Replace("\"", "&quot;")
-            .Replace("'", "&apos;");
     }
 
     private static void GenerateFactoryImplementation(StringBuilder builder, DiscoveredFactory factory, BreadcrumbWriter breadcrumbs, string? projectDirectory)
@@ -1454,20 +1439,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Fields for injectable dependencies
         foreach (var param in allInjectableParams)
         {
-            var fieldName = "_" + ToCamelCase(GetSimpleTypeName(param.TypeName));
+            var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
             builder.AppendLine($"    private readonly {param.TypeName} {fieldName};");
         }
 
         builder.AppendLine();
 
         // Constructor
-        var ctorParams = string.Join(", ", allInjectableParams.Select(p => $"{p.TypeName} {ToCamelCase(GetSimpleTypeName(p.TypeName))}"));
+        var ctorParams = string.Join(", ", allInjectableParams.Select(p => $"{p.TypeName} {GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName))}"));
         builder.AppendLine($"    public {factoryImplName}({ctorParams})");
         builder.AppendLine("    {");
         foreach (var param in allInjectableParams)
         {
-            var fieldName = "_" + ToCamelCase(GetSimpleTypeName(param.TypeName));
-            var paramName = ToCamelCase(GetSimpleTypeName(param.TypeName));
+            var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
+            var paramName = GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
             builder.AppendLine($"        {fieldName} = {paramName};");
         }
         builder.AppendLine("    }");
@@ -1478,7 +1463,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
             {
-                var paramName = p.ParameterName ?? ToCamelCase(GetSimpleTypeName(p.TypeName));
+                var paramName = p.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName));
                 return $"{p.TypeName} {paramName}";
             }));
 
@@ -1490,12 +1475,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var allArgs = new List<string>();
             foreach (var inj in ctor.InjectableParameters)
             {
-                var fieldName = "_" + ToCamelCase(GetSimpleTypeName(inj.TypeName));
+                var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
                 allArgs.Add(fieldName);
             }
             foreach (var rt in ctor.RuntimeParameters)
             {
-                var paramName = rt.ParameterName ?? ToCamelCase(GetSimpleTypeName(rt.TypeName));
+                var paramName = rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName));
                 allArgs.Add(paramName);
             }
 
@@ -1515,7 +1500,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         // Build the lambda
         var runtimeParams = string.Join(", ", ctor.RuntimeParameters.Select(p => 
-            p.ParameterName ?? ToCamelCase(GetSimpleTypeName(p.TypeName))));
+            p.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName))));
 
         builder.AppendLine($"{indent}services.AddSingleton<{funcType}>(sp =>");
         builder.AppendLine($"{indent}    ({runtimeParams}) => new {factory.TypeName}(");
@@ -1526,7 +1511,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (inj.IsKeyed)
             {
-                allArgs.Add($"sp.GetRequiredKeyedService<{inj.TypeName}>(\"{EscapeStringLiteral(inj.ServiceKey!)}\")");
+                allArgs.Add($"sp.GetRequiredKeyedService<{inj.TypeName}>(\"{GeneratorHelpers.EscapeStringLiteral(inj.ServiceKey!)}\")");
             }
             else
             {
@@ -1535,7 +1520,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         foreach (var rt in ctor.RuntimeParameters)
         {
-            allArgs.Add(rt.ParameterName ?? ToCamelCase(GetSimpleTypeName(rt.TypeName)));
+            allArgs.Add(rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName)));
         }
 
         for (int i = 0; i < allArgs.Count; i++)
@@ -1547,29 +1532,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine($"{indent});");
     }
 
-    private static string GetSimpleTypeName(string fullyQualifiedName)
-    {
-        // "global::System.String" -> "String"
-        var parts = fullyQualifiedName.Split('.');
-        return parts[parts.Length - 1];
-    }
-
-    private static string ToCamelCase(string name)
-    {
-        if (string.IsNullOrEmpty(name))
-            return name;
-        
-        // Remove leading 'I' for interfaces
-        if (name.Length > 1 && name[0] == 'I' && char.IsUpper(name[1]))
-            name = name.Substring(1);
-        
-        return char.ToLowerInvariant(name[0]) + name.Substring(1);
-    }
-
     private static string GenerateDiagnosticsSource(DiscoveryResult discoveryResult, string assemblyName, string? projectDirectory, DiagnosticOptions options, IReadOnlyList<string> referencedTypeRegistryAssemblies, Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes)
     {
         var builder = new StringBuilder();
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
         builder.AppendLine("// <auto-generated/>");
@@ -1590,28 +1556,28 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("{");
 
         // Output path for MSBuild target
-        builder.AppendLine($"    public const string OutputPath = @\"{EscapeStringLiteral(options.OutputPath)}\";");
+        builder.AppendLine($"    public const string OutputPath = @\"{GeneratorHelpers.EscapeStringLiteral(options.OutputPath)}\";");
         builder.AppendLine();
 
         // Generate all three diagnostic outputs when enabled
         var dependencyGraphContent = GenerateDependencyGraphMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter, referencedTypeRegistryAssemblies, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>DependencyGraph.md content</summary>");
-        builder.AppendLine($"    public const string DependencyGraph = @\"{EscapeVerbatimStringLiteral(dependencyGraphContent)}\";");
+        builder.AppendLine($"    public const string DependencyGraph = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(dependencyGraphContent)}\";");
         builder.AppendLine();
 
         var lifetimeSummaryContent = GenerateLifetimeSummaryMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>LifetimeSummary.md content</summary>");
-        builder.AppendLine($"    public const string LifetimeSummary = @\"{EscapeVerbatimStringLiteral(lifetimeSummaryContent)}\";");
+        builder.AppendLine($"    public const string LifetimeSummary = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(lifetimeSummaryContent)}\";");
         builder.AppendLine();
 
         var registrationIndexContent = GenerateRegistrationIndexMarkdown(discoveryResult, assemblyName, projectDirectory, timestamp, options.TypeFilter, referencedAssemblyTypes);
         builder.AppendLine("    /// <summary>RegistrationIndex.md content</summary>");
-        builder.AppendLine($"    public const string RegistrationIndex = @\"{EscapeVerbatimStringLiteral(registrationIndexContent)}\";");
+        builder.AppendLine($"    public const string RegistrationIndex = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(registrationIndexContent)}\";");
         builder.AppendLine();
 
         var analyzerStatusContent = GenerateAnalyzerStatusMarkdown(timestamp);
         builder.AppendLine("    /// <summary>AnalyzerStatus.md content</summary>");
-        builder.AppendLine($"    public const string AnalyzerStatus = @\"{EscapeVerbatimStringLiteral(analyzerStatusContent)}\";");
+        builder.AppendLine($"    public const string AnalyzerStatus = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(analyzerStatusContent)}\";");
 
         builder.AppendLine("}");
 
@@ -1659,7 +1625,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     {
                         var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
                         var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
-                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                        sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
                     }
                     sb.AppendLine("    end");
                 }
@@ -1670,7 +1636,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     {
                         var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
                         var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
-                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                        sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
                     }
                     sb.AppendLine("    end");
                 }
@@ -1681,7 +1647,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     {
                         var shape = type.IsDecorator ? "[[" : (type.HasFactory ? "{{" : "[");
                         var endShape = type.IsDecorator ? "]]" : (type.HasFactory ? "}}" : "]");
-                        sb.AppendLine($"        {GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
+                        sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.FullName)}{shape}\"{type.ShortName}\"{endShape}");
                     }
                     sb.AppendLine("    end");
                 }
@@ -1692,13 +1658,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     foreach (var dep in type.Dependencies)
                     {
-                        var depShort = GetShortTypeName(dep);
+                        var depShort = GeneratorHelpers.GetShortTypeName(dep);
                         var matchingType = refTypes.FirstOrDefault(t =>
                             t.ShortName == depShort ||
-                            t.Interfaces.Any(i => GetShortTypeName(i) == depShort));
+                            t.Interfaces.Any(i => GeneratorHelpers.GetShortTypeName(i) == depShort));
                         if (matchingType.FullName != null)
                         {
-                            sb.AppendLine($"    {GetMermaidNodeId(type.FullName)} --> {GetMermaidNodeId(matchingType.FullName)}");
+                            sb.AppendLine($"    {GeneratorHelpers.GetMermaidNodeId(type.FullName)} --> {GeneratorHelpers.GetMermaidNodeId(matchingType.FullName)}");
                         }
                     }
                 }
@@ -1711,7 +1677,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var matchingFactory = refTypes.FirstOrDefault(t => t.ShortName == factoryName);
                     if (matchingFactory.FullName != null)
                     {
-                        sb.AppendLine($"    {GetMermaidNodeId(matchingFactory.FullName)} -.->|produces| {GetMermaidNodeId(source.FullName)}");
+                        sb.AppendLine($"    {GeneratorHelpers.GetMermaidNodeId(matchingFactory.FullName)} -.->|produces| {GeneratorHelpers.GetMermaidNodeId(source.FullName)}");
                     }
                 }
 
@@ -1723,7 +1689,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 sb.AppendLine($"|---------|----------|------------|");
                 foreach (var type in refTypes.OrderBy(t => t.ShortName))
                 {
-                    var interfaces = type.Interfaces.Any() ? string.Join(", ", type.Interfaces.Select(GetShortTypeName)) : "-";
+                    var interfaces = type.Interfaces.Any() ? string.Join(", ", type.Interfaces.Select(GeneratorHelpers.GetShortTypeName)) : "-";
                     sb.AppendLine($"| {type.ShortName} | {type.Lifetime} | {interfaces} |");
                 }
                 sb.AppendLine();
@@ -1744,38 +1710,38 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             sb.AppendLine("    subgraph Singleton");
             foreach (var type in singletons)
-                sb.AppendLine($"        {GetMermaidNodeId(type.TypeName)}[\"{GetShortTypeName(type.TypeName)}\"]");
+                sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.TypeName)}[\"{GeneratorHelpers.GetShortTypeName(type.TypeName)}\"]");
             sb.AppendLine("    end");
         }
         if (scopeds.Any())
         {
             sb.AppendLine("    subgraph Scoped");
             foreach (var type in scopeds)
-                sb.AppendLine($"        {GetMermaidNodeId(type.TypeName)}[\"{GetShortTypeName(type.TypeName)}\"]");
+                sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.TypeName)}[\"{GeneratorHelpers.GetShortTypeName(type.TypeName)}\"]");
             sb.AppendLine("    end");
         }
         if (transients.Any())
         {
             sb.AppendLine("    subgraph Transient");
             foreach (var type in transients)
-                sb.AppendLine($"        {GetMermaidNodeId(type.TypeName)}[\"{GetShortTypeName(type.TypeName)}\"]");
+                sb.AppendLine($"        {GeneratorHelpers.GetMermaidNodeId(type.TypeName)}[\"{GeneratorHelpers.GetShortTypeName(type.TypeName)}\"]");
             sb.AppendLine("    end");
         }
 
         // Emit edges for dependencies
-        var typeNames = new HashSet<string>(types.Select(t => GetShortTypeName(t.TypeName)), StringComparer.Ordinal);
+        var typeNames = new HashSet<string>(types.Select(t => GeneratorHelpers.GetShortTypeName(t.TypeName)), StringComparer.Ordinal);
         foreach (var type in types)
         {
             foreach (var dep in type.ConstructorParameterTypes)
             {
-                var depShort = GetShortTypeName(dep);
+                var depShort = GeneratorHelpers.GetShortTypeName(dep);
                 // Find if we have a type implementing this interface
                 var matchingType = types.FirstOrDefault(t =>
-                    GetShortTypeName(t.TypeName) == depShort ||
-                    t.InterfaceNames.Any(i => GetShortTypeName(i) == depShort));
+                    GeneratorHelpers.GetShortTypeName(t.TypeName) == depShort ||
+                    t.InterfaceNames.Any(i => GeneratorHelpers.GetShortTypeName(i) == depShort));
 
                 if (matchingType.TypeName != null)
-                    sb.AppendLine($"    {GetMermaidNodeId(type.TypeName)} --> {GetMermaidNodeId(matchingType.TypeName)}");
+                    sb.AppendLine($"    {GeneratorHelpers.GetMermaidNodeId(type.TypeName)} --> {GeneratorHelpers.GetMermaidNodeId(matchingType.TypeName)}");
             }
         }
 
@@ -1801,20 +1767,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var serviceGroup in decoratorsByService)
             {
-                var serviceShortName = GetShortTypeName(serviceGroup.Key);
+                var serviceShortName = GeneratorHelpers.GetShortTypeName(serviceGroup.Key);
                 var orderedDecorators = serviceGroup.OrderByDescending(d => d.Order).ToList();
 
                 // Find the underlying implementation for this service
                 var implementation = types.FirstOrDefault(t =>
-                    t.InterfaceNames.Any(i => GetShortTypeName(i) == serviceShortName) &&
-                    !discovery.Decorators.Any(d => GetShortTypeName(d.DecoratorTypeName) == GetShortTypeName(t.TypeName)));
+                    t.InterfaceNames.Any(i => GeneratorHelpers.GetShortTypeName(i) == serviceShortName) &&
+                    !discovery.Decorators.Any(d => GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName) == GeneratorHelpers.GetShortTypeName(t.TypeName)));
 
                 // Build the chain: highest order decorator -> ... -> lowest order decorator -> implementation
                 for (int i = 0; i < orderedDecorators.Count; i++)
                 {
                     var decorator = orderedDecorators[i];
-                    var decoratorId = GetMermaidNodeId(decorator.DecoratorTypeName);
-                    var decoratorName = GetShortTypeName(decorator.DecoratorTypeName);
+                    var decoratorId = GeneratorHelpers.GetMermaidNodeId(decorator.DecoratorTypeName);
+                    var decoratorName = GeneratorHelpers.GetShortTypeName(decorator.DecoratorTypeName);
 
                     // Add node definition
                     sb.AppendLine($"    {decoratorId}[[\"{decoratorName}\"]]");
@@ -1823,12 +1789,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     if (i < orderedDecorators.Count - 1)
                     {
                         var nextDecorator = orderedDecorators[i + 1];
-                        sb.AppendLine($"    {decoratorId} --> {GetMermaidNodeId(nextDecorator.DecoratorTypeName)}");
+                        sb.AppendLine($"    {decoratorId} --> {GeneratorHelpers.GetMermaidNodeId(nextDecorator.DecoratorTypeName)}");
                     }
                     else if (implementation.TypeName != null)
                     {
-                        var implId = GetMermaidNodeId(implementation.TypeName);
-                        var implName = GetShortTypeName(implementation.TypeName);
+                        var implId = GeneratorHelpers.GetMermaidNodeId(implementation.TypeName);
+                        var implName = GeneratorHelpers.GetShortTypeName(implementation.TypeName);
                         sb.AppendLine($"    {implId}[\"{implName}\"]");
                         sb.AppendLine($"    {decoratorId} --> {implId}");
                     }
@@ -1838,7 +1804,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Plugin decorators (we don't have chain order info, just show the decorator types)
             foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName))
             {
-                var decoratorId = GetMermaidNodeId(type.FullName);
+                var decoratorId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var decoratorName = type.ShortName;
                 sb.AppendLine($"    {decoratorId}[[\"{decoratorName}\"]]");
             }
@@ -1863,8 +1829,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Host intercepted services
             foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
             {
-                var targetId = GetMermaidNodeId(service.TypeName);
-                var targetName = GetShortTypeName(service.TypeName);
+                var targetId = GeneratorHelpers.GetMermaidNodeId(service.TypeName);
+                var targetName = GeneratorHelpers.GetShortTypeName(service.TypeName);
                 var proxyId = targetId + "_Proxy";
                 var proxyName = targetName + "_InterceptorProxy";
 
@@ -1878,8 +1844,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // Show interceptors applied
                 foreach (var interceptorType in service.AllInterceptorTypeNames)
                 {
-                    var interceptorId = GetMermaidNodeId(interceptorType);
-                    var interceptorName = GetShortTypeName(interceptorType);
+                    var interceptorId = GeneratorHelpers.GetMermaidNodeId(interceptorType);
+                    var interceptorName = GeneratorHelpers.GetShortTypeName(interceptorType);
                     sb.AppendLine($"    {interceptorId}([[\"{interceptorName}\"]])");
                     sb.AppendLine($"    {proxyId} --> {interceptorId}");
                 }
@@ -1888,7 +1854,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Plugin intercepted services
             foreach (var (assembly, type) in pluginInterceptors.OrderBy(x => x.Type.ShortName))
             {
-                var targetId = GetMermaidNodeId(type.FullName);
+                var targetId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var targetName = type.ShortName;
                 var proxyId = targetId + "_Proxy";
                 var proxyName = targetName + "_InterceptorProxy";
@@ -1919,12 +1885,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var keyGroup in typesByKey)
             {
-                var safeKey = SanitizeIdentifier(keyGroup.Key);
+                var safeKey = GeneratorHelpers.SanitizeIdentifier(keyGroup.Key);
                 sb.AppendLine($"    subgraph key_{safeKey}[\"{keyGroup.Key}\"]");
                 foreach (var item in keyGroup.OrderBy(x => x.Type.TypeName))
                 {
-                    var nodeId = GetMermaidNodeId(item.Type.TypeName);
-                    var nodeName = GetShortTypeName(item.Type.TypeName);
+                    var nodeId = GeneratorHelpers.GetMermaidNodeId(item.Type.TypeName);
+                    var nodeName = GeneratorHelpers.GetShortTypeName(item.Type.TypeName);
                     sb.AppendLine($"        {nodeId}[\"{nodeName}\"]");
                 }
                 sb.AppendLine("    end");
@@ -1950,13 +1916,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var asmGroup in pluginsByAssembly)
             {
-                var safeAsm = SanitizeIdentifier(asmGroup.Key);
-                var shortAsm = GetShortTypeName(asmGroup.Key);
+                var safeAsm = GeneratorHelpers.SanitizeIdentifier(asmGroup.Key);
+                var shortAsm = GeneratorHelpers.GetShortTypeName(asmGroup.Key);
                 sb.AppendLine($"    subgraph asm_{safeAsm}[\"{shortAsm}\"]");
                 foreach (var plugin in asmGroup.OrderBy(p => p.TypeName))
                 {
-                    var nodeId = GetMermaidNodeId(plugin.TypeName);
-                    var nodeName = GetShortTypeName(plugin.TypeName);
+                    var nodeId = GeneratorHelpers.GetMermaidNodeId(plugin.TypeName);
+                    var nodeName = GeneratorHelpers.GetShortTypeName(plugin.TypeName);
                     // Use stadium shape for plugins
                     sb.AppendLine($"        {nodeId}([\"{nodeName}\"])");
                 }
@@ -1983,8 +1949,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Host factories
             foreach (var factory in factories.OrderBy(f => f.TypeName))
             {
-                var sourceNodeId = GetMermaidNodeId(factory.TypeName);
-                var sourceName = GetShortTypeName(factory.TypeName);
+                var sourceNodeId = GeneratorHelpers.GetMermaidNodeId(factory.TypeName);
+                var sourceName = GeneratorHelpers.GetShortTypeName(factory.TypeName);
                 var factoryNodeId = sourceNodeId + "Factory";
                 var factoryName = sourceName + "Factory";
 
@@ -1999,7 +1965,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Plugin factories
             foreach (var (assembly, type) in pluginFactories.OrderBy(f => f.Type.ShortName))
             {
-                var sourceNodeId = GetMermaidNodeId(type.FullName);
+                var sourceNodeId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var sourceName = type.ShortName;
                 var factoryNodeId = sourceNodeId + "Factory";
                 var factoryName = sourceName + "Factory";
@@ -2027,14 +1993,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var type in typesWithInterfaces.OrderBy(t => t.TypeName))
             {
-                var implId = GetMermaidNodeId(type.TypeName);
-                var implName = GetShortTypeName(type.TypeName);
+                var implId = GeneratorHelpers.GetMermaidNodeId(type.TypeName);
+                var implName = GeneratorHelpers.GetShortTypeName(type.TypeName);
                 sb.AppendLine($"    {implId}[\"{implName}\"]");
 
                 foreach (var iface in type.InterfaceNames)
                 {
-                    var ifaceId = GetMermaidNodeId(iface);
-                    var ifaceName = GetShortTypeName(iface);
+                    var ifaceId = GeneratorHelpers.GetMermaidNodeId(iface);
+                    var ifaceName = GeneratorHelpers.GetShortTypeName(iface);
                     // Interface uses rounded box, dotted edge points from interface to impl
                     sb.AppendLine($"    {ifaceId}((\"{ifaceName}\"))");
                     sb.AppendLine($"    {ifaceId} -.-> {implId}");
@@ -2064,7 +2030,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (hubServices.Any())
         {
             sb.AppendLine();
-            sb.AppendLine("**Hub Services:** " + string.Join(", ", hubServices.Select(h => $"{GetShortTypeName(h.TypeName)} ({h.DependentCount})")));
+            sb.AppendLine("**Hub Services:** " + string.Join(", ", hubServices.Select(h => $"{GeneratorHelpers.GetShortTypeName(h.TypeName)} ({h.DependentCount})")));
         }
 
         sb.AppendLine();
@@ -2078,9 +2044,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         foreach (var type in types.OrderBy(t => t.TypeName))
         {
             var deps = type.ConstructorParameterTypes.Any()
-                ? string.Join(", ", type.ConstructorParameterTypes.Select(GetShortTypeName))
+                ? string.Join(", ", type.ConstructorParameterTypes.Select(GeneratorHelpers.GetShortTypeName))
                 : "-";
-            sb.AppendLine($"| {GetShortTypeName(type.TypeName)} | {type.Lifetime} | {deps} |");
+            sb.AppendLine($"| {GeneratorHelpers.GetShortTypeName(type.TypeName)} | {type.Lifetime} | {deps} |");
         }
 
         return sb.ToString();
@@ -2123,9 +2089,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 sb.AppendLine("|----------|-------|---|");
                 if (refTotal > 0)
                 {
-                    sb.AppendLine($"| Singleton | {refSingletons} | {Percentage(refSingletons, refTotal)}% |");
-                    sb.AppendLine($"| Scoped | {refScopeds} | {Percentage(refScopeds, refTotal)}% |");
-                    sb.AppendLine($"| Transient | {refTransients} | {Percentage(refTransients, refTotal)}% |");
+                    sb.AppendLine($"| Singleton | {refSingletons} | {GeneratorHelpers.Percentage(refSingletons, refTotal)}% |");
+                    sb.AppendLine($"| Scoped | {refScopeds} | {GeneratorHelpers.Percentage(refScopeds, refTotal)}% |");
+                    sb.AppendLine($"| Transient | {refTransients} | {GeneratorHelpers.Percentage(refTransients, refTotal)}% |");
                     sb.AppendLine($"| **Total** | **{refTotal}** | 100% |");
                 }
                 sb.AppendLine();
@@ -2139,9 +2105,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         if (total > 0)
         {
-            sb.AppendLine($"| Singleton | {singletons.Count} | {Percentage(singletons.Count, total)}% |");
-            sb.AppendLine($"| Scoped | {scopeds.Count} | {Percentage(scopeds.Count, total)}% |");
-            sb.AppendLine($"| Transient | {transients.Count} | {Percentage(transients.Count, total)}% |");
+            sb.AppendLine($"| Singleton | {singletons.Count} | {GeneratorHelpers.Percentage(singletons.Count, total)}% |");
+            sb.AppendLine($"| Scoped | {scopeds.Count} | {GeneratorHelpers.Percentage(scopeds.Count, total)}% |");
+            sb.AppendLine($"| Transient | {transients.Count} | {GeneratorHelpers.Percentage(transients.Count, total)}% |");
             sb.AppendLine($"| **Total** | **{total}** | 100% |");
         }
         else
@@ -2157,7 +2123,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"## Singleton ({singletons.Count})");
             sb.AppendLine();
             foreach (var type in singletons.OrderBy(t => t.TypeName))
-                sb.AppendLine($"- {GetShortTypeName(type.TypeName)}");
+                sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
 
@@ -2166,7 +2132,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"## Scoped ({scopeds.Count})");
             sb.AppendLine();
             foreach (var type in scopeds.OrderBy(t => t.TypeName))
-                sb.AppendLine($"- {GetShortTypeName(type.TypeName)}");
+                sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
 
@@ -2175,7 +2141,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"## Transient ({transients.Count})");
             sb.AppendLine();
             foreach (var type in transients.OrderBy(t => t.TypeName))
-                sb.AppendLine($"- {GetShortTypeName(type.TypeName)}");
+                sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
 
@@ -2215,7 +2181,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 foreach (var type in refTypes.OrderBy(t => t.ShortName))
                 {
                     var iface = type.Interfaces.FirstOrDefault() ?? "-";
-                    sb.AppendLine($"| {index} | {GetShortTypeName(iface)} | {type.ShortName} | {type.Lifetime} |");
+                    sb.AppendLine($"| {index} | {GeneratorHelpers.GetShortTypeName(iface)} | {type.ShortName} | {type.Lifetime} |");
                     index++;
                 }
                 sb.AppendLine();
@@ -2236,7 +2202,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var iface = type.InterfaceNames.FirstOrDefault() ?? "-";
                 var source = BreadcrumbWriter.GetRelativeSourcePath(type.SourceFilePath, projectDirectory);
-                sb.AppendLine($"| {index} | {GetShortTypeName(iface)} | {GetShortTypeName(type.TypeName)} | {type.Lifetime} | {source} |");
+                sb.AppendLine($"| {index} | {GeneratorHelpers.GetShortTypeName(iface)} | {GeneratorHelpers.GetShortTypeName(type.TypeName)} | {type.Lifetime} | {source} |");
                 index++;
             }
             sb.AppendLine();
@@ -2269,8 +2235,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var chain = string.Join(" → ",
                     group.OrderBy(d => d.Order)
-                         .Select(d => GetShortTypeName(d.DecoratorTypeName)));
-                sb.AppendLine($"| {GetShortTypeName(group.Key)} | {chain} | (host) |");
+                         .Select(d => GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName)));
+                sb.AppendLine($"| {GeneratorHelpers.GetShortTypeName(group.Key)} | {chain} | (host) |");
             }
 
             // Plugin decorators
@@ -2278,7 +2244,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 // For plugin decorators, we show them individually since we don't have chain info
                 var serviceName = type.Interfaces.FirstOrDefault() ?? "-";
-                sb.AppendLine($"| {GetShortTypeName(serviceName)} | {type.ShortName} | {assembly} |");
+                sb.AppendLine($"| {GeneratorHelpers.GetShortTypeName(serviceName)} | {type.ShortName} | {assembly} |");
             }
             sb.AppendLine();
         }
@@ -2300,8 +2266,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Host intercepted services
             foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
             {
-                var serviceName = GetShortTypeName(service.TypeName);
-                var interceptors = string.Join(", ", service.AllInterceptorTypeNames.Select(GetShortTypeName));
+                var serviceName = GeneratorHelpers.GetShortTypeName(service.TypeName);
+                var interceptors = string.Join(", ", service.AllInterceptorTypeNames.Select(GeneratorHelpers.GetShortTypeName));
                 var proxyName = serviceName + "_InterceptorProxy";
                 sb.AppendLine($"| {serviceName} | {interceptors} | {proxyName} | (host) |");
             }
@@ -2360,8 +2326,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var plugin in orderedPlugins)
             {
-                var interfaces = string.Join(", ", plugin.InterfaceNames.Select(GetShortTypeName));
-                sb.AppendLine($"| {plugin.Order} | {GetShortTypeName(plugin.TypeName)} | {interfaces} |");
+                var interfaces = string.Join(", ", plugin.InterfaceNames.Select(GeneratorHelpers.GetShortTypeName));
+                sb.AppendLine($"| {plugin.Order} | {GeneratorHelpers.GetShortTypeName(plugin.TypeName)} | {interfaces} |");
             }
             sb.AppendLine();
         }
@@ -2380,7 +2346,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 foreach (var key in type.ServiceKeys)
                 {
                     var iface = type.InterfaceNames.FirstOrDefault() ?? "-";
-                    sb.AppendLine($"| `\"{key}\"` | {GetShortTypeName(iface)} | {GetShortTypeName(type.TypeName)} | {type.Lifetime} |");
+                    sb.AppendLine($"| `\"{key}\"` | {GeneratorHelpers.GetShortTypeName(iface)} | {GeneratorHelpers.GetShortTypeName(type.TypeName)} | {type.Lifetime} |");
                 }
             }
             sb.AppendLine();
@@ -2440,8 +2406,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         return types.Where(t => 
             filter.Contains(t.TypeName) ||                                      // global::TestApp.OrderService
-            filter.Contains(GetShortTypeName(t.TypeName)) ||                    // OrderService
-            filter.Contains(StripGlobalPrefix(t.TypeName)))                     // TestApp.OrderService
+            filter.Contains(GeneratorHelpers.GetShortTypeName(t.TypeName)) ||                    // OrderService
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(t.TypeName)))                     // TestApp.OrderService
                     .ToList();
     }
 
@@ -2452,8 +2418,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         return plugins.Where(p => 
             filter.Contains(p.TypeName) ||
-            filter.Contains(GetShortTypeName(p.TypeName)) ||
-            filter.Contains(StripGlobalPrefix(p.TypeName)))
+            filter.Contains(GeneratorHelpers.GetShortTypeName(p.TypeName)) ||
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(p.TypeName)))
                       .ToList();
     }
 
@@ -2464,11 +2430,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         return decorators.Where(d => 
             filter.Contains(d.DecoratorTypeName) ||
-            filter.Contains(GetShortTypeName(d.DecoratorTypeName)) ||
-            filter.Contains(StripGlobalPrefix(d.DecoratorTypeName)) ||
+            filter.Contains(GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName)) ||
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(d.DecoratorTypeName)) ||
             filter.Contains(d.ServiceTypeName) ||
-            filter.Contains(GetShortTypeName(d.ServiceTypeName)) ||
-            filter.Contains(StripGlobalPrefix(d.ServiceTypeName)))
+            filter.Contains(GeneratorHelpers.GetShortTypeName(d.ServiceTypeName)) ||
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(d.ServiceTypeName)))
                          .ToList();
     }
 
@@ -2479,8 +2445,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         return factories.Where(f => 
             filter.Contains(f.TypeName) ||
-            filter.Contains(GetShortTypeName(f.TypeName)) ||
-            filter.Contains(StripGlobalPrefix(f.TypeName)))
+            filter.Contains(GeneratorHelpers.GetShortTypeName(f.TypeName)) ||
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(f.TypeName)))
                         .ToList();
     }
 
@@ -2570,14 +2536,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var openGenericName = TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.OpenGenericInterface);
                     
                     // Extract the base name (before the <>)
-                    var openGenericBaseName = GetGenericBaseName(openGenericName);
-                    var interfaceBaseName = GetGenericBaseName(interfaceName);
+                    var openGenericBaseName = GeneratorHelpers.GetGenericBaseName(openGenericName);
+                    var interfaceBaseName = GeneratorHelpers.GetGenericBaseName(interfaceName);
                     
                     if (openGenericBaseName == interfaceBaseName)
                     {
                         // This interface is a closed version of the open generic
                         // Create a closed decorator registration
-                        var closedDecoratorTypeName = CreateClosedGenericType(
+                        var closedDecoratorTypeName = GeneratorHelpers.CreateClosedGenericType(
                             TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.DecoratorType),
                             interfaceName,
                             openGenericName);
@@ -2594,81 +2560,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
     }
 
-    /// <summary>
-    /// Extracts the base name from a generic type (e.g., "global::Namespace.IHandler{T}" becomes "global::Namespace.IHandler").
-    /// </summary>
-    private static string GetGenericBaseName(string typeName)
-    {
-        var angleBracketIndex = typeName.IndexOf('<');
-        return angleBracketIndex >= 0 ? typeName.Substring(0, angleBracketIndex) : typeName;
-    }
-
-    /// <summary>
-    /// Creates a closed generic type name from an open generic decorator and a closed interface.
-    /// For example: LoggingDecorator{T} + IHandler{Order} = LoggingDecorator{Order}
-    /// </summary>
-    private static string CreateClosedGenericType(string openDecoratorTypeName, string closedInterfaceName, string openInterfaceName)
-    {
-        // Extract the type arguments from the closed interface
-        var closedArgs = ExtractGenericArguments(closedInterfaceName);
-        
-        // Replace the type parameters in the open decorator with the closed arguments
-        var openDecoratorBaseName = GetGenericBaseName(openDecoratorTypeName);
-        
-        if (closedArgs.Length == 0)
-            return openDecoratorTypeName;
-        
-        return $"{openDecoratorBaseName}<{string.Join(", ", closedArgs)}>";
-    }
-
-    /// <summary>
-    /// Extracts the generic type arguments from a closed generic type name.
-    /// For example: "IHandler{Order, Payment}" returns ["Order", "Payment"]
-    /// </summary>
-    private static string[] ExtractGenericArguments(string typeName)
-    {
-        var angleBracketIndex = typeName.IndexOf('<');
-        if (angleBracketIndex < 0)
-            return Array.Empty<string>();
-
-        var argsStart = angleBracketIndex + 1;
-        var argsEnd = typeName.LastIndexOf('>');
-        if (argsEnd <= argsStart)
-            return Array.Empty<string>();
-
-        var argsString = typeName.Substring(argsStart, argsEnd - argsStart);
-        
-        // Handle nested generics by parsing with bracket depth tracking
-        var args = new List<string>();
-        var depth = 0;
-        var start = 0;
-        
-        for (int i = 0; i < argsString.Length; i++)
-        {
-            var c = argsString[i];
-            if (c == '<') depth++;
-            else if (c == '>') depth--;
-            else if (c == ',' && depth == 0)
-            {
-                args.Add(argsString.Substring(start, i - start).Trim());
-                start = i + 1;
-            }
-        }
-        
-        // Add the last argument
-        if (start < argsString.Length)
-            args.Add(argsString.Substring(start).Trim());
-        
-        return args.ToArray();
-    }
-
-    private static string StripGlobalPrefix(string name)
-    {
-        return name.StartsWith("global::", StringComparison.Ordinal) 
-            ? name.Substring(8) 
-            : name;
-    }
-
     private static int CalculateMaxDependencyDepth(IReadOnlyList<DiscoveredType> types)
     {
         if (types.Count == 0) return 0;
@@ -2677,9 +2568,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var providerLookup = new Dictionary<string, DiscoveredType>(StringComparer.Ordinal);
         foreach (var type in types)
         {
-            providerLookup[GetShortTypeName(type.TypeName)] = type;
+            providerLookup[GeneratorHelpers.GetShortTypeName(type.TypeName)] = type;
             foreach (var iface in type.InterfaceNames)
-                providerLookup[GetShortTypeName(iface)] = type;
+                providerLookup[GeneratorHelpers.GetShortTypeName(iface)] = type;
         }
 
         // Calculate depth for each type using memoization
@@ -2697,7 +2588,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
     private static int GetDepth(DiscoveredType type, Dictionary<string, DiscoveredType> providerLookup, Dictionary<string, int> cache, HashSet<string> visiting)
     {
-        var key = GetShortTypeName(type.TypeName);
+        var key = GeneratorHelpers.GetShortTypeName(type.TypeName);
         
         if (cache.TryGetValue(key, out var cached))
             return cached;
@@ -2709,7 +2600,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         int maxChildDepth = 0;
         foreach (var dep in type.ConstructorParameterTypes)
         {
-            var depShort = GetShortTypeName(dep);
+            var depShort = GeneratorHelpers.GetShortTypeName(dep);
             if (providerLookup.TryGetValue(depShort, out var depType))
             {
                 var childDepth = GetDepth(depType, providerLookup, cache, visiting);
@@ -2733,7 +2624,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             foreach (var dep in type.ConstructorParameterTypes)
             {
-                var depShort = GetShortTypeName(dep);
+                var depShort = GeneratorHelpers.GetShortTypeName(dep);
                 if (!dependentCounts.ContainsKey(depShort))
                     dependentCounts[depShort] = 0;
                 dependentCounts[depShort]++;
@@ -2744,7 +2635,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var hubs = new List<(string TypeName, int DependentCount)>();
         foreach (var type in types)
         {
-            var shortName = GetShortTypeName(type.TypeName);
+            var shortName = GeneratorHelpers.GetShortTypeName(type.TypeName);
             var count = 0;
 
             // Check if this type's name or any of its interfaces is depended upon
@@ -2753,7 +2644,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             foreach (var iface in type.InterfaceNames)
             {
-                if (dependentCounts.TryGetValue(GetShortTypeName(iface), out var c2))
+                if (dependentCounts.TryGetValue(GeneratorHelpers.GetShortTypeName(iface), out var c2))
                     count += c2;
             }
 
@@ -2764,36 +2655,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return hubs.OrderByDescending(h => h.DependentCount).ToList();
     }
 
-    private static string GetMermaidNodeId(string typeName)
-    {
-        return GetShortTypeName(typeName).Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace(",", "_");
-    }
-
-    private static int Percentage(int count, int total)
-    {
-        if (total == 0) return 0;
-        return (int)Math.Round(100.0 * count / total);
-    }
-
-    private static string EscapeStringLiteral(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return string.Empty;
-        return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
-    }
-
-    private static string EscapeVerbatimStringLiteral(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return string.Empty;
-        // In verbatim strings, only double-quotes need escaping (by doubling them)
-        return value.Replace("\"", "\"\"");
-    }
-
     private static void GenerateInterceptorProxyClass(StringBuilder builder, DiscoveredInterceptedService service, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
-        var proxyTypeName = GetProxyTypeName(service.TypeName);
-        var shortTypeName = GetShortTypeName(service.TypeName);
+        var proxyTypeName = GeneratorHelpers.GetProxyTypeName(service.TypeName);
+        var shortTypeName = GeneratorHelpers.GetShortTypeName(service.TypeName);
 
         // Write verbose breadcrumb for interceptor proxy
         if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
@@ -2992,7 +2857,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (hasResult)
             {
                 // Extract the inner type from Task<T> or ValueTask<T>
-                var innerType = ExtractGenericTypeArgument(method.ReturnType);
+                var innerType = GeneratorHelpers.ExtractGenericTypeArgument(method.ReturnType);
                 if (method.ReturnType.StartsWith("global::System.Threading.Tasks.ValueTask<", StringComparison.Ordinal))
                 {
                     builder.AppendLine($"        return new {method.ReturnType}(proceed().AsTask().ContinueWith(t => ({innerType})t.Result!));");
@@ -3024,95 +2889,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
         builder.AppendLine("    }");
         builder.AppendLine();
-    }
-
-    private static string GetProxyTypeName(string fullyQualifiedTypeName)
-    {
-        var shortName = GetShortTypeName(fullyQualifiedTypeName);
-        return $"{shortName}_InterceptorProxy";
-    }
-
-    private static string GetShortTypeName(string fullyQualifiedTypeName)
-    {
-        // Remove global:: prefix and get just the type name
-        var name = fullyQualifiedTypeName;
-        if (name.StartsWith("global::", StringComparison.Ordinal))
-            name = name.Substring(8);
-        
-        var lastDot = name.LastIndexOf('.');
-        return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
-    }
-
-    /// <summary>
-    /// Gets the fully qualified validator class name for an options type.
-    /// E.g., "global::TestApp.StripeOptions" -> "global::TestApp.Generated.StripeOptionsValidator"
-    /// </summary>
-    private static string GetValidatorClassName(string optionsTypeName)
-    {
-        var shortName = GetShortTypeName(optionsTypeName);
-        
-        // Get namespace from fully qualified name
-        var name = optionsTypeName;
-        if (name.StartsWith("global::", StringComparison.Ordinal))
-            name = name.Substring(8);
-        
-        var lastDot = name.LastIndexOf('.');
-        var ns = lastDot >= 0 ? name.Substring(0, lastDot) : "";
-        
-        var validatorName = shortName + "Validator";
-        return string.IsNullOrEmpty(ns)
-            ? $"global::{validatorName}"
-            : $"global::{ns}.Generated.{validatorName}";
-    }
-
-    private static string ExtractGenericTypeArgument(string genericTypeName)
-    {
-        // Extract T from Task<T> or ValueTask<T>
-        var openBracket = genericTypeName.IndexOf('<');
-        var closeBracket = genericTypeName.LastIndexOf('>');
-        if (openBracket >= 0 && closeBracket > openBracket)
-        {
-            return genericTypeName.Substring(openBracket + 1, closeBracket - openBracket - 1);
-        }
-        return "object";
-    }
-
-    /// <summary>
-    /// Sanitizes an assembly name to be a valid C# identifier for use in namespaces.
-    /// </summary>
-    private static string SanitizeIdentifier(string name)
-    {
-        if (string.IsNullOrEmpty(name))
-            return "Generated";
-
-        var sb = new StringBuilder(name.Length);
-        foreach (var c in name)
-        {
-            if (char.IsLetterOrDigit(c) || c == '_')
-            {
-                sb.Append(c);
-            }
-            else if (c == '.' || c == '-' || c == ' ')
-            {
-                // Keep dots for namespace segments, replace dashes/spaces with underscores
-                sb.Append(c == '.' ? '.' : '_');
-            }
-            // Skip other characters
-        }
-
-        var result = sb.ToString();
-
-        // Ensure each segment doesn't start with a digit
-        var segments = result.Split('.');
-        for (int i = 0; i < segments.Length; i++)
-        {
-            if (segments[i].Length > 0 && char.IsDigit(segments[i][0]))
-            {
-                segments[i] = "_" + segments[i];
-            }
-        }
-
-        return string.Join(".", segments.Where(s => s.Length > 0));
     }
 
     /// <summary>
