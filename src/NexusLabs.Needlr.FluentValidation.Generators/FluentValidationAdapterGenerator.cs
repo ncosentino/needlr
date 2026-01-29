@@ -11,7 +11,7 @@ namespace NexusLabs.Needlr.FluentValidation.Generators;
 
 /// <summary>
 /// Source generator that creates IValidateOptions adapters for FluentValidation validators
-/// and registers them via NeedlrSourceGenBootstrap.RegisterExtension.
+/// and registers them via SourceGenRegistry.RegisterExtension.
 /// </summary>
 [Generator(LanguageNames.CSharp)]
 public sealed class FluentValidationAdapterGenerator : IIncrementalGenerator
@@ -203,7 +203,8 @@ internal static class FluentValidationModuleInitializer
     [ModuleInitializer]
     internal static void Initialize()
     {{
-        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.RegisterExtension(
+        // Register with core SourceGenRegistry for ConfiguredSyringe
+        global::NexusLabs.Needlr.SourceGenRegistry.RegisterExtension(
             (services, config) => FluentValidationTypeRegistry.RegisterFluentValidators(
                 (IServiceCollection)services,
                 (IConfiguration)config));

@@ -621,7 +621,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services),");
         }
         
-        // Generate the options registrar lambda
+        // Generate the options registrar lambda for NeedlrSourceGenBootstrap (for backward compat)
         if (hasOptions)
         {
             builder.AppendLine($"            (services, config) => global::{safeAssemblyName}.Generated.TypeRegistry.RegisterOptions((IServiceCollection)services, (IConfiguration)config));");
@@ -630,6 +630,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             builder.AppendLine("            null);");
         }
+        
+        // Also register with SourceGenRegistry (for ConfiguredSyringe without Generators.Attributes dependency)
+        if (hasOptions)
+        {
+            builder.AppendLine();
+            builder.AppendLine("        // Register options with core SourceGenRegistry for ConfiguredSyringe");
+            builder.AppendLine($"        global::NexusLabs.Needlr.SourceGenRegistry.RegisterOptionsRegistrar(");
+            builder.AppendLine($"            (services, config) => global::{safeAssemblyName}.Generated.TypeRegistry.RegisterOptions((IServiceCollection)services, (IConfiguration)config));");
+        }
+        
         builder.AppendLine("    }");
 
         // Generate ForceLoadReferencedAssemblies method if needed

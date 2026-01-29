@@ -96,13 +96,13 @@ public sealed record ConfiguredSyringe
         var callbacksWithExtras = new List<Action<IServiceCollection>>(callbacks);
         
         // Auto-register options from source-generated bootstrap
-        if (NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar != null)
+        if (SourceGenRegistry.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar != null)
         {
             callbacksWithExtras.Add(services => optionsRegistrar(services, config));
         }
         
         // Auto-register extensions (e.g., FluentValidation) from source-generated bootstrap
-        if (NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetExtensionRegistrar(out var extensionRegistrar) && extensionRegistrar != null)
+        if (SourceGenRegistry.TryGetExtensionRegistrar(out var extensionRegistrar) && extensionRegistrar != null)
         {
             callbacksWithExtras.Add(services => extensionRegistrar(services, config));
         }
