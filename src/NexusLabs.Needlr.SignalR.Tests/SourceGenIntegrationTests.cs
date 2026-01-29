@@ -103,6 +103,24 @@ public sealed class SourceGenIntegrationTests
         Assert.Single(generatedPlugins);
         Assert.Equal(reflectionPlugins.OrderBy(x => x), generatedPlugins.OrderBy(x => x));
     }
+
+    [Fact]
+    public void SignalR_ModuleInitializerRegistersPlugins()
+    {
+        if (!NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginProvider))
+        {
+            Assert.Fail("NeedlrSourceGenBootstrap has no registered providers");
+            return;
+        }
+
+        var allPluginTypes = pluginProvider().ToList();
+        var signalRPluginTypes = allPluginTypes
+            .Where(p => p.PluginType.Assembly == typeof(SignalRWebApplicationBuilderPlugin).Assembly)
+            .Select(p => p.PluginType.Name)
+            .ToList();
+
+        Assert.Contains(signalRPluginTypes, n => n == "SignalRWebApplicationBuilderPlugin");
+    }
 }
 
 /// <summary>
