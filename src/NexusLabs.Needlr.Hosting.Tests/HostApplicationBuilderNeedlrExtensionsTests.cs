@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
-using NexusLabs.Needlr.Injection.Scrutor;
 
 using System.Reflection;
 
@@ -21,7 +20,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var builder = Host.CreateApplicationBuilder();
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -40,7 +38,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var builder = Host.CreateApplicationBuilder();
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -62,7 +59,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var builder = Host.CreateApplicationBuilder();
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -85,7 +81,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var builder = Host.CreateApplicationBuilder();
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -128,7 +123,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var builder = Host.CreateApplicationBuilder();
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -152,7 +146,6 @@ public sealed class HostApplicationBuilderNeedlrExtensionsTests
         var logger = loggerFactory.CreateLogger("Test");
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(b => b
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());

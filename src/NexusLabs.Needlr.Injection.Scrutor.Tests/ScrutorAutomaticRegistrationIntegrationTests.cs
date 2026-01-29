@@ -1,14 +1,16 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
-using NexusLabs.Needlr.Injection.Scrutor;
 
 using Xunit;
 
-namespace NexusLabs.Needlr.IntegrationTests.Reflection;
+namespace NexusLabs.Needlr.Injection.Scrutor.Tests;
 
+/// <summary>
+/// Integration tests for Scrutor-based automatic type registration.
+/// These tests verify the full Syringe workflow with Scrutor type registrar.
+/// </summary>
 public sealed class ScrutorAutomaticRegistrationTests
 {
     private readonly IServiceProvider _serviceProvider;
@@ -220,7 +222,7 @@ public sealed class ScrutorAutomaticRegistrationTests
     public void GetRegisteredTypes_WithScrutorRegistrar_ContainsTestNamespaceTypes()
     {
         var testNamespaceTypes = _serviceProvider.GetRegisteredTypes(type => 
-            type.Namespace?.StartsWith("NexusLabs.Needlr.IntegrationTests") == true);
+            type.Namespace?.StartsWith("NexusLabs.Needlr.Injection.Scrutor.Tests") == true);
         
         Assert.Contains(typeof(MyAutomaticService), testNamespaceTypes);
         Assert.Contains(typeof(IMyAutomaticService), testNamespaceTypes);

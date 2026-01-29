@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
-using NexusLabs.Needlr.Injection.Scrutor;
 
 using Xunit;
 
@@ -19,7 +18,6 @@ public sealed class HostFactoryTests
         // Arrange
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -40,7 +38,6 @@ public sealed class HostFactoryTests
         // Arrange
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -69,7 +66,6 @@ public sealed class HostFactoryTests
         var callbackInvoked = false;
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -98,7 +94,6 @@ public sealed class HostFactoryTests
         
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -129,7 +124,6 @@ public sealed class HostFactoryTests
         
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
@@ -161,7 +155,6 @@ public sealed class HostFactoryTests
         
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());

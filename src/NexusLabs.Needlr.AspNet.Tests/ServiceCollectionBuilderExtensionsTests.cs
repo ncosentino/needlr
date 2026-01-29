@@ -1,6 +1,5 @@
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
-using NexusLabs.Needlr.Injection.Scrutor;
 
 using Xunit;
 
@@ -14,7 +13,6 @@ public sealed class ServiceCollectionBuilderExtensionsTests
         // Arrange
         var syringe = new Syringe()
             .UsingReflection()
-            .UsingScrutorTypeRegistrar()
             .UsingAssemblyProvider(builder => builder
                 .MatchingAssemblies(x => x.Contains("NexusLabs.Needlr"))
                 .Build());
