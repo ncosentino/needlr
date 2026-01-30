@@ -103,7 +103,7 @@ internal static class InterceptorCodeGenerator
         builder.AppendLine("}");
     }
 
-    internal static void GenerateInterceptedMethod(StringBuilder builder, TypeDiscoveryHelper.InterceptedMethodInfo method, int methodIndex, string targetTypeName, BreadcrumbWriter breadcrumbs)
+    internal static void GenerateInterceptedMethod(StringBuilder builder, InterceptorDiscoveryHelper.InterceptedMethodInfo method, int methodIndex, string targetTypeName, BreadcrumbWriter breadcrumbs)
     {
         var parameterList = method.GetParameterList();
         var argumentList = method.GetArgumentList();

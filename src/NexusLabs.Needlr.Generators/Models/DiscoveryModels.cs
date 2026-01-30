@@ -157,7 +157,7 @@ internal readonly struct DiscoveredInterceptedService
         string[] interfaceNames,
         string assemblyName,
         GeneratorLifetime lifetime,
-        TypeDiscoveryHelper.InterceptedMethodInfo[] methods,
+        InterceptorDiscoveryHelper.InterceptedMethodInfo[] methods,
         string[] allInterceptorTypeNames,
         string? sourceFilePath = null)
     {
@@ -174,7 +174,7 @@ internal readonly struct DiscoveredInterceptedService
     public string[] InterfaceNames { get; }
     public string AssemblyName { get; }
     public GeneratorLifetime Lifetime { get; }
-    public TypeDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
+    public InterceptorDiscoveryHelper.InterceptedMethodInfo[] Methods { get; }
     public string[] AllInterceptorTypeNames { get; }
     public string? SourceFilePath { get; }
 }
@@ -189,7 +189,7 @@ internal readonly struct DiscoveredFactory
         string[] interfaceNames,
         string assemblyName,
         int generationMode,
-        TypeDiscoveryHelper.FactoryConstructorInfo[] constructors,
+        FactoryDiscoveryHelper.FactoryConstructorInfo[] constructors,
         string? returnTypeName = null,
         string? sourceFilePath = null)
     {
@@ -207,7 +207,7 @@ internal readonly struct DiscoveredFactory
     public string AssemblyName { get; }
     /// <summary>Mode flags: 1=Func, 2=Interface, 3=All</summary>
     public int GenerationMode { get; }
-    public TypeDiscoveryHelper.FactoryConstructorInfo[] Constructors { get; }
+    public FactoryDiscoveryHelper.FactoryConstructorInfo[] Constructors { get; }
     /// <summary>
     /// If set, the factory Create() and Func return this type instead of the concrete type.
     /// Used when [GenerateFactory&lt;T&gt;] is applied.

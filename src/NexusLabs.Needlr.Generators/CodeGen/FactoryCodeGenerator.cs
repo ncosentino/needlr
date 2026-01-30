@@ -129,7 +129,7 @@ internal static class FactoryCodeGenerator
         builder.AppendLine("}");
     }
 
-    internal static void GenerateFuncRegistration(StringBuilder builder, DiscoveredFactory factory, TypeDiscoveryHelper.FactoryConstructorInfo ctor, string indent)
+    internal static void GenerateFuncRegistration(StringBuilder builder, DiscoveredFactory factory, FactoryDiscoveryHelper.FactoryConstructorInfo ctor, string indent)
     {
         // Build Func<TRuntime..., TReturn> type - uses ReturnTypeName (interface if generic attribute used)
         var runtimeTypes = string.Join(", ", ctor.RuntimeParameters.Select(p => p.TypeName));
