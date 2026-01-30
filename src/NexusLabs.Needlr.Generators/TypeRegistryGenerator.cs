@@ -293,10 +293,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for [Options] attribute
-            if (TypeDiscoveryHelper.HasOptionsAttribute(typeSymbol))
+            if (OptionsAttributeHelper.HasOptionsAttribute(typeSymbol))
             {
                 var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                var optionsAttrs = TypeDiscoveryHelper.GetOptionsAttributes(typeSymbol);
+                var optionsAttrs = OptionsAttributeHelper.GetOptionsAttributes(typeSymbol);
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
                 foreach (var optionsAttr in optionsAttrs)
@@ -307,7 +307,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var methodName = optionsAttr.ValidateMethod ?? "Validate"; // Convention: "Validate"
 
                     // Find validation method using convention-based discovery
-                    var validatorMethodInfo = TypeDiscoveryHelper.FindValidationMethod(targetType, methodName);
+                    var validatorMethodInfo = OptionsAttributeHelper.FindValidationMethod(targetType, methodName);
                     OptionsValidatorInfo? validatorInfo = validatorMethodInfo.HasValue
                         ? new OptionsValidatorInfo(validatorMethodInfo.Value.MethodName, validatorMethodInfo.Value.IsStatic)
                         : null;
@@ -334,17 +334,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for [GenerateFactory] attribute - these types get factories instead of direct registration
-            if (TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol))
+            if (FactoryDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol))
             {
-                var factoryConstructors = TypeDiscoveryHelper.GetFactoryConstructors(typeSymbol);
+                var factoryConstructors = FactoryDiscoveryHelper.GetFactoryConstructors(typeSymbol);
                 if (factoryConstructors.Count > 0)
                 {
                     // Has at least one constructor with runtime params - generate factory
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
-                    var generationMode = TypeDiscoveryHelper.GetFactoryGenerationMode(typeSymbol);
-                    var returnTypeOverride = TypeDiscoveryHelper.GetFactoryReturnInterfaceType(typeSymbol);
+                    var generationMode = FactoryDiscoveryHelper.GetFactoryGenerationMode(typeSymbol);
+                    var returnTypeOverride = FactoryDiscoveryHelper.GetFactoryReturnInterfaceType(typeSymbol);
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
                     factories.Add(new DiscoveredFactory(
@@ -375,7 +375,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for OpenDecoratorFor attributes (source-gen only open generic decorators)
-            var openDecoratorInfos = TypeDiscoveryHelper.GetOpenDecoratorForAttributes(typeSymbol);
+            var openDecoratorInfos = OpenDecoratorDiscoveryHelper.GetOpenDecoratorForAttributes(typeSymbol);
             foreach (var openDecoratorInfo in openDecoratorInfos)
             {
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
@@ -388,14 +388,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // Check for Intercept attributes and collect intercepted services
-            if (TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol))
+            if (InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol))
             {
                 var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
                 if (lifetime.HasValue)
                 {
-                    var classLevelInterceptors = TypeDiscoveryHelper.GetInterceptAttributes(typeSymbol);
-                    var methodLevelInterceptors = TypeDiscoveryHelper.GetMethodLevelInterceptAttributes(typeSymbol);
-                    var methods = TypeDiscoveryHelper.GetInterceptedMethods(typeSymbol, classLevelInterceptors, methodLevelInterceptors);
+                    var classLevelInterceptors = InterceptorDiscoveryHelper.GetInterceptAttributes(typeSymbol);
+                    var methodLevelInterceptors = InterceptorDiscoveryHelper.GetMethodLevelInterceptAttributes(typeSymbol);
+                    var methods = InterceptorDiscoveryHelper.GetInterceptedMethods(typeSymbol, classLevelInterceptors, methodLevelInterceptors);
 
                     if (methods.Count > 0)
                     {
@@ -468,7 +468,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var interfaceNames = pluginInterfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     var attributeNames = TypeDiscoveryHelper.GetPluginAttributes(typeSymbol).ToArray();
                     var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
-                    var order = TypeDiscoveryHelper.GetPluginOrder(typeSymbol);
+                    var order = PluginOrderHelper.GetPluginOrder(typeSymbol);
 
                     pluginTypes.Add(new DiscoveredPlugin(typeName, interfaceNames, assembly.Name, attributeNames, sourceFilePath, order));
                 }
@@ -1289,7 +1289,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var interceptedServiceNames = new HashSet<string>();
                 foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
                 {
-                    if (TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol))
+                    if (InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol))
                     {
                         interceptedServiceNames.Add(typeSymbol.Name);
                     }
@@ -1298,8 +1298,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
                 {
                     // Check if it's a registerable type (injectable, plugin, factory source, or interceptor)
-                    var hasFactoryAttr = TypeDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
-                    var hasInterceptAttr = TypeDiscoveryHelper.HasInterceptAttributes(typeSymbol);
+                    var hasFactoryAttr = FactoryDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
+                    var hasInterceptAttr = InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol);
                     var isInterceptorProxy = typeSymbol.Name.EndsWith("_InterceptorProxy");
                     
                     if (!hasFactoryAttr && !hasInterceptAttr && !isInterceptorProxy &&
@@ -1316,7 +1316,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var dependencies = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol)?
                         .ToArray() ?? Array.Empty<string>();
                     var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) || 
-                                      TypeDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol);
+                                      OpenDecoratorDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol);
                     var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
                     var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
                     var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
