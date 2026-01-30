@@ -132,8 +132,61 @@ internal static class GeneratorHelpers
         if (name.StartsWith("global::", StringComparison.Ordinal))
             name = name.Substring(8);
         
-        var lastDot = name.LastIndexOf('.');
-        return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+        // For generic types, find the last dot before the generic type parameter
+        // e.g., "Microsoft.Extensions.Options.IOptions<Foo.Bar>" -> find dot before "IOptions"
+        var genericStart = name.IndexOf('<');
+        
+        if (genericStart < 0)
+        {
+            // Non-generic type: just find the last dot
+            var lastDot = name.LastIndexOf('.');
+            return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+        }
+        
+        // Generic type: shorten the outer type and recursively shorten type arguments
+        var lastDot2 = name.LastIndexOf('.', genericStart - 1);
+        var outerType = lastDot2 >= 0 ? name.Substring(lastDot2 + 1, genericStart - lastDot2 - 1) : name.Substring(0, genericStart);
+        
+        // Extract and shorten the type arguments
+        var genericEnd = name.LastIndexOf('>');
+        if (genericEnd > genericStart)
+        {
+            var typeArgsStr = name.Substring(genericStart + 1, genericEnd - genericStart - 1);
+            var shortenedArgs = ShortenGenericTypeArgs(typeArgsStr);
+            return $"{outerType}<{shortenedArgs}>";
+        }
+        
+        return outerType;
+    }
+
+    private static string ShortenGenericTypeArgs(string typeArgsStr)
+    {
+        // Handle multiple type arguments and nested generics
+        var result = new System.Text.StringBuilder();
+        var depth = 0;
+        var start = 0;
+        
+        for (int i = 0; i < typeArgsStr.Length; i++)
+        {
+            var c = typeArgsStr[i];
+            if (c == '<') depth++;
+            else if (c == '>') depth--;
+            else if (c == ',' && depth == 0)
+            {
+                // Found a top-level comma, process this argument
+                var arg = typeArgsStr.Substring(start, i - start).Trim();
+                if (result.Length > 0) result.Append(", ");
+                result.Append(GetShortTypeName(arg));
+                start = i + 1;
+            }
+        }
+        
+        // Process the last (or only) argument
+        var lastArg = typeArgsStr.Substring(start).Trim();
+        if (result.Length > 0) result.Append(", ");
+        result.Append(GetShortTypeName(lastArg));
+        
+        return result.ToString();
     }
 
     /// <summary>
