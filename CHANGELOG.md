@@ -25,10 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Compile-time validation with NDLRGEN006, NDLRGEN007, NDLRGEN008 analyzers
   - See [Open Generic Decorators documentation](docs/open-generic-decorators.md)
 
-- **NDLRGEN020: AOT Compatibility Check for Options**: New analyzer error when `[Options]` is used in AOT-enabled projects
-  - Fires when `PublishAot=true` or `IsAotCompatible=true`
-  - The `[Options]` feature uses reflection-based configuration binding APIs that are not AOT-compatible
-  - See [NDLRGEN020 documentation](docs/analyzers/NDLRGEN020.md) for workarounds
+- **NDLRGEN020: AOT Compatibility Check for Options**: Analyzer that was planned for AOT-incompatible property types
+  - **Current behavior**: For parity with ConfigurationBinder, unsupported property types are silently skipped in AOT mode
+  - This matches non-AOT behavior where ConfigurationBinder skips unbindable types at runtime
+  - See [NDLRGEN020 documentation](docs/analyzers/NDLRGEN020.md)
+
+- **AOT-Compatible Options Phase 1**: Enum support and named options now work in AOT mode
+  - Enums bind correctly using `Enum.TryParse<T>()` (matches ConfigurationBinder)
+  - Named options work with `[Options("Section", Name = "Named")]` pattern
+  - **Known limitation**: Init-only properties and positional record properties are skipped in AOT mode
+  - See [Options documentation](docs/options.md#aot-compatibility)
 
 - **Positional Record Support for [Options]**: Positional records now work with `[Options]` when declared as `partial`
   - The generator emits a parameterless constructor that chains to the primary constructor

@@ -39,6 +39,31 @@ Console.WriteLine($"  ConnectionString:   {dbOptions.Value.ConnectionString}");
 Console.WriteLine($"  CommandTimeout:     {dbOptions.Value.CommandTimeout}");
 Console.WriteLine($"  EnableRetry:        {dbOptions.Value.EnableRetry}");
 Console.WriteLine($"  RetryDelaySeconds:  {dbOptions.Value.RetryDelaySeconds}");
+Console.WriteLine($"  Level (enum):       {dbOptions.Value.Level}");
+Console.WriteLine();
+
+// Named options demo
+var loggingOptions = provider.GetRequiredService<IOptionsSnapshot<LoggingOptions>>();
+var verboseLogging = loggingOptions.Get("Verbose");
+Console.WriteLine("LoggingOptions (Named='Verbose') from [Options] + AOT source generation:");
+Console.WriteLine($"  Path:               {verboseLogging.Path}");
+Console.WriteLine($"  MinLevel (enum):    {verboseLogging.MinLevel}");
+Console.WriteLine();
+
+// Immutable options demo (init-only properties)
+var cachingOptions = provider.GetRequiredService<IOptions<CachingOptions>>();
+Console.WriteLine("CachingOptions (init-only properties) + AOT source generation:");
+Console.WriteLine($"  Provider:           {cachingOptions.Value.Provider}");
+Console.WriteLine($"  ExpirationMinutes:  {cachingOptions.Value.ExpirationMinutes}");
+Console.WriteLine($"  EnableCompression:  {cachingOptions.Value.EnableCompression}");
+Console.WriteLine();
+
+// Positional record demo (generator creates parameterless ctor)
+var securityOptions = provider.GetRequiredService<IOptions<SecurityOptions>>();
+Console.WriteLine("SecurityOptions (positional record) + AOT source generation:");
+Console.WriteLine($"  SecretKey:          {securityOptions.Value.SecretKey}");
+Console.WriteLine($"  RequireHttps:       {securityOptions.Value.RequireHttps}");
+Console.WriteLine($"  TokenExpirySeconds: {securityOptions.Value.TokenExpirySeconds}");
 Console.WriteLine();
 
 var weather = provider.GetRequiredService<IConsoleWeatherProvider>();

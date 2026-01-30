@@ -359,12 +359,14 @@ internal readonly struct PositionalRecordParameter
 /// </summary>
 internal readonly struct OptionsPropertyInfo
 {
-    public OptionsPropertyInfo(string name, string typeName, bool isNullable, bool hasInitOnlySetter)
+    public OptionsPropertyInfo(string name, string typeName, bool isNullable, bool hasInitOnlySetter, bool isEnum = false, string? enumTypeName = null)
     {
         Name = name;
         TypeName = typeName;
         IsNullable = isNullable;
         HasInitOnlySetter = hasInitOnlySetter;
+        IsEnum = isEnum;
+        EnumTypeName = enumTypeName;
     }
 
     /// <summary>Property name.</summary>
@@ -378,6 +380,12 @@ internal readonly struct OptionsPropertyInfo
 
     /// <summary>True if the property has an init-only setter.</summary>
     public bool HasInitOnlySetter { get; }
+
+    /// <summary>True if the property type is an enum.</summary>
+    public bool IsEnum { get; }
+
+    /// <summary>The underlying enum type name (for nullable enums, this is the non-nullable type).</summary>
+    public string? EnumTypeName { get; }
 }
 
 /// <summary>

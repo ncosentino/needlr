@@ -68,25 +68,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     missingPlugin.TypeName));
             }
             
-            // NDLRGEN020: Report error if [Options] used in AOT project AND we can't generate AOT code
-            // For prototype: we'll generate AOT code, so only warn if there's something we can't handle
-            if (isAotProject && discoveryResult.Options.Count > 0)
-            {
-                // Check for unsupported features in AOT mode
-                foreach (var opt in discoveryResult.Options)
-                {
-                    // For prototype, only support classes with primitive properties
-                    // Complex types will be addressed in full implementation
-                    var hasUnsupportedProperty = opt.Properties.Any(p => !IsSupportedAotPropertyType(p.TypeName));
-                    if (hasUnsupportedProperty)
-                    {
-                        spc.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.OptionsNotAotCompatible,
-                            Location.None,
-                            opt.TypeName));
-                    }
-                }
-            }
+            // NDLRGEN020: Previously reported error if [Options] used in AOT project
+            // Now removed for parity - we generate best-effort code and let unsupported 
+            // types fail at runtime (matching non-AOT ConfigurationBinder behavior)
 
             // NDLRGEN021: Report warning for non-partial positional records
             foreach (var opt in discoveryResult.Options.Where(o => o.IsNonPartialPositionalRecord))
@@ -308,11 +292,32 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
+            // Check if it's an enum type
+            var isEnum = false;
+            string? enumTypeName = null;
+            var actualType = property.Type;
+            
+            // For nullable types, get the underlying type
+            if (actualType is INamedTypeSymbol nullableType && 
+                nullableType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+                nullableType.TypeArguments.Length == 1)
+            {
+                actualType = nullableType.TypeArguments[0];
+            }
+            
+            if (actualType.TypeKind == TypeKind.Enum)
+            {
+                isEnum = true;
+                enumTypeName = actualType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            }
+
             properties.Add(new OptionsPropertyInfo(
                 property.Name,
                 typeName,
                 isNullable,
-                isInitOnly));
+                isInitOnly,
+                isEnum,
+                enumTypeName));
         }
 
         return properties;
@@ -1113,6 +1118,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var propIndex = 0;
             foreach (var prop in opt.Properties)
             {
+                // Skip init-only properties in AOT mode - they can't be assigned after construction
+                if (prop.HasInitOnlySetter)
+                {
+                    builder.AppendLine($"                // Skipped: {prop.Name} (init-only property cannot be bound in AOT mode)");
+                    continue;
+                }
+                
                 GeneratePropertyBinding(builder, prop, propIndex);
                 propIndex++;
             }
@@ -1140,7 +1152,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         
         builder.Append($"                if (section[\"{prop.Name}\"] is {{ }} {varName}");
         
-        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        // Check if it's an enum first
+        if (prop.IsEnum && prop.EnumTypeName != null)
+        {
+            builder.AppendLine($" && global::System.Enum.TryParse<{prop.EnumTypeName}>({varName}, true, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "string" || baseTypeName == "global::System.String")
         {
             // String: direct assignment
             builder.AppendLine($") options.{prop.Name} = {varName};");
@@ -1203,8 +1220,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         else
         {
-            // Unsupported type - skip with comment
-            builder.AppendLine($") {{ }} // Unsupported type: {typeName}");
+            // Unsupported type - skip silently (matching ConfigurationBinder behavior)
+            builder.AppendLine($") {{ }} // Skipped: {typeName} (not a supported primitive)");
         }
     }
 
@@ -1220,36 +1237,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             return typeName.Substring(0, typeName.Length - 1);
         }
         return typeName;
-    }
-
-    /// <summary>
-    /// Determines if a property type is supported for AOT code generation.
-    /// </summary>
-    private static bool IsSupportedAotPropertyType(string typeName)
-    {
-        var baseTypeName = GetBaseTypeName(typeName);
-        
-        // List of supported primitive types for the prototype
-        var supportedTypes = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "string", "global::System.String",
-            "int", "global::System.Int32",
-            "bool", "global::System.Boolean",
-            "double", "global::System.Double",
-            "float", "global::System.Single",
-            "decimal", "global::System.Decimal",
-            "long", "global::System.Int64",
-            "short", "global::System.Int16",
-            "byte", "global::System.Byte",
-            "char", "global::System.Char",
-            "global::System.TimeSpan",
-            "global::System.DateTime",
-            "global::System.DateTimeOffset",
-            "global::System.Guid",
-            "global::System.Uri"
-        };
-
-        return supportedTypes.Contains(baseTypeName);
     }
 
     private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)

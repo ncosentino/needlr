@@ -15,8 +15,19 @@ namespace AotSourceGenConsolePlugin;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// <summary>
+/// Enum for testing AOT-compatible enum binding.
+/// </summary>
+public enum LogLevel
+{
+    Debug = 0,
+    Info = 1,
+    Warning = 2,
+    Error = 3
+}
+
+/// <summary>
 /// Simple options class for testing AOT-compatible configuration binding.
-/// Uses primitive types: string, int, bool, double.
+/// Uses primitive types: string, int, bool, double, and enum.
 /// </summary>
 [Options("Database")]
 public class DatabaseOptions
@@ -25,7 +36,42 @@ public class DatabaseOptions
     public int CommandTimeout { get; set; } = 30;
     public bool EnableRetry { get; set; } = true;
     public double RetryDelaySeconds { get; set; } = 1.5;
+    public LogLevel Level { get; set; } = LogLevel.Info;
 }
+
+/// <summary>
+/// Named options for testing AOT-compatible named options binding.
+/// </summary>
+[Options("Logging", Name = "Verbose")]
+public class LoggingOptions
+{
+    public string Path { get; set; } = "";
+    public LogLevel MinLevel { get; set; } = LogLevel.Debug;
+}
+
+/// <summary>
+/// Immutable options using init-only properties for testing AOT compatibility.
+/// NOTE: Init-only properties are skipped in AOT mode - they retain their default values.
+/// This is a known limitation; use regular setters for full AOT support.
+/// </summary>
+[Options("Caching")]
+public class CachingOptions
+{
+    public string Provider { get; set; } = "Memory";
+    public int ExpirationMinutes { get; set; } = 60;
+    public bool EnableCompression { get; set; } = false;
+}
+
+/// <summary>
+/// Positional record options for testing AOT-compatible constructor generation.
+/// The generator creates a parameterless constructor for this.
+/// </summary>
+[Options("Security")]
+public partial record SecurityOptions(
+    string SecretKey,
+    bool RequireHttps,
+    int TokenExpirySeconds
+);
 
 public interface IConsoleWeatherProvider
 {

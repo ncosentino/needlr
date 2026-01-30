@@ -73,9 +73,10 @@ public sealed class OptionsAotCompatibilityTests
     }
 
     [Fact]
-    public void Generator_EmitsDiagnostic_WhenOptionsHasUnsupportedPropertyType()
+    public void Generator_SkipsUnsupportedPropertyTypes_Silently_MatchingNonAotBehavior()
     {
-        // Options with nested objects or collections are not yet supported in AOT
+        // Options with nested objects or collections are silently skipped in AOT
+        // This matches ConfigurationBinder behavior in non-AOT
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -92,16 +93,22 @@ public sealed class OptionsAotCompatibilityTests
                 [Options]
                 public class AppSettings
                 {
+                    public string Name { get; set; } = "";
                     public NestedSettings Nested { get; set; } = new();
                 }
             }
             """;
 
-        var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
+        var (generatedCode, diagnostics) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot: true);
 
+        // No NDLRGEN020 - we achieve parity by silently skipping unsupported types
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
-        Assert.Single(ndlrgen020);
-        Assert.Contains("AppSettings", ndlrgen020[0].GetMessage());
+        Assert.Empty(ndlrgen020);
+
+        // Supported property should still be bound
+        Assert.Contains("section[\"Name\"]", generatedCode);
+        // Unsupported property should be skipped with a comment
+        Assert.Contains("Skipped:", generatedCode);
     }
 
     [Fact]
@@ -150,9 +157,9 @@ public sealed class OptionsAotCompatibilityTests
     }
 
     [Fact]
-    public void Generator_EmitsDiagnostic_OnlyForOptionsWithUnsupportedTypes()
+    public void Generator_SkipsCollectionProperties_Silently_MatchingNonAotBehavior()
     {
-        // First options has only primitives (supported), second has a list (unsupported)
+        // Collections are silently skipped in AOT, matching non-AOT behavior
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -169,19 +176,25 @@ public sealed class OptionsAotCompatibilityTests
                 }
 
                 [Options]
-                public class UnsupportedOptions
+                public class OptionsWithCollection
                 {
+                    public string Name { get; set; } = "";
                     public List<string> Items { get; set; } = new();
                 }
             }
             """;
 
-        var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
+        var (generatedCode, diagnostics) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot: true);
 
+        // No NDLRGEN020 for either - parity with non-AOT
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
-        Assert.Single(ndlrgen020);
-        Assert.Contains("UnsupportedOptions", ndlrgen020[0].GetMessage());
-        Assert.DoesNotContain("SupportedOptions", string.Join(",", ndlrgen020.Select(d => d.GetMessage())));
+        Assert.Empty(ndlrgen020);
+
+        // Supported properties should be bound
+        Assert.Contains("section[\"Value\"]", generatedCode);
+        Assert.Contains("section[\"Name\"]", generatedCode);
+        // Collection should be skipped
+        Assert.Contains("Skipped:", generatedCode);
     }
 
     [Fact]
