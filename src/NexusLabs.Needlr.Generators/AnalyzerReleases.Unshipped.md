@@ -13,3 +13,4 @@ NDLRGEN018 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, V
 NDLRGEN019 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validation method won't run
 NDLRGEN020 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, [Options] is not compatible with AOT
 NDLRGEN021 | NexusLabs.Needlr.Generators | Warning | TypeRegistryGenerator, Positional record must be partial for [Options]
+NDLRGEN030 | NexusLabs.Needlr.Generators | Warning | UnsupportedDataAnnotationAnalyzer, DataAnnotation cannot be source-generated

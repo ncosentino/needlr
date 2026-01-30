@@ -251,4 +251,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Positional records (records with primary constructor parameters) lack parameterless constructors, which Microsoft's configuration binder requires. When the record is declared partial, the generator emits a parameterless constructor that chains to the primary constructor. Without partial, the record cannot work with configuration binding at runtime.",
         helpLinkUri: HelpLinkBase + "NDLRGEN021.md");
+
+    /// <summary>
+    /// NDLRGEN030: DataAnnotation attribute cannot be source-generated.
+    /// </summary>
+    public static readonly DiagnosticDescriptor UnsupportedDataAnnotation = new(
+        id: "NDLRGEN030",
+        title: "DataAnnotation attribute cannot be source-generated",
+        messageFormat: "DataAnnotation '{0}' on '{1}.{2}' cannot be source-generated. In AOT mode, this validation will not run. Consider using a custom Validate() method instead.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "This DataAnnotation validation attribute cannot be source-generated because it requires runtime reflection or invokes arbitrary code. In AOT mode, validation will silently skip this attribute. In non-AOT mode, the reflection-based .ValidateDataAnnotations() fallback will handle it. Consider adding a custom Validate() method that performs equivalent validation.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN030.md");
 }
