@@ -68,10 +68,43 @@ Console.WriteLine();
 
 // Validated options demo (ValidateOnStart + DataAnnotations + custom validator)
 var apiOptions = provider.GetRequiredService<IOptions<ApiOptions>>();
-Console.WriteLine("ApiOptions (ValidateOnStart + custom validator) + AOT source generation:");
+Console.WriteLine("ApiOptions (ValidateOnStart + DataAnnotations + custom validator) + AOT source generation:");
 Console.WriteLine($"  Endpoint:           {apiOptions.Value.Endpoint}");
 Console.WriteLine($"  TimeoutSeconds:     {apiOptions.Value.TimeoutSeconds}");
 Console.WriteLine($"  ApiKey:             {(string.IsNullOrEmpty(apiOptions.Value.ApiKey) ? "(empty)" : "***" + apiOptions.Value.ApiKey[^4..])}");
+Console.WriteLine("  ✓ DataAnnotations validated via source-generated ApiOptionsDataAnnotationsValidator");
+Console.WriteLine("  ✓ Custom Validate() method validated via source-generated ApiOptionsValidator");
+Console.WriteLine();
+
+// Demonstrate source-generated DataAnnotations validation by manually invoking the validators
+Console.WriteLine("── Source-Generated DataAnnotations Validation Demo ──");
+var validators = provider.GetServices<IValidateOptions<ApiOptions>>().ToList();
+Console.WriteLine($"  Registered validators ({validators.Count}):");
+foreach (var v in validators)
+{
+    Console.WriteLine($"    - {v.GetType().Name}");
+}
+
+// Get the source-generated DataAnnotations validator (registered as IValidateOptions<ApiOptions>)
+var dataAnnotationsValidator = validators.Single(v => v.GetType().Name == "ApiOptionsDataAnnotationsValidator");
+
+// Validate current (valid) options
+var validResult = dataAnnotationsValidator.Validate("Api", apiOptions.Value);
+Console.WriteLine($"  Current options valid: {!validResult.Failed}");
+
+// Demonstrate validation failure with invalid options
+var invalidOptions = new ApiOptions 
+{ 
+    Endpoint = "not-a-valid-url",  // [Url] violation
+    TimeoutSeconds = 500,           // [Range(1, 300)] violation
+    ApiKey = "test"
+};
+var invalidResult = dataAnnotationsValidator.Validate("Api", invalidOptions);
+Console.WriteLine($"  Invalid options detected (source-gen validation):");
+foreach (var failure in invalidResult.Failures ?? Array.Empty<string>())
+{
+    Console.WriteLine($"    ✗ {failure}");
+}
 Console.WriteLine();
 
 var clusterOptions = provider.GetRequiredService<IOptions<ClusterOptions>>();
