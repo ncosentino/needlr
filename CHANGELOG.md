@@ -5,74 +5,72 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.2-alpha.18] - 2026-01-30
 
 ### Added
-- **Enhanced Dependency Graph Visualization**: The `DependencyGraph.md` diagnostic output now includes 7 additional sections:
-  - **Referenced Plugin Assemblies**: Full visualization of types from referenced assemblies with `[GenerateTypeRegistry]`, including Mermaid diagrams, dependency edges, and interface mappings
-  - **Decorator Chains**: Mermaid diagram showing decorator wrapping order (highest to lowest Order)
-  - **Keyed Service Clusters**: Groups services by their `[Keyed]` attribute values as subgraphs
-  - **Plugin Assembly Boundaries**: Shows plugins grouped by their source assembly
-  - **Factory Services**: Highlights `[GenerateFactory]` types with hexagon node shape
-  - **Interface Mapping**: Shows interface-to-implementation relationships with dotted edges
-  - **Complexity Metrics**: Max dependency depth, hub services (≥3 dependents), total count
-  - See [Breadcrumbs documentation](docs/breadcrumbs.md) for details
+- **AOT-Compatible Options - Full Parity**: Complete feature parity with non-AOT configuration binding
+  - Primitive types, nullable primitives, and enums using `Enum.TryParse<T>()`
+  - Init-only properties via factory pattern with object initializers
+  - Positional records via factory pattern with constructor invocation
+  - Nested objects with recursive property binding
+  - Arrays, Lists, and Dictionaries (`Dictionary<string, T>`)
+  - Circular reference protection with visited type tracking
+  - Named options with `[Options("Section", Name = "Named")]` pattern
+
+- **DataAnnotations Source Generation**: Validation attributes source-generated as `IValidateOptions<T>` implementations
+  - Supported: `[Required]`, `[Range]`, `[StringLength]`, `[MinLength]`, `[MaxLength]`, `[RegularExpression]`, `[EmailAddress]`, `[Phone]`, `[Url]`
+  - Non-AOT keeps `.ValidateDataAnnotations()` fallback for unsupported attributes
+
+- **NDLRGEN030: Unsupported DataAnnotation Warning**: Analyzer warns when [Options] classes use DataAnnotation attributes that cannot be source-generated
+  - Warns about: `[CustomValidation]`, `[CreditCard]`, `[FileExtensions]`, and custom `ValidationAttribute` subclasses
+  - Guides users to use custom `Validate()` method instead
+
+- **[RegisterAs<T>] Attribute**: Explicit interface registration for DI
+  - Apply `[RegisterAs<IService>]` to control which interface a class is registered as
+  - NDLRCOR015 analyzer validates the type argument is implemented by the class
+
+- **FluentValidation Integration**: New `NexusLabs.Needlr.FluentValidation` package with source generator extension
+  - Auto-discovers and registers FluentValidation validators for `[Options]` classes
+  - Extension framework for custom validator integrations
+
+- **Enhanced Diagnostic Output**
+  - `OptionsSummary.md` shows all discovered options with their configuration
+  - Consolidated Factory Services section in diagnostics
+
+- **Enhanced Dependency Graph Visualization**: The `DependencyGraph.md` diagnostic output now includes additional sections
+  - Decorator Chains, Keyed Service Clusters, Plugin Assembly Boundaries
+  - Factory Services, Interface Mapping, Complexity Metrics
 
 - **Open Generic Decorators**: New `[OpenDecoratorFor(typeof(IInterface<>))]` attribute for source-gen only
   - Automatically decorates all closed implementations of an open generic interface
-  - Example: `[OpenDecoratorFor(typeof(IHandler<>))]` decorates `IHandler<Order>`, `IHandler<Payment>`, etc.
-  - Supports `Order` property for multiple decorators
   - Compile-time validation with NDLRGEN006, NDLRGEN007, NDLRGEN008 analyzers
-  - See [Open Generic Decorators documentation](docs/open-generic-decorators.md)
-
-- **NDLRGEN020: AOT Compatibility Check for Options**: Analyzer that was planned for AOT-incompatible property types
-  - **Current behavior**: For parity with ConfigurationBinder, unsupported property types are silently skipped in AOT mode
-  - This matches non-AOT behavior where ConfigurationBinder skips unbindable types at runtime
-  - See [NDLRGEN020 documentation](docs/analyzers/NDLRGEN020.md)
-
-- **AOT-Compatible Options Phase 1**: Enum support and named options now work in AOT mode
-  - Enums bind correctly using `Enum.TryParse<T>()` (matches ConfigurationBinder)
-  - Named options work with `[Options("Section", Name = "Named")]` pattern
-  - **Known limitation**: Init-only properties and positional record properties are skipped in AOT mode
-  - See [Options documentation](docs/options.md#aot-compatibility)
 
 - **Positional Record Support for [Options]**: Positional records now work with `[Options]` when declared as `partial`
   - The generator emits a parameterless constructor that chains to the primary constructor
-  - Example: `[Options("Redis")] public partial record RedisConfig(string Host, int Port);`
   - NDLRGEN021 warning emitted for non-partial positional records
-  - See [Options documentation](docs/options.md#positional-records)
 
 ### Changed
-- **BREAKING: `[GenerateFactory]` namespace change**: `[GenerateFactory]`, `[GenerateFactory<T>]`, and `FactoryGenerationMode` have moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
-  - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly
+- **BREAKING: `[GenerateFactory]` namespace change**: Moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
   - Update imports: `using NexusLabs.Needlr;` → `using NexusLabs.Needlr.Generators;`
 
 - **BREAKING: Factory analyzer diagnostic IDs renamed**: Factory-related analyzers moved to generators project with new IDs
-  - `NDLRCOR012` → `NDLRGEN003` (all params injectable)
-  - `NDLRCOR013` → `NDLRGEN004` (no injectable params)
-  - `NDLRCOR014` → `NDLRGEN005` (type arg not implemented)
-  - Update `.editorconfig` and `#pragma` directives if you've configured these
+  - `NDLRCOR012` → `NDLRGEN003`, `NDLRCOR013` → `NDLRGEN004`, `NDLRCOR014` → `NDLRGEN005`
 
 - **BREAKING: ConfiguredSyringe API**: `Syringe` no longer has `BuildServiceProvider()`. You must call a strategy method first:
-  - `new Syringe().UsingReflection()` → returns `ConfiguredSyringe`
-  - `new Syringe().UsingSourceGen()` → returns `ConfiguredSyringe`
-  - `new Syringe().UsingAutoConfiguration()` → returns `ConfiguredSyringe`
-  - `ConfiguredSyringe` has `BuildServiceProvider()`, `ForHost()`, `ForWebApplication()`, etc.
-- All `SyringeExtensions` methods now operate on `ConfiguredSyringe` (e.g., `WithVerification`, `UsingAdditionalAssemblies`)
-- This prevents runtime crashes from misconfigured syringes by making incorrect usage a compile-time error
+  - `new Syringe().UsingReflection()` / `.UsingSourceGen()` / `.UsingAutoConfiguration()` → returns `ConfiguredSyringe`
+  - This prevents runtime crashes from misconfigured syringes by making incorrect usage a compile-time error
 
-### Migration Guide
-```csharp
-// Before (could crash at runtime if strategy not set)
-new Syringe().BuildServiceProvider(config);
+- **Refactored TypeRegistryGenerator**: Decomposed into smaller focused generators
+  - `OptionsCodeGenerator`, `FactoryCodeGenerator`, `InterceptorCodeGenerator`
+  - `DiagnosticsGenerator`, `SignalRCodeGenerator`, `SemanticKernelCodeGenerator`
 
-// After (compile-time enforced)
-new Syringe().UsingReflection().BuildServiceProvider(config);
-// or
-new Syringe().UsingSourceGen().BuildServiceProvider(config);
-// or  
-new Syringe().UsingAutoConfiguration().BuildServiceProvider(config);
-```
+- **SignalR and SemanticKernel code generation moved to dedicated packages**
+
+### Fixed
+- `GetShortTypeName` correctly handles generic types
+- Attribute detection in DataAnnotations uses namespace/typeName matching (more reliable than ToDisplayString)
+
+_(176 files changed, +23041/-2816 lines)_
 
 ## [0.0.2-alpha.16] - 2026-01-24
 
