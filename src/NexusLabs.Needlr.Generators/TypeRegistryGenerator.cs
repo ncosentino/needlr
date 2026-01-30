@@ -80,6 +80,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
+            // NDLRGEN021: Report warning for non-partial positional records
+            foreach (var opt in discoveryResult.Options.Where(o => o.IsNonPartialPositionalRecord))
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.PositionalRecordMustBePartial,
+                    Location.None,
+                    opt.TypeName));
+            }
+
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
@@ -112,6 +121,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var validatorsText = CodeGen.OptionsCodeGenerator.GenerateOptionsValidatorsSource(optionsWithValidators, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("OptionsValidators.g.cs", SourceText.From(validatorsText, Encoding.UTF8));
+            }
+
+            // Generate parameterless constructors for partial positional records with [Options]
+            var optionsNeedingConstructors = discoveryResult.Options.Where(o => o.NeedsGeneratedConstructor).ToList();
+            if (optionsNeedingConstructors.Count > 0)
+            {
+                var constructorsText = CodeGen.OptionsCodeGenerator.GeneratePositionalRecordConstructorsSource(optionsNeedingConstructors, assemblyName, breadcrumbs, projectDirectory);
+                spc.AddSource("OptionsConstructors.g.cs", SourceText.From(constructorsText, Encoding.UTF8));
             }
 
             // Generate diagnostic output files if configured
@@ -180,6 +197,77 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
         
         return false;
+    }
+
+    /// <summary>
+    /// Detects if a type is a positional record (record with primary constructor parameters).
+    /// Returns null if not a positional record, or PositionalRecordInfo if it is.
+    /// </summary>
+    private static PositionalRecordInfo? DetectPositionalRecord(INamedTypeSymbol typeSymbol)
+    {
+        // Must be a record
+        if (!typeSymbol.IsRecord)
+            return null;
+
+        // Check for primary constructor with parameters
+        // Records with positional parameters have a primary constructor generated from the record declaration
+        var primaryCtor = typeSymbol.InstanceConstructors
+            .FirstOrDefault(c => c.Parameters.Length > 0 && IsPrimaryConstructor(c, typeSymbol));
+
+        if (primaryCtor == null)
+            return null;
+
+        // Check if the record has a parameterless constructor already
+        // (user-defined or from record with init-only properties)
+        var hasParameterlessCtor = typeSymbol.InstanceConstructors
+            .Any(c => c.Parameters.Length == 0 && !c.IsImplicitlyDeclared);
+
+        if (hasParameterlessCtor)
+            return null; // Doesn't need generated constructor
+
+        // Check if partial
+        var isPartial = typeSymbol.DeclaringSyntaxReferences
+            .Select(r => r.GetSyntax())
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax>()
+            .Any(s => s.Modifiers.Any(m => m.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword)));
+
+        // Extract constructor parameters
+        var parameters = primaryCtor.Parameters
+            .Select(p => new PositionalRecordParameter(p.Name, p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
+            .ToList();
+
+        // Get namespace
+        var containingNamespace = typeSymbol.ContainingNamespace.IsGlobalNamespace
+            ? ""
+            : typeSymbol.ContainingNamespace.ToDisplayString();
+
+        return new PositionalRecordInfo(
+            typeSymbol.Name,
+            containingNamespace,
+            isPartial,
+            parameters);
+    }
+
+    /// <summary>
+    /// Determines if a constructor is the primary constructor of a record.
+    /// Primary constructors for positional records are synthesized and have matching properties.
+    /// </summary>
+    private static bool IsPrimaryConstructor(IMethodSymbol ctor, INamedTypeSymbol recordType)
+    {
+        // For positional records, the primary constructor parameters correspond to auto-properties
+        // Check if each parameter has a matching property
+        foreach (var param in ctor.Parameters)
+        {
+            var hasMatchingProperty = recordType.GetMembers()
+                .OfType<IPropertySymbol>()
+                .Any(p => p.Name.Equals(param.Name, StringComparison.Ordinal) &&
+                         SymbolEqualityComparer.Default.Equals(p.Type, param.Type));
+
+            if (!hasMatchingProperty)
+                return false;
+        }
+
+        return true;
     }
 
     private static AttributeInfo? GetAttributeInfoFromCompilation(Compilation compilation)
@@ -335,6 +423,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var optionsAttrs = OptionsAttributeHelper.GetOptionsAttributes(typeSymbol);
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
+                // Detect positional record (record with primary constructor parameters)
+                var positionalRecordInfo = DetectPositionalRecord(typeSymbol);
+
                 foreach (var optionsAttr in optionsAttrs)
                 {
                     // Determine validator type and method
@@ -365,7 +456,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         sourceFilePath,
                         validatorInfo,
                         optionsAttr.ValidateMethod,
-                        validatorTypeName));
+                        validatorTypeName,
+                        positionalRecordInfo));
                 }
             }
 

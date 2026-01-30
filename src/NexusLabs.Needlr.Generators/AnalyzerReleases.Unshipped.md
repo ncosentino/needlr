@@ -12,3 +12,4 @@ NDLRGEN017 | NexusLabs.Needlr.Generators | Error | OptionsAttributeAnalyzer, Val
 NDLRGEN018 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validator won't run
 NDLRGEN019 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validation method won't run
 NDLRGEN020 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, [Options] is not compatible with AOT
+NDLRGEN021 | NexusLabs.Needlr.Generators | Warning | TypeRegistryGenerator, Positional record must be partial for [Options]

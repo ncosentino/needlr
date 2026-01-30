@@ -327,16 +327,16 @@ public class CacheService
 }
 ```
 
-### ⚠️ Positional Records Not Supported
+### Positional Records
 
-**Positional records do not work** with reflection-based configuration binding:
+Positional records (records with primary constructor parameters) are supported when declared as `partial`:
 
 ```csharp
-// ❌ DOES NOT WORK - no parameterless constructor
+// ✅ WORKS - partial positional record
 [Options("Redis")]
-public record RedisOptions(string Host, int Port);
+public partial record RedisOptions(string Host, int Port);
 
-// ✅ WORKS - use init-only properties instead
+// ✅ WORKS - init-only properties (no partial needed)
 [Options("Redis")]
 public record RedisOptions
 {
@@ -345,7 +345,19 @@ public record RedisOptions
 }
 ```
 
-Positional records lack a parameterless constructor, which Microsoft's configuration binder requires to instantiate the object. Use records with init-only properties instead.
+When you use `partial`, Needlr generates a parameterless constructor that chains to the primary constructor:
+
+```csharp
+// Generated code:
+public partial record RedisOptions
+{
+    public RedisOptions() : this(string.Empty, default) { }
+}
+```
+
+This enables Microsoft's configuration binder to instantiate the record.
+
+> ⚠️ **Non-partial positional records** will emit warning [NDLRGEN021](analyzers/NDLRGEN021.md) because they cannot work with configuration binding at runtime.
 
 ## AOT Compatibility
 
@@ -390,6 +402,7 @@ The following analyzers help catch common mistakes:
 | [NDLRGEN018](analyzers/NDLRGEN018.md) | Warning | Validator won't run (ValidateOnStart is false) |
 | [NDLRGEN019](analyzers/NDLRGEN019.md) | Warning | Validation method won't run (ValidateOnStart is false) |
 | [NDLRGEN020](analyzers/NDLRGEN020.md) | Error | [Options] is not compatible with Native AOT |
+| [NDLRGEN021](analyzers/NDLRGEN021.md) | Warning | Positional record must be partial for [Options] |
 
 ## Best Practices
 

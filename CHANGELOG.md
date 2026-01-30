@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The `[Options]` feature uses reflection-based configuration binding APIs that are not AOT-compatible
   - See [NDLRGEN020 documentation](docs/analyzers/NDLRGEN020.md) for workarounds
 
+- **Positional Record Support for [Options]**: Positional records now work with `[Options]` when declared as `partial`
+  - The generator emits a parameterless constructor that chains to the primary constructor
+  - Example: `[Options("Redis")] public partial record RedisConfig(string Host, int Port);`
+  - NDLRGEN021 warning emitted for non-partial positional records
+  - See [Options documentation](docs/options.md#positional-records)
+
 ### Changed
 - **BREAKING: `[GenerateFactory]` namespace change**: `[GenerateFactory]`, `[GenerateFactory<T>]`, and `FactoryGenerationMode` have moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
   - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly

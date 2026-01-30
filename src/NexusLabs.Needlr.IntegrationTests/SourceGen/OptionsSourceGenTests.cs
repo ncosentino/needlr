@@ -422,6 +422,108 @@ public sealed class OptionsSourceGenTests
         Assert.Equal("https://injected.example.com", service.GetEndpoint());
         Assert.Equal(45, service.GetTimeout());
     }
+
+    [Fact]
+    public void Options_PositionalRecord_BindsCorrectly()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PositionalRecord:Host"] = "redis.example.com",
+                ["PositionalRecord:Port"] = "6380"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<PositionalRecordOptions>>();
+
+        Assert.Equal("redis.example.com", options.Value.Host);
+        Assert.Equal(6380, options.Value.Port);
+    }
+
+    [Fact]
+    public void Options_PositionalRecord_UsesDefaultValues_WhenNotConfigured()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<PositionalRecordOptions>>();
+
+        // Should use the default values from the generated parameterless constructor
+        Assert.Equal(string.Empty, options.Value.Host);
+        Assert.Equal(0, options.Value.Port);
+    }
+
+    [Fact]
+    public void Options_PositionalRecord_WithIOptionsMonitor_ReturnsCurrentValue()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PositionalRecord:Host"] = "cache.local",
+                ["PositionalRecord:Port"] = "6379"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var monitor = provider.GetRequiredService<IOptionsMonitor<PositionalRecordOptions>>();
+
+        Assert.Equal("cache.local", monitor.CurrentValue.Host);
+        Assert.Equal(6379, monitor.CurrentValue.Port);
+    }
+
+    [Fact]
+    public void Options_PositionalRecordWithMixedTypes_BindsAllTypesCorrectly()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MixedPositional:Name"] = "TestService",
+                ["MixedPositional:Count"] = "42",
+                ["MixedPositional:Enabled"] = "true",
+                ["MixedPositional:Rate"] = "3.14"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<MixedPositionalRecordOptions>>();
+
+        Assert.Equal("TestService", options.Value.Name);
+        Assert.Equal(42, options.Value.Count);
+        Assert.True(options.Value.Enabled);
+        Assert.Equal(3.14, options.Value.Rate, precision: 2);
+    }
+
+    [Fact]
+    public void Options_PositionalRecord_CanInjectIntoService()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PositionalRecord:Host"] = "injected.redis.local",
+                ["PositionalRecord:Port"] = "16379"
+            })
+            .Build();
+
+        var provider = new Syringe()
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
+            .UsingPostPluginRegistrationCallback(services =>
+                services.AddSingleton<ServiceWithPositionalRecordOptions>())
+            .BuildServiceProvider(configuration);
+
+        var service = provider.GetRequiredService<ServiceWithPositionalRecordOptions>();
+
+        Assert.Equal("injected.redis.local", service.GetHost());
+        Assert.Equal(16379, service.GetPort());
+    }
 }
 
 [Options("TestDatabase")]
@@ -555,4 +657,30 @@ public class ServiceWithImmutableOptions
 
     public string GetEndpoint() => _options.Value.Endpoint;
     public int GetTimeout() => _options.Value.Timeout;
+}
+
+/// <summary>
+/// Positional record for testing generated parameterless constructor.
+/// The generator should emit a parameterless constructor that chains to the primary constructor.
+/// </summary>
+[Options("PositionalRecord")]
+public partial record PositionalRecordOptions(string Host, int Port);
+
+/// <summary>
+/// Positional record with multiple parameter types for testing default value generation.
+/// </summary>
+[Options("MixedPositional")]
+public partial record MixedPositionalRecordOptions(string Name, int Count, bool Enabled, double Rate);
+
+public class ServiceWithPositionalRecordOptions
+{
+    private readonly IOptions<PositionalRecordOptions> _options;
+
+    public ServiceWithPositionalRecordOptions(IOptions<PositionalRecordOptions> options)
+    {
+        _options = options;
+    }
+
+    public string GetHost() => _options.Value.Host;
+    public int GetPort() => _options.Value.Port;
 }

@@ -51,6 +51,7 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN018](NDLRGEN018.md) | Warning | [Options] Validator won't run (ValidateOnStart is false) |
 | [NDLRGEN019](NDLRGEN019.md) | Warning | [Options] Validation method won't run (ValidateOnStart is false) |
 | [NDLRGEN020](NDLRGEN020.md) | Error | [Options] is not compatible with Native AOT |
+| [NDLRGEN021](NDLRGEN021.md) | Warning | [Options] Positional record must be partial |
 
 ## Diagnostic ID Naming Convention
 

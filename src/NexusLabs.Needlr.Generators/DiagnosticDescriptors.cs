@@ -233,4 +233,22 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "The [Options] attribute generates code that calls Configure<T>() and BindConfiguration() which use reflection for property binding. These APIs have [RequiresDynamicCode] and [RequiresUnreferencedCode] attributes, making them incompatible with Native AOT and trimming. Remove the [Options] attribute or disable AOT/trimming for this project.",
         helpLinkUri: HelpLinkBase + "NDLRGEN020.md");
+
+    /// <summary>
+    /// NDLRGEN021: Positional record with [Options] must be declared partial.
+    /// </summary>
+    /// <remarks>
+    /// Positional records lack parameterless constructors, which are required for
+    /// configuration binding. When the record is partial, the generator can emit
+    /// a parameterless constructor. Non-partial records cannot be extended.
+    /// </remarks>
+    public static readonly DiagnosticDescriptor PositionalRecordMustBePartial = new(
+        id: "NDLRGEN021",
+        title: "Positional record must be partial for [Options]",
+        messageFormat: "Positional record '{0}' has [Options] but is not declared partial. Add the 'partial' modifier to enable configuration binding, or use a record with init-only properties instead.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Positional records (records with primary constructor parameters) lack parameterless constructors, which Microsoft's configuration binder requires. When the record is declared partial, the generator emits a parameterless constructor that chains to the primary constructor. Without partial, the record cannot work with configuration binding at runtime.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN021.md");
 }

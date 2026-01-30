@@ -123,5 +123,100 @@ internal static class OptionsCodeGenerator
 
         return builder.ToString();
     }
+
+    /// <summary>
+    /// Generates parameterless constructors for partial positional records with [Options].
+    /// This enables configuration binding which requires a parameterless constructor.
+    /// </summary>
+    internal static string GeneratePositionalRecordConstructorsSource(
+        IReadOnlyList<DiscoveredOptions> optionsNeedingConstructors, 
+        string assemblyName, 
+        BreadcrumbWriter breadcrumbs, 
+        string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Options Constructors");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+
+        // Group by namespace for cleaner output
+        var byNamespace = optionsNeedingConstructors
+            .Where(o => o.PositionalRecordInfo != null)
+            .GroupBy(o => o.PositionalRecordInfo!.Value.ContainingNamespace)
+            .OrderBy(g => g.Key);
+
+        foreach (var namespaceGroup in byNamespace)
+        {
+            var namespaceName = namespaceGroup.Key;
+            
+            if (!string.IsNullOrEmpty(namespaceName))
+            {
+                builder.AppendLine($"namespace {namespaceName};");
+                builder.AppendLine();
+            }
+
+            foreach (var opt in namespaceGroup)
+            {
+                var info = opt.PositionalRecordInfo!.Value;
+                
+                builder.AppendLine("/// <summary>");
+                builder.AppendLine($"/// Generated parameterless constructor for configuration binding.");
+                builder.AppendLine($"/// Chains to primary constructor with default values.");
+                builder.AppendLine("/// </summary>");
+                builder.AppendLine($"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+                builder.AppendLine($"public partial record {info.ShortTypeName}");
+                builder.AppendLine("{");
+                
+                // Build the constructor call with default values for each parameter
+                var defaultArgs = new List<string>();
+                foreach (var param in info.Parameters)
+                {
+                    var defaultValue = GetDefaultValueForType(param.TypeName);
+                    defaultArgs.Add(defaultValue);
+                }
+                
+                var argsString = string.Join(", ", defaultArgs);
+                builder.AppendLine($"    public {info.ShortTypeName}() : this({argsString}) {{ }}");
+                builder.AppendLine("}");
+                builder.AppendLine();
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Gets the default value expression for a given type.
+    /// </summary>
+    private static string GetDefaultValueForType(string fullyQualifiedTypeName)
+    {
+        // Handle common types with user-friendly defaults
+        return fullyQualifiedTypeName switch
+        {
+            "global::System.String" or "string" => "string.Empty",
+            "global::System.Boolean" or "bool" => "default",
+            "global::System.Int32" or "int" => "default",
+            "global::System.Int64" or "long" => "default",
+            "global::System.Int16" or "short" => "default",
+            "global::System.Byte" or "byte" => "default",
+            "global::System.SByte" or "sbyte" => "default",
+            "global::System.UInt32" or "uint" => "default",
+            "global::System.UInt64" or "ulong" => "default",
+            "global::System.UInt16" or "ushort" => "default",
+            "global::System.Single" or "float" => "default",
+            "global::System.Double" or "double" => "default",
+            "global::System.Decimal" or "decimal" => "default",
+            "global::System.Char" or "char" => "default",
+            "global::System.DateTime" => "default",
+            "global::System.DateTimeOffset" => "default",
+            "global::System.TimeSpan" => "default",
+            "global::System.Guid" => "default",
+            // For nullable types and reference types, use default (which gives null for reference types)
+            // For other value types, use default
+            _ when fullyQualifiedTypeName.EndsWith("?") => "default",
+            _ => "default!"  // Reference types need null-forgiving operator
+        };
+    }
 }
 

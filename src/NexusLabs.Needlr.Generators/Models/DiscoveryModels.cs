@@ -246,7 +246,8 @@ internal readonly struct DiscoveredOptions
         string? sourceFilePath = null,
         OptionsValidatorInfo? validatorMethod = null,
         string? validateMethodOverride = null,
-        string? validatorTypeName = null)
+        string? validatorTypeName = null,
+        PositionalRecordInfo? positionalRecordInfo = null)
     {
         TypeName = typeName;
         SectionName = sectionName;
@@ -257,6 +258,7 @@ internal readonly struct DiscoveredOptions
         ValidatorMethod = validatorMethod;
         ValidateMethodOverride = validateMethodOverride;
         ValidatorTypeName = validatorTypeName;
+        PositionalRecordInfo = positionalRecordInfo;
     }
 
     /// <summary>Fully qualified type name of the options class.</summary>
@@ -283,6 +285,9 @@ internal readonly struct DiscoveredOptions
     /// <summary>External validator type name from [Options(Validator = typeof(...))], or null to use options class.</summary>
     public string? ValidatorTypeName { get; }
 
+    /// <summary>Information about positional record primary constructor, if applicable.</summary>
+    public PositionalRecordInfo? PositionalRecordInfo { get; }
+
     /// <summary>True if this is a named options registration (not default).</summary>
     public bool IsNamed => Name != null;
 
@@ -291,6 +296,57 @@ internal readonly struct DiscoveredOptions
 
     /// <summary>True if an external validator type is specified.</summary>
     public bool HasExternalValidator => ValidatorTypeName != null;
+
+    /// <summary>True if this is a positional record that needs a generated parameterless constructor.</summary>
+    public bool NeedsGeneratedConstructor => PositionalRecordInfo?.IsPartial == true;
+
+    /// <summary>True if this is a non-partial positional record (will emit diagnostic).</summary>
+    public bool IsNonPartialPositionalRecord => PositionalRecordInfo != null && !PositionalRecordInfo.Value.IsPartial;
+}
+
+/// <summary>
+/// Information about a positional record's primary constructor parameters.
+/// </summary>
+internal readonly struct PositionalRecordInfo
+{
+    public PositionalRecordInfo(
+        string shortTypeName,
+        string containingNamespace,
+        bool isPartial,
+        IReadOnlyList<PositionalRecordParameter> parameters)
+    {
+        ShortTypeName = shortTypeName;
+        ContainingNamespace = containingNamespace;
+        IsPartial = isPartial;
+        Parameters = parameters;
+    }
+
+    /// <summary>The simple type name (without namespace).</summary>
+    public string ShortTypeName { get; }
+
+    /// <summary>The containing namespace.</summary>
+    public string ContainingNamespace { get; }
+
+    /// <summary>Whether the record is declared as partial.</summary>
+    public bool IsPartial { get; }
+
+    /// <summary>The primary constructor parameters.</summary>
+    public IReadOnlyList<PositionalRecordParameter> Parameters { get; }
+}
+
+/// <summary>
+/// A parameter in a positional record's primary constructor.
+/// </summary>
+internal readonly struct PositionalRecordParameter
+{
+    public PositionalRecordParameter(string name, string typeName)
+    {
+        Name = name;
+        TypeName = typeName;
+    }
+
+    public string Name { get; }
+    public string TypeName { get; }
 }
 
 /// <summary>
