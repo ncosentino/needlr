@@ -232,7 +232,7 @@ public sealed class OptionsParityBehaviorTests
 
     /// <summary>
     /// Validates that init-only properties ARE bound in AOT mode using the factory pattern.
-    /// Phase 5 added support for init-only properties using Options.Create with object initializers.
+    /// Init-only properties use Options.Create with object initializers.
     /// This test documents the EXPECTED behavior: init-only properties should be bound in AOT.
     /// </summary>
     [Fact]
@@ -273,7 +273,7 @@ public sealed class OptionsParityBehaviorTests
 
     /// <summary>
     /// Validates that positional records ARE bound in AOT mode using the constructor pattern.
-    /// Phase 5 added support for positional records using Options.Create with constructor calls.
+    /// Positional records use Options.Create with constructor calls.
     /// This test documents the EXPECTED behavior: positional records should be bound in AOT.
     /// </summary>
     [Fact]

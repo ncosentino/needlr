@@ -9,7 +9,7 @@ using Xunit;
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
 /// <summary>
-/// Tests for the unified validator design (Phase 5).
+/// Tests for the unified validator design.
 /// Convention-based discovery, ValidateMethod, Validator property, ValidationError.
 /// </summary>
 public sealed class OptionsValidatorUnifiedTests

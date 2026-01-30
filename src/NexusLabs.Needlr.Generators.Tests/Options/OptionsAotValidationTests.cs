@@ -15,7 +15,6 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 
 /// <summary>
 /// Tests for AOT-compatible validation support in options generation.
-/// Phase 2 of AOT options parity.
 /// </summary>
 public sealed class OptionsAotValidationTests
 {

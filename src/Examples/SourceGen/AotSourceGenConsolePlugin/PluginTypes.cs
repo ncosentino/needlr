@@ -51,7 +51,7 @@ public class LoggingOptions
 
 /// <summary>
 /// Options with init-only properties for testing AOT factory pattern.
-/// Phase 5 added support: these ARE bound in AOT using Options.Create with object initializers.
+/// Init-only properties are bound in AOT using Options.Create with object initializers.
 /// </summary>
 [Options("Caching")]
 public class CachingOptions
@@ -63,7 +63,7 @@ public class CachingOptions
 
 /// <summary>
 /// Positional record options for testing AOT-compatible constructor binding.
-/// Phase 5 added support: these ARE bound in AOT using Options.Create with constructor.
+/// Positional records are bound in AOT using Options.Create with constructor.
 /// </summary>
 [Options("Security")]
 public partial record SecurityOptions(

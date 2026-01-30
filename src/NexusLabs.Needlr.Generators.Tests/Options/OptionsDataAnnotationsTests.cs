@@ -9,13 +9,13 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// <summary>
 /// Tests for source-generated DataAnnotations validation.
 /// 
-/// Phase 4 Goal: Generate IValidateOptions implementations that check
-/// DataAnnotation attributes without reflection, enabling AOT compatibility.
+/// Generates IValidateOptions implementations that check DataAnnotation 
+/// attributes without reflection, enabling AOT compatibility.
 /// </summary>
 public sealed class OptionsDataAnnotationsTests
 {
     // =============================================================
-    // 4.1 Required Attribute
+    // Required Attribute
     // =============================================================
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.2 Range Attribute
+    // Range Attribute
     // =============================================================
 
     [Fact]
@@ -137,7 +137,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.3 StringLength Attribute
+    // StringLength Attribute
     // =============================================================
 
     [Fact]
@@ -169,7 +169,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.4 MinLength / MaxLength Attributes
+    // MinLength / MaxLength Attributes
     // =============================================================
 
     [Fact]
@@ -227,7 +227,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.5 RegularExpression Attribute
+    // RegularExpression Attribute
     // =============================================================
 
     [Fact]
@@ -258,7 +258,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.6 Multiple Attributes
+    // Multiple Attributes
     // =============================================================
 
     [Fact]
@@ -295,7 +295,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.7 Combined with Custom Validator
+    // Combined with Custom Validator
     // =============================================================
 
     [Fact]
@@ -336,7 +336,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.8 Validator Registration
+    // Validator Registration
     // =============================================================
 
     [Fact]
@@ -367,7 +367,7 @@ public sealed class OptionsDataAnnotationsTests
     }
 
     // =============================================================
-    // 4.9 No DataAnnotations = No Validator Generated
+    // No DataAnnotations = No Validator Generated
     // =============================================================
 
     [Fact]

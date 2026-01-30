@@ -9,13 +9,13 @@ namespace NexusLabs.Needlr.Generators.Tests.Options;
 /// <summary>
 /// Tests for AOT-compatible init-only and positional record support.
 /// 
-/// Phase 5 Goal: Bind init-only properties and positional records in AOT
+/// Binds init-only properties and positional records in AOT
 /// by using object initializer syntax in a factory pattern.
 /// </summary>
 public sealed class OptionsAotInitOnlyTests
 {
     // =============================================================
-    // 5.1 Init-Only Properties
+    // Init-Only Properties
     // =============================================================
 
     [Fact]
@@ -108,7 +108,7 @@ public sealed class OptionsAotInitOnlyTests
     }
 
     // =============================================================
-    // 5.2 Positional Records
+    // Positional Records
     // =============================================================
 
     [Fact]
@@ -183,7 +183,7 @@ public sealed class OptionsAotInitOnlyTests
     }
 
     // =============================================================
-    // 5.3 Records with Init Properties (non-positional)
+    // Records with Init Properties (non-positional)
     // =============================================================
 
     [Fact]

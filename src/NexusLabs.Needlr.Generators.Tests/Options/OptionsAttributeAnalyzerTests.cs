@@ -12,7 +12,7 @@ using Xunit;
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
 /// <summary>
-/// Tests for the OptionsAttributeAnalyzer (Phase 5C).
+/// Tests for the OptionsAttributeAnalyzer.
 /// </summary>
 public sealed class OptionsAttributeAnalyzerTests
 {
