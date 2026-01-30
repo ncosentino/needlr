@@ -1,5 +1,17 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
+    Needlr Source Generator Configuration
+    
+    Exposes MSBuild properties to the source generator for AOT compatibility detection.
+  -->
+  
+  <!-- Expose AOT-related properties to the source generator -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="PublishAot" />
+    <CompilerVisibleProperty Include="IsAotCompatible" />
+  </ItemGroup>
+  
+  <!--
     Needlr Diagnostic File Extraction Target
     
     When NeedlrDiagnostics=true, the source generator creates NeedlrDiagnostics.g.cs 

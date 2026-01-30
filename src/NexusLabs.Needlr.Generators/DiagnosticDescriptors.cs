@@ -212,4 +212,25 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "When ValidateMethod is specified but ValidateOnStart is not enabled, the validation method will never be invoked. Either enable ValidateOnStart or remove the ValidateMethod property.",
         helpLinkUri: HelpLinkBase + "NDLRGEN019.md");
+
+    // ============================================================================
+    // AOT Compatibility Analyzers (NDLRGEN020+)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN020: [Options] attribute is not compatible with AOT/trimming.
+    /// </summary>
+    /// <remarks>
+    /// The [Options] feature generates calls to Configure&lt;T&gt;() and BindConfiguration()
+    /// which use reflection for configuration binding. These APIs are not AOT-compatible.
+    /// </remarks>
+    public static readonly DiagnosticDescriptor OptionsNotAotCompatible = new(
+        id: "NDLRGEN020",
+        title: "[Options] is not compatible with AOT",
+        messageFormat: "Type '{0}' has [Options] attribute but is in an AOT-enabled project. The [Options] feature uses configuration binding APIs that are not compatible with Native AOT or trimming.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [Options] attribute generates code that calls Configure<T>() and BindConfiguration() which use reflection for property binding. These APIs have [RequiresDynamicCode] and [RequiresUnreferencedCode] attributes, making them incompatible with Native AOT and trimming. Remove the [Options] attribute or disable AOT/trimming for this project.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN020.md");
 }

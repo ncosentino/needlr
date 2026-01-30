@@ -3,9 +3,9 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<!-- Options binding requires reflection for configuration binding -->
-		<!-- AOT compatibility is enabled for non-options features -->
-		<IsAotCompatible>false</IsAotCompatible>
+
+		<!-- AOT compatible -->
+		<IsAotCompatible>true</IsAotCompatible>
 
 		<!-- Emit generated files for debugging -->
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -18,11 +18,6 @@
 
 	<!-- Import Needlr targets for diagnostic file extraction -->
 	<Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />

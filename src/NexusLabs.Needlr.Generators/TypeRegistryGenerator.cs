@@ -39,6 +39,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var breadcrumbLevel = GetBreadcrumbLevel(configOptions);
             var projectDirectory = GetProjectDirectory(configOptions);
             var breadcrumbs = new BreadcrumbWriter(breadcrumbLevel);
+            
+            // Check if this is an AOT project
+            var isAotProject = IsAotProject(configOptions);
 
             var discoveryResult = DiscoverTypes(
                 compilation,
@@ -63,6 +66,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     Location.None,
                     missingPlugin.AssemblyName,
                     missingPlugin.TypeName));
+            }
+            
+            // NDLRGEN020: Report error if [Options] used in AOT project
+            if (isAotProject && discoveryResult.Options.Count > 0)
+            {
+                foreach (var opt in discoveryResult.Options)
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.OptionsNotAotCompatible,
+                        Location.None,
+                        opt.TypeName));
+                }
             }
 
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory);
@@ -144,6 +159,27 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnosticsFilter", out var filter);
         
         return DiagnosticOptions.Parse(enabled, outputPath, filter);
+    }
+    
+    /// <summary>
+    /// Checks if the project is configured for AOT compilation.
+    /// Returns true if either PublishAot or IsAotCompatible is set to true.
+    /// </summary>
+    private static bool IsAotProject(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        if (configOptions.GlobalOptions.TryGetValue("build_property.PublishAot", out var publishAot) &&
+            publishAot.Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        
+        if (configOptions.GlobalOptions.TryGetValue("build_property.IsAotCompatible", out var isAotCompatible) &&
+            isAotCompatible.Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        
+        return false;
     }
 
     private static AttributeInfo? GetAttributeInfoFromCompilation(Compilation compilation)
