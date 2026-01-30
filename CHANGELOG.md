@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Compile-time validation with NDLRGEN006, NDLRGEN007, NDLRGEN008 analyzers
   - See [Open Generic Decorators documentation](docs/open-generic-decorators.md)
 
+- **NDLRGEN020: AOT Compatibility Check for Options**: New analyzer error when `[Options]` is used in AOT-enabled projects
+  - Fires when `PublishAot=true` or `IsAotCompatible=true`
+  - The `[Options]` feature uses reflection-based configuration binding APIs that are not AOT-compatible
+  - See [NDLRGEN020 documentation](docs/analyzers/NDLRGEN020.md) for workarounds
+
 ### Changed
 - **BREAKING: `[GenerateFactory]` namespace change**: `[GenerateFactory]`, `[GenerateFactory<T>]`, and `FactoryGenerationMode` have moved from `NexusLabs.Needlr` to `NexusLabs.Needlr.Generators`
   - These are source-generation only features and now live in the `NexusLabs.Needlr.Generators.Attributes` assembly
