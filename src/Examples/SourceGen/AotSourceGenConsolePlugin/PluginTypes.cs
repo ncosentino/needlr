@@ -50,21 +50,20 @@ public class LoggingOptions
 }
 
 /// <summary>
-/// Immutable options using init-only properties for testing AOT compatibility.
-/// NOTE: Init-only properties are skipped in AOT mode - they retain their default values.
-/// This is a known limitation; use regular setters for full AOT support.
+/// Options with init-only properties for testing AOT factory pattern.
+/// Phase 5 added support: these ARE bound in AOT using Options.Create with object initializers.
 /// </summary>
 [Options("Caching")]
 public class CachingOptions
 {
-    public string Provider { get; set; } = "Memory";
-    public int ExpirationMinutes { get; set; } = 60;
-    public bool EnableCompression { get; set; } = false;
+    public string Provider { get; init; } = "Memory";
+    public int ExpirationMinutes { get; init; } = 60;
+    public bool EnableCompression { get; init; } = false;
 }
 
 /// <summary>
-/// Positional record options for testing AOT-compatible constructor generation.
-/// The generator creates a parameterless constructor for this.
+/// Positional record options for testing AOT-compatible constructor binding.
+/// Phase 5 added support: these ARE bound in AOT using Options.Create with constructor.
 /// </summary>
 [Options("Security")]
 public partial record SecurityOptions(

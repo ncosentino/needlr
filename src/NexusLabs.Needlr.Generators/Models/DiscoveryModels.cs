@@ -307,6 +307,15 @@ internal readonly struct DiscoveredOptions
 
     /// <summary>True if this is a non-partial positional record (will emit diagnostic).</summary>
     public bool IsNonPartialPositionalRecord => PositionalRecordInfo != null && !PositionalRecordInfo.Value.IsPartial;
+    
+    /// <summary>True if this type has any init-only properties (requires factory pattern in AOT).</summary>
+    public bool HasInitOnlyProperties => Properties.Any(p => p.HasInitOnlySetter);
+    
+    /// <summary>True if this is a positional record (uses constructor binding in AOT).</summary>
+    public bool IsPositionalRecord => PositionalRecordInfo != null;
+    
+    /// <summary>True if this type requires factory pattern (Options.Create) instead of Configure delegate in AOT.</summary>
+    public bool RequiresFactoryPattern => IsPositionalRecord || HasInitOnlyProperties;
 }
 
 /// <summary>

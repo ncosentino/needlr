@@ -1231,60 +1231,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             builder.AppendLine();
             builder.AppendLine($"        // Bind {opt.SectionName} section to {GeneratorHelpers.GetShortTypeName(typeName)}");
             
-            if (opt.IsNamed)
+            // Choose binding pattern based on type characteristics
+            if (opt.IsPositionalRecord)
             {
-                builder.AppendLine($"        services.AddOptions<{typeName}>(\"{opt.Name}\")");
+                // Positional records: Use constructor binding with Options.Create
+                GeneratePositionalRecordBinding(builder, opt, safeAssemblyName, externalValidatorsToRegister);
+            }
+            else if (opt.HasInitOnlyProperties)
+            {
+                // Classes/records with init-only properties: Use object initializer with Options.Create
+                GenerateInitOnlyBinding(builder, opt, safeAssemblyName, externalValidatorsToRegister);
             }
             else
             {
-                builder.AppendLine($"        services.AddOptions<{typeName}>()");
-            }
-            
-            builder.AppendLine("            .Configure<IConfiguration>((options, config) =>");
-            builder.AppendLine("            {");
-            builder.AppendLine($"                var section = config.GetSection(\"{opt.SectionName}\");");
-            
-            // Generate property binding for each property
-            var propIndex = 0;
-            foreach (var prop in opt.Properties)
-            {
-                // Skip init-only properties in AOT mode - they can't be assigned after construction
-                if (prop.HasInitOnlySetter)
-                {
-                    builder.AppendLine($"                // Skipped: {prop.Name} (init-only property cannot be bound in AOT mode)");
-                    continue;
-                }
-                
-                GeneratePropertyBinding(builder, prop, propIndex);
-                propIndex++;
-            }
-            
-            builder.Append("            })");
-            
-            // Add validation chain if ValidateOnStart is enabled
-            if (opt.ValidateOnStart)
-            {
-                // Note: ValidateDataAnnotations() uses reflection and is NOT AOT-compatible.
-                // Only ValidateOnStart() is emitted. Custom validators still work.
-                // TODO: Add NDLRGEN022 warning for DataAnnotations usage in AOT
-                builder.AppendLine();
-                builder.Append("            .ValidateOnStart()");
-            }
-            
-            builder.AppendLine(";");
-            
-            // Handle custom validator method registration
-            if (opt.ValidateOnStart && opt.HasValidatorMethod)
-            {
-                var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
-                var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
-                builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
-
-                // If external validator with instance method, register it too
-                if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
-                {
-                    externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
-                }
+                // Regular classes with setters: Use Configure delegate pattern
+                GenerateConfigureBinding(builder, opt, safeAssemblyName, externalValidatorsToRegister);
             }
         }
 
@@ -1292,6 +1253,363 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         foreach (var validatorType in externalValidatorsToRegister)
         {
             builder.AppendLine($"        services.AddSingleton<{validatorType}>();");
+        }
+    }
+    
+    private static void GenerateConfigureBinding(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
+    {
+        var typeName = opt.TypeName;
+        
+        if (opt.IsNamed)
+        {
+            builder.AppendLine($"        services.AddOptions<{typeName}>(\"{opt.Name}\")");
+        }
+        else
+        {
+            builder.AppendLine($"        services.AddOptions<{typeName}>()");
+        }
+        
+        builder.AppendLine("            .Configure<IConfiguration>((options, config) =>");
+        builder.AppendLine("            {");
+        builder.AppendLine($"                var section = config.GetSection(\"{opt.SectionName}\");");
+        
+        // Generate property binding for each property
+        var propIndex = 0;
+        foreach (var prop in opt.Properties)
+        {
+            GeneratePropertyBinding(builder, prop, propIndex);
+            propIndex++;
+        }
+        
+        builder.Append("            })");
+        
+        // Add validation chain if ValidateOnStart is enabled
+        if (opt.ValidateOnStart)
+        {
+            builder.AppendLine();
+            builder.Append("            .ValidateOnStart()");
+        }
+        
+        builder.AppendLine(";");
+        
+        RegisterValidator(builder, opt, safeAssemblyName, externalValidatorsToRegister);
+    }
+    
+    private static void GenerateInitOnlyBinding(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
+    {
+        var typeName = opt.TypeName;
+        
+        // Use AddSingleton with IOptions<T> factory pattern for init-only
+        builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IOptions<{typeName}>>(sp =>");
+        builder.AppendLine("        {");
+        builder.AppendLine($"            var config = sp.GetRequiredService<IConfiguration>();");
+        builder.AppendLine($"            var section = config.GetSection(\"{opt.SectionName}\");");
+        
+        // Generate parsing variables first
+        var propIndex = 0;
+        foreach (var prop in opt.Properties)
+        {
+            GeneratePropertyParseVariable(builder, prop, propIndex);
+            propIndex++;
+        }
+        
+        // Create object with initializer
+        builder.AppendLine($"            return global::Microsoft.Extensions.Options.Options.Create(new {typeName}");
+        builder.AppendLine("            {");
+        
+        propIndex = 0;
+        foreach (var prop in opt.Properties)
+        {
+            var comma = propIndex < opt.Properties.Count - 1 ? "," : "";
+            GeneratePropertyInitializer(builder, prop, propIndex, comma);
+            propIndex++;
+        }
+        
+        builder.AppendLine("            });");
+        builder.AppendLine("        });");
+        
+        // For validation with factory pattern, we need to register the validator separately
+        if (opt.ValidateOnStart)
+        {
+            RegisterValidatorForFactory(builder, opt, safeAssemblyName, externalValidatorsToRegister);
+        }
+    }
+    
+    private static void GeneratePositionalRecordBinding(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
+    {
+        var typeName = opt.TypeName;
+        var recordInfo = opt.PositionalRecordInfo!.Value;
+        
+        // Use AddSingleton with IOptions<T> factory pattern for positional records
+        builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IOptions<{typeName}>>(sp =>");
+        builder.AppendLine("        {");
+        builder.AppendLine($"            var config = sp.GetRequiredService<IConfiguration>();");
+        builder.AppendLine($"            var section = config.GetSection(\"{opt.SectionName}\");");
+        
+        // Generate parsing variables for each constructor parameter
+        var paramIndex = 0;
+        foreach (var param in recordInfo.Parameters)
+        {
+            GenerateParameterParseVariable(builder, param, paramIndex);
+            paramIndex++;
+        }
+        
+        // Create record with constructor
+        builder.Append($"            return global::Microsoft.Extensions.Options.Options.Create(new {typeName}(");
+        
+        paramIndex = 0;
+        foreach (var param in recordInfo.Parameters)
+        {
+            if (paramIndex > 0) builder.Append(", ");
+            builder.Append($"p{paramIndex}");
+            paramIndex++;
+        }
+        
+        builder.AppendLine("));");
+        builder.AppendLine("        });");
+        
+        // For validation with factory pattern, we need to register the validator separately
+        if (opt.ValidateOnStart)
+        {
+            RegisterValidatorForFactory(builder, opt, safeAssemblyName, externalValidatorsToRegister);
+        }
+    }
+    
+    private static void GeneratePropertyParseVariable(StringBuilder builder, OptionsPropertyInfo prop, int index)
+    {
+        var varName = $"p{index}";
+        var typeName = prop.TypeName;
+        var baseTypeName = GetBaseTypeName(typeName);
+        
+        // Handle complex types
+        if (prop.ComplexTypeKind != ComplexTypeKind.None)
+        {
+            GenerateComplexTypeParseVariable(builder, prop, index);
+            return;
+        }
+        
+        // Handle enums
+        if (prop.IsEnum && prop.EnumTypeName != null)
+        {
+            var defaultVal = prop.IsNullable ? "null" : "default";
+            builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && global::System.Enum.TryParse<{prop.EnumTypeName}>(v{index}, true, out var e{index}) ? e{index} : {defaultVal};");
+            return;
+        }
+        
+        // Handle primitives
+        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        {
+            var defaultVal = prop.IsNullable ? "null" : "\"\"";
+            builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] ?? {defaultVal};");
+        }
+        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
+        {
+            var defaultVal = prop.IsNullable ? "null" : "0";
+            builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && int.TryParse(v{index}, out var i{index}) ? i{index} : {defaultVal};");
+        }
+        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
+        {
+            var defaultVal = prop.IsNullable ? "null" : "false";
+            builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && bool.TryParse(v{index}, out var b{index}) ? b{index} : {defaultVal};");
+        }
+        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
+        {
+            var defaultVal = prop.IsNullable ? "null" : "0.0";
+            builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && double.TryParse(v{index}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d{index}) ? d{index} : {defaultVal};");
+        }
+        else
+        {
+            // Default to default value for unsupported types
+            builder.AppendLine($"            var {varName} = default({typeName}); // Unsupported type");
+        }
+    }
+    
+    private static void GenerateComplexTypeParseVariable(StringBuilder builder, OptionsPropertyInfo prop, int index)
+    {
+        var varName = $"p{index}";
+        var sectionVar = $"sec{index}";
+        
+        switch (prop.ComplexTypeKind)
+        {
+            case ComplexTypeKind.NestedObject:
+                builder.AppendLine($"            var {sectionVar} = section.GetSection(\"{prop.Name}\");");
+                builder.AppendLine($"            var {varName} = new {GetNonNullableTypeName(prop.TypeName)}();");
+                if (prop.NestedProperties != null)
+                {
+                    var nestedIndex = index * 100;
+                    foreach (var nested in prop.NestedProperties)
+                    {
+                        GenerateNestedPropertyAssignment(builder, nested, nestedIndex, varName, sectionVar);
+                        nestedIndex++;
+                    }
+                }
+                break;
+                
+            case ComplexTypeKind.List:
+                var listElemType = prop.ElementTypeName ?? "string";
+                builder.AppendLine($"            var {sectionVar} = section.GetSection(\"{prop.Name}\");");
+                builder.AppendLine($"            var {varName} = new global::System.Collections.Generic.List<{listElemType}>();");
+                builder.AppendLine($"            foreach (var child in {sectionVar}.GetChildren())");
+                builder.AppendLine("            {");
+                if (prop.NestedProperties != null && prop.NestedProperties.Count > 0)
+                {
+                    builder.AppendLine($"                var item = new {listElemType}();");
+                    var ni = index * 100;
+                    foreach (var np in prop.NestedProperties)
+                    {
+                        GenerateChildPropertyAssignment(builder, np, ni, "item", "child");
+                        ni++;
+                    }
+                    builder.AppendLine($"                {varName}.Add(item);");
+                }
+                else
+                {
+                    builder.AppendLine($"                if (child.Value is {{ }} val) {varName}.Add(val);");
+                }
+                builder.AppendLine("            }");
+                break;
+                
+            case ComplexTypeKind.Dictionary:
+                var dictValType = prop.ElementTypeName ?? "string";
+                builder.AppendLine($"            var {sectionVar} = section.GetSection(\"{prop.Name}\");");
+                builder.AppendLine($"            var {varName} = new global::System.Collections.Generic.Dictionary<string, {dictValType}>();");
+                builder.AppendLine($"            foreach (var child in {sectionVar}.GetChildren())");
+                builder.AppendLine("            {");
+                if (prop.NestedProperties != null && prop.NestedProperties.Count > 0)
+                {
+                    builder.AppendLine($"                var item = new {dictValType}();");
+                    var ni = index * 100;
+                    foreach (var np in prop.NestedProperties)
+                    {
+                        GenerateChildPropertyAssignment(builder, np, ni, "item", "child");
+                        ni++;
+                    }
+                    builder.AppendLine($"                {varName}[child.Key] = item;");
+                }
+                else if (dictValType == "int" || dictValType == "global::System.Int32")
+                {
+                    builder.AppendLine($"                if (child.Value is {{ }} val && int.TryParse(val, out var iv)) {varName}[child.Key] = iv;");
+                }
+                else
+                {
+                    builder.AppendLine($"                if (child.Value is {{ }} val) {varName}[child.Key] = val;");
+                }
+                builder.AppendLine("            }");
+                break;
+                
+            default:
+                builder.AppendLine($"            var {varName} = default({prop.TypeName}); // Complex type");
+                break;
+        }
+    }
+    
+    private static void GenerateNestedPropertyAssignment(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetVar, string sectionVar)
+    {
+        var varName = $"nv{index}";
+        var baseTypeName = GetBaseTypeName(prop.TypeName);
+        
+        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        {
+            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName}) {targetVar}.{prop.Name} = {varName};");
+        }
+        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
+        {
+            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && int.TryParse({varName}, out var ni{index})) {targetVar}.{prop.Name} = ni{index};");
+        }
+        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
+        {
+            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && bool.TryParse({varName}, out var nb{index})) {targetVar}.{prop.Name} = nb{index};");
+        }
+    }
+    
+    private static void GenerateChildPropertyAssignment(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetVar, string sectionVar)
+    {
+        var varName = $"cv{index}";
+        var baseTypeName = GetBaseTypeName(prop.TypeName);
+        
+        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        {
+            builder.AppendLine($"                if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName}) {targetVar}.{prop.Name} = {varName};");
+        }
+        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
+        {
+            builder.AppendLine($"                if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && int.TryParse({varName}, out var ci{index})) {targetVar}.{prop.Name} = ci{index};");
+        }
+    }
+    
+    private static void GeneratePropertyInitializer(StringBuilder builder, OptionsPropertyInfo prop, int index, string comma)
+    {
+        builder.AppendLine($"                {prop.Name} = p{index}{comma}");
+    }
+    
+    private static void GenerateParameterParseVariable(StringBuilder builder, PositionalRecordParameter param, int index)
+    {
+        var varName = $"p{index}";
+        var typeName = param.TypeName;
+        var baseTypeName = GetBaseTypeName(typeName);
+        
+        // Check if it's an enum
+        // For simplicity, check if it's a known primitive, otherwise assume it could be an enum
+        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        {
+            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] ?? \"\";");
+        }
+        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
+        {
+            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && int.TryParse(v{index}, out var i{index}) ? i{index} : 0;");
+        }
+        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
+        {
+            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && bool.TryParse(v{index}, out var b{index}) && b{index};");
+        }
+        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
+        {
+            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && double.TryParse(v{index}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d{index}) ? d{index} : 0.0;");
+        }
+        else
+        {
+            // Try enum parsing for other types
+            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && global::System.Enum.TryParse<{typeName}>(v{index}, true, out var e{index}) ? e{index} : default({typeName});");
+        }
+    }
+    
+    private static void RegisterValidator(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
+    {
+        if (opt.ValidateOnStart && opt.HasValidatorMethod)
+        {
+            var typeName = opt.TypeName;
+            var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+            var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
+            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+
+            if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
+            {
+                externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
+            }
+        }
+    }
+    
+    private static void RegisterValidatorForFactory(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
+    {
+        var typeName = opt.TypeName;
+        
+        // For factory pattern, we need to add OptionsBuilder validation manually
+        // Since we're using AddSingleton<IOptions<T>>, we also need to register for IOptionsSnapshot and IOptionsMonitor
+        builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IOptionsSnapshot<{typeName}>>(sp => new global::Microsoft.Extensions.Options.OptionsManager<{typeName}>(sp.GetRequiredService<global::Microsoft.Extensions.Options.IOptionsFactory<{typeName}>>()));");
+        
+        // Add startup validation
+        builder.AppendLine($"        services.AddOptions<{typeName}>().ValidateOnStart();");
+        
+        if (opt.HasValidatorMethod)
+        {
+            var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+            var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
+            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+
+            if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
+            {
+                externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
+            }
         }
     }
 

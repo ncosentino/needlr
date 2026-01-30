@@ -231,14 +231,12 @@ public sealed class OptionsParityBehaviorTests
     }
 
     /// <summary>
-    /// Documents that init-only properties are skipped in AOT mode.
-    /// The AOT binding approach uses a callback on an already-constructed instance,
-    /// which cannot assign to init-only properties. This is an AOT-specific limitation.
-    /// Non-AOT uses ConfigurationBinder which can set init-only via reflection.
-    /// When a future enhancement adds proper init-only support, update this test.
+    /// Validates that init-only properties ARE bound in AOT mode using the factory pattern.
+    /// Phase 5 added support for init-only properties using Options.Create with object initializers.
+    /// This test documents the EXPECTED behavior: init-only properties should be bound in AOT.
     /// </summary>
     [Fact]
-    public void Options_WithInitOnlyProperties_AreSkippedInAot_KnownLimitation()
+    public void Options_WithInitOnlyProperties_AreBoundInAot()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -257,25 +255,29 @@ public sealed class OptionsParityBehaviorTests
             }
             """;
 
-        // AOT path - init-only properties should be skipped
+        // AOT path - init-only properties should use factory pattern
         var (aotCode, _) = RunGenerator(source, isAot: true);
         
-        // Init-only properties should have skip comments
-        Assert.Contains("Skipped: Name (init-only property cannot be bound in AOT mode)", aotCode);
-        Assert.Contains("Skipped: Count (init-only property cannot be bound in AOT mode)", aotCode);
+        // Should use Options.Create with object initializer (factory pattern)
+        Assert.Contains("Options.Create(new global::TestApp.ImmutableOptions", aotCode);
         
-        // Regular setter should still work
-        Assert.Contains("section[\"Enabled\"]", aotCode);
+        // Init-only properties should be bound via initializers
+        Assert.Contains("Name =", aotCode);
+        Assert.Contains("Count =", aotCode);
+        Assert.Contains("Enabled =", aotCode);
+        
+        // Should NOT have skip comments for these properties
+        Assert.DoesNotContain("Skipped: Name", aotCode);
+        Assert.DoesNotContain("Skipped: Count", aotCode);
     }
 
     /// <summary>
-    /// Documents that positional records have init-only properties that are skipped in AOT.
-    /// Even though we generate a parameterless constructor, the properties are still init-only
-    /// and cannot be assigned in the Configure callback.
-    /// This is a known limitation of the current AOT implementation.
+    /// Validates that positional records ARE bound in AOT mode using the constructor pattern.
+    /// Phase 5 added support for positional records using Options.Create with constructor calls.
+    /// This test documents the EXPECTED behavior: positional records should be bound in AOT.
     /// </summary>
     [Fact]
-    public void Options_PositionalRecord_InitOnlyPropertiesSkippedInAot_KnownLimitation()
+    public void Options_PositionalRecord_IsBoundInAot()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -289,13 +291,21 @@ public sealed class OptionsParityBehaviorTests
             }
             """;
 
-        // AOT path - positional record properties are init-only and should be skipped
+        // AOT path - positional record should use constructor pattern
         var (aotCode, _) = RunGenerator(source, isAot: true);
         
-        // All properties should have skip comments (they're all init-only)
-        Assert.Contains("Skipped: Host (init-only property cannot be bound in AOT mode)", aotCode);
-        Assert.Contains("Skipped: Port (init-only property cannot be bound in AOT mode)", aotCode);
-        Assert.Contains("Skipped: Secure (init-only property cannot be bound in AOT mode)", aotCode);
+        // Should use Options.Create with constructor call
+        Assert.Contains("Options.Create(new global::TestApp.PositionalOptions(", aotCode);
+        
+        // Constructor args should be parsed from config
+        Assert.Contains("section[\"Host\"]", aotCode);
+        Assert.Contains("section[\"Port\"]", aotCode);
+        Assert.Contains("section[\"Secure\"]", aotCode);
+        
+        // Should NOT have skip comments
+        Assert.DoesNotContain("Skipped: Host", aotCode);
+        Assert.DoesNotContain("Skipped: Port", aotCode);
+        Assert.DoesNotContain("Skipped: Secure", aotCode);
     }
 
     private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGenerator(
