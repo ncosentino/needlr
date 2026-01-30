@@ -316,6 +316,9 @@ internal readonly struct DiscoveredOptions
     
     /// <summary>True if this type requires factory pattern (Options.Create) instead of Configure delegate in AOT.</summary>
     public bool RequiresFactoryPattern => IsPositionalRecord || HasInitOnlyProperties;
+    
+    /// <summary>True if any property has DataAnnotation validation attributes.</summary>
+    public bool HasDataAnnotations => Properties.Any(p => p.HasDataAnnotations);
 }
 
 /// <summary>
@@ -377,7 +380,8 @@ internal readonly struct OptionsPropertyInfo
         string? enumTypeName = null,
         ComplexTypeKind complexTypeKind = ComplexTypeKind.None,
         string? elementTypeName = null,
-        IReadOnlyList<OptionsPropertyInfo>? nestedProperties = null)
+        IReadOnlyList<OptionsPropertyInfo>? nestedProperties = null,
+        IReadOnlyList<DataAnnotationInfo>? dataAnnotations = null)
     {
         Name = name;
         TypeName = typeName;
@@ -388,6 +392,7 @@ internal readonly struct OptionsPropertyInfo
         ComplexTypeKind = complexTypeKind;
         ElementTypeName = elementTypeName;
         NestedProperties = nestedProperties;
+        DataAnnotations = dataAnnotations ?? Array.Empty<DataAnnotationInfo>();
     }
 
     /// <summary>Property name.</summary>
@@ -416,6 +421,12 @@ internal readonly struct OptionsPropertyInfo
     
     /// <summary>For nested objects and collection element types, the bindable properties.</summary>
     public IReadOnlyList<OptionsPropertyInfo>? NestedProperties { get; }
+    
+    /// <summary>DataAnnotation validation attributes on this property.</summary>
+    public IReadOnlyList<DataAnnotationInfo> DataAnnotations { get; }
+    
+    /// <summary>True if this property has any DataAnnotation validation attributes.</summary>
+    public bool HasDataAnnotations => DataAnnotations.Count > 0;
 }
 
 /// <summary>
@@ -433,6 +444,63 @@ internal enum ComplexTypeKind
     List,
     /// <summary>A dictionary type (Dictionary&lt;string, T&gt;).</summary>
     Dictionary
+}
+
+/// <summary>
+/// Identifies the kind of DataAnnotation attribute for source-generated validation.
+/// </summary>
+internal enum DataAnnotationKind
+{
+    Required,
+    Range,
+    StringLength,
+    MinLength,
+    MaxLength,
+    RegularExpression,
+    EmailAddress,
+    Phone,
+    Url,
+    Unsupported
+}
+
+/// <summary>
+/// Information about a DataAnnotation attribute on an options property.
+/// </summary>
+internal readonly struct DataAnnotationInfo
+{
+    public DataAnnotationInfo(
+        DataAnnotationKind kind,
+        string? errorMessage = null,
+        object? minimum = null,
+        object? maximum = null,
+        string? pattern = null,
+        int? minimumLength = null)
+    {
+        Kind = kind;
+        ErrorMessage = errorMessage;
+        Minimum = minimum;
+        Maximum = maximum;
+        Pattern = pattern;
+        MinimumLength = minimumLength;
+    }
+
+    /// <summary>The kind of DataAnnotation attribute.</summary>
+    public DataAnnotationKind Kind { get; }
+    
+    /// <summary>Custom error message if specified.</summary>
+    public string? ErrorMessage { get; }
+    
+    /// <summary>Minimum value for Range attribute.</summary>
+    public object? Minimum { get; }
+    
+    /// <summary>Maximum value for Range/StringLength/MaxLength attributes.</summary>
+    public object? Maximum { get; }
+    
+    /// <summary>Pattern for RegularExpression attribute.</summary>
+    public string? Pattern { get; }
+    
+    /// <summary>Minimum length for StringLength/MinLength attributes.</summary>
+    public int? MinimumLength { get; }
 }
 
 /// <summary>

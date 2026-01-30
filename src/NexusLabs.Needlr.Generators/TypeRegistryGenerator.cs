@@ -115,6 +115,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 spc.AddSource("OptionsValidators.g.cs", SourceText.From(validatorsText, Encoding.UTF8));
             }
 
+            // Generate DataAnnotations validator classes if any have DataAnnotation attributes
+            var optionsWithDataAnnotations = discoveryResult.Options.Where(o => o.HasDataAnnotations).ToList();
+            if (optionsWithDataAnnotations.Count > 0)
+            {
+                var dataAnnotationsValidatorsText = CodeGen.OptionsCodeGenerator.GenerateDataAnnotationsValidatorsSource(optionsWithDataAnnotations, assemblyName, breadcrumbs, projectDirectory);
+                spc.AddSource("OptionsDataAnnotationsValidators.g.cs", SourceText.From(dataAnnotationsValidatorsText, Encoding.UTF8));
+            }
+
             // Generate parameterless constructors for partial positional records with [Options]
             var optionsNeedingConstructors = discoveryResult.Options.Where(o => o.NeedsGeneratedConstructor).ToList();
             if (optionsNeedingConstructors.Count > 0)
@@ -321,6 +329,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             
             // Detect complex types
             var (complexKind, elementTypeName, nestedProps) = AnalyzeComplexType(property.Type, visitedTypes);
+            
+            // Extract DataAnnotation attributes
+            var dataAnnotations = ExtractDataAnnotations(property);
 
             properties.Add(new OptionsPropertyInfo(
                 property.Name,
@@ -331,10 +342,133 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 enumTypeName,
                 complexKind,
                 elementTypeName,
-                nestedProps));
+                nestedProps,
+                dataAnnotations));
         }
 
         return properties;
+    }
+    
+    private static IReadOnlyList<DataAnnotationInfo> ExtractDataAnnotations(IPropertySymbol property)
+    {
+        var annotations = new List<DataAnnotationInfo>();
+        
+        foreach (var attr in property.GetAttributes())
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass == null) continue;
+            
+            // Get the attribute type name - use ContainingNamespace + Name for reliable matching
+            var attrNamespace = attrClass.ContainingNamespace?.ToDisplayString() ?? "";
+            var attrTypeName = attrClass.Name;
+            
+            // Only process System.ComponentModel.DataAnnotations attributes
+            if (attrNamespace != "System.ComponentModel.DataAnnotations")
+                continue;
+            
+            // Extract error message if present
+            string? errorMessage = null;
+            foreach (var namedArg in attr.NamedArguments)
+            {
+                if (namedArg.Key == "ErrorMessage" && namedArg.Value.Value is string msg)
+                {
+                    errorMessage = msg;
+                    break;
+                }
+            }
+            
+            // Check for known DataAnnotation attributes
+            if (attrTypeName == "RequiredAttribute")
+            {
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.Required, errorMessage));
+            }
+            else if (attrTypeName == "RangeAttribute")
+            {
+                object? min = null, max = null;
+                if (attr.ConstructorArguments.Length >= 2)
+                {
+                    min = attr.ConstructorArguments[0].Value;
+                    max = attr.ConstructorArguments[1].Value;
+                }
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.Range, errorMessage, min, max));
+            }
+            else if (attrTypeName == "StringLengthAttribute")
+            {
+                object? maxLen = null;
+                int? minLen = null;
+                if (attr.ConstructorArguments.Length >= 1)
+                {
+                    maxLen = attr.ConstructorArguments[0].Value;
+                }
+                foreach (var namedArg in attr.NamedArguments)
+                {
+                    if (namedArg.Key == "MinimumLength" && namedArg.Value.Value is int ml)
+                    {
+                        minLen = ml;
+                    }
+                }
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.StringLength, errorMessage, null, maxLen, null, minLen));
+            }
+            else if (attrTypeName == "MinLengthAttribute")
+            {
+                int? minLen = null;
+                if (attr.ConstructorArguments.Length >= 1 && attr.ConstructorArguments[0].Value is int ml)
+                {
+                    minLen = ml;
+                }
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.MinLength, errorMessage, null, null, null, minLen));
+            }
+            else if (attrTypeName == "MaxLengthAttribute")
+            {
+                object? maxLen = null;
+                if (attr.ConstructorArguments.Length >= 1)
+                {
+                    maxLen = attr.ConstructorArguments[0].Value;
+                }
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.MaxLength, errorMessage, null, maxLen));
+            }
+            else if (attrTypeName == "RegularExpressionAttribute")
+            {
+                string? pattern = null;
+                if (attr.ConstructorArguments.Length >= 1 && attr.ConstructorArguments[0].Value is string p)
+                {
+                    pattern = p;
+                }
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.RegularExpression, errorMessage, null, null, pattern));
+            }
+            else if (attrTypeName == "EmailAddressAttribute")
+            {
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.EmailAddress, errorMessage));
+            }
+            else if (attrTypeName == "PhoneAttribute")
+            {
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.Phone, errorMessage));
+            }
+            else if (attrTypeName == "UrlAttribute")
+            {
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.Url, errorMessage));
+            }
+            else if (IsValidationAttribute(attrClass))
+            {
+                // Unsupported validation attribute
+                annotations.Add(new DataAnnotationInfo(DataAnnotationKind.Unsupported, errorMessage));
+            }
+        }
+        
+        return annotations;
+    }
+    
+    private static bool IsValidationAttribute(INamedTypeSymbol attrClass)
+    {
+        // Check if this inherits from ValidationAttribute
+        var current = attrClass.BaseType;
+        while (current != null)
+        {
+            if (current.ToDisplayString() == "System.ComponentModel.DataAnnotations.ValidationAttribute")
+                return true;
+            current = current.BaseType;
+        }
+        return false;
     }
     
     private static (ComplexTypeKind Kind, string? ElementTypeName, IReadOnlyList<OptionsPropertyInfo>? NestedProperties) AnalyzeComplexType(
@@ -1186,6 +1320,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 builder.Append(".ValidateDataAnnotations()");
                 builder.AppendLine(".ValidateOnStart();");
 
+                // Register source-generated DataAnnotations validator if present
+                // This runs alongside .ValidateDataAnnotations() - source-gen handles supported attributes,
+                // reflection fallback handles unsupported attributes (like [CustomValidation])
+                if (opt.HasDataAnnotations)
+                {
+                    var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+                    var dataAnnotationsValidatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}DataAnnotationsValidator";
+                    builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {dataAnnotationsValidatorClassName}>();");
+                }
+
                 // If there's a custom validator method, register the generated validator
                 if (opt.HasValidatorMethod)
                 {
@@ -1575,10 +1719,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     
     private static void RegisterValidator(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
     {
+        var typeName = opt.TypeName;
+        var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+        
+        // Register DataAnnotations validator if present
+        if (opt.HasDataAnnotations)
+        {
+            var dataAnnotationsValidatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}DataAnnotationsValidator";
+            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {dataAnnotationsValidatorClassName}>();");
+        }
+        
         if (opt.ValidateOnStart && opt.HasValidatorMethod)
         {
-            var typeName = opt.TypeName;
-            var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
             var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
             builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
 
@@ -1592,6 +1744,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static void RegisterValidatorForFactory(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
     {
         var typeName = opt.TypeName;
+        var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
         
         // For factory pattern, we need to add OptionsBuilder validation manually
         // Since we're using AddSingleton<IOptions<T>>, we also need to register for IOptionsSnapshot and IOptionsMonitor
@@ -1600,9 +1753,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Add startup validation
         builder.AppendLine($"        services.AddOptions<{typeName}>().ValidateOnStart();");
         
+        // Register DataAnnotations validator if present
+        if (opt.HasDataAnnotations)
+        {
+            var dataAnnotationsValidatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}DataAnnotationsValidator";
+            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {dataAnnotationsValidatorClassName}>();");
+        }
+        
         if (opt.HasValidatorMethod)
         {
-            var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
             var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
             builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
 
