@@ -188,6 +188,84 @@ public sealed class OptionsGeneratorTests
         Assert.Contains("IConfiguration configuration", generated);
     }
 
+    [Fact]
+    public void Generator_WithInitOnlyProperties_GeneratesConfigureCall()
+    {
+        // Init-only properties are supported by Microsoft's configuration binding (.NET 5+)
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options]
+                public class ImmutableSettings
+                {
+                    public string ApiKey { get; init; } = "";
+                    public int Timeout { get; init; } = 30;
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Section name is inferred as "Immutable" (strips "Settings" suffix)
+        Assert.Contains("Configure<global::TestApp.ImmutableSettings>", generated);
+        Assert.Contains("configuration.GetSection(\"Immutable\")", generated);
+    }
+
+    [Fact]
+    public void Generator_WithRecordType_GeneratesConfigureCall()
+    {
+        // Records with init properties are supported (.NET 5+)
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options]
+                public record DatabaseConfig
+                {
+                    public string Host { get; init; } = "";
+                    public int Port { get; init; } = 5432;
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Section name is inferred as "Database" (strips "Config" suffix)
+        Assert.Contains("Configure<global::TestApp.DatabaseConfig>", generated);
+        Assert.Contains("configuration.GetSection(\"Database\")", generated);
+    }
+
+    [Fact]
+    public void Generator_WithPositionalRecord_GeneratesConfigureCall()
+    {
+        // NOTE: While the generator handles positional records, they will FAIL at runtime
+        // with reflection-based configuration binding because they lack parameterless constructors.
+        // This test verifies the generator doesn't crash - use init-only records instead.
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options("Redis")]
+                public record RedisConfig(string Host, int Port);
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        Assert.Contains("Configure<global::TestApp.RedisConfig>", generated);
+        Assert.Contains("configuration.GetSection(\"Redis\")", generated);
+    }
+
     private static string RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);

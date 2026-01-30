@@ -319,6 +319,109 @@ public sealed class OptionsSourceGenTests
         Assert.Equal("Server=e2e;Database=EndToEnd", snapshot.Value.ConnectionString);
         Assert.Equal(120, options.Value.CommandTimeout);
     }
+
+    [Fact]
+    public void Options_ImmutableClass_BindsInitOnlyProperties()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ImmutableClass:Host"] = "api.example.com",
+                ["ImmutableClass:Port"] = "9000",
+                ["ImmutableClass:ApiKey"] = "secret-key-123"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<ImmutableClassOptions>>();
+
+        Assert.Equal("api.example.com", options.Value.Host);
+        Assert.Equal(9000, options.Value.Port);
+        Assert.Equal("secret-key-123", options.Value.ApiKey);
+    }
+
+    [Fact]
+    public void Options_ImmutableClass_UsesDefaults_WhenNotConfigured()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ImmutableClass:ApiKey"] = "required-key"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<ImmutableClassOptions>>();
+
+        Assert.Equal("", options.Value.Host);
+        Assert.Equal(8080, options.Value.Port);
+        Assert.Equal("required-key", options.Value.ApiKey);
+    }
+
+    [Fact]
+    public void Options_ImmutableRecord_BindsCorrectly()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ImmutableRecord:Endpoint"] = "https://api.example.com",
+                ["ImmutableRecord:Timeout"] = "120"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var options = provider.GetRequiredService<IOptions<ImmutableRecordOptions>>();
+
+        Assert.Equal("https://api.example.com", options.Value.Endpoint);
+        Assert.Equal(120, options.Value.Timeout);
+    }
+
+    [Fact]
+    public void Options_ImmutableRecord_WithIOptionsMonitor_ReturnsCurrentValue()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ImmutableRecord:Endpoint"] = "https://monitor.example.com",
+                ["ImmutableRecord:Timeout"] = "60"
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var monitor = provider.GetRequiredService<IOptionsMonitor<ImmutableRecordOptions>>();
+
+        Assert.Equal("https://monitor.example.com", monitor.CurrentValue.Endpoint);
+        Assert.Equal(60, monitor.CurrentValue.Timeout);
+    }
+
+    [Fact]
+    public void Options_ImmutableTypes_CanInjectIntoService()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ImmutableRecord:Endpoint"] = "https://injected.example.com",
+                ["ImmutableRecord:Timeout"] = "45"
+            })
+            .Build();
+
+        var provider = new Syringe()
+            .UsingGeneratedComponents(
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetInjectableTypes,
+                NexusLabs.Needlr.IntegrationTests.Generated.TypeRegistry.GetPluginTypes)
+            .UsingPostPluginRegistrationCallback(services =>
+                services.AddSingleton<ServiceWithImmutableOptions>())
+            .BuildServiceProvider(configuration);
+
+        var service = provider.GetRequiredService<ServiceWithImmutableOptions>();
+
+        Assert.Equal("https://injected.example.com", service.GetEndpoint());
+        Assert.Equal(45, service.GetTimeout());
+    }
 }
 
 [Options("TestDatabase")]
@@ -416,4 +519,40 @@ public class ServiceWithOptions
     }
 
     public string GetConnectionString() => _options.Value.ConnectionString;
+}
+
+/// <summary>
+/// Tests immutable options class with init-only properties.
+/// </summary>
+[Options("ImmutableClass")]
+public class ImmutableClassOptions
+{
+    public string Host { get; init; } = "";
+    public int Port { get; init; } = 8080;
+    public required string ApiKey { get; init; }
+}
+
+/// <summary>
+/// Tests record type with init properties.
+/// Note: Positional records (e.g., record Foo(string Bar)) do NOT work with reflection-based
+/// configuration binding because they lack parameterless constructors. Use init-only records instead.
+/// </summary>
+[Options("ImmutableRecord")]
+public record ImmutableRecordOptions
+{
+    public string Endpoint { get; init; } = "";
+    public int Timeout { get; init; } = 30;
+}
+
+public class ServiceWithImmutableOptions
+{
+    private readonly IOptions<ImmutableRecordOptions> _options;
+
+    public ServiceWithImmutableOptions(IOptions<ImmutableRecordOptions> options)
+    {
+        _options = options;
+    }
+
+    public string GetEndpoint() => _options.Value.Endpoint;
+    public int GetTimeout() => _options.Value.Timeout;
 }

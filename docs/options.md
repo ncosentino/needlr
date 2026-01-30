@@ -271,6 +271,82 @@ public class MyService
 }
 ```
 
+## Immutable Options
+
+The `[Options]` attribute supports immutable options patterns, including `init`-only properties and records with init properties.
+
+### Init-Only Properties
+
+```csharp
+[Options("Cache")]
+public class CacheOptions
+{
+    public required string Host { get; init; }
+    public int Port { get; init; } = 6379;
+    public int TimeoutMs { get; init; } = 5000;
+}
+```
+
+### Records with Init Properties
+
+```csharp
+[Options("Redis")]
+public record RedisOptions
+{
+    public string Host { get; init; } = "localhost";
+    public int Port { get; init; } = 6379;
+}
+```
+
+### Configuration Reload with Immutable Types
+
+Immutable types work correctly with `IOptionsMonitor<T>` for configuration reload. When the configuration file changes:
+
+1. A **new instance** is created with the updated values
+2. `IOptionsMonitor<T>.CurrentValue` returns the new instance
+3. `OnChange()` callbacks receive the new instance
+
+```csharp
+public class CacheService
+{
+    private readonly IOptionsMonitor<CacheOptions> _options;
+
+    public CacheService(IOptionsMonitor<CacheOptions> options)
+    {
+        _options = options;
+        
+        // React to configuration changes
+        options.OnChange(newOptions =>
+        {
+            // newOptions is a new immutable instance
+            Console.WriteLine($"Cache timeout changed to {newOptions.TimeoutMs}ms");
+        });
+    }
+
+    public CacheOptions CurrentConfig => _options.CurrentValue;
+}
+```
+
+### ⚠️ Positional Records Not Supported
+
+**Positional records do not work** with reflection-based configuration binding:
+
+```csharp
+// ❌ DOES NOT WORK - no parameterless constructor
+[Options("Redis")]
+public record RedisOptions(string Host, int Port);
+
+// ✅ WORKS - use init-only properties instead
+[Options("Redis")]
+public record RedisOptions
+{
+    public string Host { get; init; } = "";
+    public int Port { get; init; } = 6379;
+}
+```
+
+Positional records lack a parameterless constructor, which Microsoft's configuration binder requires to instantiate the object. Use records with init-only properties instead.
+
 ## AOT Compatibility
 
 > ⚠️ **Important**: The `[Options]` attribute is **not compatible with Native AOT**.
