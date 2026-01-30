@@ -1,23 +1,23 @@
 {
   "summary": {
-    "generatedon": "2026-01-30T23:05:42Z",
+    "generatedon": "2026-01-30T23:11:09Z",
     "parser": "MultiReport (16x Cobertura)",
     "assemblies": 16,
     "classes": 163,
     "files": 141,
-    "coveredlines": 7338,
-    "uncoveredlines": 872,
+    "coveredlines": 7337,
+    "uncoveredlines": 873,
     "coverablelines": 8210,
     "totallines": 21953,
     "linecoverage": 89.3,
-    "coveredbranches": 3422,
+    "coveredbranches": 3421,
     "totalbranches": 4400,
     "branchcoverage": 77.7,
     "coveredmethods": 935,
-    "fullcoveredmethods": 768,
+    "fullcoveredmethods": 767,
     "totalmethods": 1036,
     "methodcoverage": 90.2,
-    "fullmethodcoverage": 74.1
+    "fullmethodcoverage": 74
  },
   "coverage": {
     "assemblies": [
@@ -155,11 +155,11 @@
       { "name": "NexusLabs.Needlr.Injection.Bundle", "classes": 2, "coverage": 93.9, "coveredlines": 108, "coverablelines": 115, "totallines": 287, "branchcoverage": 76.6, "coveredbranches": 23, "totalbranches": 30, "methodcoverage": 100, "fullmethodcoverage": 72.7, "coveredmethods": 11, "fullcoveredmethods": 8, "totalmethods": 11, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "coverage": 96.2, "coveredlines": 78, "coverablelines": 81, "totallines": 155, "branchcoverage": 70.8, "coveredbranches": 17, "totalbranches": 24, "methodcoverage": 100, "fullmethodcoverage": 85.7, "coveredmethods": 7, "fullcoveredmethods": 6, "totalmethods": 7 },
         { "name": "NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions", "coverage": 88.2, "coveredlines": 30, "coverablelines": 34, "totallines": 132, "branchcoverage": 100, "coveredbranches": 6, "totalbranches": 6, "methodcoverage": 100, "fullmethodcoverage": 50, "coveredmethods": 4, "fullcoveredmethods": 2, "totalmethods": 4 } ] },
-      { "name": "NexusLabs.Needlr.Injection.Reflection", "classes": 12, "coverage": 93.7, "coveredlines": 388, "coverablelines": 414, "totallines": 1253, "branchcoverage": 90.1, "coveredbranches": 155, "totalbranches": 172, "methodcoverage": 95.3, "fullmethodcoverage": 87.6, "coveredmethods": 62, "fullcoveredmethods": 57, "totalmethods": 65, "classesinassembly": [
+      { "name": "NexusLabs.Needlr.Injection.Reflection", "classes": 12, "coverage": 93.4, "coveredlines": 387, "coverablelines": 414, "totallines": 1253, "branchcoverage": 89.5, "coveredbranches": 154, "totalbranches": 172, "methodcoverage": 95.3, "fullmethodcoverage": 86.1, "coveredmethods": 62, "fullcoveredmethods": 56, "totalmethods": 65, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder", "coverage": 100, "coveredlines": 15, "coverablelines": 15, "totallines": 60, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 5 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions", "coverage": 65.7, "coveredlines": 23, "coverablelines": 35, "totallines": 153, "branchcoverage": 50, "coveredbranches": 4, "totalbranches": 8, "methodcoverage": 71.4, "fullmethodcoverage": 71.4, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 7 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader", "coverage": 100, "coveredlines": 11, "coverablelines": 11, "totallines": 27, "branchcoverage": 50, "coveredbranches": 1, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
-        { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "coverage": 100, "coveredlines": 37, "coverablelines": 37, "totallines": 64, "branchcoverage": 100, "coveredbranches": 2, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
+        { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "coverage": 97.2, "coveredlines": 36, "coverablelines": 37, "totallines": 64, "branchcoverage": 50, "coveredbranches": 1, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 50, "coveredmethods": 2, "fullcoveredmethods": 1, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader", "coverage": 100, "coveredlines": 13, "coverablelines": 13, "totallines": 37, "branchcoverage": 50, "coveredbranches": 2, "totalbranches": 4, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFactory", "coverage": 96, "coveredlines": 49, "coverablelines": 51, "totallines": 199, "branchcoverage": 100, "coveredbranches": 48, "totalbranches": 48, "methodcoverage": 100, "fullmethodcoverage": 90, "coveredmethods": 10, "fullcoveredmethods": 9, "totalmethods": 10 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext", "coverage": 100, "coveredlines": 4, "coverablelines": 4, "totallines": 30, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 4, "fullcoveredmethods": 4, "totalmethods": 4 },
