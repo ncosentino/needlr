@@ -80,22 +80,29 @@ if (Test-Path $changelogPath) {
 
 if (-not $DryRun) { Ensure-CleanRepo }
 
-# Build validation - MUST pass before any release actions
-Write-Host "Validating build..." -ForegroundColor Cyan
-$buildProjects = @(
-  "src\NexusLabs.Needlr",
-  "src\NexusLabs.Needlr.Analyzers",
-  "src\NexusLabs.Needlr.Generators"
-)
-foreach ($proj in $buildProjects) {
-  $buildResult = & dotnet build $proj -c Release -v q 2>&1
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "BUILD FAILED for $proj" -ForegroundColor Red
-    Write-Host $buildResult
-    throw "Build validation failed. Fix build errors before releasing."
-  }
+# Build and pack validation - MUST pass before any release actions
+Write-Host "Validating build and pack..." -ForegroundColor Cyan
+
+# Find all packable projects (those with IsPackable not explicitly false)
+$srcDir = Join-Path $PSScriptRoot "..\src"
+$projects = Get-ChildItem -Path $srcDir -Filter "*.csproj" -Recurse | Where-Object {
+  $content = Get-Content $_.FullName -Raw
+  # Exclude test projects and projects with IsPackable=false
+  -not ($_.Name -match "\.Tests\.") -and
+  -not ($content -match "<IsPackable>false</IsPackable>")
 }
-Write-Host "Build validation passed." -ForegroundColor Green
+
+foreach ($proj in $projects) {
+  Write-Host "  Packing $($proj.Name)..." -NoNewline
+  $packResult = & dotnet pack $proj.FullName -c Release -v q --no-restore 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host " FAILED" -ForegroundColor Red
+    Write-Host $packResult
+    throw "Pack validation failed for $($proj.Name). Fix errors before releasing."
+  }
+  Write-Host " OK" -ForegroundColor Green
+}
+Write-Host "Build and pack validation passed." -ForegroundColor Green
 
 if ($DryRun) {
   Write-Host ""
