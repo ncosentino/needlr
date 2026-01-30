@@ -68,15 +68,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     missingPlugin.TypeName));
             }
             
-            // NDLRGEN020: Report error if [Options] used in AOT project
+            // NDLRGEN020: Report error if [Options] used in AOT project AND we can't generate AOT code
+            // For prototype: we'll generate AOT code, so only warn if there's something we can't handle
             if (isAotProject && discoveryResult.Options.Count > 0)
             {
+                // Check for unsupported features in AOT mode
                 foreach (var opt in discoveryResult.Options)
                 {
-                    spc.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.OptionsNotAotCompatible,
-                        Location.None,
-                        opt.TypeName));
+                    // For prototype, only support classes with primitive properties
+                    // Complex types will be addressed in full implementation
+                    var hasUnsupportedProperty = opt.Properties.Any(p => !IsSupportedAotPropertyType(p.TypeName));
+                    if (hasUnsupportedProperty)
+                    {
+                        spc.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.OptionsNotAotCompatible,
+                            Location.None,
+                            opt.TypeName));
+                    }
                 }
             }
 
@@ -89,7 +97,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     opt.TypeName));
             }
 
-            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory);
+            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading
@@ -270,6 +278,46 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return true;
     }
 
+    /// <summary>
+    /// Extracts bindable properties from an options type for AOT code generation.
+    /// </summary>
+    private static IReadOnlyList<OptionsPropertyInfo> ExtractBindableProperties(INamedTypeSymbol typeSymbol)
+    {
+        var properties = new List<OptionsPropertyInfo>();
+
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is not IPropertySymbol property)
+                continue;
+
+            // Skip static, indexers, readonly properties without init
+            if (property.IsStatic || property.IsIndexer)
+                continue;
+
+            // Must have a setter (set or init)
+            if (property.SetMethod == null)
+                continue;
+
+            // Check if it's init-only
+            var isInitOnly = property.SetMethod.IsInitOnly;
+
+            // Get nullability info
+            var isNullable = property.NullableAnnotation == NullableAnnotation.Annotated ||
+                             (property.Type is INamedTypeSymbol namedType &&
+                              namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
+
+            var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+            properties.Add(new OptionsPropertyInfo(
+                property.Name,
+                typeName,
+                isNullable,
+                isInitOnly));
+        }
+
+        return properties;
+    }
+
     private static AttributeInfo? GetAttributeInfoFromCompilation(Compilation compilation)
     {
         // Get assembly-level attributes directly from the compilation
@@ -426,6 +474,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // Detect positional record (record with primary constructor parameters)
                 var positionalRecordInfo = DetectPositionalRecord(typeSymbol);
 
+                // Extract bindable properties for AOT code generation
+                var properties = ExtractBindableProperties(typeSymbol);
+
                 foreach (var optionsAttr in optionsAttrs)
                 {
                     // Determine validator type and method
@@ -457,7 +508,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         validatorInfo,
                         optionsAttr.ValidateMethod,
                         validatorTypeName,
-                        positionalRecordInfo));
+                        positionalRecordInfo,
+                        properties));
                 }
             }
 
@@ -610,7 +662,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
     }
 
-    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory, bool isAotProject)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
@@ -625,6 +677,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (hasOptions)
         {
             builder.AppendLine("using Microsoft.Extensions.Configuration;");
+            if (isAotProject)
+            {
+                builder.AppendLine("using Microsoft.Extensions.Options;");
+            }
         }
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
@@ -661,7 +717,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (hasOptions)
         {
             builder.AppendLine();
-            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, safeAssemblyName, breadcrumbs, projectDirectory);
+            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, safeAssemblyName, breadcrumbs, projectDirectory, isAotProject);
         }
 
         builder.AppendLine();
@@ -942,7 +998,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory, bool isAotProject)
     {
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Registers all discovered options types with the service collection.");
@@ -957,68 +1013,243 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             breadcrumbs.WriteInlineComment(builder, "        ", "No options types discovered");
         }
+        else if (isAotProject)
+        {
+            GenerateAotOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs, projectDirectory);
+        }
         else
         {
-            // Track external validators to register (avoid duplicates)
-            var externalValidatorsToRegister = new HashSet<string>();
-
-            foreach (var opt in options)
-            {
-                var typeName = opt.TypeName;
-                
-                if (opt.ValidateOnStart)
-                {
-                    // Use AddOptions pattern for validation support
-                    // services.AddOptions<T>().BindConfiguration("Section").ValidateDataAnnotations().ValidateOnStart();
-                    builder.Append($"        services.AddOptions<{typeName}>");
-                    
-                    if (opt.IsNamed)
-                    {
-                        builder.Append($"(\"{opt.Name}\")");
-                    }
-                    else
-                    {
-                        builder.Append("()");
-                    }
-                    
-                    builder.Append($".BindConfiguration(\"{opt.SectionName}\")");
-                    builder.Append(".ValidateDataAnnotations()");
-                    builder.AppendLine(".ValidateOnStart();");
-
-                    // If there's a custom validator method, register the generated validator
-                    if (opt.HasValidatorMethod)
-                    {
-                        var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
-                        var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
-                        builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
-
-                        // If external validator with instance method, register it too
-                        if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
-                        {
-                            externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
-                        }
-                    }
-                }
-                else if (opt.IsNamed)
-                {
-                    // Named options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, "name", section)
-                    builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, \"{opt.Name}\", configuration.GetSection(\"{opt.SectionName}\"));");
-                }
-                else
-                {
-                    // Default options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, section)
-                    builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, configuration.GetSection(\"{opt.SectionName}\"));");
-                }
-            }
-
-            // Register external validators that have instance methods
-            foreach (var validatorType in externalValidatorsToRegister)
-            {
-                builder.AppendLine($"        services.AddSingleton<{validatorType}>();");
-            }
+            GenerateReflectionOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs);
         }
 
         builder.AppendLine("    }");
+    }
+
+    private static void GenerateReflectionOptionsRegistration(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs)
+    {
+        // Track external validators to register (avoid duplicates)
+        var externalValidatorsToRegister = new HashSet<string>();
+
+        foreach (var opt in options)
+        {
+            var typeName = opt.TypeName;
+            
+            if (opt.ValidateOnStart)
+            {
+                // Use AddOptions pattern for validation support
+                // services.AddOptions<T>().BindConfiguration("Section").ValidateDataAnnotations().ValidateOnStart();
+                builder.Append($"        services.AddOptions<{typeName}>");
+                
+                if (opt.IsNamed)
+                {
+                    builder.Append($"(\"{opt.Name}\")");
+                }
+                else
+                {
+                    builder.Append("()");
+                }
+                
+                builder.Append($".BindConfiguration(\"{opt.SectionName}\")");
+                builder.Append(".ValidateDataAnnotations()");
+                builder.AppendLine(".ValidateOnStart();");
+
+                // If there's a custom validator method, register the generated validator
+                if (opt.HasValidatorMethod)
+                {
+                    var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+                    var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
+                    builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+
+                    // If external validator with instance method, register it too
+                    if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
+                    {
+                        externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
+                    }
+                }
+            }
+            else if (opt.IsNamed)
+            {
+                // Named options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, "name", section)
+                builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, \"{opt.Name}\", configuration.GetSection(\"{opt.SectionName}\"));");
+            }
+            else
+            {
+                // Default options: OptionsConfigurationServiceCollectionExtensions.Configure<T>(services, section)
+                builder.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions.Configure<{typeName}>(services, configuration.GetSection(\"{opt.SectionName}\"));");
+            }
+        }
+
+        // Register external validators that have instance methods
+        foreach (var validatorType in externalValidatorsToRegister)
+        {
+            builder.AppendLine($"        services.AddSingleton<{validatorType}>();");
+        }
+    }
+
+    private static void GenerateAotOptionsRegistration(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        breadcrumbs.WriteInlineComment(builder, "        ", "AOT-compatible options binding (no reflection)");
+
+        foreach (var opt in options)
+        {
+            var typeName = opt.TypeName;
+            builder.AppendLine();
+            builder.AppendLine($"        // Bind {opt.SectionName} section to {GeneratorHelpers.GetShortTypeName(typeName)}");
+            
+            if (opt.IsNamed)
+            {
+                builder.AppendLine($"        services.AddOptions<{typeName}>(\"{opt.Name}\")");
+            }
+            else
+            {
+                builder.AppendLine($"        services.AddOptions<{typeName}>()");
+            }
+            
+            builder.AppendLine("            .Configure<IConfiguration>((options, config) =>");
+            builder.AppendLine("            {");
+            builder.AppendLine($"                var section = config.GetSection(\"{opt.SectionName}\");");
+            
+            // Generate property binding for each property
+            var propIndex = 0;
+            foreach (var prop in opt.Properties)
+            {
+                GeneratePropertyBinding(builder, prop, propIndex);
+                propIndex++;
+            }
+            
+            builder.AppendLine("            });");
+            
+            // Handle validation if needed
+            if (opt.ValidateOnStart && opt.HasValidatorMethod)
+            {
+                var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
+                var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
+                builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+            }
+        }
+    }
+
+    private static void GeneratePropertyBinding(StringBuilder builder, OptionsPropertyInfo prop, int index)
+    {
+        var varName = $"v{index}";
+        
+        // Determine how to parse the value based on type
+        var typeName = prop.TypeName;
+        var isNullableValueType = typeName.StartsWith("global::System.Nullable<") || typeName.EndsWith("?");
+        var baseTypeName = GetBaseTypeName(typeName);
+        
+        builder.Append($"                if (section[\"{prop.Name}\"] is {{ }} {varName}");
+        
+        if (baseTypeName == "string" || baseTypeName == "global::System.String")
+        {
+            // String: direct assignment
+            builder.AppendLine($") options.{prop.Name} = {varName};");
+        }
+        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
+        {
+            builder.AppendLine($" && int.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
+        {
+            builder.AppendLine($" && bool.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
+        {
+            builder.AppendLine($" && double.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "float" || baseTypeName == "global::System.Single")
+        {
+            builder.AppendLine($" && float.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "decimal" || baseTypeName == "global::System.Decimal")
+        {
+            builder.AppendLine($" && decimal.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "long" || baseTypeName == "global::System.Int64")
+        {
+            builder.AppendLine($" && long.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "short" || baseTypeName == "global::System.Int16")
+        {
+            builder.AppendLine($" && short.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "byte" || baseTypeName == "global::System.Byte")
+        {
+            builder.AppendLine($" && byte.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "char" || baseTypeName == "global::System.Char")
+        {
+            builder.AppendLine($" && {varName}.Length == 1) options.{prop.Name} = {varName}[0];");
+        }
+        else if (baseTypeName == "global::System.TimeSpan")
+        {
+            builder.AppendLine($" && global::System.TimeSpan.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "global::System.DateTime")
+        {
+            builder.AppendLine($" && global::System.DateTime.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "global::System.DateTimeOffset")
+        {
+            builder.AppendLine($" && global::System.DateTimeOffset.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "global::System.Guid")
+        {
+            builder.AppendLine($" && global::System.Guid.TryParse({varName}, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else if (baseTypeName == "global::System.Uri")
+        {
+            builder.AppendLine($" && global::System.Uri.TryCreate({varName}, global::System.UriKind.RelativeOrAbsolute, out var p{index})) options.{prop.Name} = p{index};");
+        }
+        else
+        {
+            // Unsupported type - skip with comment
+            builder.AppendLine($") {{ }} // Unsupported type: {typeName}");
+        }
+    }
+
+    private static string GetBaseTypeName(string typeName)
+    {
+        // Handle nullable types like "global::System.Nullable<int>" or "int?"
+        if (typeName.StartsWith("global::System.Nullable<") && typeName.EndsWith(">"))
+        {
+            return typeName.Substring("global::System.Nullable<".Length, typeName.Length - "global::System.Nullable<".Length - 1);
+        }
+        if (typeName.EndsWith("?"))
+        {
+            return typeName.Substring(0, typeName.Length - 1);
+        }
+        return typeName;
+    }
+
+    /// <summary>
+    /// Determines if a property type is supported for AOT code generation.
+    /// </summary>
+    private static bool IsSupportedAotPropertyType(string typeName)
+    {
+        var baseTypeName = GetBaseTypeName(typeName);
+        
+        // List of supported primitive types for the prototype
+        var supportedTypes = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "string", "global::System.String",
+            "int", "global::System.Int32",
+            "bool", "global::System.Boolean",
+            "double", "global::System.Double",
+            "float", "global::System.Single",
+            "decimal", "global::System.Decimal",
+            "long", "global::System.Int64",
+            "short", "global::System.Int16",
+            "byte", "global::System.Byte",
+            "char", "global::System.Char",
+            "global::System.TimeSpan",
+            "global::System.DateTime",
+            "global::System.DateTimeOffset",
+            "global::System.Guid",
+            "global::System.Uri"
+        };
+
+        return supportedTypes.Contains(baseTypeName);
     }
 
     private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)

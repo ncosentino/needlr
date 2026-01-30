@@ -247,7 +247,8 @@ internal readonly struct DiscoveredOptions
         OptionsValidatorInfo? validatorMethod = null,
         string? validateMethodOverride = null,
         string? validatorTypeName = null,
-        PositionalRecordInfo? positionalRecordInfo = null)
+        PositionalRecordInfo? positionalRecordInfo = null,
+        IReadOnlyList<OptionsPropertyInfo>? properties = null)
     {
         TypeName = typeName;
         SectionName = sectionName;
@@ -259,6 +260,7 @@ internal readonly struct DiscoveredOptions
         ValidateMethodOverride = validateMethodOverride;
         ValidatorTypeName = validatorTypeName;
         PositionalRecordInfo = positionalRecordInfo;
+        Properties = properties ?? Array.Empty<OptionsPropertyInfo>();
     }
 
     /// <summary>Fully qualified type name of the options class.</summary>
@@ -287,6 +289,9 @@ internal readonly struct DiscoveredOptions
 
     /// <summary>Information about positional record primary constructor, if applicable.</summary>
     public PositionalRecordInfo? PositionalRecordInfo { get; }
+
+    /// <summary>Bindable properties for AOT code generation.</summary>
+    public IReadOnlyList<OptionsPropertyInfo> Properties { get; }
 
     /// <summary>True if this is a named options registration (not default).</summary>
     public bool IsNamed => Name != null;
@@ -347,6 +352,32 @@ internal readonly struct PositionalRecordParameter
 
     public string Name { get; }
     public string TypeName { get; }
+}
+
+/// <summary>
+/// Information about a bindable property on an options class (for AOT code generation).
+/// </summary>
+internal readonly struct OptionsPropertyInfo
+{
+    public OptionsPropertyInfo(string name, string typeName, bool isNullable, bool hasInitOnlySetter)
+    {
+        Name = name;
+        TypeName = typeName;
+        IsNullable = isNullable;
+        HasInitOnlySetter = hasInitOnlySetter;
+    }
+
+    /// <summary>Property name.</summary>
+    public string Name { get; }
+
+    /// <summary>Fully qualified type name.</summary>
+    public string TypeName { get; }
+
+    /// <summary>True if the property type is nullable.</summary>
+    public bool IsNullable { get; }
+
+    /// <summary>True if the property has an init-only setter.</summary>
+    public bool HasInitOnlySetter { get; }
 }
 
 /// <summary>

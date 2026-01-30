@@ -10,6 +10,23 @@ using System.Reflection;
 
 namespace AotSourceGenConsolePlugin;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// AOT-COMPATIBLE OPTIONS DEMO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// <summary>
+/// Simple options class for testing AOT-compatible configuration binding.
+/// Uses primitive types: string, int, bool, double.
+/// </summary>
+[Options("Database")]
+public class DatabaseOptions
+{
+    public string ConnectionString { get; set; } = "";
+    public int CommandTimeout { get; set; } = 30;
+    public bool EnableRetry { get; set; } = true;
+    public double RetryDelaySeconds { get; set; } = 1.5;
+}
+
 public interface IConsoleWeatherProvider
 {
     string GetForecast();

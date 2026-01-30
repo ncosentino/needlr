@@ -20,6 +20,11 @@
 	<Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
 
 	<ItemGroup>
+		<!-- Microsoft.Extensions.Options is required for AOT-compatible options binding -->
+		<PackageReference Include="Microsoft.Extensions.Options" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
 		  OutputItemType="Analyzer"

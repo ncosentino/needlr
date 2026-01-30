@@ -14,13 +14,15 @@ using Xunit;
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
 /// <summary>
-/// Tests for NDLRGEN020: Options attribute is not compatible with AOT.
+/// Tests for NDLRGEN020: Options attribute is not compatible with AOT (for unsupported types).
+/// With AOT-compatible code generation, primitive types are now supported in AOT projects.
 /// </summary>
 public sealed class OptionsAotCompatibilityTests
 {
     [Fact]
-    public void Generator_EmitsDiagnostic_WhenOptionsUsedInAotProject()
+    public void Generator_NoDiagnostic_WhenOptionsWithPrimitivesUsedInAotProject()
     {
+        // Options with primitive types should work in AOT projects (we generate direct binding code)
         var source = """
             using NexusLabs.Needlr.Generators;
             
@@ -32,6 +34,9 @@ public sealed class OptionsAotCompatibilityTests
                 public class AppSettings
                 {
                     public string ApiKey { get; set; } = "";
+                    public int Timeout { get; set; }
+                    public bool EnableFeature { get; set; }
+                    public double RetryDelay { get; set; }
                 }
             }
             """;
@@ -39,12 +44,11 @@ public sealed class OptionsAotCompatibilityTests
         var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
 
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
-        Assert.Single(ndlrgen020);
-        Assert.Contains("AppSettings", ndlrgen020[0].GetMessage());
+        Assert.Empty(ndlrgen020);
     }
 
     [Fact]
-    public void Generator_EmitsDiagnostic_WhenOptionsUsedInIsAotCompatibleProject()
+    public void Generator_NoDiagnostic_WhenOptionsWithPrimitivesUsedInIsAotCompatibleProject()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -57,6 +61,7 @@ public sealed class OptionsAotCompatibilityTests
                 public class DatabaseOptions
                 {
                     public string ConnectionString { get; set; } = "";
+                    public int CommandTimeout { get; set; }
                 }
             }
             """;
@@ -64,8 +69,39 @@ public sealed class OptionsAotCompatibilityTests
         var diagnostics = RunGeneratorWithAotEnabled(source, isAotCompatible: true);
 
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
+        Assert.Empty(ndlrgen020);
+    }
+
+    [Fact]
+    public void Generator_EmitsDiagnostic_WhenOptionsHasUnsupportedPropertyType()
+    {
+        // Options with nested objects or collections are not yet supported in AOT
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                public class NestedSettings
+                {
+                    public string Value { get; set; } = "";
+                }
+
+                [Options]
+                public class AppSettings
+                {
+                    public NestedSettings Nested { get; set; } = new();
+                }
+            }
+            """;
+
+        var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
+
+        var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
         Assert.Single(ndlrgen020);
-        Assert.Contains("DatabaseOptions", ndlrgen020[0].GetMessage());
+        Assert.Contains("AppSettings", ndlrgen020[0].GetMessage());
     }
 
     [Fact]
@@ -114,7 +150,42 @@ public sealed class OptionsAotCompatibilityTests
     }
 
     [Fact]
-    public void Generator_EmitsMultipleDiagnostics_WhenMultipleOptionsInAotProject()
+    public void Generator_EmitsDiagnostic_OnlyForOptionsWithUnsupportedTypes()
+    {
+        // First options has only primitives (supported), second has a list (unsupported)
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options]
+                public class SupportedOptions
+                {
+                    public string Value { get; set; } = "";
+                    public int Number { get; set; }
+                }
+
+                [Options]
+                public class UnsupportedOptions
+                {
+                    public List<string> Items { get; set; } = new();
+                }
+            }
+            """;
+
+        var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
+
+        var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
+        Assert.Single(ndlrgen020);
+        Assert.Contains("UnsupportedOptions", ndlrgen020[0].GetMessage());
+        Assert.DoesNotContain("SupportedOptions", string.Join(",", ndlrgen020.Select(d => d.GetMessage())));
+    }
+
+    [Fact]
+    public void Generator_NoDiagnostic_ForNullablePrimitives()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -124,15 +195,11 @@ public sealed class OptionsAotCompatibilityTests
             namespace TestApp
             {
                 [Options]
-                public class FirstOptions
+                public class NullableOptions
                 {
-                    public string Value { get; set; } = "";
-                }
-
-                [Options]
-                public class SecondOptions
-                {
-                    public int Number { get; set; }
+                    public string? NullableString { get; set; }
+                    public int? NullableInt { get; set; }
+                    public bool? NullableBool { get; set; }
                 }
             }
             """;
@@ -140,12 +207,77 @@ public sealed class OptionsAotCompatibilityTests
         var diagnostics = RunGeneratorWithAotEnabled(source, publishAot: true);
 
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
-        Assert.Equal(2, ndlrgen020.Count);
-        Assert.Contains(ndlrgen020, d => d.GetMessage().Contains("FirstOptions"));
-        Assert.Contains(ndlrgen020, d => d.GetMessage().Contains("SecondOptions"));
+        Assert.Empty(ndlrgen020);
+    }
+
+    [Fact]
+    public void Generator_GeneratesAotBindingCode_ForPrimitiveTypes()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options]
+                public class DatabaseOptions
+                {
+                    public string ConnectionString { get; set; } = "";
+                    public int CommandTimeout { get; set; }
+                    public bool EnableRetry { get; set; }
+                    public double RetryDelay { get; set; }
+                }
+            }
+            """;
+
+        var (generatedCode, _) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot: true);
+
+        // Should use AddOptions pattern with direct binding
+        Assert.Contains("AddOptions<global::TestApp.DatabaseOptions>()", generatedCode);
+        Assert.Contains(".Configure<IConfiguration>((options, config) =>", generatedCode);
+        Assert.Contains("section[\"ConnectionString\"]", generatedCode);
+        Assert.Contains("int.TryParse", generatedCode);
+        Assert.Contains("bool.TryParse", generatedCode);
+        Assert.Contains("double.TryParse", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_UsesReflectionBinding_ForNonAotProject()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            
+            [assembly: GenerateTypeRegistry]
+            
+            namespace TestApp
+            {
+                [Options]
+                public class CacheSettings
+                {
+                    public int CacheTimeoutSeconds { get; set; } = 300;
+                }
+            }
+            """;
+
+        var (generatedCode, _) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot: false, isAotCompatible: false);
+
+        // Should use OptionsConfigurationServiceCollectionExtensions.Configure (reflection-based)
+        Assert.Contains("OptionsConfigurationServiceCollectionExtensions.Configure<global::TestApp.CacheSettings>", generatedCode);
+        // Should NOT use AddOptions pattern with direct binding
+        Assert.DoesNotContain(".Configure<IConfiguration>((options, config) =>", generatedCode);
     }
 
     private static ImmutableArray<Diagnostic> RunGeneratorWithAotEnabled(
+        string source,
+        bool publishAot = false,
+        bool isAotCompatible = false)
+    {
+        var (_, diagnostics) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot, isAotCompatible);
+        return diagnostics;
+    }
+
+    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithAotEnabled_GetOutput(
         string source,
         bool publishAot = false,
         bool isAotCompatible = false)
@@ -175,9 +307,23 @@ public sealed class OptionsAotCompatibilityTests
             parseOptions: (CSharpParseOptions)syntaxTree.Options,
             optionsProvider: optionsProvider);
 
-        driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-        return diagnostics;
+        // Find the TypeRegistry.g.cs output
+        var generatedCode = "";
+        var runResult = driver.GetRunResult();
+        foreach (var result in runResult.Results)
+        {
+            foreach (var source2 in result.GeneratedSources)
+            {
+                if (source2.HintName == "TypeRegistry.g.cs")
+                {
+                    generatedCode = source2.SourceText.ToString();
+                }
+            }
+        }
+
+        return (generatedCode, diagnostics);
     }
 
     private sealed class AotTestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider

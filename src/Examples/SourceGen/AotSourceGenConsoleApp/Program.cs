@@ -3,19 +3,42 @@ using AotSourceGenConsolePlugin.Generated;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
 
-var config = new ConfigurationManager();
-config["Greeting"] = "hello";
-config["Weather:Prefix"] = "AOT";
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true)
+    .Build();
+
+// Also set in-memory values for compatibility with existing demo
+var configManager = new ConfigurationManager();
+configManager.AddConfiguration(config);
+configManager["Greeting"] = "hello";
+configManager["Weather:Prefix"] = "AOT";
 
 var provider = new Syringe()
     .UsingSourceGen()
-    .BuildServiceProvider(config);
+    .BuildServiceProvider(configManager);
 
 Console.WriteLine("AotSourceGenConsoleApp running. Reflection disabled; demonstrating source-gen registry + plugins.");
+Console.WriteLine();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AOT OPTIONS DEMO
+// ─────────────────────────────────────────────────────────────────────────────
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine("AOT OPTIONS DEMO");
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine();
+
+var dbOptions = provider.GetRequiredService<IOptions<DatabaseOptions>>();
+Console.WriteLine("DatabaseOptions from [Options] + AOT source generation:");
+Console.WriteLine($"  ConnectionString:   {dbOptions.Value.ConnectionString}");
+Console.WriteLine($"  CommandTimeout:     {dbOptions.Value.CommandTimeout}");
+Console.WriteLine($"  EnableRetry:        {dbOptions.Value.EnableRetry}");
+Console.WriteLine($"  RetryDelaySeconds:  {dbOptions.Value.RetryDelaySeconds}");
 Console.WriteLine();
 
 var weather = provider.GetRequiredService<IConsoleWeatherProvider>();
