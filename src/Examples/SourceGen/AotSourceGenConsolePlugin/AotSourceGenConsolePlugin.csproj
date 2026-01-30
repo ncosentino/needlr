@@ -22,6 +22,8 @@
 	<ItemGroup>
 		<!-- Microsoft.Extensions.Options is required for AOT-compatible options binding -->
 		<PackageReference Include="Microsoft.Extensions.Options" />
+		<!-- Microsoft.Extensions.Options.DataAnnotations is required for ValidateDataAnnotations() -->
+		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -73,6 +73,29 @@ public partial record SecurityOptions(
     int TokenExpirySeconds
 );
 
+/// <summary>
+/// Validated options for testing AOT-compatible validation.
+/// Uses ValidateOnStart with DataAnnotations and a custom validator.
+/// </summary>
+[Options("Api", ValidateOnStart = true)]
+public class ApiOptions
+{
+    [System.ComponentModel.DataAnnotations.Required]
+    [System.ComponentModel.DataAnnotations.Url]
+    public string Endpoint { get; set; } = "";
+    
+    [System.ComponentModel.DataAnnotations.Range(1, 300)]
+    public int TimeoutSeconds { get; set; } = 30;
+    
+    public string ApiKey { get; set; } = "";
+    
+    public IEnumerable<string> Validate()
+    {
+        if (string.IsNullOrWhiteSpace(ApiKey))
+            yield return "ApiKey is required";
+    }
+}
+
 public interface IConsoleWeatherProvider
 {
     string GetForecast();

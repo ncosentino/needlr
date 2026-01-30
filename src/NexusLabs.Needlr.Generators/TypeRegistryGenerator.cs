@@ -1095,6 +1095,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     {
         breadcrumbs.WriteInlineComment(builder, "        ", "AOT-compatible options binding (no reflection)");
 
+        var externalValidatorsToRegister = new HashSet<string>();
+
         foreach (var opt in options)
         {
             var typeName = opt.TypeName;
@@ -1129,15 +1131,39 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 propIndex++;
             }
             
-            builder.AppendLine("            });");
+            builder.Append("            })");
             
-            // Handle validation if needed
+            // Add validation chain if ValidateOnStart is enabled
+            if (opt.ValidateOnStart)
+            {
+                // Note: ValidateDataAnnotations() uses reflection and is NOT AOT-compatible.
+                // Only ValidateOnStart() is emitted. Custom validators still work.
+                // TODO: Add NDLRGEN022 warning for DataAnnotations usage in AOT
+                builder.AppendLine();
+                builder.Append("            .ValidateOnStart()");
+            }
+            
+            builder.AppendLine(";");
+            
+            // Handle custom validator method registration
             if (opt.ValidateOnStart && opt.HasValidatorMethod)
             {
                 var shortTypeName = GeneratorHelpers.GetShortTypeName(typeName);
                 var validatorClassName = $"global::{safeAssemblyName}.Generated.{shortTypeName}Validator";
                 builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Options.IValidateOptions<{typeName}>, {validatorClassName}>();");
+
+                // If external validator with instance method, register it too
+                if (opt.HasExternalValidator && opt.ValidatorMethod != null && !opt.ValidatorMethod.Value.IsStatic)
+                {
+                    externalValidatorsToRegister.Add(opt.ValidatorTypeName!);
+                }
             }
+        }
+
+        // Register external validators that have instance methods
+        foreach (var validatorType in externalValidatorsToRegister)
+        {
+            builder.AppendLine($"        services.AddSingleton<{validatorType}>();");
         }
     }
 

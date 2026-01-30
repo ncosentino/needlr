@@ -66,6 +66,14 @@ Console.WriteLine($"  RequireHttps:       {securityOptions.Value.RequireHttps}")
 Console.WriteLine($"  TokenExpirySeconds: {securityOptions.Value.TokenExpirySeconds}");
 Console.WriteLine();
 
+// Validated options demo (ValidateOnStart + DataAnnotations + custom validator)
+var apiOptions = provider.GetRequiredService<IOptions<ApiOptions>>();
+Console.WriteLine("ApiOptions (ValidateOnStart + custom validator) + AOT source generation:");
+Console.WriteLine($"  Endpoint:           {apiOptions.Value.Endpoint}");
+Console.WriteLine($"  TimeoutSeconds:     {apiOptions.Value.TimeoutSeconds}");
+Console.WriteLine($"  ApiKey:             {(string.IsNullOrEmpty(apiOptions.Value.ApiKey) ? "(empty)" : "***" + apiOptions.Value.ApiKey[^4..])}");
+Console.WriteLine();
+
 var weather = provider.GetRequiredService<IConsoleWeatherProvider>();
 var time = provider.GetRequiredService<IConsoleTimeProvider>();
 var manual = provider.GetRequiredService<IConsoleManualService>();
