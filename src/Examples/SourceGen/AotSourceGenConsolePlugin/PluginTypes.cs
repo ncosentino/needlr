@@ -96,6 +96,28 @@ public class ApiOptions
     }
 }
 
+/// <summary>
+/// Options with complex types for testing AOT-compatible complex binding.
+/// Demonstrates nested objects, lists, and dictionaries.
+/// </summary>
+[Options("Cluster")]
+public class ClusterOptions
+{
+    public string Name { get; set; } = "";
+    public NodeConfig Primary { get; set; } = new();
+    public List<string> Tags { get; set; } = new();
+    public Dictionary<string, int> Limits { get; set; } = new();
+}
+
+/// <summary>
+/// Nested configuration object for ClusterOptions.
+/// </summary>
+public class NodeConfig
+{
+    public string Host { get; set; } = "";
+    public int Port { get; set; } = 8080;
+}
+
 public interface IConsoleWeatherProvider
 {
     string GetForecast();

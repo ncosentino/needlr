@@ -75,8 +75,8 @@ public sealed class OptionsAotCompatibilityTests
     [Fact]
     public void Generator_SkipsUnsupportedPropertyTypes_Silently_MatchingNonAotBehavior()
     {
-        // Options with nested objects or collections are silently skipped in AOT
-        // This matches ConfigurationBinder behavior in non-AOT
+        // Options with nested objects are now properly bound in AOT
+        // This achieves feature parity with non-AOT ConfigurationBinder
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -101,14 +101,13 @@ public sealed class OptionsAotCompatibilityTests
 
         var (generatedCode, diagnostics) = RunGeneratorWithAotEnabled_GetOutput(source, publishAot: true);
 
-        // No NDLRGEN020 - we achieve parity by silently skipping unsupported types
+        // No NDLRGEN020 - we achieve parity by actually supporting the type
         var ndlrgen020 = diagnostics.Where(d => d.Id == "NDLRGEN020").ToList();
         Assert.Empty(ndlrgen020);
 
-        // Supported property should still be bound
+        // Both properties should be bound (nested objects now supported)
         Assert.Contains("section[\"Name\"]", generatedCode);
-        // Unsupported property should be skipped with a comment
-        Assert.Contains("Skipped:", generatedCode);
+        Assert.Contains("GetSection(\"Nested\")", generatedCode);
     }
 
     [Fact]
@@ -159,7 +158,7 @@ public sealed class OptionsAotCompatibilityTests
     [Fact]
     public void Generator_SkipsCollectionProperties_Silently_MatchingNonAotBehavior()
     {
-        // Collections are silently skipped in AOT, matching non-AOT behavior
+        // Collections are now properly bound in AOT, matching non-AOT behavior
         var source = """
             using NexusLabs.Needlr.Generators;
             using System.Collections.Generic;
@@ -193,8 +192,9 @@ public sealed class OptionsAotCompatibilityTests
         // Supported properties should be bound
         Assert.Contains("section[\"Value\"]", generatedCode);
         Assert.Contains("section[\"Name\"]", generatedCode);
-        // Collection should be skipped
-        Assert.Contains("Skipped:", generatedCode);
+        // Collection should now be bound (not skipped)
+        Assert.Contains("GetSection(\"Items\")", generatedCode);
+        Assert.Contains("GetChildren()", generatedCode);
     }
 
     [Fact]

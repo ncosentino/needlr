@@ -359,7 +359,16 @@ internal readonly struct PositionalRecordParameter
 /// </summary>
 internal readonly struct OptionsPropertyInfo
 {
-    public OptionsPropertyInfo(string name, string typeName, bool isNullable, bool hasInitOnlySetter, bool isEnum = false, string? enumTypeName = null)
+    public OptionsPropertyInfo(
+        string name, 
+        string typeName, 
+        bool isNullable, 
+        bool hasInitOnlySetter, 
+        bool isEnum = false, 
+        string? enumTypeName = null,
+        ComplexTypeKind complexTypeKind = ComplexTypeKind.None,
+        string? elementTypeName = null,
+        IReadOnlyList<OptionsPropertyInfo>? nestedProperties = null)
     {
         Name = name;
         TypeName = typeName;
@@ -367,6 +376,9 @@ internal readonly struct OptionsPropertyInfo
         HasInitOnlySetter = hasInitOnlySetter;
         IsEnum = isEnum;
         EnumTypeName = enumTypeName;
+        ComplexTypeKind = complexTypeKind;
+        ElementTypeName = elementTypeName;
+        NestedProperties = nestedProperties;
     }
 
     /// <summary>Property name.</summary>
@@ -386,6 +398,32 @@ internal readonly struct OptionsPropertyInfo
 
     /// <summary>The underlying enum type name (for nullable enums, this is the non-nullable type).</summary>
     public string? EnumTypeName { get; }
+    
+    /// <summary>The kind of complex type (nested object, array, list, dictionary).</summary>
+    public ComplexTypeKind ComplexTypeKind { get; }
+    
+    /// <summary>For collections, the element type. For dictionaries, the value type.</summary>
+    public string? ElementTypeName { get; }
+    
+    /// <summary>For nested objects and collection element types, the bindable properties.</summary>
+    public IReadOnlyList<OptionsPropertyInfo>? NestedProperties { get; }
+}
+
+/// <summary>
+/// Identifies the kind of complex type for AOT binding generation.
+/// </summary>
+internal enum ComplexTypeKind
+{
+    /// <summary>Not a complex type (primitive, enum, etc).</summary>
+    None,
+    /// <summary>A nested object with properties to bind.</summary>
+    NestedObject,
+    /// <summary>An array type (T[]).</summary>
+    Array,
+    /// <summary>A list type (List&lt;T&gt;, IList&lt;T&gt;, etc).</summary>
+    List,
+    /// <summary>A dictionary type (Dictionary&lt;string, T&gt;).</summary>
+    Dictionary
 }
 
 /// <summary>

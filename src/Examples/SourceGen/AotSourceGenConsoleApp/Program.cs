@@ -74,6 +74,15 @@ Console.WriteLine($"  TimeoutSeconds:     {apiOptions.Value.TimeoutSeconds}");
 Console.WriteLine($"  ApiKey:             {(string.IsNullOrEmpty(apiOptions.Value.ApiKey) ? "(empty)" : "***" + apiOptions.Value.ApiKey[^4..])}");
 Console.WriteLine();
 
+var clusterOptions = provider.GetRequiredService<IOptions<ClusterOptions>>();
+Console.WriteLine("ClusterOptions (complex types) + AOT source generation:");
+Console.WriteLine($"  Name:               {clusterOptions.Value.Name}");
+Console.WriteLine($"  Primary.Host:       {clusterOptions.Value.Primary.Host}");
+Console.WriteLine($"  Primary.Port:       {clusterOptions.Value.Primary.Port}");
+Console.WriteLine($"  Tags:               [{string.Join(", ", clusterOptions.Value.Tags)}]");
+Console.WriteLine($"  Limits:             {string.Join(", ", clusterOptions.Value.Limits.Select(kv => $"{kv.Key}={kv.Value}"))}");
+Console.WriteLine();
+
 var weather = provider.GetRequiredService<IConsoleWeatherProvider>();
 var time = provider.GetRequiredService<IConsoleTimeProvider>();
 var manual = provider.GetRequiredService<IConsoleManualService>();
