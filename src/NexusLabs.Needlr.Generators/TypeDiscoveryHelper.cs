@@ -667,6 +667,13 @@ internal static class TypeDiscoveryHelper
         if (HasUnsatisfiedRequiredMembers(typeSymbol))
             return false;
 
+        // Skip types with [DoNotAutoRegister] directly on the type itself
+        // NOTE: We use the "Direct" version because [DoNotAutoRegister] on interfaces
+        // (like IServiceCollectionPlugin) means "don't inject as DI service", not
+        // "don't discover plugins implementing this interface"
+        if (HasDoNotAutoRegisterAttributeDirect(typeSymbol))
+            return false;
+
         return true;
     }
 

@@ -246,3 +246,119 @@ public sealed class TestNotificationHubRegistration : IHubRegistrationPlugin
     public string HubPath => "/notifications";
     public Type HubType => typeof(TestNotificationHub);
 }
+
+/// <summary>
+/// Test hub registration plugin marked with [DoNotAutoRegister].
+/// This should NOT be discovered by plugin factories.
+/// </summary>
+[DoNotAutoRegister]
+public sealed class ManuallyRegisteredHubPlugin : IHubRegistrationPlugin
+{
+    public string HubPath => "/manual";
+    public Type HubType => typeof(TestChatHub);
+}
+
+/// <summary>
+/// Tests verifying that [DoNotAutoRegister] prevents duplicate hub registration.
+/// This was the root cause of AmbiguousMatchException when hubs were registered twice.
+/// </summary>
+public sealed class DoNotAutoRegisterPluginTests
+{
+    [Fact]
+    public void ReflectionFactory_DoNotAutoRegister_ExcludesPluginFromDiscovery()
+    {
+        var assemblies = new[] { typeof(ManuallyRegisteredHubPlugin).Assembly };
+        var reflectionFactory = new ReflectionPluginFactory();
+
+        var plugins = reflectionFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .ToList();
+
+        // ManuallyRegisteredHubPlugin should NOT be discovered
+        Assert.DoesNotContain(plugins, p => p.GetType() == typeof(ManuallyRegisteredHubPlugin));
+        
+        // But the other registrations should still work
+        Assert.Contains(plugins, p => p.GetType() == typeof(TestChatHubRegistration));
+        Assert.Contains(plugins, p => p.GetType() == typeof(TestNotificationHubRegistration));
+    }
+
+    [Fact]
+    public void SourceGenFactory_DoNotAutoRegister_ExcludesPluginFromDiscovery()
+    {
+        var assemblies = new[] { typeof(ManuallyRegisteredHubPlugin).Assembly };
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.SignalR.Tests.Generated.TypeRegistry.GetPluginTypes);
+
+        var plugins = generatedFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .ToList();
+
+        // ManuallyRegisteredHubPlugin should NOT be discovered
+        Assert.DoesNotContain(plugins, p => p.GetType() == typeof(ManuallyRegisteredHubPlugin));
+        
+        // But the other registrations should still work
+        Assert.Contains(plugins, p => p.GetType() == typeof(TestChatHubRegistration));
+        Assert.Contains(plugins, p => p.GetType() == typeof(TestNotificationHubRegistration));
+    }
+
+    [Fact]
+    public void DoNotAutoRegister_PreventsDuplicateHubRegistration()
+    {
+        // This test verifies the fix for AmbiguousMatchException
+        // When a hub registration plugin has [DoNotAutoRegister], it should NOT
+        // be discovered by plugin factories, preventing the same hub from being
+        // registered twice (once manually, once via auto-discovery).
+        
+        var assemblies = new[] { typeof(ManuallyRegisteredHubPlugin).Assembly };
+        var reflectionFactory = new ReflectionPluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.SignalR.Tests.Generated.TypeRegistry.GetPluginTypes);
+
+        var reflectionPlugins = reflectionFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .ToList();
+
+        var generatedPlugins = generatedFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .ToList();
+
+        // Neither factory should find the ManuallyRegisteredHubPlugin
+        Assert.DoesNotContain(reflectionPlugins, p => p.GetType() == typeof(ManuallyRegisteredHubPlugin));
+        Assert.DoesNotContain(generatedPlugins, p => p.GetType() == typeof(ManuallyRegisteredHubPlugin));
+
+        // Count should be equal (parity)
+        Assert.Equal(reflectionPlugins.Count, generatedPlugins.Count);
+        
+        // No duplicate paths in discovered plugins
+        var reflectionPaths = reflectionPlugins.Select(p => p.HubPath).ToList();
+        Assert.Equal(reflectionPaths.Distinct().Count(), reflectionPaths.Count);
+    }
+
+    [Fact]
+    public void Parity_DoNotAutoRegister_BothFactoriesExcludeSamePlugins()
+    {
+        var assemblies = new[] { typeof(ManuallyRegisteredHubPlugin).Assembly };
+        var reflectionFactory = new ReflectionPluginFactory();
+        var generatedFactory = new GeneratedPluginFactory(
+            NexusLabs.Needlr.SignalR.Tests.Generated.TypeRegistry.GetPluginTypes);
+
+        var reflectionTypes = reflectionFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .Select(p => p.GetType().FullName)
+            .OrderBy(n => n)
+            .ToList();
+
+        var generatedTypes = generatedFactory
+            .CreatePluginsFromAssemblies<IHubRegistrationPlugin>(assemblies)
+            .Select(p => p.GetType().FullName)
+            .OrderBy(n => n)
+            .ToList();
+
+        // Both should discover the same set of plugins
+        Assert.Equal(reflectionTypes, generatedTypes);
+        
+        // Neither should contain the excluded plugin
+        Assert.DoesNotContain("NexusLabs.Needlr.SignalR.Tests.ManuallyRegisteredHubPlugin", reflectionTypes);
+        Assert.DoesNotContain("NexusLabs.Needlr.SignalR.Tests.ManuallyRegisteredHubPlugin", generatedTypes);
+    }
+}

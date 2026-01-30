@@ -145,8 +145,9 @@ public sealed class AnotherTestPlugin : ITestPlugin
 }
 
 /// <summary>
-/// A plugin with DoNotAutoRegister attribute - should still be discoverable as a plugin
-/// but excluded from auto-registration as a service. Plugin discovery doesn't use this attribute.
+/// A plugin with DoNotAutoRegister attribute - should NOT be discovered as a plugin.
+/// This attribute is used to explicitly opt out of plugin discovery (e.g., when a plugin
+/// should only be used with explicit manual registration or reflection-based approaches).
 /// </summary>
 [DoNotAutoRegister]
 public sealed class ManualRegistrationTestPlugin : ITestPlugin

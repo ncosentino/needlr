@@ -10,11 +10,15 @@
     <Project Path="Examples/Bundle/BundleExamplePlugin/BundleExamplePlugin.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/">
-    <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
+    <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
+  </Folder>
+  <Folder Name="/Examples/SourceGen/AotConsole/">
     <Project Path="Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />
     <Project Path="Examples/SourceGen/AotSourceGenConsolePlugin/AotSourceGenConsolePlugin.csproj" />
+  </Folder>
+  <Folder Name="/Examples/SourceGen/AotWebApp/">
+    <Project Path="Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj" />
     <Project Path="Examples/SourceGen/AotSourceGenPlugin/AotSourceGenPlugin.csproj" />
-    <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/TransitiveDependencyDemo/">
     <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureA/TransitiveDemo.FeatureA.csproj" />
@@ -31,6 +35,9 @@
   </Folder>
   <Folder Name="/Examples/SemanticKernel/">
     <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
+  </Folder>
+  <Folder Name="/Examples/SignalR/">
+    <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
   </Folder>
   <Folder Name="/Examples/Hosting/">
   </Folder>

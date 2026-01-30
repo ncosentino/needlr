@@ -37,6 +37,14 @@ These examples use compile-time source generation. **Recommended for:**
 | `AotSourceGenPlugin` | Plugin assembly for the web app |
 | `MinimalWebApiSourceGen` | Minimal API with source-generated discovery |
 
+### `SignalR/` - SignalR Integration
+
+Examples showing integration with ASP.NET Core SignalR:
+
+| Example | Description |
+|---------|-------------|
+| `ChatHubExample` | Real-time chat application using Needlr's SignalR integration with source-generated hub registration |
+
 ### `SemanticKernel/` - Semantic Kernel Integration
 
 Examples showing integration with Microsoft Semantic Kernel:

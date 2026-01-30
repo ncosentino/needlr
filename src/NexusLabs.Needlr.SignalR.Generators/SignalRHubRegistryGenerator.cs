@@ -248,6 +248,8 @@ public class SignalRHubRegistryGenerator : IIncrementalGenerator
         builder.AppendLine();
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine("using Microsoft.AspNetCore.Builder;");
+        builder.AppendLine("using Microsoft.AspNetCore.SignalR;");
         builder.AppendLine();
         builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
         builder.AppendLine();
@@ -277,6 +279,31 @@ public class SignalRHubRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// Gets the number of hub registrations discovered at compile time.");
         builder.AppendLine("    /// </summary>");
         builder.AppendLine($"    public static int Count => {registrations.Count};");
+        builder.AppendLine("}");
+        builder.AppendLine();
+
+        // Generate MapGeneratedHubs extension method
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Extension methods for mapping SignalR hubs using source-generated registrations.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.SignalR.Generators\", \"1.0.0\")]");
+        builder.AppendLine("public static class SignalRHubExtensions");
+        builder.AppendLine("{");
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Maps all SignalR hubs discovered at compile time. AOT-safe, no reflection.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"app\">The web application to configure.</param>");
+        builder.AppendLine("    /// <returns>The web application for chaining.</returns>");
+        builder.AppendLine("    public static WebApplication MapGeneratedHubs(this WebApplication app)");
+        builder.AppendLine("    {");
+
+        foreach (var reg in registrations)
+        {
+            builder.AppendLine($"        app.MapHub<{reg.HubTypeName}>(\"{EscapeStringLiteral(reg.HubPath)}\");");
+        }
+
+        builder.AppendLine("        return app;");
+        builder.AppendLine("    }");
         builder.AppendLine("}");
 
         return builder.ToString();
