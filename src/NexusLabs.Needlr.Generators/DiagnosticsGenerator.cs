@@ -11,7 +11,7 @@ using NexusLabs.Needlr.Generators.Models;
 namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
-/// Generates diagnostic markdown output files (DependencyGraph.md, LifetimeSummary.md, RegistrationIndex.md, AnalyzerStatus.md).
+/// Generates diagnostic markdown output files (DependencyGraph.md, LifetimeSummary.md, RegistrationIndex.md, AnalyzerStatus.md, OptionsSummary.md).
 /// </summary>
 internal static class DiagnosticsGenerator
 {
@@ -61,6 +61,11 @@ internal static class DiagnosticsGenerator
         var analyzerStatusContent = GenerateAnalyzerStatusMarkdown(timestamp);
         builder.AppendLine("    /// <summary>AnalyzerStatus.md content</summary>");
         builder.AppendLine($"    public const string AnalyzerStatus = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(analyzerStatusContent)}\";");
+        builder.AppendLine();
+
+        var optionsSummaryContent = GenerateOptionsSummaryMarkdown(discoveryResult, assemblyName, timestamp, options.TypeFilter);
+        builder.AppendLine("    /// <summary>OptionsSummary.md content</summary>");
+        builder.AppendLine($"    public const string OptionsSummary = @\"{GeneratorHelpers.EscapeVerbatimStringLiteral(optionsSummaryContent)}\";");
 
         builder.AppendLine("}");
 
@@ -1026,6 +1031,175 @@ internal static class DiagnosticsGenerator
         }
 
         return hubs.OrderByDescending(h => h.DependentCount).ToList();
+    }
+
+    internal static string GenerateOptionsSummaryMarkdown(DiscoveryResult discovery, string assemblyName, string timestamp, HashSet<string> typeFilter)
+    {
+        var sb = new StringBuilder();
+        var options = FilterOptions(discovery.Options, typeFilter);
+
+        sb.AppendLine("# Needlr Options Summary");
+        sb.AppendLine();
+        sb.AppendLine($"Generated: {timestamp} UTC");
+        sb.AppendLine($"Assembly: {assemblyName}");
+        sb.AppendLine();
+
+        if (options.Count == 0)
+        {
+            sb.AppendLine("*No options classes discovered. Add `[Options]` attribute to configuration classes.*");
+            sb.AppendLine();
+            return sb.ToString();
+        }
+
+        sb.AppendLine($"## Overview");
+        sb.AppendLine();
+        sb.AppendLine($"| Metric | Count |");
+        sb.AppendLine($"|:-------|------:|");
+        sb.AppendLine($"| Total Options Classes | {options.Count} |");
+        sb.AppendLine($"| Named Options | {options.Count(o => o.IsNamed)} |");
+        sb.AppendLine($"| With Validation | {options.Count(o => o.ValidateOnStart)} |");
+        sb.AppendLine($"| With External Validator | {options.Count(o => o.HasExternalValidator)} |");
+        sb.AppendLine();
+
+        // Options table
+        sb.AppendLine("## Options Classes");
+        sb.AppendLine();
+        sb.AppendLine("| Class | Section | Name | ValidateOnStart | Validator |");
+        sb.AppendLine("|:------|:--------|:-----|:---------------:|:----------|");
+
+        foreach (var opt in options.OrderBy(o => o.SectionName).ThenBy(o => o.TypeName))
+        {
+            var shortName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
+            var namedLabel = opt.IsNamed ? opt.Name : "-";
+            var validateIcon = opt.ValidateOnStart ? "✅" : "❌";
+            var validatorInfo = GetValidatorDescription(opt);
+
+            sb.AppendLine($"| `{shortName}` | `{opt.SectionName}` | {namedLabel} | {validateIcon} | {validatorInfo} |");
+        }
+
+        sb.AppendLine();
+
+        // Detailed breakdown by section
+        var sectionGroups = options.GroupBy(o => o.SectionName).OrderBy(g => g.Key);
+        
+        sb.AppendLine("## Configuration Sections");
+        sb.AppendLine();
+
+        foreach (var group in sectionGroups)
+        {
+            sb.AppendLine($"### `{group.Key}`");
+            sb.AppendLine();
+
+            foreach (var opt in group.OrderBy(o => o.TypeName))
+            {
+                var shortName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
+                sb.AppendLine($"**{shortName}**");
+                sb.AppendLine();
+                sb.AppendLine($"- Configuration Path: `{group.Key}`");
+                
+                if (opt.IsNamed)
+                    sb.AppendLine($"- Named Options: `{opt.Name}`");
+                
+                sb.AppendLine($"- Validate On Start: {(opt.ValidateOnStart ? "Yes" : "No")}");
+
+                if (opt.HasExternalValidator)
+                {
+                    sb.AppendLine($"- External Validator: `{GeneratorHelpers.GetShortTypeName(opt.ValidatorTypeName!)}`");
+                }
+
+                if (opt.HasValidatorMethod)
+                {
+                    var methodType = opt.ValidatorMethod!.Value.IsStatic ? "static" : "instance";
+                    sb.AppendLine($"- Validation Method: `{opt.ValidatorMethod.Value.MethodName}()` ({methodType})");
+                }
+                else if (opt.ValidateMethodOverride != null)
+                {
+                    sb.AppendLine($"- Validation Method: `{opt.ValidateMethodOverride}()` (specified but not found)");
+                }
+
+                if (opt.SourceFilePath != null)
+                {
+                    // Use just the filename for brevity in markdown
+                    var fileName = System.IO.Path.GetFileName(opt.SourceFilePath);
+                    sb.AppendLine($"- Source: `{fileName}`");
+                }
+
+                sb.AppendLine();
+            }
+        }
+
+        // Validation warnings
+        var missingValidation = options.Where(o => !o.ValidateOnStart && (o.HasValidatorMethod || o.HasExternalValidator)).ToList();
+        if (missingValidation.Count > 0)
+        {
+            sb.AppendLine("## ⚠️ Potential Issues");
+            sb.AppendLine();
+            sb.AppendLine("The following options have validators configured but `ValidateOnStart` is disabled:");
+            sb.AppendLine();
+
+            foreach (var opt in missingValidation)
+            {
+                var shortName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
+                sb.AppendLine($"- `{shortName}`: Has validator but won't run at startup");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("*Set `ValidateOnStart = true` in the `[Options]` attribute to enable startup validation.*");
+            sb.AppendLine();
+        }
+
+        // Usage example
+        sb.AppendLine("## Usage");
+        sb.AppendLine();
+        sb.AppendLine("Options are automatically registered via source generation. Access them via:");
+        sb.AppendLine();
+        sb.AppendLine("```csharp");
+        sb.AppendLine("// Constructor injection");
+        sb.AppendLine("public MyService(IOptions<DatabaseOptions> options) { }");
+        sb.AppendLine();
+        sb.AppendLine("// Named options");
+        sb.AppendLine("public MyService(IOptionsSnapshot<ConnectionOptions> options)");
+        sb.AppendLine("{");
+        sb.AppendLine("    var primary = options.Get(\"Primary\");");
+        sb.AppendLine("}");
+        sb.AppendLine("```");
+        sb.AppendLine();
+
+        return sb.ToString();
+    }
+
+    private static string GetValidatorDescription(DiscoveredOptions opt)
+    {
+        if (opt.HasExternalValidator)
+        {
+            var validatorShort = GeneratorHelpers.GetShortTypeName(opt.ValidatorTypeName!);
+            return $"`{validatorShort}`";
+        }
+
+        if (opt.HasValidatorMethod)
+        {
+            var methodType = opt.ValidatorMethod!.Value.IsStatic ? "static" : "self";
+            return $"`{opt.ValidatorMethod.Value.MethodName}()` ({methodType})";
+        }
+
+        if (opt.ValidateMethodOverride != null)
+        {
+            return $"`{opt.ValidateMethodOverride}()` (not found)";
+        }
+
+        return "-";
+    }
+
+    internal static IReadOnlyList<DiscoveredOptions> FilterOptions(IReadOnlyList<DiscoveredOptions> options, HashSet<string> filter)
+    {
+        if (filter == null || filter.Count == 0)
+            return options;
+
+        return options.Where(o => 
+            filter.Contains(o.TypeName) ||
+            filter.Contains(GeneratorHelpers.GetShortTypeName(o.TypeName)) ||
+            filter.Contains(GeneratorHelpers.StripGlobalPrefix(o.TypeName)))
+                      .ToList();
     }
 }
 
