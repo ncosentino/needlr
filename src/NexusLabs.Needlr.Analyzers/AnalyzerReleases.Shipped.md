@@ -1,14 +1,6 @@
 ; Shipped analyzer releases
 ; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
-## Release 0.0.2-alpha.18
-
-### New Rules
-
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
-NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument must be implemented by class
-
 ## Release 0.0.2
 
 ### New Rules
@@ -26,3 +18,4 @@ NDLRCOR008 | NexusLabs.Needlr | Warning | InterceptAttributeAnalyzer, [Intercept
 NDLRCOR009 | NexusLabs.Needlr | Info | LazyResolutionAnalyzer, Lazy<T> references undiscovered type
 NDLRCOR010 | NexusLabs.Needlr | Info | CollectionResolutionAnalyzer, IEnumerable<T> has no discovered implementations
 NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, [FromKeyedServices] references unknown key
+NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument must be implemented by class

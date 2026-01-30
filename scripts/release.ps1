@@ -80,6 +80,23 @@ if (Test-Path $changelogPath) {
 
 if (-not $DryRun) { Ensure-CleanRepo }
 
+# Build validation - MUST pass before any release actions
+Write-Host "Validating build..." -ForegroundColor Cyan
+$buildProjects = @(
+  "src\NexusLabs.Needlr",
+  "src\NexusLabs.Needlr.Analyzers",
+  "src\NexusLabs.Needlr.Generators"
+)
+foreach ($proj in $buildProjects) {
+  $buildResult = & dotnet build $proj -c Release -v q 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "BUILD FAILED for $proj" -ForegroundColor Red
+    Write-Host $buildResult
+    throw "Build validation failed. Fix build errors before releasing."
+  }
+}
+Write-Host "Build validation passed." -ForegroundColor Green
+
 if ($DryRun) {
   Write-Host ""
   Write-Host "=== CHANGELOG ENTRY ===" -ForegroundColor Cyan
