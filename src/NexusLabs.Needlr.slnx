@@ -39,6 +39,9 @@
   <Folder Name="/Examples/SignalR/">
     <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
   </Folder>
+  <Folder Name="/Examples/FluentValidation/">
+    <Project Path="Examples/FluentValidation/OptionsValidationExample/OptionsValidationExample.csproj" />
+  </Folder>
   <Folder Name="/Examples/Hosting/">
   </Folder>
   <Folder Name="/Examples/Hosting/Reflection/">

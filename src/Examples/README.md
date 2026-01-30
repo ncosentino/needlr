@@ -53,6 +53,14 @@ Examples showing integration with Microsoft Semantic Kernel:
 |---------|-------------|
 | `SimpleSemanticKernelApp` | Basic Semantic Kernel integration with Needlr |
 
+### `FluentValidation/` - Options Validation Examples
+
+Examples showing FluentValidation integration for options classes:
+
+| Example | Description |
+|---------|-------------|
+| `OptionsValidationExample` | Web API demonstrating `[Options]` with FluentValidation validators for Database, SMTP, and API client configuration |
+
 ### `Hosting/` - Generic Host Examples
 
 Examples showing Needlr integration with the Generic Host for worker services and console applications:
