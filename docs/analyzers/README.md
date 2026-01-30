@@ -44,6 +44,13 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN006](NDLRGEN006.md) | Error | [OpenDecoratorFor] type must be an open generic interface |
 | [NDLRGEN007](NDLRGEN007.md) | Error | [OpenDecoratorFor] decorator must be an open generic class |
 | [NDLRGEN008](NDLRGEN008.md) | Error | [OpenDecoratorFor] decorator must implement the interface |
+| [NDLRGEN014](NDLRGEN014.md) | Error | [Options] Validator type has no validation method |
+| [NDLRGEN015](NDLRGEN015.md) | Error | [Options] Validator type mismatch |
+| [NDLRGEN016](NDLRGEN016.md) | Error | [Options] Validation method not found |
+| [NDLRGEN017](NDLRGEN017.md) | Error | [Options] Validation method has wrong signature |
+| [NDLRGEN018](NDLRGEN018.md) | Warning | [Options] Validator won't run (ValidateOnStart is false) |
+| [NDLRGEN019](NDLRGEN019.md) | Warning | [Options] Validation method won't run (ValidateOnStart is false) |
+| [NDLRGEN020](NDLRGEN020.md) | Error | [Options] is not compatible with Native AOT |
 
 ## Diagnostic ID Naming Convention
 
