@@ -640,13 +640,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var interceptedServices = new List<DiscoveredInterceptedService>();
         var factories = new List<DiscoveredFactory>();
         var options = new List<DiscoveredOptions>();
+        var hostedServices = new List<DiscoveredHostedService>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -654,7 +655,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -696,7 +697,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options);
+        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices);
     }
 
     private static void CollectTypesFromAssembly(
@@ -709,6 +710,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredInterceptedService> interceptedServices,
         List<DiscoveredFactory> factories,
         List<DiscoveredOptions> options,
+        List<DiscoveredHostedService> hostedServices,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -905,6 +907,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
+            // Check for hosted service types (BackgroundService or IHostedService implementations)
+            if (TypeDiscoveryHelper.IsHostedServiceType(typeSymbol, isCurrentAssembly))
+            {
+                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                var constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
+                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                
+                hostedServices.Add(new DiscoveredHostedService(
+                    typeName,
+                    assembly.Name,
+                    GeneratorLifetime.Singleton, // Hosted services are always singleton
+                    constructorParams,
+                    sourceFilePath));
+            }
+
             // Check for plugin types (concrete class with parameterless ctor and interfaces)
             if (TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly))
             {
@@ -988,7 +1005,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine();
-        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
+        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
+
+        if (discoveryResult.HostedServices.Count > 0)
+        {
+            builder.AppendLine();
+            GenerateRegisterHostedServicesMethod(builder, discoveryResult.HostedServices, breadcrumbs, projectDirectory);
+        }
 
         builder.AppendLine("}");
 
@@ -2216,19 +2239,33 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return typeName;
     }
 
-    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, bool hasHostedServices, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Applies all discovered decorators and interceptors to the service collection.");
+        builder.AppendLine("    /// Applies all discovered decorators, interceptors, and hosted services to the service collection.");
         builder.AppendLine("    /// Decorators are applied in order, with lower Order values applied first (closer to the original service).");
         builder.AppendLine("    /// </summary>");
         builder.AppendLine("    /// <param name=\"services\">The service collection to apply decorators to.</param>");
         builder.AppendLine("    public static void ApplyDecorators(IServiceCollection services)");
         builder.AppendLine("    {");
 
+        // Register hosted services first (before decorators apply)
+        if (hasHostedServices)
+        {
+            breadcrumbs.WriteInlineComment(builder, "        ", "Register hosted services");
+            builder.AppendLine("        RegisterHostedServices(services);");
+            if (decorators.Count > 0 || hasInterceptors)
+            {
+                builder.AppendLine();
+            }
+        }
+
         if (decorators.Count == 0 && !hasInterceptors)
         {
-            breadcrumbs.WriteInlineComment(builder, "        ", "No decorators or interceptors discovered");
+            if (!hasHostedServices)
+            {
+                breadcrumbs.WriteInlineComment(builder, "        ", "No decorators, interceptors, or hosted services discovered");
+            }
         }
         else
         {
@@ -2281,6 +2318,36 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 breadcrumbs.WriteInlineComment(builder, "        ", "Register intercepted services with their proxies");
                 builder.AppendLine($"        global::{safeAssemblyName}.Generated.InterceptorRegistrations.RegisterInterceptedServices(services);");
             }
+        }
+
+        builder.AppendLine("    }");
+    }
+
+    private static void GenerateRegisterHostedServicesMethod(StringBuilder builder, IReadOnlyList<DiscoveredHostedService> hostedServices, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all discovered hosted services (BackgroundService and IHostedService implementations).");
+        builder.AppendLine("    /// Each service is registered as singleton and also as IHostedService for the host to discover.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    private static void RegisterHostedServices(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var hostedService in hostedServices)
+        {
+            var typeName = hostedService.TypeName;
+            var shortName = typeName.Split('.').Last();
+            var sourcePath = hostedService.SourceFilePath != null
+                ? BreadcrumbWriter.GetRelativeSourcePath(hostedService.SourceFilePath, projectDirectory)
+                : $"[{hostedService.AssemblyName}]";
+
+            breadcrumbs.WriteInlineComment(builder, "        ", $"Hosted service: {shortName} ← {sourcePath}");
+
+            // Register the concrete type as singleton
+            builder.AppendLine($"        services.AddSingleton<{typeName}>();");
+
+            // Register as IHostedService that forwards to the concrete type
+            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<{typeName}>());");
         }
 
         builder.AppendLine("    }");

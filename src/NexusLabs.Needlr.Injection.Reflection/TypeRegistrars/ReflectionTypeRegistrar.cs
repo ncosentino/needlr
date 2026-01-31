@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -50,8 +51,86 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
             }
         }
 
+        // Register hosted services discovered via BackgroundService/IHostedService
+        // Must happen BEFORE decorators so that decorators can wrap the hosted services
+        RegisterHostedServices(services, allTypes);
+
         // Apply decorators discovered via [DecoratorFor<T>] attributes
         ApplyDecoratorForAttributes(services, allTypes);
+    }
+
+    /// <summary>
+    /// Discovers and registers types that are hosted services (inherit from BackgroundService
+    /// or implement IHostedService directly).
+    /// </summary>
+    private static void RegisterHostedServices(IServiceCollection services, List<Type> allTypes)
+    {
+        var hostedServiceTypes = allTypes
+            .Where(IsHostedServiceType)
+            .ToList();
+
+        foreach (var type in hostedServiceTypes)
+        {
+            // Skip if already registered as concrete type (from regular registration)
+            var existingRegistration = services.FirstOrDefault(d => d.ServiceType == type);
+            if (existingRegistration is null)
+            {
+                // Register concrete type as singleton
+                services.AddSingleton(type);
+            }
+
+            // Register as IHostedService forwarding to concrete type
+            services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService(type));
+        }
+    }
+
+    /// <summary>
+    /// Determines if a type is a hosted service (inherits from BackgroundService
+    /// or implements IHostedService directly, excluding abstract classes and decorators).
+    /// </summary>
+    private static bool IsHostedServiceType(Type type)
+    {
+        if (!type.IsClass || type.IsAbstract)
+            return false;
+
+        // Skip types that are decorators for IHostedService
+        if (IsDecoratorForHostedService(type))
+            return false;
+
+        // Check if inherits from BackgroundService
+        var baseType = type.BaseType;
+        while (baseType is not null)
+        {
+            if (baseType.FullName == "Microsoft.Extensions.Hosting.BackgroundService")
+                return true;
+            baseType = baseType.BaseType;
+        }
+
+        // Check if directly implements IHostedService
+        return type.GetInterfaces().Any(i => i.FullName == "Microsoft.Extensions.Hosting.IHostedService");
+    }
+
+    /// <summary>
+    /// Checks if a type has [DecoratorFor&lt;IHostedService&gt;] attribute.
+    /// </summary>
+    private static bool IsDecoratorForHostedService(Type type)
+    {
+        foreach (var attribute in type.GetCustomAttributes(inherit: false))
+        {
+            var attrType = attribute.GetType();
+            if (!attrType.IsGenericType)
+                continue;
+
+            var genericTypeDef = attrType.GetGenericTypeDefinition();
+            if (genericTypeDef.FullName?.StartsWith("NexusLabs.Needlr.DecoratorForAttribute`1", StringComparison.Ordinal) != true)
+                continue;
+
+            // Get the type argument
+            var typeArgs = attrType.GetGenericArguments();
+            if (typeArgs.Length == 1 && typeArgs[0].FullName == "Microsoft.Extensions.Hosting.IHostedService")
+                return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -151,12 +230,13 @@ public sealed class ReflectionTypeRegistrar : ITypeRegistrar
         }
         else
         {
-            // Register as interfaces (excluding system interfaces, generic type definitions, and decorator interfaces)
+            // Register as interfaces (excluding system interfaces, generic type definitions, decorator interfaces, and IHostedService)
             interfaces = type.GetInterfaces()
                 .Where(i => !i.IsGenericTypeDefinition)
                 .Where(i => i.Assembly != typeof(object).Assembly) // Skip system interfaces
                 .Where(i => !i.Name.StartsWith("System.")) // Additional system interface filtering
                 .Where(i => !IsDecoratorInterface(i, constructorParamTypes)) // Skip decorator pattern interfaces
+                .Where(i => i.FullName != "Microsoft.Extensions.Hosting.IHostedService") // Hosted services registered separately
                 .ToList();
         }
 

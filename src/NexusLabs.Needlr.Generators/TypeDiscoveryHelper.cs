@@ -85,6 +85,11 @@ internal static class TypeDiscoveryHelper
             if (IsDecoratorInterface(iface, constructorParamTypes))
                 continue;
 
+            // Skip IHostedService - hosted services are registered separately via RegisterHostedServices()
+            // to ensure proper concrete + interface forwarding pattern
+            if (IsHostedServiceInterface(iface))
+                continue;
+
             result.Add(iface);
         }
 
@@ -267,6 +272,105 @@ internal static class TypeDiscoveryHelper
 
     private static bool IsSystemInterface(INamedTypeSymbol interfaceSymbol)
         => SharedHelper.IsSystemType(interfaceSymbol);
+
+    private static bool IsHostedServiceInterface(INamedTypeSymbol interfaceSymbol)
+    {
+        var fullName = GetFullyQualifiedName(interfaceSymbol);
+        return fullName == "global::Microsoft.Extensions.Hosting.IHostedService";
+    }
+
+    /// <summary>
+    /// Determines whether a type is a hosted service (implements IHostedService or inherits from BackgroundService).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="isCurrentAssembly">True if the type is from the current compilation's assembly.</param>
+    /// <returns>True if the type is a hosted service.</returns>
+    public static bool IsHostedServiceType(INamedTypeSymbol typeSymbol, bool isCurrentAssembly = false)
+    {
+        // Must be a concrete, non-abstract class
+        if (typeSymbol.IsAbstract || typeSymbol.TypeKind != TypeKind.Class)
+            return false;
+
+        // Check accessibility
+        if (!isCurrentAssembly && IsInternalOrLessAccessible(typeSymbol))
+            return false;
+
+        // Skip if marked with [DoNotAutoRegister]
+        if (HasDoNotAutoRegisterAttributeDirect(typeSymbol))
+            return false;
+
+        // Skip compiler-generated types
+        if (IsCompilerGenerated(typeSymbol))
+            return false;
+
+        // Skip decorators - types with [DecoratorFor<IHostedService>] should not be
+        // registered as hosted services (they decorate hosted services, not are hosted services)
+        if (IsDecoratorForHostedService(typeSymbol))
+            return false;
+
+        // Check if inherits from BackgroundService
+        if (InheritsFromBackgroundService(typeSymbol))
+            return true;
+
+        // Check if directly implements IHostedService (not via BackgroundService)
+        if (ImplementsIHostedService(typeSymbol))
+            return true;
+
+        return false;
+    }
+
+    private static bool IsDecoratorForHostedService(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var attribute in typeSymbol.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass == null)
+                continue;
+
+            var attrFullName = attrClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            
+            // Check for DecoratorForAttribute<IHostedService>
+            if (attrFullName.StartsWith("global::NexusLabs.Needlr.DecoratorForAttribute<", StringComparison.Ordinal))
+            {
+                // Get the type argument
+                if (attrClass.IsGenericType && attrClass.TypeArguments.Length == 1)
+                {
+                    var typeArg = attrClass.TypeArguments[0];
+                    if (typeArg is INamedTypeSymbol namedTypeArg)
+                    {
+                        var typeArgName = GetFullyQualifiedName(namedTypeArg);
+                        if (typeArgName == "global::Microsoft.Extensions.Hosting.IHostedService")
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static bool InheritsFromBackgroundService(INamedTypeSymbol typeSymbol)
+    {
+        var baseType = typeSymbol.BaseType;
+        while (baseType != null)
+        {
+            var fullName = GetFullyQualifiedName(baseType);
+            if (fullName == "global::Microsoft.Extensions.Hosting.BackgroundService")
+                return true;
+            baseType = baseType.BaseType;
+        }
+        return false;
+    }
+
+    private static bool ImplementsIHostedService(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            var fullName = GetFullyQualifiedName(iface);
+            if (fullName == "global::Microsoft.Extensions.Hosting.IHostedService")
+                return true;
+        }
+        return false;
+    }
 
     private static bool IsSystemType(INamedTypeSymbol typeSymbol)
         => SharedHelper.IsSystemType(typeSymbol);

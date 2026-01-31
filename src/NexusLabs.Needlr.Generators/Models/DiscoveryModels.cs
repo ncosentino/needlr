@@ -92,6 +92,32 @@ internal readonly struct DiscoveredDecorator
 }
 
 /// <summary>
+/// Information about a discovered hosted service (BackgroundService or IHostedService implementation).
+/// </summary>
+internal readonly struct DiscoveredHostedService
+{
+    public DiscoveredHostedService(
+        string typeName,
+        string assemblyName,
+        GeneratorLifetime lifetime,
+        TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        AssemblyName = assemblyName;
+        Lifetime = lifetime;
+        ConstructorParameters = constructorParameters;
+        SourceFilePath = sourceFilePath;
+    }
+
+    public string TypeName { get; }
+    public string AssemblyName { get; }
+    public GeneratorLifetime Lifetime { get; }
+    public TypeDiscoveryHelper.ConstructorParameterInfo[] ConstructorParameters { get; }
+    public string? SourceFilePath { get; }
+}
+
+/// <summary>
 /// Information about an open-generic decorator (from [OpenDecoratorFor(typeof(IHandler&lt;&gt;))]).
 /// </summary>
 internal readonly struct DiscoveredOpenDecorator
@@ -534,7 +560,8 @@ internal readonly struct DiscoveryResult
         IReadOnlyList<MissingTypeRegistryPlugin> missingTypeRegistryPlugins,
         IReadOnlyList<DiscoveredInterceptedService> interceptedServices,
         IReadOnlyList<DiscoveredFactory> factories,
-        IReadOnlyList<DiscoveredOptions> options)
+        IReadOnlyList<DiscoveredOptions> options,
+        IReadOnlyList<DiscoveredHostedService> hostedServices)
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
@@ -544,6 +571,7 @@ internal readonly struct DiscoveryResult
         InterceptedServices = interceptedServices;
         Factories = factories;
         Options = options;
+        HostedServices = hostedServices;
     }
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -554,6 +582,7 @@ internal readonly struct DiscoveryResult
     public IReadOnlyList<DiscoveredInterceptedService> InterceptedServices { get; }
     public IReadOnlyList<DiscoveredFactory> Factories { get; }
     public IReadOnlyList<DiscoveredOptions> Options { get; }
+    public IReadOnlyList<DiscoveredHostedService> HostedServices { get; }
 }
 
 /// <summary>

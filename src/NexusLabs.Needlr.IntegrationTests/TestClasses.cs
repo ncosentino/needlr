@@ -1182,7 +1182,7 @@ public sealed class Order100Plugin : IOrderedServiceCollectionPlugin
 
 #endregion
 
-#region Open Generic Decorator Test Classes
+// Open Generic Decorator Test Classes
 
 /// <summary>
 /// Open generic interface for testing [OpenDecoratorFor] attribute.
@@ -1259,4 +1259,58 @@ public sealed class MetricsOpenDecorator<T> : IOpenGenericHandler<T>
     public string Handle(T message) => $"Metrics({_inner.Handle(message)})";
 }
 
-#endregion
+// Hosted Service Test Classes (uses Microsoft.Extensions.Hosting)
+public sealed class TestWorkerService : Microsoft.Extensions.Hosting.BackgroundService
+{
+    public bool Started { get; private set; }
+    public bool Stopped { get; private set; }
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        Started = true;
+        return Task.CompletedTask;
+    }
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        Stopped = true;
+        return base.StopAsync(cancellationToken);
+    }
+}
+
+public sealed class AnotherWorkerService : Microsoft.Extensions.Hosting.BackgroundService
+{
+    public bool Started { get; private set; }
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        Started = true;
+        return Task.CompletedTask;
+    }
+}
+
+[DoNotAutoRegister]
+public sealed class ExcludedWorkerService : Microsoft.Extensions.Hosting.BackgroundService
+{
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
+}
+
+[DecoratorFor<Microsoft.Extensions.Hosting.IHostedService>(Order = 0)]
+public sealed class TrackerHostedServiceDecorator(
+    Microsoft.Extensions.Hosting.IHostedService _wrapped) :
+    Microsoft.Extensions.Hosting.IHostedService
+{
+    public static int WrapCount { get; set; }
+    public Microsoft.Extensions.Hosting.IHostedService Wrapped => _wrapped;
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        WrapCount++;
+        return _wrapped.StartAsync(cancellationToken);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return _wrapped.StopAsync(cancellationToken);
+    }
+}
