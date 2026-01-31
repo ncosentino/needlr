@@ -1,4 +1,4 @@
-# RegisterAs\<T> - Explicit Interface Registration
+# RegisterAs&lt;T&gt; - Explicit Interface Registration
 
 The `[RegisterAs<T>]` attribute gives you explicit control over which interfaces a class is registered as in dependency injection. By default, Needlr registers a class as all non-system interfaces it implements. Use `[RegisterAs<T>]` when you want to limit which interfaces are publicly resolvable.
 
