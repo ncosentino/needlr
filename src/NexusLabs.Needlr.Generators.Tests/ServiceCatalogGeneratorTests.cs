@@ -200,7 +200,7 @@ public sealed class ServiceCatalogGeneratorTests
     }
 
     [Fact]
-    public void ServiceCatalog_HasStaticInstanceProperty()
+    public void ServiceCatalog_ImplementsIServiceCatalog()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -215,8 +215,9 @@ public sealed class ServiceCatalogGeneratorTests
 
         var catalogContent = GetServiceCatalogOutput(source);
 
-        // Should have static Instance property
-        Assert.Contains("public static ServiceCatalog Instance { get; }", catalogContent);
+        // Should implement IServiceCatalog interface
+        Assert.Contains("IServiceCatalog", catalogContent);
+        Assert.Contains("public sealed class ServiceCatalog", catalogContent);
     }
 
     [Fact]
@@ -342,6 +343,27 @@ public sealed class ServiceCatalogGeneratorTests
         Assert.Contains("Transient", catalogContent);
     }
 
+    [Fact]
+    public void ServiceCatalog_IsRegisteredInApplyDecorators()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public sealed class SimpleService { }
+            }
+            """;
+
+        var typeRegistryContent = GetTypeRegistryOutput(source);
+
+        // ApplyDecorators should register the ServiceCatalog as IServiceCatalog
+        Assert.Contains("AddSingleton<global::NexusLabs.Needlr.Catalog.IServiceCatalog", typeRegistryContent);
+        Assert.Contains("ServiceCatalog>", typeRegistryContent);
+    }
+
     private static string GetServiceCatalogOutput(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
@@ -369,6 +391,35 @@ public sealed class ServiceCatalogGeneratorTests
             .FirstOrDefault(t => t.FilePath.Contains("ServiceCatalog"));
 
         return catalogTree?.GetText().ToString() ?? string.Empty;
+    }
+
+    private static string GetTypeRegistryOutput(string source)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DecoratorForAttribute<>).Assembly.Location),
+            });
+
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            new[] { syntaxTree },
+            references.ToArray(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
+
+        // Return only the TypeRegistry output
+        var registryTree = outputCompilation.SyntaxTrees
+            .FirstOrDefault(t => t.FilePath.EndsWith("TypeRegistry.g.cs"));
+
+        return registryTree?.GetText().ToString() ?? string.Empty;
     }
 
     private static string GetServiceCatalogOutputWithExtra(string source, string extraSource)

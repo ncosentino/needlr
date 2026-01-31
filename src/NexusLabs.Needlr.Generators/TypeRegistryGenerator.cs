@@ -2252,6 +2252,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// <param name=\"services\">The service collection to apply decorators to.</param>");
         builder.AppendLine("    public static void ApplyDecorators(IServiceCollection services)");
         builder.AppendLine("    {");
+        
+        // Register ServiceCatalog first
+        breadcrumbs.WriteInlineComment(builder, "        ", "Register service catalog for DI resolution");
+        builder.AppendLine($"        services.AddSingleton<global::NexusLabs.Needlr.Catalog.IServiceCatalog, global::{safeAssemblyName}.Generated.ServiceCatalog>();");
+        builder.AppendLine();
 
         // Register hosted services first (before decorators apply)
         if (hasHostedServices)

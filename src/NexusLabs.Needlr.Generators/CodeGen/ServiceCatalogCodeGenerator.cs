@@ -39,9 +39,6 @@ internal static class ServiceCatalogCodeGenerator
         builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
         builder.AppendLine($"public sealed class ServiceCatalog : global::NexusLabs.Needlr.Catalog.IServiceCatalog");
         builder.AppendLine("{");
-        builder.AppendLine($"    /// <summary>Gets the singleton instance of the service catalog.</summary>");
-        builder.AppendLine($"    public static ServiceCatalog Instance {{ get; }} = new ServiceCatalog();");
-        builder.AppendLine();
         builder.AppendLine($"    /// <inheritdoc />");
         builder.AppendLine($"    public string AssemblyName => \"{GeneratorHelpers.EscapeStringLiteral(assemblyName)}\";");
         builder.AppendLine();

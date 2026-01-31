@@ -1,4 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+
 using NexusLabs.Needlr.Catalog;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
 using NexusLabs.Needlr.IntegrationTests.Generated;
 
 using Xunit;
@@ -6,32 +10,49 @@ using Xunit;
 namespace NexusLabs.Needlr.IntegrationTests.SourceGen;
 
 /// <summary>
-/// Tests that verify ServiceCatalog is generated and accessible at runtime.
+/// Tests that verify ServiceCatalog is generated and accessible at runtime via DI.
 /// These tests prove the catalog can be queried in application code with specific, expected values.
 /// </summary>
 public sealed class ServiceCatalogIntegrationTests
 {
-    [Fact]
-    public void ServiceCatalog_Instance_IsAccessible()
+    private static IServiceCatalog GetCatalog()
     {
-        var catalog = ServiceCatalog.Instance;
+        var provider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+        return provider.GetRequiredService<IServiceCatalog>();
+    }
+
+    [Fact]
+    public void ServiceCatalog_IsResolvableFromDI()
+    {
+        var provider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+        
+        var catalog = provider.GetRequiredService<IServiceCatalog>();
         
         Assert.NotNull(catalog);
         Assert.IsType<ServiceCatalog>(catalog);
     }
 
     [Fact]
-    public void ServiceCatalog_ImplementsInterface()
+    public void ServiceCatalog_MultipleResolutions_ReturnsSameInstance()
     {
-        IServiceCatalog catalog = ServiceCatalog.Instance;
+        var provider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
         
-        Assert.NotNull(catalog);
+        var catalog1 = provider.GetRequiredService<IServiceCatalog>();
+        var catalog2 = provider.GetRequiredService<IServiceCatalog>();
+        
+        Assert.Same(catalog1, catalog2);
     }
 
     [Fact]
     public void ServiceCatalog_AssemblyName_IsCorrect()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         Assert.Equal("NexusLabs.Needlr.IntegrationTests", catalog.AssemblyName);
     }
@@ -39,7 +60,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_GeneratedAt_HasValidFormat()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         Assert.False(string.IsNullOrEmpty(catalog.GeneratedAt));
         // Should be a valid UTC timestamp format: yyyy-MM-dd HH:mm:ss
@@ -49,7 +70,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_HostedServices_ContainsTestWorkerService()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var testWorker = catalog.HostedServices
             .SingleOrDefault(h => h.ShortTypeName == "TestWorkerService");
@@ -62,7 +83,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_HostedServices_ContainsAnotherWorkerService()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var anotherWorker = catalog.HostedServices
             .SingleOrDefault(h => h.ShortTypeName == "AnotherWorkerService");
@@ -74,7 +95,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_HostedServices_ExcludesExcludedWorkerService()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var excluded = catalog.HostedServices
             .SingleOrDefault(h => h.ShortTypeName == "ExcludedWorkerService");
@@ -85,7 +106,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Decorators_ContainsTrackerHostedServiceDecorator()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var tracker = catalog.Decorators
             .SingleOrDefault(d => d.ShortDecoratorTypeName == "TrackerHostedServiceDecorator");
@@ -99,7 +120,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Decorators_ContainsLoggingHostedServiceDecorator()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var logging = catalog.Decorators
             .SingleOrDefault(d => d.ShortDecoratorTypeName == "LoggingHostedServiceDecorator");
@@ -112,7 +133,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Decorators_ContainsMetricsHostedServiceDecorator()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var metrics = catalog.Decorators
             .SingleOrDefault(d => d.ShortDecoratorTypeName == "MetricsHostedServiceDecorator");
@@ -125,7 +146,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Decorators_ContainsDecoratorForTestServiceDecorators()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         // Three decorators for IDecoratorForTestService with orders 0, 1, 2
         var zeroOrder = catalog.Decorators
@@ -151,7 +172,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Services_ContainsDecoratorForTestServiceImpl()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var impl = catalog.Services
             .SingleOrDefault(s => s.ShortTypeName == "DecoratorForTestServiceImpl");
@@ -166,7 +187,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Services_ContainsSingletonJobService()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var singletonJob = catalog.Services
             .SingleOrDefault(s => s.ShortTypeName == "SingletonJobService");
@@ -181,7 +202,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Services_ContainsRegularSingletonService()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         var regularSingleton = catalog.Services
             .SingleOrDefault(s => s.ShortTypeName == "RegularSingletonService");
@@ -194,7 +215,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Decorators_ExcludesDoNotAutoRegisterTypes()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         // ManualDecorator and AttributeDecorator have [DoNotAutoRegister]
         var manualDecorator = catalog.Decorators
@@ -209,7 +230,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Services_ExcludesDoNotAutoRegisterTypes()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         // ManualAndAttributeDecoratorServiceImpl has [DoNotAutoRegister]
         var excluded = catalog.Services
@@ -221,7 +242,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Plugins_Collection_IsNotNull()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         Assert.NotNull(catalog.Plugins);
         // The integration test project has plugins defined
@@ -230,7 +251,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_Options_Collection_IsNotNull()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         Assert.NotNull(catalog.Options);
     }
@@ -238,7 +259,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_InterceptedServices_Collection_IsNotNull()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         Assert.NotNull(catalog.InterceptedServices);
     }
@@ -246,7 +267,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_CanQueryServicesImplementingInterface()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         // Find all services implementing ITestJob (interface names include global:: prefix)
         var jobServices = catalog.Services
@@ -264,7 +285,7 @@ public sealed class ServiceCatalogIntegrationTests
     [Fact]
     public void ServiceCatalog_CanQueryDecoratorsByServiceType()
     {
-        var catalog = ServiceCatalog.Instance;
+        var catalog = GetCatalog();
         
         // Find all decorators for IHostedService
         var hostedServiceDecorators = catalog.Decorators
