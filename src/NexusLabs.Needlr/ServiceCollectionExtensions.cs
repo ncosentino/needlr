@@ -34,16 +34,39 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Find the existing service registration
-        var existingDescriptor = services
-            .LastOrDefault(d => d.ServiceType == typeof(TService)) 
-            ?? throw new InvalidOperationException(
+        // Find ALL existing service registrations for this type
+        var existingDescriptors = services
+            .Where(d => d.ServiceType == typeof(TService))
+            .ToList();
+
+        if (existingDescriptors.Count == 0)
+        {
+            throw new InvalidOperationException(
                 $"No service registration found for type {typeof(TService).Name}. " +
                 $"Please register the service before decorating it.");
-        services.Remove(existingDescriptor);
+        }
 
-        // Create a new registration with the same lifetime that uses the decorator
-        var decoratedDescriptor = existingDescriptor.Lifetime switch
+        // Remove all existing registrations
+        foreach (var descriptor in existingDescriptors)
+        {
+            services.Remove(descriptor);
+        }
+
+        // Create decorated registrations for each, preserving order and lifetime
+        foreach (var existingDescriptor in existingDescriptors)
+        {
+            var decoratedDescriptor = CreateDecoratedDescriptor<TService, TDecorator>(existingDescriptor);
+            services.Add(decoratedDescriptor);
+        }
+
+        return services;
+    }
+
+    private static ServiceDescriptor CreateDecoratedDescriptor<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDecorator>(
+        ServiceDescriptor existingDescriptor)
+        where TDecorator : class, TService
+    {
+        return existingDescriptor.Lifetime switch
         {
             ServiceLifetime.Singleton => new ServiceDescriptor(typeof(TService), provider =>
             {
@@ -64,9 +87,6 @@ public static class ServiceCollectionExtensions
                 $"Unsupported service lifetime '{existingDescriptor.Lifetime}' " +
                 $"for '{typeof(TService)}'.")
         };
-
-        services.Add(decoratedDescriptor);
-        return services;
     }
 
     /// <summary>
@@ -98,25 +118,38 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(serviceType);
         ArgumentNullException.ThrowIfNull(decoratorType);
 
-        // Find the existing service registration
-        var existingDescriptor = services
-            .LastOrDefault(d => d.ServiceType == serviceType)
-            ?? throw new InvalidOperationException(
+        // Find ALL existing service registrations for this type
+        var existingDescriptors = services
+            .Where(d => d.ServiceType == serviceType)
+            .ToList();
+
+        if (existingDescriptors.Count == 0)
+        {
+            throw new InvalidOperationException(
                 $"No service registration found for type {serviceType.Name}. " +
                 $"Please register the service before decorating it.");
-        services.Remove(existingDescriptor);
+        }
 
-        // Create a new registration with the same lifetime that uses the decorator
-        var decoratedDescriptor = new ServiceDescriptor(
-            serviceType,
-            provider =>
-            {
-                var originalService = CreateOriginalService(provider, existingDescriptor, serviceType);
-                return ActivatorUtilities.CreateInstance(provider, decoratorType, originalService!);
-            },
-            existingDescriptor.Lifetime);
+        // Remove all existing registrations
+        foreach (var descriptor in existingDescriptors)
+        {
+            services.Remove(descriptor);
+        }
 
-        services.Add(decoratedDescriptor);
+        // Create decorated registrations for each, preserving order and lifetime
+        foreach (var existingDescriptor in existingDescriptors)
+        {
+            var decoratedDescriptor = new ServiceDescriptor(
+                serviceType,
+                provider =>
+                {
+                    var originalService = CreateOriginalService(provider, existingDescriptor, serviceType);
+                    return ActivatorUtilities.CreateInstance(provider, decoratorType, originalService!);
+                },
+                existingDescriptor.Lifetime);
+            services.Add(decoratedDescriptor);
+        }
+
         return services;
     }
 

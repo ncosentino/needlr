@@ -108,7 +108,7 @@ public sealed class ServiceCollectionExtensionsDecoratorTests
     }
 
     [Fact]
-    public void AddDecorator_WithMultipleRegistrations_DecoratesLastOne()
+    public void AddDecorator_WithMultipleRegistrations_DecoratesAllRegistrations()
     {
         var services = new ServiceCollection();
         services.AddSingleton<IDecoratorService, OriginalService>();
@@ -116,10 +116,59 @@ public sealed class ServiceCollectionExtensionsDecoratorTests
         services.AddDecorator<IDecoratorService, ServiceDecorator>();
 
         using var provider = services.BuildServiceProvider();
-        var instance = provider.GetRequiredService<IDecoratorService>();
+        var instances = provider.GetServices<IDecoratorService>().ToList();
 
-        Assert.IsType<ServiceDecorator>(instance);
-        Assert.Equal("Decorated: Alternative", instance.GetValue());
+        // Both registrations should be decorated
+        Assert.Equal(2, instances.Count);
+        Assert.All(instances, instance => Assert.IsType<ServiceDecorator>(instance));
+        
+        // Each should wrap a different inner service
+        var values = instances.Select(i => i.GetValue()).OrderBy(v => v).ToList();
+        Assert.Contains("Decorated: Alternative", values);
+        Assert.Contains("Decorated: Original", values);
+    }
+
+    [Fact]
+    public void AddDecorator_WithMultipleRegistrations_ChainedDecorators_DecoratesAll()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IDecoratorService, OriginalService>();
+        services.AddSingleton<IDecoratorService, AlternativeService>();
+        services.AddDecorator<IDecoratorService, ServiceDecorator>();
+        services.AddDecorator<IDecoratorService, SecondDecorator>();
+
+        using var provider = services.BuildServiceProvider();
+        var instances = provider.GetServices<IDecoratorService>().ToList();
+
+        // Both registrations should be decorated with both decorators
+        Assert.Equal(2, instances.Count);
+        Assert.All(instances, instance => Assert.IsType<SecondDecorator>(instance));
+        
+        var values = instances.Select(i => i.GetValue()).OrderBy(v => v).ToList();
+        Assert.Contains("Second: Decorated: Alternative", values);
+        Assert.Contains("Second: Decorated: Original", values);
+    }
+
+    [Fact]
+    public void AddDecorator_WithDifferentLifetimes_DecoratesAllAndPreservesLifetimes()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IDecoratorService, OriginalService>();
+        services.AddScoped<IDecoratorService, AlternativeService>();
+        services.AddDecorator<IDecoratorService, ServiceDecorator>();
+
+        // Should have two registrations with different lifetimes
+        var descriptors = services.Where(d => d.ServiceType == typeof(IDecoratorService)).ToList();
+        Assert.Equal(2, descriptors.Count);
+        Assert.Contains(descriptors, d => d.Lifetime == ServiceLifetime.Singleton);
+        Assert.Contains(descriptors, d => d.Lifetime == ServiceLifetime.Scoped);
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        
+        var instances = scope.ServiceProvider.GetServices<IDecoratorService>().ToList();
+        Assert.Equal(2, instances.Count);
+        Assert.All(instances, instance => Assert.IsType<ServiceDecorator>(instance));
     }
 
     [Fact]

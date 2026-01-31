@@ -93,4 +93,130 @@ public sealed class DecoratorForAttributeSourceGenTests
         var service = allServices.First();
         Assert.Contains("Second(", service.GetValue());
     }
+
+    [Fact]
+    public void Decorator_WithMultipleRegistrations_AllDecorated_SourceGen()
+    {
+        // Arrange: Register two implementations via callback, decorator applied by source-gen AddDecorator call
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .UsingPostPluginRegistrationCallback(services =>
+            {
+                services.AddSingleton<IMultiRegSourceGenTestService, MultiRegSourceGenServiceA>();
+                services.AddSingleton<IMultiRegSourceGenTestService, MultiRegSourceGenServiceB>();
+            })
+            .AddDecorator<IMultiRegSourceGenTestService, MultiRegSourceGenDecorator>()
+            .BuildServiceProvider();
+
+        // Act
+        var instances = serviceProvider.GetServices<IMultiRegSourceGenTestService>().ToList();
+
+        // Assert - Both registrations should be decorated
+        Assert.Equal(2, instances.Count);
+        Assert.All(instances, instance => Assert.IsType<MultiRegSourceGenDecorator>(instance));
+
+        var values = instances.Select(i => i.GetValue()).OrderBy(v => v).ToList();
+        Assert.Contains("Decorated: SourceGenA", values);
+        Assert.Contains("Decorated: SourceGenB", values);
+    }
+
+    [Fact]
+    public void ChainedDecorators_WithMultipleRegistrations_AllDecorated_SourceGen()
+    {
+        // Arrange: Two decorators applied to two registrations
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .UsingPostPluginRegistrationCallback(services =>
+            {
+                services.AddSingleton<IMultiRegSourceGenTestService, MultiRegSourceGenServiceA>();
+                services.AddSingleton<IMultiRegSourceGenTestService, MultiRegSourceGenServiceB>();
+            })
+            .AddDecorator<IMultiRegSourceGenTestService, MultiRegSourceGenDecorator>()
+            .AddDecorator<IMultiRegSourceGenTestService, MultiRegSourceGenSecondDecorator>()
+            .BuildServiceProvider();
+
+        // Act
+        var instances = serviceProvider.GetServices<IMultiRegSourceGenTestService>().ToList();
+
+        // Assert
+        Assert.Equal(2, instances.Count);
+        Assert.All(instances, instance => Assert.IsType<MultiRegSourceGenSecondDecorator>(instance));
+
+        var values = instances.Select(i => i.GetValue()).OrderBy(v => v).ToList();
+        Assert.Contains("Second(Decorated: SourceGenA)", values);
+        Assert.Contains("Second(Decorated: SourceGenB)", values);
+    }
+
+    [Fact]
+    public void Decorator_WithDifferentLifetimes_PreservesLifetimes_SourceGen()
+    {
+        // Arrange: Different lifetimes for different implementations
+        var serviceProvider = new Syringe()
+            .UsingSourceGen()
+            .UsingPostPluginRegistrationCallback(services =>
+            {
+                services.AddSingleton<IMultiRegSourceGenTestService, MultiRegSourceGenServiceA>();
+                services.AddScoped<IMultiRegSourceGenTestService, MultiRegSourceGenServiceB>();
+            })
+            .AddDecorator<IMultiRegSourceGenTestService, MultiRegSourceGenDecorator>()
+            .BuildServiceProvider();
+
+        // Act - Use scope to verify lifetimes
+        using var scope1 = serviceProvider.CreateScope();
+        using var scope2 = serviceProvider.CreateScope();
+
+        var instances1 = scope1.ServiceProvider.GetServices<IMultiRegSourceGenTestService>().ToList();
+        var instances2 = scope2.ServiceProvider.GetServices<IMultiRegSourceGenTestService>().ToList();
+
+        // Assert - Both should have 2 instances
+        Assert.Equal(2, instances1.Count);
+        Assert.Equal(2, instances2.Count);
+
+        // All should be decorated
+        Assert.All(instances1, i => Assert.IsType<MultiRegSourceGenDecorator>(i));
+        Assert.All(instances2, i => Assert.IsType<MultiRegSourceGenDecorator>(i));
+    }
+}
+
+public interface IMultiRegSourceGenTestService
+{
+    string GetValue();
+}
+
+[DoNotAutoRegister]
+public sealed class MultiRegSourceGenServiceA : IMultiRegSourceGenTestService
+{
+    public string GetValue() => "SourceGenA";
+}
+
+[DoNotAutoRegister]
+public sealed class MultiRegSourceGenServiceB : IMultiRegSourceGenTestService
+{
+    public string GetValue() => "SourceGenB";
+}
+
+[DoNotAutoRegister]
+public sealed class MultiRegSourceGenDecorator : IMultiRegSourceGenTestService
+{
+    private readonly IMultiRegSourceGenTestService _inner;
+
+    public MultiRegSourceGenDecorator(IMultiRegSourceGenTestService inner)
+    {
+        _inner = inner;
+    }
+
+    public string GetValue() => $"Decorated: {_inner.GetValue()}";
+}
+
+[DoNotAutoRegister]
+public sealed class MultiRegSourceGenSecondDecorator : IMultiRegSourceGenTestService
+{
+    private readonly IMultiRegSourceGenTestService _inner;
+
+    public MultiRegSourceGenSecondDecorator(IMultiRegSourceGenTestService inner)
+    {
+        _inner = inner;
+    }
+
+    public string GetValue() => $"Second({_inner.GetValue()})";
 }
