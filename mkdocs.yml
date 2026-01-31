@@ -48,6 +48,7 @@ nav:
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Plugin Development: plugin-development.md
+  - Benchmarks: benchmarks.md
   - Analyzers:
     - Overview: analyzers/README.md
     - Core Analyzers:

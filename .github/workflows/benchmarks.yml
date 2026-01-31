@@ -83,6 +83,13 @@ jobs:
             --exporters json markdown html \
             --artifacts ../../benchmark-results
 
+      - name: Prepare Benchmark JSON for Web
+        run: |
+          # Find and copy the combined JSON report
+          find benchmark-results -name '*-report-full-compressed.json' -exec cp {} benchmark-results/results.json \; 2>/dev/null || \
+          find benchmark-results -name '*-report.json' -exec cp {} benchmark-results/results.json \; 2>/dev/null || \
+          echo '{"Benchmarks":[]}' > benchmark-results/results.json
+
       - name: Upload Benchmark Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -105,83 +112,9 @@ jobs:
           # Create benchmarks directory in site
           mkdir -p site/benchmarks/results
           
-          # Copy latest results
+          # Copy all benchmark results including the results.json for the web page
           cp -r benchmark-results/* site/benchmarks/ 2>/dev/null || true
-          
-          # Create simple index page for benchmarks
-          cat > site/benchmarks/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Needlr Benchmarks</title>
-              <style>
-                  body {
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                      max-width: 1200px;
-                      margin: 50px auto;
-                      padding: 20px;
-                      background: #f5f5f5;
-                  }
-                  .card {
-                      background: white;
-                      border-radius: 8px;
-                      padding: 30px;
-                      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                      margin-bottom: 20px;
-                  }
-                  h1 { color: #333; margin-top: 0; }
-                  h2 { color: #555; border-bottom: 2px solid #7c4dff; padding-bottom: 10px; }
-                  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-                  th { background: #f8f9fa; font-weight: 600; }
-                  tr:hover { background: #f5f5f5; }
-                  .baseline { background: #e8f5e9; }
-                  .faster { color: #2e7d32; }
-                  .slower { color: #c62828; }
-                  a { color: #7c4dff; text-decoration: none; }
-                  a:hover { text-decoration: underline; }
-                  .timestamp { color: #666; font-size: 0.9em; }
-                  .nav { margin-bottom: 20px; }
-                  .nav a { margin-right: 20px; }
-              </style>
-          </head>
-          <body>
-              <div class="nav">
-                  <a href="../">← Back to Documentation</a>
-              </div>
-              <div class="card">
-                  <h1>📊 Needlr Benchmarks</h1>
-                  <p>Performance comparison between source-generated and reflection-based dependency injection.</p>
-                  <p class="timestamp">Last updated: TIMESTAMP_PLACEHOLDER</p>
-              </div>
-              
-              <div class="card">
-                  <h2>Benchmark Reports</h2>
-                  <p>View detailed benchmark results:</p>
-                  <ul>
-                      <li><a href="results/">HTML Reports</a> - Detailed benchmark results with charts</li>
-                  </ul>
-              </div>
-              
-              <div class="card">
-                  <h2>Summary</h2>
-                  <p>Needlr's source generation approach provides faster service registration and resolution compared to reflection-based alternatives.</p>
-                  <p><strong>Key findings:</strong></p>
-                  <ul>
-                      <li>Source-gen registration is typically <strong>faster</strong> than reflection</li>
-                      <li>Service resolution performance is comparable once the container is built</li>
-                      <li>Memory allocation is reduced with source generation</li>
-                  </ul>
-              </div>
-          </body>
-          </html>
-          EOF
-          
-          # Replace timestamp placeholder
-          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
-          sed -i "s/TIMESTAMP_PLACEHOLDER/$TIMESTAMP/g" site/benchmarks/index.html
+          cp benchmark-results/results.json site/benchmarks/results/results.json 2>/dev/null || true
 
       - name: Save Last Benchmark Commit
         run: echo "${{ github.sha }}" > site/.last-benchmark-commit
