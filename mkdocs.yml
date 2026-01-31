@@ -1,0 +1,120 @@
+site_name: Needlr
+site_url: https://ncosentino.github.io/needlr/
+site_description: Opinionated fluent dependency injection for .NET with source generation
+repo_url: https://github.com/ncosentino/needlr
+repo_name: ncosentino/needlr
+
+theme:
+  name: material
+  logo: assets/needlr.webp
+  favicon: assets/needlr.webp
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts: core-concepts.md
+  - Features:
+    - Service Registration: register-as.md
+    - Hosted Services: hosted-services.md
+    - Keyed Services: keyed-services.md
+    - Options Binding: options.md
+    - Factories: factories.md
+    - Interceptors: interceptors.md
+    - Open Generic Decorators: open-generic-decorators.md
+    - Service Catalog: service-catalog.md
+    - Breadcrumbs: breadcrumbs.md
+  - Advanced:
+    - Advanced Usage: advanced-usage.md
+    - Plugin Development: plugin-development.md
+  - Analyzers:
+    - Overview: analyzers/README.md
+    - Core Analyzers:
+      - NDLRCOR001: analyzers/NDLRCOR001.md
+      - NDLRCOR002: analyzers/NDLRCOR002.md
+      - NDLRCOR003: analyzers/NDLRCOR003.md
+      - NDLRCOR004: analyzers/NDLRCOR004.md
+      - NDLRCOR005: analyzers/NDLRCOR005.md
+      - NDLRCOR006: analyzers/NDLRCOR006.md
+      - NDLRCOR007: analyzers/NDLRCOR007.md
+      - NDLRCOR008: analyzers/NDLRCOR008.md
+      - NDLRCOR009: analyzers/NDLRCOR009.md
+      - NDLRCOR010: analyzers/NDLRCOR010.md
+      - NDLRCOR011: analyzers/NDLRCOR011.md
+      - NDLRCOR012: analyzers/NDLRCOR012.md
+      - NDLRCOR015: analyzers/NDLRCOR015.md
+    - Generator Analyzers:
+      - NDLRGEN001: analyzers/NDLRGEN001.md
+      - NDLRGEN002: analyzers/NDLRGEN002.md
+      - NDLRGEN003: analyzers/NDLRGEN003.md
+      - NDLRGEN004: analyzers/NDLRGEN004.md
+      - NDLRGEN005: analyzers/NDLRGEN005.md
+      - NDLRGEN006: analyzers/NDLRGEN006.md
+      - NDLRGEN007: analyzers/NDLRGEN007.md
+      - NDLRGEN008: analyzers/NDLRGEN008.md
+      - NDLRGEN014: analyzers/NDLRGEN014.md
+      - NDLRGEN015: analyzers/NDLRGEN015.md
+      - NDLRGEN016: analyzers/NDLRGEN016.md
+      - NDLRGEN017: analyzers/NDLRGEN017.md
+      - NDLRGEN018: analyzers/NDLRGEN018.md
+      - NDLRGEN019: analyzers/NDLRGEN019.md
+      - NDLRGEN020: analyzers/NDLRGEN020.md
+      - NDLRGEN021: analyzers/NDLRGEN021.md
+      - NDLRGEN022: analyzers/NDLRGEN022.md
+    - SignalR Analyzers:
+      - NDLRSIG001: analyzers/NDLRSIG001.md
+      - NDLRSIG002: analyzers/NDLRSIG002.md
+  - Video Tutorials: video-tutorials.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ncosentino/needlr
+
+docs_dir: docs

@@ -1,0 +1,194 @@
+name: Benchmarks
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+  # Weekly on Sunday at 3am UTC
+  schedule:
+    - cron: '0 3 * * 0'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes since last benchmark
+        id: check
+        run: |
+          # Fetch gh-pages branch if it exists
+          git fetch origin gh-pages:gh-pages 2>/dev/null || true
+          
+          # Try to get last benchmarked commit
+          LAST_COMMIT=$(git show gh-pages:.last-benchmark-commit 2>/dev/null || echo "")
+          
+          echo "Last benchmarked commit: $LAST_COMMIT"
+          echo "Current commit: ${{ github.sha }}"
+          
+          # For manual trigger, always run
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger - running benchmarks"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          elif [ -z "$LAST_COMMIT" ]; then
+            echo "No previous benchmark found - running benchmarks"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          elif [ "$LAST_COMMIT" = "${{ github.sha }}" ]; then
+            echo "No changes since last benchmark - skipping"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected - running benchmarks"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+  run-benchmarks:
+    needs: check-changes
+    if: needs.check-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj
+
+      - name: Build Benchmarks
+        run: dotnet build src/NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj -c Release --no-restore
+
+      - name: Run Benchmarks
+        run: |
+          cd src/NexusLabs.Needlr.Benchmarks
+          dotnet run -c Release --no-build -- \
+            --filter '*' \
+            --exporters json markdown html \
+            --artifacts ../../benchmark-results
+
+      - name: Upload Benchmark Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results/
+
+      - name: Setup Python for MkDocs
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install MkDocs
+        run: pip install mkdocs-material
+
+      - name: Build Documentation
+        run: python -m mkdocs build
+
+      - name: Prepare Benchmark Results for Pages
+        run: |
+          # Create benchmarks directory in site
+          mkdir -p site/benchmarks/results
+          
+          # Copy latest results
+          cp -r benchmark-results/* site/benchmarks/ 2>/dev/null || true
+          
+          # Create simple index page for benchmarks
+          cat > site/benchmarks/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Needlr Benchmarks</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      max-width: 1200px;
+                      margin: 50px auto;
+                      padding: 20px;
+                      background: #f5f5f5;
+                  }
+                  .card {
+                      background: white;
+                      border-radius: 8px;
+                      padding: 30px;
+                      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                      margin-bottom: 20px;
+                  }
+                  h1 { color: #333; margin-top: 0; }
+                  h2 { color: #555; border-bottom: 2px solid #7c4dff; padding-bottom: 10px; }
+                  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+                  th { background: #f8f9fa; font-weight: 600; }
+                  tr:hover { background: #f5f5f5; }
+                  .baseline { background: #e8f5e9; }
+                  .faster { color: #2e7d32; }
+                  .slower { color: #c62828; }
+                  a { color: #7c4dff; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+                  .timestamp { color: #666; font-size: 0.9em; }
+                  .nav { margin-bottom: 20px; }
+                  .nav a { margin-right: 20px; }
+              </style>
+          </head>
+          <body>
+              <div class="nav">
+                  <a href="../">← Back to Documentation</a>
+              </div>
+              <div class="card">
+                  <h1>📊 Needlr Benchmarks</h1>
+                  <p>Performance comparison between source-generated and reflection-based dependency injection.</p>
+                  <p class="timestamp">Last updated: TIMESTAMP_PLACEHOLDER</p>
+              </div>
+              
+              <div class="card">
+                  <h2>Benchmark Reports</h2>
+                  <p>View detailed benchmark results:</p>
+                  <ul>
+                      <li><a href="results/">HTML Reports</a> - Detailed benchmark results with charts</li>
+                  </ul>
+              </div>
+              
+              <div class="card">
+                  <h2>Summary</h2>
+                  <p>Needlr's source generation approach provides faster service registration and resolution compared to reflection-based alternatives.</p>
+                  <p><strong>Key findings:</strong></p>
+                  <ul>
+                      <li>Source-gen registration is typically <strong>faster</strong> than reflection</li>
+                      <li>Service resolution performance is comparable once the container is built</li>
+                      <li>Memory allocation is reduced with source generation</li>
+                  </ul>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          # Replace timestamp placeholder
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          sed -i "s/TIMESTAMP_PLACEHOLDER/$TIMESTAMP/g" site/benchmarks/index.html
+
+      - name: Save Last Benchmark Commit
+        run: echo "${{ github.sha }}" > site/.last-benchmark-commit
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true

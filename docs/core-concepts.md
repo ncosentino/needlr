@@ -4,7 +4,7 @@ This guide explains the fundamental concepts and architecture of Needlr.
 
 ## Architecture Overview
 
-Needlr is built around several key components that work together to provide automatic dependency injection. **Needlr is source-generation-first**: compile-time discovery is the default, with reflection available as an opt-in alternative.
+Needlr is built around several key components that work together to provide automatic dependency injection. **Needlr is source-generation-first**: compile-time discovery is the recommended approach, though both source-gen (`.UsingSourceGen()`) and reflection (`.UsingReflection()`) require explicit opt-in.
 
 ```
                          ┌─────────────────────────┐

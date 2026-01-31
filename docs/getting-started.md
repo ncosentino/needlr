@@ -2,7 +2,7 @@
 
 Needlr is an opinionated dependency injection library for .NET that simplifies service registration and web application setup through automatic discovery and a fluent API.
 
-**Needlr is source-generation-first**: The recommended approach uses compile-time source generation for AOT compatibility. Reflection-based discovery is available as an explicit opt-in for dynamic scenarios.
+**Needlr is source-generation-first**: The recommended approach uses compile-time source generation for AOT compatibility. Both source-gen and reflection require explicit opt-in via `.UsingSourceGen()` or `.UsingReflection()`.
 
 ## Installation
 

@@ -72,19 +72,31 @@ jobs:
         name: coverage-report
         path: coverage/report/
 
+    - name: Setup Python for MkDocs
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install MkDocs
+      run: pip install mkdocs-material
+
+    - name: Build Documentation
+      run: python -m mkdocs build
+
     - name: Deploy Coverage Report to GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        mkdir -p pages-deploy/coverage
-        cp .github/pages/index.html pages-deploy/
-        cp -r coverage/report/* pages-deploy/coverage/
+        # MkDocs output is in site/
+        # Coverage goes into site/coverage/
+        mkdir -p site/coverage
+        cp -r coverage/report/* site/coverage/
 
     - name: Publish to GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./pages-deploy
+        publish_dir: ./site
 
     - name: Update Coverage Badge JSON
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

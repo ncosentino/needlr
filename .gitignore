@@ -117,3 +117,6 @@ claude-flow.ps1
 hive-mind-prompt-*.txt
 **appsettings.Development.json
 **/BenchmarkDotNet.Artifacts/**
+
+# MkDocs
+site/
