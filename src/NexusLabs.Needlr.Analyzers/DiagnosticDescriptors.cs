@@ -169,4 +169,17 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "When using [RegisterAs<T>], T must be an interface that the decorated class implements. The class will only be registered as the specified interface, so it must actually implement it.",
         helpLinkUri: HelpLinkBase + "NDLRCOR015.md");
+
+    /// <summary>
+    /// NDLRCOR012: Disposable captive dependency - longer-lived service holds IDisposable with shorter lifetime.
+    /// </summary>
+    public static readonly DiagnosticDescriptor DisposableCaptiveDependency = new(
+        id: DiagnosticIds.DisposableCaptiveDependency,
+        title: "Disposable captive dependency",
+        messageFormat: "'{0}' ({1}) depends on '{2}' ({3}) which implements {4}. The disposable will be disposed when its scope ends while '{0}' continues to hold a reference.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A longer-lived service holds a reference to a shorter-lived IDisposable/IAsyncDisposable. When the shorter-lived scope ends, the dependency will be disposed while the longer-lived service still holds a reference, causing ObjectDisposedException at runtime. Use a factory pattern (Func<T>) or IServiceScopeFactory to resolve scoped dependencies on demand.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR012.md");
 }

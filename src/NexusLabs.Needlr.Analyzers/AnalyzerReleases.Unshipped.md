@@ -5,3 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRCOR012 | NexusLabs.Needlr | Error | Disposable captive dependency - longer-lived service holds IDisposable with shorter lifetime

@@ -67,4 +67,9 @@ public static class DiagnosticIds
     /// NDLRCOR015: [RegisterAs&lt;T&gt;] type argument must be an interface implemented by the class.
     /// </summary>
     public const string RegisterAsTypeArgNotImplemented = "NDLRCOR015";
+
+    /// <summary>
+    /// NDLRCOR012: Disposable captive dependency - longer-lived service holds IDisposable with shorter lifetime.
+    /// </summary>
+    public const string DisposableCaptiveDependency = "NDLRCOR012";
 }
