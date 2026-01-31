@@ -123,21 +123,23 @@ public sealed class HostedServiceParityTests
         var sgHosted = sourceGenProvider.GetServices<IHostedService>().ToList();
         var refHosted = reflectionProvider.GetServices<IHostedService>().ToList();
 
-        // All should be wrapped by TrackerHostedServiceDecorator
-        Assert.All(sgHosted, hs => Assert.IsType<TrackerHostedServiceDecorator>(hs));
-        Assert.All(refHosted, hs => Assert.IsType<TrackerHostedServiceDecorator>(hs));
+        // Outermost decorator should be MetricsHostedServiceDecorator (Order=2)
+        Assert.All(sgHosted, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
+        Assert.All(refHosted, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
         
-        // Get wrapped types from source-gen
+        // Get innermost wrapped types from source-gen
         var sgWrappedTypes = sgHosted
-            .Cast<TrackerHostedServiceDecorator>()
-            .Select(d => d.Wrapped.GetType())
+            .Cast<MetricsHostedServiceDecorator>()
+            .Select(GetInnermostService)
+            .Select(s => s.GetType())
             .OrderBy(t => t.Name)
             .ToList();
         
-        // Get wrapped types from reflection
+        // Get innermost wrapped types from reflection
         var refWrappedTypes = refHosted
-            .Cast<TrackerHostedServiceDecorator>()
-            .Select(d => d.Wrapped.GetType())
+            .Cast<MetricsHostedServiceDecorator>()
+            .Select(GetInnermostService)
+            .Select(s => s.GetType())
             .OrderBy(t => t.Name)
             .ToList();
         
@@ -155,6 +157,13 @@ public sealed class HostedServiceParityTests
         Assert.DoesNotContain(typeof(ExcludedWorkerService), refWrappedTypes);
     }
 
+    private static IHostedService GetInnermostService(MetricsHostedServiceDecorator metrics)
+    {
+        var logging = (LoggingHostedServiceDecorator)metrics.Wrapped;
+        var tracker = (TrackerHostedServiceDecorator)logging.Wrapped;
+        return tracker.Wrapped;
+    }
+
     [Fact]
     public void Parity_DecoratorApplied_BothWrapSameServices()
     {
@@ -169,18 +178,124 @@ public sealed class HostedServiceParityTests
         var sgHosted = sourceGenProvider.GetServices<IHostedService>().ToList();
         var refHosted = reflectionProvider.GetServices<IHostedService>().ToList();
 
-        // Verify source-gen has TestWorkerService wrapped
-        var sgDecorators = sgHosted.Cast<TrackerHostedServiceDecorator>().ToList();
-        var sgTestWorker = sgDecorators.SingleOrDefault(d => d.Wrapped is TestWorkerService);
-        var sgAnotherWorker = sgDecorators.SingleOrDefault(d => d.Wrapped is AnotherWorkerService);
-        Assert.NotNull(sgTestWorker);
-        Assert.NotNull(sgAnotherWorker);
+        // Outermost decorator should be MetricsHostedServiceDecorator (Order=2)
+        Assert.All(sgHosted, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
+        Assert.All(refHosted, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
         
-        // Verify reflection has TestWorkerService wrapped
-        var refDecorators = refHosted.Cast<TrackerHostedServiceDecorator>().ToList();
-        var refTestWorker = refDecorators.SingleOrDefault(d => d.Wrapped is TestWorkerService);
-        var refAnotherWorker = refDecorators.SingleOrDefault(d => d.Wrapped is AnotherWorkerService);
-        Assert.NotNull(refTestWorker);
-        Assert.NotNull(refAnotherWorker);
+        // Verify the full decorator chain on source-gen
+        var sgMetrics = sgHosted.Cast<MetricsHostedServiceDecorator>().ToList();
+        foreach (var metric in sgMetrics)
+        {
+            Assert.IsType<LoggingHostedServiceDecorator>(metric.Wrapped);
+            var logging = (LoggingHostedServiceDecorator)metric.Wrapped;
+            Assert.IsType<TrackerHostedServiceDecorator>(logging.Wrapped);
+        }
+        
+        // Verify the full decorator chain on reflection
+        var refMetrics = refHosted.Cast<MetricsHostedServiceDecorator>().ToList();
+        foreach (var metric in refMetrics)
+        {
+            Assert.IsType<LoggingHostedServiceDecorator>(metric.Wrapped);
+            var logging = (LoggingHostedServiceDecorator)metric.Wrapped;
+            Assert.IsType<TrackerHostedServiceDecorator>(logging.Wrapped);
+        }
+    }
+
+    [Fact]
+    public void Parity_MultiLevelDecorators_ChainIdenticalBetweenBoth()
+    {
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .BuildServiceProvider();
+
+        var sgHosted = sourceGenProvider.GetServices<IHostedService>().ToList();
+        var refHosted = reflectionProvider.GetServices<IHostedService>().ToList();
+
+        Assert.Equal(2, sgHosted.Count);
+        Assert.Equal(2, refHosted.Count);
+
+        // Unwrap the full chain for source-gen
+        var sgChains = sgHosted.Select(GetDecoratorChain).OrderBy(c => c.InnerType.Name).ToList();
+        var refChains = refHosted.Select(GetDecoratorChain).OrderBy(c => c.InnerType.Name).ToList();
+
+        // Verify chain structure is identical
+        for (int i = 0; i < sgChains.Count; i++)
+        {
+            Assert.Equal(sgChains[i].DecoratorTypes, refChains[i].DecoratorTypes);
+            Assert.Equal(sgChains[i].InnerType, refChains[i].InnerType);
+        }
+
+        // Verify specific inner types
+        var sgInnerTypes = sgChains.Select(c => c.InnerType).ToHashSet();
+        var refInnerTypes = refChains.Select(c => c.InnerType).ToHashSet();
+        
+        Assert.Contains(typeof(TestWorkerService), sgInnerTypes);
+        Assert.Contains(typeof(AnotherWorkerService), sgInnerTypes);
+        Assert.Contains(typeof(TestWorkerService), refInnerTypes);
+        Assert.Contains(typeof(AnotherWorkerService), refInnerTypes);
+    }
+
+    [Fact]
+    public void Parity_MultiLevelDecorators_CorrectOrderApplied()
+    {
+        var sourceGenProvider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        var reflectionProvider = new Syringe()
+            .UsingReflection()
+            .BuildServiceProvider();
+
+        var sgHosted = sourceGenProvider.GetServices<IHostedService>().First();
+        var refHosted = reflectionProvider.GetServices<IHostedService>().First();
+
+        // Expected chain (outermost to innermost):
+        // MetricsHostedServiceDecorator (Order=2) -> 
+        // LoggingHostedServiceDecorator (Order=1) -> 
+        // TrackerHostedServiceDecorator (Order=0) -> 
+        // Actual Service
+
+        var sgChain = GetDecoratorChain(sgHosted);
+        var refChain = GetDecoratorChain(refHosted);
+
+        var expectedDecoratorOrder = new[]
+        {
+            typeof(MetricsHostedServiceDecorator),
+            typeof(LoggingHostedServiceDecorator),
+            typeof(TrackerHostedServiceDecorator)
+        };
+
+        Assert.Equal(expectedDecoratorOrder, sgChain.DecoratorTypes);
+        Assert.Equal(expectedDecoratorOrder, refChain.DecoratorTypes);
+    }
+
+    private static (Type[] DecoratorTypes, Type InnerType) GetDecoratorChain(IHostedService service)
+    {
+        var decoratorTypes = new List<Type>();
+        IHostedService current = service;
+
+        while (current is MetricsHostedServiceDecorator metrics)
+        {
+            decoratorTypes.Add(typeof(MetricsHostedServiceDecorator));
+            current = metrics.Wrapped;
+        }
+
+        while (current is LoggingHostedServiceDecorator logging)
+        {
+            decoratorTypes.Add(typeof(LoggingHostedServiceDecorator));
+            current = logging.Wrapped;
+        }
+
+        while (current is TrackerHostedServiceDecorator tracker)
+        {
+            decoratorTypes.Add(typeof(TrackerHostedServiceDecorator));
+            current = tracker.Wrapped;
+        }
+
+        return (decoratorTypes.ToArray(), current.GetType());
     }
 }

@@ -65,16 +65,17 @@ public sealed class HostedServiceReflectionTests
 
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToList();
 
-        // Expect exactly 2 hosted services: TestWorkerService and AnotherWorkerService (wrapped by decorator)
+        // Expect exactly 2 hosted services: TestWorkerService and AnotherWorkerService (wrapped by decorators)
         Assert.Equal(2, hostedServices.Count);
         
-        // All should be wrapped by TrackerHostedServiceDecorator
-        Assert.All(hostedServices, hs => Assert.IsType<TrackerHostedServiceDecorator>(hs));
+        // Outermost decorator should be MetricsHostedServiceDecorator (Order=2)
+        Assert.All(hostedServices, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
         
-        // Verify the specific wrapped services
+        // Verify the specific wrapped services at the innermost level
         var wrappedTypes = hostedServices
-            .Cast<TrackerHostedServiceDecorator>()
-            .Select(d => d.Wrapped.GetType())
+            .Cast<MetricsHostedServiceDecorator>()
+            .Select(GetInnermostService)
+            .Select(s => s.GetType())
             .ToList();
         
         Assert.Contains(typeof(TestWorkerService), wrappedTypes);
@@ -93,18 +94,67 @@ public sealed class HostedServiceReflectionTests
 
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToList();
         
-        // All hosted services should be TrackerHostedServiceDecorator instances
-        Assert.All(hostedServices, hs => Assert.IsType<TrackerHostedServiceDecorator>(hs));
+        // All hosted services should be MetricsHostedServiceDecorator instances (outermost)
+        Assert.All(hostedServices, hs => Assert.IsType<MetricsHostedServiceDecorator>(hs));
         
-        // Verify each decorator wraps the expected concrete type
-        var decorators = hostedServices.Cast<TrackerHostedServiceDecorator>().ToList();
+        // Verify the full decorator chain
+        foreach (var service in hostedServices.Cast<MetricsHostedServiceDecorator>())
+        {
+            Assert.IsType<LoggingHostedServiceDecorator>(service.Wrapped);
+            var logging = (LoggingHostedServiceDecorator)service.Wrapped;
+            Assert.IsType<TrackerHostedServiceDecorator>(logging.Wrapped);
+        }
         
-        var testWorkerDecorator = decorators.SingleOrDefault(d => d.Wrapped is TestWorkerService);
-        Assert.NotNull(testWorkerDecorator);
-        Assert.IsType<TestWorkerService>(testWorkerDecorator.Wrapped);
+        // Verify innermost services are the expected worker services
+        var innerServices = hostedServices
+            .Cast<MetricsHostedServiceDecorator>()
+            .Select(GetInnermostService)
+            .ToList();
         
-        var anotherWorkerDecorator = decorators.SingleOrDefault(d => d.Wrapped is AnotherWorkerService);
-        Assert.NotNull(anotherWorkerDecorator);
-        Assert.IsType<AnotherWorkerService>(anotherWorkerDecorator.Wrapped);
+        var testWorker = innerServices.SingleOrDefault(s => s is TestWorkerService);
+        Assert.NotNull(testWorker);
+        
+        var anotherWorker = innerServices.SingleOrDefault(s => s is AnotherWorkerService);
+        Assert.NotNull(anotherWorker);
+    }
+
+    [Fact]
+    public void HostedService_MultiLevelDecorators_AppliedInCorrectOrder()
+    {
+        var serviceProvider = new Syringe()
+            .UsingReflection()
+            .BuildServiceProvider();
+
+        var hostedServices = serviceProvider.GetServices<IHostedService>().ToList();
+        
+        Assert.Equal(2, hostedServices.Count);
+        
+        // Verify decorator chain order for each hosted service
+        foreach (var service in hostedServices)
+        {
+            // Outermost: MetricsHostedServiceDecorator (Order=2)
+            Assert.IsType<MetricsHostedServiceDecorator>(service);
+            var metrics = (MetricsHostedServiceDecorator)service;
+            
+            // Middle: LoggingHostedServiceDecorator (Order=1)
+            Assert.IsType<LoggingHostedServiceDecorator>(metrics.Wrapped);
+            var logging = (LoggingHostedServiceDecorator)metrics.Wrapped;
+            
+            // Inner: TrackerHostedServiceDecorator (Order=0)
+            Assert.IsType<TrackerHostedServiceDecorator>(logging.Wrapped);
+            var tracker = (TrackerHostedServiceDecorator)logging.Wrapped;
+            
+            // Innermost: Actual service
+            Assert.True(
+                tracker.Wrapped is TestWorkerService or AnotherWorkerService,
+                $"Expected TestWorkerService or AnotherWorkerService but got {tracker.Wrapped.GetType().Name}");
+        }
+    }
+
+    private static IHostedService GetInnermostService(MetricsHostedServiceDecorator metrics)
+    {
+        var logging = (LoggingHostedServiceDecorator)metrics.Wrapped;
+        var tracker = (TrackerHostedServiceDecorator)logging.Wrapped;
+        return tracker.Wrapped;
     }
 }
