@@ -32,6 +32,7 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 Additional documentation:
 - [Core Concepts](docs/core-concepts.md) - Understand the architecture and design
 - [Hosted Services](docs/hosted-services.md) - Auto-discovery of BackgroundService and IHostedService
+- [Keyed Services](docs/keyed-services.md) - Multiple implementations with different keys
 - [Service Catalog](docs/service-catalog.md) - Query your DI registrations at runtime
 - [Plugin Development](docs/plugin-development.md) - Create custom plugins to extend functionality
 - [Advanced Usage](docs/advanced-usage.md) - Complex scenarios and optimization techniques
