@@ -307,16 +307,10 @@ namespace NexusLabs.Needlr.Generators
             out var outputCompilation,
             out var diagnostics);
 
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
+        // Return only TypeRegistry file - decorators are registered there
+        var registryTree = outputCompilation.SyntaxTrees
+            .FirstOrDefault(t => t.FilePath.EndsWith("TypeRegistry.g.cs"));
 
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        return registryTree?.GetText().ToString() ?? string.Empty;
     }
 }

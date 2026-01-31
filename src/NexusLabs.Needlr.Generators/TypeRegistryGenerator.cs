@@ -131,6 +131,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 spc.AddSource("OptionsConstructors.g.cs", SourceText.From(constructorsText, Encoding.UTF8));
             }
 
+            // Generate ServiceCatalog for runtime introspection
+            var catalogText = CodeGen.ServiceCatalogCodeGenerator.GenerateServiceCatalogSource(discoveryResult, assemblyName, projectDirectory, breadcrumbs);
+            spc.AddSource("ServiceCatalog.g.cs", SourceText.From(catalogText, Encoding.UTF8));
+
             // Generate diagnostic output files if configured
             var diagnosticOptions = GetDiagnosticOptions(configOptions);
             if (diagnosticOptions.Enabled)

@@ -1078,18 +1078,27 @@ namespace TestApp
         // Act - Get all files with None
         var noneFiles = RunGeneratorWithBreadcrumbLevelGetFiles(source, "None");
 
-        // Assert - Multiple files should be generated
-        Assert.True(verboseFiles.Length >= 2, "Should have at least TypeRegistry and InterceptorProxies files");
-        Assert.True(noneFiles.Length >= 2, "Should have at least TypeRegistry and InterceptorProxies files");
+        // Filter to only registration files - exclude metadata catalogs
+        // The file path includes generator name, so check the actual file name
+        var verboseRegistrationFiles = verboseFiles.Where(f => 
+            f.FilePath.EndsWith("TypeRegistry.g.cs") || f.FilePath.EndsWith("InterceptorProxies.g.cs")).ToArray();
+        var noneRegistrationFiles = noneFiles.Where(f => 
+            f.FilePath.EndsWith("TypeRegistry.g.cs") || f.FilePath.EndsWith("InterceptorProxies.g.cs")).ToArray();
 
-        // Assert - All verbose files should have verbose markers
-        foreach (var file in verboseFiles)
+        // Assert - Multiple registration files should be generated
+        Assert.True(verboseRegistrationFiles.Length >= 2, 
+            $"Should have at least TypeRegistry and InterceptorProxies files, got: {string.Join(", ", verboseRegistrationFiles.Select(f => f.FilePath))}");
+        Assert.True(noneRegistrationFiles.Length >= 2, 
+            $"Should have at least TypeRegistry and InterceptorProxies files, got: {string.Join(", ", noneRegistrationFiles.Select(f => f.FilePath))}");
+
+        // Assert - All verbose registration files should have verbose markers
+        foreach (var file in verboseRegistrationFiles)
         {
             Assert.Contains("═══════════════", file.Content);
         }
 
         // Assert - No none files should have verbose markers
-        foreach (var file in noneFiles)
+        foreach (var file in noneRegistrationFiles)
         {
             Assert.DoesNotContain("═══════════════", file.Content);
         }
@@ -1187,8 +1196,10 @@ namespace TestApp
             out var outputCompilation,
             out var diagnostics);
 
+        // Return all generated files except ServiceCatalog (has timestamp that varies)
         var generatedTrees = outputCompilation.SyntaxTrees
             .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .Where(t => !t.FilePath.EndsWith("ServiceCatalog.g.cs"))
             .OrderBy(t => t.FilePath)
             .ToList();
 
@@ -1234,6 +1245,7 @@ namespace TestApp
             out var outputCompilation,
             out var diagnostics);
 
+        // Return all generated files for tests to filter as needed
         return outputCompilation.SyntaxTrees
             .Where(t => t.FilePath.EndsWith(".g.cs"))
             .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
