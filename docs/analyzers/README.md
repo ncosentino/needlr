@@ -19,6 +19,7 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR009](NDLRCOR009.md) | Info | Lazy<T> references undiscovered type |
 | [NDLRCOR010](NDLRCOR010.md) | Info | IEnumerable<T> has no discovered implementations |
 | [NDLRCOR011](NDLRCOR011.md) | Info | [FromKeyedServices] keyed service usage tracking |
+| [NDLRCOR012](NDLRCOR012.md) | Error | Disposable captive dependency |
 | [NDLRCOR015](NDLRCOR015.md) | Error | [RegisterAs<T>] type T not implemented by class |
 
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
