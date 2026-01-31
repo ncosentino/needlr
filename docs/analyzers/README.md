@@ -53,6 +53,7 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN019](NDLRGEN019.md) | Warning | [Options] Validation method won't run (ValidateOnStart is false) |
 | [NDLRGEN020](NDLRGEN020.md) | Error | [Options] is not compatible with Native AOT |
 | [NDLRGEN021](NDLRGEN021.md) | Warning | [Options] Positional record must be partial |
+| [NDLRGEN022](NDLRGEN022.md) | Error | Disposable captive dependency (uses inferred lifetimes) |
 
 ## Diagnostic ID Naming Convention
 

@@ -5,3 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRGEN022 | NexusLabs.Needlr.Generators | Error | Disposable captive dependency detected

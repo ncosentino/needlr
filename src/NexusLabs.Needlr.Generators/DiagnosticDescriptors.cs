@@ -253,6 +253,28 @@ internal static class DiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRGEN021.md");
 
     /// <summary>
+    /// NDLRGEN022: Disposable service may be captured by a longer-lived service.
+    /// </summary>
+    /// <remarks>
+    /// This error is emitted when a longer-lived service (e.g., Singleton) has a constructor
+    /// dependency on a shorter-lived service (e.g., Scoped, Transient) that implements
+    /// IDisposable or IAsyncDisposable. This is a "captive dependency" anti-pattern where
+    /// the disposable may be disposed while the consuming service still holds a reference.
+    ///
+    /// Unlike NDLRCOR012 which only detects explicit lifetime attributes, this diagnostic
+    /// uses inferred lifetimes from Needlr's convention-based discovery, catching more issues.
+    /// </remarks>
+    public static readonly DiagnosticDescriptor DisposableCaptiveDependency = new(
+        id: "NDLRGEN022",
+        title: "Disposable captive dependency detected",
+        messageFormat: "'{0}' ({1}) depends on '{2}' ({3}) which implements IDisposable. The disposable may be disposed while '{0}' still holds a reference to it.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A longer-lived service captures a shorter-lived disposable dependency. When the shorter-lived scope ends, the dependency will be disposed while the consuming service continues to use it. This can cause ObjectDisposedException at runtime. Use Func<T> or IServiceScopeFactory to create new instances on demand.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN022.md");
+
+    /// <summary>
     /// NDLRGEN030: DataAnnotation attribute cannot be source-generated.
     /// </summary>
     public static readonly DiagnosticDescriptor UnsupportedDataAnnotation = new(

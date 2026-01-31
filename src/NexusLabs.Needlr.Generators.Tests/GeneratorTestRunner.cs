@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -210,9 +211,27 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Runs the TypeRegistryGenerator and returns diagnostics.
+    /// </summary>
+    public IReadOnlyList<Diagnostic> RunTypeRegistryGeneratorDiagnostics()
+    {
+        var generator = new TypeRegistryGenerator();
+        _ = RunGeneratorWithDiagnostics(generator, out var diagnostics);
+        return diagnostics;
+    }
+
+    /// <summary>
     /// Runs a specific generator and returns all generated files.
     /// </summary>
     public GeneratedFile[] RunGenerator(IIncrementalGenerator generator)
+    {
+        return RunGeneratorWithDiagnostics(generator, out _);
+    }
+
+    /// <summary>
+    /// Runs a specific generator and returns all generated files along with diagnostics.
+    /// </summary>
+    public GeneratedFile[] RunGeneratorWithDiagnostics(IIncrementalGenerator generator, out IReadOnlyList<Diagnostic> generatorDiagnostics)
     {
         var parseOptions = _parseOptions ?? new CSharpParseOptions();
         var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
@@ -248,6 +267,8 @@ public sealed class GeneratorTestRunner
             compilation,
             out var outputCompilation,
             out var diagnostics);
+
+        generatorDiagnostics = diagnostics;
 
         return outputCompilation.SyntaxTrees
             .Where(t => t.FilePath.EndsWith(".g.cs"))
@@ -329,6 +350,17 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Creates a runner for hosted service tests with inline hosting type definitions
+    /// and lifetime attributes (Singleton, Scoped, Transient).
+    /// </summary>
+    public static GeneratorTestRunner ForHostedServiceWithLifetimes()
+    {
+        return new GeneratorTestRunner()
+            .WithSource(InlineAttributeDefinitionsWithLifetimes)
+            .WithSource(InlineHostingDefinitions);
+    }
+
+    /// <summary>
     /// Inline attribute definitions for tests that don't use real assembly references.
     /// </summary>
     public const string InlineAttributeDefinitions = """
@@ -336,6 +368,36 @@ public sealed class GeneratorTestRunner
         {
             [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
             public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
+        }
+
+        namespace NexusLabs.Needlr.Generators
+        {
+            [System.AttributeUsage(System.AttributeTargets.Assembly)]
+            public sealed class GenerateTypeRegistryAttribute : System.Attribute
+            {
+                public string[]? IncludeNamespacePrefixes { get; set; }
+                public bool IncludeSelf { get; set; } = true;
+            }
+        }
+        """;
+
+    /// <summary>
+    /// Extended inline attribute definitions including lifetime attributes.
+    /// </summary>
+    public const string InlineAttributeDefinitionsWithLifetimes = """
+        namespace NexusLabs.Needlr
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class SingletonAttribute : System.Attribute { }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class ScopedAttribute : System.Attribute { }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class TransientAttribute : System.Attribute { }
         }
 
         namespace NexusLabs.Needlr.Generators

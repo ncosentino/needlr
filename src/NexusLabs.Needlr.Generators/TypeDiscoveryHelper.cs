@@ -502,6 +502,22 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Checks if a type implements IDisposable or IAsyncDisposable.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns>True if the type implements IDisposable or IAsyncDisposable.</returns>
+    public static bool IsDisposableType(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var iface in typeSymbol.AllInterfaces)
+        {
+            var fullName = GetFullyQualifiedName(iface);
+            if (fullName == "global::System.IDisposable" || fullName == "global::System.IAsyncDisposable")
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Known Needlr plugin interface names that indicate a type is a plugin.
     /// </summary>
     private static readonly string[] NeedlrPluginInterfaceNames =

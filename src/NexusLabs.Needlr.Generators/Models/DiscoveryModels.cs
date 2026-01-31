@@ -9,7 +9,7 @@ namespace NexusLabs.Needlr.Generators.Models;
 /// </summary>
 internal readonly struct DiscoveredType
 {
-    public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null)
+    public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null, bool isDisposable = false)
     {
         TypeName = typeName;
         InterfaceNames = interfaceNames;
@@ -18,6 +18,7 @@ internal readonly struct DiscoveredType
         ConstructorParameters = constructorParameters;
         ServiceKeys = serviceKeys;
         SourceFilePath = sourceFilePath;
+        IsDisposable = isDisposable;
     }
 
     public string TypeName { get; }
@@ -30,6 +31,10 @@ internal readonly struct DiscoveredType
     /// </summary>
     public string[] ServiceKeys { get; }
     public string? SourceFilePath { get; }
+    /// <summary>
+    /// True if this type implements IDisposable or IAsyncDisposable.
+    /// </summary>
+    public bool IsDisposable { get; }
 
     /// <summary>
     /// Gets the constructor parameter types (for backward compatibility with existing code paths).
