@@ -202,65 +202,8 @@ public sealed class HostedServiceDiscoveryTests
 
     private static string RunGenerator(string source)
     {
-        var attributeSource = """
-            namespace NexusLabs.Needlr
-            {
-                [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-                public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
-            }
-
-            namespace NexusLabs.Needlr.Generators
-            {
-                [System.AttributeUsage(System.AttributeTargets.Assembly)]
-                public sealed class GenerateTypeRegistryAttribute : System.Attribute
-                {
-                    public string[]? IncludeNamespacePrefixes { get; set; }
-                    public bool IncludeSelf { get; set; } = true;
-                }
-            }
-            """;
-
-        var hostingSource = """
-            namespace Microsoft.Extensions.Hosting
-            {
-                public interface IHostedService
-                {
-                    System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken);
-                    System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken);
-                }
-
-                public abstract class BackgroundService : IHostedService
-                {
-                    public virtual System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken) 
-                        => System.Threading.Tasks.Task.CompletedTask;
-                    public virtual System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken) 
-                        => System.Threading.Tasks.Task.CompletedTask;
-                    protected abstract System.Threading.Tasks.Task ExecuteAsync(System.Threading.CancellationToken stoppingToken);
-                }
-            }
-            """;
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[]
-            {
-                CSharpSyntaxTree.ParseText(source),
-                CSharpSyntaxTree.ParseText(attributeSource),
-                CSharpSyntaxTree.ParseText(hostingSource)
-            },
-            new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Threading.Tasks.Task).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Threading.CancellationToken).Assembly.Location)
-            },
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-        var runResult = driver.GetRunResult();
-        return string.Join("\n", runResult.GeneratedTrees.Select(t => t.GetText().ToString()));
+        return GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
     }
 }

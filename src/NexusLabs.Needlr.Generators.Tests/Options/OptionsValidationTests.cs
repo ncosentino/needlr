@@ -1,9 +1,6 @@
 // Copyright (c) NexusLabs. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests.Options;
@@ -285,45 +282,12 @@ public sealed class OptionsValidationTests
         Assert.Contains("AddOptions<global::TestApp.OptionsA>", generated);
         Assert.Contains("AddOptions<global::TestApp.OptionsB>", generated);
         Assert.Contains("Configure<global::TestApp.OptionsC>", generated);
-    }    private static string RunGenerator(string source)
-    {
-        return GetAllGeneratedFiles(source);
     }
 
-    private static string GetAllGeneratedFiles(string source)
+    private static string RunGenerator(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-        // Return all generated files except ServiceCatalog (metadata)
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .Where(t => !t.FilePath.EndsWith("ServiceCatalog.g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }}
+        return GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .RunTypeRegistryGeneratorExcluding("ServiceCatalog.g.cs");
+    }
+}

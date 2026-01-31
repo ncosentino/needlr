@@ -200,37 +200,8 @@ public sealed class OptionsNestedTests
 
     private static string RunGenerator(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-        // Return all generated sources
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-    }}
+        return GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+    }
+}

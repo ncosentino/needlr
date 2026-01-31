@@ -495,43 +495,9 @@ namespace TestApp
 
     private static string RunGenerator(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        // Use the REAL attribute assemblies instead of mocking them
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            // Return empty string if no code was generated
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        return GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
     }
 
     [Fact]
@@ -692,42 +658,9 @@ namespace TestApp
 
     private static string RunGeneratorWithDeferToContainer(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        // Use the REAL attribute assemblies instead of mocking them
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        return GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
     }
 
 #pragma warning disable xUnit1051 // Using CancellationToken with synchronous compilation methods

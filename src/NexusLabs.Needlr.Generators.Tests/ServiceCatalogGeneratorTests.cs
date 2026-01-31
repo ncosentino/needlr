@@ -366,92 +366,26 @@ public sealed class ServiceCatalogGeneratorTests
 
     private static string GetServiceCatalogOutput(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DecoratorForAttribute<>).Assembly.Location),
-            });
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references.ToArray(),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
-
-        // Return only the ServiceCatalog output
-        var catalogTree = outputCompilation.SyntaxTrees
-            .FirstOrDefault(t => t.FilePath.Contains("ServiceCatalog"));
-
-        return catalogTree?.GetText().ToString() ?? string.Empty;
+        return GeneratorTestRunner.ForTypeRegistry()
+            .WithReference<DecoratorForAttribute<object>>()
+            .WithSource(source)
+            .GetServiceCatalogOutput();
     }
 
     private static string GetTypeRegistryOutput(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DecoratorForAttribute<>).Assembly.Location),
-            });
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references.ToArray(),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
-
-        // Return only the TypeRegistry output
-        var registryTree = outputCompilation.SyntaxTrees
-            .FirstOrDefault(t => t.FilePath.EndsWith("TypeRegistry.g.cs"));
-
-        return registryTree?.GetText().ToString() ?? string.Empty;
+        return GeneratorTestRunner.ForTypeRegistry()
+            .WithReference<DecoratorForAttribute<object>>()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
     }
 
     private static string GetServiceCatalogOutputWithExtra(string source, string extraSource)
     {
-        var syntaxTrees = new[]
-        {
-            CSharpSyntaxTree.ParseText(source),
-            CSharpSyntaxTree.ParseText(extraSource)
-        };
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DecoratorForAttribute<>).Assembly.Location),
-            });
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            syntaxTrees,
-            references.ToArray(),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
-
-        // Return only the ServiceCatalog output
-        var catalogTree = outputCompilation.SyntaxTrees
-            .FirstOrDefault(t => t.FilePath.Contains("ServiceCatalog"));
-
-        return catalogTree?.GetText().ToString() ?? string.Empty;
+        return GeneratorTestRunner.ForTypeRegistry()
+            .WithReference<DecoratorForAttribute<object>>()
+            .WithSource(source)
+            .WithSource(extraSource)
+            .GetServiceCatalogOutput();
     }
 }

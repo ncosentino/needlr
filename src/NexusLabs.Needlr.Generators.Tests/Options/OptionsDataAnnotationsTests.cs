@@ -1,7 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests.Options;
@@ -400,82 +396,10 @@ public sealed class OptionsDataAnnotationsTests
 
     private static string RunGenerator(string source, bool isAot)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(isAot);
-
-        var generator = new TypeRegistryGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
-
-        var generatedCode = "";
-        var runResult = driver.GetRunResult();
-        foreach (var result in runResult.Results)
-        {
-            foreach (var generatedSource in result.GeneratedSources)
-            {
-                generatedCode += generatedSource.SourceText.ToString() + "\n";
-            }
-        }
-
-        return generatedCode;
-    }
-    
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly TestAnalyzerConfigOptions _globalOptions;
-
-        public TestAnalyzerConfigOptionsProvider(bool isAot)
-        {
-            var options = new Dictionary<string, string>
-            {
-                ["build_property.NeedlrBreadcrumbLevel"] = "Minimal"
-            };
-
-            if (isAot)
-            {
-                options["build_property.PublishAot"] = "true";
-            }
-
-            _globalOptions = new TestAnalyzerConfigOptions(options);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public TestAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
+        return GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode(isAot)
+            .WithBreadcrumbLevel("Minimal")
+            .RunTypeRegistryGenerator();
     }
 }

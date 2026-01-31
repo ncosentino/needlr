@@ -1,6 +1,4 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
+using NexusLabs.Needlr.Generators.Tests.Diagnostics;
 
 using Xunit;
 
@@ -1157,148 +1155,41 @@ namespace TestApp
         // Assert - All runs should produce identical output
         Assert.Equal(run1, run2);
         Assert.Equal(run2, run3);
-    }    private static string RunGeneratorWithBreadcrumbLevel(string source, string? breadcrumbLevel)
+    }
+
+    private static string RunGeneratorWithBreadcrumbLevel(string source, string? breadcrumbLevel)
     {
         return RunGeneratorWithOptions(source, breadcrumbLevel, null);
     }
 
     private static string RunGeneratorWithOptions(string source, string? breadcrumbLevel, string? projectDir)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var runner = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source);
 
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        
-        // Create options provider with breadcrumb level
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(breadcrumbLevel, projectDir);
-        
-        var driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        // Return all generated files except ServiceCatalog (has timestamp that varies)
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .Where(t => !t.FilePath.EndsWith("ServiceCatalog.g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
+        if (breadcrumbLevel != null)
         {
-            return string.Empty;
+            runner = runner.WithBreadcrumbLevel(breadcrumbLevel);
         }
 
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        if (projectDir != null)
+        {
+            runner = runner.WithProjectDir(projectDir);
+        }
+
+        return runner.RunTypeRegistryGeneratorExcluding("ServiceCatalog.g.cs");
     }
 
     private static GeneratedFile[] RunGeneratorWithBreadcrumbLevelGetFiles(string source, string? breadcrumbLevel)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var runner = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source);
 
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(DeferToContainerAttribute).Assembly.Location),
-            })
-            .ToArray();
+        if (breadcrumbLevel != null)
+        {
+            runner = runner.WithBreadcrumbLevel(breadcrumbLevel);
+        }
 
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        
-        // Create options provider with breadcrumb level
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(breadcrumbLevel, null);
-        
-        var driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        // Return all generated files for tests to filter as needed
-        return outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
-            .OrderBy(f => f.FilePath)
-            .ToArray();
+        return runner.RunTypeRegistryGeneratorFiles();
     }
-
-    private sealed record GeneratedFile(string FilePath, string Content);    /// <summary>
-    /// Test implementation of AnalyzerConfigOptionsProvider that allows setting
-    /// MSBuild properties for generator testing.
-    /// </summary>
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly TestAnalyzerConfigOptions _globalOptions;
-
-        public TestAnalyzerConfigOptionsProvider(string? breadcrumbLevel, string? projectDir)
-        {
-            var options = new Dictionary<string, string>();
-            
-            if (breadcrumbLevel != null)
-            {
-                options["build_property.NeedlrBreadcrumbLevel"] = breadcrumbLevel;
-            }
-            
-            if (projectDir != null)
-            {
-                options["build_property.ProjectDir"] = projectDir;
-            }
-
-            _globalOptions = new TestAnalyzerConfigOptions(options);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    /// <summary>
-    /// Test implementation of AnalyzerConfigOptions that returns configured values.
-    /// </summary>
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public TestAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
-    }}
+}

@@ -598,81 +598,16 @@ namespace TestApp
     }
     private static string RunGenerator(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(GenerateFactoryAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        return GeneratorTestRunner.ForFactory()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
     }
 
     private static string RunGeneratorWithDocs(string source)
     {
-        // Parse with documentation mode to enable XML doc extraction
-        var parseOptions = new CSharpParseOptions(documentationMode: DocumentationMode.Parse);
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(GenerateFactoryAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
-
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation,
-            out var outputCompilation,
-            out var diagnostics);
-
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        if (generatedTrees.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        return string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
+        return GeneratorTestRunner.ForFactory()
+            .WithSource(source)
+            .WithDocumentationMode()
+            .RunTypeRegistryGenerator();
     }
 }
