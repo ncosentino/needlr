@@ -1,6 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -46,7 +43,9 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Proxy class should be generated
         Assert.Contains("OrderService_InterceptorProxy", generatedCode);
@@ -99,7 +98,9 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Both interceptors should be registered
         Assert.Contains("LoggingInterceptor", generatedCode);
@@ -143,7 +144,9 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Async method should be handled correctly
         Assert.Contains("GetOrderAsync", generatedCode);
@@ -185,7 +188,9 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert
         Assert.Contains("OrderService_InterceptorProxy", generatedCode);
@@ -218,7 +223,9 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - No interceptor proxies file should be generated
         Assert.DoesNotContain("InterceptorProxies.g.cs", generatedCode);
@@ -260,17 +267,12 @@ public sealed class InterceptorProxyGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForInterceptorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert
         Assert.Contains("ProcessOrder", generatedCode);
         Assert.Contains("void", generatedCode);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForInterceptorWithInlineTypes()
-            .WithSource(source)
-            .RunTypeRegistryGenerator();
     }
 }

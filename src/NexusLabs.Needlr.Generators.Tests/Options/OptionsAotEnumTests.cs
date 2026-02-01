@@ -4,12 +4,8 @@
 using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 using Xunit;
-
-#pragma warning disable xUnit1051 // Calls to methods which accept CancellationToken
 
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
@@ -193,97 +189,24 @@ public sealed class OptionsAotEnumTests
 
     private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithAot(string source)
     {
-        return RunGenerator(source, isAot: true);
+        var runner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal");
+
+        var generatedCode = runner.GetTypeRegistryOutput();
+        var diagnostics = runner.RunTypeRegistryGeneratorDiagnostics();
+        return (generatedCode, diagnostics.ToImmutableArray());
     }
 
     private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithoutAot(string source)
     {
-        return RunGenerator(source, isAot: false);
-    }
+        var runner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal");
 
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGenerator(
-        string source,
-        bool isAot)
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(isAot);
-
-        var generator = new TypeRegistryGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
-
-        var generatedCode = "";
-        var runResult = driver.GetRunResult();
-        foreach (var result in runResult.Results)
-        {
-            foreach (var source2 in result.GeneratedSources)
-            {
-                if (source2.HintName == "TypeRegistry.g.cs")
-                {
-                    generatedCode = source2.SourceText.ToString();
-                }
-            }
-        }
-
-        return (generatedCode, diagnostics);
-    }
-
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly TestAnalyzerConfigOptions _globalOptions;
-
-        public TestAnalyzerConfigOptionsProvider(bool isAot)
-        {
-            var options = new Dictionary<string, string>
-            {
-                ["build_property.NeedlrBreadcrumbLevel"] = "Minimal"
-            };
-
-            if (isAot)
-            {
-                options["build_property.PublishAot"] = "true";
-            }
-
-            _globalOptions = new TestAnalyzerConfigOptions(options);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public TestAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
+        var generatedCode = runner.GetTypeRegistryOutput();
+        var diagnostics = runner.RunTypeRegistryGeneratorDiagnostics();
+        return (generatedCode, diagnostics.ToImmutableArray());
     }
 }

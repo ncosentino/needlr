@@ -1,6 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -49,7 +46,9 @@ public sealed class DecoratorPatternTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - ServiceDecorator should have Array.Empty<Type>() for interfaces
         Assert.Contains("typeof(global::TestNamespace.ServiceDecorator)", generatedCode);
@@ -103,7 +102,9 @@ public sealed class DecoratorPatternTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - Processor should be registered as IProcessor (not a decorator)
         Assert.Contains("typeof(global::TestNamespace.Processor), [typeof(global::TestNamespace.IProcessor)]", generatedCode);
@@ -147,7 +148,9 @@ public sealed class DecoratorPatternTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - Both decorators should have Array.Empty<Type>() for interfaces
         var lines = generatedCode.Split('\n');
@@ -206,7 +209,9 @@ public sealed class DecoratorPatternTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - LoggingDecorator should be registered as ILoggable but NOT as IService
         // The line looks like: new InjectableTypeInfo(typeof(global::TestNamespace.LoggingDecorator), [typeof(global::TestNamespace.ILoggable)], ...
@@ -224,12 +229,5 @@ public sealed class DecoratorPatternTests
         // Should have ILoggable but not IService in the interfaces array
         Assert.Contains("ILoggable", interfacesArray);
         Assert.DoesNotContain("IService", interfacesArray);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForDecoratorWithInlineTypes()
-            .WithSource(source)
-            .GetTypeRegistryOutput();
     }
 }

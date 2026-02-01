@@ -1,7 +1,4 @@
-using System.Collections.Immutable;
-
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 using Xunit;
 
@@ -390,41 +387,13 @@ public sealed class OptionsGeneratorTests
             .RunTypeRegistryGenerator();
     }
 
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithDiagnostics(string source)
+    private static (string GeneratedCode, IReadOnlyList<Diagnostic> Diagnostics) RunGeneratorWithDiagnostics(string source)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var generator = new TypeRegistryGenerator();
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-        var runResult = driver.GetRunResult();
-        var generatorDiagnostics = runResult.Diagnostics;
-
-        var generatedTrees = outputCompilation.SyntaxTrees
-            .Where(t => t.FilePath.EndsWith(".g.cs"))
-            .OrderBy(t => t.FilePath)
-            .ToList();
-
-        var generatedCode = generatedTrees.Count == 0
+        var runner = GeneratorTestRunner.ForOptions().WithSource(source);
+        var files = runner.RunGeneratorWithDiagnostics(new TypeRegistryGenerator(), out var diagnostics);
+        var generatedCode = files.Length == 0
             ? string.Empty
-            : string.Join("\n\n", generatedTrees.Select(t => t.GetText().ToString()));
-
-        return (generatedCode, generatorDiagnostics);
+            : string.Join("\n\n", files.Select(f => f.Content));
+        return (generatedCode, diagnostics);
     }
 }

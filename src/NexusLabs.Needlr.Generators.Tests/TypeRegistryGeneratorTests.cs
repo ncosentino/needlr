@@ -21,7 +21,9 @@ namespace TestApp
     public class MyService : IMyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("public static class TypeRegistry", generatedCode);
         Assert.Contains("GetInjectableTypes", generatedCode);
@@ -40,7 +42,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("ModuleInitializer", generatedCode);
         Assert.Contains("NeedlrSourceGenBootstrap.Register", generatedCode);
@@ -66,7 +70,9 @@ namespace OtherCompany.Services
     public class ExcludedService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("IncludedService", generatedCode);
         Assert.DoesNotContain("ExcludedService", generatedCode);
@@ -90,7 +96,9 @@ namespace MyCompany.Services
 public class GlobalService { }
 ";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("NamespacedService", generatedCode);
         Assert.Contains("GlobalService", generatedCode);
@@ -114,7 +122,9 @@ namespace MyCompany.Services
 public class GlobalService { }
 ";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("NamespacedService", generatedCode);
         Assert.DoesNotContain("GlobalService", generatedCode);
@@ -138,7 +148,9 @@ namespace MyCompany.Services
 public class GlobalService { }
 ";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.DoesNotContain("NamespacedService", generatedCode);
         Assert.Contains("GlobalService", generatedCode);
@@ -157,7 +169,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // The generator should still produce the TypeRegistry class
         Assert.Contains("public static class TypeRegistry", generatedCode);
@@ -179,7 +193,9 @@ namespace TestApp
     public class ConcreteService : AbstractService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("ConcreteService", generatedCode);
         // AbstractService should not be registered as a standalone injectable type
@@ -202,7 +218,9 @@ namespace TestApp
     public class Service : IService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("Service", generatedCode);
         // IService should only appear as an interface reference, not as a standalone type
@@ -226,7 +244,9 @@ namespace TestApp
     public class MyService : IMyService, IAnotherService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("typeof(global::TestApp.IMyService)", generatedCode);
         Assert.Contains("typeof(global::TestApp.IAnotherService)", generatedCode);
@@ -254,7 +274,9 @@ namespace TestApp
     public class IncludedService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("IncludedService", generatedCode);
         Assert.DoesNotContain("ExcludedService", generatedCode);
@@ -274,7 +296,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("MyService", generatedCode);
         Assert.DoesNotContain("MyRecord", generatedCode);
@@ -294,7 +318,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("MyService", generatedCode);
         Assert.DoesNotContain("MyException", generatedCode);
@@ -314,7 +340,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         Assert.Contains("MyService", generatedCode);
         Assert.DoesNotContain("MyAttribute", generatedCode);
@@ -335,7 +363,9 @@ namespace TestApp
     public class AnotherService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Verify it contains the expected class declaration and method
         Assert.Contains("public static class TypeRegistry", generatedCode);
@@ -356,7 +386,9 @@ namespace TestApp
     public class MyService : IMyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Verify lifetime is emitted (MyService has parameterless constructor -> Singleton)
         Assert.Contains("InjectableLifetime.Singleton", generatedCode);
@@ -381,7 +413,9 @@ namespace TestApp
     public class InjectableService : IInjectableService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // ServiceWithStringParam has string parameter -> should be excluded entirely
         Assert.DoesNotContain("ServiceWithStringParam", generatedCode);
@@ -404,7 +438,9 @@ namespace TestApp
     public class MyPlugin : IMyPlugin { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Verify plugin types are generated
         Assert.Contains("GetPluginTypes", generatedCode);
@@ -425,7 +461,9 @@ namespace TestApp
     public class MyPlugin : IMyPlugin { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Verify factory lambda is generated
         Assert.Contains("() => new global::TestApp.MyPlugin()", generatedCode);
@@ -451,7 +489,9 @@ namespace TestApp
     public class ValidPlugin : IMyPlugin { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // ValidPlugin should be in plugins, InvalidPlugin should not
         Assert.Contains("ValidPlugin", generatedCode);
@@ -475,7 +515,9 @@ namespace TestApp
     public class MultiPlugin : IPluginA, IPluginB { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Verify both interfaces are in the plugin entry
         Assert.Contains("typeof(global::TestApp.IPluginA)", generatedCode);
@@ -491,13 +533,6 @@ namespace TestApp
         if (endIndex < 0) return string.Empty;
 
         return generatedCode.Substring(startIndex, endIndex - startIndex + 2);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForTypeRegistry()
-            .WithSource(source)
-            .RunTypeRegistryGenerator();
     }
 
     [Fact]
@@ -522,7 +557,9 @@ namespace TestApp
     public class RegularService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should contain the regular service
         Assert.Contains("RegularService", generatedCode);
@@ -551,7 +588,9 @@ namespace TestApp
     public class ConcreteRepository { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should contain the concrete type
         Assert.Contains("ConcreteRepository", generatedCode);
@@ -577,7 +616,9 @@ namespace TestApp
     public partial class CacheService { }
 }";
 
-        var generatedCode = RunGeneratorWithDeferToContainer(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should contain factory that resolves ICacheProvider
         Assert.Contains("sp => new global::TestApp.CacheService(sp.GetRequiredService<global::TestApp.ICacheProvider>())", generatedCode);
@@ -600,7 +641,9 @@ namespace TestApp
     public partial class CacheService { }
 }";
 
-        var generatedCode = RunGeneratorWithDeferToContainer(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should contain factory that resolves both dependencies
         Assert.Contains("sp => new global::TestApp.CacheService(sp.GetRequiredService<global::TestApp.ICacheProvider>(), sp.GetRequiredService<global::TestApp.ILogger>())", generatedCode);
@@ -620,7 +663,9 @@ namespace TestApp
     public partial class SimpleService { }
 }";
 
-        var generatedCode = RunGeneratorWithDeferToContainer(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should contain parameterless factory
         Assert.Contains("sp => new global::TestApp.SimpleService()", generatedCode);
@@ -648,19 +693,14 @@ namespace TestApp
     }
 }";
 
-        var generatedCode = RunGeneratorWithDeferToContainer(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should use the DeferToContainer parameter, producing a factory with ICacheProvider
         Assert.Contains("sp => new global::TestApp.EngageFeedCacheProvider(sp.GetRequiredService<global::TestApp.ICacheProvider>())", generatedCode);
         // Should NOT produce parameterless factory
         Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
-    }
-
-    private static string RunGeneratorWithDeferToContainer(string source)
-    {
-        return GeneratorTestRunner.ForTypeRegistry()
-            .WithSource(source)
-            .RunTypeRegistryGenerator();
     }
 
 #pragma warning disable xUnit1051 // Using CancellationToken with synchronous compilation methods
@@ -848,7 +888,9 @@ namespace TestApp
     public class MyService { }
 }";
 
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Should NOT generate ForceLoadReferencedAssemblies method when no referenced assemblies have [GenerateTypeRegistry]
         Assert.DoesNotContain("ForceLoadReferencedAssemblies", generatedCode);

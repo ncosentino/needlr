@@ -1,6 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -35,7 +32,9 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert
         Assert.Contains("RegisterHostedServices", generatedCode);
@@ -65,7 +64,9 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert
         Assert.Contains("RegisterHostedServices", generatedCode);
@@ -98,7 +99,9 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Should NOT contain registration for MyWorker
         Assert.DoesNotContain("MyWorker", generatedCode);
@@ -124,7 +127,9 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Should NOT contain registration for abstract class
         Assert.DoesNotContain("BaseWorker", generatedCode);
@@ -162,7 +167,9 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Both workers should be registered
         Assert.Contains("services.AddSingleton<global::TestNamespace.WorkerA>()", generatedCode);
@@ -193,17 +200,12 @@ public sealed class HostedServiceDiscoveryTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForHostedServiceWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - ApplyDecorators should call RegisterHostedServices
         Assert.Contains("public static void ApplyDecorators(IServiceCollection services)", generatedCode);
         Assert.Contains("RegisterHostedServices(services);", generatedCode);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForHostedServiceWithInlineTypes()
-            .WithSource(source)
-            .RunTypeRegistryGenerator();
     }
 }

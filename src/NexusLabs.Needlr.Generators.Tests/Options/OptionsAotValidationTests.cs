@@ -1,15 +1,9 @@
 // Copyright (c) NexusLabs. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Immutable;
-
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 using Xunit;
-
-#pragma warning disable xUnit1051 // Calls to methods which accept CancellationToken
 
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
@@ -46,10 +40,15 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var runner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal");
+        var generatedCode = runner.GetTypeRegistryOutput();
+        var diagnostics = runner.RunTypeRegistryGeneratorDiagnostics();
 
         // Should not emit any NDLRGEN diagnostics (NDLRGEN022 will be added in future)
-        Assert.Empty(diagnostics.Where(d => d.Id.StartsWith("NDLRGEN02") || d.Id.StartsWith("NDLRGEN03")));
+        Assert.DoesNotContain(diagnostics, d => d.Id.StartsWith("NDLRGEN02") || d.Id.StartsWith("NDLRGEN03"));
 
         // ValidateDataAnnotations() is NOT emitted in AOT (uses reflection)
         Assert.DoesNotContain(".ValidateDataAnnotations()", generatedCode);
@@ -90,7 +89,11 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var generatedCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Should register the validator
         Assert.Contains("IValidateOptions<global::TestApp.OptionsWithValidator>", generatedCode);
@@ -129,7 +132,11 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var generatedCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Should register the external validator type
         Assert.Contains("AddSingleton<global::TestApp.MyValidator>", generatedCode);
@@ -170,7 +177,11 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var generatedCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Should NOT register the static validator as singleton
         Assert.DoesNotContain("AddSingleton<global::TestApp.StaticValidator>", generatedCode);
@@ -202,7 +213,11 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var generatedCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Should have named options with validation chain
         Assert.Contains("AddOptions<global::TestApp.ApiOptions>(\"Primary\")", generatedCode);
@@ -236,8 +251,15 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (aotCode, _) = RunGeneratorWithAot(source);
-        var (nonAotCode, _) = RunGeneratorWithoutAot(source);
+        var aotCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
+        var nonAotCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Non-AOT includes ValidateDataAnnotations
         Assert.Contains(".ValidateDataAnnotations()", nonAotCode);
@@ -286,106 +308,15 @@ public sealed class OptionsAotValidationTests
             }
             """;
 
-        var (generatedCode, diagnostics) = RunGeneratorWithAot(source);
+        var generatedCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
 
         // Count ValidateOnStart calls - should be 2 (Database and Cache, not Logging)
         var validateOnStartCount = generatedCode.Split(".ValidateOnStart()").Length - 1;
         Assert.Equal(2, validateOnStartCount);
     }
 
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithAot(string source)
-    {
-        return RunGenerator(source, isAot: true);
-    }
-
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGeneratorWithoutAot(string source)
-    {
-        return RunGenerator(source, isAot: false);
-    }
-
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGenerator(
-        string source,
-        bool isAot)
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(isAot);
-
-        var generator = new TypeRegistryGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
-
-        var generatedCode = "";
-        var runResult = driver.GetRunResult();
-        foreach (var result in runResult.Results)
-        {
-            foreach (var source2 in result.GeneratedSources)
-            {
-                if (source2.HintName == "TypeRegistry.g.cs")
-                {
-                    generatedCode = source2.SourceText.ToString();
-                }
-            }
-        }
-
-        return (generatedCode, diagnostics);
-    }
-
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly TestAnalyzerConfigOptions _globalOptions;
-
-        public TestAnalyzerConfigOptionsProvider(bool isAot)
-        {
-            var options = new Dictionary<string, string>
-            {
-                ["build_property.NeedlrBreadcrumbLevel"] = "Minimal"
-            };
-
-            if (isAot)
-            {
-                options["build_property.PublishAot"] = "true";
-            }
-
-            _globalOptions = new TestAnalyzerConfigOptions(options);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public TestAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
-    }
 }

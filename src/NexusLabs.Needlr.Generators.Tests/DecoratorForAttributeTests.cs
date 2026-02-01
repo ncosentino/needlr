@@ -1,6 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -45,7 +42,9 @@ public sealed class DecoratorForAttributeTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - ApplyDecorators method should be generated with the decorator
         Assert.Contains("ApplyDecorators", generatedCode);
@@ -94,7 +93,9 @@ public sealed class DecoratorForAttributeTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - Both decorators should be generated, FirstDecorator before SecondDecorator
         Assert.Contains("ApplyDecorators", generatedCode);
@@ -158,7 +159,9 @@ public sealed class DecoratorForAttributeTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - Both service decorators should be generated
         Assert.Contains("Decorators for global::TestNamespace.IServiceA", generatedCode);
@@ -200,7 +203,9 @@ public sealed class DecoratorForAttributeTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - MyDecorator should NOT be registered with IMyService interface
         // (either via Array.Empty<Type>() or by virtue of decorator pattern detection)
@@ -270,17 +275,12 @@ public sealed class DecoratorForAttributeTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .GetTypeRegistryOutput();
 
         // Assert - Both decorator registrations should be generated
         Assert.Contains("AddDecorator<global::TestNamespace.IServiceA, global::TestNamespace.MultiDecorator>", generatedCode);
         Assert.Contains("AddDecorator<global::TestNamespace.IServiceB, global::TestNamespace.MultiDecorator>", generatedCode);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForDecoratorWithInlineTypes()
-            .WithSource(source)
-            .GetTypeRegistryOutput();
     }
 }

@@ -1,15 +1,7 @@
 // Copyright (c) NexusLabs. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Immutable;
-
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
-
 using Xunit;
-
-#pragma warning disable xUnit1051 // Calls to methods which accept CancellationToken
 
 namespace NexusLabs.Needlr.Generators.Tests.Options;
 
@@ -49,15 +41,24 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path
-        var (aotCode, aotDiagnostics) = RunGenerator(source, isAot: true);
+        var aotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal");
+        var aotCode = aotRunner.GetTypeRegistryOutput();
+        var aotDiagnostics = aotRunner.RunTypeRegistryGeneratorDiagnostics();
         
         // Non-AOT path
-        var (nonAotCode, nonAotDiagnostics) = RunGenerator(source, isAot: false);
+        var nonAotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal");
+        var nonAotCode = nonAotRunner.GetTypeRegistryOutput();
+        var nonAotDiagnostics = nonAotRunner.RunTypeRegistryGeneratorDiagnostics();
 
         // Both paths should NOT emit NDLRGEN020 for interface properties
         // (matching ConfigurationBinder's silent skip behavior)
-        Assert.Empty(aotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
-        Assert.Empty(nonAotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
+        Assert.DoesNotContain(aotDiagnostics, d => d.Id == "NDLRGEN020");
+        Assert.DoesNotContain(nonAotDiagnostics, d => d.Id == "NDLRGEN020");
 
         // AOT should generate binding for Name but skip Service
         Assert.Contains("section[\"Name\"]", aotCode);
@@ -90,14 +91,23 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path
-        var (aotCode, aotDiagnostics) = RunGenerator(source, isAot: true);
+        var aotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal");
+        var aotCode = aotRunner.GetTypeRegistryOutput();
+        var aotDiagnostics = aotRunner.RunTypeRegistryGeneratorDiagnostics();
         
         // Non-AOT path
-        var (nonAotCode, nonAotDiagnostics) = RunGenerator(source, isAot: false);
+        var nonAotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal");
+        var nonAotCode = nonAotRunner.GetTypeRegistryOutput();
+        var nonAotDiagnostics = nonAotRunner.RunTypeRegistryGeneratorDiagnostics();
 
         // Both paths should NOT emit NDLRGEN020 for object properties
-        Assert.Empty(aotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
-        Assert.Empty(nonAotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
+        Assert.DoesNotContain(aotDiagnostics, d => d.Id == "NDLRGEN020");
+        Assert.DoesNotContain(nonAotDiagnostics, d => d.Id == "NDLRGEN020");
 
         // AOT should generate binding for Name but skip Data
         Assert.Contains("section[\"Name\"]", aotCode);
@@ -128,10 +138,17 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path
-        var (_, aotDiagnostics) = RunGenerator(source, isAot: true);
+        var aotDiagnostics = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .RunTypeRegistryGeneratorDiagnostics();
         
         // Non-AOT path
-        var (_, nonAotDiagnostics) = RunGenerator(source, isAot: false);
+        var nonAotDiagnostics = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal")
+            .RunTypeRegistryGeneratorDiagnostics();
 
         // Currently, neither path detects circular references
         // When NDLRGEN023 is implemented, update this test to expect the diagnostic
@@ -174,10 +191,17 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path
-        var (_, aotDiagnostics) = RunGenerator(source, isAot: true);
+        var aotDiagnostics = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .RunTypeRegistryGeneratorDiagnostics();
         
         // Non-AOT path  
-        var (_, nonAotDiagnostics) = RunGenerator(source, isAot: false);
+        var nonAotDiagnostics = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal")
+            .RunTypeRegistryGeneratorDiagnostics();
 
         // Currently, neither path detects mutual circular references
         var circularDiagnostics = aotDiagnostics.Where(d => d.Id == "NDLRGEN023").ToList();
@@ -217,14 +241,23 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path
-        var (aotCode, aotDiagnostics) = RunGenerator(source, isAot: true);
+        var aotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal");
+        var aotCode = aotRunner.GetTypeRegistryOutput();
+        var aotDiagnostics = aotRunner.RunTypeRegistryGeneratorDiagnostics();
         
         // Non-AOT path
-        var (nonAotCode, nonAotDiagnostics) = RunGenerator(source, isAot: false);
+        var nonAotRunner = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithBreadcrumbLevel("Minimal");
+        var nonAotCode = nonAotRunner.GetTypeRegistryOutput();
+        var nonAotDiagnostics = nonAotRunner.RunTypeRegistryGeneratorDiagnostics();
 
         // Both paths should NOT emit NDLRGEN020 for abstract properties
-        Assert.Empty(aotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
-        Assert.Empty(nonAotDiagnostics.Where(d => d.Id == "NDLRGEN020"));
+        Assert.DoesNotContain(aotDiagnostics, d => d.Id == "NDLRGEN020");
+        Assert.DoesNotContain(nonAotDiagnostics, d => d.Id == "NDLRGEN020");
 
         // AOT should generate binding for Name
         Assert.Contains("section[\"Name\"]", aotCode);
@@ -256,7 +289,11 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path - init-only properties should use factory pattern
-        var (aotCode, _) = RunGenerator(source, isAot: true);
+        var aotCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
         
         // Should use Options.Create with object initializer (factory pattern)
         Assert.Contains("Options.Create(new global::TestApp.ImmutableOptions", aotCode);
@@ -292,7 +329,11 @@ public sealed class OptionsParityBehaviorTests
             """;
 
         // AOT path - positional record should use constructor pattern
-        var (aotCode, _) = RunGenerator(source, isAot: true);
+        var aotCode = GeneratorTestRunner.ForOptions()
+            .WithSource(source)
+            .WithAotMode()
+            .WithBreadcrumbLevel("Minimal")
+            .GetTypeRegistryOutput();
         
         // Should use Options.Create with constructor call
         Assert.Contains("Options.Create(new global::TestApp.PositionalOptions(", aotCode);
@@ -308,89 +349,4 @@ public sealed class OptionsParityBehaviorTests
         Assert.DoesNotContain("Skipped: Secure", aotCode);
     }
 
-    private static (string GeneratedCode, ImmutableArray<Diagnostic> Diagnostics) RunGenerator(
-        string source,
-        bool isAot)
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
-        var references = Basic.Reference.Assemblies.Net100.References.All
-            .Concat(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(GenerateTypeRegistryAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(OptionsAttribute).Assembly.Location),
-            })
-            .ToArray();
-
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(isAot);
-
-        var generator = new TypeRegistryGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: new[] { generator.AsSourceGenerator() },
-            additionalTexts: Array.Empty<AdditionalText>(),
-            parseOptions: (CSharpParseOptions)syntaxTree.Options,
-            optionsProvider: optionsProvider);
-
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
-
-        var generatedCode = "";
-        var runResult = driver.GetRunResult();
-        foreach (var result in runResult.Results)
-        {
-            foreach (var source2 in result.GeneratedSources)
-            {
-                if (source2.HintName == "TypeRegistry.g.cs")
-                {
-                    generatedCode = source2.SourceText.ToString();
-                }
-            }
-        }
-
-        return (generatedCode, diagnostics);
-    }
-
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly TestAnalyzerConfigOptions _globalOptions;
-
-        public TestAnalyzerConfigOptionsProvider(bool isAot)
-        {
-            var options = new Dictionary<string, string>
-            {
-                ["build_property.NeedlrBreadcrumbLevel"] = "Minimal"
-            };
-
-            if (isAot)
-            {
-                options["build_property.PublishAot"] = "true";
-            }
-
-            _globalOptions = new TestAnalyzerConfigOptions(options);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public TestAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
-    }
 }

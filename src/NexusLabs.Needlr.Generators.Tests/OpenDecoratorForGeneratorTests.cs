@@ -1,6 +1,3 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Generators.Tests;
@@ -48,7 +45,9 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Should generate a closed decorator for IHandler<Order>
         Assert.Contains("ApplyDecorators", generatedCode);
@@ -98,7 +97,9 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Should generate closed decorators for both IHandler<Order> and IHandler<Payment>
         Assert.Contains("ApplyDecorators", generatedCode);
@@ -142,7 +143,9 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Order should be preserved in the generated code
         Assert.Contains("Order: 5", generatedCode);
@@ -192,7 +195,9 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Both decorators should be expanded
         Assert.Contains("LoggingDecorator<global::TestNamespace.Order>", generatedCode);
@@ -229,7 +234,9 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - No LoggingDecorator registrations should be generated
         // (because there are no concrete IHandler<T> implementations)
@@ -273,16 +280,11 @@ public sealed class OpenDecoratorForGeneratorTests
             """;
 
         // Act
-        var generatedCode = RunGenerator(source);
+        var generatedCode = GeneratorTestRunner.ForDecoratorWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
 
         // Assert - Should generate a decorator with both type parameters filled
         Assert.Contains("LoggingDecorator<global::TestNamespace.GetOrderRequest, global::TestNamespace.Order>", generatedCode);
-    }
-
-    private static string RunGenerator(string source)
-    {
-        return GeneratorTestRunner.ForDecoratorWithInlineTypes()
-            .WithSource(source)
-            .RunTypeRegistryGenerator();
     }
 }
