@@ -55,10 +55,6 @@ public class MyService : IReader, IWriter, ILogger
 
 Do not suppress this diagnostic. If the class doesn't implement the interface, the registration is invalid and will fail.
 
-## Related Rules
-
-- [NDLRCOR014](NDLRCOR014.md) - Similar validation for `[GenerateFactory<T>]`
-
 ## See Also
 
 - [RegisterAs Documentation](../register-as.md)

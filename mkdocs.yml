@@ -3,6 +3,7 @@ site_url: https://ncosentino.github.io/needlr/
 site_description: Opinionated fluent dependency injection for .NET with source generation
 repo_url: https://github.com/ncosentino/needlr
 repo_name: ncosentino/needlr
+strict: true
 
 theme:
   name: material

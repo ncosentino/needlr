@@ -210,7 +210,7 @@ public class DatabaseOptionsValidator : AbstractValidator<DatabaseOptions>
 }
 ```
 
-See [FluentValidation Integration](./fluentvalidation.md) for more details.
+For more details on FluentValidation integration, see the [Advanced Usage](./advanced-usage.md) guide.
 
 ## Attribute Properties
 
@@ -418,6 +418,5 @@ The following analyzers help catch common mistakes:
 
 ## See Also
 
-- [FluentValidation Integration](./fluentvalidation.md)
 - [Getting Started](./getting-started.md)
 - [Analyzers Reference](./analyzers/README.md)

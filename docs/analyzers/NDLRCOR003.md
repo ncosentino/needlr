@@ -125,4 +125,4 @@ builder.Services.AddSingleton<EngageFeedCacheProvider>(sp =>
 ## See Also
 
 - [Advanced Usage - Working with Other Source Generators](../advanced-usage.md#working-with-other-source-generators)
-- [DeferToContainer Attribute Reference](../defer-to-container.md)
+- [DeferToContainer Attribute](../core-concepts.md)

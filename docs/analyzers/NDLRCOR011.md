@@ -97,5 +97,5 @@ This analyzer only runs when:
 
 ## See Also
 
-- [Keyed Attribute](../attributes/Keyed.md) - Static keyed service registration
+- [Keyed Services](../keyed-services.md) - Static keyed service registration
 - [AnalyzerStatus.md](../breadcrumbs.md#analyzer-status) - View all active analyzers
