@@ -35,11 +35,9 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"public sealed class {implName} : {provider.TypeName}");
         builder.AppendLine("{");
 
-        // Generate constructor with all injectable properties (Required, Optional, Collection)
-        // Factory properties are not injected via constructor
+        // Generate constructor with all properties (Required, Optional, Collection, Factory)
         // Optional parameters must come last in C#
         var injectableProps = provider.Properties
-            .Where(p => p.Kind != ProviderPropertyKind.Factory)
             .OrderBy(p => p.Kind == ProviderPropertyKind.Optional ? 1 : 0)
             .ToList();
 
@@ -126,11 +124,9 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"public partial class {className} : {interfaceName}");
         builder.AppendLine("{");
 
-        // Generate constructor with all injectable properties (Required, Optional, Collection)
-        // Factory properties are not injected via constructor
+        // Generate constructor with all properties (Required, Optional, Collection, Factory)
         // Optional parameters must come last in C#
         var injectableProps = provider.Properties
-            .Where(p => p.Kind != ProviderPropertyKind.Factory)
             .OrderBy(p => p.Kind == ProviderPropertyKind.Optional ? 1 : 0)
             .ToList();
 

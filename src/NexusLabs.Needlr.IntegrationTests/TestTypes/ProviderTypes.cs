@@ -134,3 +134,10 @@ public partial class CollectionShorthandProvider { }
 /// </summary>
 [Provider(Optional = new[] { typeof(IOptionalLogger) })]
 public partial class OptionalShorthandProvider { }
+
+/// <summary>
+/// Shorthand provider with factories parameter.
+/// Generates a property for ISimpleFactoryServiceFactory.
+/// </summary>
+[Provider(Factories = new[] { typeof(SimpleFactoryService) })]
+public partial class FactoryShorthandProvider { }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
+using NexusLabs.Needlr.IntegrationTests.Generated;
 using NexusLabs.Needlr.IntegrationTests.TestTypes;
 
 using Xunit;
@@ -303,5 +304,37 @@ public sealed class ProviderSourceGenTests
 
         // OptionalLogger is registered, so it should be resolved
         Assert.NotNull(optionalProvider.OptionalLogger);
+    }
+
+    [Fact]
+    public void ShorthandFactoryProvider_IsResolvable()
+    {
+        var provider = BuildServiceProvider();
+
+        var factoryProvider = provider.GetService<IFactoryShorthandProvider>();
+
+        Assert.NotNull(factoryProvider);
+    }
+
+    [Fact]
+    public void ShorthandFactoryProvider_HasFactoryProperty()
+    {
+        var provider = BuildServiceProvider();
+
+        var factoryProvider = provider.GetRequiredService<IFactoryShorthandProvider>();
+
+        Assert.NotNull(factoryProvider.SimpleFactoryServiceFactory);
+    }
+
+    [Fact]
+    public void ShorthandFactoryProvider_FactoryCreatesInstances()
+    {
+        var provider = BuildServiceProvider();
+
+        var factoryProvider = provider.GetRequiredService<IFactoryShorthandProvider>();
+        var instance = factoryProvider.SimpleFactoryServiceFactory.Create("test-connection");
+
+        Assert.NotNull(instance);
+        Assert.Equal("test-connection", instance.ConnectionString);
     }
 }

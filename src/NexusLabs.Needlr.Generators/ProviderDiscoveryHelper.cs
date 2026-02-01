@@ -180,6 +180,11 @@ internal static class ProviderDiscoveryHelper
                         {
                             serviceTypeName = $"global::System.Collections.Generic.IEnumerable<{serviceTypeName}>";
                         }
+                        // For factories, convert to factory interface type
+                        else if (kind.Value == ProviderPropertyKind.Factory)
+                        {
+                            serviceTypeName = DeriveFactoryTypeName(typeSymbol);
+                        }
                         
                         yield return new ProviderPropertyInfo(propertyName, serviceTypeName, kind.Value);
                     }
@@ -191,6 +196,7 @@ internal static class ProviderDiscoveryHelper
     /// <summary>
     /// Derives a property name from a type (e.g., IOrderRepository → OrderRepository).
     /// For collections, pluralizes the name (e.g., IHandler → Handlers).
+    /// For factories, appends Factory suffix (e.g., IOrderService → OrderServiceFactory).
     /// </summary>
     private static string DerivePropertyName(INamedTypeSymbol typeSymbol, ProviderPropertyKind kind = ProviderPropertyKind.Required)
     {
@@ -206,6 +212,11 @@ internal static class ProviderDiscoveryHelper
         if (kind == ProviderPropertyKind.Collection)
         {
             name = Pluralize(name);
+        }
+        // Append Factory suffix for factory properties
+        else if (kind == ProviderPropertyKind.Factory)
+        {
+            name = name + "Factory";
         }
 
         return name;
@@ -232,6 +243,27 @@ internal static class ProviderDiscoveryHelper
     }
 
     private static bool IsVowel(char c) => "aeiouAEIOU".Contains(c);
+
+    /// <summary>
+    /// Derives a factory interface type name from a service type.
+    /// E.g., IOrderService → IOrderServiceFactory (in Generated namespace)
+    /// </summary>
+    private static string DeriveFactoryTypeName(INamedTypeSymbol typeSymbol)
+    {
+        var name = typeSymbol.Name;
+        
+        // Remove leading 'I' from interface names to get base name
+        if (typeSymbol.TypeKind == TypeKind.Interface && name.StartsWith("I") && name.Length > 1 && char.IsUpper(name[1]))
+        {
+            name = name.Substring(1);
+        }
+        
+        // Get the namespace of the type
+        var typeNamespace = typeSymbol.ContainingNamespace?.ToDisplayString();
+        
+        // Factory interface is I{Name}Factory
+        return $"global::{typeNamespace}.Generated.I{name}Factory";
+    }
 
     /// <summary>
     /// Determines the property kind based on the type.

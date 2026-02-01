@@ -498,4 +498,64 @@ public sealed class ProviderGeneratorTests
         // Constructor should have nullable parameter with default
         Assert.Contains("IOptionalService? optionalService = null", generatedCode);
     }
+
+    [Fact]
+    public void Generator_WithFactoriesParameter_GeneratesFactoryProperty()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IOrderService { }
+                public class OrderService : IOrderService 
+                {
+                    public OrderService(string orderId) { }
+                }
+
+                [Provider(Factories = new[] { typeof(IOrderService) })]
+                public partial class OrderProvider { }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Interface should have factory property
+        Assert.Contains("IOrderServiceFactory OrderServiceFactory { get; }", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithFactoriesOnInterface_GeneratesFactoryProperty()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IOrderService { }
+                public class OrderService : IOrderService 
+                {
+                    public OrderService(string orderId) { }
+                }
+
+                [Provider]
+                public interface IOrderProvider
+                {
+                    IOrderServiceFactory OrderServiceFactory { get; }
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Implementation should inject the factory
+        Assert.Contains("IOrderServiceFactory orderServiceFactory", generatedCode);
+        Assert.Contains("OrderServiceFactory = orderServiceFactory", generatedCode);
+    }
 }
