@@ -75,11 +75,13 @@ orderService.GetOrder(123);  // Logging interceptor wraps this call
 ### When to Use Each
 
 **Use Decorators when:**
+
 - You need different behavior for different methods
 - You're modifying only one service type
 - You need reflection support
 
 **Use Interceptors when:**
+
 - The same logic applies to all methods (logging, timing, caching)
 - You want to reuse the same interceptor across many services
 - You're using source generation

@@ -18,6 +18,7 @@ services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<MyWorkerServic
 ```
 
 This pattern allows:
+
 - Resolving by concrete type (`MyWorkerService`)
 - Resolution via `IHostedService` for the host to start/stop
 - Decorators to be applied via `IHostedService`
@@ -142,6 +143,7 @@ var hostedServices = provider.GetServices<IHostedService>();
 ## Discovery Rules
 
 A type is discovered as a hosted service if:
+
 - ✅ Inherits from `BackgroundService` OR implements `IHostedService`
 - ✅ Is a concrete class (not abstract)
 - ✅ Is accessible (public, or internal in the current assembly)

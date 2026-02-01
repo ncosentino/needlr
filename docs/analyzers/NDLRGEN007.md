@@ -11,6 +11,7 @@ A class marked with `[OpenDecoratorFor(typeof(IInterface<>))]` is either:
 When using `[OpenDecoratorFor]`, the decorator class must be an open generic with the **same number of type parameters** as the interface it decorates. This is because Needlr needs to close both the interface and decorator with the same type arguments at compile time.
 
 For example:
+
 - `IHandler<T>` (1 type parameter) → decorator must have 1 type parameter
 - `IRequestHandler<TRequest, TResponse>` (2 type parameters) → decorator must have 2 type parameters
 

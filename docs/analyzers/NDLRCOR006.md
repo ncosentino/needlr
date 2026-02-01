@@ -13,6 +13,7 @@ A → B → C → A  (cycle!)
 ```
 
 This is impossible to resolve because:
+
 - To create `A`, we need `B`
 - To create `B`, we need `C`
 - To create `C`, we need `A` ← but we haven't finished creating `A` yet!
@@ -184,6 +185,7 @@ This analyzer detects cycles at compile-time by:
 2. Traversing the graph using DFS to find back-edges
 
 Limitations:
+
 
 - Only analyzes types with Needlr registration attributes
 - Cannot detect cycles involving factory-registered services

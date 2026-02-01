@@ -20,6 +20,7 @@ public class FileService : IReader, IWriter, ILogger
 ```
 
 With this configuration:
+
 - ✅ `provider.GetService<IReader>()` returns `FileService`
 - ✅ `provider.GetService<FileService>()` returns `FileService` (concrete type always registered)
 - ❌ `provider.GetService<IWriter>()` returns `null`
@@ -115,6 +116,7 @@ Needlr includes compile-time validation:
 ## Works With Both Paths
 
 `[RegisterAs<T>]` works identically in both:
+
 
 - **Source Generation** - Full AOT/trimming compatibility
 - **Reflection** - Traditional runtime discovery

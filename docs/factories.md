@@ -24,6 +24,7 @@ public sealed class DatabaseConnection
 ```
 
 The source generator creates:
+
 - **`IDatabaseConnectionFactory`** - Interface with `Create(string connectionString)` method
 - **`Func<string, DatabaseConnection>`** - Delegate for functional-style creation
 
@@ -137,6 +138,7 @@ public class BothService { }
 ## Parameter Classification
 
 Needlr classifies constructor parameters as:
+
 - **Injectable**: Interfaces and classes (resolved from the container)
 - **Runtime**: Value types, strings, delegates, arrays (must be provided to `Create()`)
 
@@ -163,11 +165,13 @@ using MyApp.Generated;  // Contains IDatabaseConnectionFactory, IReportGenerator
 ## When to Use Factories
 
 **Use `[GenerateFactory]` when:**
+
 - Your class requires runtime configuration (connection strings, API keys, correlation IDs)
 - You need to create multiple instances with different runtime parameters
 - You want to avoid manual `IServiceProvider.GetRequiredService<>()` calls in factory methods
 
 **Use `[GenerateFactory<TInterface>]` when:**
+
 - You want to mock the factory in unit tests
 - You want to mock the returned instances
 - You prefer interface-based dependency injection

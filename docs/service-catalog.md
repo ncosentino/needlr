@@ -14,6 +14,7 @@ var catalog = serviceProvider.GetRequiredService<IServiceCatalog>();
 
 The `IServiceCatalog` interface exposes collections for each type of registration Needlr discovers:
 
+
 - **Services** - All standard service registrations with their lifetime, interfaces, and constructor parameters
 - **Decorators** - All decorators with their target service type and order
 - **HostedServices** - All discovered `BackgroundService`/`IHostedService` implementations
@@ -110,5 +111,6 @@ foreach (var opt in validatedOptions)
 ## API Reference
 
 See the source code for full type definitions:
+
 - [IServiceCatalog Interface](https://github.com/ncosentino/needlr/blob/main/src/NexusLabs.Needlr/Catalog/IServiceCatalog.cs)
 - [Catalog Entry Types](https://github.com/ncosentino/needlr/tree/main/src/NexusLabs.Needlr/Catalog/)

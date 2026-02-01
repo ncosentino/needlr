@@ -115,6 +115,7 @@ public class CacheService(Func<IUserContext> userContextFactory)
 
 Sometimes the design needs rethinking. If a Singleton truly needs request-specific data, consider:
 
+
 - Passing the data as a method parameter
 - Using `IHttpContextAccessor` (for ASP.NET Core)
 - Using ambient context patterns (with caution)

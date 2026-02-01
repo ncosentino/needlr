@@ -54,6 +54,7 @@ public interface IMethodInterceptor
 ```
 
 The interface requires a single method:
+
 - `InterceptAsync`: Called when an intercepted method is invoked. Call `invocation.ProceedAsync()` to continue to the next interceptor or the actual method.
 
 ## When to Suppress

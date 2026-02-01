@@ -15,6 +15,7 @@ A collection of video tutorials and demonstrations to help developers learn and 
 
 **Topics Covered:**
 
+
 - Problems with extension method patterns in ASP.NET Core
 - Plugin-based architecture approach
 - Automatic type discovery and registration

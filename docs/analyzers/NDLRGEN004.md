@@ -66,6 +66,7 @@ The primary purpose of factory generation is to partition constructor parameters
 ## When to Suppress
 
 You might intentionally want a factory for a type with no injectable dependencies if:
+
 - You want consistent factory patterns across your codebase
 - You anticipate adding injectable dependencies later
 - You prefer resolving factories from DI for consistency

@@ -5,6 +5,7 @@ Needlr's source generator can include helpful documentation comments (breadcrumb
 ## Overview
 
 Breadcrumbs are self-documenting comments embedded in generated source code that explain:
+
 - What triggered the code generation
 - Source file locations of discovered types
 - Lifetime configurations (Singleton, Scoped, Transient)
@@ -215,11 +216,13 @@ You can set the breadcrumb level based on build configuration:
 ### Case Sensitivity
 
 The breadcrumb level value is **case-insensitive**:
+
 - `Verbose`, `verbose`, `VERBOSE`, `VeRbOsE` all work the same
 
 ### Invalid Values
 
 If an invalid value is specified, Needlr defaults to `Minimal`:
+
 - `InvalidLevel` → defaults to `Minimal`
 - Empty string → defaults to `Minimal`
 - Whitespace only → defaults to `Minimal`

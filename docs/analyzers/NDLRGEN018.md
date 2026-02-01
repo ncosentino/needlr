@@ -79,6 +79,7 @@ public class PaymentOptionsValidator : IOptionsValidator<PaymentOptions>
 
 Specifying a validator without enabling validation is almost always a mistake:
 
+
 - You wrote validation logic that will never execute
 - Your application won't fail fast on invalid configuration
 - Future maintainers may assume validation is happening

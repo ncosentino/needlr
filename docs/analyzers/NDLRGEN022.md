@@ -96,6 +96,7 @@ public class CacheService
 
 The diagnostic recognizes these factory patterns and does **not** flag them:
 
+
 - `Func<T>` - Creates new instances on demand
 - `Lazy<T>` - Deferred creation
 - `IServiceScopeFactory` - Creates new scopes

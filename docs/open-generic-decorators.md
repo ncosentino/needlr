@@ -115,10 +115,12 @@ public class ValidationDecorator<TRequest, TResponse> : IRequestHandler<TRequest
 | Attribute location | `NexusLabs.Needlr` | `NexusLabs.Needlr.Generators` |
 
 **Use `[DecoratorFor<T>]`** when:
+
 - You're decorating a specific closed type (e.g., `IOrderService`)
 - You need reflection path compatibility
 
 **Use `[OpenDecoratorFor]`** when:
+
 - You want to decorate all implementations of a generic interface
 - You're using source generation (required)
 - You want compile-time expansion

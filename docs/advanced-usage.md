@@ -866,6 +866,7 @@ The generator emits error `NDLRGEN002` if it detects internal plugin types in a 
 
 When using source generation, Needlr automatically discovers all referenced assemblies that have `[GenerateTypeRegistry]` and ensures they are loaded at startup. This is critical because:
 
+
 - **Module initializers only run when an assembly is loaded** - If your code never directly references a type from an assembly, that assembly never loads
 - **Transitive dependencies** - Plugin assemblies referenced by your project but never directly used in code would be invisible to the type registry
 
@@ -922,11 +923,13 @@ public class Startup
 
 You typically don't need `[NeedlrAssemblyOrder]` when:
 
+
 - Plugins don't have inter-dependencies during registration
 - You're using the default registration which handles most scenarios
 - All plugin configuration happens at runtime (not during registration)
 
 You DO need `[NeedlrAssemblyOrder]` when:
+
 
 - A plugin's `Configure()` method calls `GetRequiredService<T>()` and `T` is registered by another plugin
 - You have strict initialization order requirements
@@ -1214,6 +1217,7 @@ From longest to shortest lifetime:
 3. **Transient** - New instance every time
 
 A mismatch is detected when a service depends on another with a shorter lifetime:
+
 - ❌ Singleton → Scoped (mismatch)
 - ❌ Singleton → Transient (mismatch)
 - ❌ Scoped → Transient (mismatch)
@@ -1266,6 +1270,7 @@ result.ThrowIfInvalid();
 ### Compile-Time Detection
 
 Needlr includes Roslyn analyzers that detect issues at compile time:
+
 
 - **[NDLRCOR005](analyzers/NDLRCOR005.md)**: Lifetime mismatch warnings
 - **[NDLRCOR006](analyzers/NDLRCOR006.md)**: Circular dependency errors

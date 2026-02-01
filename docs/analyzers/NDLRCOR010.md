@@ -17,6 +17,7 @@ public class PluginHost(IEnumerable<IPlugin> plugins)
 ```
 
 This is an **informational diagnostic** (not a warning or error) because:
+
 - Implementations may be registered via reflection at runtime
 - Implementations may come from a third-party library
 - Implementations may be registered manually in an `IServiceCollectionPlugin`

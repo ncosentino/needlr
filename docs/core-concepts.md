@@ -44,12 +44,14 @@ var syringe = new Syringe()
 ```
 
 **Benefits:**
+
 - ✅ AOT compatible
 - ✅ Trimming safe
 - ✅ Faster startup (no runtime scanning)
 - ✅ Compile-time error detection
 
 **Requirements:**
+
 - Add `NexusLabs.Needlr.Generators` as an analyzer
 - Add `NexusLabs.Needlr.Generators.Attributes`
 - All types must be known at compile time
@@ -66,11 +68,13 @@ var syringe = new Syringe()
 ```
 
 **Benefits:**
+
 - ✅ Dynamic plugin loading
 - ✅ Runtime assembly scanning
 - ✅ Scrutor integration support
 
 **Drawbacks:**
+
 - ❌ Not AOT compatible
 - ❌ Not trimming safe
 - ❌ Slower startup
@@ -141,6 +145,7 @@ var provider = new AssemblyProviderBuilder()
 
 Different loaders provide different scanning strategies:
 
+
 - **DefaultAssemblyLoader**: Scans current domain assemblies
 - **AllAssembliesLoader**: Scans all loaded assemblies
 - **FileMatchAssemblyLoader**: Scans assemblies matching file patterns
@@ -150,6 +155,7 @@ NOTE: you can provide your own custom loaders.
 ### Assembly Sorters
 
 Control the order in which assemblies are processed:
+
 
 - **DefaultAssemblySorter**: No specific ordering
 - **AlphabeticalAssemblySorter**: Alphabetical by name
@@ -166,6 +172,7 @@ Type registrars determine how discovered types are registered:
 #### GeneratedTypeRegistrar (Source Generation)
 
 Used with source generation strategy:
+
 - Types discovered at compile time
 - AOT and trimming compatible
 - No runtime reflection
@@ -173,12 +180,14 @@ Used with source generation strategy:
 #### ReflectionTypeRegistrar (Reflection)
 
 Used with reflection strategy:
+
 - Types discovered at runtime
 - Supports dynamic scenarios
 
 #### ScrutorTypeRegistrar (Reflection only)
 
 Uses Scrutor library for advanced registration scenarios (requires reflection):
+
 - Assembly scanning with filters
 - Decorator pattern support
 - Advanced lifetime management
@@ -192,6 +201,7 @@ Control which types are eligible for automatic registration:
 #### GeneratedTypeFilterer (Source Generation)
 
 For source-gen, filtering is done at compile time based on:
+
 - Types with `[DoNotAutoRegister]` attribute excluded
 - Types with `[DoNotInject]` attribute excluded
 - Abstract classes and interfaces excluded
@@ -199,6 +209,7 @@ For source-gen, filtering is done at compile time based on:
 #### ReflectionTypeFilterer (Reflection)
 
 For reflection, filters at runtime based on:
+
 - Excludes types with `[DoNotAutoRegister]` attribute
 - Excludes types with `[DoNotInject]` attribute
 - Excludes abstract classes and interfaces
@@ -299,6 +310,7 @@ public class MyAppPlugin : IWebApplicationPlugin
 ### Plugin Discovery
 
 Plugins are automatically discovered and registered:
+
 - Scanned from assemblies like other types
 - Sorted by `[PluginOrder]` attribute (lower values first)
 - Plugins with same order are sorted alphabetically by type name
@@ -332,6 +344,7 @@ not to control the discoverability of plugins.
 ### Lifetime Detection
 
 Needlr automatically determines appropriate lifetimes based on:
+
 - Type characteristics (stateless vs stateful)
 - Interface implementations
 - Decorator patterns
@@ -384,6 +397,7 @@ public class CachingDecorator : IService
     public string GetValue() => _cached ??= _inner.GetValue();
 }
 ```
+
 
 - **Order property**: Lower values are applied first (closest to original)
 - **Result chain**: CachingDecorator → LoggingDecorator → ServiceImpl

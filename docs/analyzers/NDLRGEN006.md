@@ -12,6 +12,7 @@ The `[OpenDecoratorFor]` attribute is designed to create decorators for all clos
 2. **An open/unbound generic** using the `typeof(IInterface<>)` syntax
 
 Common mistakes include:
+
 - Passing a closed generic type like `typeof(IHandler<string>)`
 - Passing a non-generic interface like `typeof(IService)`
 - Passing a class instead of an interface

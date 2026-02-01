@@ -17,6 +17,7 @@ public class OrderService(Lazy<IUnknownService> unknown)
 ```
 
 This is an **informational diagnostic** (not a warning or error) because:
+
 - The type may be registered via reflection at runtime
 - The type may come from a third-party library
 - The type may be registered manually in an `IServiceCollectionPlugin`

@@ -55,6 +55,7 @@ public partial record RedisConfig
 ```
 
 The generated constructor uses:
+
 - `string.Empty` for string parameters
 - `default` for value types (0 for int, false for bool, etc.)
 - `default!` for other reference types

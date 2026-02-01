@@ -62,6 +62,7 @@ public class MyPlugin : IServiceCollectionPlugin
 ## When to Suppress
 
 Suppress this warning if:
+
 - The plugin is intentionally designed to be instantiated via DI after container construction
 - The plugin is abstract and constructor parameters are for derived classes
 - You are using a custom plugin factory that handles constructor injection

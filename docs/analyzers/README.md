@@ -103,6 +103,7 @@ dotnet_diagnostic.NDLRCOR005.severity = error
 NDLRCOR009, NDLRCOR010, and NDLRCOR011 are **resolution validation analyzers** that help catch potential issues with service resolution patterns.
 
 These analyzers:
+
 - Only activate when `[assembly: GenerateTypeRegistry]` is present
 - Default to `Info` severity (non-blocking)
 - Can be promoted to `Warning` or `Error` via `.editorconfig`

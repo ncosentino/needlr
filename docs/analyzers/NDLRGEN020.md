@@ -7,11 +7,13 @@ A class has the `[Options]` attribute but is in a project with `PublishAot=true`
 ## Rule Description
 
 The `[Options]` attribute generates code that calls Microsoft's configuration binding APIs:
+
 - `Configure<T>()`
 - `BindConfiguration()`
 - `ValidateDataAnnotations()`
 
 These APIs use **reflection** to bind configuration values to properties at runtime. They are marked with `[RequiresDynamicCode]` and `[RequiresUnreferencedCode]`, making them incompatible with:
+
 - **Native AOT** - No JIT compiler to generate code at runtime
 - **Trimming** - Reflection targets may be trimmed away
 

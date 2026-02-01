@@ -144,11 +144,13 @@ await webApplication.RunAsync();
 ### Automatic Registration
 
 By default, Needlr automatically registers:
+
 - All non-nested non-abstract classes (public and internal) in scanned assemblies
 - Classes as both themselves and their interfaces
 - With Singleton lifetime by default (use `[Transient]` or `[Scoped]` attributes to override)
 
 By default, Needlr automatically dots NOT register:
+
 - Anything marked with the `[DoNotAutoRegister]` attribute
 - Record types
 - Nested classes
@@ -338,12 +340,14 @@ var webApplication = new Syringe()
 | **Scrutor Support** | ❌ No | ✅ Yes |
 
 **Use Source Generation when:**
+
 - Building AOT-compiled applications
 - Targeting trimmed/self-contained deployments
 - You want faster startup times
 - All plugins are known at compile time
 
 **Use Reflection when:**
+
 - Loading plugins dynamically at runtime
 - Scanning assemblies not known at compile time
 - Using Scrutor for advanced registration patterns

@@ -402,6 +402,7 @@ dotnet run -c Release -- --filter '*'
 
 Benchmarks run automatically:
 
+
 - **Weekly**: Every Sunday at 3am UTC (if code has changed)
 - **On-demand**: Via [workflow dispatch](https://github.com/ncosentino/needlr/actions/workflows/benchmarks.yml)
 
@@ -410,6 +411,7 @@ Results are published to this page after each run.
 ## Methodology
 
 All benchmarks use [BenchmarkDotNet](https://benchmarkdotnet.org/) with:
+
 
 - **ShortRun job**: 3 warmup iterations, 3 target iterations
 - **Memory diagnostics**: Tracks allocations per operation

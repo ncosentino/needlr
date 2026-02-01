@@ -14,6 +14,7 @@ This error proactively detects this misconfiguration at compile time, preventing
 
 The generator checks for internal types implementing any of these interfaces:
 
+
 - `NexusLabs.Needlr.IServiceCollectionPlugin`
 - `NexusLabs.Needlr.IPostBuildServiceCollectionPlugin`
 - `NexusLabs.Needlr.IWebApplicationPlugin`

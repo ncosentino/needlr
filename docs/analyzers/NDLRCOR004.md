@@ -15,6 +15,7 @@ When using Needlr's source generation with namespace filtering, types in the glo
 3. **Silent exclusion**: Unlike a compile error, these types are silently skipped during type discovery.
 
 This analyzer detects types that:
+
 - Are in the global namespace
 - Appear to be injectable (have DI attributes, implement interfaces, or have constructor dependencies)
 - Would be excluded by the current `IncludeNamespacePrefixes` configuration
@@ -96,6 +97,7 @@ This analyzer reports a warning when ALL of these conditions are true:
 3. `IncludeNamespacePrefixes` doesn't include `""` (empty string)
 4. The type is NOT marked with `[DoNotInject]` or `[DoNotAutoRegister]`
 5. The type appears injectable:
+
    - Has a lifetime attribute (`[Singleton]`, `[Scoped]`, `[Transient]`)
    - Implements one or more interfaces
    - Has a constructor with interface/abstract class parameters
@@ -103,6 +105,7 @@ This analyzer reports a warning when ALL of these conditions are true:
 ## When to Suppress
 
 Suppress this warning if:
+
 
 - The type is intentionally not registered with DI
 - You're manually registering the type elsewhere

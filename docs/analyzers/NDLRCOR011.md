@@ -19,6 +19,7 @@ public class PaymentHandler(
 ```
 
 This is an **informational diagnostic** (not a warning or error) because:
+
 - Keys may be registered at runtime via `IServiceCollectionPlugin`
 - The analyzer only validates statically-discoverable `[Keyed]` registrations
 
