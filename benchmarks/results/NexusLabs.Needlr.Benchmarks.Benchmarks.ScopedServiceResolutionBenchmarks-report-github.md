@@ -12,5 +12,5 @@ WarmupCount=3
 ```
 | Method                           | Mean     | Error     | StdDev    | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
 |--------------------------------- |---------:|----------:|----------:|------:|-----:|-------:|----------:|------------:|
-| CreateScopeAndResolve_Reflection | 2.152 μs | 0.0134 μs | 0.0021 μs |  1.00 |    1 | 0.0229 |     408 B |        1.00 |
-| CreateScopeAndResolve_SourceGen  | 2.241 μs | 0.0165 μs | 0.0043 μs |  1.04 |    1 | 0.0229 |     408 B |        1.00 |
+| CreateScopeAndResolve_Reflection | 2.150 μs | 0.0514 μs | 0.0079 μs |  1.00 |    1 | 0.0229 |     408 B |        1.00 |
+| CreateScopeAndResolve_SourceGen  | 2.235 μs | 0.0246 μs | 0.0064 μs |  1.04 |    1 | 0.0229 |     408 B |        1.00 |

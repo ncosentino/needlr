@@ -10,5 +10,5 @@ WarmupCount=3
 
  Method                        | Mean     | Error    | StdDev   | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
 ------------------------------ |---------:|---------:|---------:|------:|-----:|-------:|----------:|------------:|
- ResolveOpenGeneric_Reflection | 19.86 ns | 0.406 ns | 0.105 ns |  1.00 |    1 | 0.0014 |      24 B |        1.00 |
- ResolveOpenGeneric_SourceGen  | 18.88 ns | 0.102 ns | 0.016 ns |  0.95 |    1 | 0.0014 |      24 B |        1.00 |
+ ResolveOpenGeneric_Reflection | 19.27 ns | 0.676 ns | 0.175 ns |  1.00 |    1 | 0.0014 |      24 B |        1.00 |
+ ResolveOpenGeneric_SourceGen  | 19.32 ns | 0.456 ns | 0.071 ns |  1.00 |    1 | 0.0014 |      24 B |        1.00 |

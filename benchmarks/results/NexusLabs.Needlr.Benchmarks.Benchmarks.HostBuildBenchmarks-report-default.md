@@ -8,8 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  InvocationCount=1  IterationCount=5  
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
- Method                      | Mean     | Error     | StdDev    | Ratio | Rank | Allocated | Alloc Ratio |
----------------------------- |---------:|----------:|----------:|------:|-----:|----------:|------------:|
- BuildHost_Reflection        | 6.625 ms | 0.1319 ms | 0.0343 ms |  1.00 |    2 | 1264.8 KB |        1.00 |
- BuildHost_SourceGen         | 2.681 ms | 0.0956 ms | 0.0148 ms |  0.40 |    1 | 549.16 KB |        0.43 |
- BuildHost_SourceGenExplicit | 2.616 ms | 0.0640 ms | 0.0166 ms |  0.39 |    1 | 484.36 KB |        0.38 |
+ Method                      | Mean     | Error     | StdDev    | Ratio | Rank | Allocated  | Alloc Ratio |
+---------------------------- |---------:|----------:|----------:|------:|-----:|-----------:|------------:|
+ BuildHost_Reflection        | 7.986 ms | 0.2624 ms | 0.0682 ms |  1.00 |    2 | 1500.02 KB |        1.00 |
+ BuildHost_SourceGen         | 2.764 ms | 0.1062 ms | 0.0276 ms |  0.35 |    1 |  565.88 KB |        0.38 |
+ BuildHost_SourceGenExplicit | 2.706 ms | 0.0936 ms | 0.0243 ms |  0.34 |    1 |  494.53 KB |        0.33 |

@@ -17,6 +17,12 @@
 ,
   "OptionsResolutionBenchmarks": {"description": "Benchmarks comparing IOptions resolution between source-gen and reflection. All benchmarks measure resolution of a single options type. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/OptionsResolutionBenchmarks.cs"}
 ,
+  "ProviderBuildBenchmarks": {"description": "Benchmarks measuring the complete path from scratch to a type that can resolve services. Baseline: Manual registration → IServiceProvider Needlr Reflection: Syringe reflection → IServiceProvider Needlr Source Gen: Syringe source gen → IServiceProvider Needlr Provider: Syringe source gen + resolve provider → ISingleServiceProvider", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ProviderBuildBenchmarks.cs"}
+,
+  "ProviderFactoryResolutionBenchmarks": {"description": "Benchmarks comparing factory resolution through providers. Measures the time to invoke a factory method from different sources.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ProviderFactoryResolutionBenchmarks.cs"}
+,
+  "ProviderResolutionBenchmarks": {"description": "Benchmarks comparing service resolution approaches. Measures the time to resolve a type from a pre-built provider. Baseline: Manual registration + ServiceProvider.GetService Needlr Reflection: Syringe reflection + ServiceProvider.GetService Needlr Source Gen: Syringe source gen + ServiceProvider.GetService Provider Interface: Source gen provider property access Provider Shorthand: Source gen shorthand provider property access", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ProviderResolutionBenchmarks.cs"}
+,
   "ScopedServiceResolutionBenchmarks": {"description": "Benchmarks comparing scoped service resolution between source-gen and reflection. Measures the cost of creating a scope and resolving scoped services within it. This is critical for web applications where each request creates a new scope. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ScopedServiceResolutionBenchmarks.cs"}
 ,
   "ServiceProviderBuildBenchmarks": {"description": "End-to-end benchmarks comparing full Syringe pipeline for source-gen vs reflection. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ServiceProviderBuildBenchmarks.cs"}

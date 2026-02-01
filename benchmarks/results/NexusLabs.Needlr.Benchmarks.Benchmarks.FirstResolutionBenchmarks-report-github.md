@@ -10,7 +10,7 @@ Job=ShortRun  InvocationCount=1  IterationCount=5
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
 ```
-| Method                          | Mean       | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
-|-------------------------------- |-----------:|---------:|---------:|------:|-----:|----------:|------------:|
-| BuildAndResolveFirst_Reflection | 4,347.9 μs | 91.50 μs | 23.76 μs |  1.00 |    2 | 977.76 KB |        1.00 |
-| BuildAndResolveFirst_SourceGen  |   397.6 μs | 38.47 μs |  5.95 μs |  0.09 |    1 | 188.23 KB |        0.19 |
+| Method                          | Mean       | Error    | StdDev   | Ratio | Rank | Allocated  | Alloc Ratio |
+|-------------------------------- |-----------:|---------:|---------:|------:|-----:|-----------:|------------:|
+| BuildAndResolveFirst_Reflection | 5,631.4 μs | 84.66 μs | 21.98 μs |  1.00 |    2 | 1226.41 KB |        1.00 |
+| BuildAndResolveFirst_SourceGen  |   479.4 μs | 37.45 μs |  5.79 μs |  0.09 |    1 |     202 KB |        0.16 |

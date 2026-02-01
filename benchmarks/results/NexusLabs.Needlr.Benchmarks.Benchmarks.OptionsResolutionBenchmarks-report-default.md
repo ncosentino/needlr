@@ -10,5 +10,5 @@ WarmupCount=3
 
  Method                    | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
 -------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
- ResolveOptions_Reflection | 16.68 ns | 0.051 ns | 0.013 ns |  1.00 |    0.00 |    1 |         - |          NA |
- ResolveOptions_SourceGen  | 20.39 ns | 2.027 ns | 0.526 ns |  1.22 |    0.03 |    1 |         - |          NA |
+ ResolveOptions_Reflection | 17.20 ns | 0.080 ns | 0.021 ns |  1.00 |    0.00 |    1 |         - |          NA |
+ ResolveOptions_SourceGen  | 17.87 ns | 3.120 ns | 0.810 ns |  1.04 |    0.04 |    1 |         - |          NA |

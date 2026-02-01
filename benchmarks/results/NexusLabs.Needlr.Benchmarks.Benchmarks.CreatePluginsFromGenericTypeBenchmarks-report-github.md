@@ -10,9 +10,9 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                          | Mean        | Error     | StdDev   | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
-|-------------------------------- |------------:|----------:|---------:|------:|-----:|-------:|----------:|------------:|
-| Reflection_AssemblyListProvided | 25,786.0 ns | 520.02 ns | 80.47 ns |  1.00 |    2 | 0.2441 |    5662 B |        1.00 |
-| SourceGen_AssemblyListProvided  | 21,544.8 ns |  76.44 ns | 19.85 ns |  0.84 |    2 | 1.2817 |   21728 B |        3.84 |
-| SourceGen_EmptyAssemblyList     | 19,534.7 ns | 139.78 ns | 36.30 ns |  0.76 |    2 | 1.2207 |   20728 B |        3.66 |
-| SourceGen_ParameterlessOverload |    417.8 ns |   9.21 ns |  2.39 ns |  0.02 |    1 | 0.0262 |     440 B |        0.08 |
+| Method                          | Mean        | Error     | StdDev    | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
+|-------------------------------- |------------:|----------:|----------:|------:|-----:|-------:|----------:|------------:|
+| Reflection_AssemblyListProvided | 29,531.5 ns | 625.21 ns |  96.75 ns |  1.00 |    2 | 0.3662 |    6437 B |        1.00 |
+| SourceGen_AssemblyListProvided  | 23,724.4 ns | 495.43 ns | 128.66 ns |  0.80 |    2 | 1.4038 |   23528 B |        3.66 |
+| SourceGen_EmptyAssemblyList     | 22,590.2 ns | 247.18 ns |  64.19 ns |  0.76 |    2 | 1.3428 |   22528 B |        3.50 |
+| SourceGen_ParameterlessOverload |    435.1 ns |   6.44 ns |   1.00 ns |  0.01 |    1 | 0.0262 |     440 B |        0.07 |
