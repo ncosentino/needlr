@@ -145,3 +145,86 @@ public sealed class StandaloneService2 { public string Name => "Standalone2"; }
 public sealed class StandaloneService3 { public string Name => "Standalone3"; }
 public sealed class StandaloneService4 { public string Name => "Standalone4"; }
 public sealed class StandaloneService5 { public string Name => "Standalone5"; }
+
+// ============================================================================
+// Deep dependency chain - 10 levels deep
+// ============================================================================
+
+public interface IDeepLevel1 { }
+public interface IDeepLevel2 { }
+public interface IDeepLevel3 { }
+public interface IDeepLevel4 { }
+public interface IDeepLevel5 { }
+public interface IDeepLevel6 { }
+public interface IDeepLevel7 { }
+public interface IDeepLevel8 { }
+public interface IDeepLevel9 { }
+public interface IDeepLevel10 { }
+
+public sealed class DeepLevel1 : IDeepLevel1 { }
+public sealed class DeepLevel2(IDeepLevel1 dep) : IDeepLevel2 { }
+public sealed class DeepLevel3(IDeepLevel2 dep) : IDeepLevel3 { }
+public sealed class DeepLevel4(IDeepLevel3 dep) : IDeepLevel4 { }
+public sealed class DeepLevel5(IDeepLevel4 dep) : IDeepLevel5 { }
+public sealed class DeepLevel6(IDeepLevel5 dep) : IDeepLevel6 { }
+public sealed class DeepLevel7(IDeepLevel6 dep) : IDeepLevel7 { }
+public sealed class DeepLevel8(IDeepLevel7 dep) : IDeepLevel8 { }
+public sealed class DeepLevel9(IDeepLevel8 dep) : IDeepLevel9 { }
+public sealed class DeepLevel10(IDeepLevel9 dep) : IDeepLevel10 { }
+
+// ============================================================================
+// Scoped services - for scope resolution benchmarks
+// ============================================================================
+
+public interface IScopedService1 { Guid InstanceId { get; } }
+public interface IScopedService2 { Guid InstanceId { get; } }
+public interface IScopedService3 { Guid InstanceId { get; } }
+
+[Scoped]
+public sealed class ScopedService1 : IScopedService1
+{
+    public Guid InstanceId { get; } = Guid.NewGuid();
+}
+
+[Scoped]
+public sealed class ScopedService2 : IScopedService2
+{
+    public Guid InstanceId { get; } = Guid.NewGuid();
+}
+
+[Scoped]
+public sealed class ScopedService3(IScopedService1 dep1, IScopedService2 dep2) : IScopedService3
+{
+    public Guid InstanceId { get; } = Guid.NewGuid();
+}
+
+// ============================================================================
+// Factory-injectable services - for Func<T> and Lazy<T> benchmarks
+// ============================================================================
+
+public interface IFactoryService { string GetValue(); }
+
+public sealed class FactoryService : IFactoryService
+{
+    public string GetValue() => "Factory created";
+}
+
+// ============================================================================
+// Open generic services - for generic resolution benchmarks
+// ============================================================================
+
+public interface IRepository<T> where T : class
+{
+    T? GetById(int id);
+    void Save(T entity);
+}
+
+public sealed class Repository<T> : IRepository<T> where T : class
+{
+    public T? GetById(int id) => null;
+    public void Save(T entity) { }
+}
+
+public sealed class EntityA { public int Id { get; set; } }
+public sealed class EntityB { public int Id { get; set; } }
+public sealed class EntityC { public int Id { get; set; } }

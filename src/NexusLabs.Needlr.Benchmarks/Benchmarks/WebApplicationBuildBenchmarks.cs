@@ -40,7 +40,7 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public WebApplication Reflection()
+    public WebApplication BuildWebApp_Reflection()
     {
         _lastApp = new Syringe()
             .UsingReflection()
@@ -50,7 +50,7 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark]
-    public WebApplication SourceGen()
+    public WebApplication BuildWebApp_SourceGen()
     {
         _lastApp = new Syringe()
             .UsingSourceGen()
@@ -60,7 +60,7 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark]
-    public WebApplication SourceGenExplicit()
+    public WebApplication BuildWebApp_SourceGenExplicit()
     {
         _lastApp = new Syringe()
             .UsingGeneratedComponents(

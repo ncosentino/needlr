@@ -35,6 +35,7 @@ public sealed record ConfiguredSyringe
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal AssemblyOrdering.AssemblyOrderBuilder? AssemblyOrder { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
+    internal IReadOnlyList<Action<IServiceCollection>>? PreRegistrationCallbacks { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
     internal VerificationOptions? VerificationOptions { get; init; }
     
@@ -57,6 +58,7 @@ public sealed record ConfiguredSyringe
         AssemblyProvider = source.AssemblyProvider;
         AssemblyOrder = source.AssemblyOrder;
         AdditionalAssemblies = source.AdditionalAssemblies;
+        PreRegistrationCallbacks = source.PreRegistrationCallbacks;
         PostPluginRegistrationCallbacks = source.PostPluginRegistrationCallbacks;
         VerificationOptions = source.VerificationOptions;
         ServiceProviderBuilderFactory = source.ServiceProviderBuilderFactory;
@@ -89,11 +91,12 @@ public sealed record ConfiguredSyringe
         var serviceCollectionPopulator = GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
         var assemblyProvider = GetOrCreateAssemblyProvider();
         var additionalAssemblies = AdditionalAssemblies ?? [];
-        var callbacks = PostPluginRegistrationCallbacks ?? [];
+        var preCallbacks = PreRegistrationCallbacks ?? [];
+        var postCallbacks = PostPluginRegistrationCallbacks ?? [];
         var verificationOptions = VerificationOptions ?? Needlr.VerificationOptions.Default;
 
         // Build the list of post-plugin callbacks
-        var callbacksWithExtras = new List<Action<IServiceCollection>>(callbacks);
+        var callbacksWithExtras = new List<Action<IServiceCollection>>(postCallbacks);
         
         // Auto-register options from source-generated bootstrap
         if (SourceGenRegistry.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar != null)
@@ -118,6 +121,7 @@ public sealed record ConfiguredSyringe
         return serviceProviderBuilder.Build(
             services: new ServiceCollection(),
             config: config,
+            preRegistrationCallbacks: [.. preCallbacks],
             postPluginRegistrationCallbacks: callbacksWithExtras);
     }
 

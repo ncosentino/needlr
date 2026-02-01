@@ -43,6 +43,20 @@ public interface IServiceProviderBuilder
         IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks);
 
     /// <summary>
+    /// Builds a new <see cref="IServiceProvider"/> with both pre and post registration callbacks.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <param name="config">The configuration to use for settings.</param>
+    /// <param name="preRegistrationCallbacks">Callbacks executed before auto-discovery registration (e.g., for open generics).</param>
+    /// <param name="postPluginRegistrationCallbacks">Callbacks executed after plugin registration.</param>
+    /// <returns>The built <see cref="IServiceProvider"/>.</returns>
+    IServiceProvider Build(
+        IServiceCollection services,
+        IConfiguration config,
+        IReadOnlyList<Action<IServiceCollection>> preRegistrationCallbacks,
+        IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks);
+
+    /// <summary>
     /// Configures plugins that require post-build service collection configuration using the built service provider.
     /// </summary>
     /// <param name="provider">The built service provider to use for plugin configuration.</param>

@@ -59,13 +59,28 @@ public sealed class GeneratedServiceProviderBuilder : IServiceProviderBuilder
     public IServiceProvider Build(
         IServiceCollection services,
         IConfiguration config,
+        IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks) =>
+        Build(services, config, [], postPluginRegistrationCallbacks);
+
+    /// <inheritdoc/>
+    public IServiceProvider Build(
+        IServiceCollection services,
+        IConfiguration config,
+        IReadOnlyList<Action<IServiceCollection>> preRegistrationCallbacks,
         IReadOnlyList<Action<IServiceCollection>> postPluginRegistrationCallbacks)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(preRegistrationCallbacks);
         ArgumentNullException.ThrowIfNull(postPluginRegistrationCallbacks);
 
         services.AddSingleton(config);
+
+        foreach (var callback in preRegistrationCallbacks)
+        {
+            callback.Invoke(services);
+        }
+
         _serviceCollectionPopulator.RegisterToServiceCollection(
             services,
             config,

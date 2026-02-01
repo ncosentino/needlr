@@ -13,12 +13,13 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 
 /// <summary>
-/// Benchmarks comparing keyed service resolution between source-gen and reflection.
-/// All benchmarks measure resolution of a keyed service.
+/// Benchmarks comparing scoped service resolution between source-gen and reflection.
+/// Measures the cost of creating a scope and resolving scoped services within it.
+/// This is critical for web applications where each request creates a new scope.
 /// Reflection is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
-public class KeyedServiceResolutionBenchmarks
+public class ScopedServiceResolutionBenchmarks
 {
     private IServiceProvider _reflectionProvider = null!;
     private IServiceProvider _sourceGenProvider = null!;
@@ -29,7 +30,7 @@ public class KeyedServiceResolutionBenchmarks
     public void Setup()
     {
         _configuration = new ConfigurationBuilder().Build();
-        _assemblies = [typeof(SimpleService1).Assembly];
+        _assemblies = [typeof(ScopedService1).Assembly];
 
         _reflectionProvider = new Syringe()
             .UsingReflection()
@@ -50,14 +51,16 @@ public class KeyedServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IKeyedService ResolveKeyed_Reflection()
+    public IScopedService3 CreateScopeAndResolve_Reflection()
     {
-        return _reflectionProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        using var scope = _reflectionProvider.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<IScopedService3>();
     }
 
     [Benchmark]
-    public IKeyedService ResolveKeyed_SourceGen()
+    public IScopedService3 CreateScopeAndResolve_SourceGen()
     {
-        return _sourceGenProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        using var scope = _sourceGenProvider.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<IScopedService3>();
     }
 }

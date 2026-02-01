@@ -50,13 +50,13 @@ public class SimpleServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public ISimpleService1 Reflection()
+    public ISimpleService1 ResolveSimple_Reflection()
     {
         return _reflectionProvider.GetRequiredService<ISimpleService1>();
     }
 
     [Benchmark]
-    public ISimpleService1 SourceGen()
+    public ISimpleService1 ResolveSimple_SourceGen()
     {
         return _sourceGenProvider.GetRequiredService<ISimpleService1>();
     }
@@ -100,13 +100,13 @@ public class DependentServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IDependentService11 Reflection()
+    public IDependentService11 ResolveDependent_Reflection()
     {
         return _reflectionProvider.GetRequiredService<IDependentService11>();
     }
 
     [Benchmark]
-    public IDependentService11 SourceGen()
+    public IDependentService11 ResolveDependent_SourceGen()
     {
         return _sourceGenProvider.GetRequiredService<IDependentService11>();
     }

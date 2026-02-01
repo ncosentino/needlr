@@ -138,6 +138,48 @@ public static class SyringeExtensions
     }
 
     /// <summary>
+    /// Configures the syringe to use pre-registration callbacks.
+    /// These callbacks are executed before auto-discovery registration, useful for open generics or base registrations.
+    /// </summary>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="callbacks">The callbacks to execute before auto-discovery.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static ConfiguredSyringe UsingPreRegistrationCallbacks(
+        this ConfiguredSyringe syringe,
+        IReadOnlyList<Action<IServiceCollection>> callbacks)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callbacks);
+
+        var result = syringe;
+        foreach (var callback in callbacks)
+        {
+            result = result.UsingPreRegistrationCallback(callback);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Configures the syringe to add a single pre-registration callback.
+    /// This callback is executed before auto-discovery registration, useful for open generics or base registrations.
+    /// </summary>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="callback">The callback to execute before auto-discovery.</param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static ConfiguredSyringe UsingPreRegistrationCallback(
+        this ConfiguredSyringe syringe,
+        Action<IServiceCollection> callback)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var existingCallbacks = syringe.PreRegistrationCallbacks ?? [];
+        var newCallbacks = new List<Action<IServiceCollection>>(existingCallbacks) { callback };
+
+        return syringe with { PreRegistrationCallbacks = newCallbacks };
+    }
+
+    /// <summary>
     /// Configures the syringe to use post-plugin registration callbacks.
     /// These callbacks are executed after plugin registration but before the service provider is finalized.
     /// </summary>

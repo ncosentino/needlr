@@ -46,6 +46,7 @@ public sealed record Syringe
     internal IAssemblyProvider? AssemblyProvider { get; init; }
     internal AssemblyOrdering.AssemblyOrderBuilder? AssemblyOrder { get; init; }
     internal IReadOnlyList<Assembly>? AdditionalAssemblies { get; init; }
+    internal IReadOnlyList<Action<IServiceCollection>>? PreRegistrationCallbacks { get; init; }
     internal IReadOnlyList<Action<IServiceCollection>>? PostPluginRegistrationCallbacks { get; init; }
     internal VerificationOptions? VerificationOptions { get; init; }
     

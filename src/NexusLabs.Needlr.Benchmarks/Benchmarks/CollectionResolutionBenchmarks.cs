@@ -13,12 +13,13 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 
 /// <summary>
-/// Benchmarks comparing keyed service resolution between source-gen and reflection.
-/// All benchmarks measure resolution of a keyed service.
+/// Benchmarks comparing IEnumerable&lt;T&gt; collection resolution between source-gen and reflection.
+/// Measures the cost of resolving all implementations of an interface.
+/// Common pattern for plugin systems, handlers, and strategy patterns.
 /// Reflection is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
-public class KeyedServiceResolutionBenchmarks
+public class CollectionResolutionBenchmarks
 {
     private IServiceProvider _reflectionProvider = null!;
     private IServiceProvider _sourceGenProvider = null!;
@@ -50,14 +51,14 @@ public class KeyedServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IKeyedService ResolveKeyed_Reflection()
+    public IMultiInterface1A[] ResolveCollection_Reflection()
     {
-        return _reflectionProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        return _reflectionProvider.GetServices<IMultiInterface1A>().ToArray();
     }
 
     [Benchmark]
-    public IKeyedService ResolveKeyed_SourceGen()
+    public IMultiInterface1A[] ResolveCollection_SourceGen()
     {
-        return _sourceGenProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        return _sourceGenProvider.GetServices<IMultiInterface1A>().ToArray();
     }
 }

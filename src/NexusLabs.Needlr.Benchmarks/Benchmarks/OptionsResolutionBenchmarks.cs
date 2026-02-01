@@ -61,13 +61,13 @@ public class OptionsResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public CacheOptions Reflection()
+    public CacheOptions ResolveOptions_Reflection()
     {
         return _reflectionProvider.GetRequiredService<IOptions<CacheOptions>>().Value;
     }
 
     [Benchmark]
-    public CacheOptions SourceGen()
+    public CacheOptions ResolveOptions_SourceGen()
     {
         return _sourceGenProvider.GetRequiredService<IOptions<CacheOptions>>().Value;
     }

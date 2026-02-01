@@ -13,12 +13,13 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 
 /// <summary>
-/// Benchmarks comparing keyed service resolution between source-gen and reflection.
-/// All benchmarks measure resolution of a keyed service.
+/// Benchmarks comparing resolution of services with deep dependency chains.
+/// Tests a 10-level deep dependency graph where each level depends on the previous.
+/// Real applications often have complex dependency graphs; this measures scaling behavior.
 /// Reflection is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
-public class KeyedServiceResolutionBenchmarks
+public class DeepDependencyChainBenchmarks
 {
     private IServiceProvider _reflectionProvider = null!;
     private IServiceProvider _sourceGenProvider = null!;
@@ -29,7 +30,7 @@ public class KeyedServiceResolutionBenchmarks
     public void Setup()
     {
         _configuration = new ConfigurationBuilder().Build();
-        _assemblies = [typeof(SimpleService1).Assembly];
+        _assemblies = [typeof(DeepLevel1).Assembly];
 
         _reflectionProvider = new Syringe()
             .UsingReflection()
@@ -50,14 +51,14 @@ public class KeyedServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IKeyedService ResolveKeyed_Reflection()
+    public IDeepLevel10 ResolveDeepChain_Reflection()
     {
-        return _reflectionProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        return _reflectionProvider.GetRequiredService<IDeepLevel10>();
     }
 
     [Benchmark]
-    public IKeyedService ResolveKeyed_SourceGen()
+    public IDeepLevel10 ResolveDeepChain_SourceGen()
     {
-        return _sourceGenProvider.GetRequiredKeyedService<IKeyedService>("primary");
+        return _sourceGenProvider.GetRequiredService<IDeepLevel10>();
     }
 }

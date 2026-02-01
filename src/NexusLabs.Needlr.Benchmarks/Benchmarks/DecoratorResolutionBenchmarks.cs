@@ -50,13 +50,13 @@ public class DecoratorResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IDecoratedService Reflection()
+    public IDecoratedService ResolveDecorated_Reflection()
     {
         return _reflectionProvider.GetRequiredService<IDecoratedService>();
     }
 
     [Benchmark]
-    public IDecoratedService SourceGen()
+    public IDecoratedService ResolveDecorated_SourceGen()
     {
         return _sourceGenProvider.GetRequiredService<IDecoratedService>();
     }
