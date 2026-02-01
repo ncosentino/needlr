@@ -115,6 +115,7 @@ Needlr includes compile-time validation:
 ## Works With Both Paths
 
 `[RegisterAs<T>]` works identically in both:
+
 - **Source Generation** - Full AOT/trimming compatibility
 - **Reflection** - Traditional runtime discovery
 
