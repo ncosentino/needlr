@@ -107,6 +107,46 @@ jobs:
           
           cd ..
 
+      - name: Extract Benchmark Descriptions
+        run: |
+          # Extract XML docs from benchmark classes to create descriptions.json
+          # This allows the web page to show descriptions without hardcoding
+          
+          BENCHMARK_DIR="src/NexusLabs.Needlr.Benchmarks/Benchmarks"
+          OUTPUT_FILE="benchmark-results/descriptions.json"
+          
+          echo '{' > "$OUTPUT_FILE"
+          first=true
+          
+          for file in "$BENCHMARK_DIR"/*.cs; do
+            if [ -f "$file" ]; then
+              # Get class name from filename
+              classname=$(basename "$file" .cs)
+              
+              # Extract XML summary using grep/sed
+              summary=$(grep -A 20 '/// <summary>' "$file" | grep -B 20 '/// </summary>' | head -20 | grep '///' | sed 's/.*\/\/\/ //' | sed 's/<[^>]*>//g' | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ *//' | sed 's/ *$//')
+              
+              # Get relative path for source link
+              relpath="src/NexusLabs.Needlr.Benchmarks/Benchmarks/$(basename "$file")"
+              
+              if [ "$first" = true ]; then
+                first=false
+              else
+                echo ',' >> "$OUTPUT_FILE"
+              fi
+              
+              # Escape quotes in summary
+              summary_escaped=$(echo "$summary" | sed 's/"/\\"/g')
+              
+              echo "  \"$classname\": {\"description\": \"$summary_escaped\", \"source\": \"$relpath\"}" >> "$OUTPUT_FILE"
+            fi
+          done
+          
+          echo '}' >> "$OUTPUT_FILE"
+          
+          echo "Generated descriptions.json:"
+          cat "$OUTPUT_FILE"
+
       - name: Upload Benchmark Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -129,9 +169,10 @@ jobs:
           # Create benchmarks directory in site
           mkdir -p site/benchmarks/results
           
-          # Copy all benchmark results including the results.json for the web page
+          # Copy all benchmark results including JSON files for the web page
           cp -r benchmark-results/* site/benchmarks/ 2>/dev/null || true
           cp benchmark-results/results.json site/benchmarks/results/results.json 2>/dev/null || true
+          cp benchmark-results/descriptions.json site/benchmarks/results/descriptions.json 2>/dev/null || true
 
       - name: Save Last Benchmark Commit
         run: echo "${{ github.sha }}" > site/.last-benchmark-commit
