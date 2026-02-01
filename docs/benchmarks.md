@@ -13,15 +13,13 @@ Performance comparison between source-generated and reflection-based dependency 
     <p><em>Loading benchmark results...</em></p>
 </div>
 
-<div id="charts-container">
-    <canvas id="buildChart" style="max-height: 400px;"></canvas>
-</div>
+<div id="charts-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
     const resultsDiv = document.getElementById('benchmark-results');
-    const chartCanvas = document.getElementById('buildChart');
+    const chartsContainer = document.getElementById('charts-container');
     const takeawayText = document.getElementById('takeaway-text');
     
     // Try to load benchmark data from the benchmarks directory
@@ -34,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         const data = await response.json();
         displayResults(data, resultsDiv);
-        renderChart(data, chartCanvas);
+        renderAllCharts(data, chartsContainer);
         updateKeyTakeaway(data, takeawayText);
     } catch (error) {
         resultsDiv.innerHTML = `
@@ -46,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                    → Trigger a benchmark run</a></p>
             </div>
         `;
-        chartCanvas.style.display = 'none';
+        chartsContainer.style.display = 'none';
     }
 });
 
@@ -152,85 +150,139 @@ function formatBytes(bytes) {
     return bytes + ' B';
 }
 
-function renderChart(data, canvas) {
+function renderAllCharts(data, container) {
     if (!data || !data.Benchmarks) {
-        canvas.style.display = 'none';
+        container.style.display = 'none';
         return;
     }
     
-    // Filter to build benchmarks only
-    const buildBenchmarks = data.Benchmarks.filter(b => 
-        b.Type?.includes('Build') || b.Method?.includes('Build')
-    );
-    
-    if (buildBenchmarks.length === 0) {
-        canvas.style.display = 'none';
-        return;
-    }
-    
-    // Group by benchmark class
+    // Group benchmarks by class
     const grouped = {};
-    buildBenchmarks.forEach(b => {
+    data.Benchmarks.forEach(b => {
         const className = (b.Type || 'Unknown').split('.').pop();
-        if (!grouped[className]) grouped[className] = { reflection: 0, sourceGen: 0 };
-        
-        const mean = getMeanFromMeasurements(b);
-        const meanMs = mean ? mean / 1e6 : 0;
-        
-        if (b.Method?.includes('Reflection')) {
-            grouped[className].reflection = meanMs;
-        } else if (b.Method?.includes('SourceGen') && !b.Method?.includes('Explicit')) {
-            grouped[className].sourceGen = meanMs;
-        }
+        if (!grouped[className]) grouped[className] = [];
+        grouped[className].push(b);
     });
     
-    const labels = Object.keys(grouped);
-    const reflectionData = labels.map(l => grouped[l].reflection);
-    const sourceGenData = labels.map(l => grouped[l].sourceGen);
+    let html = '';
+    let chartIndex = 0;
     
-    new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Reflection (Baseline)',
-                    data: reflectionData,
-                    backgroundColor: 'rgba(198, 40, 40, 0.7)',
-                    borderColor: 'rgba(198, 40, 40, 1)',
-                    borderWidth: 1
+    for (const [className, benchmarks] of Object.entries(grouped)) {
+        // Find baseline and collect data
+        const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+        if (!baseline) continue;
+        
+        const baselineAlloc = baseline?.Memory?.BytesAllocatedPerOperation;
+        
+        // Collect all methods with their data
+        const methods = benchmarks.map(b => ({
+            name: b.Method,
+            time: getMeanFromMeasurements(b),
+            memory: b.Memory?.BytesAllocatedPerOperation,
+            isBaseline: b.Method?.includes('Reflection')
+        })).filter(m => m.time);
+        
+        if (methods.length < 2) continue;
+        
+        // Create chart containers
+        html += `<div class="benchmark-chart-group">`;
+        html += `<h4>${className.replace('Benchmarks', '')}</h4>`;
+        html += `<div class="chart-row">`;
+        html += `<div class="chart-cell"><canvas id="timeChart${chartIndex}"></canvas></div>`;
+        if (baselineAlloc) {
+            html += `<div class="chart-cell"><canvas id="memChart${chartIndex}"></canvas></div>`;
+        }
+        html += `</div></div>`;
+        chartIndex++;
+    }
+    
+    container.innerHTML = html;
+    
+    // Now render charts
+    chartIndex = 0;
+    for (const [className, benchmarks] of Object.entries(grouped)) {
+        const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+        if (!baseline) continue;
+        
+        const baselineAlloc = baseline?.Memory?.BytesAllocatedPerOperation;
+        
+        const methods = benchmarks.map(b => ({
+            name: b.Method,
+            time: getMeanFromMeasurements(b),
+            memory: b.Memory?.BytesAllocatedPerOperation,
+            isBaseline: b.Method?.includes('Reflection')
+        })).filter(m => m.time);
+        
+        if (methods.length < 2) continue;
+        
+        // Shorten method names for labels
+        const shortClassName = className.replace('Benchmarks', '');
+        const labels = methods.map(m => m.name.replace(shortClassName + '_', '').replace('_', ' '));
+        const timeData = methods.map(m => m.time / 1e6); // Convert to ms
+        const memData = methods.map(m => m.memory ? m.memory / 1024 : 0); // Convert to KB
+        const colors = methods.map(m => m.isBaseline ? 'rgba(198, 40, 40, 0.7)' : 'rgba(46, 125, 50, 0.7)');
+        const borderColors = methods.map(m => m.isBaseline ? 'rgba(198, 40, 40, 1)' : 'rgba(46, 125, 50, 1)');
+        
+        // Time chart
+        const timeCanvas = document.getElementById(`timeChart${chartIndex}`);
+        if (timeCanvas) {
+            new Chart(timeCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Time (ms)',
+                        data: timeData,
+                        backgroundColor: colors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
                 },
-                {
-                    label: 'Source Generation',
-                    data: sourceGenData,
-                    backgroundColor: 'rgba(46, 125, 50, 0.7)',
-                    borderColor: 'rgba(46, 125, 50, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Build Time Comparison (lower is better)'
-                },
-                legend: {
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Time (ms)'
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: `${shortClassName} - Time (lower is better)` },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'ms' } }
                     }
                 }
+            });
+        }
+        
+        // Memory chart
+        if (baselineAlloc) {
+            const memCanvas = document.getElementById(`memChart${chartIndex}`);
+            if (memCanvas) {
+                new Chart(memCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Memory (KB)',
+                            data: memData,
+                            backgroundColor: colors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: `${shortClassName} - Memory (lower is better)` },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'KB' } }
+                        }
+                    }
+                });
             }
         }
-    });
+        
+        chartIndex++;
+    }
 }
 
 function updateKeyTakeaway(data, element) {
@@ -315,6 +367,26 @@ function updateKeyTakeaway(data, element) {
 }
 #benchmark-results .slower {
     color: #c62828;
+}
+.benchmark-chart-group {
+    margin: 2em 0;
+    padding: 1em;
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 8px;
+}
+.benchmark-chart-group h4 {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+.chart-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+.chart-cell {
+    flex: 1;
+    min-width: 300px;
+    max-height: 300px;
 }
 </style>
 
