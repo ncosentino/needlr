@@ -85,10 +85,27 @@ jobs:
 
       - name: Prepare Benchmark JSON for Web
         run: |
-          # Find and copy the combined JSON report
-          find benchmark-results -name '*-report-full-compressed.json' -exec cp {} benchmark-results/results.json \; 2>/dev/null || \
-          find benchmark-results -name '*-report.json' -exec cp {} benchmark-results/results.json \; 2>/dev/null || \
-          echo '{"Benchmarks":[]}' > benchmark-results/results.json
+          # BenchmarkDotNet creates one JSON file per benchmark class.
+          # We need to merge all results into a single combined file.
+          # Use jq to merge all Benchmarks arrays from all report files.
+          
+          cd benchmark-results
+          
+          # Find all full-compressed JSON files and merge their Benchmarks arrays
+          JSON_FILES=$(find . -name '*-report-full-compressed.json' -type f)
+          
+          if [ -n "$JSON_FILES" ]; then
+            # Create merged JSON with all benchmarks
+            echo "$JSON_FILES" | xargs cat | jq -s '{
+              Title: "Needlr Benchmarks",
+              HostEnvironmentInfo: .[0].HostEnvironmentInfo,
+              Benchmarks: [.[].Benchmarks[]]
+            }' > results.json
+          else
+            echo '{"Benchmarks":[]}' > results.json
+          fi
+          
+          cd ..
 
       - name: Upload Benchmark Artifacts
         uses: actions/upload-artifact@v4
