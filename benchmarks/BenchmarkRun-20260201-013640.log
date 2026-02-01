@@ -1,0 +1,3136 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 27 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true /p:IntermediateOutputPath="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/obj/Release/net10.0/" /p:OutDir="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0/" /p:OutputPath="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0/" in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238
+// command took 1.73 sec and exited with 0
+// start dotnet  build -c Release --no-restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true /p:IntermediateOutputPath="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/obj/Release/net10.0/" /p:OutDir="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0/" /p:OutputPath="/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0/" --output "/home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0/" in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238
+// command took 33.23 sec and exited with 0
+// ***** Done, took 00:00:35 (35.07 sec)   *****
+// Found 4 benchmarks:
+//   CreatePluginsFromGenericTypeBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   CreatePluginsFromGenericTypeBenchmarks.SourceGen_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   CreatePluginsFromGenericTypeBenchmarks.SourceGen_EmptyAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   CreatePluginsFromGenericTypeBenchmarks.SourceGen_ParameterlessOverload: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: CreatePluginsFromGenericTypeBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 156 157 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks.Reflection --job ShortRun --benchmarkId 0 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 328153.00 ns, 328.1530 us/op
+WorkloadJitting  1: 1 op, 11484642.00 ns, 11.4846 ms/op
+
+OverheadJitting  2: 16 op, 483715.00 ns, 30.2322 us/op
+WorkloadJitting  2: 16 op, 1661557.00 ns, 103.8473 us/op
+
+WorkloadPilot    1: 16 op, 835793.00 ns, 52.2371 us/op
+WorkloadPilot    2: 32 op, 1705398.00 ns, 53.2937 us/op
+WorkloadPilot    3: 64 op, 3205733.00 ns, 50.0896 us/op
+WorkloadPilot    4: 128 op, 6303765.00 ns, 49.2482 us/op
+WorkloadPilot    5: 256 op, 12310285.00 ns, 48.0871 us/op
+WorkloadPilot    6: 512 op, 24550649.00 ns, 47.9505 us/op
+WorkloadPilot    7: 1024 op, 48789785.00 ns, 47.6463 us/op
+WorkloadPilot    8: 2048 op, 112960136.00 ns, 55.1563 us/op
+WorkloadPilot    9: 4096 op, 294156724.00 ns, 71.8156 us/op
+WorkloadPilot   10: 8192 op, 445561354.00 ns, 54.3898 us/op
+WorkloadPilot   11: 16384 op, 333598673.00 ns, 20.3612 us/op
+WorkloadPilot   12: 32768 op, 667233677.00 ns, 20.3624 us/op
+
+OverheadWarmup   1: 32768 op, 162354.00 ns, 4.9547 ns/op
+OverheadWarmup   2: 32768 op, 245870.00 ns, 7.5034 ns/op
+OverheadWarmup   3: 32768 op, 240890.00 ns, 7.3514 ns/op
+OverheadWarmup   4: 32768 op, 152946.00 ns, 4.6675 ns/op
+OverheadWarmup   5: 32768 op, 170128.00 ns, 5.1919 ns/op
+OverheadWarmup   6: 32768 op, 150702.00 ns, 4.5991 ns/op
+
+OverheadActual   1: 32768 op, 171130.00 ns, 5.2225 ns/op
+OverheadActual   2: 32768 op, 166822.00 ns, 5.0910 ns/op
+OverheadActual   3: 32768 op, 152105.00 ns, 4.6419 ns/op
+OverheadActual   4: 32768 op, 155160.00 ns, 4.7351 ns/op
+OverheadActual   5: 32768 op, 152494.00 ns, 4.6537 ns/op
+OverheadActual   6: 32768 op, 153217.00 ns, 4.6758 ns/op
+OverheadActual   7: 32768 op, 152505.00 ns, 4.6541 ns/op
+OverheadActual   8: 32768 op, 173114.00 ns, 5.2830 ns/op
+OverheadActual   9: 32768 op, 152595.00 ns, 4.6568 ns/op
+OverheadActual  10: 32768 op, 153527.00 ns, 4.6853 ns/op
+OverheadActual  11: 32768 op, 153357.00 ns, 4.6801 ns/op
+OverheadActual  12: 32768 op, 151784.00 ns, 4.6321 ns/op
+OverheadActual  13: 32768 op, 152215.00 ns, 4.6452 ns/op
+OverheadActual  14: 32768 op, 153717.00 ns, 4.6911 ns/op
+OverheadActual  15: 32768 op, 154288.00 ns, 4.7085 ns/op
+
+WorkloadWarmup   1: 32768 op, 680052009.00 ns, 20.7535 us/op
+WorkloadWarmup   2: 32768 op, 679778245.00 ns, 20.7452 us/op
+WorkloadWarmup   3: 32768 op, 669059897.00 ns, 20.4181 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 32768 op, 672406745.00 ns, 20.5202 us/op
+WorkloadActual   2: 32768 op, 669488659.00 ns, 20.4312 us/op
+WorkloadActual   3: 32768 op, 670349538.00 ns, 20.4574 us/op
+WorkloadActual   4: 32768 op, 669182426.00 ns, 20.4218 us/op
+WorkloadActual   5: 32768 op, 668315736.00 ns, 20.3954 us/op
+
+// AfterActualRun
+WorkloadResult   1: 32768 op, 669335302.00 ns, 20.4265 us/op
+WorkloadResult   2: 32768 op, 670196181.00 ns, 20.4528 us/op
+WorkloadResult   3: 32768 op, 669029069.00 ns, 20.4171 us/op
+WorkloadResult   4: 32768 op, 668162379.00 ns, 20.3907 us/op
+// GC:  9 0 0 154620288 32768
+// Threading:  0 0 32768
+
+// AfterAll
+// Benchmark Process 2953 has exited with code 0.
+
+Mean = 20.422 μs, StdErr = 0.013 μs (0.06%), N = 4, StdDev = 0.026 μs
+Min = 20.391 μs, Q1 = 20.411 μs, Median = 20.422 μs, Q3 = 20.433 μs, Max = 20.453 μs
+IQR = 0.023 μs, LowerFence = 20.377 μs, UpperFence = 20.467 μs
+ConfidenceInterval = [20.256 μs; 20.587 μs] (CI 99.9%), Margin = 0.166 μs (0.81% of Mean)
+Skewness = -0, Kurtosis = 1.08, MValue = 2
+
+// ** Remained 26 (96.3 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 3m from now) **
+// **************************
+// Benchmark: CreatePluginsFromGenericTypeBenchmarks.SourceGen_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 156 157 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks.SourceGen_AssemblyListProvided --job ShortRun --benchmarkId 1 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 354754.00 ns, 354.7540 us/op
+WorkloadJitting  1: 1 op, 13949489.00 ns, 13.9495 ms/op
+
+OverheadJitting  2: 16 op, 516406.00 ns, 32.2754 us/op
+WorkloadJitting  2: 16 op, 1220952.00 ns, 76.3095 us/op
+
+WorkloadPilot    1: 16 op, 576247.00 ns, 36.0154 us/op
+WorkloadPilot    2: 32 op, 1195094.00 ns, 37.3467 us/op
+WorkloadPilot    3: 64 op, 2496698.00 ns, 39.0109 us/op
+WorkloadPilot    4: 128 op, 4949743.00 ns, 38.6699 us/op
+WorkloadPilot    5: 256 op, 9961363.00 ns, 38.9116 us/op
+WorkloadPilot    6: 512 op, 20371556.00 ns, 39.7882 us/op
+WorkloadPilot    7: 1024 op, 37913612.00 ns, 37.0250 us/op
+WorkloadPilot    8: 2048 op, 64393659.00 ns, 31.4422 us/op
+WorkloadPilot    9: 4096 op, 127694306.00 ns, 31.1754 us/op
+WorkloadPilot   10: 8192 op, 262172896.00 ns, 32.0035 us/op
+WorkloadPilot   11: 16384 op, 360001996.00 ns, 21.9728 us/op
+WorkloadPilot   12: 32768 op, 657118128.00 ns, 20.0537 us/op
+
+OverheadWarmup   1: 32768 op, 139771.00 ns, 4.2655 ns/op
+OverheadWarmup   2: 32768 op, 138298.00 ns, 4.2205 ns/op
+OverheadWarmup   3: 32768 op, 138730.00 ns, 4.2337 ns/op
+OverheadWarmup   4: 32768 op, 165860.00 ns, 5.0616 ns/op
+OverheadWarmup   5: 32768 op, 138800.00 ns, 4.2358 ns/op
+OverheadWarmup   6: 32768 op, 138269.00 ns, 4.2196 ns/op
+OverheadWarmup   7: 32768 op, 138680.00 ns, 4.2322 ns/op
+OverheadWarmup   8: 32768 op, 138248.00 ns, 4.2190 ns/op
+
+OverheadActual   1: 32768 op, 138820.00 ns, 4.2365 ns/op
+OverheadActual   2: 32768 op, 138328.00 ns, 4.2214 ns/op
+OverheadActual   3: 32768 op, 138789.00 ns, 4.2355 ns/op
+OverheadActual   4: 32768 op, 165389.00 ns, 5.0473 ns/op
+OverheadActual   5: 32768 op, 138539.00 ns, 4.2279 ns/op
+OverheadActual   6: 32768 op, 152325.00 ns, 4.6486 ns/op
+OverheadActual   7: 32768 op, 138719.00 ns, 4.2334 ns/op
+OverheadActual   8: 32768 op, 138238.00 ns, 4.2187 ns/op
+OverheadActual   9: 32768 op, 138779.00 ns, 4.2352 ns/op
+OverheadActual  10: 32768 op, 158256.00 ns, 4.8296 ns/op
+OverheadActual  11: 32768 op, 138789.00 ns, 4.2355 ns/op
+OverheadActual  12: 32768 op, 138288.00 ns, 4.2202 ns/op
+OverheadActual  13: 32768 op, 138790.00 ns, 4.2355 ns/op
+OverheadActual  14: 32768 op, 138298.00 ns, 4.2205 ns/op
+OverheadActual  15: 32768 op, 172963.00 ns, 5.2784 ns/op
+
+WorkloadWarmup   1: 32768 op, 656991264.00 ns, 20.0498 us/op
+WorkloadWarmup   2: 32768 op, 659208637.00 ns, 20.1175 us/op
+WorkloadWarmup   3: 32768 op, 653697852.00 ns, 19.9493 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 32768 op, 652612838.00 ns, 19.9162 us/op
+WorkloadActual   2: 32768 op, 652560680.00 ns, 19.9146 us/op
+WorkloadActual   3: 32768 op, 653923788.00 ns, 19.9562 us/op
+WorkloadActual   4: 32768 op, 653416670.00 ns, 19.9407 us/op
+WorkloadActual   5: 32768 op, 655586677.00 ns, 20.0069 us/op
+
+// AfterActualRun
+WorkloadResult   1: 32768 op, 652474049.00 ns, 19.9119 us/op
+WorkloadResult   2: 32768 op, 652421891.00 ns, 19.9103 us/op
+WorkloadResult   3: 32768 op, 653784999.00 ns, 19.9519 us/op
+WorkloadResult   4: 32768 op, 653277881.00 ns, 19.9365 us/op
+WorkloadResult   5: 32768 op, 655447888.00 ns, 20.0027 us/op
+// GC:  37 0 0 633340640 32768
+// Threading:  0 0 32768
+
+// AfterAll
+// Benchmark Process 2966 has exited with code 0.
+
+Mean = 19.943 μs, StdErr = 0.017 μs (0.08%), N = 5, StdDev = 0.038 μs
+Min = 19.910 μs, Q1 = 19.912 μs, Median = 19.936 μs, Q3 = 19.952 μs, Max = 20.003 μs
+IQR = 0.040 μs, LowerFence = 19.852 μs, UpperFence = 20.012 μs
+ConfidenceInterval = [19.797 μs; 20.088 μs] (CI 99.9%), Margin = 0.146 μs (0.73% of Mean)
+Skewness = 0.57, Kurtosis = 1.47, MValue = 2
+
+// ** Remained 25 (92.6 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 3m from now) **
+// **************************
+// Benchmark: CreatePluginsFromGenericTypeBenchmarks.SourceGen_EmptyAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 156 157 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks.SourceGen_EmptyAssemblyList --job ShortRun --benchmarkId 2 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 331640.00 ns, 331.6400 us/op
+WorkloadJitting  1: 1 op, 14230322.00 ns, 14.2303 ms/op
+
+OverheadJitting  2: 16 op, 525282.00 ns, 32.8301 us/op
+WorkloadJitting  2: 16 op, 1092563.00 ns, 68.2852 us/op
+
+WorkloadPilot    1: 16 op, 523399.00 ns, 32.7124 us/op
+WorkloadPilot    2: 32 op, 1085659.00 ns, 33.9268 us/op
+WorkloadPilot    3: 64 op, 2284421.00 ns, 35.6941 us/op
+WorkloadPilot    4: 128 op, 4390388.00 ns, 34.2999 us/op
+WorkloadPilot    5: 256 op, 9159484.00 ns, 35.7792 us/op
+WorkloadPilot    6: 512 op, 18131838.00 ns, 35.4137 us/op
+WorkloadPilot    7: 1024 op, 34803115.00 ns, 33.9874 us/op
+WorkloadPilot    8: 2048 op, 57298581.00 ns, 27.9778 us/op
+WorkloadPilot    9: 4096 op, 118217441.00 ns, 28.8617 us/op
+WorkloadPilot   10: 8192 op, 206578422.00 ns, 25.2171 us/op
+WorkloadPilot   11: 16384 op, 304264371.00 ns, 18.5708 us/op
+WorkloadPilot   12: 32768 op, 603699833.00 ns, 18.4235 us/op
+
+OverheadWarmup   1: 32768 op, 139681.00 ns, 4.2627 ns/op
+OverheadWarmup   2: 32768 op, 138328.00 ns, 4.2214 ns/op
+OverheadWarmup   3: 32768 op, 138709.00 ns, 4.2331 ns/op
+OverheadWarmup   4: 32768 op, 138358.00 ns, 4.2224 ns/op
+OverheadWarmup   5: 32768 op, 138779.00 ns, 4.2352 ns/op
+OverheadWarmup   6: 32768 op, 138289.00 ns, 4.2202 ns/op
+
+OverheadActual   1: 32768 op, 152776.00 ns, 4.6624 ns/op
+OverheadActual   2: 32768 op, 138308.00 ns, 4.2208 ns/op
+OverheadActual   3: 32768 op, 138799.00 ns, 4.2358 ns/op
+OverheadActual   4: 32768 op, 154379.00 ns, 4.7113 ns/op
+OverheadActual   5: 32768 op, 154309.00 ns, 4.7091 ns/op
+OverheadActual   6: 32768 op, 152485.00 ns, 4.6535 ns/op
+OverheadActual   7: 32768 op, 153857.00 ns, 4.6953 ns/op
+OverheadActual   8: 32768 op, 168765.00 ns, 5.1503 ns/op
+OverheadActual   9: 32768 op, 154809.00 ns, 4.7244 ns/op
+OverheadActual  10: 32768 op, 153727.00 ns, 4.6914 ns/op
+OverheadActual  11: 32768 op, 153898.00 ns, 4.6966 ns/op
+OverheadActual  12: 32768 op, 168035.00 ns, 5.1280 ns/op
+OverheadActual  13: 32768 op, 153757.00 ns, 4.6923 ns/op
+OverheadActual  14: 32768 op, 155341.00 ns, 4.7406 ns/op
+OverheadActual  15: 32768 op, 156853.00 ns, 4.7868 ns/op
+
+WorkloadWarmup   1: 32768 op, 616409094.00 ns, 18.8113 us/op
+WorkloadWarmup   2: 32768 op, 614355514.00 ns, 18.7486 us/op
+WorkloadWarmup   3: 32768 op, 610892410.00 ns, 18.6430 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 32768 op, 606763484.00 ns, 18.5170 us/op
+WorkloadActual   2: 32768 op, 603567597.00 ns, 18.4194 us/op
+WorkloadActual   3: 32768 op, 607183881.00 ns, 18.5298 us/op
+WorkloadActual   4: 32768 op, 606620989.00 ns, 18.5126 us/op
+WorkloadActual   5: 32768 op, 605052911.00 ns, 18.4647 us/op
+
+// AfterActualRun
+WorkloadResult   1: 32768 op, 606609586.00 ns, 18.5123 us/op
+WorkloadResult   2: 32768 op, 603413699.00 ns, 18.4147 us/op
+WorkloadResult   3: 32768 op, 607029983.00 ns, 18.5251 us/op
+WorkloadResult   4: 32768 op, 606467091.00 ns, 18.5079 us/op
+WorkloadResult   5: 32768 op, 604899013.00 ns, 18.4601 us/op
+// GC:  35 0 0 600572640 32768
+// Threading:  0 0 32768
+
+// AfterAll
+// Benchmark Process 2974 has exited with code 0.
+
+Mean = 18.484 μs, StdErr = 0.021 μs (0.11%), N = 5, StdDev = 0.046 μs
+Min = 18.415 μs, Q1 = 18.460 μs, Median = 18.508 μs, Q3 = 18.512 μs, Max = 18.525 μs
+IQR = 0.052 μs, LowerFence = 18.382 μs, UpperFence = 18.591 μs
+ConfidenceInterval = [18.307 μs; 18.661 μs] (CI 99.9%), Margin = 0.177 μs (0.96% of Mean)
+Skewness = -0.5, Kurtosis = 1.22, MValue = 2
+
+// ** Remained 24 (88.9 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 3m from now) **
+// **************************
+// Benchmark: CreatePluginsFromGenericTypeBenchmarks.SourceGen_ParameterlessOverload: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 156 157 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks.SourceGen_ParameterlessOverload --job ShortRun --benchmarkId 3 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 291143.00 ns, 291.1430 us/op
+WorkloadJitting  1: 1 op, 13504482.00 ns, 13.5045 ms/op
+
+OverheadJitting  2: 16 op, 494954.00 ns, 30.9346 us/op
+WorkloadJitting  2: 16 op, 545178.00 ns, 34.0736 us/op
+
+WorkloadPilot    1: 16 op, 55884.00 ns, 3.4928 us/op
+WorkloadPilot    2: 32 op, 94567.00 ns, 2.9552 us/op
+WorkloadPilot    3: 64 op, 156763.00 ns, 2.4494 us/op
+WorkloadPilot    4: 128 op, 295752.00 ns, 2.3106 us/op
+WorkloadPilot    5: 256 op, 687273.00 ns, 2.6847 us/op
+WorkloadPilot    6: 512 op, 1298545.00 ns, 2.5362 us/op
+WorkloadPilot    7: 1024 op, 2389393.00 ns, 2.3334 us/op
+WorkloadPilot    8: 2048 op, 4841352.00 ns, 2.3639 us/op
+WorkloadPilot    9: 4096 op, 9301934.00 ns, 2.2710 us/op
+WorkloadPilot   10: 8192 op, 18400647.00 ns, 2.2462 us/op
+WorkloadPilot   11: 16384 op, 35924556.00 ns, 2.1927 us/op
+WorkloadPilot   12: 32768 op, 71761750.00 ns, 2.1900 us/op
+WorkloadPilot   13: 65536 op, 154534124.00 ns, 2.3580 us/op
+WorkloadPilot   14: 131072 op, 74150451.00 ns, 565.7230 ns/op
+WorkloadPilot   15: 262144 op, 119353788.00 ns, 455.2986 ns/op
+WorkloadPilot   16: 524288 op, 228980859.00 ns, 436.7463 ns/op
+WorkloadPilot   17: 1048576 op, 447796933.00 ns, 427.0524 ns/op
+WorkloadPilot   18: 2097152 op, 891138778.00 ns, 424.9281 ns/op
+
+OverheadWarmup   1: 2097152 op, 8934895.00 ns, 4.2605 ns/op
+OverheadWarmup   2: 2097152 op, 8935737.00 ns, 4.2609 ns/op
+OverheadWarmup   3: 2097152 op, 8915839.00 ns, 4.2514 ns/op
+OverheadWarmup   4: 2097152 op, 8904139.00 ns, 4.2458 ns/op
+OverheadWarmup   5: 2097152 op, 8950154.00 ns, 4.2678 ns/op
+OverheadWarmup   6: 2097152 op, 8887797.00 ns, 4.2380 ns/op
+
+OverheadActual   1: 2097152 op, 8933042.00 ns, 4.2596 ns/op
+OverheadActual   2: 2097152 op, 8985009.00 ns, 4.2844 ns/op
+OverheadActual   3: 2097152 op, 8948190.00 ns, 4.2668 ns/op
+OverheadActual   4: 2097152 op, 8945235.00 ns, 4.2654 ns/op
+OverheadActual   5: 2097152 op, 8951056.00 ns, 4.2682 ns/op
+OverheadActual   6: 2097152 op, 8944814.00 ns, 4.2652 ns/op
+OverheadActual   7: 2097152 op, 8927772.00 ns, 4.2571 ns/op
+OverheadActual   8: 2097152 op, 8883609.00 ns, 4.2360 ns/op
+OverheadActual   9: 2097152 op, 8889010.00 ns, 4.2386 ns/op
+OverheadActual  10: 2097152 op, 8887287.00 ns, 4.2378 ns/op
+OverheadActual  11: 2097152 op, 8890132.00 ns, 4.2391 ns/op
+OverheadActual  12: 2097152 op, 8888309.00 ns, 4.2383 ns/op
+OverheadActual  13: 2097152 op, 8885282.00 ns, 4.2368 ns/op
+OverheadActual  14: 2097152 op, 8888489.00 ns, 4.2384 ns/op
+OverheadActual  15: 2097152 op, 8887918.00 ns, 4.2381 ns/op
+
+WorkloadWarmup   1: 2097152 op, 865717817.00 ns, 412.8064 ns/op
+WorkloadWarmup   2: 2097152 op, 852861009.00 ns, 406.6758 ns/op
+WorkloadWarmup   3: 2097152 op, 845116065.00 ns, 402.9827 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 2097152 op, 854665845.00 ns, 407.5364 ns/op
+WorkloadActual   2: 2097152 op, 852237600.00 ns, 406.3786 ns/op
+WorkloadActual   3: 2097152 op, 857577875.00 ns, 408.9250 ns/op
+WorkloadActual   4: 2097152 op, 854099869.00 ns, 407.2666 ns/op
+WorkloadActual   5: 2097152 op, 852416253.00 ns, 406.4637 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 2097152 op, 845775713.00 ns, 403.2973 ns/op
+WorkloadResult   2: 2097152 op, 843347468.00 ns, 402.1394 ns/op
+WorkloadResult   3: 2097152 op, 848687743.00 ns, 404.6859 ns/op
+WorkloadResult   4: 2097152 op, 845209737.00 ns, 403.0274 ns/op
+WorkloadResult   5: 2097152 op, 843526121.00 ns, 402.2246 ns/op
+// GC:  55 0 0 922747616 2097152
+// Threading:  0 0 2097152
+
+// AfterAll
+// Benchmark Process 2982 has exited with code 0.
+
+Mean = 403.075 ns, StdErr = 0.461 ns (0.11%), N = 5, StdDev = 1.030 ns
+Min = 402.139 ns, Q1 = 402.225 ns, Median = 403.027 ns, Q3 = 403.297 ns, Max = 404.686 ns
+IQR = 1.073 ns, LowerFence = 400.616 ns, UpperFence = 404.906 ns
+ConfidenceInterval = [399.108 ns; 407.042 ns] (CI 99.9%), Margin = 3.967 ns (0.98% of Mean)
+Skewness = 0.5, Kurtosis = 1.43, MValue = 2
+
+// ** Remained 23 (85.2 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 3m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-report-default.md
+
+// * Detailed results *
+CreatePluginsFromGenericTypeBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 20.422 μs, StdErr = 0.013 μs (0.06%), N = 4, StdDev = 0.026 μs
+Min = 20.391 μs, Q1 = 20.411 μs, Median = 20.422 μs, Q3 = 20.433 μs, Max = 20.453 μs
+IQR = 0.023 μs, LowerFence = 20.377 μs, UpperFence = 20.467 μs
+ConfidenceInterval = [20.256 μs; 20.587 μs] (CI 99.9%), Margin = 0.166 μs (0.81% of Mean)
+Skewness = -0, Kurtosis = 1.08, MValue = 2
+-------------------- Histogram --------------------
+[20.370 μs ; 20.474 μs) | @@@@
+---------------------------------------------------
+
+CreatePluginsFromGenericTypeBenchmarks.SourceGen_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 19.943 μs, StdErr = 0.017 μs (0.08%), N = 5, StdDev = 0.038 μs
+Min = 19.910 μs, Q1 = 19.912 μs, Median = 19.936 μs, Q3 = 19.952 μs, Max = 20.003 μs
+IQR = 0.040 μs, LowerFence = 19.852 μs, UpperFence = 20.012 μs
+ConfidenceInterval = [19.797 μs; 20.088 μs] (CI 99.9%), Margin = 0.146 μs (0.73% of Mean)
+Skewness = 0.57, Kurtosis = 1.47, MValue = 2
+-------------------- Histogram --------------------
+[19.881 μs ; 20.032 μs) | @@@@@
+---------------------------------------------------
+
+CreatePluginsFromGenericTypeBenchmarks.SourceGen_EmptyAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 18.484 μs, StdErr = 0.021 μs (0.11%), N = 5, StdDev = 0.046 μs
+Min = 18.415 μs, Q1 = 18.460 μs, Median = 18.508 μs, Q3 = 18.512 μs, Max = 18.525 μs
+IQR = 0.052 μs, LowerFence = 18.382 μs, UpperFence = 18.591 μs
+ConfidenceInterval = [18.307 μs; 18.661 μs] (CI 99.9%), Margin = 0.177 μs (0.96% of Mean)
+Skewness = -0.5, Kurtosis = 1.22, MValue = 2
+-------------------- Histogram --------------------
+[18.379 μs ; 18.560 μs) | @@@@@
+---------------------------------------------------
+
+CreatePluginsFromGenericTypeBenchmarks.SourceGen_ParameterlessOverload: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 403.075 ns, StdErr = 0.461 ns (0.11%), N = 5, StdDev = 1.030 ns
+Min = 402.139 ns, Q1 = 402.225 ns, Median = 403.027 ns, Q3 = 403.297 ns, Max = 404.686 ns
+IQR = 1.073 ns, LowerFence = 400.616 ns, UpperFence = 404.906 ns
+ConfidenceInterval = [399.108 ns; 407.042 ns] (CI 99.9%), Margin = 3.967 ns (0.98% of Mean)
+Skewness = 0.5, Kurtosis = 1.43, MValue = 2
+-------------------- Histogram --------------------
+[401.349 ns ; 405.477 ns) | @@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method                          | Mean        | Error     | StdDev   | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
+|-------------------------------- |------------:|----------:|---------:|------:|-----:|-------:|----------:|------------:|
+| Reflection                      | 20,421.8 ns | 165.58 ns | 25.62 ns |  1.00 |    2 | 0.2747 |    4719 B |        1.00 |
+| SourceGen_AssemblyListProvided  | 19,942.7 ns | 145.57 ns | 37.80 ns |  0.98 |    2 | 1.1292 |   19328 B |        4.10 |
+| SourceGen_EmptyAssemblyList     | 18,484.0 ns | 176.78 ns | 45.91 ns |  0.91 |    2 | 1.0681 |   18328 B |        3.88 |
+| SourceGen_ParameterlessOverload |    403.1 ns |   3.97 ns |  1.03 ns |  0.02 |    1 | 0.0262 |     440 B |        0.09 |
+
+// * Hints *
+Outliers
+  CreatePluginsFromGenericTypeBenchmarks.Reflection: ShortRun -> 1 outlier  was  removed (20.52 μs)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Gen0        : GC Generation 0 collects per 1000 operations
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:33 (33.16 sec), executed benchmarks: 4
+
+// Found 2 benchmarks:
+//   DecoratorResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   DecoratorResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: DecoratorResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 162 163 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks.Reflection --job ShortRun --benchmarkId 4 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 300702.00 ns, 300.7020 us/op
+WorkloadJitting  1: 1 op, 6871677.00 ns, 6.8717 ms/op
+
+OverheadJitting  2: 16 op, 469849.00 ns, 29.3656 us/op
+WorkloadJitting  2: 16 op, 488774.00 ns, 30.5484 us/op
+
+WorkloadPilot    1: 16 op, 6061.00 ns, 378.8125 ns/op
+WorkloadPilot    2: 32 op, 8295.00 ns, 259.2188 ns/op
+WorkloadPilot    3: 64 op, 12363.00 ns, 193.1719 ns/op
+WorkloadPilot    4: 128 op, 24526.00 ns, 191.6094 ns/op
+WorkloadPilot    5: 256 op, 34444.00 ns, 134.5469 ns/op
+WorkloadPilot    6: 512 op, 54612.00 ns, 106.6641 ns/op
+WorkloadPilot    7: 1024 op, 111759.00 ns, 109.1396 ns/op
+WorkloadPilot    8: 2048 op, 171220.00 ns, 83.6035 ns/op
+WorkloadPilot    9: 4096 op, 332292.00 ns, 81.1260 ns/op
+WorkloadPilot   10: 8192 op, 747437.00 ns, 91.2399 ns/op
+WorkloadPilot   11: 16384 op, 1377395.00 ns, 84.0695 ns/op
+WorkloadPilot   12: 32768 op, 2688437.00 ns, 82.0446 ns/op
+WorkloadPilot   13: 65536 op, 5288718.00 ns, 80.6994 ns/op
+WorkloadPilot   14: 131072 op, 10608825.00 ns, 80.9389 ns/op
+WorkloadPilot   15: 262144 op, 20933820.00 ns, 79.8562 ns/op
+WorkloadPilot   16: 524288 op, 41594639.00 ns, 79.3355 ns/op
+WorkloadPilot   17: 1048576 op, 83466474.00 ns, 79.5998 ns/op
+WorkloadPilot   18: 2097152 op, 61476200.00 ns, 29.3141 ns/op
+WorkloadPilot   19: 4194304 op, 74586040.00 ns, 17.7827 ns/op
+WorkloadPilot   20: 8388608 op, 147875217.00 ns, 17.6281 ns/op
+WorkloadPilot   21: 16777216 op, 296389489.00 ns, 17.6662 ns/op
+WorkloadPilot   22: 33554432 op, 592443410.00 ns, 17.6562 ns/op
+
+OverheadWarmup   1: 33554432 op, 130489832.00 ns, 3.8889 ns/op
+OverheadWarmup   2: 33554432 op, 140689983.00 ns, 4.1929 ns/op
+OverheadWarmup   3: 33554432 op, 109469451.00 ns, 3.2624 ns/op
+OverheadWarmup   4: 33554432 op, 109588765.00 ns, 3.2660 ns/op
+OverheadWarmup   5: 33554432 op, 109875991.00 ns, 3.2746 ns/op
+OverheadWarmup   6: 33554432 op, 109527530.00 ns, 3.2642 ns/op
+
+OverheadActual   1: 33554432 op, 109610525.00 ns, 3.2666 ns/op
+OverheadActual   2: 33554432 op, 109756497.00 ns, 3.2710 ns/op
+OverheadActual   3: 33554432 op, 109614481.00 ns, 3.2668 ns/op
+OverheadActual   4: 33554432 op, 109689697.00 ns, 3.2690 ns/op
+OverheadActual   5: 33554432 op, 109561177.00 ns, 3.2652 ns/op
+OverheadActual   6: 33554432 op, 109856429.00 ns, 3.2740 ns/op
+OverheadActual   7: 33554432 op, 111111846.00 ns, 3.3114 ns/op
+OverheadActual   8: 33554432 op, 109549966.00 ns, 3.2648 ns/op
+OverheadActual   9: 33554432 op, 109861298.00 ns, 3.2741 ns/op
+OverheadActual  10: 33554432 op, 109650414.00 ns, 3.2678 ns/op
+OverheadActual  11: 33554432 op, 109718832.00 ns, 3.2699 ns/op
+OverheadActual  12: 33554432 op, 109527213.00 ns, 3.2642 ns/op
+OverheadActual  13: 33554432 op, 109682604.00 ns, 3.2688 ns/op
+OverheadActual  14: 33554432 op, 109519609.00 ns, 3.2639 ns/op
+OverheadActual  15: 33554432 op, 110796827.00 ns, 3.3020 ns/op
+
+WorkloadWarmup   1: 33554432 op, 599952198.00 ns, 17.8800 ns/op
+WorkloadWarmup   2: 33554432 op, 597721667.00 ns, 17.8135 ns/op
+WorkloadWarmup   3: 33554432 op, 597799593.00 ns, 17.8158 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 597913566.00 ns, 17.8192 ns/op
+WorkloadActual   2: 33554432 op, 606135900.00 ns, 18.0643 ns/op
+WorkloadActual   3: 33554432 op, 592412792.00 ns, 17.6553 ns/op
+WorkloadActual   4: 33554432 op, 592937023.00 ns, 17.6709 ns/op
+WorkloadActual   5: 33554432 op, 594713143.00 ns, 17.7238 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 488230962.00 ns, 14.5504 ns/op
+WorkloadResult   2: 33554432 op, 482730188.00 ns, 14.3865 ns/op
+WorkloadResult   3: 33554432 op, 483254419.00 ns, 14.4021 ns/op
+WorkloadResult   4: 33554432 op, 485030539.00 ns, 14.4550 ns/op
+// GC:  0 0 0 1360 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 2999 has exited with code 0.
+
+Mean = 14.449 ns, StdErr = 0.037 ns (0.26%), N = 4, StdDev = 0.074 ns
+Min = 14.386 ns, Q1 = 14.398 ns, Median = 14.429 ns, Q3 = 14.479 ns, Max = 14.550 ns
+IQR = 0.081 ns, LowerFence = 14.277 ns, UpperFence = 14.600 ns
+ConfidenceInterval = [13.970 ns; 14.927 ns] (CI 99.9%), Margin = 0.478 ns (3.31% of Mean)
+Skewness = 0.44, Kurtosis = 1.06, MValue = 2
+
+// ** Remained 22 (81.5 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 3m from now) **
+// **************************
+// Benchmark: DecoratorResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 162 163 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks.SourceGen --job ShortRun --benchmarkId 5 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 366234.00 ns, 366.2340 us/op
+WorkloadJitting  1: 1 op, 6089856.00 ns, 6.0899 ms/op
+
+OverheadJitting  2: 16 op, 504774.00 ns, 31.5484 us/op
+WorkloadJitting  2: 16 op, 489155.00 ns, 30.5722 us/op
+
+WorkloadPilot    1: 16 op, 6912.00 ns, 432.0000 ns/op
+WorkloadPilot    2: 32 op, 8796.00 ns, 274.8750 ns/op
+WorkloadPilot    3: 64 op, 13005.00 ns, 203.2031 ns/op
+WorkloadPilot    4: 128 op, 26199.00 ns, 204.6797 ns/op
+WorkloadPilot    5: 256 op, 36208.00 ns, 141.4375 ns/op
+WorkloadPilot    6: 512 op, 56425.00 ns, 110.2051 ns/op
+WorkloadPilot    7: 1024 op, 94787.00 ns, 92.5654 ns/op
+WorkloadPilot    8: 2048 op, 175017.00 ns, 85.4575 ns/op
+WorkloadPilot    9: 4096 op, 353320.00 ns, 86.2598 ns/op
+WorkloadPilot   10: 8192 op, 734633.00 ns, 89.6769 ns/op
+WorkloadPilot   11: 16384 op, 1407892.00 ns, 85.9309 ns/op
+WorkloadPilot   12: 32768 op, 2717170.00 ns, 82.9214 ns/op
+WorkloadPilot   13: 65536 op, 6217422.00 ns, 94.8703 ns/op
+WorkloadPilot   14: 131072 op, 10627138.00 ns, 81.0786 ns/op
+WorkloadPilot   15: 262144 op, 21079591.00 ns, 80.4123 ns/op
+WorkloadPilot   16: 524288 op, 42010864.00 ns, 80.1294 ns/op
+WorkloadPilot   17: 1048576 op, 83722077.00 ns, 79.8436 ns/op
+WorkloadPilot   18: 2097152 op, 74560695.00 ns, 35.5533 ns/op
+WorkloadPilot   19: 4194304 op, 77836223.00 ns, 18.5576 ns/op
+WorkloadPilot   20: 8388608 op, 154453849.00 ns, 18.4123 ns/op
+WorkloadPilot   21: 16777216 op, 308827196.00 ns, 18.4075 ns/op
+WorkloadPilot   22: 33554432 op, 618182564.00 ns, 18.4233 ns/op
+
+OverheadWarmup   1: 33554432 op, 130411774.00 ns, 3.8866 ns/op
+OverheadWarmup   2: 33554432 op, 140552462.00 ns, 4.1888 ns/op
+OverheadWarmup   3: 33554432 op, 109513623.00 ns, 3.2638 ns/op
+OverheadWarmup   4: 33554432 op, 109951772.00 ns, 3.2768 ns/op
+OverheadWarmup   5: 33554432 op, 109551574.00 ns, 3.2649 ns/op
+
+OverheadActual   1: 33554432 op, 112339937.00 ns, 3.3480 ns/op
+OverheadActual   2: 33554432 op, 119093565.00 ns, 3.5493 ns/op
+OverheadActual   3: 33554432 op, 109752149.00 ns, 3.2709 ns/op
+OverheadActual   4: 33554432 op, 109658314.00 ns, 3.2681 ns/op
+OverheadActual   5: 33554432 op, 109643245.00 ns, 3.2676 ns/op
+OverheadActual   6: 33554432 op, 123089714.00 ns, 3.6684 ns/op
+OverheadActual   7: 33554432 op, 114330989.00 ns, 3.4073 ns/op
+OverheadActual   8: 33554432 op, 109995424.00 ns, 3.2781 ns/op
+OverheadActual   9: 33554432 op, 109955509.00 ns, 3.2769 ns/op
+OverheadActual  10: 33554432 op, 109980857.00 ns, 3.2777 ns/op
+OverheadActual  11: 33554432 op, 110278824.00 ns, 3.2866 ns/op
+OverheadActual  12: 33554432 op, 109770303.00 ns, 3.2714 ns/op
+OverheadActual  13: 33554432 op, 110101122.00 ns, 3.2813 ns/op
+OverheadActual  14: 33554432 op, 109745346.00 ns, 3.2707 ns/op
+OverheadActual  15: 33554432 op, 109659066.00 ns, 3.2681 ns/op
+
+WorkloadWarmup   1: 33554432 op, 613591281.00 ns, 18.2864 ns/op
+WorkloadWarmup   2: 33554432 op, 614436661.00 ns, 18.3116 ns/op
+WorkloadWarmup   3: 33554432 op, 613068060.00 ns, 18.2709 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 614282706.00 ns, 18.3071 ns/op
+WorkloadActual   2: 33554432 op, 615375896.00 ns, 18.3396 ns/op
+WorkloadActual   3: 33554432 op, 614148412.00 ns, 18.3030 ns/op
+WorkloadActual   4: 33554432 op, 618713627.00 ns, 18.4391 ns/op
+WorkloadActual   5: 33554432 op, 618895757.00 ns, 18.4445 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 504301849.00 ns, 15.0294 ns/op
+WorkloadResult   2: 33554432 op, 505395039.00 ns, 15.0619 ns/op
+WorkloadResult   3: 33554432 op, 504167555.00 ns, 15.0254 ns/op
+WorkloadResult   4: 33554432 op, 508732770.00 ns, 15.1614 ns/op
+WorkloadResult   5: 33554432 op, 508914900.00 ns, 15.1668 ns/op
+// GC:  0 0 0 1360 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 3011 has exited with code 0.
+
+Mean = 15.089 ns, StdErr = 0.031 ns (0.21%), N = 5, StdDev = 0.070 ns
+Min = 15.025 ns, Q1 = 15.029 ns, Median = 15.062 ns, Q3 = 15.161 ns, Max = 15.167 ns
+IQR = 0.132 ns, LowerFence = 14.831 ns, UpperFence = 15.359 ns
+ConfidenceInterval = [14.819 ns; 15.359 ns] (CI 99.9%), Margin = 0.270 ns (1.79% of Mean)
+Skewness = 0.21, Kurtosis = 0.78, MValue = 2
+
+// ** Remained 21 (77.8 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 3m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-report-default.md
+
+// * Detailed results *
+DecoratorResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 14.449 ns, StdErr = 0.037 ns (0.26%), N = 4, StdDev = 0.074 ns
+Min = 14.386 ns, Q1 = 14.398 ns, Median = 14.429 ns, Q3 = 14.479 ns, Max = 14.550 ns
+IQR = 0.081 ns, LowerFence = 14.277 ns, UpperFence = 14.600 ns
+ConfidenceInterval = [13.970 ns; 14.927 ns] (CI 99.9%), Margin = 0.478 ns (3.31% of Mean)
+Skewness = 0.44, Kurtosis = 1.06, MValue = 2
+-------------------- Histogram --------------------
+[14.325 ns ; 14.612 ns) | @@@@
+---------------------------------------------------
+
+DecoratorResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 15.089 ns, StdErr = 0.031 ns (0.21%), N = 5, StdDev = 0.070 ns
+Min = 15.025 ns, Q1 = 15.029 ns, Median = 15.062 ns, Q3 = 15.161 ns, Max = 15.167 ns
+IQR = 0.132 ns, LowerFence = 14.831 ns, UpperFence = 15.359 ns
+ConfidenceInterval = [14.819 ns; 15.359 ns] (CI 99.9%), Margin = 0.270 ns (1.79% of Mean)
+Skewness = 0.21, Kurtosis = 0.78, MValue = 2
+-------------------- Histogram --------------------
+[14.972 ns ; 15.221 ns) | @@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
+| Reflection | 14.45 ns | 0.478 ns | 0.074 ns |  1.00 |    1 |         - |          NA |
+| SourceGen  | 15.09 ns | 0.270 ns | 0.070 ns |  1.04 |    1 |         - |          NA |
+
+// * Hints *
+Outliers
+  DecoratorResolutionBenchmarks.Reflection: ShortRun -> 1 outlier  was  removed (18.06 ns)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:19 (19.15 sec), executed benchmarks: 2
+
+// Found 2 benchmarks:
+//   DependentServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   DependentServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: DependentServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks.Reflection --job ShortRun --benchmarkId 6 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 330839.00 ns, 330.8390 us/op
+WorkloadJitting  1: 1 op, 4296885.00 ns, 4.2969 ms/op
+
+OverheadJitting  2: 16 op, 465320.00 ns, 29.0825 us/op
+WorkloadJitting  2: 16 op, 451564.00 ns, 28.2228 us/op
+
+WorkloadPilot    1: 16 op, 5961.00 ns, 372.5625 ns/op
+WorkloadPilot    2: 32 op, 8466.00 ns, 264.5625 ns/op
+WorkloadPilot    3: 64 op, 12493.00 ns, 195.2031 ns/op
+WorkloadPilot    4: 128 op, 25087.00 ns, 195.9922 ns/op
+WorkloadPilot    5: 256 op, 35858.00 ns, 140.0703 ns/op
+WorkloadPilot    6: 512 op, 55534.00 ns, 108.4648 ns/op
+WorkloadPilot    7: 1024 op, 95188.00 ns, 92.9570 ns/op
+WorkloadPilot    8: 2048 op, 173054.00 ns, 84.4990 ns/op
+WorkloadPilot    9: 4096 op, 334586.00 ns, 81.6860 ns/op
+WorkloadPilot   10: 8192 op, 739463.00 ns, 90.2665 ns/op
+WorkloadPilot   11: 16384 op, 1407543.00 ns, 85.9096 ns/op
+WorkloadPilot   12: 32768 op, 2681143.00 ns, 81.8220 ns/op
+WorkloadPilot   13: 65536 op, 5321651.00 ns, 81.2020 ns/op
+WorkloadPilot   14: 131072 op, 10590042.00 ns, 80.7956 ns/op
+WorkloadPilot   15: 262144 op, 20969229.00 ns, 79.9913 ns/op
+WorkloadPilot   16: 524288 op, 41844163.00 ns, 79.8114 ns/op
+WorkloadPilot   17: 1048576 op, 49674444.00 ns, 47.3732 ns/op
+WorkloadPilot   18: 2097152 op, 39332756.00 ns, 18.7553 ns/op
+WorkloadPilot   19: 4194304 op, 78386090.00 ns, 18.6887 ns/op
+WorkloadPilot   20: 8388608 op, 156492427.00 ns, 18.6554 ns/op
+WorkloadPilot   21: 16777216 op, 311198695.00 ns, 18.5489 ns/op
+WorkloadPilot   22: 33554432 op, 626227370.00 ns, 18.6630 ns/op
+
+OverheadWarmup   1: 33554432 op, 131908629.00 ns, 3.9312 ns/op
+OverheadWarmup   2: 33554432 op, 142961747.00 ns, 4.2606 ns/op
+OverheadWarmup   3: 33554432 op, 113562705.00 ns, 3.3844 ns/op
+OverheadWarmup   4: 33554432 op, 110996557.00 ns, 3.3080 ns/op
+OverheadWarmup   5: 33554432 op, 112286158.00 ns, 3.3464 ns/op
+OverheadWarmup   6: 33554432 op, 111738844.00 ns, 3.3301 ns/op
+
+OverheadActual   1: 33554432 op, 111014129.00 ns, 3.3085 ns/op
+OverheadActual   2: 33554432 op, 110865972.00 ns, 3.3041 ns/op
+OverheadActual   3: 33554432 op, 110958235.00 ns, 3.3068 ns/op
+OverheadActual   4: 33554432 op, 110955189.00 ns, 3.3067 ns/op
+OverheadActual   5: 33554432 op, 111032975.00 ns, 3.3090 ns/op
+OverheadActual   6: 33554432 op, 110800961.00 ns, 3.3021 ns/op
+OverheadActual   7: 33554432 op, 110841626.00 ns, 3.3033 ns/op
+OverheadActual   8: 33554432 op, 111104769.00 ns, 3.3112 ns/op
+OverheadActual   9: 33554432 op, 111145765.00 ns, 3.3124 ns/op
+OverheadActual  10: 33554432 op, 110818794.00 ns, 3.3027 ns/op
+OverheadActual  11: 33554432 op, 110913702.00 ns, 3.3055 ns/op
+OverheadActual  12: 33554432 op, 111024659.00 ns, 3.3088 ns/op
+OverheadActual  13: 33554432 op, 110846126.00 ns, 3.3035 ns/op
+OverheadActual  14: 33554432 op, 111020201.00 ns, 3.3087 ns/op
+OverheadActual  15: 33554432 op, 111147359.00 ns, 3.3124 ns/op
+
+WorkloadWarmup   1: 33554432 op, 621982362.00 ns, 18.5365 ns/op
+WorkloadWarmup   2: 33554432 op, 621589097.00 ns, 18.5248 ns/op
+WorkloadWarmup   3: 33554432 op, 622376991.00 ns, 18.5483 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 636236616.00 ns, 18.9613 ns/op
+WorkloadActual   2: 33554432 op, 623055870.00 ns, 18.5685 ns/op
+WorkloadActual   3: 33554432 op, 621623434.00 ns, 18.5258 ns/op
+WorkloadActual   4: 33554432 op, 623666439.00 ns, 18.5867 ns/op
+WorkloadActual   5: 33554432 op, 621545823.00 ns, 18.5235 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 512097635.00 ns, 15.2617 ns/op
+WorkloadResult   2: 33554432 op, 510665199.00 ns, 15.2190 ns/op
+WorkloadResult   3: 33554432 op, 512708204.00 ns, 15.2799 ns/op
+WorkloadResult   4: 33554432 op, 510587588.00 ns, 15.2167 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 3026 has exited with code 0.
+
+Mean = 15.244 ns, StdErr = 0.016 ns (0.10%), N = 4, StdDev = 0.031 ns
+Min = 15.217 ns, Q1 = 15.218 ns, Median = 15.240 ns, Q3 = 15.266 ns, Max = 15.280 ns
+IQR = 0.048 ns, LowerFence = 15.147 ns, UpperFence = 15.338 ns
+ConfidenceInterval = [15.041 ns; 15.448 ns] (CI 99.9%), Margin = 0.203 ns (1.33% of Mean)
+Skewness = 0.1, Kurtosis = 0.68, MValue = 2
+
+// ** Remained 20 (74.1 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 2m from now) **
+// **************************
+// Benchmark: DependentServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks.SourceGen --job ShortRun --benchmarkId 7 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 329768.00 ns, 329.7680 us/op
+WorkloadJitting  1: 1 op, 3142001.00 ns, 3.1420 ms/op
+
+OverheadJitting  2: 16 op, 487053.00 ns, 30.4408 us/op
+WorkloadJitting  2: 16 op, 474620.00 ns, 29.6638 us/op
+
+WorkloadPilot    1: 16 op, 5280.00 ns, 330.0000 ns/op
+WorkloadPilot    2: 32 op, 6212.00 ns, 194.1250 ns/op
+WorkloadPilot    3: 64 op, 8496.00 ns, 132.7500 ns/op
+WorkloadPilot    4: 128 op, 16100.00 ns, 125.7813 ns/op
+WorkloadPilot    5: 256 op, 23835.00 ns, 93.1055 ns/op
+WorkloadPilot    6: 512 op, 43702.00 ns, 85.3555 ns/op
+WorkloadPilot    7: 1024 op, 83838.00 ns, 81.8730 ns/op
+WorkloadPilot    8: 2048 op, 176741.00 ns, 86.2993 ns/op
+WorkloadPilot    9: 4096 op, 352661.00 ns, 86.0989 ns/op
+WorkloadPilot   10: 8192 op, 737673.00 ns, 90.0480 ns/op
+WorkloadPilot   11: 16384 op, 1415153.00 ns, 86.3741 ns/op
+WorkloadPilot   12: 32768 op, 2763822.00 ns, 84.3452 ns/op
+WorkloadPilot   13: 65536 op, 5477159.00 ns, 83.5748 ns/op
+WorkloadPilot   14: 131072 op, 10913601.00 ns, 83.2642 ns/op
+WorkloadPilot   15: 262144 op, 21665299.00 ns, 82.6466 ns/op
+WorkloadPilot   16: 524288 op, 43004216.00 ns, 82.0240 ns/op
+WorkloadPilot   17: 1048576 op, 85793440.00 ns, 81.8190 ns/op
+WorkloadPilot   18: 2097152 op, 80593941.00 ns, 38.4302 ns/op
+WorkloadPilot   19: 4194304 op, 77098588.00 ns, 18.3817 ns/op
+WorkloadPilot   20: 8388608 op, 153097434.00 ns, 18.2506 ns/op
+WorkloadPilot   21: 16777216 op, 308017819.00 ns, 18.3593 ns/op
+WorkloadPilot   22: 33554432 op, 614911187.00 ns, 18.3258 ns/op
+
+OverheadWarmup   1: 33554432 op, 130921913.00 ns, 3.9018 ns/op
+OverheadWarmup   2: 33554432 op, 141127547.00 ns, 4.2059 ns/op
+OverheadWarmup   3: 33554432 op, 109657468.00 ns, 3.2680 ns/op
+OverheadWarmup   4: 33554432 op, 109690771.00 ns, 3.2690 ns/op
+OverheadWarmup   5: 33554432 op, 109697293.00 ns, 3.2692 ns/op
+OverheadWarmup   6: 33554432 op, 109671244.00 ns, 3.2685 ns/op
+
+OverheadActual   1: 33554432 op, 109561048.00 ns, 3.2652 ns/op
+OverheadActual   2: 33554432 op, 109785016.00 ns, 3.2718 ns/op
+OverheadActual   3: 33554432 op, 109661356.00 ns, 3.2682 ns/op
+OverheadActual   4: 33554432 op, 109646769.00 ns, 3.2677 ns/op
+OverheadActual   5: 33554432 op, 109665914.00 ns, 3.2683 ns/op
+OverheadActual   6: 33554432 op, 109942621.00 ns, 3.2765 ns/op
+OverheadActual   7: 33554432 op, 109625057.00 ns, 3.2671 ns/op
+OverheadActual   8: 33554432 op, 109576046.00 ns, 3.2656 ns/op
+OverheadActual   9: 33554432 op, 109601694.00 ns, 3.2664 ns/op
+OverheadActual  10: 33554432 op, 109649213.00 ns, 3.2678 ns/op
+OverheadActual  11: 33554432 op, 109567160.00 ns, 3.2654 ns/op
+OverheadActual  12: 33554432 op, 110213889.00 ns, 3.2846 ns/op
+OverheadActual  13: 33554432 op, 109608928.00 ns, 3.2666 ns/op
+OverheadActual  14: 33554432 op, 109732358.00 ns, 3.2703 ns/op
+OverheadActual  15: 33554432 op, 109705619.00 ns, 3.2695 ns/op
+
+WorkloadWarmup   1: 33554432 op, 676526597.00 ns, 20.1621 ns/op
+WorkloadWarmup   2: 33554432 op, 679436299.00 ns, 20.2488 ns/op
+WorkloadWarmup   3: 33554432 op, 674146060.00 ns, 20.0911 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 661710466.00 ns, 19.7205 ns/op
+WorkloadActual   2: 33554432 op, 670044609.00 ns, 19.9689 ns/op
+WorkloadActual   3: 33554432 op, 633400592.00 ns, 18.8768 ns/op
+WorkloadActual   4: 33554432 op, 622688242.00 ns, 18.5576 ns/op
+WorkloadActual   5: 33554432 op, 620644541.00 ns, 18.4966 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 552061253.00 ns, 16.4527 ns/op
+WorkloadResult   2: 33554432 op, 560395396.00 ns, 16.7011 ns/op
+WorkloadResult   3: 33554432 op, 523751379.00 ns, 15.6090 ns/op
+WorkloadResult   4: 33554432 op, 513039029.00 ns, 15.2898 ns/op
+WorkloadResult   5: 33554432 op, 510995328.00 ns, 15.2288 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 3036 has exited with code 0.
+
+Mean = 15.856 ns, StdErr = 0.304 ns (1.92%), N = 5, StdDev = 0.679 ns
+Min = 15.229 ns, Q1 = 15.290 ns, Median = 15.609 ns, Q3 = 16.453 ns, Max = 16.701 ns
+IQR = 1.163 ns, LowerFence = 13.545 ns, UpperFence = 18.197 ns
+ConfidenceInterval = [13.241 ns; 18.472 ns] (CI 99.9%), Margin = 2.615 ns (16.49% of Mean)
+Skewness = 0.24, Kurtosis = 0.84, MValue = 2
+
+// ** Remained 19 (70.4 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 2m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-report-default.md
+
+// * Detailed results *
+DependentServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 15.244 ns, StdErr = 0.016 ns (0.10%), N = 4, StdDev = 0.031 ns
+Min = 15.217 ns, Q1 = 15.218 ns, Median = 15.240 ns, Q3 = 15.266 ns, Max = 15.280 ns
+IQR = 0.048 ns, LowerFence = 15.147 ns, UpperFence = 15.338 ns
+ConfidenceInterval = [15.041 ns; 15.448 ns] (CI 99.9%), Margin = 0.203 ns (1.33% of Mean)
+Skewness = 0.1, Kurtosis = 0.68, MValue = 2
+-------------------- Histogram --------------------
+[15.191 ns ; 15.306 ns) | @@@@
+---------------------------------------------------
+
+DependentServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 15.856 ns, StdErr = 0.304 ns (1.92%), N = 5, StdDev = 0.679 ns
+Min = 15.229 ns, Q1 = 15.290 ns, Median = 15.609 ns, Q3 = 16.453 ns, Max = 16.701 ns
+IQR = 1.163 ns, LowerFence = 13.545 ns, UpperFence = 18.197 ns
+ConfidenceInterval = [13.241 ns; 18.472 ns] (CI 99.9%), Margin = 2.615 ns (16.49% of Mean)
+Skewness = 0.24, Kurtosis = 0.84, MValue = 2
+-------------------- Histogram --------------------
+[14.898 ns ; 16.056 ns) | @@@
+[16.056 ns ; 17.223 ns) | @@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+| Reflection | 15.24 ns | 0.203 ns | 0.031 ns |  1.00 |    0.00 |    1 |         - |          NA |
+| SourceGen  | 15.86 ns | 2.615 ns | 0.679 ns |  1.04 |    0.04 |    1 |         - |          NA |
+
+// * Hints *
+Outliers
+  DependentServiceResolutionBenchmarks.Reflection: ShortRun -> 1 outlier  was  removed (18.96 ns)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:19 (19.56 sec), executed benchmarks: 2
+
+// Found 3 benchmarks:
+//   HostBuildBenchmarks.BuildHost_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   HostBuildBenchmarks.BuildHost_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   HostBuildBenchmarks.BuildHost_SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: HostBuildBenchmarks.BuildHost_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks.BuildHost_Reflection --job ShortRun --benchmarkId 8 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 369661.00 ns, 369.6610 us/op
+WorkloadJitting  1: 1 op, 195620182.00 ns, 195.6202 ms/op
+
+WorkloadPilot    1: 2 op, 17700911.00 ns, 8.8505 ms/op
+WorkloadPilot    2: 3 op, 20839250.00 ns, 6.9464 ms/op
+WorkloadPilot    3: 4 op, 24774268.00 ns, 6.1936 ms/op
+WorkloadPilot    4: 5 op, 29148618.00 ns, 5.8297 ms/op
+WorkloadPilot    5: 6 op, 33563715.00 ns, 5.5940 ms/op
+WorkloadPilot    6: 7 op, 37154620.00 ns, 5.3078 ms/op
+WorkloadPilot    7: 8 op, 53760302.00 ns, 6.7200 ms/op
+WorkloadPilot    8: 9 op, 57745365.00 ns, 6.4162 ms/op
+WorkloadPilot    9: 10 op, 64017984.00 ns, 6.4018 ms/op
+WorkloadPilot   10: 11 op, 69705532.00 ns, 6.3369 ms/op
+WorkloadPilot   11: 12 op, 75803623.00 ns, 6.3170 ms/op
+WorkloadPilot   12: 13 op, 83725458.00 ns, 6.4404 ms/op
+WorkloadPilot   13: 14 op, 96560860.00 ns, 6.8972 ms/op
+WorkloadPilot   14: 15 op, 116796952.00 ns, 7.7865 ms/op
+WorkloadPilot   15: 16 op, 120322865.00 ns, 7.5202 ms/op
+WorkloadPilot   16: 32 op, 238562384.00 ns, 7.4551 ms/op
+WorkloadPilot   17: 64 op, 470777789.00 ns, 7.3559 ms/op
+WorkloadPilot   18: 128 op, 983157109.00 ns, 7.6809 ms/op
+
+WorkloadWarmup   1: 128 op, 1065982901.00 ns, 8.3280 ms/op
+WorkloadWarmup   2: 128 op, 1092672738.00 ns, 8.5365 ms/op
+WorkloadWarmup   3: 128 op, 1063169579.00 ns, 8.3060 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 128 op, 835870584.00 ns, 6.5302 ms/op
+WorkloadActual   2: 128 op, 761407067.00 ns, 5.9485 ms/op
+WorkloadActual   3: 128 op, 704482853.00 ns, 5.5038 ms/op
+WorkloadActual   4: 128 op, 756692525.00 ns, 5.9117 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.Json.JsonConfigurationSource.Build(IConfigurationBuilder builder)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at NexusLabs.Needlr.Hosting.IHostFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.Hosting/IHostFactoryExtensions.cs:line 46
+   at NexusLabs.Needlr.Hosting.HostFactory.Create(CreateHostOptions options, Func`1 createHostApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.Hosting/HostFactory.cs:line 28
+   at BenchmarkDotNet.Autogenerated.Runnable_8.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 1916
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunSpecific(Int64 invokeCount, IterationMode iterationMode, Int32 iterationCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.Run(Int64 invokeCount, IterationMode iterationMode, Boolean runAuto, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_8.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 1781
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 3045 has exited with code 255.
+
+// ** Remained 18 (66.7 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 2m from now) **
+// **************************
+// Benchmark: HostBuildBenchmarks.BuildHost_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks.BuildHost_SourceGen --job ShortRun --benchmarkId 9 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 339715.00 ns, 339.7150 us/op
+WorkloadJitting  1: 1 op, 77505598.00 ns, 77.5056 ms/op
+
+WorkloadPilot    1: 2 op, 12190465.00 ns, 6.0952 ms/op
+WorkloadPilot    2: 3 op, 14278697.00 ns, 4.7596 ms/op
+WorkloadPilot    3: 4 op, 14265635.00 ns, 3.5664 ms/op
+WorkloadPilot    4: 5 op, 16479114.00 ns, 3.2958 ms/op
+WorkloadPilot    5: 6 op, 18555787.00 ns, 3.0926 ms/op
+WorkloadPilot    6: 7 op, 21286482.00 ns, 3.0409 ms/op
+WorkloadPilot    7: 8 op, 23203678.00 ns, 2.9005 ms/op
+WorkloadPilot    8: 9 op, 25729621.00 ns, 2.8588 ms/op
+WorkloadPilot    9: 10 op, 28309645.00 ns, 2.8310 ms/op
+WorkloadPilot   10: 11 op, 30642647.00 ns, 2.7857 ms/op
+WorkloadPilot   11: 12 op, 33664378.00 ns, 2.8054 ms/op
+WorkloadPilot   12: 13 op, 39050439.00 ns, 3.0039 ms/op
+WorkloadPilot   13: 14 op, 41667532.00 ns, 2.9763 ms/op
+WorkloadPilot   14: 15 op, 54608493.00 ns, 3.6406 ms/op
+WorkloadPilot   15: 16 op, 50583112.00 ns, 3.1614 ms/op
+WorkloadPilot   16: 32 op, 98338699.00 ns, 3.0731 ms/op
+WorkloadPilot   17: 64 op, 202218609.00 ns, 3.1597 ms/op
+WorkloadPilot   18: 128 op, 425756951.00 ns, 3.3262 ms/op
+WorkloadPilot   19: 256 op, 989662852.00 ns, 3.8659 ms/op
+
+WorkloadWarmup   1: 256 op, 1176716529.00 ns, 4.5965 ms/op
+WorkloadWarmup   2: 256 op, 1296628642.00 ns, 5.0650 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.Physical.PhysicalFilesWatcher.TryEnableFileSystemWatcher()
+   at Microsoft.Extensions.FileProviders.Physical.PhysicalFilesWatcher.CreateFileChangeToken(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder(HostApplicationBuilderSettings settings)
+   at NexusLabs.Needlr.Hosting.IHostFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.Hosting/IHostFactoryExtensions.cs:line 46
+   at NexusLabs.Needlr.Hosting.HostFactory.Create(CreateHostOptions options, Func`1 createHostApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.Hosting/HostFactory.cs:line 28
+   at NexusLabs.Needlr.Hosting.IHostFactoryExtensions.Create(IHostFactory factory, CreateHostOptions options, Action`2 configureCallback) in /_/src/NexusLabs.Needlr.Hosting/IHostFactoryExtensions.cs:line 51
+   at NexusLabs.Needlr.Hosting.HostSyringe.BuildHost() in /_/src/NexusLabs.Needlr.Hosting/HostSyringe.cs:line 100
+   at NexusLabs.Needlr.Hosting.SyringeHostingExtensions.BuildHost(ConfiguredSyringe syringe) in /_/src/NexusLabs.Needlr.Hosting/SyringeHostingExtensions.cs:line 75
+   at NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks.BuildHost_SourceGen() in /_/src/NexusLabs.Needlr.Benchmarks/Benchmarks/HostBuildBenchmarks.cs:line 43
+   at BenchmarkDotNet.Autogenerated.Runnable_9.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 2116
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineStage.Run(IStoppingCriteria criteria, Int64 invokeCount, IterationMode mode, IterationStage stage, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.Run(Int64 invokeCount, IterationMode iterationMode, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_9.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 1981
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 5610 has exited with code 255.
+
+// ** Remained 17 (63.0 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 2m from now) **
+// **************************
+// Benchmark: HostBuildBenchmarks.BuildHost_SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks.BuildHost_SourceGenExplicit --job ShortRun --benchmarkId 10 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 365374.00 ns, 365.3740 us/op
+WorkloadJitting  1: 1 op, 72757095.00 ns, 72.7571 ms/op
+
+WorkloadPilot    1: 2 op, 11800184.00 ns, 5.9001 ms/op
+WorkloadPilot    2: 3 op, 12777111.00 ns, 4.2590 ms/op
+WorkloadPilot    3: 4 op, 14043980.00 ns, 3.5110 ms/op
+WorkloadPilot    4: 5 op, 16745682.00 ns, 3.3491 ms/op
+WorkloadPilot    5: 6 op, 18317801.00 ns, 3.0530 ms/op
+WorkloadPilot    6: 7 op, 20461440.00 ns, 2.9231 ms/op
+WorkloadPilot    7: 8 op, 28826639.00 ns, 3.6033 ms/op
+WorkloadPilot    8: 9 op, 28123226.00 ns, 3.1248 ms/op
+WorkloadPilot    9: 10 op, 31169652.00 ns, 3.1170 ms/op
+WorkloadPilot   10: 11 op, 33386908.00 ns, 3.0352 ms/op
+WorkloadPilot   11: 12 op, 35446019.00 ns, 2.9538 ms/op
+WorkloadPilot   12: 13 op, 38201591.00 ns, 2.9386 ms/op
+WorkloadPilot   13: 14 op, 42077549.00 ns, 3.0055 ms/op
+WorkloadPilot   14: 15 op, 65768347.00 ns, 4.3846 ms/op
+WorkloadPilot   15: 16 op, 50379362.00 ns, 3.1487 ms/op
+WorkloadPilot   16: 32 op, 97742003.00 ns, 3.0544 ms/op
+WorkloadPilot   17: 64 op, 197414436.00 ns, 3.0846 ms/op
+WorkloadPilot   18: 128 op, 427768615.00 ns, 3.3419 ms/op
+WorkloadPilot   19: 256 op, 991228154.00 ns, 3.8720 ms/op
+
+WorkloadWarmup   1: 256 op, 1116339644.00 ns, 4.3607 ms/op
+WorkloadWarmup   2: 256 op, 1335100563.00 ns, 5.2152 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.Physical.PhysicalFilesWatcher.TryEnableFileSystemWatcher()
+   at Microsoft.Extensions.FileProviders.Physical.PhysicalFilesWatcher.CreateFileChangeToken(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder(HostApplicationBuilderSettings settings)
+   at NexusLabs.Needlr.Hosting.IHostFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.Hosting/IHostFactoryExtensions.cs:line 46
+   at NexusLabs.Needlr.Hosting.HostFactory.Create(CreateHostOptions options, Func`1 createHostApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.Hosting/HostFactory.cs:line 28
+   at NexusLabs.Needlr.Hosting.IHostFactoryExtensions.Create(IHostFactory factory, CreateHostOptions options, Action`2 configureCallback) in /_/src/NexusLabs.Needlr.Hosting/IHostFactoryExtensions.cs:line 51
+   at NexusLabs.Needlr.Hosting.HostSyringe.BuildHost() in /_/src/NexusLabs.Needlr.Hosting/HostSyringe.cs:line 100
+   at NexusLabs.Needlr.Hosting.SyringeHostingExtensions.BuildHost(ConfiguredSyringe syringe) in /_/src/NexusLabs.Needlr.Hosting/SyringeHostingExtensions.cs:line 75
+   at NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks.BuildHost_SourceGenExplicit() in /_/src/NexusLabs.Needlr.Benchmarks/Benchmarks/HostBuildBenchmarks.cs:line 52
+   at BenchmarkDotNet.Autogenerated.Runnable_10.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 2316
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineStage.Run(IStoppingCriteria criteria, Int64 invokeCount, IterationMode mode, IterationStage stage, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.Run(Int64 invokeCount, IterationMode iterationMode, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_10.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 2181
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 8177 has exited with code 255.
+
+// ** Remained 16 (59.3 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 2m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-report-default.md
+
+// * Detailed results *
+HostBuildBenchmarks.BuildHost_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+HostBuildBenchmarks.BuildHost_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+HostBuildBenchmarks.BuildHost_SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method                      | Mean | Error | Ratio | RatioSD | Rank | Alloc Ratio |
+|---------------------------- |-----:|------:|------:|--------:|-----:|------------:|
+| BuildHost_Reflection        |   NA |    NA |     ? |       ? |    ? |           ? |
+| BuildHost_SourceGen         |   NA |    NA |     ? |       ? |    ? |           ? |
+| BuildHost_SourceGenExplicit |   NA |    NA |     ? |       ? |    ? |           ? |
+
+Benchmarks with issues:
+  HostBuildBenchmarks.BuildHost_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+  HostBuildBenchmarks.BuildHost_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+  HostBuildBenchmarks.BuildHost_SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// * Warnings *
+BaselineCustomAnalyzer
+  Summary -> A question mark '?' symbol indicates that it was not possible to compute the (Ratio, RatioSD, Alloc Ratio) column(s) because the baseline value is too close to zero.
+
+// * Hints *
+Outliers
+  HostBuildBenchmarks.BuildHost_Reflection: ShortRun -> 1 outlier  was  removed (6.53 ms)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:25 (25.83 sec), executed benchmarks: 3
+
+// Found 2 benchmarks:
+//   KeyedServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   KeyedServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: KeyedServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks.Reflection --job ShortRun --benchmarkId 11 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 330267.00 ns, 330.2670 us/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.InvalidOperationException: No keyed service for type 'NexusLabs.Needlr.Benchmarks.TestTypes.IKeyedService' using key type 'System.String' has been registered.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowInvalidOperationException_NoKeyedServiceRegistered(Type serviceType, Type keyType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetRequiredKeyedService(Type serviceType, Object serviceKey, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderKeyedServiceExtensions.GetRequiredKeyedService[T](IServiceProvider provider, Object serviceKey)
+   at NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks.Reflection() in /_/src/NexusLabs.Needlr.Benchmarks/Benchmarks/KeyedServiceResolutionBenchmarks.cs:line 55
+   at BenchmarkDotNet.Autogenerated.Runnable_11.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 2516
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineFactory.Jit(Engine engine, Int32 jitIndex, Int32 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineFactory.CreateReadyToRun(EngineParameters engineParameters)
+   at BenchmarkDotNet.Autogenerated.Runnable_11.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 2379
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 10742 has exited with code 255.
+
+// ** Remained 15 (55.6 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 2m from now) **
+// **************************
+// Benchmark: KeyedServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks.SourceGen --job ShortRun --benchmarkId 12 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 328424.00 ns, 328.4240 us/op
+WorkloadJitting  1: 1 op, 2984191.00 ns, 2.9842 ms/op
+
+OverheadJitting  2: 16 op, 442667.00 ns, 27.6667 us/op
+WorkloadJitting  2: 16 op, 490046.00 ns, 30.6279 us/op
+
+WorkloadPilot    1: 16 op, 5490.00 ns, 343.1250 ns/op
+WorkloadPilot    2: 32 op, 7294.00 ns, 227.9375 ns/op
+WorkloadPilot    3: 64 op, 10369.00 ns, 162.0156 ns/op
+WorkloadPilot    4: 128 op, 16782.00 ns, 131.1094 ns/op
+WorkloadPilot    5: 256 op, 29415.00 ns, 114.9023 ns/op
+WorkloadPilot    6: 512 op, 68167.00 ns, 133.1387 ns/op
+WorkloadPilot    7: 1024 op, 104596.00 ns, 102.1445 ns/op
+WorkloadPilot    8: 2048 op, 204462.00 ns, 99.8350 ns/op
+WorkloadPilot    9: 4096 op, 403615.00 ns, 98.5388 ns/op
+WorkloadPilot   10: 8192 op, 890776.00 ns, 108.7373 ns/op
+WorkloadPilot   11: 16384 op, 1745133.00 ns, 106.5145 ns/op
+WorkloadPilot   12: 32768 op, 3419664.00 ns, 104.3599 ns/op
+WorkloadPilot   13: 65536 op, 6722439.00 ns, 102.5763 ns/op
+WorkloadPilot   14: 131072 op, 13414724.00 ns, 102.3462 ns/op
+WorkloadPilot   15: 262144 op, 26828024.00 ns, 102.3408 ns/op
+WorkloadPilot   16: 524288 op, 53468298.00 ns, 101.9827 ns/op
+WorkloadPilot   17: 1048576 op, 101291661.00 ns, 96.5993 ns/op
+WorkloadPilot   18: 2097152 op, 59284323.00 ns, 28.2690 ns/op
+WorkloadPilot   19: 4194304 op, 118700152.00 ns, 28.3003 ns/op
+WorkloadPilot   20: 8388608 op, 236562919.00 ns, 28.2005 ns/op
+WorkloadPilot   21: 16777216 op, 473615904.00 ns, 28.2297 ns/op
+WorkloadPilot   22: 33554432 op, 948011375.00 ns, 28.2529 ns/op
+
+OverheadWarmup   1: 33554432 op, 131867361.00 ns, 3.9300 ns/op
+OverheadWarmup   2: 33554432 op, 141718337.00 ns, 4.2235 ns/op
+OverheadWarmup   3: 33554432 op, 111033742.00 ns, 3.3091 ns/op
+OverheadWarmup   4: 33554432 op, 111118701.00 ns, 3.3116 ns/op
+OverheadWarmup   5: 33554432 op, 110918356.00 ns, 3.3056 ns/op
+
+OverheadActual   1: 33554432 op, 110838567.00 ns, 3.3032 ns/op
+OverheadActual   2: 33554432 op, 110972067.00 ns, 3.3072 ns/op
+OverheadActual   3: 33554432 op, 110930399.00 ns, 3.3060 ns/op
+OverheadActual   4: 33554432 op, 110857452.00 ns, 3.3038 ns/op
+OverheadActual   5: 33554432 op, 110893079.00 ns, 3.3049 ns/op
+OverheadActual   6: 33554432 op, 111069459.00 ns, 3.3101 ns/op
+OverheadActual   7: 33554432 op, 111038571.00 ns, 3.3092 ns/op
+OverheadActual   8: 33554432 op, 110981334.00 ns, 3.3075 ns/op
+OverheadActual   9: 33554432 op, 110914078.00 ns, 3.3055 ns/op
+OverheadActual  10: 33554432 op, 110855890.00 ns, 3.3038 ns/op
+OverheadActual  11: 33554432 op, 110870677.00 ns, 3.3042 ns/op
+OverheadActual  12: 33554432 op, 110978048.00 ns, 3.3074 ns/op
+OverheadActual  13: 33554432 op, 110909550.00 ns, 3.3054 ns/op
+OverheadActual  14: 33554432 op, 111018774.00 ns, 3.3086 ns/op
+OverheadActual  15: 33554432 op, 110968931.00 ns, 3.3071 ns/op
+
+WorkloadWarmup   1: 33554432 op, 934999719.00 ns, 27.8652 ns/op
+WorkloadWarmup   2: 33554432 op, 937852763.00 ns, 27.9502 ns/op
+WorkloadWarmup   3: 33554432 op, 935868283.00 ns, 27.8910 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 848813140.00 ns, 25.2966 ns/op
+WorkloadActual   2: 33554432 op, 854430942.00 ns, 25.4640 ns/op
+WorkloadActual   3: 33554432 op, 848007316.00 ns, 25.2726 ns/op
+WorkloadActual   4: 33554432 op, 847497784.00 ns, 25.2574 ns/op
+WorkloadActual   5: 33554432 op, 848974214.00 ns, 25.3014 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 737882741.00 ns, 21.9906 ns/op
+WorkloadResult   2: 33554432 op, 737076917.00 ns, 21.9666 ns/op
+WorkloadResult   3: 33554432 op, 736567385.00 ns, 21.9514 ns/op
+WorkloadResult   4: 33554432 op, 738043815.00 ns, 21.9954 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 10749 has exited with code 0.
+
+Mean = 21.976 ns, StdErr = 0.010 ns (0.05%), N = 4, StdDev = 0.021 ns
+Min = 21.951 ns, Q1 = 21.963 ns, Median = 21.979 ns, Q3 = 21.992 ns, Max = 21.995 ns
+IQR = 0.029 ns, LowerFence = 21.919 ns, UpperFence = 22.035 ns
+ConfidenceInterval = [21.842 ns; 22.110 ns] (CI 99.9%), Margin = 0.134 ns (0.61% of Mean)
+Skewness = -0.15, Kurtosis = 0.77, MValue = 2
+
+// ** Remained 14 (51.9 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 1m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-report-default.md
+
+// * Detailed results *
+KeyedServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+KeyedServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 21.976 ns, StdErr = 0.010 ns (0.05%), N = 4, StdDev = 0.021 ns
+Min = 21.951 ns, Q1 = 21.963 ns, Median = 21.979 ns, Q3 = 21.992 ns, Max = 21.995 ns
+IQR = 0.029 ns, LowerFence = 21.919 ns, UpperFence = 22.035 ns
+ConfidenceInterval = [21.842 ns; 22.110 ns] (CI 99.9%), Margin = 0.134 ns (0.61% of Mean)
+Skewness = -0.15, Kurtosis = 0.77, MValue = 2
+-------------------- Histogram --------------------
+[21.934 ns ; 22.013 ns) | @@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+| Reflection |       NA |       NA |       NA |     ? |       ? |    ? |        NA |           ? |
+| SourceGen  | 21.98 ns | 0.134 ns | 0.021 ns |     ? |       ? |    1 |         - |           ? |
+
+Benchmarks with issues:
+  KeyedServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// * Warnings *
+BaselineCustomAnalyzer
+  Summary -> A question mark '?' symbol indicates that it was not possible to compute the (Ratio, RatioSD, Alloc Ratio) column(s) because the baseline value is too close to zero.
+
+// * Hints *
+Outliers
+  KeyedServiceResolutionBenchmarks.SourceGen: ShortRun -> 1 outlier  was  removed (25.46 ns)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:12 (12.74 sec), executed benchmarks: 2
+
+// Found 2 benchmarks:
+//   OptionsResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   OptionsResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: OptionsResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks.Reflection --job ShortRun --benchmarkId 13 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 347600.00 ns, 347.6000 us/op
+WorkloadJitting  1: 1 op, 10479605.00 ns, 10.4796 ms/op
+
+OverheadJitting  2: 16 op, 533207.00 ns, 33.3254 us/op
+WorkloadJitting  2: 16 op, 578141.00 ns, 36.1338 us/op
+
+WorkloadPilot    1: 16 op, 8346.00 ns, 521.6250 ns/op
+WorkloadPilot    2: 32 op, 9378.00 ns, 293.0625 ns/op
+WorkloadPilot    3: 64 op, 13205.00 ns, 206.3281 ns/op
+WorkloadPilot    4: 128 op, 21830.00 ns, 170.5469 ns/op
+WorkloadPilot    5: 256 op, 35867.00 ns, 140.1055 ns/op
+WorkloadPilot    6: 512 op, 57097.00 ns, 111.5176 ns/op
+WorkloadPilot    7: 1024 op, 95038.00 ns, 92.8105 ns/op
+WorkloadPilot    8: 2048 op, 176630.00 ns, 86.2451 ns/op
+WorkloadPilot    9: 4096 op, 333434.00 ns, 81.4048 ns/op
+WorkloadPilot   10: 8192 op, 741797.00 ns, 90.5514 ns/op
+WorkloadPilot   11: 16384 op, 1394137.00 ns, 85.0914 ns/op
+WorkloadPilot   12: 32768 op, 2706791.00 ns, 82.6047 ns/op
+WorkloadPilot   13: 65536 op, 5375651.00 ns, 82.0259 ns/op
+WorkloadPilot   14: 131072 op, 10550398.00 ns, 80.4931 ns/op
+WorkloadPilot   15: 262144 op, 20779363.00 ns, 79.2670 ns/op
+WorkloadPilot   16: 524288 op, 41370715.00 ns, 78.9084 ns/op
+WorkloadPilot   17: 1048576 op, 83234460.00 ns, 79.3786 ns/op
+WorkloadPilot   18: 2097152 op, 71504400.00 ns, 34.0960 ns/op
+WorkloadPilot   19: 4194304 op, 81951882.00 ns, 19.5389 ns/op
+WorkloadPilot   20: 8388608 op, 162943389.00 ns, 19.4244 ns/op
+WorkloadPilot   21: 16777216 op, 327334260.00 ns, 19.5106 ns/op
+WorkloadPilot   22: 33554432 op, 650876706.00 ns, 19.3976 ns/op
+
+OverheadWarmup   1: 33554432 op, 131901487.00 ns, 3.9310 ns/op
+OverheadWarmup   2: 33554432 op, 142391371.00 ns, 4.2436 ns/op
+OverheadWarmup   3: 33554432 op, 110970400.00 ns, 3.3072 ns/op
+OverheadWarmup   4: 33554432 op, 110902703.00 ns, 3.3052 ns/op
+OverheadWarmup   5: 33554432 op, 111006096.00 ns, 3.3082 ns/op
+OverheadWarmup   6: 33554432 op, 110950623.00 ns, 3.3066 ns/op
+
+OverheadActual   1: 33554432 op, 111058575.00 ns, 3.3098 ns/op
+OverheadActual   2: 33554432 op, 110807796.00 ns, 3.3023 ns/op
+OverheadActual   3: 33554432 op, 110833514.00 ns, 3.3031 ns/op
+OverheadActual   4: 33554432 op, 110855535.00 ns, 3.3038 ns/op
+OverheadActual   5: 33554432 op, 110853331.00 ns, 3.3037 ns/op
+OverheadActual   6: 33554432 op, 111043897.00 ns, 3.3094 ns/op
+OverheadActual   7: 33554432 op, 114900647.00 ns, 3.4243 ns/op
+OverheadActual   8: 33554432 op, 111269249.00 ns, 3.3161 ns/op
+OverheadActual   9: 33554432 op, 110955302.00 ns, 3.3067 ns/op
+OverheadActual  10: 33554432 op, 111410303.00 ns, 3.3203 ns/op
+OverheadActual  11: 33554432 op, 111050959.00 ns, 3.3096 ns/op
+OverheadActual  12: 33554432 op, 110909396.00 ns, 3.3054 ns/op
+OverheadActual  13: 33554432 op, 110871375.00 ns, 3.3042 ns/op
+OverheadActual  14: 33554432 op, 111011236.00 ns, 3.3084 ns/op
+OverheadActual  15: 33554432 op, 110941677.00 ns, 3.3063 ns/op
+
+WorkloadWarmup   1: 33554432 op, 651768283.00 ns, 19.4242 ns/op
+WorkloadWarmup   2: 33554432 op, 658139112.00 ns, 19.6141 ns/op
+WorkloadWarmup   3: 33554432 op, 651201736.00 ns, 19.4073 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 689660149.00 ns, 20.5535 ns/op
+WorkloadActual   2: 33554432 op, 687392318.00 ns, 20.4859 ns/op
+WorkloadActual   3: 33554432 op, 688895038.00 ns, 20.5307 ns/op
+WorkloadActual   4: 33554432 op, 690275709.00 ns, 20.5718 ns/op
+WorkloadActual   5: 33554432 op, 690686958.00 ns, 20.5841 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 578704847.00 ns, 17.2467 ns/op
+WorkloadResult   2: 33554432 op, 576437016.00 ns, 17.1792 ns/op
+WorkloadResult   3: 33554432 op, 577939736.00 ns, 17.2239 ns/op
+WorkloadResult   4: 33554432 op, 579320407.00 ns, 17.2651 ns/op
+WorkloadResult   5: 33554432 op, 579731656.00 ns, 17.2773 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 10821 has exited with code 0.
+
+Mean = 17.238 ns, StdErr = 0.017 ns (0.10%), N = 5, StdDev = 0.039 ns
+Min = 17.179 ns, Q1 = 17.224 ns, Median = 17.247 ns, Q3 = 17.265 ns, Max = 17.277 ns
+IQR = 0.041 ns, LowerFence = 17.162 ns, UpperFence = 17.327 ns
+ConfidenceInterval = [17.089 ns; 17.388 ns] (CI 99.9%), Margin = 0.149 ns (0.87% of Mean)
+Skewness = -0.46, Kurtosis = 1.34, MValue = 2
+
+// ** Remained 13 (48.1 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 1m from now) **
+// **************************
+// Benchmark: OptionsResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks.SourceGen --job ShortRun --benchmarkId 14 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 332020.00 ns, 332.0200 us/op
+WorkloadJitting  1: 1 op, 10216571.00 ns, 10.2166 ms/op
+
+OverheadJitting  2: 16 op, 516095.00 ns, 32.2559 us/op
+WorkloadJitting  2: 16 op, 529009.00 ns, 33.0631 us/op
+
+WorkloadPilot    1: 16 op, 8285.00 ns, 517.8125 ns/op
+WorkloadPilot    2: 32 op, 9097.00 ns, 284.2813 ns/op
+WorkloadPilot    3: 64 op, 13485.00 ns, 210.7031 ns/op
+WorkloadPilot    4: 128 op, 21460.00 ns, 167.6563 ns/op
+WorkloadPilot    5: 256 op, 35998.00 ns, 140.6172 ns/op
+WorkloadPilot    6: 512 op, 56045.00 ns, 109.4629 ns/op
+WorkloadPilot    7: 1024 op, 96551.00 ns, 94.2881 ns/op
+WorkloadPilot    8: 2048 op, 176881.00 ns, 86.3677 ns/op
+WorkloadPilot    9: 4096 op, 336920.00 ns, 82.2559 ns/op
+WorkloadPilot   10: 8192 op, 748069.00 ns, 91.3170 ns/op
+WorkloadPilot   11: 16384 op, 1385470.00 ns, 84.5624 ns/op
+WorkloadPilot   12: 32768 op, 2709806.00 ns, 82.6967 ns/op
+WorkloadPilot   13: 65536 op, 5313715.00 ns, 81.0809 ns/op
+WorkloadPilot   14: 131072 op, 10542931.00 ns, 80.4362 ns/op
+WorkloadPilot   15: 262144 op, 20878946.00 ns, 79.6469 ns/op
+WorkloadPilot   16: 524288 op, 41671589.00 ns, 79.4822 ns/op
+WorkloadPilot   17: 1048576 op, 82912774.00 ns, 79.0718 ns/op
+WorkloadPilot   18: 2097152 op, 78370411.00 ns, 37.3699 ns/op
+WorkloadPilot   19: 4194304 op, 81854044.00 ns, 19.5155 ns/op
+WorkloadPilot   20: 8388608 op, 163772880.00 ns, 19.5232 ns/op
+WorkloadPilot   21: 16777216 op, 329112949.00 ns, 19.6167 ns/op
+WorkloadPilot   22: 33554432 op, 654199791.00 ns, 19.4967 ns/op
+
+OverheadWarmup   1: 33554432 op, 131815573.00 ns, 3.9284 ns/op
+OverheadWarmup   2: 33554432 op, 143943677.00 ns, 4.2899 ns/op
+OverheadWarmup   3: 33554432 op, 110999304.00 ns, 3.3080 ns/op
+OverheadWarmup   4: 33554432 op, 113681488.00 ns, 3.3880 ns/op
+OverheadWarmup   5: 33554432 op, 110971021.00 ns, 3.3072 ns/op
+
+OverheadActual   1: 33554432 op, 110819007.00 ns, 3.3027 ns/op
+OverheadActual   2: 33554432 op, 110962977.00 ns, 3.3070 ns/op
+OverheadActual   3: 33554432 op, 110838293.00 ns, 3.3032 ns/op
+OverheadActual   4: 33554432 op, 111092468.00 ns, 3.3108 ns/op
+OverheadActual   5: 33554432 op, 110896523.00 ns, 3.3050 ns/op
+OverheadActual   6: 33554432 op, 115770194.00 ns, 3.4502 ns/op
+OverheadActual   7: 33554432 op, 111254261.00 ns, 3.3156 ns/op
+OverheadActual   8: 33554432 op, 110953041.00 ns, 3.3067 ns/op
+OverheadActual   9: 33554432 op, 110936136.00 ns, 3.3062 ns/op
+OverheadActual  10: 33554432 op, 110975820.00 ns, 3.3073 ns/op
+OverheadActual  11: 33554432 op, 110918953.00 ns, 3.3056 ns/op
+OverheadActual  12: 33554432 op, 110924253.00 ns, 3.3058 ns/op
+OverheadActual  13: 33554432 op, 110881924.00 ns, 3.3045 ns/op
+OverheadActual  14: 33554432 op, 110996699.00 ns, 3.3080 ns/op
+OverheadActual  15: 33554432 op, 111238340.00 ns, 3.3152 ns/op
+
+WorkloadWarmup   1: 33554432 op, 656175684.00 ns, 19.5556 ns/op
+WorkloadWarmup   2: 33554432 op, 656220378.00 ns, 19.5569 ns/op
+WorkloadWarmup   3: 33554432 op, 657757890.00 ns, 19.6027 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 657019090.00 ns, 19.5807 ns/op
+WorkloadActual   2: 33554432 op, 658623447.00 ns, 19.6285 ns/op
+WorkloadActual   3: 33554432 op, 657591887.00 ns, 19.5978 ns/op
+WorkloadActual   4: 33554432 op, 661886736.00 ns, 19.7258 ns/op
+WorkloadActual   5: 33554432 op, 660476940.00 ns, 19.6837 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 546066049.00 ns, 16.2740 ns/op
+WorkloadResult   2: 33554432 op, 547670406.00 ns, 16.3219 ns/op
+WorkloadResult   3: 33554432 op, 546638846.00 ns, 16.2911 ns/op
+WorkloadResult   4: 33554432 op, 550933695.00 ns, 16.4191 ns/op
+WorkloadResult   5: 33554432 op, 549523899.00 ns, 16.3771 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 10831 has exited with code 0.
+
+Mean = 16.337 ns, StdErr = 0.027 ns (0.17%), N = 5, StdDev = 0.061 ns
+Min = 16.274 ns, Q1 = 16.291 ns, Median = 16.322 ns, Q3 = 16.377 ns, Max = 16.419 ns
+IQR = 0.086 ns, LowerFence = 16.162 ns, UpperFence = 16.506 ns
+ConfidenceInterval = [16.104 ns; 16.570 ns] (CI 99.9%), Margin = 0.233 ns (1.43% of Mean)
+Skewness = 0.26, Kurtosis = 1.02, MValue = 2
+
+// ** Remained 12 (44.4 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 1m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-report-default.md
+
+// * Detailed results *
+OptionsResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 17.238 ns, StdErr = 0.017 ns (0.10%), N = 5, StdDev = 0.039 ns
+Min = 17.179 ns, Q1 = 17.224 ns, Median = 17.247 ns, Q3 = 17.265 ns, Max = 17.277 ns
+IQR = 0.041 ns, LowerFence = 17.162 ns, UpperFence = 17.327 ns
+ConfidenceInterval = [17.089 ns; 17.388 ns] (CI 99.9%), Margin = 0.149 ns (0.87% of Mean)
+Skewness = -0.46, Kurtosis = 1.34, MValue = 2
+-------------------- Histogram --------------------
+[17.149 ns ; 17.307 ns) | @@@@@
+---------------------------------------------------
+
+OptionsResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 16.337 ns, StdErr = 0.027 ns (0.17%), N = 5, StdDev = 0.061 ns
+Min = 16.274 ns, Q1 = 16.291 ns, Median = 16.322 ns, Q3 = 16.377 ns, Max = 16.419 ns
+IQR = 0.086 ns, LowerFence = 16.162 ns, UpperFence = 16.506 ns
+ConfidenceInterval = [16.104 ns; 16.570 ns] (CI 99.9%), Margin = 0.233 ns (1.43% of Mean)
+Skewness = 0.26, Kurtosis = 1.02, MValue = 2
+-------------------- Histogram --------------------
+[16.227 ns ; 16.466 ns) | @@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
+| Reflection | 17.24 ns | 0.149 ns | 0.039 ns |  1.00 |    1 |         - |          NA |
+| SourceGen  | 16.34 ns | 0.233 ns | 0.061 ns |  0.95 |    1 |         - |          NA |
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:20 (20.23 sec), executed benchmarks: 2
+
+// Found 5 benchmarks:
+//   ServiceProviderBuildBenchmarks.BuildServiceProvider_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: ServiceProviderBuildBenchmarks.BuildServiceProvider_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks.BuildServiceProvider_Reflection --job ShortRun --benchmarkId 15 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 348732.00 ns, 348.7320 us/op
+WorkloadJitting  1: 1 op, 57003330.00 ns, 57.0033 ms/op
+
+WorkloadPilot    1: 2 op, 7352737.00 ns, 3.6764 ms/op
+WorkloadPilot    2: 3 op, 9387402.00 ns, 3.1291 ms/op
+WorkloadPilot    3: 4 op, 11636437.00 ns, 2.9091 ms/op
+WorkloadPilot    4: 5 op, 14045983.00 ns, 2.8092 ms/op
+WorkloadPilot    5: 6 op, 16358967.00 ns, 2.7265 ms/op
+WorkloadPilot    6: 7 op, 18962365.00 ns, 2.7089 ms/op
+WorkloadPilot    7: 8 op, 21099310.00 ns, 2.6374 ms/op
+WorkloadPilot    8: 9 op, 23787005.00 ns, 2.6430 ms/op
+WorkloadPilot    9: 10 op, 37934798.00 ns, 3.7935 ms/op
+WorkloadPilot   10: 11 op, 39574644.00 ns, 3.5977 ms/op
+WorkloadPilot   11: 12 op, 42666855.00 ns, 3.5556 ms/op
+WorkloadPilot   12: 13 op, 46837944.00 ns, 3.6029 ms/op
+WorkloadPilot   13: 14 op, 50060419.00 ns, 3.5757 ms/op
+WorkloadPilot   14: 15 op, 54937598.00 ns, 3.6625 ms/op
+WorkloadPilot   15: 16 op, 58181012.00 ns, 3.6363 ms/op
+WorkloadPilot   16: 32 op, 119889591.00 ns, 3.7465 ms/op
+WorkloadPilot   17: 64 op, 225853022.00 ns, 3.5290 ms/op
+WorkloadPilot   18: 128 op, 470048694.00 ns, 3.6723 ms/op
+WorkloadPilot   19: 256 op, 887304611.00 ns, 3.4660 ms/op
+
+WorkloadWarmup   1: 256 op, 796329365.00 ns, 3.1107 ms/op
+WorkloadWarmup   2: 256 op, 574422916.00 ns, 2.2438 ms/op
+WorkloadWarmup   3: 256 op, 392870298.00 ns, 1.5346 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 256 op, 356593933.00 ns, 1.3929 ms/op
+WorkloadActual   2: 256 op, 328881018.00 ns, 1.2847 ms/op
+WorkloadActual   3: 256 op, 320135386.00 ns, 1.2505 ms/op
+WorkloadActual   4: 256 op, 319206459.00 ns, 1.2469 ms/op
+WorkloadActual   5: 256 op, 318996587.00 ns, 1.2461 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 256 op, 328881018.00 ns, 1.2847 ms/op
+WorkloadResult   2: 256 op, 320135386.00 ns, 1.2505 ms/op
+WorkloadResult   3: 256 op, 319206459.00 ns, 1.2469 ms/op
+WorkloadResult   4: 256 op, 318996587.00 ns, 1.2461 ms/op
+// GC:  8 0 0 137615888 256
+// Threading:  0 0 256
+
+// AfterAll
+// Benchmark Process 10841 has exited with code 0.
+
+Mean = 1.257 ms, StdErr = 0.009 ms (0.74%), N = 4, StdDev = 0.019 ms
+Min = 1.246 ms, Q1 = 1.247 ms, Median = 1.249 ms, Q3 = 1.259 ms, Max = 1.285 ms
+IQR = 0.012 ms, LowerFence = 1.228 ms, UpperFence = 1.278 ms
+ConfidenceInterval = [1.137 ms; 1.377 ms] (CI 99.9%), Margin = 0.120 ms (9.52% of Mean)
+Skewness = 0.73, Kurtosis = 1.3, MValue = 2
+
+// ** Remained 11 (40.7 %) benchmark(s) to run. Estimated finish 2026-02-01 1:41 (0h 1m from now) **
+// **************************
+// Benchmark: ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_AssemblyListProvided --job ShortRun --benchmarkId 16 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 332502.00 ns, 332.5020 us/op
+WorkloadJitting  1: 1 op, 42051213.00 ns, 42.0512 ms/op
+
+WorkloadPilot    1: 2 op, 952069.00 ns, 476.0345 us/op
+WorkloadPilot    2: 3 op, 1024074.00 ns, 341.3580 us/op
+WorkloadPilot    3: 4 op, 1100508.00 ns, 275.1270 us/op
+WorkloadPilot    4: 5 op, 1494284.00 ns, 298.8568 us/op
+WorkloadPilot    5: 6 op, 1564445.00 ns, 260.7408 us/op
+WorkloadPilot    6: 7 op, 1926112.00 ns, 275.1589 us/op
+WorkloadPilot    7: 8 op, 2102110.00 ns, 262.7638 us/op
+WorkloadPilot    8: 9 op, 2335747.00 ns, 259.5274 us/op
+WorkloadPilot    9: 10 op, 2587589.00 ns, 258.7589 us/op
+WorkloadPilot   10: 11 op, 3072004.00 ns, 279.2731 us/op
+WorkloadPilot   11: 12 op, 3320437.00 ns, 276.7031 us/op
+WorkloadPilot   12: 13 op, 3555909.00 ns, 273.5315 us/op
+WorkloadPilot   13: 14 op, 3833277.00 ns, 273.8055 us/op
+WorkloadPilot   14: 15 op, 4048089.00 ns, 269.8726 us/op
+WorkloadPilot   15: 16 op, 4378477.00 ns, 273.6548 us/op
+WorkloadPilot   16: 32 op, 9513547.00 ns, 297.2983 us/op
+WorkloadPilot   17: 64 op, 19711385.00 ns, 307.9904 us/op
+WorkloadPilot   18: 128 op, 38650624.00 ns, 301.9580 us/op
+WorkloadPilot   19: 256 op, 78371251.00 ns, 306.1377 us/op
+WorkloadPilot   20: 512 op, 153684633.00 ns, 300.1653 us/op
+WorkloadPilot   21: 1024 op, 318099830.00 ns, 310.6444 us/op
+WorkloadPilot   22: 2048 op, 545824165.00 ns, 266.5157 us/op
+
+WorkloadWarmup   1: 2048 op, 306267618.00 ns, 149.5447 us/op
+WorkloadWarmup   2: 2048 op, 203829078.00 ns, 99.5259 us/op
+WorkloadWarmup   3: 2048 op, 133085429.00 ns, 64.9831 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 2048 op, 132536713.00 ns, 64.7152 us/op
+WorkloadActual   2: 2048 op, 135293618.00 ns, 66.0613 us/op
+WorkloadActual   3: 2048 op, 132625560.00 ns, 64.7586 us/op
+WorkloadActual   4: 2048 op, 133091611.00 ns, 64.9861 us/op
+WorkloadActual   5: 2048 op, 132077685.00 ns, 64.4911 us/op
+
+// AfterActualRun
+WorkloadResult   1: 2048 op, 132536713.00 ns, 64.7152 us/op
+WorkloadResult   2: 2048 op, 132625560.00 ns, 64.7586 us/op
+WorkloadResult   3: 2048 op, 133091611.00 ns, 64.9861 us/op
+WorkloadResult   4: 2048 op, 132077685.00 ns, 64.4911 us/op
+// GC:  10 1 0 182701112 2048
+// Threading:  0 0 2048
+
+// AfterAll
+// Benchmark Process 10851 has exited with code 0.
+
+Mean = 64.738 μs, StdErr = 0.101 μs (0.16%), N = 4, StdDev = 0.203 μs
+Min = 64.491 μs, Q1 = 64.659 μs, Median = 64.737 μs, Q3 = 64.815 μs, Max = 64.986 μs
+IQR = 0.156 μs, LowerFence = 64.425 μs, UpperFence = 65.050 μs
+ConfidenceInterval = [63.427 μs; 66.049 μs] (CI 99.9%), Margin = 1.311 μs (2.03% of Mean)
+Skewness = 0.01, Kurtosis = 1.11, MValue = 2
+
+// ** Remained 10 (37.0 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 1m from now) **
+// **************************
+// Benchmark: ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_AssemblyListProvided --job ShortRun --benchmarkId 17 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 384889.00 ns, 384.8890 us/op
+WorkloadJitting  1: 1 op, 44209749.00 ns, 44.2097 ms/op
+
+WorkloadPilot    1: 2 op, 1040816.00 ns, 520.4080 us/op
+WorkloadPilot    2: 3 op, 1330457.00 ns, 443.4857 us/op
+WorkloadPilot    3: 4 op, 1340777.00 ns, 335.1943 us/op
+WorkloadPilot    4: 5 op, 1776462.00 ns, 355.2924 us/op
+WorkloadPilot    5: 6 op, 1851561.00 ns, 308.5935 us/op
+WorkloadPilot    6: 7 op, 2465447.00 ns, 352.2067 us/op
+WorkloadPilot    7: 8 op, 2516233.00 ns, 314.5291 us/op
+WorkloadPilot    8: 9 op, 2810001.00 ns, 312.2223 us/op
+WorkloadPilot    9: 10 op, 3082020.00 ns, 308.2020 us/op
+WorkloadPilot   10: 11 op, 3561206.00 ns, 323.7460 us/op
+WorkloadPilot   11: 12 op, 3989904.00 ns, 332.4920 us/op
+WorkloadPilot   12: 13 op, 4239463.00 ns, 326.1125 us/op
+WorkloadPilot   13: 14 op, 4547489.00 ns, 324.8206 us/op
+WorkloadPilot   14: 15 op, 4841749.00 ns, 322.7833 us/op
+WorkloadPilot   15: 16 op, 5118646.00 ns, 319.9154 us/op
+WorkloadPilot   16: 32 op, 11440801.00 ns, 357.5250 us/op
+WorkloadPilot   17: 64 op, 24300955.00 ns, 379.7024 us/op
+WorkloadPilot   18: 128 op, 45510593.00 ns, 355.5515 us/op
+WorkloadPilot   19: 256 op, 99023258.00 ns, 386.8096 us/op
+WorkloadPilot   20: 512 op, 187385999.00 ns, 365.9883 us/op
+WorkloadPilot   21: 1024 op, 365392840.00 ns, 356.8289 us/op
+WorkloadPilot   22: 2048 op, 594207743.00 ns, 290.1405 us/op
+
+WorkloadWarmup   1: 2048 op, 325783604.00 ns, 159.0740 us/op
+WorkloadWarmup   2: 2048 op, 181909604.00 ns, 88.8230 us/op
+WorkloadWarmup   3: 2048 op, 176321881.00 ns, 86.0947 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 2048 op, 174428383.00 ns, 85.1701 us/op
+WorkloadActual   2: 2048 op, 174279645.00 ns, 85.0975 us/op
+WorkloadActual   3: 2048 op, 175179847.00 ns, 85.5370 us/op
+WorkloadActual   4: 2048 op, 174015531.00 ns, 84.9685 us/op
+WorkloadActual   5: 2048 op, 174781272.00 ns, 85.3424 us/op
+
+// AfterActualRun
+WorkloadResult   1: 2048 op, 174428383.00 ns, 85.1701 us/op
+WorkloadResult   2: 2048 op, 174279645.00 ns, 85.0975 us/op
+WorkloadResult   3: 2048 op, 175179847.00 ns, 85.5370 us/op
+WorkloadResult   4: 2048 op, 174015531.00 ns, 84.9685 us/op
+WorkloadResult   5: 2048 op, 174781272.00 ns, 85.3424 us/op
+// GC:  17 2 0 292313408 2048
+// Threading:  0 0 2048
+
+// AfterAll
+// Benchmark Process 10859 has exited with code 0.
+
+Mean = 85.223 μs, StdErr = 0.099 μs (0.12%), N = 5, StdDev = 0.221 μs
+Min = 84.969 μs, Q1 = 85.097 μs, Median = 85.170 μs, Q3 = 85.342 μs, Max = 85.537 μs
+IQR = 0.245 μs, LowerFence = 84.730 μs, UpperFence = 85.710 μs
+ConfidenceInterval = [84.370 μs; 86.076 μs] (CI 99.9%), Margin = 0.853 μs (1.00% of Mean)
+Skewness = 0.26, Kurtosis = 1.19, MValue = 2
+
+// ** Remained 9 (33.3 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 1m from now) **
+// **************************
+// Benchmark: ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_NoAssemblyList --job ShortRun --benchmarkId 18 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 305621.00 ns, 305.6210 us/op
+WorkloadJitting  1: 1 op, 41545162.00 ns, 41.5452 ms/op
+
+WorkloadPilot    1: 2 op, 953582.00 ns, 476.7910 us/op
+WorkloadPilot    2: 3 op, 1021229.00 ns, 340.4097 us/op
+WorkloadPilot    3: 4 op, 1226993.00 ns, 306.7483 us/op
+WorkloadPilot    4: 5 op, 1497359.00 ns, 299.4718 us/op
+WorkloadPilot    5: 6 op, 1563162.00 ns, 260.5270 us/op
+WorkloadPilot    6: 7 op, 1978769.00 ns, 282.6813 us/op
+WorkloadPilot    7: 8 op, 2152132.00 ns, 269.0165 us/op
+WorkloadPilot    8: 9 op, 2357325.00 ns, 261.9250 us/op
+WorkloadPilot    9: 10 op, 2619034.00 ns, 261.9034 us/op
+WorkloadPilot   10: 11 op, 3037948.00 ns, 276.1771 us/op
+WorkloadPilot   11: 12 op, 3333981.00 ns, 277.8318 us/op
+WorkloadPilot   12: 13 op, 3574390.00 ns, 274.9531 us/op
+WorkloadPilot   13: 14 op, 3835989.00 ns, 273.9992 us/op
+WorkloadPilot   14: 15 op, 4078242.00 ns, 271.8828 us/op
+WorkloadPilot   15: 16 op, 4356662.00 ns, 272.2914 us/op
+WorkloadPilot   16: 32 op, 9399406.00 ns, 293.7314 us/op
+WorkloadPilot   17: 64 op, 19910640.00 ns, 311.1038 us/op
+WorkloadPilot   18: 128 op, 38679868.00 ns, 302.1865 us/op
+WorkloadPilot   19: 256 op, 77934188.00 ns, 304.4304 us/op
+WorkloadPilot   20: 512 op, 155083460.00 ns, 302.8974 us/op
+WorkloadPilot   21: 1024 op, 318404797.00 ns, 310.9422 us/op
+WorkloadPilot   22: 2048 op, 544771332.00 ns, 266.0016 us/op
+
+WorkloadWarmup   1: 2048 op, 302720934.00 ns, 147.8130 us/op
+WorkloadWarmup   2: 2048 op, 203071763.00 ns, 99.1561 us/op
+WorkloadWarmup   3: 2048 op, 163106964.00 ns, 79.6421 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 2048 op, 134936658.00 ns, 65.8870 us/op
+WorkloadActual   2: 2048 op, 135117616.00 ns, 65.9754 us/op
+WorkloadActual   3: 2048 op, 135455878.00 ns, 66.1406 us/op
+WorkloadActual   4: 2048 op, 135392630.00 ns, 66.1097 us/op
+WorkloadActual   5: 2048 op, 135230898.00 ns, 66.0307 us/op
+
+// AfterActualRun
+WorkloadResult   1: 2048 op, 134936658.00 ns, 65.8870 us/op
+WorkloadResult   2: 2048 op, 135117616.00 ns, 65.9754 us/op
+WorkloadResult   3: 2048 op, 135455878.00 ns, 66.1406 us/op
+WorkloadResult   4: 2048 op, 135392630.00 ns, 66.1097 us/op
+WorkloadResult   5: 2048 op, 135230898.00 ns, 66.0307 us/op
+// GC:  11 1 0 187630960 2048
+// Threading:  0 0 2048
+
+// AfterAll
+// Benchmark Process 10866 has exited with code 0.
+
+Mean = 66.029 μs, StdErr = 0.046 μs (0.07%), N = 5, StdDev = 0.102 μs
+Min = 65.887 μs, Q1 = 65.975 μs, Median = 66.031 μs, Q3 = 66.110 μs, Max = 66.141 μs
+IQR = 0.134 μs, LowerFence = 65.774 μs, UpperFence = 66.311 μs
+ConfidenceInterval = [65.634 μs; 66.423 μs] (CI 99.9%), Margin = 0.395 μs (0.60% of Mean)
+Skewness = -0.2, Kurtosis = 1.11, MValue = 2
+
+// ** Remained 8 (29.6 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 1m from now) **
+// **************************
+// Benchmark: ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_NoAssemblyList --job ShortRun --benchmarkId 19 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 332652.00 ns, 332.6520 us/op
+WorkloadJitting  1: 1 op, 44333192.00 ns, 44.3332 ms/op
+
+WorkloadPilot    1: 2 op, 1041386.00 ns, 520.6930 us/op
+WorkloadPilot    2: 3 op, 1235289.00 ns, 411.7630 us/op
+WorkloadPilot    3: 4 op, 1318794.00 ns, 329.6985 us/op
+WorkloadPilot    4: 5 op, 1863122.00 ns, 372.6244 us/op
+WorkloadPilot    5: 6 op, 1852612.00 ns, 308.7687 us/op
+WorkloadPilot    6: 7 op, 2347577.00 ns, 335.3681 us/op
+WorkloadPilot    7: 8 op, 2494432.00 ns, 311.8040 us/op
+WorkloadPilot    8: 9 op, 2830580.00 ns, 314.5089 us/op
+WorkloadPilot    9: 10 op, 3110894.00 ns, 311.0894 us/op
+WorkloadPilot   10: 11 op, 3612331.00 ns, 328.3937 us/op
+WorkloadPilot   11: 12 op, 3932239.00 ns, 327.6866 us/op
+WorkloadPilot   12: 13 op, 4259029.00 ns, 327.6176 us/op
+WorkloadPilot   13: 14 op, 4581933.00 ns, 327.2809 us/op
+WorkloadPilot   14: 15 op, 4837651.00 ns, 322.5101 us/op
+WorkloadPilot   15: 16 op, 5319792.00 ns, 332.4870 us/op
+WorkloadPilot   16: 32 op, 11575082.00 ns, 361.7213 us/op
+WorkloadPilot   17: 64 op, 24462126.00 ns, 382.2207 us/op
+WorkloadPilot   18: 128 op, 46207966.00 ns, 360.9997 us/op
+WorkloadPilot   19: 256 op, 97699297.00 ns, 381.6379 us/op
+WorkloadPilot   20: 512 op, 191640791.00 ns, 374.2984 us/op
+WorkloadPilot   21: 1024 op, 363903265.00 ns, 355.3743 us/op
+WorkloadPilot   22: 2048 op, 625079804.00 ns, 305.2147 us/op
+
+WorkloadWarmup   1: 2048 op, 353581782.00 ns, 172.6474 us/op
+WorkloadWarmup   2: 2048 op, 193679399.00 ns, 94.5700 us/op
+WorkloadWarmup   3: 2048 op, 173378304.00 ns, 84.6574 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 2048 op, 172742586.00 ns, 84.3470 us/op
+WorkloadActual   2: 2048 op, 172482028.00 ns, 84.2197 us/op
+WorkloadActual   3: 2048 op, 173644331.00 ns, 84.7873 us/op
+WorkloadActual   4: 2048 op, 172496486.00 ns, 84.2268 us/op
+WorkloadActual   5: 2048 op, 171952188.00 ns, 83.9610 us/op
+
+// AfterActualRun
+WorkloadResult   1: 2048 op, 172742586.00 ns, 84.3470 us/op
+WorkloadResult   2: 2048 op, 172482028.00 ns, 84.2197 us/op
+WorkloadResult   3: 2048 op, 172496486.00 ns, 84.2268 us/op
+WorkloadResult   4: 2048 op, 171952188.00 ns, 83.9610 us/op
+// GC:  17 1 0 292399472 2048
+// Threading:  0 0 2048
+
+// AfterAll
+// Benchmark Process 10876 has exited with code 0.
+
+Mean = 84.189 μs, StdErr = 0.081 μs (0.10%), N = 4, StdDev = 0.163 μs
+Min = 83.961 μs, Q1 = 84.155 μs, Median = 84.223 μs, Q3 = 84.257 μs, Max = 84.347 μs
+IQR = 0.102 μs, LowerFence = 84.002 μs, UpperFence = 84.410 μs
+ConfidenceInterval = [83.138 μs; 85.239 μs] (CI 99.9%), Margin = 1.051 μs (1.25% of Mean)
+Skewness = -0.45, Kurtosis = 1.19, MValue = 2
+
+// ** Remained 7 (25.9 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-report-default.md
+
+// * Detailed results *
+ServiceProviderBuildBenchmarks.BuildServiceProvider_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 1.257 ms, StdErr = 0.009 ms (0.74%), N = 4, StdDev = 0.019 ms
+Min = 1.246 ms, Q1 = 1.247 ms, Median = 1.249 ms, Q3 = 1.259 ms, Max = 1.285 ms
+IQR = 0.012 ms, LowerFence = 1.228 ms, UpperFence = 1.278 ms
+ConfidenceInterval = [1.137 ms; 1.377 ms] (CI 99.9%), Margin = 0.120 ms (9.52% of Mean)
+Skewness = 0.73, Kurtosis = 1.3, MValue = 2
+-------------------- Histogram --------------------
+[1.231 ms ; 1.264 ms) | @@@
+[1.264 ms ; 1.300 ms) | @
+---------------------------------------------------
+
+ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 64.738 μs, StdErr = 0.101 μs (0.16%), N = 4, StdDev = 0.203 μs
+Min = 64.491 μs, Q1 = 64.659 μs, Median = 64.737 μs, Q3 = 64.815 μs, Max = 64.986 μs
+IQR = 0.156 μs, LowerFence = 64.425 μs, UpperFence = 65.050 μs
+ConfidenceInterval = [63.427 μs; 66.049 μs] (CI 99.9%), Margin = 1.311 μs (2.03% of Mean)
+Skewness = 0.01, Kurtosis = 1.11, MValue = 2
+-------------------- Histogram --------------------
+[64.323 μs ; 65.154 μs) | @@@@
+---------------------------------------------------
+
+ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_AssemblyListProvided: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 85.223 μs, StdErr = 0.099 μs (0.12%), N = 5, StdDev = 0.221 μs
+Min = 84.969 μs, Q1 = 85.097 μs, Median = 85.170 μs, Q3 = 85.342 μs, Max = 85.537 μs
+IQR = 0.245 μs, LowerFence = 84.730 μs, UpperFence = 85.710 μs
+ConfidenceInterval = [84.370 μs; 86.076 μs] (CI 99.9%), Margin = 0.853 μs (1.00% of Mean)
+Skewness = 0.26, Kurtosis = 1.19, MValue = 2
+-------------------- Histogram --------------------
+[84.799 μs ; 85.707 μs) | @@@@@
+---------------------------------------------------
+
+ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 66.029 μs, StdErr = 0.046 μs (0.07%), N = 5, StdDev = 0.102 μs
+Min = 65.887 μs, Q1 = 65.975 μs, Median = 66.031 μs, Q3 = 66.110 μs, Max = 66.141 μs
+IQR = 0.134 μs, LowerFence = 65.774 μs, UpperFence = 66.311 μs
+ConfidenceInterval = [65.634 μs; 66.423 μs] (CI 99.9%), Margin = 0.395 μs (0.60% of Mean)
+Skewness = -0.2, Kurtosis = 1.11, MValue = 2
+-------------------- Histogram --------------------
+[65.808 μs ; 66.219 μs) | @@@@@
+---------------------------------------------------
+
+ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_NoAssemblyList: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 84.189 μs, StdErr = 0.081 μs (0.10%), N = 4, StdDev = 0.163 μs
+Min = 83.961 μs, Q1 = 84.155 μs, Median = 84.223 μs, Q3 = 84.257 μs, Max = 84.347 μs
+IQR = 0.102 μs, LowerFence = 84.002 μs, UpperFence = 84.410 μs
+ConfidenceInterval = [83.138 μs; 85.239 μs] (CI 99.9%), Margin = 1.051 μs (1.25% of Mean)
+Skewness = -0.45, Kurtosis = 1.19, MValue = 2
+-------------------- Histogram --------------------
+[83.827 μs ; 84.481 μs) | @@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method                                                      | Mean        | Error      | StdDev    | Ratio | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|------------------------------------------------------------ |------------:|-----------:|----------:|------:|--------:|-----:|--------:|-------:|----------:|------------:|
+| BuildServiceProvider_Reflection                             | 1,257.05 μs | 119.732 μs | 18.529 μs |  1.00 |    0.02 |    3 | 31.2500 |      - | 524.96 KB |        1.00 |
+| BuildServiceProvider_SourceGenExplicit_AssemblyListProvided |    64.74 μs |   1.311 μs |  0.203 μs |  0.05 |    0.00 |    1 |  4.8828 | 0.4883 |  87.12 KB |        0.17 |
+| BuildServiceProvider_SourceGenImplicit_AssemblyListProvided |    85.22 μs |   0.853 μs |  0.221 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.9766 | 139.39 KB |        0.27 |
+| BuildServiceProvider_SourceGenExplicit_NoAssemblyList       |    66.03 μs |   0.395 μs |  0.102 μs |  0.05 |    0.00 |    1 |  5.3711 | 0.4883 |  89.47 KB |        0.17 |
+| BuildServiceProvider_SourceGenImplicit_NoAssemblyList       |    84.19 μs |   1.051 μs |  0.163 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.4883 | 139.43 KB |        0.27 |
+
+// * Hints *
+Outliers
+  ServiceProviderBuildBenchmarks.BuildServiceProvider_Reflection: ShortRun                             -> 1 outlier  was  removed (1.39 ms)
+  ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenExplicit_AssemblyListProvided: ShortRun -> 1 outlier  was  removed (66.06 μs)
+  ServiceProviderBuildBenchmarks.BuildServiceProvider_SourceGenImplicit_NoAssemblyList: ShortRun       -> 1 outlier  was  removed, 2 outliers were detected (83.96 μs, 84.79 μs)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Gen0        : GC Generation 0 collects per 1000 operations
+  Gen1        : GC Generation 1 collects per 1000 operations
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 μs        : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:18 (18.7 sec), executed benchmarks: 5
+
+// Found 2 benchmarks:
+//   SimpleServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   SimpleServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: SimpleServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks.Reflection --job ShortRun --benchmarkId 20 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 342931.00 ns, 342.9310 us/op
+WorkloadJitting  1: 1 op, 4087151.00 ns, 4.0872 ms/op
+
+OverheadJitting  2: 16 op, 495456.00 ns, 30.9660 us/op
+WorkloadJitting  2: 16 op, 481310.00 ns, 30.0819 us/op
+
+WorkloadPilot    1: 16 op, 4869.00 ns, 304.3125 ns/op
+WorkloadPilot    2: 32 op, 6171.00 ns, 192.8438 ns/op
+WorkloadPilot    3: 64 op, 9388.00 ns, 146.6875 ns/op
+WorkloadPilot    4: 128 op, 21881.00 ns, 170.9453 ns/op
+WorkloadPilot    5: 256 op, 35686.00 ns, 139.3984 ns/op
+WorkloadPilot    6: 512 op, 55714.00 ns, 108.8164 ns/op
+WorkloadPilot    7: 1024 op, 95268.00 ns, 93.0352 ns/op
+WorkloadPilot    8: 2048 op, 178574.00 ns, 87.1943 ns/op
+WorkloadPilot    9: 4096 op, 351678.00 ns, 85.8589 ns/op
+WorkloadPilot   10: 8192 op, 764059.00 ns, 93.2689 ns/op
+WorkloadPilot   11: 16384 op, 1456523.00 ns, 88.8991 ns/op
+WorkloadPilot   12: 32768 op, 2818430.00 ns, 86.0117 ns/op
+WorkloadPilot   13: 65536 op, 5505142.00 ns, 84.0018 ns/op
+WorkloadPilot   14: 131072 op, 10948810.00 ns, 83.5328 ns/op
+WorkloadPilot   15: 262144 op, 21742990.00 ns, 82.9429 ns/op
+WorkloadPilot   16: 524288 op, 43403246.00 ns, 82.7851 ns/op
+WorkloadPilot   17: 1048576 op, 88411211.00 ns, 84.3155 ns/op
+WorkloadPilot   18: 2097152 op, 74336267.00 ns, 35.4463 ns/op
+WorkloadPilot   19: 4194304 op, 76504752.00 ns, 18.2402 ns/op
+WorkloadPilot   20: 8388608 op, 152890260.00 ns, 18.2259 ns/op
+WorkloadPilot   21: 16777216 op, 305927392.00 ns, 18.2347 ns/op
+WorkloadPilot   22: 33554432 op, 616815985.00 ns, 18.3825 ns/op
+
+OverheadWarmup   1: 33554432 op, 131767069.00 ns, 3.9270 ns/op
+OverheadWarmup   2: 33554432 op, 142062586.00 ns, 4.2338 ns/op
+OverheadWarmup   3: 33554432 op, 110937587.00 ns, 3.3062 ns/op
+OverheadWarmup   4: 33554432 op, 111112764.00 ns, 3.3114 ns/op
+OverheadWarmup   5: 33554432 op, 110894786.00 ns, 3.3049 ns/op
+
+OverheadActual   1: 33554432 op, 110989583.00 ns, 3.3077 ns/op
+OverheadActual   2: 33554432 op, 110984644.00 ns, 3.3076 ns/op
+OverheadActual   3: 33554432 op, 110886801.00 ns, 3.3047 ns/op
+OverheadActual   4: 33554432 op, 112596358.00 ns, 3.3556 ns/op
+OverheadActual   5: 33554432 op, 110906168.00 ns, 3.3053 ns/op
+OverheadActual   6: 33554432 op, 115803323.00 ns, 3.4512 ns/op
+OverheadActual   7: 33554432 op, 110844933.00 ns, 3.3034 ns/op
+OverheadActual   8: 33554432 op, 110905216.00 ns, 3.3052 ns/op
+OverheadActual   9: 33554432 op, 110919562.00 ns, 3.3057 ns/op
+OverheadActual  10: 33554432 op, 110903562.00 ns, 3.3052 ns/op
+OverheadActual  11: 33554432 op, 110963976.00 ns, 3.3070 ns/op
+OverheadActual  12: 33554432 op, 111002848.00 ns, 3.3081 ns/op
+OverheadActual  13: 33554432 op, 110897331.00 ns, 3.3050 ns/op
+OverheadActual  14: 33554432 op, 110885990.00 ns, 3.3047 ns/op
+OverheadActual  15: 33554432 op, 110808385.00 ns, 3.3023 ns/op
+
+WorkloadWarmup   1: 33554432 op, 603126652.00 ns, 17.9746 ns/op
+WorkloadWarmup   2: 33554432 op, 604462028.00 ns, 18.0144 ns/op
+WorkloadWarmup   3: 33554432 op, 602704002.00 ns, 17.9620 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 602949290.00 ns, 17.9693 ns/op
+WorkloadActual   2: 33554432 op, 607852298.00 ns, 18.1154 ns/op
+WorkloadActual   3: 33554432 op, 605911485.00 ns, 18.0576 ns/op
+WorkloadActual   4: 33554432 op, 611445191.00 ns, 18.2225 ns/op
+WorkloadActual   5: 33554432 op, 612634474.00 ns, 18.2579 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 492043122.00 ns, 14.6640 ns/op
+WorkloadResult   2: 33554432 op, 496946130.00 ns, 14.8101 ns/op
+WorkloadResult   3: 33554432 op, 495005317.00 ns, 14.7523 ns/op
+WorkloadResult   4: 33554432 op, 500539023.00 ns, 14.9172 ns/op
+WorkloadResult   5: 33554432 op, 501728306.00 ns, 14.9527 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 10883 has exited with code 0.
+
+Mean = 14.819 ns, StdErr = 0.053 ns (0.36%), N = 5, StdDev = 0.118 ns
+Min = 14.664 ns, Q1 = 14.752 ns, Median = 14.810 ns, Q3 = 14.917 ns, Max = 14.953 ns
+IQR = 0.165 ns, LowerFence = 14.505 ns, UpperFence = 15.165 ns
+ConfidenceInterval = [14.363 ns; 15.275 ns] (CI 99.9%), Margin = 0.456 ns (3.08% of Mean)
+Skewness = -0.09, Kurtosis = 1.03, MValue = 2
+
+// ** Remained 6 (22.2 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// **************************
+// Benchmark: SimpleServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks.SourceGen --job ShortRun --benchmarkId 21 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 344014.00 ns, 344.0140 us/op
+WorkloadJitting  1: 1 op, 3079438.00 ns, 3.0794 ms/op
+
+OverheadJitting  2: 16 op, 511576.00 ns, 31.9735 us/op
+WorkloadJitting  2: 16 op, 485147.00 ns, 30.3217 us/op
+
+WorkloadPilot    1: 16 op, 4990.00 ns, 311.8750 ns/op
+WorkloadPilot    2: 32 op, 6653.00 ns, 207.9063 ns/op
+WorkloadPilot    3: 64 op, 8926.00 ns, 139.4688 ns/op
+WorkloadPilot    4: 128 op, 13695.00 ns, 106.9922 ns/op
+WorkloadPilot    5: 256 op, 23645.00 ns, 92.3633 ns/op
+WorkloadPilot    6: 512 op, 42900.00 ns, 83.7891 ns/op
+WorkloadPilot    7: 1024 op, 98344.00 ns, 96.0391 ns/op
+WorkloadPilot    8: 2048 op, 175278.00 ns, 85.5850 ns/op
+WorkloadPilot    9: 4096 op, 332291.00 ns, 81.1257 ns/op
+WorkloadPilot   10: 8192 op, 753179.00 ns, 91.9408 ns/op
+WorkloadPilot   11: 16384 op, 1397753.00 ns, 85.3121 ns/op
+WorkloadPilot   12: 32768 op, 2710608.00 ns, 82.7212 ns/op
+WorkloadPilot   13: 65536 op, 5330987.00 ns, 81.3444 ns/op
+WorkloadPilot   14: 131072 op, 10543673.00 ns, 80.4418 ns/op
+WorkloadPilot   15: 262144 op, 20954967.00 ns, 79.9369 ns/op
+WorkloadPilot   16: 524288 op, 42014701.00 ns, 80.1367 ns/op
+WorkloadPilot   17: 1048576 op, 83812877.00 ns, 79.9302 ns/op
+WorkloadPilot   18: 2097152 op, 78364771.00 ns, 37.3672 ns/op
+WorkloadPilot   19: 4194304 op, 78091029.00 ns, 18.6184 ns/op
+WorkloadPilot   20: 8388608 op, 157163384.00 ns, 18.7353 ns/op
+WorkloadPilot   21: 16777216 op, 314815673.00 ns, 18.7645 ns/op
+WorkloadPilot   22: 33554432 op, 624576702.00 ns, 18.6138 ns/op
+
+OverheadWarmup   1: 33554432 op, 130548614.00 ns, 3.8907 ns/op
+OverheadWarmup   2: 33554432 op, 142704571.00 ns, 4.2529 ns/op
+OverheadWarmup   3: 33554432 op, 110037837.00 ns, 3.2794 ns/op
+OverheadWarmup   4: 33554432 op, 112291240.00 ns, 3.3465 ns/op
+OverheadWarmup   5: 33554432 op, 110261395.00 ns, 3.2860 ns/op
+
+OverheadActual   1: 33554432 op, 109549334.00 ns, 3.2648 ns/op
+OverheadActual   2: 33554432 op, 109593566.00 ns, 3.2661 ns/op
+OverheadActual   3: 33554432 op, 109621059.00 ns, 3.2670 ns/op
+OverheadActual   4: 33554432 op, 111313833.00 ns, 3.3174 ns/op
+OverheadActual   5: 33554432 op, 109610759.00 ns, 3.2667 ns/op
+OverheadActual   6: 33554432 op, 114525286.00 ns, 3.4131 ns/op
+OverheadActual   7: 33554432 op, 109813477.00 ns, 3.2727 ns/op
+OverheadActual   8: 33554432 op, 109638000.00 ns, 3.2675 ns/op
+OverheadActual   9: 33554432 op, 109646806.00 ns, 3.2677 ns/op
+OverheadActual  10: 33554432 op, 109748857.00 ns, 3.2708 ns/op
+OverheadActual  11: 33554432 op, 109540898.00 ns, 3.2646 ns/op
+OverheadActual  12: 33554432 op, 109560494.00 ns, 3.2652 ns/op
+OverheadActual  13: 33554432 op, 109572818.00 ns, 3.2655 ns/op
+OverheadActual  14: 33554432 op, 109733088.00 ns, 3.2703 ns/op
+OverheadActual  15: 33554432 op, 110251096.00 ns, 3.2857 ns/op
+
+WorkloadWarmup   1: 33554432 op, 620037197.00 ns, 18.4785 ns/op
+WorkloadWarmup   2: 33554432 op, 620747919.00 ns, 18.4997 ns/op
+WorkloadWarmup   3: 33554432 op, 619980691.00 ns, 18.4769 ns/op
+
+// BeforeActualRun
+WorkloadActual   1: 33554432 op, 619852320.00 ns, 18.4730 ns/op
+WorkloadActual   2: 33554432 op, 620305617.00 ns, 18.4865 ns/op
+WorkloadActual   3: 33554432 op, 621139156.00 ns, 18.5114 ns/op
+WorkloadActual   4: 33554432 op, 629412293.00 ns, 18.7579 ns/op
+WorkloadActual   5: 33554432 op, 628965969.00 ns, 18.7446 ns/op
+
+// AfterActualRun
+WorkloadResult   1: 33554432 op, 510214320.00 ns, 15.2056 ns/op
+WorkloadResult   2: 33554432 op, 510667617.00 ns, 15.2191 ns/op
+WorkloadResult   3: 33554432 op, 511501156.00 ns, 15.2439 ns/op
+WorkloadResult   4: 33554432 op, 519774293.00 ns, 15.4905 ns/op
+WorkloadResult   5: 33554432 op, 519327969.00 ns, 15.4772 ns/op
+// GC:  0 0 0 1072 33554432
+// Threading:  0 0 33554432
+
+// AfterAll
+// Benchmark Process 10892 has exited with code 0.
+
+Mean = 15.327 ns, StdErr = 0.064 ns (0.42%), N = 5, StdDev = 0.144 ns
+Min = 15.206 ns, Q1 = 15.219 ns, Median = 15.244 ns, Q3 = 15.477 ns, Max = 15.490 ns
+IQR = 0.258 ns, LowerFence = 14.832 ns, UpperFence = 15.864 ns
+ConfidenceInterval = [14.774 ns; 15.880 ns] (CI 99.9%), Margin = 0.553 ns (3.61% of Mean)
+Skewness = 0.27, Kurtosis = 0.76, MValue = 2
+
+// ** Remained 5 (18.5 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.SimpleServiceResolutionBenchmarks-report-default.md
+
+// * Detailed results *
+SimpleServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 14.819 ns, StdErr = 0.053 ns (0.36%), N = 5, StdDev = 0.118 ns
+Min = 14.664 ns, Q1 = 14.752 ns, Median = 14.810 ns, Q3 = 14.917 ns, Max = 14.953 ns
+IQR = 0.165 ns, LowerFence = 14.505 ns, UpperFence = 15.165 ns
+ConfidenceInterval = [14.363 ns; 15.275 ns] (CI 99.9%), Margin = 0.456 ns (3.08% of Mean)
+Skewness = -0.09, Kurtosis = 1.03, MValue = 2
+-------------------- Histogram --------------------
+[14.573 ns ; 15.044 ns) | @@@@@
+---------------------------------------------------
+
+SimpleServiceResolutionBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 15.327 ns, StdErr = 0.064 ns (0.42%), N = 5, StdDev = 0.144 ns
+Min = 15.206 ns, Q1 = 15.219 ns, Median = 15.244 ns, Q3 = 15.477 ns, Max = 15.490 ns
+IQR = 0.258 ns, LowerFence = 14.832 ns, UpperFence = 15.864 ns
+ConfidenceInterval = [14.774 ns; 15.880 ns] (CI 99.9%), Margin = 0.553 ns (3.61% of Mean)
+Skewness = 0.27, Kurtosis = 0.76, MValue = 2
+-------------------- Histogram --------------------
+[15.095 ns ; 15.601 ns) | @@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
+| Reflection | 14.82 ns | 0.456 ns | 0.118 ns |  1.00 |    1 |         - |          NA |
+| SourceGen  | 15.33 ns | 0.553 ns | 0.144 ns |  1.03 |    1 |         - |          NA |
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:19 (19.03 sec), executed benchmarks: 2
+
+// Found 2 benchmarks:
+//   TypeRegistrationBenchmarks.RegisterTypes_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   TypeRegistrationBenchmarks.RegisterTypes_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: TypeRegistrationBenchmarks.RegisterTypes_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks.RegisterTypes_Reflection --job ShortRun --benchmarkId 22 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 324808.00 ns, 324.8080 us/op
+WorkloadJitting  1: 1 op, 19789747.00 ns, 19.7897 ms/op
+
+OverheadJitting  2: 16 op, 494574.00 ns, 30.9109 us/op
+WorkloadJitting  2: 16 op, 28928955.00 ns, 1.8081 ms/op
+
+WorkloadPilot    1: 16 op, 25240498.00 ns, 1.5775 ms/op
+WorkloadPilot    2: 32 op, 52571195.00 ns, 1.6428 ms/op
+WorkloadPilot    3: 64 op, 119118307.00 ns, 1.8612 ms/op
+WorkloadPilot    4: 128 op, 289934039.00 ns, 2.2651 ms/op
+WorkloadPilot    5: 256 op, 606940822.00 ns, 2.3709 ms/op
+
+OverheadWarmup   1: 256 op, 4138.00 ns, 16.1641 ns/op
+OverheadWarmup   2: 256 op, 1573.00 ns, 6.1445 ns/op
+OverheadWarmup   3: 256 op, 1543.00 ns, 6.0273 ns/op
+OverheadWarmup   4: 256 op, 1533.00 ns, 5.9883 ns/op
+OverheadWarmup   5: 256 op, 1543.00 ns, 6.0273 ns/op
+OverheadWarmup   6: 256 op, 1522.00 ns, 5.9453 ns/op
+OverheadWarmup   7: 256 op, 1543.00 ns, 6.0273 ns/op
+OverheadWarmup   8: 256 op, 1553.00 ns, 6.0664 ns/op
+OverheadWarmup   9: 256 op, 1533.00 ns, 5.9883 ns/op
+
+OverheadActual   1: 256 op, 1563.00 ns, 6.1055 ns/op
+OverheadActual   2: 256 op, 1573.00 ns, 6.1445 ns/op
+OverheadActual   3: 256 op, 1553.00 ns, 6.0664 ns/op
+OverheadActual   4: 256 op, 1603.00 ns, 6.2617 ns/op
+OverheadActual   5: 256 op, 1563.00 ns, 6.1055 ns/op
+OverheadActual   6: 256 op, 2625.00 ns, 10.2539 ns/op
+OverheadActual   7: 256 op, 2565.00 ns, 10.0195 ns/op
+OverheadActual   8: 256 op, 2445.00 ns, 9.5508 ns/op
+OverheadActual   9: 256 op, 2625.00 ns, 10.2539 ns/op
+OverheadActual  10: 256 op, 2705.00 ns, 10.5664 ns/op
+OverheadActual  11: 256 op, 2725.00 ns, 10.6445 ns/op
+OverheadActual  12: 256 op, 2585.00 ns, 10.0977 ns/op
+OverheadActual  13: 256 op, 1543.00 ns, 6.0273 ns/op
+OverheadActual  14: 256 op, 2635.00 ns, 10.2930 ns/op
+OverheadActual  15: 256 op, 2696.00 ns, 10.5313 ns/op
+OverheadActual  16: 256 op, 2515.00 ns, 9.8242 ns/op
+OverheadActual  17: 256 op, 2544.00 ns, 9.9375 ns/op
+OverheadActual  18: 256 op, 4048.00 ns, 15.8125 ns/op
+OverheadActual  19: 256 op, 2465.00 ns, 9.6289 ns/op
+OverheadActual  20: 256 op, 2585.00 ns, 10.0977 ns/op
+
+WorkloadWarmup   1: 256 op, 590950549.00 ns, 2.3084 ms/op
+WorkloadWarmup   2: 256 op, 480369700.00 ns, 1.8764 ms/op
+WorkloadWarmup   3: 256 op, 323797007.00 ns, 1.2648 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 256 op, 281100356.00 ns, 1.0980 ms/op
+WorkloadActual   2: 256 op, 264701776.00 ns, 1.0340 ms/op
+WorkloadActual   3: 256 op, 194090433.00 ns, 758.1658 us/op
+WorkloadActual   4: 256 op, 179887973.00 ns, 702.6874 us/op
+WorkloadActual   5: 256 op, 193596998.00 ns, 756.2383 us/op
+
+// AfterActualRun
+WorkloadResult   1: 256 op, 281097801.50 ns, 1.0980 ms/op
+WorkloadResult   2: 256 op, 264699221.50 ns, 1.0340 ms/op
+WorkloadResult   3: 256 op, 194087878.50 ns, 758.1558 us/op
+WorkloadResult   4: 256 op, 179885418.50 ns, 702.6774 us/op
+WorkloadResult   5: 256 op, 193594443.50 ns, 756.2283 us/op
+// GC:  5 0 0 88049712 256
+// Threading:  0 0 256
+
+// AfterAll
+// Benchmark Process 10902 has exited with code 0.
+
+Mean = 869.816 μs, StdErr = 81.345 μs (9.35%), N = 5, StdDev = 181.894 μs
+Min = 702.677 μs, Q1 = 756.228 μs, Median = 758.156 μs, Q3 = 1,033.981 μs, Max = 1,098.038 μs
+IQR = 277.753 μs, LowerFence = 339.599 μs, UpperFence = 1,450.611 μs
+ConfidenceInterval = [169.409 μs; 1,570.224 μs] (CI 99.9%), Margin = 700.408 μs (80.52% of Mean)
+Skewness = 0.29, Kurtosis = 0.83, MValue = 2
+
+// ** Remained 4 (14.8 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// **************************
+// Benchmark: TypeRegistrationBenchmarks.RegisterTypes_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks.RegisterTypes_SourceGen --job ShortRun --benchmarkId 23 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 325819.00 ns, 325.8190 us/op
+WorkloadJitting  1: 1 op, 6026166.00 ns, 6.0262 ms/op
+
+OverheadJitting  2: 16 op, 471451.00 ns, 29.4657 us/op
+WorkloadJitting  2: 16 op, 1820814.00 ns, 113.8009 us/op
+
+WorkloadPilot    1: 16 op, 1279983.00 ns, 79.9989 us/op
+WorkloadPilot    2: 32 op, 2612234.00 ns, 81.6323 us/op
+WorkloadPilot    3: 64 op, 5442535.00 ns, 85.0396 us/op
+WorkloadPilot    4: 128 op, 10897344.00 ns, 85.1355 us/op
+WorkloadPilot    5: 256 op, 21464930.00 ns, 83.8474 us/op
+WorkloadPilot    6: 512 op, 42542426.00 ns, 83.0907 us/op
+WorkloadPilot    7: 1024 op, 79324523.00 ns, 77.4654 us/op
+WorkloadPilot    8: 2048 op, 157326022.00 ns, 76.8193 us/op
+WorkloadPilot    9: 4096 op, 58934732.00 ns, 14.3884 us/op
+WorkloadPilot   10: 8192 op, 114407392.00 ns, 13.9657 us/op
+WorkloadPilot   11: 16384 op, 229322275.00 ns, 13.9967 us/op
+WorkloadPilot   12: 32768 op, 460847373.00 ns, 14.0639 us/op
+WorkloadPilot   13: 65536 op, 911764681.00 ns, 13.9124 us/op
+
+OverheadWarmup   1: 65536 op, 254696.00 ns, 3.8864 ns/op
+OverheadWarmup   2: 65536 op, 274914.00 ns, 4.1949 ns/op
+OverheadWarmup   3: 65536 op, 253594.00 ns, 3.8695 ns/op
+OverheadWarmup   4: 65536 op, 253705.00 ns, 3.8712 ns/op
+OverheadWarmup   5: 65536 op, 253565.00 ns, 3.8691 ns/op
+
+OverheadActual   1: 65536 op, 253754.00 ns, 3.8720 ns/op
+OverheadActual   2: 65536 op, 265787.00 ns, 4.0556 ns/op
+OverheadActual   3: 65536 op, 253674.00 ns, 3.8708 ns/op
+OverheadActual   4: 65536 op, 254456.00 ns, 3.8827 ns/op
+OverheadActual   5: 65536 op, 274153.00 ns, 4.1832 ns/op
+OverheadActual   6: 65536 op, 282318.00 ns, 4.3078 ns/op
+OverheadActual   7: 65536 op, 264975.00 ns, 4.0432 ns/op
+OverheadActual   8: 65536 op, 266268.00 ns, 4.0629 ns/op
+OverheadActual   9: 65536 op, 265276.00 ns, 4.0478 ns/op
+OverheadActual  10: 65536 op, 265116.00 ns, 4.0453 ns/op
+OverheadActual  11: 65536 op, 282678.00 ns, 4.3133 ns/op
+OverheadActual  12: 65536 op, 292867.00 ns, 4.4688 ns/op
+OverheadActual  13: 65536 op, 268031.00 ns, 4.0898 ns/op
+OverheadActual  14: 65536 op, 268232.00 ns, 4.0929 ns/op
+OverheadActual  15: 65536 op, 266839.00 ns, 4.0716 ns/op
+
+WorkloadWarmup   1: 65536 op, 919219338.00 ns, 14.0262 us/op
+WorkloadWarmup   2: 65536 op, 914439370.00 ns, 13.9532 us/op
+WorkloadWarmup   3: 65536 op, 911451645.00 ns, 13.9076 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 65536 op, 946699874.00 ns, 14.4455 us/op
+WorkloadActual   2: 65536 op, 958154359.00 ns, 14.6203 us/op
+WorkloadActual   3: 65536 op, 913541959.00 ns, 13.9395 us/op
+WorkloadActual   4: 65536 op, 915674710.00 ns, 13.9721 us/op
+WorkloadActual   5: 65536 op, 922054327.00 ns, 14.0694 us/op
+
+// AfterActualRun
+WorkloadResult   1: 65536 op, 946433606.00 ns, 14.4414 us/op
+WorkloadResult   2: 65536 op, 957888091.00 ns, 14.6162 us/op
+WorkloadResult   3: 65536 op, 913275691.00 ns, 13.9355 us/op
+WorkloadResult   4: 65536 op, 915408442.00 ns, 13.9680 us/op
+WorkloadResult   5: 65536 op, 921788059.00 ns, 14.0654 us/op
+// GC:  91 5 0 1533543136 65536
+// Threading:  0 0 65536
+
+// AfterAll
+// Benchmark Process 10912 has exited with code 0.
+
+Mean = 14.205 μs, StdErr = 0.137 μs (0.96%), N = 5, StdDev = 0.305 μs
+Min = 13.935 μs, Q1 = 13.968 μs, Median = 14.065 μs, Q3 = 14.441 μs, Max = 14.616 μs
+IQR = 0.473 μs, LowerFence = 13.258 μs, UpperFence = 15.152 μs
+ConfidenceInterval = [13.029 μs; 15.382 μs] (CI 99.9%), Margin = 1.176 μs (8.28% of Mean)
+Skewness = 0.33, Kurtosis = 0.93, MValue = 2
+
+// ** Remained 3 (11.1 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-report-default.md
+
+// * Detailed results *
+TypeRegistrationBenchmarks.RegisterTypes_Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 869.816 μs, StdErr = 81.345 μs (9.35%), N = 5, StdDev = 181.894 μs
+Min = 702.677 μs, Q1 = 756.228 μs, Median = 758.156 μs, Q3 = 1,033.981 μs, Max = 1,098.038 μs
+IQR = 277.753 μs, LowerFence = 339.599 μs, UpperFence = 1,450.611 μs
+ConfidenceInterval = [169.409 μs; 1,570.224 μs] (CI 99.9%), Margin = 700.408 μs (80.52% of Mean)
+Skewness = 0.29, Kurtosis = 0.83, MValue = 2
+-------------------- Histogram --------------------
+[563.064 μs ;   926.397 μs) | @@@
+[926.397 μs ; 1,237.652 μs) | @@
+---------------------------------------------------
+
+TypeRegistrationBenchmarks.RegisterTypes_SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 14.205 μs, StdErr = 0.137 μs (0.96%), N = 5, StdDev = 0.305 μs
+Min = 13.935 μs, Q1 = 13.968 μs, Median = 14.065 μs, Q3 = 14.441 μs, Max = 14.616 μs
+IQR = 0.473 μs, LowerFence = 13.258 μs, UpperFence = 15.152 μs
+ConfidenceInterval = [13.029 μs; 15.382 μs] (CI 99.9%), Margin = 1.176 μs (8.28% of Mean)
+Skewness = 0.33, Kurtosis = 0.93, MValue = 2
+-------------------- Histogram --------------------
+[13.766 μs ; 14.294 μs) | @@@
+[14.294 μs ; 14.851 μs) | @@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method                   | Mean      | Error      | StdDev     | Ratio | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|------------------------- |----------:|-----------:|-----------:|------:|--------:|-----:|--------:|-------:|----------:|------------:|
+| RegisterTypes_Reflection | 869.82 μs | 700.408 μs | 181.894 μs |  1.03 |    0.27 |    2 | 19.5313 |      - | 335.88 KB |        1.00 |
+| RegisterTypes_SourceGen  |  14.21 μs |   1.176 μs |   0.305 μs |  0.02 |    0.00 |    1 |  1.3885 | 0.0763 |  22.85 KB |        0.07 |
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Gen0        : GC Generation 0 collects per 1000 operations
+  Gen1        : GC Generation 1 collects per 1000 operations
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 μs        : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:14 (14.68 sec), executed benchmarks: 2
+
+// Found 3 benchmarks:
+//   WebApplicationBuildBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   WebApplicationBuildBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+//   WebApplicationBuildBenchmarks.SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// **************************
+// Benchmark: WebApplicationBuildBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks.Reflection --job ShortRun --benchmarkId 24 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 371314.00 ns, 371.3140 us/op
+WorkloadJitting  1: 1 op, 412535480.00 ns, 412.5355 ms/op
+
+OverheadJitting  2: 1 op, 842.00 ns, 842.0000 ns/op
+WorkloadJitting  2: 1 op, 9886243.00 ns, 9.8862 ms/op
+
+OverheadJitting  3: 16 op, 519111.00 ns, 32.4444 us/op
+WorkloadJitting  3: 16 op, 101487916.00 ns, 6.3430 ms/op
+
+WorkloadPilot    1: 16 op, 89596436.00 ns, 5.5998 ms/op
+WorkloadPilot    2: 32 op, 189200755.00 ns, 5.9125 ms/op
+WorkloadPilot    3: 64 op, 394323660.00 ns, 6.1613 ms/op
+WorkloadPilot    4: 128 op, 966949233.00 ns, 7.5543 ms/op
+
+OverheadWarmup   1: 128 op, 4979.00 ns, 38.8984 ns/op
+OverheadWarmup   2: 128 op, 1763.00 ns, 13.7734 ns/op
+OverheadWarmup   3: 128 op, 2314.00 ns, 18.0781 ns/op
+OverheadWarmup   4: 128 op, 2385.00 ns, 18.6328 ns/op
+OverheadWarmup   5: 128 op, 2164.00 ns, 16.9063 ns/op
+OverheadWarmup   6: 128 op, 2094.00 ns, 16.3594 ns/op
+OverheadWarmup   7: 128 op, 1793.00 ns, 14.0078 ns/op
+OverheadWarmup   8: 128 op, 2255.00 ns, 17.6172 ns/op
+OverheadWarmup   9: 128 op, 2235.00 ns, 17.4609 ns/op
+
+OverheadActual   1: 128 op, 1884.00 ns, 14.7188 ns/op
+OverheadActual   2: 128 op, 1723.00 ns, 13.4609 ns/op
+OverheadActual   3: 128 op, 1734.00 ns, 13.5469 ns/op
+OverheadActual   4: 128 op, 1984.00 ns, 15.5000 ns/op
+OverheadActual   5: 128 op, 1924.00 ns, 15.0313 ns/op
+OverheadActual   6: 128 op, 1803.00 ns, 14.0859 ns/op
+OverheadActual   7: 128 op, 2395.00 ns, 18.7109 ns/op
+OverheadActual   8: 128 op, 2395.00 ns, 18.7109 ns/op
+OverheadActual   9: 128 op, 2455.00 ns, 19.1797 ns/op
+OverheadActual  10: 128 op, 2595.00 ns, 20.2734 ns/op
+OverheadActual  11: 128 op, 2605.00 ns, 20.3516 ns/op
+OverheadActual  12: 128 op, 2645.00 ns, 20.6641 ns/op
+OverheadActual  13: 128 op, 2415.00 ns, 18.8672 ns/op
+OverheadActual  14: 128 op, 2355.00 ns, 18.3984 ns/op
+OverheadActual  15: 128 op, 2625.00 ns, 20.5078 ns/op
+OverheadActual  16: 128 op, 2364.00 ns, 18.4688 ns/op
+OverheadActual  17: 128 op, 2124.00 ns, 16.5938 ns/op
+OverheadActual  18: 128 op, 5621.00 ns, 43.9141 ns/op
+OverheadActual  19: 128 op, 2916.00 ns, 22.7813 ns/op
+OverheadActual  20: 128 op, 2334.00 ns, 18.2344 ns/op
+
+WorkloadWarmup   1: 128 op, 1135275037.00 ns, 8.8693 ms/op
+WorkloadWarmup   2: 128 op, 1198292306.00 ns, 9.3617 ms/op
+WorkloadWarmup   3: 128 op, 1253388632.00 ns, 9.7921 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 128 op, 1297877219.00 ns, 10.1397 ms/op
+WorkloadActual   2: 128 op, 1104686103.00 ns, 8.6304 ms/op
+WorkloadActual   3: 128 op, 840628075.00 ns, 6.5674 ms/op
+WorkloadActual   4: 128 op, 867928700.00 ns, 6.7807 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.Json.JsonConfigurationSource.Build(IConfigurationBuilder builder)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions.cs:line 44
+   at NexusLabs.Needlr.AspNet.WebApplicationFactory.Create(CreateWebApplicationOptions options, Func`1 createWebApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.AspNet/WebApplicationFactory.cs:line 28
+   at BenchmarkDotNet.Autogenerated.Runnable_24.WorkloadActionUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 5102
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunSpecific(Int64 invokeCount, IterationMode iterationMode, Int32 iterationCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.Run(Int64 invokeCount, IterationMode iterationMode, Boolean runAuto, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_24.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 4981
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 10924 has exited with code 255.
+
+// ** Remained 2 (7.4 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// **************************
+// Benchmark: WebApplicationBuildBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks.SourceGen --job ShortRun --benchmarkId 25 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 385922.00 ns, 385.9220 us/op
+WorkloadJitting  1: 1 op, 94020536.00 ns, 94.0205 ms/op
+
+WorkloadPilot    1: 2 op, 15460414.00 ns, 7.7302 ms/op
+WorkloadPilot    2: 3 op, 16717004.00 ns, 5.5723 ms/op
+WorkloadPilot    3: 4 op, 18683089.00 ns, 4.6708 ms/op
+WorkloadPilot    4: 5 op, 21937232.00 ns, 4.3874 ms/op
+WorkloadPilot    5: 6 op, 24746394.00 ns, 4.1244 ms/op
+WorkloadPilot    6: 7 op, 27789894.00 ns, 3.9700 ms/op
+WorkloadPilot    7: 8 op, 30458925.00 ns, 3.8074 ms/op
+WorkloadPilot    8: 9 op, 39710351.00 ns, 4.4123 ms/op
+WorkloadPilot    9: 10 op, 40602459.00 ns, 4.0602 ms/op
+WorkloadPilot   10: 11 op, 55292923.00 ns, 5.0266 ms/op
+WorkloadPilot   11: 12 op, 46609481.00 ns, 3.8841 ms/op
+WorkloadPilot   12: 13 op, 48948351.00 ns, 3.7653 ms/op
+WorkloadPilot   13: 14 op, 61161233.00 ns, 4.3687 ms/op
+WorkloadPilot   14: 15 op, 60815267.00 ns, 4.0544 ms/op
+WorkloadPilot   15: 16 op, 64643995.00 ns, 4.0402 ms/op
+WorkloadPilot   16: 32 op, 140684716.00 ns, 4.3964 ms/op
+WorkloadPilot   17: 64 op, 278489307.00 ns, 4.3514 ms/op
+WorkloadPilot   18: 128 op, 583488584.00 ns, 4.5585 ms/op
+
+WorkloadWarmup   1: 128 op, 618968740.00 ns, 4.8357 ms/op
+WorkloadWarmup   2: 128 op, 665170562.00 ns, 5.1966 ms/op
+WorkloadWarmup   3: 128 op, 739012136.00 ns, 5.7735 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 128 op, 766700283.00 ns, 5.9898 ms/op
+WorkloadActual   2: 128 op, 743764234.00 ns, 5.8107 ms/op
+WorkloadActual   3: 128 op, 625997542.00 ns, 4.8906 ms/op
+WorkloadActual   4: 128 op, 614293309.00 ns, 4.7992 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.Json.JsonConfigurationSource.Build(IConfigurationBuilder builder)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(WebApplicationOptions options)
+   at NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions.cs:line 44
+   at NexusLabs.Needlr.AspNet.WebApplicationFactory.Create(CreateWebApplicationOptions options, Func`1 createWebApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.AspNet/WebApplicationFactory.cs:line 28
+   at NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions.Create(IWebApplicationFactory factory, CreateWebApplicationOptions options, Action`2 configureCallback) in /_/src/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions.cs:line 49
+   at NexusLabs.Needlr.AspNet.WebApplicationSyringe.BuildWebApplication() in /_/src/NexusLabs.Needlr.AspNet/WebApplicationSyringe.cs:line 102
+   at NexusLabs.Needlr.AspNet.SyringeAspNetExtensions.BuildWebApplication(ConfiguredSyringe syringe) in /_/src/NexusLabs.Needlr.AspNet/SyringeAspNetExtensions.cs:line 74
+   at NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks.SourceGen() in /_/src/NexusLabs.Needlr.Benchmarks/Benchmarks/WebApplicationBuildBenchmarks.cs:line 43
+   at BenchmarkDotNet.Autogenerated.Runnable_25.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 5316
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunSpecific(Int64 invokeCount, IterationMode iterationMode, Int32 iterationCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.Run(Int64 invokeCount, IterationMode iterationMode, Boolean runAuto, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_25.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 5181
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 13487 has exited with code 255.
+
+// ** Remained 1 (3.7 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// **************************
+// Benchmark: WebApplicationBuildBenchmarks.SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 551a6b5e-a931-45bd-b264-d914b7600238.dll --anonymousPipes 149 160 --benchmarkName NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks.SourceGenExplicit --job ShortRun --benchmarkId 26 in /home/runner/work/needlr/needlr/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.14.0
+// Runtime=.NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT VectorSize=256
+// Job: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 337822.00 ns, 337.8220 us/op
+WorkloadJitting  1: 1 op, 90522172.00 ns, 90.5222 ms/op
+
+WorkloadPilot    1: 2 op, 15323507.00 ns, 7.6618 ms/op
+WorkloadPilot    2: 3 op, 16645959.00 ns, 5.5487 ms/op
+WorkloadPilot    3: 4 op, 18610884.00 ns, 4.6527 ms/op
+WorkloadPilot    4: 5 op, 21129783.00 ns, 4.2260 ms/op
+WorkloadPilot    5: 6 op, 24224858.00 ns, 4.0375 ms/op
+WorkloadPilot    6: 7 op, 27120642.00 ns, 3.8744 ms/op
+WorkloadPilot    7: 8 op, 29842301.00 ns, 3.7303 ms/op
+WorkloadPilot    8: 9 op, 39672117.00 ns, 4.4080 ms/op
+WorkloadPilot    9: 10 op, 38660286.00 ns, 3.8660 ms/op
+WorkloadPilot   10: 11 op, 60944245.00 ns, 5.5404 ms/op
+WorkloadPilot   11: 12 op, 45523196.00 ns, 3.7936 ms/op
+WorkloadPilot   12: 13 op, 47298063.00 ns, 3.6383 ms/op
+WorkloadPilot   13: 14 op, 50069125.00 ns, 3.5764 ms/op
+WorkloadPilot   14: 15 op, 53990827.00 ns, 3.5994 ms/op
+WorkloadPilot   15: 16 op, 56945310.00 ns, 3.5591 ms/op
+WorkloadPilot   16: 32 op, 121850889.00 ns, 3.8078 ms/op
+WorkloadPilot   17: 64 op, 229539114.00 ns, 3.5865 ms/op
+WorkloadPilot   18: 128 op, 556895108.00 ns, 4.3507 ms/op
+
+WorkloadWarmup   1: 128 op, 570151378.00 ns, 4.4543 ms/op
+WorkloadWarmup   2: 128 op, 659314391.00 ns, 5.1509 ms/op
+WorkloadWarmup   3: 128 op, 693568960.00 ns, 5.4185 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 128 op, 769177809.00 ns, 6.0092 ms/op
+WorkloadActual   2: 128 op, 747720247.00 ns, 5.8416 ms/op
+WorkloadActual   3: 128 op, 735513116.00 ns, 5.7462 ms/op
+WorkloadActual   4: 128 op, 732642693.00 ns, 5.7238 ms/op
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.IO.IOException: The configured user limit (1280) on the number of inotify instances has been reached, or the per-process limit on the number of open file descriptors has been reached.
+   at System.IO.FileSystemWatcher.StartRaisingEvents()
+   at Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch(String filter)
+   at Microsoft.Extensions.Primitives.ChangeToken.OnChange(Func`1 changeTokenProducer, Action changeTokenConsumer)
+   at Microsoft.Extensions.Configuration.Json.JsonConfigurationSource.Build(IConfigurationBuilder builder)
+   at Microsoft.Extensions.Configuration.ConfigurationManager.Microsoft.Extensions.Configuration.IConfigurationBuilder.Add(IConfigurationSource source)
+   at Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, String[] args)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder..ctor(HostApplicationBuilderSettings settings)
+   at Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(WebApplicationOptions options)
+   at NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions.<>c__DisplayClass1_0.<Create>g__Factory|0() in /_/src/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions.cs:line 44
+   at NexusLabs.Needlr.AspNet.WebApplicationFactory.Create(CreateWebApplicationOptions options, Func`1 createWebApplicationBuilderCallback) in /_/src/NexusLabs.Needlr.AspNet/WebApplicationFactory.cs:line 28
+   at NexusLabs.Needlr.AspNet.IWebApplicationFactoryExtensions.Create(IWebApplicationFactory factory, CreateWebApplicationOptions options, Action`2 configureCallback) in /_/src/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions.cs:line 49
+   at NexusLabs.Needlr.AspNet.WebApplicationSyringe.BuildWebApplication() in /_/src/NexusLabs.Needlr.AspNet/WebApplicationSyringe.cs:line 102
+   at NexusLabs.Needlr.AspNet.SyringeAspNetExtensions.BuildWebApplication(ConfiguredSyringe syringe) in /_/src/NexusLabs.Needlr.AspNet/SyringeAspNetExtensions.cs:line 74
+   at NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks.SourceGenExplicit() in /_/src/NexusLabs.Needlr.Benchmarks/Benchmarks/WebApplicationBuildBenchmarks.cs:line 52
+   at BenchmarkDotNet.Autogenerated.Runnable_26.WorkloadActionNoUnroll(Int64 invokeCount) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 5516
+   at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunSpecific(Int64 invokeCount, IterationMode iterationMode, Int32 iterationCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineActualStage.Run(Int64 invokeCount, IterationMode iterationMode, Boolean runAuto, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.EngineActualStage.RunWorkload(Int64 invokeCount, Int32 unrollFactor, Boolean forceSpecific)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_26.Run(IHost host, String benchmarkName) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 5381
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   --- End of inner exception stack trace ---
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /_/src/NexusLabs.Needlr.Benchmarks/bin/Release/net10.0/551a6b5e-a931-45bd-b264-d914b7600238/551a6b5e-a931-45bd-b264-d914b7600238.notcs:line 57
+// AfterAll
+No Workload Results were obtained from the run.
+// Benchmark Process 16059 has exited with code 255.
+
+// ** Remained 0 (0.0 %) benchmark(s) to run. Estimated finish 2026-02-01 1:40 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-report.csv
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-report-github.md
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-report.html
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-report-full-compressed.json
+  home/runner/work/needlr/needlr/benchmark-results/results/NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-report-default.md
+
+// * Detailed results *
+WebApplicationBuildBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+WebApplicationBuildBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+WebApplicationBuildBenchmarks.SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+Runtime = .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2; GC = Concurrent Workstation
+There are not any results runs
+
+// * Summary *
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+
+Job=ShortRun  IterationCount=5  LaunchCount=1  
+WarmupCount=3  
+
+| Method            | Mean | Error | Ratio | RatioSD | Rank | Alloc Ratio |
+|------------------ |-----:|------:|------:|--------:|-----:|------------:|
+| Reflection        |   NA |    NA |     ? |       ? |    ? |           ? |
+| SourceGen         |   NA |    NA |     ? |       ? |    ? |           ? |
+| SourceGenExplicit |   NA |    NA |     ? |       ? |    ? |           ? |
+
+Benchmarks with issues:
+  WebApplicationBuildBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+  WebApplicationBuildBenchmarks.SourceGen: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+  WebApplicationBuildBenchmarks.SourceGenExplicit: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
+
+// * Warnings *
+BaselineCustomAnalyzer
+  Summary -> A question mark '?' symbol indicates that it was not possible to compute the (Ratio, RatioSD, Alloc Ratio) column(s) because the baseline value is too close to zero.
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter HtmlExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Rank        : Relative position of current benchmark mean among all benchmarks (Arabic style)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ns        : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:33 (33.65 sec), executed benchmarks: 3
+
+Global total time: 00:04:12 (252.07 sec), executed benchmarks: 27
+// * Artifacts cleanup *
+Artifacts cleanup is finished

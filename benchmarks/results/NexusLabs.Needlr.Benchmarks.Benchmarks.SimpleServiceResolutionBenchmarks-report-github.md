@@ -12,5 +12,5 @@ WarmupCount=3
 ```
 | Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
 |----------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
-| Reflection | 15.30 ns | 0.329 ns | 0.051 ns |  1.00 |    1 |         - |          NA |
-| SourceGen  | 15.16 ns | 0.124 ns | 0.019 ns |  0.99 |    1 |         - |          NA |
+| Reflection | 14.82 ns | 0.456 ns | 0.118 ns |  1.00 |    1 |         - |          NA |
+| SourceGen  | 15.33 ns | 0.553 ns | 0.144 ns |  1.03 |    1 |         - |          NA |

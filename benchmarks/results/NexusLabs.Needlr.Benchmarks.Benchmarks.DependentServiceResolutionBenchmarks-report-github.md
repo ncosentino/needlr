@@ -10,7 +10,7 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
-|----------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
-| Reflection | 14.71 ns | 0.031 ns | 0.005 ns |  1.00 |    1 |         - |          NA |
-| SourceGen  | 15.02 ns | 0.135 ns | 0.035 ns |  1.02 |    1 |         - |          NA |
+| Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+|----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+| Reflection | 15.24 ns | 0.203 ns | 0.031 ns |  1.00 |    0.00 |    1 |         - |          NA |
+| SourceGen  | 15.86 ns | 2.615 ns | 0.679 ns |  1.04 |    0.04 |    1 |         - |          NA |

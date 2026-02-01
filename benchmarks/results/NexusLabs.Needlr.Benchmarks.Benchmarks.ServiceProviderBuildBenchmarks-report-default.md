@@ -10,8 +10,8 @@ WarmupCount=3
 
  Method                                                      | Mean        | Error      | StdDev    | Ratio | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
 ------------------------------------------------------------ |------------:|-----------:|----------:|------:|--------:|-----:|--------:|-------:|----------:|------------:|
- BuildServiceProvider_Reflection                             | 1,239.16 μs | 164.830 μs | 25.508 μs |  1.00 |    0.03 |    3 | 31.2500 |      - | 525.03 KB |        1.00 |
- BuildServiceProvider_SourceGenExplicit_AssemblyListProvided |    63.51 μs |   2.984 μs |  0.775 μs |  0.05 |    0.00 |    1 |  5.3711 | 0.4883 |  89.43 KB |        0.17 |
- BuildServiceProvider_SourceGenImplicit_AssemblyListProvided |    81.82 μs |   2.267 μs |  0.351 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.9766 | 141.73 KB |        0.27 |
- BuildServiceProvider_SourceGenExplicit_NoAssemblyList       |    61.53 μs |   1.203 μs |  0.312 μs |  0.05 |    0.00 |    1 |  5.3711 | 0.4883 |  89.47 KB |        0.17 |
- BuildServiceProvider_SourceGenImplicit_NoAssemblyList       |    82.00 μs |   0.956 μs |  0.248 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.4883 | 139.43 KB |        0.27 |
+ BuildServiceProvider_Reflection                             | 1,257.05 μs | 119.732 μs | 18.529 μs |  1.00 |    0.02 |    3 | 31.2500 |      - | 524.96 KB |        1.00 |
+ BuildServiceProvider_SourceGenExplicit_AssemblyListProvided |    64.74 μs |   1.311 μs |  0.203 μs |  0.05 |    0.00 |    1 |  4.8828 | 0.4883 |  87.12 KB |        0.17 |
+ BuildServiceProvider_SourceGenImplicit_AssemblyListProvided |    85.22 μs |   0.853 μs |  0.221 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.9766 | 139.39 KB |        0.27 |
+ BuildServiceProvider_SourceGenExplicit_NoAssemblyList       |    66.03 μs |   0.395 μs |  0.102 μs |  0.05 |    0.00 |    1 |  5.3711 | 0.4883 |  89.47 KB |        0.17 |
+ BuildServiceProvider_SourceGenImplicit_NoAssemblyList       |    84.19 μs |   1.051 μs |  0.163 μs |  0.07 |    0.00 |    2 |  8.3008 | 0.4883 | 139.43 KB |        0.27 |
