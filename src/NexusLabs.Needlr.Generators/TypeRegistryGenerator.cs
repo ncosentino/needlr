@@ -792,11 +792,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var providers = new List<DiscoveredProvider>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
+        
+        // Compute the generated namespace for the current assembly
+        var currentAssemblyName = compilation.Assembly.Name;
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(currentAssemblyName);
+        var generatedNamespace = $"{safeAssemblyName}.Generated";
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
         }
 
         // Collect types from all referenced assemblies
@@ -804,7 +809,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                // For referenced assemblies, they use their own generated namespace
+                var refSafeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblySymbol.Name);
+                var refGeneratedNamespace = $"{refSafeAssemblyName}.Generated";
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
             }
         }
 
@@ -863,7 +871,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredProvider> providers,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
-        bool isCurrentAssembly)
+        bool isCurrentAssembly,
+        string generatedNamespace)
     {
         foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assembly.GlobalNamespace))
         {
@@ -1078,7 +1087,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Check for [Provider] attribute
             if (ProviderDiscoveryHelper.HasProviderAttribute(typeSymbol))
             {
-                var discoveredProvider = ProviderDiscoveryHelper.DiscoverProvider(typeSymbol, assembly.Name);
+                var discoveredProvider = ProviderDiscoveryHelper.DiscoverProvider(typeSymbol, assembly.Name, generatedNamespace);
                 if (discoveredProvider.HasValue)
                 {
                     providers.Add(discoveredProvider.Value);

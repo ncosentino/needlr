@@ -60,7 +60,10 @@ internal static class ProviderDiscoveryHelper
     /// <summary>
     /// Discovers a provider from a type symbol with [Provider] attribute.
     /// </summary>
-    public static DiscoveredProvider? DiscoverProvider(INamedTypeSymbol typeSymbol, string assemblyName)
+    /// <param name="typeSymbol">The type symbol to discover.</param>
+    /// <param name="assemblyName">The assembly name containing the type.</param>
+    /// <param name="generatedNamespace">The namespace where generated types are placed (e.g., "AssemblyName.Generated").</param>
+    public static DiscoveredProvider? DiscoverProvider(INamedTypeSymbol typeSymbol, string assemblyName, string generatedNamespace)
     {
         var providerAttr = GetProviderAttribute(typeSymbol);
         if (providerAttr == null)
@@ -81,7 +84,7 @@ internal static class ProviderDiscoveryHelper
         else
         {
             // Class mode: Extract from attribute constructor args and named args
-            properties.AddRange(ExtractPropertiesFromAttribute(providerAttr));
+            properties.AddRange(ExtractPropertiesFromAttribute(providerAttr, generatedNamespace));
         }
 
         return new DiscoveredProvider(
@@ -134,7 +137,9 @@ internal static class ProviderDiscoveryHelper
     /// <summary>
     /// Extracts provider properties from [Provider] attribute arguments.
     /// </summary>
-    private static IEnumerable<ProviderPropertyInfo> ExtractPropertiesFromAttribute(AttributeData attribute)
+    /// <param name="attribute">The attribute data to extract from.</param>
+    /// <param name="generatedNamespace">The namespace where generated types are placed.</param>
+    private static IEnumerable<ProviderPropertyInfo> ExtractPropertiesFromAttribute(AttributeData attribute, string generatedNamespace)
     {
         // Process constructor arguments (required services)
         if (attribute.ConstructorArguments.Length > 0)
@@ -183,7 +188,7 @@ internal static class ProviderDiscoveryHelper
                         // For factories, convert to factory interface type
                         else if (kind.Value == ProviderPropertyKind.Factory)
                         {
-                            serviceTypeName = DeriveFactoryTypeName(typeSymbol);
+                            serviceTypeName = DeriveFactoryTypeName(typeSymbol, generatedNamespace);
                         }
                         
                         yield return new ProviderPropertyInfo(propertyName, serviceTypeName, kind.Value);
@@ -248,7 +253,9 @@ internal static class ProviderDiscoveryHelper
     /// Derives a factory interface type name from a service type.
     /// E.g., IOrderService → IOrderServiceFactory (in Generated namespace)
     /// </summary>
-    private static string DeriveFactoryTypeName(INamedTypeSymbol typeSymbol)
+    /// <param name="typeSymbol">The type to derive the factory name from.</param>
+    /// <param name="generatedNamespace">The namespace where generated types are placed.</param>
+    private static string DeriveFactoryTypeName(INamedTypeSymbol typeSymbol, string generatedNamespace)
     {
         var name = typeSymbol.Name;
         
@@ -258,11 +265,8 @@ internal static class ProviderDiscoveryHelper
             name = name.Substring(1);
         }
         
-        // Get the namespace of the type
-        var typeNamespace = typeSymbol.ContainingNamespace?.ToDisplayString();
-        
-        // Factory interface is I{Name}Factory
-        return $"global::{typeNamespace}.Generated.I{name}Factory";
+        // Factory interface is I{Name}Factory in the assembly's generated namespace
+        return $"global::{generatedNamespace}.I{name}Factory";
     }
 
     /// <summary>
