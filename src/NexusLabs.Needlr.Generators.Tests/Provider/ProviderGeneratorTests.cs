@@ -123,31 +123,6 @@ public sealed class ProviderGeneratorTests
         Assert.Contains("public global::TestApp.IOrderValidator Validator { get; }", generatedCode);
     }
 
-    [Fact(Skip = "NDLRGEN031 diagnostic not yet implemented")]
-    public void Generator_WithProviderOnClass_RequiresPartial()
-    {
-        var source = """
-            using NexusLabs.Needlr;
-            using NexusLabs.Needlr.Generators;
-
-            [assembly: GenerateTypeRegistry]
-
-            namespace TestApp
-            {
-                public interface IOrderRepository { }
-                public class OrderRepository : IOrderRepository { }
-
-                [Provider(typeof(IOrderRepository))]
-                public class OrderProvider { }
-            }
-            """;
-
-        var diagnostics = RunGeneratorDiagnostics(source);
-
-        // Should emit NDLRGEN031 for non-partial class
-        Assert.Contains(diagnostics, d => d.Id == "NDLRGEN031");
-    }
-
     [Fact]
     public void Generator_WithProviderOnPartialClass_GeneratesInterfaceAndImplementation()
     {

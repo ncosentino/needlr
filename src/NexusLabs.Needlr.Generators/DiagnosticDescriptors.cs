@@ -286,4 +286,60 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "This DataAnnotation validation attribute cannot be source-generated because it requires runtime reflection or invokes arbitrary code. In AOT mode, validation will silently skip this attribute. In non-AOT mode, the reflection-based .ValidateDataAnnotations() fallback will handle it. Consider adding a custom Validate() method that performs equivalent validation.",
         helpLinkUri: HelpLinkBase + "NDLRGEN030.md");
+
+    // ============================================================================
+    // Provider Analyzers (NDLRGEN031-034)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN031: [Provider] on class requires `partial` modifier.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ProviderClassNotPartial = new(
+        id: "NDLRGEN031",
+        title: "[Provider] on class requires partial modifier",
+        messageFormat: "Class '{0}' has [Provider] attribute but is not declared partial. Add the 'partial' modifier to enable provider generation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When applying [Provider] to a class (shorthand mode), the class must be declared partial so the generator can add an interface implementation and constructor. Without the partial modifier, the generator cannot extend the class.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN031.md");
+
+    /// <summary>
+    /// NDLRGEN032: [Provider] interface must only contain get-only properties.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ProviderInterfaceInvalidMember = new(
+        id: "NDLRGEN032",
+        title: "[Provider] interface has invalid member",
+        messageFormat: "Interface '{0}' has [Provider] attribute but contains {1}. Provider interfaces must only contain get-only properties.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Provider interfaces should only contain get-only properties that represent the services to be provided. Methods, events, indexers, and settable properties are not supported. Consider using a class with [Provider(typeof(T), ...)] shorthand syntax instead.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN032.md");
+
+    /// <summary>
+    /// NDLRGEN033: Provider property type is a concrete class, consider using an interface.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ProviderPropertyConcreteType = new(
+        id: "NDLRGEN033",
+        title: "Provider property uses concrete type",
+        messageFormat: "Provider property '{0}.{1}' has type '{2}' which is a concrete class. Consider using an interface for better testability and flexibility.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Provider properties represent services resolved from the DI container. Using interface types instead of concrete classes improves testability, allows for easier mocking, and follows dependency inversion principles. This is a recommendation, not a requirement.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN033.md");
+
+    /// <summary>
+    /// NDLRGEN034: Circular provider dependency detected.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ProviderCircularDependency = new(
+        id: "NDLRGEN034",
+        title: "Circular provider dependency detected",
+        messageFormat: "Provider '{0}' has a circular dependency: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A circular dependency was detected in the provider dependency graph. Provider A references Provider B which references Provider A (directly or indirectly). This will cause a stack overflow at runtime. Break the cycle by removing one of the provider references or restructuring the dependencies.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN034.md");
 }

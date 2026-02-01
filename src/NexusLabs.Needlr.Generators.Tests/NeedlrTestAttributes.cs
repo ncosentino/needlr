@@ -197,6 +197,28 @@ namespace NexusLabs.Needlr.Generators
 }";
 
     /// <summary>
+    /// Provider attribute (source-gen only).
+    /// </summary>
+    public const string Provider = @"
+namespace NexusLabs.Needlr.Generators
+{
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface, Inherited = false, AllowMultiple = false)]
+    public sealed class ProviderAttribute : System.Attribute
+    {
+        public System.Type[]? Required { get; set; }
+        public System.Type[]? Optional { get; set; }
+        public System.Type[]? Collections { get; set; }
+        public System.Type[]? Factories { get; set; }
+
+        public ProviderAttribute() { }
+        public ProviderAttribute(params System.Type[] requiredServices)
+        {
+            Required = requiredServices;
+        }
+    }
+}";
+
+    /// <summary>
     /// Core attributes plus interceptors (for interceptor tests).
     /// </summary>
     public const string CoreWithInterceptors = Core + Interceptors;
@@ -215,4 +237,9 @@ namespace NexusLabs.Needlr.Generators
     /// All attributes including open decorator (Core + Interceptors + Decorators + OpenDecorator).
     /// </summary>
     public const string AllWithOpenDecorator = Core + Interceptors + Decorators + OpenDecorator;
+
+    /// <summary>
+    /// All attributes including provider (Core + Interceptors + Decorators + Provider).
+    /// </summary>
+    public const string AllWithProvider = Core + Interceptors + Decorators + Provider;
 }
