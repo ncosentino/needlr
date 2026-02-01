@@ -84,13 +84,13 @@ function renderNavigation(data, descriptions, container) {
     
     const classes = [...new Set(data.Benchmarks.map(b => b.Type?.split('.').pop()))].sort();
     
-    let html = '<div class="benchmark-toc"><strong>Jump to:</strong> ';
+    let html = '<div class="benchmark-toc"><strong>Jump to:</strong><ul>';
     html += classes.map(c => {
         const anchor = c.toLowerCase().replace(/benchmarks?$/i, '');
         const label = c.replace(/Benchmarks?$/i, '');
-        return `<a href="#${anchor}">${label}</a>`;
-    }).join(' · ');
-    html += '</div>';
+        return `<li><a href="#${anchor}">${label}</a></li>`;
+    }).join('');
+    html += '</ul></div>';
     
     container.innerHTML = html;
 }
@@ -273,7 +273,8 @@ function formatTime(ns) {
 }
 
 function formatBytes(bytes) {
-    if (!bytes) return '-';
+    if (bytes === null || bytes === undefined) return '-';
+    if (bytes === 0) return '0 B';
     if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
     return bytes + ' B';
@@ -319,6 +320,14 @@ function updateKeyTakeaway(data, element) {
     padding: 0.75em 1em;
     border-radius: 4px;
     margin: 1em 0 2em 0;
+}
+.benchmark-toc ul {
+    margin: 0.5em 0 0 0;
+    padding-left: 1.5em;
+    columns: 2;
+}
+.benchmark-toc li {
+    margin: 0.2em 0;
 }
 .benchmark-toc a {
     text-decoration: none;
@@ -366,15 +375,13 @@ function updateKeyTakeaway(data, element) {
     color: #c62828;
 }
 .chart-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
+    display: block;
     margin-top: 1em;
 }
 .chart-cell {
-    flex: 1;
-    min-width: 280px;
-    max-height: 300px;
+    width: 100%;
+    max-height: 350px;
+    margin-bottom: 1.5em;
 }
 .benchmark-env {
     margin-top: 0.5em;

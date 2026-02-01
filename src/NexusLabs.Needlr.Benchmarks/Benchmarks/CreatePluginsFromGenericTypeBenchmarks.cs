@@ -32,7 +32,7 @@ public class CreatePluginsFromGenericTypeBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public List<IPostBuildServiceCollectionPlugin> Reflection()
+    public List<IPostBuildServiceCollectionPlugin> Reflection_AssemblyListProvided()
     {
         return _reflectionFactory.CreatePluginsFromAssemblies<IPostBuildServiceCollectionPlugin>(_assemblies).ToList();
     }
