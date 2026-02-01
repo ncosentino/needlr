@@ -4659,12 +4659,14 @@ stick to the source-generation patterns described in the <a href="../getting-sta
 1. <strong>Singleton</strong> - Lives for entire application lifetime
 2. <strong>Scoped</strong> - Lives for the scope/request lifetime<br />
 3. <strong>Transient</strong> - New instance every time</p>
-<p>A mismatch is detected when a service depends on another with a shorter lifetime:
-- ❌ Singleton → Scoped (mismatch)
-- ❌ Singleton → Transient (mismatch)
-- ❌ Scoped → Transient (mismatch)
-- ✅ Scoped → Singleton (ok)
-- ✅ Transient → anything (ok)</p>
+<p>A mismatch is detected when a service depends on another with a shorter lifetime:</p>
+<ul>
+<li>❌ Singleton → Scoped (mismatch)</li>
+<li>❌ Singleton → Transient (mismatch)</li>
+<li>❌ Scoped → Transient (mismatch)</li>
+<li>✅ Scoped → Singleton (ok)</li>
+<li>✅ Transient → anything (ok)</li>
+</ul>
 <h3 id="automatic-verification-with-verify">Automatic Verification with Verify()<a class="headerlink" href="#automatic-verification-with-verify" title="Permanent link">&para;</a></h3>
 <p>Use the <code>Verify()</code> extension method to automatically detect and handle issues:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="c1">// Throws ContainerVerificationException on issues (strict mode)</span>

@@ -2552,13 +2552,17 @@
 <h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
 <p>A class has the <code>[Options]</code> attribute but is in a project with <code>PublishAot=true</code> or <code>IsAotCompatible=true</code>.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p>The <code>[Options]</code> attribute generates code that calls Microsoft's configuration binding APIs:
-- <code>Configure&lt;T&gt;()</code>
-- <code>BindConfiguration()</code>
-- <code>ValidateDataAnnotations()</code></p>
-<p>These APIs use <strong>reflection</strong> to bind configuration values to properties at runtime. They are marked with <code>[RequiresDynamicCode]</code> and <code>[RequiresUnreferencedCode]</code>, making them incompatible with:
-- <strong>Native AOT</strong> - No JIT compiler to generate code at runtime
-- <strong>Trimming</strong> - Reflection targets may be trimmed away</p>
+<p>The <code>[Options]</code> attribute generates code that calls Microsoft's configuration binding APIs:</p>
+<ul>
+<li><code>Configure&lt;T&gt;()</code></li>
+<li><code>BindConfiguration()</code></li>
+<li><code>ValidateDataAnnotations()</code></li>
+</ul>
+<p>These APIs use <strong>reflection</strong> to bind configuration values to properties at runtime. They are marked with <code>[RequiresDynamicCode]</code> and <code>[RequiresUnreferencedCode]</code>, making them incompatible with:</p>
+<ul>
+<li><strong>Native AOT</strong> - No JIT compiler to generate code at runtime</li>
+<li><strong>Trimming</strong> - Reflection targets may be trimmed away</li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>You have two options:</p>
 <h3 id="option-1-remove-options-from-aot-projects">Option 1: Remove [Options] from AOT Projects<a class="headerlink" href="#option-1-remove-options-from-aot-projects" title="Permanent link">&para;</a></h3>

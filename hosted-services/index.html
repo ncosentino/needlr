@@ -2474,10 +2474,12 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="o">&lt;</span><span class="n">MyWorkerService</span><span class="o">&gt;</span><span class="p">();</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="o">&lt;</span><span class="n">IHostedService</span><span class="o">&gt;</span><span class="p">(</span><span class="n">sp</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">sp</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">MyWorkerService</span><span class="o">&gt;</span><span class="p">());</span>
 </span></code></pre></div>
-<p>This pattern allows:
-- Resolving by concrete type (<code>MyWorkerService</code>)
-- Resolution via <code>IHostedService</code> for the host to start/stop
-- Decorators to be applied via <code>IHostedService</code></p>
+<p>This pattern allows:</p>
+<ul>
+<li>Resolving by concrete type (<code>MyWorkerService</code>)</li>
+<li>Resolution via <code>IHostedService</code> for the host to start/stop</li>
+<li>Decorators to be applied via <code>IHostedService</code></li>
+</ul>
 <h2 id="automatic-startup">Automatic Startup<a class="headerlink" href="#automatic-startup" title="Permanent link">&para;</a></h2>
 <p>When using <code>.ForWebApplication()</code> or <code>.ForHost()</code> to build a <code>WebApplication</code> or <code>IHost</code>, your discovered hosted services will <strong>automatically start</strong> when you call <code>StartAsync()</code> or <code>RunAsync()</code>:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
@@ -2572,12 +2574,14 @@
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1">// Each IHostedService is wrapped by all applicable decorators</span>
 </span></code></pre></div>
 <h2 id="discovery-rules">Discovery Rules<a class="headerlink" href="#discovery-rules" title="Permanent link">&para;</a></h2>
-<p>A type is discovered as a hosted service if:
-- ✅ Inherits from <code>BackgroundService</code> OR implements <code>IHostedService</code>
-- ✅ Is a concrete class (not abstract)
-- ✅ Is accessible (public, or internal in the current assembly)
-- ❌ Does NOT have <code>[DoNotAutoRegister]</code>
-- ❌ Does NOT have <code>[DecoratorFor&lt;IHostedService&gt;]</code> (decorators are not services)</p>
+<p>A type is discovered as a hosted service if:</p>
+<ul>
+<li>✅ Inherits from <code>BackgroundService</code> OR implements <code>IHostedService</code></li>
+<li>✅ Is a concrete class (not abstract)</li>
+<li>✅ Is accessible (public, or internal in the current assembly)</li>
+<li>❌ Does NOT have <code>[DoNotAutoRegister]</code></li>
+<li>❌ Does NOT have <code>[DecoratorFor&lt;IHostedService&gt;]</code> (decorators are not services)</li>
+</ul>
 <h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Hosted services are always registered as <strong>Singleton</strong> lifetime</li>

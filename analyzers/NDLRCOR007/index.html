@@ -2433,8 +2433,10 @@
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">ValueTask</span><span class="o">&lt;</span><span class="kt">object?</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InterceptAsync</span><span class="p">(</span><span class="n">IMethodInvocation</span><span class="w"> </span><span class="n">invocation</span><span class="p">);</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The interface requires a single method:
-- <code>InterceptAsync</code>: Called when an intercepted method is invoked. Call <code>invocation.ProceedAsync()</code> to continue to the next interceptor or the actual method.</p>
+<p>The interface requires a single method:</p>
+<ul>
+<li><code>InterceptAsync</code>: Called when an intercepted method is invoked. Call <code>invocation.ProceedAsync()</code> to continue to the next interceptor or the actual method.</li>
+</ul>
 <h2 id="when-to-suppress">When to Suppress<a class="headerlink" href="#when-to-suppress" title="Permanent link">&para;</a></h2>
 <p>Do not suppress this diagnostic. Using a type that doesn't implement <code>IMethodInterceptor</code> will cause a compilation error in the generated code.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>

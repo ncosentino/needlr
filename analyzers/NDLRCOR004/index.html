@@ -2530,10 +2530,12 @@
 <p><strong>Silent exclusion</strong>: Unlike a compile error, these types are silently skipped during type discovery.</p>
 </li>
 </ol>
-<p>This analyzer detects types that:
-- Are in the global namespace
-- Appear to be injectable (have DI attributes, implement interfaces, or have constructor dependencies)
-- Would be excluded by the current <code>IncludeNamespacePrefixes</code> configuration</p>
+<p>This analyzer detects types that:</p>
+<ul>
+<li>Are in the global namespace</li>
+<li>Appear to be injectable (have DI attributes, implement interfaces, or have constructor dependencies)</li>
+<li>Would be excluded by the current <code>IncludeNamespacePrefixes</code> configuration</li>
+</ul>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// ⚠️ This triggers the warning</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyCompany&quot;</span><span class="w"> </span><span class="p">})]</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
@@ -2598,8 +2600,12 @@
 <li>The assembly has <code>[GenerateTypeRegistry]</code> with <code>IncludeNamespacePrefixes</code> set</li>
 <li><code>IncludeNamespacePrefixes</code> doesn't include <code>""</code> (empty string)</li>
 <li>The type is NOT marked with <code>[DoNotInject]</code> or <code>[DoNotAutoRegister]</code></li>
-<li>The type appears injectable:</li>
-<li>Has a lifetime attribute (<code>[Singleton]</code>, <code>[Scoped]</code>, <code>[Transient]</code>)</li>
+<li>
+<p>The type appears injectable:</p>
+</li>
+<li>
+<p>Has a lifetime attribute (<code>[Singleton]</code>, <code>[Scoped]</code>, <code>[Transient]</code>)</p>
+</li>
 <li>Implements one or more interfaces</li>
 <li>Has a constructor with interface/abstract class parameters</li>
 </ol>

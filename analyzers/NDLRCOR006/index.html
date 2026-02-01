@@ -2643,10 +2643,12 @@
 <p>A <strong>circular dependency</strong> occurs when the dependency graph contains a cycle:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>A → B → C → A  (cycle!)
 </span></code></pre></div>
-<p>This is impossible to resolve because:
-- To create <code>A</code>, we need <code>B</code>
-- To create <code>B</code>, we need <code>C</code>
-- To create <code>C</code>, we need <code>A</code> ← but we haven't finished creating <code>A</code> yet!</p>
+<p>This is impossible to resolve because:</p>
+<ul>
+<li>To create <code>A</code>, we need <code>B</code></li>
+<li>To create <code>B</code>, we need <code>C</code></li>
+<li>To create <code>C</code>, we need <code>A</code> ← but we haven't finished creating <code>A</code> yet!</li>
+</ul>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// ⚠️ NDLRCOR006: Circular dependency: OrderService → InventoryService → OrderService</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="na">[Scoped]</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nf">OrderService</span><span class="p">(</span><span class="n">IInventoryService</span><span class="w"> </span><span class="n">inventory</span><span class="p">)</span>

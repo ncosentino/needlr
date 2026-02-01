@@ -2430,10 +2430,12 @@
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">RedisConfig</span><span class="p">()</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="k">this</span><span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">,</span><span class="w"> </span><span class="k">default</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The generated constructor uses:
-- <code>string.Empty</code> for string parameters
-- <code>default</code> for value types (0 for int, false for bool, etc.)
-- <code>default!</code> for other reference types</p>
+<p>The generated constructor uses:</p>
+<ul>
+<li><code>string.Empty</code> for string parameters</li>
+<li><code>default</code> for value types (0 for int, false for bool, etc.)</li>
+<li><code>default!</code> for other reference types</li>
+</ul>
 <h2 id="when-to-suppress">When to Suppress<a class="headerlink" href="#when-to-suppress" title="Permanent link">&para;</a></h2>
 <p>Suppress this warning only if you are manually providing a parameterless constructor or if you are not using the record with configuration binding:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cp">#pragma warning disable NDLRGEN021</span>

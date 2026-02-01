@@ -2930,14 +2930,18 @@
 </tbody>
 </table>
 <h3 id="when-to-use-each">When to Use Each<a class="headerlink" href="#when-to-use-each" title="Permanent link">&para;</a></h3>
-<p><strong>Use Decorators when:</strong>
-- You need different behavior for different methods
-- You're modifying only one service type
-- You need reflection support</p>
-<p><strong>Use Interceptors when:</strong>
-- The same logic applies to all methods (logging, timing, caching)
-- You want to reuse the same interceptor across many services
-- You're using source generation</p>
+<p><strong>Use Decorators when:</strong></p>
+<ul>
+<li>You need different behavior for different methods</li>
+<li>You're modifying only one service type</li>
+<li>You need reflection support</li>
+</ul>
+<p><strong>Use Interceptors when:</strong></p>
+<ul>
+<li>The same logic applies to all methods (logging, timing, caching)</li>
+<li>You want to reuse the same interceptor across many services</li>
+<li>You're using source generation</li>
+</ul>
 <h2 id="class-level-vs-method-level-interceptors">Class-Level vs Method-Level Interceptors<a class="headerlink" href="#class-level-vs-method-level-interceptors" title="Permanent link">&para;</a></h2>
 <h3 id="class-level-all-methods">Class-Level (All Methods)<a class="headerlink" href="#class-level-all-methods" title="Permanent link">&para;</a></h3>
 <p>Apply to all methods of a service:</p>

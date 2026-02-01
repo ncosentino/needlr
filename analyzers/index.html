@@ -2668,10 +2668,12 @@
 </span></code></pre></div>
 <h2 id="resolution-validation-analyzers">Resolution Validation Analyzers<a class="headerlink" href="#resolution-validation-analyzers" title="Permanent link">&para;</a></h2>
 <p>NDLRCOR009, NDLRCOR010, and NDLRCOR011 are <strong>resolution validation analyzers</strong> that help catch potential issues with service resolution patterns.</p>
-<p>These analyzers:
-- Only activate when <code>[assembly: GenerateTypeRegistry]</code> is present
-- Default to <code>Info</code> severity (non-blocking)
-- Can be promoted to <code>Warning</code> or <code>Error</code> via <code>.editorconfig</code></p>
+<p>These analyzers:</p>
+<ul>
+<li>Only activate when <code>[assembly: GenerateTypeRegistry]</code> is present</li>
+<li>Default to <code>Info</code> severity (non-blocking)</li>
+<li>Can be promoted to <code>Warning</code> or <code>Error</code> via <code>.editorconfig</code></li>
+</ul>
 <table>
 <thead>
 <tr>

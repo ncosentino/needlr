@@ -2521,11 +2521,13 @@
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Log</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>With this configuration:
-- ✅ <code>provider.GetService&lt;IReader&gt;()</code> returns <code>FileService</code>
-- ✅ <code>provider.GetService&lt;FileService&gt;()</code> returns <code>FileService</code> (concrete type always registered)
-- ❌ <code>provider.GetService&lt;IWriter&gt;()</code> returns <code>null</code>
-- ❌ <code>provider.GetService&lt;ILogger&gt;()</code> returns <code>null</code></p>
+<p>With this configuration:</p>
+<ul>
+<li>✅ <code>provider.GetService&lt;IReader&gt;()</code> returns <code>FileService</code></li>
+<li>✅ <code>provider.GetService&lt;FileService&gt;()</code> returns <code>FileService</code> (concrete type always registered)</li>
+<li>❌ <code>provider.GetService&lt;IWriter&gt;()</code> returns <code>null</code></li>
+<li>❌ <code>provider.GetService&lt;ILogger&gt;()</code> returns <code>null</code></li>
+</ul>
 <h2 id="multiple-registeras-attributes">Multiple RegisterAs Attributes<a class="headerlink" href="#multiple-registeras-attributes" title="Permanent link">&para;</a></h2>
 <p>You can apply multiple <code>[RegisterAs&lt;T&gt;]</code> attributes to register as multiple specific interfaces:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="na">[RegisterAs&lt;IReader&gt;]</span>
@@ -2625,9 +2627,11 @@
 </tbody>
 </table>
 <h2 id="works-with-both-paths">Works With Both Paths<a class="headerlink" href="#works-with-both-paths" title="Permanent link">&para;</a></h2>
-<p><code>[RegisterAs&lt;T&gt;]</code> works identically in both:
-- <strong>Source Generation</strong> - Full AOT/trimming compatibility
-- <strong>Reflection</strong> - Traditional runtime discovery</p>
+<p><code>[RegisterAs&lt;T&gt;]</code> works identically in both:</p>
+<ul>
+<li><strong>Source Generation</strong> - Full AOT/trimming compatibility</li>
+<li><strong>Reflection</strong> - Traditional runtime discovery</li>
+</ul>
 <h2 id="lifetime-behavior">Lifetime Behavior<a class="headerlink" href="#lifetime-behavior" title="Permanent link">&para;</a></h2>
 <p><code>[RegisterAs&lt;T&gt;]</code> does not affect lifetime. Use it alongside lifetime attributes:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="na">[Transient]</span>

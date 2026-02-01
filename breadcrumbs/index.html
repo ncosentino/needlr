@@ -3008,12 +3008,14 @@
 <h1 id="breadcrumb-documentation">Breadcrumb Documentation<a class="headerlink" href="#breadcrumb-documentation" title="Permanent link">&para;</a></h1>
 <p>Needlr's source generator can include helpful documentation comments (breadcrumbs) in generated code to help developers understand why and how code was generated. This is particularly useful for debugging, learning, and working with AI assistants.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Breadcrumbs are self-documenting comments embedded in generated source code that explain:
-- What triggered the code generation
-- Source file locations of discovered types
-- Lifetime configurations (Singleton, Scoped, Transient)
-- Interceptor chains and their execution order
-- Decorator chains and their order</p>
+<p>Breadcrumbs are self-documenting comments embedded in generated source code that explain:</p>
+<ul>
+<li>What triggered the code generation</li>
+<li>Source file locations of discovered types</li>
+<li>Lifetime configurations (Singleton, Scoped, Transient)</li>
+<li>Interceptor chains and their execution order</li>
+<li>Decorator chains and their order</li>
+</ul>
 <h2 id="breadcrumb-levels">Breadcrumb Levels<a class="headerlink" href="#breadcrumb-levels" title="Permanent link">&para;</a></h2>
 <p>Needlr supports three breadcrumb levels:</p>
 <table>
@@ -3218,13 +3220,17 @@
 <li>Rebuild the project (breadcrumb level is read at generation time)</li>
 </ol>
 <h3 id="case-sensitivity">Case Sensitivity<a class="headerlink" href="#case-sensitivity" title="Permanent link">&para;</a></h3>
-<p>The breadcrumb level value is <strong>case-insensitive</strong>:
-- <code>Verbose</code>, <code>verbose</code>, <code>VERBOSE</code>, <code>VeRbOsE</code> all work the same</p>
+<p>The breadcrumb level value is <strong>case-insensitive</strong>:</p>
+<ul>
+<li><code>Verbose</code>, <code>verbose</code>, <code>VERBOSE</code>, <code>VeRbOsE</code> all work the same</li>
+</ul>
 <h3 id="invalid-values">Invalid Values<a class="headerlink" href="#invalid-values" title="Permanent link">&para;</a></h3>
-<p>If an invalid value is specified, Needlr defaults to <code>Minimal</code>:
-- <code>InvalidLevel</code> → defaults to <code>Minimal</code>
-- Empty string → defaults to <code>Minimal</code>
-- Whitespace only → defaults to <code>Minimal</code></p>
+<p>If an invalid value is specified, Needlr defaults to <code>Minimal</code>:</p>
+<ul>
+<li><code>InvalidLevel</code> → defaults to <code>Minimal</code></li>
+<li>Empty string → defaults to <code>Minimal</code></li>
+<li>Whitespace only → defaults to <code>Minimal</code></li>
+</ul>
 <h2 id="compile-time-diagnostics">Compile-Time Diagnostics<a class="headerlink" href="#compile-time-diagnostics" title="Permanent link">&para;</a></h2>
 <p>In addition to inline breadcrumbs, Needlr can generate separate diagnostic files at build time. These files provide higher-level views of your dependency injection configuration without cluttering your generated code.</p>
 <h3 id="enabling-diagnostics">Enabling Diagnostics<a class="headerlink" href="#enabling-diagnostics" title="Permanent link">&para;</a></h3>

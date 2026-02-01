@@ -3015,16 +3015,20 @@
 </span></code></pre></div>
 <h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
 <h3 id="automatic-registration">Automatic Registration<a class="headerlink" href="#automatic-registration" title="Permanent link">&para;</a></h3>
-<p>By default, Needlr automatically registers:
-- All non-nested non-abstract classes (public and internal) in scanned assemblies
-- Classes as both themselves and their interfaces
-- With Singleton lifetime by default (use <code>[Transient]</code> or <code>[Scoped]</code> attributes to override)</p>
-<p>By default, Needlr automatically dots NOT register:
-- Anything marked with the <code>[DoNotAutoRegister]</code> attribute
-- Record types
-- Nested classes
-- Interfaces or abstract classes
-- Types where the only constructor are non-injectable types (i.e. value types)</p>
+<p>By default, Needlr automatically registers:</p>
+<ul>
+<li>All non-nested non-abstract classes (public and internal) in scanned assemblies</li>
+<li>Classes as both themselves and their interfaces</li>
+<li>With Singleton lifetime by default (use <code>[Transient]</code> or <code>[Scoped]</code> attributes to override)</li>
+</ul>
+<p>By default, Needlr automatically dots NOT register:</p>
+<ul>
+<li>Anything marked with the <code>[DoNotAutoRegister]</code> attribute</li>
+<li>Record types</li>
+<li>Nested classes</li>
+<li>Interfaces or abstract classes</li>
+<li>Types where the only constructor are non-injectable types (i.e. value types)</li>
+</ul>
 <p>NOTE: there are nuances to what is automatically registered to the dependency
 container by default </p>
 <h3 id="the-syringe-class">The Syringe Class<a class="headerlink" href="#the-syringe-class" title="Permanent link">&para;</a></h3>
@@ -3194,15 +3198,19 @@ container by default </p>
 </tr>
 </tbody>
 </table>
-<p><strong>Use Source Generation when:</strong>
-- Building AOT-compiled applications
-- Targeting trimmed/self-contained deployments
-- You want faster startup times
-- All plugins are known at compile time</p>
-<p><strong>Use Reflection when:</strong>
-- Loading plugins dynamically at runtime
-- Scanning assemblies not known at compile time
-- Using Scrutor for advanced registration patterns</p>
+<p><strong>Use Source Generation when:</strong></p>
+<ul>
+<li>Building AOT-compiled applications</li>
+<li>Targeting trimmed/self-contained deployments</li>
+<li>You want faster startup times</li>
+<li>All plugins are known at compile time</li>
+</ul>
+<p><strong>Use Reflection when:</strong></p>
+<ul>
+<li>Loading plugins dynamically at runtime</li>
+<li>Scanning assemblies not known at compile time</li>
+<li>Using Scrutor for advanced registration patterns</li>
+</ul>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Learn about <a href="../core-concepts/">Core Concepts</a> for deeper understanding</li>

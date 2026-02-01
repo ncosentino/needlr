@@ -2481,10 +2481,12 @@
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="c1">// ...</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:
-- The type may be registered via reflection at runtime
-- The type may come from a third-party library
-- The type may be registered manually in an <code>IServiceCollectionPlugin</code></p>
+<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:</p>
+<ul>
+<li>The type may be registered via reflection at runtime</li>
+<li>The type may come from a third-party library</li>
+<li>The type may be registered manually in an <code>IServiceCollectionPlugin</code></li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <h3 id="option-1-ensure-the-type-is-discoverable">Option 1: Ensure the Type is Discoverable<a class="headerlink" href="#option-1-ensure-the-type-is-discoverable" title="Permanent link">&para;</a></h3>
 <p>Make sure the implementation is in a namespace matching your <code>IncludeNamespacePrefixes</code>:</p>

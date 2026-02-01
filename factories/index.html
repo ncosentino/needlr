@@ -2491,9 +2491,11 @@
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The source generator creates:
-- <strong><code>IDatabaseConnectionFactory</code></strong> - Interface with <code>Create(string connectionString)</code> method
-- <strong><code>Func&lt;string, DatabaseConnection&gt;</code></strong> - Delegate for functional-style creation</p>
+<p>The source generator creates:</p>
+<ul>
+<li><strong><code>IDatabaseConnectionFactory</code></strong> - Interface with <code>Create(string connectionString)</code> method</li>
+<li><strong><code>Func&lt;string, DatabaseConnection&gt;</code></strong> - Delegate for functional-style creation</li>
+</ul>
 <p>Both are registered as Singletons. XML documentation from your constructor parameters is propagated to the factory's <code>Create</code> method for rich IntelliSense.</p>
 <h2 id="resolving-factories">Resolving Factories<a class="headerlink" href="#resolving-factories" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Using the factory interface (recommended for testability)</span>
@@ -2582,9 +2584,11 @@
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">BothService</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="parameter-classification">Parameter Classification<a class="headerlink" href="#parameter-classification" title="Permanent link">&para;</a></h2>
-<p>Needlr classifies constructor parameters as:
-- <strong>Injectable</strong>: Interfaces and classes (resolved from the container)
-- <strong>Runtime</strong>: Value types, strings, delegates, arrays (must be provided to <code>Create()</code>)</p>
+<p>Needlr classifies constructor parameters as:</p>
+<ul>
+<li><strong>Injectable</strong>: Interfaces and classes (resolved from the container)</li>
+<li><strong>Runtime</strong>: Value types, strings, delegates, arrays (must be provided to <code>Create()</code>)</li>
+</ul>
 <p>Only constructors with at least one runtime parameter are eligible for factory generation.</p>
 <h2 id="analyzers">Analyzers<a class="headerlink" href="#analyzers" title="Permanent link">&para;</a></h2>
 <p>Needlr includes analyzers to help with factory usage:</p>
@@ -2619,14 +2623,18 @@
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">MyApp.Generated</span><span class="p">;</span><span class="w">  </span><span class="c1">// Contains IDatabaseConnectionFactory, IReportGeneratorFactory, etc.</span>
 </span></code></pre></div>
 <h2 id="when-to-use-factories">When to Use Factories<a class="headerlink" href="#when-to-use-factories" title="Permanent link">&para;</a></h2>
-<p><strong>Use <code>[GenerateFactory]</code> when:</strong>
-- Your class requires runtime configuration (connection strings, API keys, correlation IDs)
-- You need to create multiple instances with different runtime parameters
-- You want to avoid manual <code>IServiceProvider.GetRequiredService&lt;&gt;()</code> calls in factory methods</p>
-<p><strong>Use <code>[GenerateFactory&lt;TInterface&gt;]</code> when:</strong>
-- You want to mock the factory in unit tests
-- You want to mock the returned instances
-- You prefer interface-based dependency injection</p>
+<p><strong>Use <code>[GenerateFactory]</code> when:</strong></p>
+<ul>
+<li>Your class requires runtime configuration (connection strings, API keys, correlation IDs)</li>
+<li>You need to create multiple instances with different runtime parameters</li>
+<li>You want to avoid manual <code>IServiceProvider.GetRequiredService&lt;&gt;()</code> calls in factory methods</li>
+</ul>
+<p><strong>Use <code>[GenerateFactory&lt;TInterface&gt;]</code> when:</strong></p>
+<ul>
+<li>You want to mock the factory in unit tests</li>
+<li>You want to mock the returned instances</li>
+<li>You prefer interface-based dependency injection</li>
+</ul>
 <h2 id="complete-example">Complete Example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">using</span><span class="w"> </span><span class="nn">MyApp.Generated</span><span class="p">;</span>

@@ -2684,13 +2684,17 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Use <code>[DecoratorFor&lt;T&gt;]</code></strong> when:
-- You're decorating a specific closed type (e.g., <code>IOrderService</code>)
-- You need reflection path compatibility</p>
-<p><strong>Use <code>[OpenDecoratorFor]</code></strong> when:
-- You want to decorate all implementations of a generic interface
-- You're using source generation (required)
-- You want compile-time expansion</p>
+<p><strong>Use <code>[DecoratorFor&lt;T&gt;]</code></strong> when:</p>
+<ul>
+<li>You're decorating a specific closed type (e.g., <code>IOrderService</code>)</li>
+<li>You need reflection path compatibility</li>
+</ul>
+<p><strong>Use <code>[OpenDecoratorFor]</code></strong> when:</p>
+<ul>
+<li>You want to decorate all implementations of a generic interface</li>
+<li>You're using source generation (required)</li>
+<li>You want compile-time expansion</li>
+</ul>
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
 <p>Needlr provides compile-time analyzers to catch configuration errors:</p>
 <table>

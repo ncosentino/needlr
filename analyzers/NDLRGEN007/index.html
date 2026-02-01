@@ -2455,9 +2455,11 @@
 2. Has a different number of type parameters than the interface</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
 <p>When using <code>[OpenDecoratorFor]</code>, the decorator class must be an open generic with the <strong>same number of type parameters</strong> as the interface it decorates. This is because Needlr needs to close both the interface and decorator with the same type arguments at compile time.</p>
-<p>For example:
-- <code>IHandler&lt;T&gt;</code> (1 type parameter) → decorator must have 1 type parameter
-- <code>IRequestHandler&lt;TRequest, TResponse&gt;</code> (2 type parameters) → decorator must have 2 type parameters</p>
+<p>For example:</p>
+<ul>
+<li><code>IHandler&lt;T&gt;</code> (1 type parameter) → decorator must have 1 type parameter</li>
+<li><code>IRequestHandler&lt;TRequest, TResponse&gt;</code> (2 type parameters) → decorator must have 2 type parameters</li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>Ensure your decorator class:
 1. Is a generic class

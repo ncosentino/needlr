@@ -2503,11 +2503,13 @@
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="c1">// plugins will be empty unless registered via reflection</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:
-- Implementations may be registered via reflection at runtime
-- Implementations may come from a third-party library
-- Implementations may be registered manually in an <code>IServiceCollectionPlugin</code>
-- An empty collection is valid in some scenarios</p>
+<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:</p>
+<ul>
+<li>Implementations may be registered via reflection at runtime</li>
+<li>Implementations may come from a third-party library</li>
+<li>Implementations may be registered manually in an <code>IServiceCollectionPlugin</code></li>
+<li>An empty collection is valid in some scenarios</li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <h3 id="option-1-add-implementations">Option 1: Add Implementations<a class="headerlink" href="#option-1-add-implementations" title="Permanent link">&para;</a></h3>
 <p>Create classes that implement the interface:</p>

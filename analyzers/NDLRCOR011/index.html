@@ -2505,9 +2505,11 @@ that <code>[FromKeyedServices("key")]</code> parameters reference keys that are 
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">{</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:
-- Keys may be registered at runtime via <code>IServiceCollectionPlugin</code>
-- The analyzer only validates statically-discoverable <code>[Keyed]</code> registrations</p>
+<p>This is an <strong>informational diagnostic</strong> (not a warning or error) because:</p>
+<ul>
+<li>Keys may be registered at runtime via <code>IServiceCollectionPlugin</code></li>
+<li>The analyzer only validates statically-discoverable <code>[Keyed]</code> registrations</li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <h3 id="option-1-add-keyed-attribute">Option 1: Add [Keyed] Attribute<a class="headerlink" href="#option-1-add-keyed-attribute" title="Permanent link">&para;</a></h3>
 <p>Register the service with a matching key:</p>

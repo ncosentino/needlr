@@ -2493,10 +2493,12 @@
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="when-to-suppress">When to Suppress<a class="headerlink" href="#when-to-suppress" title="Permanent link">&para;</a></h2>
-<p>Suppress this warning if:
-- The plugin is intentionally designed to be instantiated via DI after container construction
-- The plugin is abstract and constructor parameters are for derived classes
-- You are using a custom plugin factory that handles constructor injection</p>
+<p>Suppress this warning if:</p>
+<ul>
+<li>The plugin is intentionally designed to be instantiated via DI after container construction</li>
+<li>The plugin is abstract and constructor parameters are for derived classes</li>
+<li>You are using a custom plugin factory that handles constructor injection</li>
+</ul>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cp">#pragma warning disable NDLRCOR002</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyCustomPlugin</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IServiceCollectionPlugin</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">{</span>

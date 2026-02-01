@@ -3537,15 +3537,19 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">syringe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">();</span><span class="w">  </span><span class="c1">// Configures all source-gen components</span>
 </span></code></pre></div>
-<p><strong>Benefits:</strong>
-- ✅ AOT compatible
-- ✅ Trimming safe
-- ✅ Faster startup (no runtime scanning)
-- ✅ Compile-time error detection</p>
-<p><strong>Requirements:</strong>
-- Add <code>NexusLabs.Needlr.Generators</code> as an analyzer
-- Add <code>NexusLabs.Needlr.Generators.Attributes</code>
-- All types must be known at compile time</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ AOT compatible</li>
+<li>✅ Trimming safe</li>
+<li>✅ Faster startup (no runtime scanning)</li>
+<li>✅ Compile-time error detection</li>
+</ul>
+<p><strong>Requirements:</strong></p>
+<ul>
+<li>Add <code>NexusLabs.Needlr.Generators</code> as an analyzer</li>
+<li>Add <code>NexusLabs.Needlr.Generators.Attributes</code></li>
+<li>All types must be known at compile time</li>
+</ul>
 <h3 id="reflection-dynamic-scenarios">Reflection (Dynamic Scenarios)<a class="headerlink" href="#reflection-dynamic-scenarios" title="Permanent link">&para;</a></h3>
 <p>Uses runtime reflection to discover and register types:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Injection.Reflection</span><span class="p">;</span>
@@ -3553,14 +3557,18 @@
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">syringe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingReflection</span><span class="p">();</span><span class="w">  </span><span class="c1">// Configures all reflection components</span>
 </span></code></pre></div>
-<p><strong>Benefits:</strong>
-- ✅ Dynamic plugin loading
-- ✅ Runtime assembly scanning
-- ✅ Scrutor integration support</p>
-<p><strong>Drawbacks:</strong>
-- ❌ Not AOT compatible
-- ❌ Not trimming safe
-- ❌ Slower startup</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ Dynamic plugin loading</li>
+<li>✅ Runtime assembly scanning</li>
+<li>✅ Scrutor integration support</li>
+</ul>
+<p><strong>Drawbacks:</strong></p>
+<ul>
+<li>❌ Not AOT compatible</li>
+<li>❌ Not trimming safe</li>
+<li>❌ Slower startup</li>
+</ul>
 <h3 id="bundle-auto-fallback">Bundle (Auto-Fallback)<a class="headerlink" href="#bundle-auto-fallback" title="Permanent link">&para;</a></h3>
 <p>Automatically chooses source-gen if available, falls back to reflection:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Injection.Bundle</span><span class="p">;</span>
@@ -3623,33 +3631,43 @@
 <h3 id="type-registrars">Type Registrars<a class="headerlink" href="#type-registrars" title="Permanent link">&para;</a></h3>
 <p>Type registrars determine how discovered types are registered:</p>
 <h4 id="generatedtyperegistrar-source-generation">GeneratedTypeRegistrar (Source Generation)<a class="headerlink" href="#generatedtyperegistrar-source-generation" title="Permanent link">&para;</a></h4>
-<p>Used with source generation strategy:
-- Types discovered at compile time
-- AOT and trimming compatible
-- No runtime reflection</p>
+<p>Used with source generation strategy:</p>
+<ul>
+<li>Types discovered at compile time</li>
+<li>AOT and trimming compatible</li>
+<li>No runtime reflection</li>
+</ul>
 <h4 id="reflectiontyperegistrar-reflection">ReflectionTypeRegistrar (Reflection)<a class="headerlink" href="#reflectiontyperegistrar-reflection" title="Permanent link">&para;</a></h4>
-<p>Used with reflection strategy:
-- Types discovered at runtime
-- Supports dynamic scenarios</p>
+<p>Used with reflection strategy:</p>
+<ul>
+<li>Types discovered at runtime</li>
+<li>Supports dynamic scenarios</li>
+</ul>
 <h4 id="scrutortyperegistrar-reflection-only">ScrutorTypeRegistrar (Reflection only)<a class="headerlink" href="#scrutortyperegistrar-reflection-only" title="Permanent link">&para;</a></h4>
-<p>Uses Scrutor library for advanced registration scenarios (requires reflection):
-- Assembly scanning with filters
-- Decorator pattern support
-- Advanced lifetime management</p>
+<p>Uses Scrutor library for advanced registration scenarios (requires reflection):</p>
+<ul>
+<li>Assembly scanning with filters</li>
+<li>Decorator pattern support</li>
+<li>Advanced lifetime management</li>
+</ul>
 <p>NOTE: you can provide your own custom type registrars.</p>
 <h3 id="type-filterers">Type Filterers<a class="headerlink" href="#type-filterers" title="Permanent link">&para;</a></h3>
 <p>Control which types are eligible for automatic registration:</p>
 <h4 id="generatedtypefilterer-source-generation">GeneratedTypeFilterer (Source Generation)<a class="headerlink" href="#generatedtypefilterer-source-generation" title="Permanent link">&para;</a></h4>
-<p>For source-gen, filtering is done at compile time based on:
-- Types with <code>[DoNotAutoRegister]</code> attribute excluded
-- Types with <code>[DoNotInject]</code> attribute excluded
-- Abstract classes and interfaces excluded</p>
+<p>For source-gen, filtering is done at compile time based on:</p>
+<ul>
+<li>Types with <code>[DoNotAutoRegister]</code> attribute excluded</li>
+<li>Types with <code>[DoNotInject]</code> attribute excluded</li>
+<li>Abstract classes and interfaces excluded</li>
+</ul>
 <h4 id="reflectiontypefilterer-reflection">ReflectionTypeFilterer (Reflection)<a class="headerlink" href="#reflectiontypefilterer-reflection" title="Permanent link">&para;</a></h4>
-<p>For reflection, filters at runtime based on:
-- Excludes types with <code>[DoNotAutoRegister]</code> attribute
-- Excludes types with <code>[DoNotInject]</code> attribute
-- Excludes abstract classes and interfaces
-- Excludes compiler-generated types</p>
+<p>For reflection, filters at runtime based on:</p>
+<ul>
+<li>Excludes types with <code>[DoNotAutoRegister]</code> attribute</li>
+<li>Excludes types with <code>[DoNotInject]</code> attribute</li>
+<li>Excludes abstract classes and interfaces</li>
+<li>Excludes compiler-generated types</li>
+</ul>
 <h4 id="custom-type-filterers">Custom Type Filterers<a class="headerlink" href="#custom-type-filterers" title="Permanent link">&para;</a></h4>
 <p>Implement <code>ITypeFilterer</code> for custom filtering logic:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTypeFilterer</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ITypeFilterer</span>
@@ -3719,11 +3737,13 @@
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="plugin-discovery">Plugin Discovery<a class="headerlink" href="#plugin-discovery" title="Permanent link">&para;</a></h3>
-<p>Plugins are automatically discovered and registered:
-- Scanned from assemblies like other types
-- Sorted by <code>[PluginOrder]</code> attribute (lower values first)
-- Plugins with same order are sorted alphabetically by type name
-- Executed in deterministic order</p>
+<p>Plugins are automatically discovered and registered:</p>
+<ul>
+<li>Scanned from assemblies like other types</li>
+<li>Sorted by <code>[PluginOrder]</code> attribute (lower values first)</li>
+<li>Plugins with same order are sorted alphabetically by type name</li>
+<li>Executed in deterministic order</li>
+</ul>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Control plugin execution order</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="na">[PluginOrder(-100)]</span><span class="w">  </span><span class="c1">// Executes first</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">InfrastructurePlugin</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IServiceCollectionPlugin</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
@@ -3745,10 +3765,12 @@ not to control the discoverability of plugins.</p>
 <li><strong>Scoped</strong>: Created once per request/scope</li>
 </ul>
 <h3 id="lifetime-detection">Lifetime Detection<a class="headerlink" href="#lifetime-detection" title="Permanent link">&para;</a></h3>
-<p>Needlr automatically determines appropriate lifetimes based on:
-- Type characteristics (stateless vs stateful)
-- Interface implementations
-- Decorator patterns</p>
+<p>Needlr automatically determines appropriate lifetimes based on:</p>
+<ul>
+<li>Type characteristics (stateless vs stateful)</li>
+<li>Interface implementations</li>
+<li>Decorator patterns</li>
+</ul>
 <h2 id="decorator-pattern">Decorator Pattern<a class="headerlink" href="#decorator-pattern" title="Permanent link">&para;</a></h2>
 <p>Decorators wrap a service to add behavior (logging, caching, retry, etc.) without modifying the original implementation.</p>
 <h3 id="why-explicit-decoratorfort-is-required">Why Explicit <code>[DecoratorFor&lt;T&gt;]</code> Is Required<a class="headerlink" href="#why-explicit-decoratorfort-is-required" title="Permanent link">&para;</a></h3>

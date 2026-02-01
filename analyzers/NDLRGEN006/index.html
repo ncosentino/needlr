@@ -2457,10 +2457,12 @@
 <li><strong>An interface</strong> (not a class or struct)</li>
 <li><strong>An open/unbound generic</strong> using the <code>typeof(IInterface&lt;&gt;)</code> syntax</li>
 </ol>
-<p>Common mistakes include:
-- Passing a closed generic type like <code>typeof(IHandler&lt;string&gt;)</code>
-- Passing a non-generic interface like <code>typeof(IService)</code>
-- Passing a class instead of an interface</p>
+<p>Common mistakes include:</p>
+<ul>
+<li>Passing a closed generic type like <code>typeof(IHandler&lt;string&gt;)</code></li>
+<li>Passing a non-generic interface like <code>typeof(IService)</code></li>
+<li>Passing a class instead of an interface</li>
+</ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>Use the open generic <code>typeof()</code> syntax with empty angle brackets:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// ❌ Wrong - closed generic</span>
