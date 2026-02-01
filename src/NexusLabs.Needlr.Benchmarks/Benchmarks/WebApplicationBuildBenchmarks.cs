@@ -21,6 +21,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 public class WebApplicationBuildBenchmarks
 {
     private Assembly[] _assemblies = null!;
+    private WebApplication? _lastApp;
 
     [GlobalSetup]
     public void Setup()
@@ -28,32 +29,45 @@ public class WebApplicationBuildBenchmarks
         _assemblies = [typeof(SimpleService1).Assembly];
     }
 
+    [IterationCleanup]
+    public void IterationCleanup()
+    {
+        if (_lastApp != null)
+        {
+            _lastApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _lastApp = null;
+        }
+    }
+
     [Benchmark(Baseline = true)]
     public WebApplication Reflection()
     {
-        return new Syringe()
+        _lastApp = new Syringe()
             .UsingReflection()
             .UsingAdditionalAssemblies(_assemblies)
             .BuildWebApplication();
+        return _lastApp;
     }
 
     [Benchmark]
     public WebApplication SourceGen()
     {
-        return new Syringe()
+        _lastApp = new Syringe()
             .UsingSourceGen()
             .UsingAdditionalAssemblies(_assemblies)
             .BuildWebApplication();
+        return _lastApp;
     }
 
     [Benchmark]
     public WebApplication SourceGenExplicit()
     {
-        return new Syringe()
+        _lastApp = new Syringe()
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetPluginTypes)
             .UsingAdditionalAssemblies(_assemblies)
             .BuildWebApplication();
+        return _lastApp;
     }
 }

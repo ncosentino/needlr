@@ -230,9 +230,9 @@ function renderChartsForBenchmark(className, benchmarks, chartIndex) {
         });
     }
     
-    // Memory chart
-    const hasMemory = baseline?.Memory?.BytesAllocatedPerOperation;
-    if (hasMemory) {
+    // Memory chart - show if any benchmark has memory data (including 0)
+    const hasAnyMemory = methods.some(m => m.memory !== null && m.memory !== undefined);
+    if (hasAnyMemory) {
         const memCanvas = document.getElementById(`memChart${chartIndex}`);
         if (memCanvas) {
             new Chart(memCanvas, {
@@ -255,13 +255,32 @@ function getMeanFromMeasurements(benchmark) {
     if (!benchmark?.Measurements) return null;
     if (benchmark.Statistics?.Mean) return benchmark.Statistics.Mean;
     
-    const actuals = benchmark.Measurements.filter(m => 
+    // Try Actual stage first
+    let measurements = benchmark.Measurements.filter(m => 
         m.IterationMode === 'Workload' && m.IterationStage === 'Actual'
     );
-    if (actuals.length === 0) return null;
     
-    const totalNsPerOp = actuals.reduce((sum, m) => sum + (m.Nanoseconds / m.Operations), 0);
-    return totalNsPerOp / actuals.length;
+    // Fallback to Result stage if no Actual
+    if (measurements.length === 0) {
+        measurements = benchmark.Measurements.filter(m => 
+            m.IterationMode === 'Workload' && m.IterationStage === 'Result'
+        );
+    }
+    
+    // Last resort: use last few Pilot iterations
+    if (measurements.length === 0) {
+        const pilots = benchmark.Measurements.filter(m => 
+            m.IterationMode === 'Workload' && m.IterationStage === 'Pilot'
+        );
+        if (pilots.length > 3) {
+            measurements = pilots.slice(-3); // Last 3 pilots as estimate
+        }
+    }
+    
+    if (measurements.length === 0) return null;
+    
+    const totalNsPerOp = measurements.reduce((sum, m) => sum + (m.Nanoseconds / m.Operations), 0);
+    return totalNsPerOp / measurements.length;
 }
 
 function formatTime(ns) {
@@ -287,7 +306,7 @@ function updateKeyTakeaway(data, element) {
         b.Type?.includes('Build') || b.Method?.includes('Build')
     );
     
-    let totalSpeedup = 0, count = 0;
+    let details = [];
     const grouped = {};
     buildBenchmarks.forEach(b => {
         const className = (b.Type || 'Unknown').split('.').pop();
@@ -296,20 +315,20 @@ function updateKeyTakeaway(data, element) {
         else if (b.Method?.includes('SourceGen') && !b.Method?.includes('Explicit')) grouped[className].sourceGen = b;
     });
     
-    for (const benchmarks of Object.values(grouped)) {
+    for (const [benchName, benchmarks] of Object.entries(grouped)) {
         if (benchmarks.reflection && benchmarks.sourceGen) {
             const refTime = getMeanFromMeasurements(benchmarks.reflection);
             const sgTime = getMeanFromMeasurements(benchmarks.sourceGen);
             if (refTime && sgTime && sgTime > 0) {
-                totalSpeedup += refTime / sgTime;
-                count++;
+                const speedup = (refTime / sgTime).toFixed(1);
+                const shortName = benchName.replace(/Benchmarks?$/i, '').replace(/Build/g, '');
+                details.push(`${shortName || 'Build'}: ${speedup}x`);
             }
         }
     }
     
-    if (count > 0) {
-        const avgSpeedup = (totalSpeedup / count).toFixed(1);
-        element.innerHTML = `<strong>Build time is ~${avgSpeedup}x faster with source generation.</strong> Service resolution is identical once the container is built.`;
+    if (details.length > 0) {
+        element.innerHTML = `<strong>DI container build speedups (source-gen vs reflection):</strong> ${details.join(', ')}. Service resolution is identical once the container is built.`;
     }
 }
 </script>

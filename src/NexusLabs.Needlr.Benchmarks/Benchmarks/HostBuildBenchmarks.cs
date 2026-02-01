@@ -21,6 +21,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 public class HostBuildBenchmarks
 {
     private Assembly[] _assemblies = null!;
+    private IHost? _lastHost;
 
     [GlobalSetup]
     public void Setup()
@@ -28,32 +29,42 @@ public class HostBuildBenchmarks
         _assemblies = [typeof(SimpleService1).Assembly];
     }
 
+    [IterationCleanup]
+    public void IterationCleanup()
+    {
+        _lastHost?.Dispose();
+        _lastHost = null;
+    }
+
     [Benchmark(Baseline = true)]
     public IHost BuildHost_Reflection()
     {
-        return new Syringe()
+        _lastHost = new Syringe()
             .UsingReflection()
             .UsingAdditionalAssemblies(_assemblies)
             .BuildHost();
+        return _lastHost;
     }
 
     [Benchmark]
     public IHost BuildHost_SourceGen()
     {
-        return new Syringe()
+        _lastHost = new Syringe()
             .UsingSourceGen()
             .UsingAdditionalAssemblies(_assemblies)
             .BuildHost();
+        return _lastHost;
     }
 
     [Benchmark]
     public IHost BuildHost_SourceGenExplicit()
     {
-        return new Syringe()
+        _lastHost = new Syringe()
             .UsingGeneratedComponents(
                 NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetInjectableTypes,
                 NexusLabs.Needlr.Benchmarks.Generated.TypeRegistry.GetPluginTypes)
             .UsingAdditionalAssemblies(_assemblies)
             .BuildHost();
+        return _lastHost;
     }
 }
