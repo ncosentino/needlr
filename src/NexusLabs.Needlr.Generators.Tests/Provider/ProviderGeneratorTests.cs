@@ -123,7 +123,7 @@ public sealed class ProviderGeneratorTests
         Assert.Contains("public global::TestApp.IOrderValidator Validator { get; }", generatedCode);
     }
 
-    [Fact(Skip = "NDLRGEN031 diagnostic not yet implemented - Phase 5")]
+    [Fact(Skip = "NDLRGEN031 diagnostic not yet implemented")]
     public void Generator_WithProviderOnClass_RequiresPartial()
     {
         var source = """
@@ -306,5 +306,196 @@ public sealed class ProviderGeneratorTests
         return GeneratorTestRunner.ForProvider()
             .WithSource(source)
             .RunTypeRegistryGeneratorDiagnostics();
+    }
+
+    [Fact]
+    public void Generator_WithOptionalProperty_GeneratesNullableType()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IOptionalService { }
+
+                [Provider]
+                public interface IServicesProvider
+                {
+                    IOptionalService? OptionalService { get; }
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Optional properties should be nullable in constructor parameter
+        Assert.Contains("IOptionalService? optionalService = null", generatedCode);
+        // Optional properties should be nullable in property declaration
+        Assert.Contains("IOptionalService? OptionalService { get; }", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithCollectionProperty_GeneratesIEnumerable()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IHandler { }
+
+                [Provider]
+                public interface IServicesProvider
+                {
+                    IEnumerable<IHandler> Handlers { get; }
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Collection properties should appear in constructor
+        Assert.Contains("global::System.Collections.Generic.IEnumerable<global::TestApp.IHandler> handlers", generatedCode);
+        // Collection properties should be assigned in constructor
+        Assert.Contains("Handlers = handlers", generatedCode);
+        // Collection properties should have correct type
+        Assert.Contains("IEnumerable<global::TestApp.IHandler> Handlers { get; }", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithNestedProvider_GeneratesProviderProperty()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IRepository { }
+                public class Repository : IRepository { }
+
+                [Provider]
+                public interface IDataProvider
+                {
+                    IRepository Repository { get; }
+                }
+
+                [Provider]
+                public interface IAppProvider
+                {
+                    IDataProvider DataProvider { get; }
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Both providers should be generated
+        Assert.Contains("class DataProvider", generatedCode);
+        Assert.Contains("class AppProvider", generatedCode);
+        // Nested provider should be a constructor parameter
+        Assert.Contains("IDataProvider dataProvider", generatedCode);
+        // Nested provider property should be generated
+        Assert.Contains("IDataProvider DataProvider { get; }", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithMixedPropertyKinds_GeneratesCorrectConstructor()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IRequiredService { }
+                public interface IOptionalService { }
+                public interface IHandler { }
+
+                [Provider]
+                public interface IServicesProvider
+                {
+                    IRequiredService Required { get; }
+                    IOptionalService? Optional { get; }
+                    IEnumerable<IHandler> Handlers { get; }
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // All property kinds should be in constructor
+        Assert.Contains("IRequiredService required", generatedCode);
+        Assert.Contains("IOptionalService? optional = null", generatedCode);
+        Assert.Contains("IEnumerable<global::TestApp.IHandler> handlers", generatedCode);
+        // All should be assigned
+        Assert.Contains("Required = required", generatedCode);
+        Assert.Contains("Optional = optional", generatedCode);
+        Assert.Contains("Handlers = handlers", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithShorthandCollections_GeneratesCollectionProperty()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IHandler { }
+
+                [Provider(Collections = new[] { typeof(IHandler) })]
+                public partial class HandlersProvider { }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Interface should be generated with collection property
+        Assert.Contains("interface IHandlersProvider", generatedCode);
+        Assert.Contains("IEnumerable<global::TestApp.IHandler> Handlers { get; }", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_WithShorthandOptional_GeneratesNullableProperty()
+    {
+        var source = """
+            using NexusLabs.Needlr;
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public interface IOptionalService { }
+
+                [Provider(Optional = new[] { typeof(IOptionalService) })]
+                public partial class OptionalProvider { }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        // Interface should be generated with nullable property
+        Assert.Contains("interface IOptionalProvider", generatedCode);
+        Assert.Contains("IOptionalService? OptionalService { get; }", generatedCode);
+        // Constructor should have nullable parameter with default
+        Assert.Contains("IOptionalService? optionalService = null", generatedCode);
     }
 }

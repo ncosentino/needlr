@@ -35,12 +35,15 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"public sealed class {implName} : {provider.TypeName}");
         builder.AppendLine("{");
 
-        // Generate constructor with all required and optional services
-        var requiredAndOptionalProps = provider.Properties
-            .Where(p => p.Kind == ProviderPropertyKind.Required || p.Kind == ProviderPropertyKind.Optional)
+        // Generate constructor with all injectable properties (Required, Optional, Collection)
+        // Factory properties are not injected via constructor
+        // Optional parameters must come last in C#
+        var injectableProps = provider.Properties
+            .Where(p => p.Kind != ProviderPropertyKind.Factory)
+            .OrderBy(p => p.Kind == ProviderPropertyKind.Optional ? 1 : 0)
             .ToList();
 
-        var ctorParams = requiredAndOptionalProps.Select(p =>
+        var ctorParams = injectableProps.Select(p =>
         {
             var paramName = GeneratorHelpers.ToCamelCase(p.PropertyName);
             if (p.Kind == ProviderPropertyKind.Optional)
@@ -58,7 +61,7 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"    public {implName}({ctorParamList})");
         builder.AppendLine("    {");
 
-        foreach (var prop in requiredAndOptionalProps)
+        foreach (var prop in injectableProps)
         {
             var paramName = GeneratorHelpers.ToCamelCase(prop.PropertyName);
             builder.AppendLine($"        {prop.PropertyName} = {paramName};");
@@ -123,11 +126,15 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"public partial class {className} : {interfaceName}");
         builder.AppendLine("{");
 
-        var requiredAndOptionalProps = provider.Properties
-            .Where(p => p.Kind == ProviderPropertyKind.Required || p.Kind == ProviderPropertyKind.Optional)
+        // Generate constructor with all injectable properties (Required, Optional, Collection)
+        // Factory properties are not injected via constructor
+        // Optional parameters must come last in C#
+        var injectableProps = provider.Properties
+            .Where(p => p.Kind != ProviderPropertyKind.Factory)
+            .OrderBy(p => p.Kind == ProviderPropertyKind.Optional ? 1 : 0)
             .ToList();
 
-        var ctorParams = requiredAndOptionalProps.Select(p =>
+        var ctorParams = injectableProps.Select(p =>
         {
             var paramName = GeneratorHelpers.ToCamelCase(p.PropertyName);
             if (p.Kind == ProviderPropertyKind.Optional)
@@ -145,7 +152,7 @@ internal static class ProviderCodeGenerator
         builder.AppendLine($"    public {className}({ctorParamList})");
         builder.AppendLine("    {");
 
-        foreach (var prop in requiredAndOptionalProps)
+        foreach (var prop in injectableProps)
         {
             var paramName = GeneratorHelpers.ToCamelCase(prop.PropertyName);
             builder.AppendLine($"        {prop.PropertyName} = {paramName};");

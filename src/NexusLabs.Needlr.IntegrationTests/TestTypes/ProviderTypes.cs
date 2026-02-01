@@ -18,6 +18,16 @@ public interface IOrderNotifier
     void Notify(string message);
 }
 
+public interface IOptionalLogger
+{
+    void Log(string message);
+}
+
+public interface IEventHandler
+{
+    void Handle(string eventName);
+}
+
 // Service implementations
 public class OrderRepository : IOrderRepository
 {
@@ -32,6 +42,21 @@ public class OrderValidator : IOrderValidator
 public class OrderNotifier : IOrderNotifier
 {
     public void Notify(string message) { }
+}
+
+public class OptionalLogger : IOptionalLogger
+{
+    public void Log(string message) { }
+}
+
+public class EventHandlerA : IEventHandler
+{
+    public void Handle(string eventName) { }
+}
+
+public class EventHandlerB : IEventHandler
+{
+    public void Handle(string eventName) { }
 }
 
 /// <summary>
@@ -57,3 +82,55 @@ public partial class InventoryProvider { }
 /// </summary>
 [Provider(typeof(IOrderRepository), typeof(IOrderValidator))]
 public partial class MultiServiceProvider { }
+
+/// <summary>
+/// Provider with optional service (nullable).
+/// </summary>
+[Provider]
+public interface IOptionalServicesProvider
+{
+    IOrderRepository Repository { get; }
+    IOptionalLogger? Logger { get; }
+}
+
+/// <summary>
+/// Provider with collection of services.
+/// </summary>
+[Provider]
+public interface IEventHandlersProvider
+{
+    IEnumerable<IEventHandler> EventHandlers { get; }
+}
+
+/// <summary>
+/// Provider that references another provider (nested).
+/// </summary>
+[Provider]
+public interface INestedProvider
+{
+    IOrderServicesProvider OrderServices { get; }
+    IEventHandlersProvider EventHandlers { get; }
+}
+
+/// <summary>
+/// Provider with mixed property kinds (required, optional, collection).
+/// </summary>
+[Provider]
+public interface IMixedServicesProvider
+{
+    IOrderRepository Repository { get; }
+    IOptionalLogger? OptionalLogger { get; }
+    IEnumerable<IEventHandler> Handlers { get; }
+}
+
+/// <summary>
+/// Shorthand provider with collections.
+/// </summary>
+[Provider(Collections = new[] { typeof(IEventHandler) })]
+public partial class CollectionShorthandProvider { }
+
+/// <summary>
+/// Shorthand provider with optional services.
+/// </summary>
+[Provider(Optional = new[] { typeof(IOptionalLogger) })]
+public partial class OptionalShorthandProvider { }

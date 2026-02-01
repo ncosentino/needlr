@@ -172,8 +172,15 @@ internal static class ProviderDiscoveryHelper
                 {
                     if (typeArg.Value is INamedTypeSymbol typeSymbol)
                     {
-                        var propertyName = DerivePropertyName(typeSymbol);
+                        var propertyName = DerivePropertyName(typeSymbol, kind.Value);
                         var serviceTypeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                        
+                        // For collections, wrap in IEnumerable<T>
+                        if (kind.Value == ProviderPropertyKind.Collection)
+                        {
+                            serviceTypeName = $"global::System.Collections.Generic.IEnumerable<{serviceTypeName}>";
+                        }
+                        
                         yield return new ProviderPropertyInfo(propertyName, serviceTypeName, kind.Value);
                     }
                 }
@@ -183,8 +190,9 @@ internal static class ProviderDiscoveryHelper
 
     /// <summary>
     /// Derives a property name from a type (e.g., IOrderRepository → OrderRepository).
+    /// For collections, pluralizes the name (e.g., IHandler → Handlers).
     /// </summary>
-    private static string DerivePropertyName(INamedTypeSymbol typeSymbol)
+    private static string DerivePropertyName(INamedTypeSymbol typeSymbol, ProviderPropertyKind kind = ProviderPropertyKind.Required)
     {
         var name = typeSymbol.Name;
 
@@ -194,8 +202,36 @@ internal static class ProviderDiscoveryHelper
             name = name.Substring(1);
         }
 
+        // Pluralize collection property names
+        if (kind == ProviderPropertyKind.Collection)
+        {
+            name = Pluralize(name);
+        }
+
         return name;
     }
+
+    /// <summary>
+    /// Simple pluralization for property names.
+    /// </summary>
+    private static string Pluralize(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+
+        // Basic pluralization rules
+        if (name.EndsWith("y") && name.Length > 1 && !IsVowel(name[name.Length - 2]))
+        {
+            return name.Substring(0, name.Length - 1) + "ies";
+        }
+        if (name.EndsWith("s") || name.EndsWith("x") || name.EndsWith("ch") || name.EndsWith("sh"))
+        {
+            return name + "es";
+        }
+        return name + "s";
+    }
+
+    private static bool IsVowel(char c) => "aeiouAEIOU".Contains(c);
 
     /// <summary>
     /// Determines the property kind based on the type.

@@ -168,4 +168,140 @@ public sealed class ProviderSourceGenTests
         Assert.NotNull(viaInterface);
         Assert.IsType<InventoryProvider>(viaInterface);
     }
+
+    [Fact]
+    public void OptionalProvider_WithServiceRegistered_ResolvesService()
+    {
+        var provider = BuildServiceProvider();
+
+        var optionalServices = provider.GetRequiredService<IOptionalServicesProvider>();
+
+        Assert.NotNull(optionalServices);
+        Assert.NotNull(optionalServices.Repository);
+        Assert.NotNull(optionalServices.Logger); // Logger is registered
+    }
+
+    [Fact]
+    public void OptionalProvider_IsRegisteredAsSingleton()
+    {
+        var provider = BuildServiceProvider();
+
+        var first = provider.GetRequiredService<IOptionalServicesProvider>();
+        var second = provider.GetRequiredService<IOptionalServicesProvider>();
+
+        Assert.Same(first, second);
+    }
+
+    [Fact]
+    public void CollectionProvider_ResolvesAllHandlers()
+    {
+        var provider = BuildServiceProvider();
+
+        var handlersProvider = provider.GetRequiredService<IEventHandlersProvider>();
+
+        Assert.NotNull(handlersProvider);
+        Assert.NotNull(handlersProvider.EventHandlers);
+        // Should have both EventHandlerA and EventHandlerB
+        var handlers = handlersProvider.EventHandlers.ToList();
+        Assert.Equal(2, handlers.Count);
+    }
+
+    [Fact]
+    public void CollectionProvider_IsRegisteredAsSingleton()
+    {
+        var provider = BuildServiceProvider();
+
+        var first = provider.GetRequiredService<IEventHandlersProvider>();
+        var second = provider.GetRequiredService<IEventHandlersProvider>();
+
+        Assert.Same(first, second);
+    }
+
+    [Fact]
+    public void NestedProvider_ResolvesChildProviders()
+    {
+        var provider = BuildServiceProvider();
+
+        var nestedProvider = provider.GetRequiredService<INestedProvider>();
+
+        Assert.NotNull(nestedProvider);
+        Assert.NotNull(nestedProvider.OrderServices);
+        Assert.NotNull(nestedProvider.EventHandlers);
+        // Verify nested providers have their own services
+        Assert.NotNull(nestedProvider.OrderServices.Repository);
+        Assert.NotNull(nestedProvider.EventHandlers.EventHandlers);
+    }
+
+    [Fact]
+    public void NestedProvider_ChildProvidersAreSameInstances()
+    {
+        var provider = BuildServiceProvider();
+
+        var nestedProvider = provider.GetRequiredService<INestedProvider>();
+        var directOrderServices = provider.GetRequiredService<IOrderServicesProvider>();
+        var directEventHandlers = provider.GetRequiredService<IEventHandlersProvider>();
+
+        // Nested providers should be the same singleton instances
+        Assert.Same(nestedProvider.OrderServices, directOrderServices);
+        Assert.Same(nestedProvider.EventHandlers, directEventHandlers);
+    }
+
+    [Fact]
+    public void MixedProvider_ResolvesAllPropertyKinds()
+    {
+        var provider = BuildServiceProvider();
+
+        var mixedProvider = provider.GetRequiredService<IMixedServicesProvider>();
+
+        Assert.NotNull(mixedProvider);
+        // Required
+        Assert.NotNull(mixedProvider.Repository);
+        // Optional
+        Assert.NotNull(mixedProvider.OptionalLogger);
+        // Collection
+        Assert.NotNull(mixedProvider.Handlers);
+        Assert.Equal(2, mixedProvider.Handlers.Count());
+    }
+
+    [Fact]
+    public void ShorthandCollectionProvider_IsResolvable()
+    {
+        var provider = BuildServiceProvider();
+
+        var collectionProvider = provider.GetService<ICollectionShorthandProvider>();
+
+        Assert.NotNull(collectionProvider);
+    }
+
+    [Fact]
+    public void ShorthandCollectionProvider_ResolvesHandlers()
+    {
+        var provider = BuildServiceProvider();
+
+        var collectionProvider = provider.GetRequiredService<ICollectionShorthandProvider>();
+
+        Assert.NotNull(collectionProvider.EventHandlers);
+        Assert.Equal(2, collectionProvider.EventHandlers.Count());
+    }
+
+    [Fact]
+    public void ShorthandOptionalProvider_IsResolvable()
+    {
+        var provider = BuildServiceProvider();
+
+        var optionalProvider = provider.GetService<IOptionalShorthandProvider>();
+
+        Assert.NotNull(optionalProvider);
+    }
+
+    [Fact]
+    public void ShorthandOptionalProvider_ResolvesOptionalService()
+    {
+        var provider = BuildServiceProvider();
+
+        var optionalProvider = provider.GetRequiredService<IOptionalShorthandProvider>();
+
+        // OptionalLogger is registered, so it should be resolved
+        Assert.NotNull(optionalProvider.OptionalLogger);
+    }
 }
