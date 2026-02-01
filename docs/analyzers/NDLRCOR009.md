@@ -97,5 +97,5 @@ dotnet_diagnostic.NDLRCOR009.severity = warning
 
 ## See Also
 
-- [Lazy Injection](../core-concepts.md#lazy-injection) - How `Lazy<T>` works in Needlr
+- [Core Concepts](../core-concepts.md) - How `Lazy<T>` works in Needlr
 - [AnalyzerStatus.md](../breadcrumbs.md#analyzer-status) - View all active analyzers in diagnostics output

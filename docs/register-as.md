@@ -134,5 +134,5 @@ public class TransientReader : IReader, IWriter
 ## See Also
 
 - [Getting Started](getting-started.md)
-- [DoNotAutoRegister](getting-started.md#excluding-types) - Exclude from all registration
+- [DoNotAutoRegister](core-concepts.md) - Exclude from all registration
 - [NDLRCOR015](analyzers/NDLRCOR015.md) - Analyzer documentation

@@ -111,4 +111,4 @@ foreach (var opt in validatedOptions)
 
 See the source code for full type definitions:
 - [IServiceCatalog Interface](https://github.com/ncosentino/needlr/blob/main/src/NexusLabs.Needlr/Catalog/IServiceCatalog.cs)
-- [Catalog Entry Types](../src/NexusLabs.Needlr/Catalog/)
+- [Catalog Entry Types](https://github.com/ncosentino/needlr/tree/main/src/NexusLabs.Needlr/Catalog/)

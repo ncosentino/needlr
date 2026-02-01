@@ -50,4 +50,4 @@ This warning should not be suppressed. Non-constant hub paths will cause compila
 
 ## See Also
 
-- [SignalR Integration](../advanced-usage.md#signalr)
+- [Advanced Usage](../advanced-usage.md)

@@ -121,6 +121,6 @@ Or in your project file:
 
 ## See Also
 
-- [Advanced Usage - Namespace Filtering](../advanced-usage.md#namespace-filtering)
+- [Advanced Usage](../advanced-usage.md)
 - [NDLRCOR001: Plugin constructor dependency not registered](NDLRCOR001.md)
-- [Core Concepts - Type Discovery](../core-concepts.md#type-discovery)
+- [Core Concepts](../core-concepts.md)

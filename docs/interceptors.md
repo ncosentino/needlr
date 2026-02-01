@@ -387,6 +387,6 @@ Needlr provides analyzers to catch common interceptor mistakes at compile time:
 
 ## See Also
 
-- [Decorators](advanced-usage.md#decorators) - For service-specific wrapping
+- [Open Generic Decorators](open-generic-decorators.md) - For service-specific wrapping
 - [Getting Started](getting-started.md) - Source generation setup
-- [Example: AotSourceGenConsoleApp](../src/Examples/SourceGen/AotSourceGenConsoleApp) - Working interceptor examples
+- [Example: AotSourceGenConsoleApp](https://github.com/ncosentino/needlr/tree/main/src/Examples/SourceGen/AotSourceGenConsoleApp) - Working interceptor examples

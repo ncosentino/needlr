@@ -39,5 +39,5 @@ This warning should not be suppressed. Non-typeof expressions will cause compila
 
 ## See Also
 
-- [SignalR Integration](../advanced-usage.md#signalr)
+- [Advanced Usage](../advanced-usage.md)
 - [NDLRSIG001: HubPath must be a constant](NDLRSIG001.md)

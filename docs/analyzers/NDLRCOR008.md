@@ -112,4 +112,4 @@ public class OrderService
 ## See Also
 
 - [Interceptors](../interceptors.md) - Full interceptor documentation
-- [Decorators](../advanced-usage.md#decorators) - Alternative for interface-less services
+- [Open Generic Decorators](../open-generic-decorators.md) - Alternative for interface-less services

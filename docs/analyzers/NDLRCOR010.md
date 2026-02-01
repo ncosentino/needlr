@@ -115,5 +115,5 @@ dotnet_diagnostic.NDLRCOR010.severity = warning
 
 ## See Also
 
-- [Collection Injection](../core-concepts.md#collection-injection) - How `IEnumerable<T>` works in Needlr
+- [Core Concepts](../core-concepts.md) - How `IEnumerable<T>` works in Needlr
 - [AnalyzerStatus.md](../breadcrumbs.md#analyzer-status) - View all active analyzers in diagnostics output
