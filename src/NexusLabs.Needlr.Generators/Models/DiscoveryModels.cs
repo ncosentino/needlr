@@ -553,6 +553,132 @@ internal readonly struct OptionsValidatorInfo
 }
 
 /// <summary>
+/// Information about a discovered Provider (from [Provider] attribute).
+/// </summary>
+internal readonly struct DiscoveredProvider
+{
+    public DiscoveredProvider(
+        string typeName,
+        string assemblyName,
+        bool isInterface,
+        bool isPartial,
+        IReadOnlyList<ProviderPropertyInfo> properties,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        AssemblyName = assemblyName;
+        IsInterface = isInterface;
+        IsPartial = isPartial;
+        Properties = properties;
+        SourceFilePath = sourceFilePath;
+    }
+
+    /// <summary>Fully qualified type name of the interface or class.</summary>
+    public string TypeName { get; }
+
+    public string AssemblyName { get; }
+
+    /// <summary>True if the [Provider] attribute is on an interface.</summary>
+    public bool IsInterface { get; }
+
+    /// <summary>True if the type is a partial class (required for shorthand mode).</summary>
+    public bool IsPartial { get; }
+
+    /// <summary>Properties to generate on the provider.</summary>
+    public IReadOnlyList<ProviderPropertyInfo> Properties { get; }
+
+    public string? SourceFilePath { get; }
+
+    /// <summary>Gets simple type name without namespace (e.g., "IOrderProvider" from "global::TestApp.IOrderProvider").</summary>
+    public string SimpleTypeName
+    {
+        get
+        {
+            var name = TypeName;
+            var lastDot = name.LastIndexOf('.');
+            return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+        }
+    }
+
+    /// <summary>Gets the implementation class name (removes leading "I" from interface name if present).</summary>
+    public string ImplementationTypeName
+    {
+        get
+        {
+            var simple = SimpleTypeName;
+            if (IsInterface && simple.StartsWith("I") && simple.Length > 1 && char.IsUpper(simple[1]))
+            {
+                return simple.Substring(1);
+            }
+            return simple;
+        }
+    }
+
+    /// <summary>Gets the interface name (adds leading "I" to class name if needed).</summary>
+    public string InterfaceTypeName
+    {
+        get
+        {
+            var simple = SimpleTypeName;
+            // For non-interfaces, add "I" prefix unless the name already follows interface naming convention (IXxx)
+            if (!IsInterface)
+            {
+                // Only treat as already having interface prefix if it starts with "I" followed by uppercase letter
+                if (simple.Length > 1 && simple[0] == 'I' && char.IsUpper(simple[1]))
+                {
+                    return simple;
+                }
+                return "I" + simple;
+            }
+            return simple;
+        }
+    }
+}
+
+/// <summary>
+/// Information about a property on a Provider.
+/// </summary>
+internal readonly struct ProviderPropertyInfo
+{
+    public ProviderPropertyInfo(
+        string propertyName,
+        string serviceTypeName,
+        ProviderPropertyKind kind)
+    {
+        PropertyName = propertyName;
+        ServiceTypeName = serviceTypeName;
+        Kind = kind;
+    }
+
+    /// <summary>Property name on the generated provider.</summary>
+    public string PropertyName { get; }
+
+    /// <summary>Fully qualified service type name.</summary>
+    public string ServiceTypeName { get; }
+
+    /// <summary>How this property should be resolved.</summary>
+    public ProviderPropertyKind Kind { get; }
+}
+
+/// <summary>
+/// Indicates how a provider property should be resolved.
+/// </summary>
+internal enum ProviderPropertyKind
+{
+    /// <summary>Required service - uses GetRequiredService&lt;T&gt;().</summary>
+    Required,
+
+    /// <summary>Optional service - uses GetService&lt;T&gt;() and is nullable.</summary>
+    Optional,
+
+    /// <summary>Collection of services - uses GetServices&lt;T&gt;().</summary>
+    Collection,
+
+    /// <summary>Factory for creating new instances.</summary>
+    Factory
+}
+
+/// <summary>
 /// Aggregated result of type discovery for an assembly.
 /// </summary>
 internal readonly struct DiscoveryResult
@@ -566,7 +692,8 @@ internal readonly struct DiscoveryResult
         IReadOnlyList<DiscoveredInterceptedService> interceptedServices,
         IReadOnlyList<DiscoveredFactory> factories,
         IReadOnlyList<DiscoveredOptions> options,
-        IReadOnlyList<DiscoveredHostedService> hostedServices)
+        IReadOnlyList<DiscoveredHostedService> hostedServices,
+        IReadOnlyList<DiscoveredProvider> providers)
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
@@ -577,6 +704,7 @@ internal readonly struct DiscoveryResult
         Factories = factories;
         Options = options;
         HostedServices = hostedServices;
+        Providers = providers;
     }
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -588,6 +716,7 @@ internal readonly struct DiscoveryResult
     public IReadOnlyList<DiscoveredFactory> Factories { get; }
     public IReadOnlyList<DiscoveredOptions> Options { get; }
     public IReadOnlyList<DiscoveredHostedService> HostedServices { get; }
+    public IReadOnlyList<DiscoveredProvider> Providers { get; }
 }
 
 /// <summary>

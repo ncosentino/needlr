@@ -93,7 +93,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0, discoveryResult.Providers.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate interceptor proxy classes if any were discovered
@@ -108,6 +108,26 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var factoriesText = GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
+            }
+
+            // Generate provider classes if any were discovered
+            if (discoveryResult.Providers.Count > 0)
+            {
+                // Interface-based providers go in the Generated namespace
+                var interfaceProviders = discoveryResult.Providers.Where(p => p.IsInterface).ToList();
+                if (interfaceProviders.Count > 0)
+                {
+                    var providersText = GenerateProvidersSource(interfaceProviders, assemblyName, breadcrumbs, projectDirectory);
+                    spc.AddSource("Providers.g.cs", SourceText.From(providersText, Encoding.UTF8));
+                }
+
+                // Shorthand class providers need to be generated in their original namespace
+                var classProviders = discoveryResult.Providers.Where(p => !p.IsInterface && p.IsPartial).ToList();
+                foreach (var provider in classProviders)
+                {
+                    var providerText = GenerateShorthandProviderSource(provider, assemblyName, breadcrumbs, projectDirectory);
+                    spc.AddSource($"Provider.{provider.SimpleTypeName}.g.cs", SourceText.From(providerText, Encoding.UTF8));
+                }
             }
 
             // Generate options validator classes if any have validation methods
@@ -769,13 +789,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var factories = new List<DiscoveredFactory>();
         var options = new List<DiscoveredOptions>();
         var hostedServices = new List<DiscoveredHostedService>();
+        var providers = new List<DiscoveredProvider>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
 
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, inaccessibleTypes, compilation, isCurrentAssembly: true);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: true);
         }
 
         // Collect types from all referenced assemblies
@@ -783,7 +804,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, inaccessibleTypes, compilation, isCurrentAssembly: false);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: false);
             }
         }
 
@@ -825,7 +846,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices);
+        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices, providers);
     }
 
     private static void CollectTypesFromAssembly(
@@ -839,6 +860,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredFactory> factories,
         List<DiscoveredOptions> options,
         List<DiscoveredHostedService> hostedServices,
+        List<DiscoveredProvider> providers,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly)
@@ -1001,8 +1023,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
-            // Check for injectable types
-            if (TypeDiscoveryHelper.IsInjectableType(typeSymbol, isCurrentAssembly))
+            // Check for injectable types (but skip types that are providers, which are handled separately)
+            if (TypeDiscoveryHelper.IsInjectableType(typeSymbol, isCurrentAssembly) && !ProviderDiscoveryHelper.HasProviderAttribute(typeSymbol))
             {
                 // Determine lifetime first - only include types that are actually injectable
                 var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
@@ -1051,6 +1073,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     GeneratorLifetime.Singleton, // Hosted services are always singleton
                     constructorParams,
                     sourceFilePath));
+            }
+
+            // Check for [Provider] attribute
+            if (ProviderDiscoveryHelper.HasProviderAttribute(typeSymbol))
+            {
+                var discoveredProvider = ProviderDiscoveryHelper.DiscoverProvider(typeSymbol, assembly.Name);
+                if (discoveredProvider.HasValue)
+                {
+                    providers.Add(discoveredProvider.Value);
+                }
             }
 
             // Check for plugin types (concrete class with parameterless ctor and interfaces)
@@ -1135,6 +1167,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             GenerateRegisterOptionsMethod(builder, discoveryResult.Options, safeAssemblyName, breadcrumbs, projectDirectory, isAotProject);
         }
 
+        if (discoveryResult.Providers.Count > 0)
+        {
+            builder.AppendLine();
+            GenerateRegisterProvidersMethod(builder, discoveryResult.Providers, safeAssemblyName, breadcrumbs, projectDirectory);
+        }
+
         builder.AppendLine();
         GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
 
@@ -1149,7 +1187,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions)
+    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions, bool hasProviders)
     {
         var builder = new StringBuilder();
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
@@ -1182,13 +1220,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes,");
         
-        // Generate the decorator/factory applier lambda
-        if (hasFactories)
+        // Generate the decorator/factory/provider applier lambda
+        if (hasFactories || hasProviders)
         {
             builder.AppendLine("            services =>");
             builder.AppendLine("            {");
             builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services);");
-            builder.AppendLine($"                global::{safeAssemblyName}.Generated.FactoryRegistrations.RegisterFactories((IServiceCollection)services);");
+            if (hasFactories)
+            {
+                builder.AppendLine($"                global::{safeAssemblyName}.Generated.FactoryRegistrations.RegisterFactories((IServiceCollection)services);");
+            }
+            if (hasProviders)
+            {
+                builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.RegisterProviders((IServiceCollection)services);");
+            }
             builder.AppendLine("            },");
         }
         else
@@ -2459,6 +2504,43 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    }");
     }
 
+    private static void GenerateRegisterProvidersMethod(StringBuilder builder, IReadOnlyList<DiscoveredProvider> providers, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all generated providers as Singletons.");
+        builder.AppendLine("    /// Providers are strongly-typed service locators that expose services via typed properties.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    public static void RegisterProviders(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var provider in providers)
+        {
+            var shortName = provider.SimpleTypeName;
+            var sourcePath = provider.SourceFilePath != null
+                ? BreadcrumbWriter.GetRelativeSourcePath(provider.SourceFilePath, projectDirectory)
+                : $"[{provider.AssemblyName}]";
+
+            breadcrumbs.WriteInlineComment(builder, "        ", $"Provider: {shortName} ← {sourcePath}");
+
+            if (provider.IsInterface)
+            {
+                // Interface mode: register the generated implementation
+                var implName = provider.ImplementationTypeName;
+                builder.AppendLine($"        services.AddSingleton<{provider.TypeName}, global::{safeAssemblyName}.Generated.{implName}>();");
+            }
+            else if (provider.IsPartial)
+            {
+                // Shorthand class mode: register the partial class as its generated interface
+                var interfaceName = provider.InterfaceTypeName;
+                var providerNamespace = GetNamespaceFromTypeName(provider.TypeName);
+                builder.AppendLine($"        services.AddSingleton<global::{providerNamespace}.{interfaceName}, {provider.TypeName}>();");
+            }
+        }
+
+        builder.AppendLine("    }");
+    }
+
     private static void GenerateRegisterHostedServicesMethod(StringBuilder builder, IReadOnlyList<DiscoveredHostedService> hostedServices, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    /// <summary>");
@@ -2647,6 +2729,61 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("}");
 
         return builder.ToString();
+    }
+
+    private static string GenerateProvidersSource(IReadOnlyList<DiscoveredProvider> providers, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Providers");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate provider implementations (interface-based only)
+        foreach (var provider in providers)
+        {
+            CodeGen.ProviderCodeGenerator.GenerateProviderImplementation(builder, provider, $"{safeAssemblyName}.Generated", breadcrumbs, projectDirectory);
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
+    private static string GenerateShorthandProviderSource(DiscoveredProvider provider, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var providerNamespace = GetNamespaceFromTypeName(provider.TypeName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, $"Needlr Generated Provider: {provider.SimpleTypeName}");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {providerNamespace};");
+        builder.AppendLine();
+
+        CodeGen.ProviderCodeGenerator.GenerateProviderInterfaceAndPartialClass(builder, provider, providerNamespace, breadcrumbs, projectDirectory);
+
+        return builder.ToString();
+    }
+
+    private static string GetNamespaceFromTypeName(string fullyQualifiedName)
+    {
+        var name = fullyQualifiedName;
+        if (name.StartsWith("global::"))
+        {
+            name = name.Substring(8);
+        }
+
+        var lastDot = name.LastIndexOf('.');
+        return lastDot >= 0 ? name.Substring(0, lastDot) : string.Empty;
     }
 
 

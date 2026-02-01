@@ -330,6 +330,16 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Creates a default runner configured for Provider tests.
+    /// </summary>
+    public static GeneratorTestRunner ForProvider()
+    {
+        return new GeneratorTestRunner()
+            .WithReference<GenerateTypeRegistryAttribute>()
+            .WithReference<ProviderAttribute>();
+    }
+
+    /// <summary>
     /// Creates a runner that uses inline attribute definitions (no real assembly references).
     /// Useful for tests that need specific attribute shapes.
     /// </summary>
