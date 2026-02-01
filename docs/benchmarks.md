@@ -68,33 +68,46 @@ function displayResults(data, container) {
     for (const [className, benchmarks] of Object.entries(grouped)) {
         const displayName = className.split('.').pop();
         html += `<h3>${displayName}</h3>`;
-        html += '<table><thead><tr><th>Method</th><th>Mean</th><th>Allocated</th><th>Ratio</th></tr></thead><tbody>';
+        html += '<table><thead><tr><th>Method</th><th>Mean</th><th>Time Ratio</th><th>Allocated</th><th>Memory Ratio</th></tr></thead><tbody>';
         
         // Find baseline (method containing "Reflection")
         const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
         const baselineMean = getMeanFromMeasurements(baseline);
+        const baselineAlloc = baseline?.Memory?.BytesAllocatedPerOperation;
         
         benchmarks.forEach(b => {
             const isBaseline = b.Method?.includes('Reflection');
             const mean = getMeanFromMeasurements(b);
             const allocated = b.Memory?.BytesAllocatedPerOperation;
             
-            let ratio = '-';
-            let ratioClass = '';
+            // Time ratio
+            let timeRatio = '-';
+            let timeRatioClass = '';
             if (mean && baselineMean) {
                 const ratioVal = mean / baselineMean;
-                ratio = ratioVal.toFixed(2);
-                ratioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
+                timeRatio = ratioVal.toFixed(2);
+                timeRatioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
             }
-            if (isBaseline) ratio = '1.00';
+            if (isBaseline) timeRatio = '1.00';
+            
+            // Memory ratio
+            let memRatio = '-';
+            let memRatioClass = '';
+            if (allocated && baselineAlloc) {
+                const ratioVal = allocated / baselineAlloc;
+                memRatio = ratioVal.toFixed(2);
+                memRatioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
+            }
+            if (isBaseline) memRatio = '1.00';
             
             const rowClass = isBaseline ? 'baseline' : '';
             
             html += `<tr class="${rowClass}">
                 <td>${b.Method}</td>
                 <td>${formatTime(mean)}</td>
+                <td class="${timeRatioClass}">${timeRatio}</td>
                 <td>${formatBytes(allocated)}</td>
-                <td class="${ratioClass}">${ratio}</td>
+                <td class="${memRatioClass}">${memRatio}</td>
             </tr>`;
         });
         html += '</tbody></table>';
