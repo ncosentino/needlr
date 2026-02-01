@@ -368,13 +368,13 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrder", "rp": "NexusLabs.Needlr.Injection_AssemblyOrder.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 56, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderBuilder", "rp": "NexusLabs.Needlr.Injection_AssemblyOrderBuilder.html", "cl": 48, "ucl": 1, "cal": 49, "tl": 129, "cb": 12, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderRule", "rp": "NexusLabs.Needlr.Injection_AssemblyOrderRule.html", "cl": 7, "ucl": 1, "cal": 8, "tl": 31, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Injection.ConfiguredSyringe", "rp": "NexusLabs.Needlr.Injection_ConfiguredSyringe.html", "cl": 88, "ucl": 4, "cal": 92, "tl": 282, "cb": 44, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.ConfiguredSyringe", "rp": "NexusLabs.Needlr.Injection_ConfiguredSyringe.html", "cl": 92, "ucl": 4, "cal": 96, "tl": 286, "cb": 46, "tb": 54, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.ITypeFilterer", "rp": "NexusLabs.Needlr.Injection_ITypeFilterer.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 56, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.ITypeFiltererExtensionMethods", "rp": "NexusLabs.Needlr.Injection_ITypeFiltererExtensionMethods.html", "cl": 75, "ucl": 0, "cal": 75, "tl": 157, "cb": 87, "tb": 110, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.OrderedAssemblyProvider", "rp": "NexusLabs.Needlr.Injection_OrderedAssemblyProvider.html", "cl": 14, "ucl": 0, "cal": 14, "tl": 34, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.ServiceCollectionPopulator", "rp": "NexusLabs.Needlr.Injection_ServiceCollectionPopulator.html", "cl": 44, "ucl": 2, "cal": 46, "tl": 110, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Injection.Syringe", "rp": "NexusLabs.Needlr.Injection_Syringe.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 56, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Injection.SyringeExtensions", "rp": "NexusLabs.Needlr.Injection_SyringeExtensions.html", "cl": 47, "ucl": 9, "cal": 56, "tl": 346, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.Syringe", "rp": "NexusLabs.Needlr.Injection_Syringe.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 57, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.SyringeExtensions", "rp": "NexusLabs.Needlr.Injection_SyringeExtensions.html", "cl": 58, "ucl": 9, "cal": 67, "tl": 388, "cb": 8, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.TypeFilterers.EmptyTypeFilterer", "rp": "NexusLabs.Needlr.Injection_EmptyTypeFilterer.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 26, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.TypeFilterers.TypeFilterDecorator", "rp": "NexusLabs.Needlr.Injection_TypeFilterDecorator.html", "cl": 28, "ucl": 0, "cal": 28, "tl": 64, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.TypeFiltering", "rp": "NexusLabs.Needlr.Injection_TypeFiltering.html", "cl": 16, "ucl": 0, "cal": 16, "tl": 45, "cb": 30, "tb": 30, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -382,7 +382,7 @@ var assemblies = [
   {
     "name": "NexusLabs.Needlr.Injection.Bundle",
     "classes": [
-      { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Bundle_ServiceProviderBuilder.html", "cl": 78, "ucl": 3, "cal": 81, "tl": 155, "cb": 17, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Bundle_ServiceProviderBuilder.html", "cl": 81, "ucl": 4, "cal": 85, "tl": 170, "cb": 18, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions", "rp": "NexusLabs.Needlr.Injection.Bundle_SyringeBundleExtensions.html", "cl": 30, "ucl": 4, "cal": 34, "tl": 132, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
@@ -396,7 +396,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFactory", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionPluginFactory.html", "cl": 49, "ucl": 2, "cal": 51, "tl": 199, "cb": 48, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionFallbackContext.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 30, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackHandlers", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionFallbackHandlers.html", "cl": 41, "ucl": 0, "cal": 41, "tl": 105, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionServiceProviderBuilder.html", "cl": 66, "ucl": 7, "cal": 73, "tl": 141, "cb": 14, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionServiceProviderBuilder.html", "cl": 70, "ucl": 7, "cal": 77, "tl": 156, "cb": 16, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.SyringeReflectionExtensions", "rp": "NexusLabs.Needlr.Injection.Reflection_SyringeReflectionExtensions.html", "cl": 28, "ucl": 0, "cal": 28, "tl": 134, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.TypeFilterers.ReflectionTypeFilterer", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionTypeFilterer.html", "cl": 28, "ucl": 0, "cal": 28, "tl": 70, "cb": 34, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Reflection.TypeRegistrars.ReflectionTypeRegistrar", "rp": "NexusLabs.Needlr.Injection.Reflection_ReflectionTypeRegistrar.html", "cl": 101, "ucl": 7, "cal": 108, "tl": 313, "cb": 69, "tb": 76, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -410,7 +410,7 @@ var assemblies = [
   {
     "name": "NexusLabs.Needlr.Injection.SourceGen",
     "classes": [
-      { "name": "NexusLabs.Needlr.Injection.SourceGen.GeneratedServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.SourceGen_GeneratedServiceProviderBuilder.html", "cl": 35, "ucl": 8, "cal": 43, "tl": 104, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.SourceGen.GeneratedServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.SourceGen_GeneratedServiceProviderBuilder.html", "cl": 38, "ucl": 9, "cal": 47, "tl": 119, "cb": 5, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.SourceGen.Loaders.GeneratedAssemblyProvider", "rp": "NexusLabs.Needlr.Injection.SourceGen_GeneratedAssemblyProvider.html", "cl": 33, "ucl": 2, "cal": 35, "tl": 75, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.SourceGen.PluginFactories.GeneratedPluginFactory", "rp": "NexusLabs.Needlr.Injection.SourceGen_GeneratedPluginFactory.html", "cl": 81, "ucl": 2, "cal": 83, "tl": 211, "cb": 53, "tb": 60, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.SourceGen.SyringeSourceGenExtensions", "rp": "NexusLabs.Needlr.Injection.SourceGen_SyringeSourceGenExtensions.html", "cl": 27, "ucl": 17, "cal": 44, "tl": 183, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -1099,7 +1099,13 @@ var riskHotspots = [
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Injection", "class": "NexusLabs.Needlr.Injection.ConfiguredSyringe", "reportPath": "NexusLabs.Needlr.Injection_ConfiguredSyringe.html", "methodName": "RunVerification(Microsoft.Extensions.DependencyInjection.IServiceCollection,NexusLabs.Needlr.VerificationOptions)", "methodShortName": "RunVerification(...)", "fileIndex": 0, "line": 126,
+    "assembly": "NexusLabs.Needlr.Injection", "class": "NexusLabs.Needlr.Injection.ConfiguredSyringe", "reportPath": "NexusLabs.Needlr.Injection_ConfiguredSyringe.html", "methodName": "BuildServiceProvider(Microsoft.Extensions.Configuration.IConfiguration)", "methodShortName": "BuildServiceProvider(...)", "fileIndex": 0, "line": 88,
+    "metrics": [
+      { "value": 16, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Injection", "class": "NexusLabs.Needlr.Injection.ConfiguredSyringe", "reportPath": "NexusLabs.Needlr.Injection_ConfiguredSyringe.html", "methodName": "RunVerification(Microsoft.Extensions.DependencyInjection.IServiceCollection,NexusLabs.Needlr.VerificationOptions)", "methodShortName": "RunVerification(...)", "fileIndex": 0, "line": 130,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },

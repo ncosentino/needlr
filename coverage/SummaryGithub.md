@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 02/01/2026 - 02:29:53 |
-| Coverage date: | 02/01/2026 - 02:28:55 - 02/01/2026 - 02:29:50 |
+| Generated on: | 02/01/2026 - 04:17:46 |
+| Coverage date: | 02/01/2026 - 04:16:49 - 02/01/2026 - 04:17:43 |
 | Parser: | MultiReport (16x Cobertura) |
 | Assemblies: | 16 |
 | Classes: | 176 |
 | Files: | 152 |
-| **Line coverage:** | 88.7% (7803 of 8796) |
-| Covered lines: | 7803 |
-| Uncovered lines: | 993 |
-| Coverable lines: | 8796 |
-| Total lines: | 23327 |
-| **Branch coverage:** | 78.2% (3670 of 4688) |
-| Covered branches: | 3670 |
-| Total branches: | 4688 |
+| **Line coverage:** | 88.7% (7829 of 8824) |
+| Covered lines: | 7829 |
+| Uncovered lines: | 995 |
+| Coverable lines: | 8824 |
+| Total lines: | 23419 |
+| **Branch coverage:** | 78.3% (3681 of 4700) |
+| Covered branches: | 3681 |
+| Total branches: | 4700 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -197,41 +197,41 @@
 |NexusLabs.Needlr.Hosting.SyringeHostingExtensions|75%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection - 96%</summary>
+<details><summary>NexusLabs.Needlr.Injection - 96.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection**|**96%**|**84.1%**|
+|**NexusLabs.Needlr.Injection**|**96.2%**|**84.5%**|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyInfo|100%|50%|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrder|100%||
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderBuilder|97.9%|85.7%|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderRule|87.5%|50%|
-|NexusLabs.Needlr.Injection.ConfiguredSyringe|95.6%|84.6%|
+|NexusLabs.Needlr.Injection.ConfiguredSyringe|95.8%|85.1%|
 |NexusLabs.Needlr.Injection.ITypeFilterer|100%|100%|
 |NexusLabs.Needlr.Injection.ITypeFiltererExtensionMethods|100%|79%|
 |NexusLabs.Needlr.Injection.OrderedAssemblyProvider|100%||
 |NexusLabs.Needlr.Injection.ServiceCollectionPopulator|95.6%|100%|
 |NexusLabs.Needlr.Injection.Syringe|100%||
-|NexusLabs.Needlr.Injection.SyringeExtensions|83.9%|100%|
+|NexusLabs.Needlr.Injection.SyringeExtensions|86.5%|100%|
 |NexusLabs.Needlr.Injection.TypeFilterers.EmptyTypeFilterer|100%||
 |NexusLabs.Needlr.Injection.TypeFilterers.TypeFilterDecorator|100%|100%|
 |NexusLabs.Needlr.Injection.TypeFiltering|100%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Bundle - 93.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Bundle - 93.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.9%**|**76.6%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|96.2%|70.8%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.5%**|**89%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
@@ -240,7 +240,7 @@
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|96%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackHandlers|100%|75%|
-|NexusLabs.Needlr.Injection.Reflection.ReflectionServiceProviderBuilder|90.4%|70%|
+|NexusLabs.Needlr.Injection.Reflection.ReflectionServiceProviderBuilder|90.9%|72.7%|
 |NexusLabs.Needlr.Injection.Reflection.SyringeReflectionExtensions|100%||
 |NexusLabs.Needlr.Injection.Reflection.TypeFilterers.ReflectionTypeFilterer|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.TypeRegistrars.ReflectionTypeRegistra<br/>r|93.5%|90.7%|
@@ -255,12 +255,12 @@
 |NexusLabs.Needlr.Injection.Scrutor.SyringeScrutorExtensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.SourceGen - 88.1%</summary>
+<details><summary>NexusLabs.Needlr.Injection.SourceGen - 87.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.SourceGen**|**88.1%**|**89%**|
-|NexusLabs.Needlr.Injection.SourceGen.GeneratedServiceProviderBuilder|81.3%|75%|
+|**NexusLabs.Needlr.Injection.SourceGen**|**87.9%**|**89.2%**|
+|NexusLabs.Needlr.Injection.SourceGen.GeneratedServiceProviderBuilder|80.8%|83.3%|
 |NexusLabs.Needlr.Injection.SourceGen.Loaders.GeneratedAssemblyProvider|94.2%|100%|
 |NexusLabs.Needlr.Injection.SourceGen.PluginFactories.GeneratedPluginFactory|97.5%|88.3%|
 |NexusLabs.Needlr.Injection.SourceGen.SyringeSourceGenExtensions|61.3%|50%|
