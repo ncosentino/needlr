@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 01/31/2026 - 23:57:46 |
-| Coverage date: | 01/31/2026 - 23:56:48 - 01/31/2026 - 23:57:43 |
+| Generated on: | 02/01/2026 - 00:21:54 |
+| Coverage date: | 02/01/2026 - 00:20:54 - 02/01/2026 - 00:21:51 |
 | Parser: | MultiReport (16x Cobertura) |
 | Assemblies: | 16 |
 | Classes: | 176 |
 | Files: | 152 |
-| **Line coverage:** | 88.7% (7803 of 8796) |
-| Covered lines: | 7803 |
-| Uncovered lines: | 993 |
+| **Line coverage:** | 88.7% (7805 of 8796) |
+| Covered lines: | 7805 |
+| Uncovered lines: | 991 |
 | Coverable lines: | 8796 |
 | Total lines: | 23327 |
-| **Branch coverage:** | 78.2% (3670 of 4688) |
-| Covered branches: | 3670 |
+| **Branch coverage:** | 78.3% (3672 of 4688) |
+| Covered branches: | 3672 |
 | Total branches: | 4688 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -163,16 +163,16 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 67.4%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 67.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**67.4%**|**32.3%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**67.9%**|**33.8%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|65.3%|40%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|66.1%|42.5%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -227,15 +227,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.6%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|96%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||

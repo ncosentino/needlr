@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#registeras-explicit-interface-registration" class="md-skip">
+        <a href="#registerast-explicit-interface-registration" class="md-skip">
           Skip to content
         </a>
       
@@ -2505,7 +2505,7 @@
   
 
 
-<h1 id="registeras-explicit-interface-registration">RegisterAs\<T> - Explicit Interface Registration<a class="headerlink" href="#registeras-explicit-interface-registration" title="Permanent link">&para;</a></h1>
+<h1 id="registerast-explicit-interface-registration">RegisterAs&lt;T&gt; - Explicit Interface Registration<a class="headerlink" href="#registerast-explicit-interface-registration" title="Permanent link">&para;</a></h1>
 <p>The <code>[RegisterAs&lt;T&gt;]</code> attribute gives you explicit control over which interfaces a class is registered as in dependency injection. By default, Needlr registers a class as all non-system interfaces it implements. Use <code>[RegisterAs&lt;T&gt;]</code> when you want to limit which interfaces are publicly resolvable.</p>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IReader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Read</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>

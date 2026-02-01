@@ -2405,19 +2405,30 @@ function displayResults(data, container) {
         html += `<h3>${displayName}</h3>`;
         html += '<table><thead><tr><th>Method</th><th>Mean</th><th>Allocated</th><th>Ratio</th></tr></thead><tbody>';
 
-        const baseline = benchmarks.find(b => b.Baseline);
+        // Find baseline (method containing "Reflection")
+        const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+        const baselineMean = getMeanFromMeasurements(baseline);
+
         benchmarks.forEach(b => {
-            const isBaseline = b.Baseline;
-            const mean = formatTime(b.Statistics?.Mean);
-            const allocated = formatBytes(b.Memory?.BytesAllocatedPerOperation);
-            const ratio = isBaseline ? '1.00' : (b.Statistics?.Mean / baseline?.Statistics?.Mean).toFixed(2);
-            const ratioClass = ratio < 1 ? 'faster' : (ratio > 1 ? 'slower' : '');
+            const isBaseline = b.Method?.includes('Reflection');
+            const mean = getMeanFromMeasurements(b);
+            const allocated = b.Memory?.BytesAllocatedPerOperation;
+
+            let ratio = '-';
+            let ratioClass = '';
+            if (mean && baselineMean) {
+                const ratioVal = mean / baselineMean;
+                ratio = ratioVal.toFixed(2);
+                ratioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
+            }
+            if (isBaseline) ratio = '1.00';
+
             const rowClass = isBaseline ? 'baseline' : '';
 
             html += `<tr class="${rowClass}">
                 <td>${b.Method}</td>
-                <td>${mean}</td>
-                <td>${allocated}</td>
+                <td>${formatTime(mean)}</td>
+                <td>${formatBytes(allocated)}</td>
                 <td class="${ratioClass}">${ratio}</td>
             </tr>`;
         });
@@ -2425,6 +2436,27 @@ function displayResults(data, container) {
     }
 
     container.innerHTML = html;
+}
+
+function getMeanFromMeasurements(benchmark) {
+    if (!benchmark?.Measurements) return null;
+
+    // Use Statistics.Mean if available
+    if (benchmark.Statistics?.Mean) return benchmark.Statistics.Mean;
+
+    // Calculate from Actual workload measurements
+    const actuals = benchmark.Measurements.filter(m => 
+        m.IterationMode === 'Workload' && m.IterationStage === 'Actual'
+    );
+
+    if (actuals.length === 0) return null;
+
+    // Calculate mean ns per operation
+    const totalNsPerOp = actuals.reduce((sum, m) => {
+        return sum + (m.Nanoseconds / m.Operations);
+    }, 0);
+
+    return totalNsPerOp / actuals.length;
 }
 
 function formatTime(ns) {
@@ -2462,9 +2494,11 @@ function renderChart(data, canvas) {
     const grouped = {};
     buildBenchmarks.forEach(b => {
         const className = (b.Type || 'Unknown').split('.').pop();
-        if (!grouped[className]) grouped[className] = { labels: [], reflection: 0, sourceGen: 0 };
+        if (!grouped[className]) grouped[className] = { reflection: 0, sourceGen: 0 };
 
-        const meanMs = (b.Statistics?.Mean || 0) / 1e6;
+        const mean = getMeanFromMeasurements(b);
+        const meanMs = mean ? mean / 1e6 : 0;
+
         if (b.Method?.includes('Reflection')) {
             grouped[className].reflection = meanMs;
         } else if (b.Method?.includes('SourceGen') && !b.Method?.includes('Explicit')) {
@@ -2532,6 +2566,7 @@ function updateKeyTakeaway(data, element) {
     let totalSpeedup = 0;
     let totalMemorySaving = 0;
     let count = 0;
+    let memCount = 0;
 
     // Group by class to find reflection/sourcegen pairs
     const grouped = {};
@@ -2548,25 +2583,31 @@ function updateKeyTakeaway(data, element) {
 
     for (const benchmarks of Object.values(grouped)) {
         if (benchmarks.reflection && benchmarks.sourceGen) {
-            const refTime = benchmarks.reflection.Statistics?.Mean || 0;
-            const sgTime = benchmarks.sourceGen.Statistics?.Mean || 0;
+            const refTime = getMeanFromMeasurements(benchmarks.reflection);
+            const sgTime = getMeanFromMeasurements(benchmarks.sourceGen);
             const refMem = benchmarks.reflection.Memory?.BytesAllocatedPerOperation || 0;
             const sgMem = benchmarks.sourceGen.Memory?.BytesAllocatedPerOperation || 0;
 
-            if (sgTime > 0) {
+            if (refTime && sgTime && sgTime > 0) {
                 totalSpeedup += refTime / sgTime;
                 count++;
             }
-            if (refMem > 0) {
+            if (refMem > 0 && sgMem > 0) {
                 totalMemorySaving += (1 - sgMem / refMem) * 100;
+                memCount++;
             }
         }
     }
 
     if (count > 0) {
         const avgSpeedup = (totalSpeedup / count).toFixed(1);
-        const avgMemorySaving = Math.round(totalMemorySaving / count);
-        element.innerHTML = `<strong>Host/WebApplication build time is ~${avgSpeedup}x faster with source generation</strong>, with ~${avgMemorySaving}% less memory allocation. Service resolution performance is identical once the container is built.`;
+        let text = `<strong>Build time is ~${avgSpeedup}x faster with source generation</strong>`;
+        if (memCount > 0) {
+            const avgMemorySaving = Math.round(totalMemorySaving / memCount);
+            text += `, with ~${avgMemorySaving}% less memory allocation`;
+        }
+        text += `. Service resolution is identical once the container is built.`;
+        element.innerHTML = text;
     }
 }
 </script>
