@@ -54,6 +54,10 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN020](NDLRGEN020.md) | Error | [Options] is not compatible with Native AOT |
 | [NDLRGEN021](NDLRGEN021.md) | Warning | [Options] Positional record must be partial |
 | [NDLRGEN022](NDLRGEN022.md) | Error | Disposable captive dependency (uses inferred lifetimes) |
+| [NDLRGEN031](NDLRGEN031.md) | Error | [Provider] on class requires partial modifier |
+| [NDLRGEN032](NDLRGEN032.md) | Error | [Provider] interface has invalid member |
+| [NDLRGEN033](NDLRGEN033.md) | Warning | [Provider] property uses concrete type |
+| [NDLRGEN034](NDLRGEN034.md) | Error | [Provider] circular dependency detected |
 
 ## Diagnostic ID Naming Convention
 

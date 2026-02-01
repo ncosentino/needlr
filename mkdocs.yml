@@ -42,6 +42,7 @@ nav:
     - Keyed Services: keyed-services.md
     - Options Binding: options.md
     - Factories: factories.md
+    - Providers: providers.md
     - Interceptors: interceptors.md
     - Open Generic Decorators: open-generic-decorators.md
     - Service Catalog: service-catalog.md
@@ -84,6 +85,10 @@ nav:
       - NDLRGEN020: analyzers/NDLRGEN020.md
       - NDLRGEN021: analyzers/NDLRGEN021.md
       - NDLRGEN022: analyzers/NDLRGEN022.md
+      - NDLRGEN031: analyzers/NDLRGEN031.md
+      - NDLRGEN032: analyzers/NDLRGEN032.md
+      - NDLRGEN033: analyzers/NDLRGEN033.md
+      - NDLRGEN034: analyzers/NDLRGEN034.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
