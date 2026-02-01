@@ -1,0 +1,19 @@
+{
+  "CreatePluginsFromGenericTypeBenchmarks": {"description": "Benchmarks comparing GeneratedPluginFactory vs ReflectionPluginFactory for creating plugins from a type parameter. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/CreatePluginsFromGenericTypeBenchmarks.cs"}
+,
+  "DecoratorResolutionBenchmarks": {"description": "Benchmarks comparing decorated service resolution between source-gen and reflection. All benchmarks measure resolution of a service with a 5-decorator chain. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/DecoratorResolutionBenchmarks.cs"}
+,
+  "HostBuildBenchmarks": {"description": "Benchmarks comparing host build with source-gen vs reflection DI. Measures full host building time including service registration. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/HostBuildBenchmarks.cs"}
+,
+  "KeyedServiceResolutionBenchmarks": {"description": "Benchmarks comparing keyed service resolution between source-gen and reflection. All benchmarks measure resolution of a keyed service. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/KeyedServiceResolutionBenchmarks.cs"}
+,
+  "OptionsResolutionBenchmarks": {"description": "Benchmarks comparing IOptions resolution between source-gen and reflection. All benchmarks measure resolution of a single options type. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/OptionsResolutionBenchmarks.cs"}
+,
+  "ServiceProviderBuildBenchmarks": {"description": "End-to-end benchmarks comparing full Syringe pipeline for source-gen vs reflection. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ServiceProviderBuildBenchmarks.cs"}
+,
+  "ServiceResolutionBenchmarks": {"description": "Benchmarks comparing simple service resolution between source-gen and reflection. All benchmarks measure resolution of a simple service (no dependencies). Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ServiceResolutionBenchmarks.cs"}
+,
+  "TypeRegistrationBenchmarks": {"description": "Benchmarks comparing GeneratedTypeRegistrar vs ReflectionTypeRegistrar. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/TypeRegistrationBenchmarks.cs"}
+,
+  "WebApplicationBuildBenchmarks": {"description": "Benchmarks comparing ASP.NET WebApplication build with source-gen vs reflection DI. Measures full WebApplication building time including service registration. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/WebApplicationBuildBenchmarks.cs"}
+}

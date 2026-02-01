@@ -11,7 +11,7 @@ WarmupCount=3
  Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
 ----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
  Reflection |       NA |       NA |       NA |     ? |       ? |    ? |        NA |           ? |
- SourceGen  | 21.98 ns | 0.134 ns | 0.021 ns |     ? |       ? |    1 |         - |           ? |
+ SourceGen  | 23.48 ns | 1.868 ns | 0.485 ns |     ? |       ? |    1 |         - |           ? |
 
 Benchmarks with issues:
   KeyedServiceResolutionBenchmarks.Reflection: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)

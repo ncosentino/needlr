@@ -8,7 +8,7 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method     | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
------------ |---------:|---------:|---------:|------:|-----:|----------:|------------:|
- Reflection | 14.82 ns | 0.456 ns | 0.118 ns |  1.00 |    1 |         - |          NA |
- SourceGen  | 15.33 ns | 0.553 ns | 0.144 ns |  1.03 |    1 |         - |          NA |
+ Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+ Reflection | 15.39 ns | 3.058 ns | 0.794 ns |  1.00 |    0.07 |    1 |         - |          NA |
+ SourceGen  | 16.24 ns | 2.945 ns | 0.456 ns |  1.06 |    0.06 |    1 |         - |          NA |
