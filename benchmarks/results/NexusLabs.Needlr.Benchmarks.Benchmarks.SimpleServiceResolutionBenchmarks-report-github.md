@@ -1,10 +1,10 @@
 ```
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.102
-  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -12,5 +12,5 @@ WarmupCount=3
 ```
 | Method     | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
 |----------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
-| Reflection | 15.39 ns | 3.058 ns | 0.794 ns |  1.00 |    0.07 |    1 |         - |          NA |
-| SourceGen  | 16.24 ns | 2.945 ns | 0.456 ns |  1.06 |    0.06 |    1 |         - |          NA |
+| Reflection | 12.66 ns | 0.168 ns | 0.044 ns |  1.00 |    0.00 |    1 |         - |          NA |
+| SourceGen  | 13.91 ns | 0.851 ns | 0.221 ns |  1.10 |    0.02 |    1 |         - |          NA |

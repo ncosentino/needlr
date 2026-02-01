@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260201-020536</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260201-024104</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,21 +14,21 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.102
-  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 </code></pre>
-<pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
-WarmupCount=3  
+<pre><code>Job=ShortRun  InvocationCount=1  IterationCount=5  
+LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method     </th><th>Mean</th><th>Error</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Alloc Ratio</th>
+<thead><tr><th>Method     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>Reflection</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>?</td><td>?</td>
-</tr><tr><td>SourceGen</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>?</td><td>?</td>
-</tr><tr><td>SourceGenExplicit</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>?</td><td>?</td>
+</thead><tbody><tr><td>Reflection</td><td>6.260 ms</td><td>0.3787 ms</td><td>0.0984 ms</td><td>1.00</td><td>0.02</td><td>2</td><td>1213.04 KB</td><td>1.00</td>
+</tr><tr><td>SourceGen</td><td>2.879 ms</td><td>0.0756 ms</td><td>0.0117 ms</td><td>0.46</td><td>0.01</td><td>1</td><td>695.52 KB</td><td>0.57</td>
+</tr><tr><td>SourceGenExplicit</td><td>2.833 ms</td><td>0.2570 ms</td><td>0.0667 ms</td><td>0.45</td><td>0.01</td><td>1</td><td>648.27 KB</td><td>0.53</td>
 </tr></tbody></table>
 </body>
 </html>
