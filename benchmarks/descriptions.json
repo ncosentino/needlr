@@ -1,13 +1,23 @@
 {
+  "CollectionResolutionBenchmarks": {"description": "Benchmarks comparing IEnumerable&lt;T&gt; collection resolution between source-gen and reflection. Measures the cost of resolving all implementations of an interface. Common pattern for plugin systems, handlers, and strategy patterns. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/CollectionResolutionBenchmarks.cs"}
+,
   "CreatePluginsFromGenericTypeBenchmarks": {"description": "Benchmarks comparing GeneratedPluginFactory vs ReflectionPluginFactory for creating plugins from a type parameter. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/CreatePluginsFromGenericTypeBenchmarks.cs"}
 ,
   "DecoratorResolutionBenchmarks": {"description": "Benchmarks comparing decorated service resolution between source-gen and reflection. All benchmarks measure resolution of a service with a 5-decorator chain. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/DecoratorResolutionBenchmarks.cs"}
+,
+  "DeepDependencyChainBenchmarks": {"description": "Benchmarks comparing resolution of services with deep dependency chains. Tests a 10-level deep dependency graph where each level depends on the previous. Real applications often have complex dependency graphs; this measures scaling behavior. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/DeepDependencyChainBenchmarks.cs"}
+,
+  "FirstResolutionBenchmarks": {"description": "Benchmarks comparing first/cold-start service resolution between source-gen and reflection. Measures the cost of the very first resolution before any caching kicks in. Critical for serverless, AOT, and cold-start scenarios. Each iteration builds a fresh container to ensure cold resolution. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/FirstResolutionBenchmarks.cs"}
 ,
   "HostBuildBenchmarks": {"description": "Benchmarks comparing host build with source-gen vs reflection DI. Measures full host building time including service registration. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/HostBuildBenchmarks.cs"}
 ,
   "KeyedServiceResolutionBenchmarks": {"description": "Benchmarks comparing keyed service resolution between source-gen and reflection. All benchmarks measure resolution of a keyed service. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/KeyedServiceResolutionBenchmarks.cs"}
 ,
+  "OpenGenericBenchmarks": {"description": "Benchmarks comparing open generic service resolution between source-gen and reflection. Tests the IRepository&lt;T&gt; pattern common in enterprise applications. Measures the cost of resolving closed generic types from open generic registrations. Uses pre-registration callbacks to register open generics before auto-discovery. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/OpenGenericBenchmarks.cs"}
+,
   "OptionsResolutionBenchmarks": {"description": "Benchmarks comparing IOptions resolution between source-gen and reflection. All benchmarks measure resolution of a single options type. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/OptionsResolutionBenchmarks.cs"}
+,
+  "ScopedServiceResolutionBenchmarks": {"description": "Benchmarks comparing scoped service resolution between source-gen and reflection. Measures the cost of creating a scope and resolving scoped services within it. This is critical for web applications where each request creates a new scope. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ScopedServiceResolutionBenchmarks.cs"}
 ,
   "ServiceProviderBuildBenchmarks": {"description": "End-to-end benchmarks comparing full Syringe pipeline for source-gen vs reflection. Uses REAL generated TypeRegistry from source generator. Reflection is the baseline.", "source": "src/NexusLabs.Needlr.Benchmarks/Benchmarks/ServiceProviderBuildBenchmarks.cs"}
 ,

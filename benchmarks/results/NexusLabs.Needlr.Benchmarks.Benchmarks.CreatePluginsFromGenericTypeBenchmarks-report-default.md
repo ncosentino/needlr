@@ -1,16 +1,16 @@
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.3 LTS (Noble Numbat)
-Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 4 logical and 2 physical cores
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.102
-  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
-  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
 
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
  Method                          | Mean        | Error     | StdDev   | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
 -------------------------------- |------------:|----------:|---------:|------:|-----:|-------:|----------:|------------:|
- Reflection_AssemblyListProvided | 19,775.9 ns | 122.28 ns | 18.92 ns |  1.00 |    2 | 0.1831 |    4714 B |        1.00 |
- SourceGen_AssemblyListProvided  | 20,409.1 ns | 259.02 ns | 67.27 ns |  1.03 |    2 | 0.7629 |   19328 B |        4.10 |
- SourceGen_EmptyAssemblyList     | 18,765.3 ns | 209.51 ns | 32.42 ns |  0.95 |    2 | 0.7019 |   18328 B |        3.89 |
- SourceGen_ParameterlessOverload |    301.8 ns |   3.58 ns |  0.55 ns |  0.02 |    1 | 0.0172 |     440 B |        0.09 |
+ Reflection_AssemblyListProvided | 25,786.0 ns | 520.02 ns | 80.47 ns |  1.00 |    2 | 0.2441 |    5662 B |        1.00 |
+ SourceGen_AssemblyListProvided  | 21,544.8 ns |  76.44 ns | 19.85 ns |  0.84 |    2 | 1.2817 |   21728 B |        3.84 |
+ SourceGen_EmptyAssemblyList     | 19,534.7 ns | 139.78 ns | 36.30 ns |  0.76 |    2 | 1.2207 |   20728 B |        3.66 |
+ SourceGen_ParameterlessOverload |    417.8 ns |   9.21 ns |  2.39 ns |  0.02 |    1 | 0.0262 |     440 B |        0.08 |
