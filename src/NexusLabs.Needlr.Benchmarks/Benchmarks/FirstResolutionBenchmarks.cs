@@ -17,7 +17,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 /// Measures the cost of the very first resolution before any caching kicks in.
 /// Critical for serverless, AOT, and cold-start scenarios.
 /// Each iteration builds a fresh container to ensure cold resolution.
-/// Reflection is the baseline.
+/// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
 public class FirstResolutionBenchmarks
@@ -41,7 +41,16 @@ public class FirstResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public ISimpleService1 BuildAndResolveFirst_Reflection()
+    public ISimpleService1 ManualDI_BuildAndResolveFirst()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ISimpleService1, SimpleService1>();
+        _lastProvider = services.BuildServiceProvider();
+        return _lastProvider.GetRequiredService<ISimpleService1>();
+    }
+
+    [Benchmark]
+    public ISimpleService1 Needlr_Reflection_BuildAndResolveFirst()
     {
         _lastProvider = new Syringe()
             .UsingReflection()
@@ -51,7 +60,7 @@ public class FirstResolutionBenchmarks
     }
 
     [Benchmark]
-    public ISimpleService1 BuildAndResolveFirst_SourceGen()
+    public ISimpleService1 Needlr_SourceGen_BuildAndResolveFirst()
     {
         _lastProvider = new Syringe()
             .UsingSourceGen()

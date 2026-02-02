@@ -16,7 +16,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 /// <summary>
 /// Benchmarks comparing GeneratedTypeRegistrar vs ReflectionTypeRegistrar.
 /// Uses REAL generated TypeRegistry from source generator.
-/// Reflection is the baseline.
+/// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
 public class TypeRegistrationBenchmarks
@@ -40,7 +40,19 @@ public class TypeRegistrationBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IServiceCollection RegisterTypes_Reflection()
+    public IServiceCollection ManualDI_RegisterTypes()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ISimpleService1, SimpleService1>();
+        services.AddSingleton<ISimpleService2, SimpleService2>();
+        services.AddSingleton<ISimpleService3, SimpleService3>();
+        services.AddSingleton<ISimpleService4, SimpleService4>();
+        services.AddSingleton<ISimpleService5, SimpleService5>();
+        return services;
+    }
+
+    [Benchmark]
+    public IServiceCollection Needlr_Reflection_RegisterTypes()
     {
         var services = new ServiceCollection();
         _reflectionRegistrar.RegisterTypesFromAssemblies(services, _reflectionTypeFilterer, _assemblies);
@@ -48,7 +60,7 @@ public class TypeRegistrationBenchmarks
     }
 
     [Benchmark]
-    public IServiceCollection RegisterTypes_SourceGen()
+    public IServiceCollection Needlr_SourceGen_RegisterTypes()
     {
         var services = new ServiceCollection();
         _sourceGenRegistrar.RegisterTypesFromAssemblies(services, _sourceGenTypeFilterer, _assemblies);

@@ -13,13 +13,12 @@ using System.Reflection;
 namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 
 /// <summary>
-/// Benchmarks comparing scoped service resolution between source-gen and reflection.
-/// Measures the cost of creating a scope and resolving scoped services within it.
-/// This is critical for web applications where each request creates a new scope.
+/// Benchmarks comparing simple service resolution between source-gen and reflection.
+/// All benchmarks measure resolution of a simple service (no dependencies).
 /// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
-public class ScopedServiceResolutionBenchmarks
+public class SimpleServiceResolutionBenchmarks
 {
     private IServiceProvider _manualProvider = null!;
     private IServiceProvider _reflectionProvider = null!;
@@ -31,13 +30,11 @@ public class ScopedServiceResolutionBenchmarks
     public void Setup()
     {
         _configuration = new ConfigurationBuilder().Build();
-        _assemblies = [typeof(ScopedService1).Assembly];
+        _assemblies = [typeof(SimpleService1).Assembly];
 
-        // Manual DI registration with scoped services
+        // Manual DI registration
         var manualServices = new ServiceCollection();
-        manualServices.AddScoped<IScopedService1, ScopedService1>();
-        manualServices.AddScoped<IScopedService2, ScopedService2>();
-        manualServices.AddScoped<IScopedService3, ScopedService3>();
+        manualServices.AddSingleton<ISimpleService1, SimpleService1>();
         _manualProvider = manualServices.BuildServiceProvider();
 
         _reflectionProvider = new Syringe()
@@ -60,23 +57,20 @@ public class ScopedServiceResolutionBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IScopedService3 ManualDI_CreateScopeAndResolve()
+    public ISimpleService1 ManualDI_ResolveSimple()
     {
-        using var scope = _manualProvider.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IScopedService3>();
+        return _manualProvider.GetRequiredService<ISimpleService1>();
     }
 
     [Benchmark]
-    public IScopedService3 Needlr_Reflection_CreateScopeAndResolve()
+    public ISimpleService1 Needlr_Reflection_ResolveSimple()
     {
-        using var scope = _reflectionProvider.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IScopedService3>();
+        return _reflectionProvider.GetRequiredService<ISimpleService1>();
     }
 
     [Benchmark]
-    public IScopedService3 Needlr_SourceGen_CreateScopeAndResolve()
+    public ISimpleService1 Needlr_SourceGen_ResolveSimple()
     {
-        using var scope = _sourceGenProvider.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IScopedService3>();
+        return _sourceGenProvider.GetRequiredService<ISimpleService1>();
     }
 }

@@ -1,6 +1,7 @@
 using BenchmarkDotNet.Attributes;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Benchmarks.TestTypes;
@@ -15,7 +16,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 /// <summary>
 /// Benchmarks comparing ASP.NET WebApplication build with source-gen vs reflection DI.
 /// Measures full WebApplication building time including service registration.
-/// Reflection is the baseline.
+/// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
 public class WebApplicationBuildBenchmarks
@@ -40,7 +41,18 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public WebApplication BuildWebApp_Reflection()
+    public WebApplication ManualDI_BuildWebApp()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddSingleton<ISimpleService1, SimpleService1>();
+        builder.Services.AddSingleton<ISimpleService2, SimpleService2>();
+        builder.Services.AddSingleton<ISimpleService3, SimpleService3>();
+        _lastApp = builder.Build();
+        return _lastApp;
+    }
+
+    [Benchmark]
+    public WebApplication Needlr_Reflection_BuildWebApp()
     {
         _lastApp = new Syringe()
             .UsingReflection()
@@ -50,7 +62,7 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark]
-    public WebApplication BuildWebApp_SourceGen()
+    public WebApplication Needlr_SourceGen_BuildWebApp()
     {
         _lastApp = new Syringe()
             .UsingSourceGen()
@@ -60,7 +72,7 @@ public class WebApplicationBuildBenchmarks
     }
 
     [Benchmark]
-    public WebApplication BuildWebApp_SourceGenExplicit()
+    public WebApplication Needlr_SourceGenExplicit_BuildWebApp()
     {
         _lastApp = new Syringe()
             .UsingGeneratedComponents(

@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NexusLabs.Needlr.Benchmarks.TestTypes;
@@ -15,7 +16,7 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 /// <summary>
 /// Benchmarks comparing host build with source-gen vs reflection DI.
 /// Measures full host building time including service registration.
-/// Reflection is the baseline.
+/// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
 public class HostBuildBenchmarks
@@ -37,7 +38,21 @@ public class HostBuildBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public IHost BuildHost_Reflection()
+    public IHost ManualDI_BuildHost()
+    {
+        _lastHost = Host.CreateDefaultBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton<ISimpleService1, SimpleService1>();
+                services.AddSingleton<ISimpleService2, SimpleService2>();
+                services.AddSingleton<ISimpleService3, SimpleService3>();
+            })
+            .Build();
+        return _lastHost;
+    }
+
+    [Benchmark]
+    public IHost Needlr_Reflection_BuildHost()
     {
         _lastHost = new Syringe()
             .UsingReflection()
@@ -47,7 +62,7 @@ public class HostBuildBenchmarks
     }
 
     [Benchmark]
-    public IHost BuildHost_SourceGen()
+    public IHost Needlr_SourceGen_BuildHost()
     {
         _lastHost = new Syringe()
             .UsingSourceGen()
@@ -57,7 +72,7 @@ public class HostBuildBenchmarks
     }
 
     [Benchmark]
-    public IHost BuildHost_SourceGenExplicit()
+    public IHost Needlr_SourceGenExplicit_BuildHost()
     {
         _lastHost = new Syringe()
             .UsingGeneratedComponents(

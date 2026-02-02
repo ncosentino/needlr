@@ -15,11 +15,12 @@ namespace NexusLabs.Needlr.Benchmarks.Benchmarks;
 /// <summary>
 /// Benchmarks comparing decorated service resolution between source-gen and reflection.
 /// All benchmarks measure resolution of a service with a 5-decorator chain.
-/// Reflection is the baseline.
+/// Manual DI is the baseline.
 /// </summary>
 [Config(typeof(BenchmarkConfig))]
 public class DecoratorResolutionBenchmarks
 {
+    private IServiceProvider _manualProvider = null!;
     private IServiceProvider _reflectionProvider = null!;
     private IServiceProvider _sourceGenProvider = null!;
     private IConfiguration _configuration = null!;
@@ -30,6 +31,20 @@ public class DecoratorResolutionBenchmarks
     {
         _configuration = new ConfigurationBuilder().Build();
         _assemblies = [typeof(SimpleService1).Assembly];
+
+        // Manual DI registration with decorator chain
+        var manualServices = new ServiceCollection();
+        manualServices.AddSingleton<IDecoratedService>(sp =>
+        {
+            IDecoratedService inner = new DecoratedServiceImpl();
+            inner = new Decorator1(inner);
+            inner = new Decorator2(inner);
+            inner = new Decorator3(inner);
+            inner = new Decorator4(inner);
+            inner = new Decorator5(inner);
+            return inner;
+        });
+        _manualProvider = manualServices.BuildServiceProvider();
 
         _reflectionProvider = new Syringe()
             .UsingReflection()
@@ -45,18 +60,25 @@ public class DecoratorResolutionBenchmarks
     [GlobalCleanup]
     public void Cleanup()
     {
+        (_manualProvider as IDisposable)?.Dispose();
         (_reflectionProvider as IDisposable)?.Dispose();
         (_sourceGenProvider as IDisposable)?.Dispose();
     }
 
     [Benchmark(Baseline = true)]
-    public IDecoratedService ResolveDecorated_Reflection()
+    public IDecoratedService ManualDI_ResolveDecorated()
+    {
+        return _manualProvider.GetRequiredService<IDecoratedService>();
+    }
+
+    [Benchmark]
+    public IDecoratedService Needlr_Reflection_ResolveDecorated()
     {
         return _reflectionProvider.GetRequiredService<IDecoratedService>();
     }
 
     [Benchmark]
-    public IDecoratedService ResolveDecorated_SourceGen()
+    public IDecoratedService Needlr_SourceGen_ResolveDecorated()
     {
         return _sourceGenProvider.GetRequiredService<IDecoratedService>();
     }

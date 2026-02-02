@@ -109,8 +109,8 @@ jobs:
 
       - name: Extract Benchmark Descriptions
         run: |
-          # Extract XML docs from benchmark classes to create descriptions.json
-          # This allows the web page to show descriptions without hardcoding
+          # Extract XML docs and baseline method from benchmark classes to create descriptions.json
+          # This allows the web page to show descriptions and identify baselines without hardcoding
           
           BENCHMARK_DIR="src/NexusLabs.Needlr.Benchmarks/Benchmarks"
           OUTPUT_FILE="benchmark-results/descriptions.json"
@@ -126,6 +126,9 @@ jobs:
               # Extract XML summary using grep/sed
               summary=$(grep -A 20 '/// <summary>' "$file" | grep -B 20 '/// </summary>' | head -20 | grep '///' | sed 's/.*\/\/\/ //' | sed 's/<[^>]*>//g' | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ *//' | sed 's/ *$//')
               
+              # Extract the baseline method name (method with Baseline = true)
+              baseline=$(grep -B 1 'public.*(' "$file" | grep -A 1 'Benchmark(Baseline = true)' | grep 'public' | sed 's/.*public[^a-zA-Z]*[a-zA-Z<>]*[[:space:]]\+\([a-zA-Z_][a-zA-Z0-9_]*\).*/\1/' | head -1)
+              
               # Get relative path for source link
               relpath="src/NexusLabs.Needlr.Benchmarks/Benchmarks/$(basename "$file")"
               
@@ -138,7 +141,7 @@ jobs:
               # Escape quotes in summary
               summary_escaped=$(echo "$summary" | sed 's/"/\\"/g')
               
-              echo "  \"$classname\": {\"description\": \"$summary_escaped\", \"source\": \"$relpath\"}" >> "$OUTPUT_FILE"
+              echo "  \"$classname\": {\"description\": \"$summary_escaped\", \"source\": \"$relpath\", \"baseline\": \"$baseline\"}" >> "$OUTPUT_FILE"
             fi
           done
           
