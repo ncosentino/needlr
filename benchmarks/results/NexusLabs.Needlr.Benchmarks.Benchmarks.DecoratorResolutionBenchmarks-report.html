@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-20260201-194734</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DecoratorResolutionBenchmarks-20260202-012601</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -24,10 +24,11 @@ WarmupCount=3
 </code></pre>
 
 <table>
-<thead><tr><th>Method               </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ResolveDecorated_Reflection</td><td>14.51 ns</td><td>0.202 ns</td><td>0.052 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>ResolveDecorated_SourceGen</td><td>15.00 ns</td><td>0.034 ns</td><td>0.009 ns</td><td>1.03</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDecorated</td><td>15.32 ns</td><td>0.060 ns</td><td>0.009 ns</td><td>1.00</td><td>0.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDecorated</td><td>15.30 ns</td><td>1.199 ns</td><td>0.311 ns</td><td>1.00</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDecorated</td><td>15.51 ns</td><td>2.898 ns</td><td>0.753 ns</td><td>1.01</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

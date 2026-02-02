@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CollectionResolutionBenchmarks-20260201-194631</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CollectionResolutionBenchmarks-20260202-012456</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -24,10 +24,11 @@ WarmupCount=3
 </code></pre>
 
 <table>
-<thead><tr><th>Method                </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ResolveCollection_Reflection</td><td>45.95 ns</td><td>0.409 ns</td><td>0.063 ns</td><td>1.00</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
-</tr><tr><td>ResolveCollection_SourceGen</td><td>51.89 ns</td><td>1.473 ns</td><td>0.383 ns</td><td>1.13</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_ResolveCollection</td><td>49.53 ns</td><td>0.684 ns</td><td>0.178 ns</td><td>1.00</td><td>0.00</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ResolveCollection</td><td>47.43 ns</td><td>4.151 ns</td><td>1.078 ns</td><td>0.96</td><td>0.02</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_ResolveCollection</td><td>48.40 ns</td><td>0.978 ns</td><td>0.151 ns</td><td>0.98</td><td>0.00</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>

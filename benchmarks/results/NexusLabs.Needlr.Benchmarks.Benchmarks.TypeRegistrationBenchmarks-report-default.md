@@ -8,7 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                   | Mean        | Error     | StdDev   | Ratio | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-------------------------- |------------:|----------:|---------:|------:|-----:|--------:|-------:|----------:|------------:|
- RegisterTypes_Reflection | 1,188.42 μs | 27.391 μs | 4.239 μs |  1.00 |    2 | 35.1563 | 3.9063 |    575 KB |        1.00 |
- RegisterTypes_SourceGen  |    17.77 μs |  0.514 μs | 0.133 μs |  0.01 |    1 |  1.8005 | 0.1221 |  29.73 KB |        0.05 |
+ Method                          | Mean           | Error        | StdDev      | Ratio     | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+-------------------------------- |---------------:|-------------:|------------:|----------:|--------:|-----:|--------:|-------:|----------:|------------:|
+ ManualDI_RegisterTypes          |       101.8 ns |      2.66 ns |     0.41 ns |      1.00 |    0.01 |    1 |  0.0315 |      - |     528 B |        1.00 |
+ Needlr_Reflection_RegisterTypes | 1,209,973.8 ns | 35,445.09 ns | 9,204.98 ns | 11,882.36 |   93.28 |    3 | 35.1563 | 3.9063 |  589901 B |    1,117.24 |
+ Needlr_SourceGen_RegisterTypes  |    17,358.0 ns |    191.11 ns |    49.63 ns |    170.46 |    0.76 |    2 |  1.8005 | 0.1221 |   30440 B |       57.65 |

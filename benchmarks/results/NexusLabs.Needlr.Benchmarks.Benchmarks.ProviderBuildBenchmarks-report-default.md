@@ -8,9 +8,9 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                              | Mean       | Error      | StdDev     | Ratio  | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
------------------------------------- |-----------:|-----------:|-----------:|-------:|--------:|-----:|--------:|-------:|----------:|------------:|
- ManualDI_ToServiceProvider          |   1.194 μs |  0.0448 μs |  0.0069 μs |   1.00 |    0.01 |    1 |  0.2689 | 0.0877 |   4.41 KB |        1.00 |
- Needlr_Reflection_ToServiceProvider | 688.529 μs | 11.8512 μs |  1.8340 μs | 576.46 |    3.29 |    3 | 11.7188 |      - | 222.19 KB |       50.43 |
- Needlr_SourceGen_ToServiceProvider  | 115.040 μs |  6.9801 μs |  1.8127 μs |  96.32 |    1.48 |    2 | 10.7422 | 1.4648 | 177.46 KB |       40.28 |
- Needlr_SourceGen_ToProvider         | 126.062 μs | 45.4504 μs | 11.8033 μs | 105.54 |    9.08 |    2 | 10.7422 | 0.9766 | 182.15 KB |       41.34 |
+ Method                              | Mean       | Error       | StdDev     | Ratio  | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+------------------------------------ |-----------:|------------:|-----------:|-------:|--------:|-----:|--------:|-------:|----------:|------------:|
+ ManualDI_ToServiceProvider          |   1.166 μs |   0.0136 μs |  0.0035 μs |   1.00 |    0.00 |    1 |  0.2689 | 0.0877 |   4.41 KB |        1.00 |
+ Needlr_Reflection_ToServiceProvider | 878.813 μs | 285.7464 μs | 74.2074 μs | 753.42 |   58.11 |    3 | 15.6250 |      - | 259.36 KB |       58.86 |
+ Needlr_SourceGen_ToServiceProvider  | 105.526 μs |   2.1915 μs |  0.3391 μs |  90.47 |    0.36 |    2 | 10.2539 | 1.4648 | 174.56 KB |       39.62 |
+ Needlr_SourceGen_ToProvider         | 110.907 μs |   1.5426 μs |  0.2387 μs |  95.08 |    0.32 |    2 | 10.7422 | 1.4648 | 179.24 KB |       40.68 |

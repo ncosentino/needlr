@@ -10,7 +10,8 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                      | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
-|---------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
-| ResolveDeepChain_Reflection | 15.01 ns | 1.086 ns | 0.282 ns |  1.00 |    0.02 |    1 |         - |          NA |
-| ResolveDeepChain_SourceGen  | 15.03 ns | 0.048 ns | 0.012 ns |  1.00 |    0.02 |    1 |         - |          NA |
+| Method                             | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+|----------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+| ManualDI_ResolveDeepChain          | 15.31 ns | 3.081 ns | 0.800 ns |  1.00 |    0.07 |    1 |         - |          NA |
+| Needlr_Reflection_ResolveDeepChain | 15.02 ns | 0.453 ns | 0.118 ns |  0.98 |    0.05 |    1 |         - |          NA |
+| Needlr_SourceGen_ResolveDeepChain  | 15.77 ns | 2.088 ns | 0.542 ns |  1.03 |    0.06 |    1 |         - |          NA |

@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-20260201-194812</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-20260202-012659</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -24,10 +24,11 @@ WarmupCount=3
 </code></pre>
 
 <table>
-<thead><tr><th>Method               </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ResolveDependent_Reflection</td><td>14.33 ns</td><td>0.396 ns</td><td>0.103 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>ResolveDependent_SourceGen</td><td>14.48 ns</td><td>0.360 ns</td><td>0.094 ns</td><td>1.01</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDependent</td><td>15.96 ns</td><td>1.775 ns</td><td>0.461 ns</td><td>1.00</td><td>0.04</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDependent</td><td>14.72 ns</td><td>0.661 ns</td><td>0.172 ns</td><td>0.92</td><td>0.03</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDependent</td><td>15.31 ns</td><td>0.341 ns</td><td>0.089 ns</td><td>0.96</td><td>0.03</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

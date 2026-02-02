@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260201-195313</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260202-013312</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -24,11 +24,12 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 </code></pre>
 
 <table>
-<thead><tr><th>Method                 </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                        </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>BuildWebApp_Reflection</td><td>8.608 ms</td><td>0.1923 ms</td><td>0.0499 ms</td><td>1.00</td><td>2</td><td>1671.91 KB</td><td>1.00</td>
-</tr><tr><td>BuildWebApp_SourceGen</td><td>3.392 ms</td><td>0.3815 ms</td><td>0.0590 ms</td><td>0.39</td><td>1</td><td>734.5 KB</td><td>0.44</td>
-</tr><tr><td>BuildWebApp_SourceGenExplicit</td><td>3.342 ms</td><td>0.1517 ms</td><td>0.0394 ms</td><td>0.39</td><td>1</td><td>674.66 KB</td><td>0.40</td>
+</thead><tbody><tr><td>ManualDI_BuildWebApp</td><td>2.695 ms</td><td>0.1941 ms</td><td>0.0504 ms</td><td>1.00</td><td>0.02</td><td>1</td><td>517.07 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_BuildWebApp</td><td>8.957 ms</td><td>0.1410 ms</td><td>0.0366 ms</td><td>3.32</td><td>0.06</td><td>2</td><td>1746.74 KB</td><td>3.38</td>
+</tr><tr><td>Needlr_SourceGen_BuildWebApp</td><td>3.367 ms</td><td>0.2353 ms</td><td>0.0611 ms</td><td>1.25</td><td>0.03</td><td>1</td><td>734.78 KB</td><td>1.42</td>
+</tr><tr><td>Needlr_SourceGenExplicit_BuildWebApp</td><td>3.294 ms</td><td>0.0295 ms</td><td>0.0077 ms</td><td>1.22</td><td>0.02</td><td>1</td><td>674.95 KB</td><td>1.31</td>
 </tr></tbody></table>
 </body>
 </html>

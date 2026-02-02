@@ -8,7 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                      | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
----------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
- ResolveDependent_Reflection | 14.33 ns | 0.396 ns | 0.103 ns |  1.00 |    1 |         - |          NA |
- ResolveDependent_SourceGen  | 14.48 ns | 0.360 ns | 0.094 ns |  1.01 |    1 |         - |          NA |
+ Method                             | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+----------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+ ManualDI_ResolveDependent          | 15.96 ns | 1.775 ns | 0.461 ns |  1.00 |    0.04 |    1 |         - |          NA |
+ Needlr_Reflection_ResolveDependent | 14.72 ns | 0.661 ns | 0.172 ns |  0.92 |    0.03 |    1 |         - |          NA |
+ Needlr_SourceGen_ResolveDependent  | 15.31 ns | 0.341 ns | 0.089 ns |  0.96 |    0.03 |    1 |         - |          NA |

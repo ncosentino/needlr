@@ -12,11 +12,11 @@ WarmupCount=3
 ```
 | Method                              | Mean       | Error     | StdDev    | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
 |------------------------------------ |-----------:|----------:|----------:|------:|--------:|-----:|----------:|------------:|
-| ManualDI_ServiceProvider_GetService | 15.2757 ns | 0.0829 ns | 0.0128 ns |  1.00 |    0.00 |    2 |         - |          NA |
+| ManualDI_ServiceProvider_GetService | 15.0468 ns | 0.0943 ns | 0.0245 ns |  1.00 |    0.00 |    2 |         - |          NA |
 | Needlr_Reflection_GetService        |         NA |        NA |        NA |     ? |       ? |    ? |        NA |           ? |
-| Needlr_SourceGen_GetService         | 18.3023 ns | 0.1584 ns | 0.0245 ns |  1.20 |    0.00 |    2 |         - |          NA |
-| Provider_Interface_PropertyAccess   |  0.8970 ns | 0.0129 ns | 0.0020 ns |  0.06 |    0.00 |    1 |         - |          NA |
-| Provider_Shorthand_PropertyAccess   |  0.8961 ns | 0.0102 ns | 0.0027 ns |  0.06 |    0.00 |    1 |         - |          NA |
+| Needlr_SourceGen_GetService         | 15.0253 ns | 0.0987 ns | 0.0256 ns |  1.00 |    0.00 |    2 |         - |          NA |
+| Provider_Interface_PropertyAccess   |  0.8946 ns | 0.0117 ns | 0.0030 ns |  0.06 |    0.00 |    1 |         - |          NA |
+| Provider_Shorthand_PropertyAccess   |  0.8952 ns | 0.0262 ns | 0.0041 ns |  0.06 |    0.00 |    1 |         - |          NA |
 
 Benchmarks with issues:
   ProviderResolutionBenchmarks.Needlr_Reflection_GetService: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)
