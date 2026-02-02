@@ -2589,6 +2589,7 @@ function renderBenchmarkSections(data, descriptions, container) {
         const anchor = className.toLowerCase().replace(/benchmarks?$/i, '');
         const displayName = className.replace(/Benchmarks?$/i, '');
         const desc = descriptions[className];
+        const baselineMethodName = desc?.baseline;
 
         html += `<div class="benchmark-section" id="${anchor}">`;
         html += `<h3>${displayName}</h3>`;
@@ -2599,11 +2600,13 @@ function renderBenchmarkSections(data, descriptions, container) {
             html += `<p class="benchmark-source"><a href="https://github.com/ncosentino/needlr/blob/main/${desc.source}" target="_blank">View Source ↗</a></p>`;
         }
 
-        // Data table
-        html += renderBenchmarkTable(benchmarks);
+        // Data table (pass baseline method name)
+        html += renderBenchmarkTable(benchmarks, baselineMethodName);
 
-        // Chart containers
-        const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+        // Chart containers - find baseline for memory check
+        const baseline = baselineMethodName 
+            ? benchmarks.find(b => b.Method === baselineMethodName)
+            : benchmarks[0];
         const hasMemory = baseline?.Memory?.BytesAllocatedPerOperation;
 
         html += `<div class="chart-row">`;
@@ -2622,20 +2625,24 @@ function renderBenchmarkSections(data, descriptions, container) {
     // Render charts after DOM update
     chartIndex = 0;
     for (const className of Object.keys(grouped).sort()) {
-        renderChartsForBenchmark(className, grouped[className], chartIndex);
+        const desc = descriptions[className];
+        const baselineMethodName = desc?.baseline;
+        renderChartsForBenchmark(className, grouped[className], chartIndex, baselineMethodName);
         chartIndex++;
     }
 }
 
-function renderBenchmarkTable(benchmarks) {
-    const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+function renderBenchmarkTable(benchmarks, baselineMethodName) {
+    const baseline = baselineMethodName 
+        ? benchmarks.find(b => b.Method === baselineMethodName)
+        : benchmarks[0];
     const baselineMean = getMeanFromMeasurements(baseline);
     const baselineAlloc = baseline?.Memory?.BytesAllocatedPerOperation;
 
     let html = '<table><thead><tr><th>Method</th><th>Mean</th><th>Time Ratio</th><th>Allocated</th><th>Memory Ratio</th></tr></thead><tbody>';
 
     benchmarks.forEach(b => {
-        const isBaseline = b.Method?.includes('Reflection');
+        const isBaseline = baselineMethodName ? b.Method === baselineMethodName : b === baseline;
         const mean = getMeanFromMeasurements(b);
         const allocated = b.Memory?.BytesAllocatedPerOperation;
 
@@ -2668,15 +2675,17 @@ function renderBenchmarkTable(benchmarks) {
     return html;
 }
 
-function renderChartsForBenchmark(className, benchmarks, chartIndex) {
-    const baseline = benchmarks.find(b => b.Method?.includes('Reflection'));
+function renderChartsForBenchmark(className, benchmarks, chartIndex, baselineMethodName) {
+    const baseline = baselineMethodName 
+        ? benchmarks.find(b => b.Method === baselineMethodName)
+        : benchmarks[0];
     if (!baseline) return;
 
     const methods = benchmarks.map(b => ({
         name: b.Method,
         time: getMeanFromMeasurements(b),
         memory: b.Memory?.BytesAllocatedPerOperation,
-        isBaseline: b.Method?.includes('Reflection')
+        isBaseline: baselineMethodName ? b.Method === baselineMethodName : b === baseline
     })).filter(m => m.time);
 
     if (methods.length < 2) return;
@@ -2685,8 +2694,8 @@ function renderChartsForBenchmark(className, benchmarks, chartIndex) {
     const labels = methods.map(m => m.name.replace(shortClassName + '_', '').replace(/_/g, ' '));
     const timeData = methods.map(m => m.time / 1e6);
     const memData = methods.map(m => m.memory ? m.memory / 1024 : 0);
-    const colors = methods.map(m => m.isBaseline ? 'rgba(198, 40, 40, 0.7)' : 'rgba(46, 125, 50, 0.7)');
-    const borderColors = methods.map(m => m.isBaseline ? 'rgba(198, 40, 40, 1)' : 'rgba(46, 125, 50, 1)');
+    const colors = methods.map(m => m.isBaseline ? 'rgba(33, 150, 243, 0.7)' : 'rgba(46, 125, 50, 0.7)');
+    const borderColors = methods.map(m => m.isBaseline ? 'rgba(33, 150, 243, 1)' : 'rgba(46, 125, 50, 1)');
 
     // Time chart
     const timeCanvas = document.getElementById(`timeChart${chartIndex}`);
@@ -2786,16 +2795,19 @@ function updateKeyTakeaway(data, element) {
     buildBenchmarks.forEach(b => {
         const className = (b.Type || 'Unknown').split('.').pop();
         if (!grouped[className]) grouped[className] = {};
-        if (b.Method?.includes('Reflection')) grouped[className].reflection = b;
+        if (b.Method?.includes('ManualDI')) grouped[className].manual = b;
         else if (b.Method?.includes('SourceGen') && !b.Method?.includes('Explicit')) grouped[className].sourceGen = b;
+        else if (b.Method?.includes('Reflection')) grouped[className].reflection = b;
     });
 
     for (const [benchName, benchmarks] of Object.entries(grouped)) {
-        if (benchmarks.reflection && benchmarks.sourceGen) {
-            const refTime = getMeanFromMeasurements(benchmarks.reflection);
+        // Compare source gen to manual DI if available, otherwise to reflection
+        const baseline = benchmarks.manual || benchmarks.reflection;
+        if (baseline && benchmarks.sourceGen) {
+            const baseTime = getMeanFromMeasurements(baseline);
             const sgTime = getMeanFromMeasurements(benchmarks.sourceGen);
-            if (refTime && sgTime && sgTime > 0) {
-                const speedup = (refTime / sgTime).toFixed(1);
+            if (baseTime && sgTime && sgTime > 0) {
+                const speedup = (baseTime / sgTime).toFixed(1);
                 const shortName = benchName.replace(/Benchmarks?$/i, '').replace(/Build/g, '');
                 details.push(`${shortName || 'Build'}: ${speedup}x`);
             }
@@ -2803,7 +2815,7 @@ function updateKeyTakeaway(data, element) {
     }
 
     if (details.length > 0) {
-        element.innerHTML = `<strong>DI container build speedups (source-gen vs reflection):</strong> ${details.join(', ')}. Service resolution is identical once the container is built.`;
+        element.innerHTML = `<strong>DI container build speedups (source-gen vs manual DI):</strong> ${details.join(', ')}. Service resolution is identical once the container is built.`;
     }
 }
 </script>
@@ -2859,7 +2871,7 @@ function updateKeyTakeaway(data, element) {
     font-weight: 600;
 }
 .benchmark-section .baseline {
-    background: rgba(198, 40, 40, 0.1);
+    background: rgba(33, 150, 243, 0.1);
 }
 .benchmark-section .faster {
     color: #2e7d32;
