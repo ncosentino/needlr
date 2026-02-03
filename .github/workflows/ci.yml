@@ -95,14 +95,6 @@ jobs:
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
 
-    - name: Deploy Documentation and Coverage
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
-        keep_files: true
-
     - name: Update Coverage Badge JSON
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
@@ -119,11 +111,20 @@ jobs:
     - name: Commit Coverage Badge
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
+        git pull --rebase origin main
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add .github/badges/coverage.json
         git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
         git push
+
+    - name: Deploy Documentation and Coverage
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+        keep_files: true
 
   aot-console-app:
     runs-on: ubuntu-latest
