@@ -1,9 +1,5 @@
 
 <Solution>
-  <Folder Name="/Analyzers/">
-    <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
-    <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
-  </Folder>
   <Folder Name="/Examples/" />
   <Folder Name="/Examples/Bundle/">
     <Project Path="Examples/Bundle/BundleExampleApp/BundleExampleApp.csproj" />
@@ -81,8 +77,8 @@
     <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
   </Folder>
   <Folder Name="/Integrations/SignalR/">
-    <Project Path="../../../needlr/src/NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Generators/NexusLabs.Needlr.SignalR.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Tests/NexusLabs.Needlr.SignalR.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR/NexusLabs.Needlr.SignalR.csproj" />
@@ -109,6 +105,7 @@
     <Project Path="NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj" />
   </Folder>
   <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
   <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />
