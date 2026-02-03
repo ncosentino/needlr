@@ -151,10 +151,14 @@ jobs:
     - name: Deploy Coverage Report
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Coverage needs to go into gh-pages manually since mike manages the site
+        # Save coverage to temp location before switching branches
+        mkdir -p /tmp/coverage-report
+        cp -r coverage/report/* /tmp/coverage-report/
+        
+        # Switch to gh-pages and add coverage
         git checkout gh-pages
         mkdir -p coverage
-        cp -r ${{ github.workspace }}/coverage/report/* coverage/
+        cp -r /tmp/coverage-report/* coverage/
         git add coverage/
         git diff --staged --quiet || git commit -m "Update coverage report [skip ci]"
         git push origin gh-pages
