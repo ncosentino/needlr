@@ -81,6 +81,7 @@
     <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
   </Folder>
   <Folder Name="/Integrations/SignalR/">
+    <Project Path="../../../needlr/src/NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Generators/NexusLabs.Needlr.SignalR.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Tests/NexusLabs.Needlr.SignalR.Tests.csproj" />

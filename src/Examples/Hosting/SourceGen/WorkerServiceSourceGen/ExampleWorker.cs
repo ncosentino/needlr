@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using NexusLabs.Needlr;
+
 namespace WorkerServiceSourceGen;
 
 /// <summary>
