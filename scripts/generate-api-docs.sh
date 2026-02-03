@@ -87,24 +87,43 @@ for XML_FILE in $XML_FILES; do
         --OutputDirectoryPath "$PROJECT_OUTPUT" \
         --ConfigurationFilePath "$ROOT_DIR/defaultdocumentation.json" 2>&1; then
         
-        # Check if any markdown files were generated (package has public types)
         MD_COUNT=$(find "$PROJECT_OUTPUT" -name "*.md" -type f 2>/dev/null | wc -l)
-        if [ "$MD_COUNT" -gt 0 ]; then
+        
+        # If no index.md was generated but we have markdown files, create one
+        # DefaultDocumentation doesn't always create index.md for single-namespace packages
+        if [ ! -f "$PROJECT_OUTPUT/index.md" ] && [ "$MD_COUNT" -gt 0 ]; then
+            # Look for a namespace file matching the project name
+            NAMESPACE_FILE="$PROJECT_OUTPUT/$PROJECT_NAME.md"
+            if [ -f "$NAMESPACE_FILE" ]; then
+                # Copy namespace file to index.md
+                cp "$NAMESPACE_FILE" "$PROJECT_OUTPUT/index.md"
+                echo "  Created index.md from namespace file"
+            else
+                # Create a simple index.md listing all files
+                echo "# $PROJECT_NAME" > "$PROJECT_OUTPUT/index.md"
+                echo "" >> "$PROJECT_OUTPUT/index.md"
+                for md in "$PROJECT_OUTPUT"/*.md; do
+                    if [ "$(basename "$md")" != "index.md" ]; then
+                        name=$(basename "$md" .md)
+                        echo "- [$name]($name.md)" >> "$PROJECT_OUTPUT/index.md"
+                    fi
+                done
+                echo "  Created index.md with file listing"
+            fi
+        fi
+        
+        # Now check if we have a valid index.md
+        if [ -f "$PROJECT_OUTPUT/index.md" ]; then
             GENERATED_PACKAGES="$GENERATED_PACKAGES $PROJECT_NAME"
             
             # Post-process: Fix escaped angle brackets in headings
-            # Replace \< and \> with HTML entities in heading lines
-            find "$PROJECT_OUTPUT" -name "*.md" -type f -exec sed -i \
-                -e 's/^\(##* .*\)\\</\1\&lt;/g' \
-                -e 's/^\(##* .*\)\\>/\1\&gt;/g' \
-                {} \;
-            
-            # Multiple passes to catch nested generics like IReadOnlyList\<Action\<T\>\>
-            for i in 1 2 3 4; do
-                find "$PROJECT_OUTPUT" -name "*.md" -type f -exec sed -i \
-                    -e 's/^\(##* .*\)\\</\1\&lt;/g' \
-                    -e 's/^\(##* .*\)\\>/\1\&gt;/g' \
-                    {} \;
+            # Replace \< and \> with HTML entities in heading lines only
+            # Use a loop to handle multiple occurrences per line (nested generics)
+            find "$PROJECT_OUTPUT" -name "*.md" -type f | while read -r mdfile; do
+                # Keep replacing until no more changes (handles deep nesting)
+                while grep -q '^##.*\\<\|^##.*\\>' "$mdfile" 2>/dev/null; do
+                    sed -i -e '/^##/s/\\</\&lt;/g' -e '/^##/s/\\>/\&gt;/g' "$mdfile"
+                done
             done
         else
             echo "  Note: $PROJECT_NAME has no public types, skipping..."
@@ -125,10 +144,10 @@ if [ "$UPDATE_INDEX" = "--update-index" ] && [ -f "$OUTPUT_DIR/index.md" ]; then
     sed -i '/No API documentation generated/d' "$OUTPUT_DIR/index.md"
     sed -i '/API documentation will be generated/d' "$OUTPUT_DIR/index.md"
     
-    # Sort and add links to each generated package
+    # Sort and add links to each generated package (only if it has index.md)
     for PROJECT_NAME in $(echo $GENERATED_PACKAGES | tr ' ' '\n' | sort); do
-        if [ -d "$OUTPUT_DIR/$PROJECT_NAME" ]; then
-            echo "* [$PROJECT_NAME]($PROJECT_NAME/)" >> "$OUTPUT_DIR/index.md"
+        if [ -f "$OUTPUT_DIR/$PROJECT_NAME/index.md" ]; then
+            echo "* [$PROJECT_NAME]($PROJECT_NAME/index.md)" >> "$OUTPUT_DIR/index.md"
         fi
     done
 fi
