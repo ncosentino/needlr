@@ -1,0 +1,12 @@
+
+<Solution>
+  <Folder Name="/Visual Studio/">
+    <Project Path="visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+    <File Path="vscode/README.md" />
+    <File Path="visualstudio/README.md" />
+    <File Path="../schemas/needlr-graph-v1.schema.json" />
+  </Folder>
+</Solution>
