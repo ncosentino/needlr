@@ -493,6 +493,10 @@
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/CreateWebApplicationOptions/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
@@ -577,11 +581,19 @@
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/PostBuildServiceCollectionPluginOptionsExtensions/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
@@ -606,6 +618,10 @@
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/ValidationFailureConverter/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation.Generators/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
@@ -662,6 +678,10 @@
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/UnsupportedDataAnnotationAnalyzer/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
@@ -726,6 +746,10 @@
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/ValidatorProviderAttribute/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
@@ -877,6 +901,10 @@
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/NexusLabs.Needlr.Injection.Bundle/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
@@ -962,6 +990,10 @@
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/SyringeReflectionExtensions/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Scrutor/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
@@ -1085,6 +1117,10 @@
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel.Generators/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel.Generators/NexusLabs.Needlr.SemanticKernel.Generators/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
@@ -1133,6 +1169,10 @@
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/DiagnosticDescriptors/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
@@ -1146,6 +1186,10 @@
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers/</loc>
+         <lastmod>2026-02-03</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Generators/</loc>
          <lastmod>2026-02-03</lastmod>
     </url>
     <url>
