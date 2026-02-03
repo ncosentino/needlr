@@ -2646,7 +2646,7 @@ during <a href="./#NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensio
 <p><code>builder</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.hostapplicationbuilder" title="Microsoft.Extensions.Hosting.HostApplicationBuilder">Microsoft.Extensions.Hosting.HostApplicationBuilder</a></p>
 <p>The host application builder to configure.</p>
 <p><a name='NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions.UseNeedlrDiscovery(thisMicrosoft.Extensions.Hosting.HostApplicationBuilder,NexusLabs.Needlr.Injection.ConfiguredSyringe,Microsoft.Extensions.Logging.ILogger).syringe'></a></p>
-<p><code>syringe</code> [NexusLabs.Needlr.Injection.ConfiguredSyringe]../NexusLabs.Needlr.Injection/index.md</p>
+<p><code>syringe</code> <a href="../../NexusLabs.Needlr.Injection/">NexusLabs.Needlr.Injection.ConfiguredSyringe</a></p>
 <p>Optional syringe instance to use for configuration. If not provided, a default syringe is created.
 Use this to provide a pre-configured syringe with specific type registrars or filterers.</p>
 <p><a name='NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions.UseNeedlrDiscovery(thisMicrosoft.Extensions.Hosting.HostApplicationBuilder,NexusLabs.Needlr.Injection.ConfiguredSyringe,Microsoft.Extensions.Logging.ILogger).logger'></a></p>
@@ -2667,8 +2667,8 @@ The same <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensi
 <h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
 <p>This method performs the following in order:
 1. Discovers assemblies using the syringe's assembly provider
-2. Runs all [NexusLabs.Needlr.Hosting.IHostApplicationBuilderPlugin.Configure(NexusLabs.Needlr.Hosting.HostApplicationBuilderPluginOptions)]../NexusLabs.Needlr.Hosting/index.md 'NexusLabs.Needlr.Hosting.IHostApplicationBuilderPlugin.Configure(NexusLabs.Needlr.Hosting.HostApplicationBuilderPluginOptions)') methods
-3. Runs all [NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)]../NexusLabs.Needlr/index.md 'NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)') methods
+2. Runs all <a href="../">NexusLabs.Needlr.Hosting.IHostApplicationBuilderPlugin.Configure(NexusLabs.Needlr.Hosting.HostApplicationBuilderPluginOptions)</a> methods
+3. Runs all <a href="../../NexusLabs.Needlr/">NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)</a> methods
 4. Registers discovered types to the service collection</p>
 <p><a href="../IHostPlugin/" title="NexusLabs.Needlr.Hosting.IHostPlugin">IHostPlugin</a> plugins are NOT executed. If needed, call <a href="./#NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions.RunHostPlugins(thisMicrosoft.Extensions.Hosting.IHost,Microsoft.Extensions.Logging.ILogger)" title="NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions.RunHostPlugins(this Microsoft.Extensions.Hosting.IHost, Microsoft.Extensions.Logging.ILogger)">RunHostPlugins(this IHost, ILogger)</a>
             after <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.hostapplicationbuilder.build" title="Microsoft.Extensions.Hosting.HostApplicationBuilder.Build">Microsoft.Extensions.Hosting.HostApplicationBuilder.Build</a>.</p>
