@@ -86,7 +86,30 @@ for XML_FILE in $XML_FILES; do
         --DocumentationFilePath "$XML_FILE" \
         --OutputDirectoryPath "$PROJECT_OUTPUT" \
         --ConfigurationFilePath "$ROOT_DIR/defaultdocumentation.json" 2>&1; then
-        GENERATED_PACKAGES="$GENERATED_PACKAGES $PROJECT_NAME"
+        
+        # Check if any markdown files were generated (package has public types)
+        MD_COUNT=$(find "$PROJECT_OUTPUT" -name "*.md" -type f 2>/dev/null | wc -l)
+        if [ "$MD_COUNT" -gt 0 ]; then
+            GENERATED_PACKAGES="$GENERATED_PACKAGES $PROJECT_NAME"
+            
+            # Post-process: Fix escaped angle brackets in headings
+            # Replace \< and \> with HTML entities in heading lines
+            find "$PROJECT_OUTPUT" -name "*.md" -type f -exec sed -i \
+                -e 's/^\(##* .*\)\\</\1\&lt;/g' \
+                -e 's/^\(##* .*\)\\>/\1\&gt;/g' \
+                {} \;
+            
+            # Multiple passes to catch nested generics like IReadOnlyList\<Action\<T\>\>
+            for i in 1 2 3 4; do
+                find "$PROJECT_OUTPUT" -name "*.md" -type f -exec sed -i \
+                    -e 's/^\(##* .*\)\\</\1\&lt;/g' \
+                    -e 's/^\(##* .*\)\\>/\1\&gt;/g' \
+                    {} \;
+            done
+        else
+            echo "  Note: $PROJECT_NAME has no public types, skipping..."
+            rm -rf "$PROJECT_OUTPUT"
+        fi
     else
         echo "  Warning: Failed to generate docs for $PROJECT_NAME"
     fi

@@ -89,37 +89,19 @@ jobs:
     - name: Build Documentation
       run: python -m mkdocs build
 
-    - name: Deploy Documentation
+    - name: Add Coverage Report to Site
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        mkdir -p site/coverage
+        cp -r coverage/report/* site/coverage/
+
+    - name: Deploy Documentation and Coverage
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./site
         keep_files: true
-        
-    - name: Deploy Coverage Report
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Save coverage to temp location before switching branches
-        mkdir -p /tmp/coverage-report
-        cp -r coverage/report/* /tmp/coverage-report/
-        
-        # Clean working directory (docs already deployed by peaceiris action)
-        git checkout -- .
-        git clean -fd
-        
-        # Switch to gh-pages and add coverage
-        git fetch origin gh-pages --depth=1
-        git checkout gh-pages
-        mkdir -p coverage
-        cp -r /tmp/coverage-report/* coverage/
-        git add coverage/
-        git diff --staged --quiet || git commit -m "Update coverage report [skip ci]"
-        git push origin gh-pages
-        git checkout main
 
     - name: Update Coverage Badge JSON
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
