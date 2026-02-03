@@ -26,11 +26,24 @@ echo "Generating API documentation to $OUTPUT_DIR..."
 mkdir -p "$OUTPUT_DIR"
 
 # Find all XML documentation files for publishable projects (exclude Tests, Benchmarks, Examples)
-XML_FILES=$(find "$ROOT_DIR/src" -path "*/bin/Release/*/NexusLabs.Needlr*.xml" \
+# Deduplicate by basename (same package can exist in multiple TFMs and Examples output)
+declare -A SEEN_PACKAGES
+XML_FILES_UNIQUE=""
+
+while IFS= read -r xml_file; do
+    pkg_name=$(basename "$xml_file" .xml)
+    if [ -z "${SEEN_PACKAGES[$pkg_name]:-}" ]; then
+        SEEN_PACKAGES[$pkg_name]=1
+        XML_FILES_UNIQUE="$XML_FILES_UNIQUE $xml_file"
+    fi
+done < <(find "$ROOT_DIR/src" -path "*/bin/Release/*/NexusLabs.Needlr*.xml" \
+    ! -path "*/Examples/*" \
     ! -name "*Tests.xml" \
     ! -name "*Benchmarks.xml" \
     ! -name "*IntegrationTests.xml" \
-    2>/dev/null | sort | uniq)
+    2>/dev/null | sort)
+
+XML_FILES="$XML_FILES_UNIQUE"
 
 if [ -z "$XML_FILES" ]; then
     echo "No XML documentation files found. Ensure the project was built with Release configuration."
@@ -38,7 +51,7 @@ if [ -z "$XML_FILES" ]; then
 fi
 
 echo "Found XML documentation files:"
-echo "$XML_FILES" | while read -r f; do echo "  - $(basename "$f")"; done
+for f in $XML_FILES; do echo "  - $(basename "$f")"; done
 
 # Keep track of generated packages
 GENERATED_PACKAGES=""
