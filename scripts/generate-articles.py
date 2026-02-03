@@ -91,6 +91,11 @@ def generate_markdown(articles: list[dict]) -> str:
         ])
     else:
         for article in articles:
+            # Featured image as clickable link
+            if article.get('image'):
+                lines.append(f"[![{article['title']}]({article['image']})]({article['link']})")
+                lines.append("")
+            
             lines.append(f"## [{article['title']}]({article['link']})")
             lines.append("")
             if article['date']:
