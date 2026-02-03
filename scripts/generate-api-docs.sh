@@ -8,10 +8,17 @@
 
 set -e
 
-OUTPUT_DIR="${1:?Usage: $0 <output-dir> [--update-index]}"
+OUTPUT_DIR_ARG="${1:?Usage: $0 <output-dir> [--update-index]}"
 UPDATE_INDEX="${2:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Convert output dir to absolute path
+if [[ "$OUTPUT_DIR_ARG" = /* ]]; then
+    OUTPUT_DIR="$OUTPUT_DIR_ARG"
+else
+    OUTPUT_DIR="$ROOT_DIR/$OUTPUT_DIR_ARG"
+fi
 
 echo "Generating API documentation to $OUTPUT_DIR..."
 
