@@ -34,6 +34,7 @@
 		<!-- Enable Needlr diagnostics - generates DependencyGraph.md, LifetimeSummary.md, RegistrationIndex.md -->
 		<NeedlrDiagnostics>true</NeedlrDiagnostics>
 		<NeedlrBreadcrumbLevel>Verbose</NeedlrBreadcrumbLevel>
+		<NeedlrExportGraph>true</NeedlrExportGraph>
 	</PropertyGroup>
 
 	<!-- Import Needlr targets for diagnostic file extraction (auto-imported when using NuGet package) -->
