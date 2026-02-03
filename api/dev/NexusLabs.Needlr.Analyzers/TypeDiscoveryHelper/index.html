@@ -2871,95 +2871,95 @@ Used by both Generators and Analyzers to ensure consistent type discovery logic.
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; TypeDiscoveryHelper</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttribute(INamedTypeSymbol)'></a></p>
 <h2 id="typediscoveryhelperhasdonotautoregisterattributeinamedtypesymbol-method">TypeDiscoveryHelper.HasDoNotAutoRegisterAttribute(INamedTypeSymbol) Method<a class="headerlink" href="#typediscoveryhelperhasdonotautoregisterattributeinamedtypesymbol-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type has the [DoNotAutoRegister] attribute (directly or on interfaces).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasDoNotAutoRegisterAttribute</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasDoNotAutoRegisterAttribute</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttribute(Microsoft.CodeAnalysis.INamedTypeSymbol).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttribute(INamedTypeSymbol).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttributeDirect(Microsoft.CodeAnalysis.INamedTypeSymbol)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttributeDirect(INamedTypeSymbol)'></a></p>
 <h2 id="typediscoveryhelperhasdonotautoregisterattributedirectinamedtypesymbol-method">TypeDiscoveryHelper.HasDoNotAutoRegisterAttributeDirect(INamedTypeSymbol) Method<a class="headerlink" href="#typediscoveryhelperhasdonotautoregisterattributedirectinamedtypesymbol-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type has the [DoNotAutoRegister] or [DoNotInject] attribute directly applied.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasDoNotAutoRegisterAttributeDirect</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasDoNotAutoRegisterAttributeDirect</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttributeDirect(Microsoft.CodeAnalysis.INamedTypeSymbol).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasDoNotAutoRegisterAttributeDirect(INamedTypeSymbol).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasUnsatisfiedRequiredMembers(Microsoft.CodeAnalysis.INamedTypeSymbol)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasUnsatisfiedRequiredMembers(INamedTypeSymbol)'></a></p>
 <h2 id="typediscoveryhelperhasunsatisfiedrequiredmembersinamedtypesymbol-method">TypeDiscoveryHelper.HasUnsatisfiedRequiredMembers(INamedTypeSymbol) Method<a class="headerlink" href="#typediscoveryhelperhasunsatisfiedrequiredmembersinamedtypesymbol-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type has required members that aren't satisfied by any constructor
 with [SetsRequiredMembers] attribute.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasUnsatisfiedRequiredMembers</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">HasUnsatisfiedRequiredMembers</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasUnsatisfiedRequiredMembers(Microsoft.CodeAnalysis.INamedTypeSymbol).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.HasUnsatisfiedRequiredMembers(INamedTypeSymbol).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(Microsoft.CodeAnalysis.INamedTypeSymbol,string)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(INamedTypeSymbol,string)'></a></p>
 <h2 id="typediscoveryhelperinheritsfrominamedtypesymbol-string-method">TypeDiscoveryHelper.InheritsFrom(INamedTypeSymbol, string) Method<a class="headerlink" href="#typediscoveryhelperinheritsfrominamedtypesymbol-string-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type inherits from a base type by name.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">InheritsFrom</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">baseTypeName</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">InheritsFrom</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">baseTypeName</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(Microsoft.CodeAnalysis.INamedTypeSymbol,string).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(INamedTypeSymbol,string).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(Microsoft.CodeAnalysis.INamedTypeSymbol,string).baseTypeName'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.InheritsFrom(INamedTypeSymbol,string).baseTypeName'></a></p>
 <p><code>baseTypeName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,bool)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(INamedTypeSymbol,bool)'></a></p>
 <h2 id="typediscoveryhelperisaccessiblefromgeneratedcodeinamedtypesymbol-bool-method">TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(INamedTypeSymbol, bool) Method<a class="headerlink" href="#typediscoveryhelperisaccessiblefromgeneratedcodeinamedtypesymbol-bool-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type is accessible from generated code.
 For types in the current assembly, internal and public types are accessible.
 For types in referenced assemblies, only public types are accessible.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsAccessibleFromGeneratedCode</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isCurrentAssembly</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsAccessibleFromGeneratedCode</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isCurrentAssembly</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,bool).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(INamedTypeSymbol,bool).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(Microsoft.CodeAnalysis.INamedTypeSymbol,bool).isCurrentAssembly'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsAccessibleFromGeneratedCode(INamedTypeSymbol,bool).isCurrentAssembly'></a></p>
 <p><code>isCurrentAssembly</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsCompilerGenerated(Microsoft.CodeAnalysis.INamedTypeSymbol)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsCompilerGenerated(INamedTypeSymbol)'></a></p>
 <h2 id="typediscoveryhelperiscompilergeneratedinamedtypesymbol-method">TypeDiscoveryHelper.IsCompilerGenerated(INamedTypeSymbol) Method<a class="headerlink" href="#typediscoveryhelperiscompilergeneratedinamedtypesymbol-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type is compiler-generated.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsCompilerGenerated</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsCompilerGenerated</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsCompilerGenerated(Microsoft.CodeAnalysis.INamedTypeSymbol).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsCompilerGenerated(INamedTypeSymbol).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,bool)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(INamedTypeSymbol,bool)'></a></p>
 <h2 id="typediscoveryhelperisinjectabletypeinamedtypesymbol-bool-method">TypeDiscoveryHelper.IsInjectableType(INamedTypeSymbol, bool) Method<a class="headerlink" href="#typediscoveryhelperisinjectabletypeinamedtypesymbol-bool-method" title="Permanent link">&para;</a></h2>
 <p>Determines whether a type symbol represents a concrete injectable type.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsInjectableType</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isCurrentAssembly</span><span class="o">=</span><span class="k">false</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsInjectableType</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isCurrentAssembly</span><span class="o">=</span><span class="k">false</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,bool).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(INamedTypeSymbol,bool).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <p>The type symbol to check.</p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol,bool).isCurrentAssembly'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsInjectableType(INamedTypeSymbol,bool).isCurrentAssembly'></a></p>
 <p><code>isCurrentAssembly</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p>True if the type is from the current compilation's assembly (allows internal types).</p>
 <h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a><br />
 True if the type is a valid injectable type; otherwise, false.</p>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsSystemType(Microsoft.CodeAnalysis.INamedTypeSymbol)'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsSystemType(INamedTypeSymbol)'></a></p>
 <h2 id="typediscoveryhelperissystemtypeinamedtypesymbol-method">TypeDiscoveryHelper.IsSystemType(INamedTypeSymbol) Method<a class="headerlink" href="#typediscoveryhelperissystemtypeinamedtypesymbol-method" title="Permanent link">&para;</a></h2>
 <p>Checks if a type is from the System namespace or system assemblies.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsSystemType</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">CodeAnalysis</span><span class="p">.</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsSystemType</span><span class="p">(</span><span class="n">INamedTypeSymbol</span><span class="w"> </span><span class="n">typeSymbol</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsSystemType(Microsoft.CodeAnalysis.INamedTypeSymbol).typeSymbol'></a></p>
+<p><a name='NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper.IsSystemType(INamedTypeSymbol).typeSymbol'></a></p>
 <p><code>typeSymbol</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.inamedtypesymbol" title="Microsoft.CodeAnalysis.INamedTypeSymbol">Microsoft.CodeAnalysis.INamedTypeSymbol</a></p>
 <h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
