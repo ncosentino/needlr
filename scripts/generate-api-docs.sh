@@ -59,12 +59,16 @@ fi
 echo "Found XML documentation files:"
 for f in $XML_FILES; do echo "  - $(basename "$f")"; done
 
+# Collect all package names for link fixing later
+ALL_PACKAGES=""
+
 # Keep track of generated packages
 GENERATED_PACKAGES=""
 
 # Generate documentation for each XML file
 for XML_FILE in $XML_FILES; do
     PROJECT_NAME=$(basename "$XML_FILE" .xml)
+    ALL_PACKAGES="$ALL_PACKAGES $PROJECT_NAME"
     
     # Get the corresponding DLL
     DLL_FILE="${XML_FILE%.xml}.dll"
@@ -132,6 +136,31 @@ for XML_FILE in $XML_FILES; do
     else
         echo "  Warning: Failed to generate docs for $PROJECT_NAME"
     fi
+done
+
+# Post-process all packages to fix internal links
+# Convert Microsoft Learn URLs for Needlr types to relative links
+# IMPORTANT: Process packages from longest to shortest to avoid partial matches
+echo ""
+echo "Post-processing: Fixing internal links..."
+
+# Sort packages by length (longest first) using awk
+SORTED_PACKAGES=$(echo $ALL_PACKAGES | tr ' ' '\n' | awk '{ print length, $0 }' | sort -rn | cut -d' ' -f2-)
+
+for PROJECT_NAME in $GENERATED_PACKAGES; do
+    PROJECT_OUTPUT="$OUTPUT_DIR/$PROJECT_NAME"
+    find "$PROJECT_OUTPUT" -name "*.md" -type f | while read -r mdfile; do
+        # For each known package (sorted by length, longest first), convert MS Learn links to relative paths
+        for PKG in $SORTED_PACKAGES; do
+            # Convert package name to lowercase for URL matching
+            PKG_LOWER=$(echo "$PKG" | tr '[:upper:]' '[:lower:]')
+            # Match full markdown link: (url 'tooltip') where URL contains our package
+            # URL format: https://learn.microsoft.com/.../nexuslabs.needlr.xxx... 'tooltip')
+            # The URL has no spaces, tooltip starts with space-quote, ends with quote-paren
+            # Use extended regex (-E) for cleaner syntax
+            sed -i -E "s|\(https://learn\.microsoft\.com/[^ ]*dotnet/api/${PKG_LOWER}[^ ]* '[^']*'\)|(../${PKG}/index.md)|g" "$mdfile" 2>/dev/null || true
+        done
+    done
 done
 
 # Update index if requested
