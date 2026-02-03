@@ -2543,12 +2543,12 @@
   <a href="#sourcegenregistryregisterextensionactionobjectobject-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SourceGenRegistry.RegisterExtension(Action\&lt;object,object>) Method
+        SourceGenRegistry.RegisterExtension(Action&lt;object,object&gt;) Method
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SourceGenRegistry.RegisterExtension(Action\&lt;object,object&gt;) Method">
+    <nav class="md-nav" aria-label="SourceGenRegistry.RegisterExtension(Action&lt;object,object&gt;) Method">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2571,12 +2571,12 @@
   <a href="#sourcegenregistryregisteroptionsregistraractionobjectobject-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SourceGenRegistry.RegisterOptionsRegistrar(Action\&lt;object,object>) Method
+        SourceGenRegistry.RegisterOptionsRegistrar(Action&lt;object,object&gt;) Method
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SourceGenRegistry.RegisterOptionsRegistrar(Action\&lt;object,object&gt;) Method">
+    <nav class="md-nav" aria-label="SourceGenRegistry.RegisterOptionsRegistrar(Action&lt;object,object&gt;) Method">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2599,12 +2599,12 @@
   <a href="#sourcegenregistrytrygetextensionregistraractionobjectobject-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SourceGenRegistry.TryGetExtensionRegistrar(Action\&lt;object,object>) Method
+        SourceGenRegistry.TryGetExtensionRegistrar(Action&lt;object,object&gt;) Method
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SourceGenRegistry.TryGetExtensionRegistrar(Action\&lt;object,object&gt;) Method">
+    <nav class="md-nav" aria-label="SourceGenRegistry.TryGetExtensionRegistrar(Action&lt;object,object&gt;) Method">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2638,12 +2638,12 @@
   <a href="#sourcegenregistrytrygetoptionsregistraractionobjectobject-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SourceGenRegistry.TryGetOptionsRegistrar(Action\&lt;object,object>) Method
+        SourceGenRegistry.TryGetOptionsRegistrar(Action&lt;object,object&gt;) Method
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SourceGenRegistry.TryGetOptionsRegistrar(Action\&lt;object,object&gt;) Method">
+    <nav class="md-nav" aria-label="SourceGenRegistry.TryGetOptionsRegistrar(Action&lt;object,object&gt;) Method">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2711,7 +2711,7 @@ callbacks during <code>BuildServiceProvider</code>.</p>
 <code>NexusLabs.Needlr.Generators.Attributes</code>.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.SourceGenRegistry.RegisterExtension(System.Action_object,object_)'></a></p>
-<h2 id="sourcegenregistryregisterextensionactionobjectobject-method">SourceGenRegistry.RegisterExtension(Action\&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistryregisterextensionactionobjectobject-method" title="Permanent link">&para;</a></h2>
+<h2 id="sourcegenregistryregisterextensionactionobjectobject-method">SourceGenRegistry.RegisterExtension(Action&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistryregisterextensionactionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Registers an extension registrar from extension packages.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">RegisterExtension</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">registrar</span><span class="p">);</span>
 </span></code></pre></div>
@@ -2721,7 +2721,7 @@ callbacks during <code>BuildServiceProvider</code>.</p>
 <p>Action that registers extension services. Parameters are (IServiceCollection, IConfiguration),
 typed as object to avoid package dependencies.</p>
 <p><a name='NexusLabs.Needlr.SourceGenRegistry.RegisterOptionsRegistrar(System.Action_object,object_)'></a></p>
-<h2 id="sourcegenregistryregisteroptionsregistraractionobjectobject-method">SourceGenRegistry.RegisterOptionsRegistrar(Action\&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistryregisteroptionsregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
+<h2 id="sourcegenregistryregisteroptionsregistraractionobjectobject-method">SourceGenRegistry.RegisterOptionsRegistrar(Action&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistryregisteroptionsregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Registers the options registrar from source-generated code.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">RegisterOptionsRegistrar</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">registrar</span><span class="p">);</span>
 </span></code></pre></div>
@@ -2731,7 +2731,7 @@ typed as object to avoid package dependencies.</p>
 <p>Action that registers options. Parameters are (IServiceCollection, IConfiguration),
 typed as object to avoid package dependencies.</p>
 <p><a name='NexusLabs.Needlr.SourceGenRegistry.TryGetExtensionRegistrar(System.Action_object,object_)'></a></p>
-<h2 id="sourcegenregistrytrygetextensionregistraractionobjectobject-method">SourceGenRegistry.TryGetExtensionRegistrar(Action\&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistrytrygetextensionregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
+<h2 id="sourcegenregistrytrygetextensionregistraractionobjectobject-method">SourceGenRegistry.TryGetExtensionRegistrar(Action&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistrytrygetextensionregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Gets the extension registrar if one is registered.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetExtensionRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">registrar</span><span class="p">);</span>
 </span></code></pre></div>
@@ -2741,7 +2741,7 @@ typed as object to avoid package dependencies.</p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p><a name='NexusLabs.Needlr.SourceGenRegistry.TryGetOptionsRegistrar(System.Action_object,object_)'></a></p>
-<h2 id="sourcegenregistrytrygetoptionsregistraractionobjectobject-method">SourceGenRegistry.TryGetOptionsRegistrar(Action\&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistrytrygetoptionsregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
+<h2 id="sourcegenregistrytrygetoptionsregistraractionobjectobject-method">SourceGenRegistry.TryGetOptionsRegistrar(Action&lt;object,object&gt;) Method<a class="headerlink" href="#sourcegenregistrytrygetoptionsregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Gets the options registrar if one is registered.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetOptionsRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">registrar</span><span class="p">);</span>
 </span></code></pre></div>

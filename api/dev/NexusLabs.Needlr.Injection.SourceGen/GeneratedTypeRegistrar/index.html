@@ -2582,12 +2582,12 @@
   <a href="#generatedtyperegistrarfuncireadonlylistinjectabletypeinfo-constructor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GeneratedTypeRegistrar(Func\&lt;IReadOnlyList\&lt;InjectableTypeInfo>>) Constructor
+        GeneratedTypeRegistrar(Func&lt;IReadOnlyList&lt;InjectableTypeInfo&gt;&gt;) Constructor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="GeneratedTypeRegistrar(Func\&lt;IReadOnlyList\&lt;InjectableTypeInfo&gt;&gt;) Constructor">
+    <nav class="md-nav" aria-label="GeneratedTypeRegistrar(Func&lt;IReadOnlyList&lt;InjectableTypeInfo&gt;&gt;) Constructor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2621,12 +2621,12 @@
   <a href="#generatedtyperegistrarregistertypesfromassembliesiservicecollection-itypefilterer-ireadonlylistassembly-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList\&lt;Assembly>) Method
+        GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList&lt;Assembly&gt;) Method
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList\&lt;Assembly&gt;) Method">
+    <nav class="md-nav" aria-label="GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList&lt;Assembly&gt;) Method">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2703,7 +2703,7 @@ as all type discovery happens at compile time.</p>
 <p>This constructor uses reflection to locate the generated TypeRegistry class.
 The generated class must be present in the calling assembly.</p>
 <p><a name='NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars.GeneratedTypeRegistrar.GeneratedTypeRegistrar(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.InjectableTypeInfo__)'></a></p>
-<h2 id="generatedtyperegistrarfuncireadonlylistinjectabletypeinfo-constructor">GeneratedTypeRegistrar(Func\&lt;IReadOnlyList\&lt;InjectableTypeInfo&gt;&gt;) Constructor<a class="headerlink" href="#generatedtyperegistrarfuncireadonlylistinjectabletypeinfo-constructor" title="Permanent link">&para;</a></h2>
+<h2 id="generatedtyperegistrarfuncireadonlylistinjectabletypeinfo-constructor">GeneratedTypeRegistrar(Func&lt;IReadOnlyList&lt;InjectableTypeInfo&gt;&gt;) Constructor<a class="headerlink" href="#generatedtyperegistrarfuncireadonlylistinjectabletypeinfo-constructor" title="Permanent link">&para;</a></h2>
 <p>Initializes a new instance with a custom type provider.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">GeneratedTypeRegistrar</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">InjectableTypeInfo</span><span class="o">&gt;&gt;?</span><span class="w"> </span><span class="n">typeProvider</span><span class="p">);</span>
 </span></code></pre></div>
@@ -2714,7 +2714,7 @@ The generated class must be present in the calling assembly.</p>
 If null, the registrar will attempt to locate the generated TypeRegistry at runtime.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars.GeneratedTypeRegistrar.RegisterTypesFromAssemblies(Microsoft.Extensions.DependencyInjection.IServiceCollection,NexusLabs.Needlr.Injection.ITypeFilterer,System.Collections.Generic.IReadOnlyList_System.Reflection.Assembly_)'></a></p>
-<h2 id="generatedtyperegistrarregistertypesfromassembliesiservicecollection-itypefilterer-ireadonlylistassembly-method">GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList\&lt;Assembly&gt;) Method<a class="headerlink" href="#generatedtyperegistrarregistertypesfromassembliesiservicecollection-itypefilterer-ireadonlylistassembly-method" title="Permanent link">&para;</a></h2>
+<h2 id="generatedtyperegistrarregistertypesfromassembliesiservicecollection-itypefilterer-ireadonlylistassembly-method">GeneratedTypeRegistrar.RegisterTypesFromAssemblies(IServiceCollection, ITypeFilterer, IReadOnlyList&lt;Assembly&gt;) Method<a class="headerlink" href="#generatedtyperegistrarregistertypesfromassembliesiservicecollection-itypefilterer-ireadonlylistassembly-method" title="Permanent link">&para;</a></h2>
 <p>Registers types from the specified assemblies into the service collection.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">RegisterTypesFromAssemblies</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">DependencyInjection</span><span class="p">.</span><span class="n">IServiceCollection</span><span class="w"> </span><span class="n">services</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Injection</span><span class="p">.</span><span class="n">ITypeFilterer</span><span class="w"> </span><span class="n">typeFilterer</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Reflection</span><span class="p">.</span><span class="n">Assembly</span><span class="o">&gt;</span><span class="w"> </span><span class="n">assemblies</span><span class="p">);</span>
 </span></code></pre></div>

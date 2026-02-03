@@ -2504,12 +2504,12 @@
   <a href="#decoratorforattributetservice-class" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DecoratorForAttribute\&lt;TService> Class
+        DecoratorForAttribute&lt;TService&gt; Class
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="DecoratorForAttribute\&lt;TService&gt; Class">
+    <nav class="md-nav" aria-label="DecoratorForAttribute&lt;TService&gt; Class">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2565,12 +2565,12 @@
   <a href="#decoratorforattributetserviceorder-property" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DecoratorForAttribute\&lt;TService>.Order Property
+        DecoratorForAttribute&lt;TService&gt;.Order Property
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="DecoratorForAttribute\&lt;TService&gt;.Order Property">
+    <nav class="md-nav" aria-label="DecoratorForAttribute&lt;TService&gt;.Order Property">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2604,12 +2604,12 @@
   <a href="#decoratorforattributetserviceservicetype-property" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DecoratorForAttribute\&lt;TService>.ServiceType Property
+        DecoratorForAttribute&lt;TService&gt;.ServiceType Property
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="DecoratorForAttribute\&lt;TService&gt;.ServiceType Property">
+    <nav class="md-nav" aria-label="DecoratorForAttribute&lt;TService&gt;.ServiceType Property">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2652,7 +2652,7 @@
 
 <h4 id="nexuslabsneedlr"><a href="../" title="index">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlr_1"><a href="../NexusLabs.Needlr/" title="NexusLabs.Needlr">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr_1" title="Permanent link">&para;</a></h3>
-<h2 id="decoratorforattributetservice-class">DecoratorForAttribute\&lt;TService&gt; Class<a class="headerlink" href="#decoratorforattributetservice-class" title="Permanent link">&para;</a></h2>
+<h2 id="decoratorforattributetservice-class">DecoratorForAttribute&lt;TService&gt; Class<a class="headerlink" href="#decoratorforattributetservice-class" title="Permanent link">&para;</a></h2>
 <p>Marks a class as a decorator for the specified service type. When discovered
 by Needlr (via source generation or reflection), the decorator will be 
 automatically wired using <a href="../ServiceCollectionExtensions/#NexusLabs.Needlr.ServiceCollectionExtensions.AddDecorator_TService,TDecorator_(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection)" title="NexusLabs.Needlr.ServiceCollectionExtensions.AddDecorator\&lt;TService,TDecorator&gt;(this Microsoft.Extensions.DependencyInjection.IServiceCollection)">AddDecorator&lt;TService,TDecorator&gt;(this IServiceCollection)</a>.</p>
@@ -2713,7 +2713,7 @@ registration (equivalent to applying <a href="../DoNotAutoRegisterAttribute/" ti
 for the decorated interface).</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.DecoratorForAttribute_TService_.Order'></a></p>
-<h2 id="decoratorforattributetserviceorder-property">DecoratorForAttribute\&lt;TService&gt;.Order Property<a class="headerlink" href="#decoratorforattributetserviceorder-property" title="Permanent link">&para;</a></h2>
+<h2 id="decoratorforattributetserviceorder-property">DecoratorForAttribute&lt;TService&gt;.Order Property<a class="headerlink" href="#decoratorforattributetserviceorder-property" title="Permanent link">&para;</a></h2>
 <p>Gets or sets the order in which this decorator is applied relative to
 other decorators for the same service. Lower values are applied first
 (closer to the original implementation). Default is 0.</p>
@@ -2728,7 +2728,7 @@ other decorators for the same service. Lower values are applied first
 - Order = 2: CachingDecorator wraps LoggingDecorator</p>
 <p>Resolving IMyService returns: CachingDecorator → LoggingDecorator → MyService</p>
 <p><a name='NexusLabs.Needlr.DecoratorForAttribute_TService_.ServiceType'></a></p>
-<h2 id="decoratorforattributetserviceservicetype-property">DecoratorForAttribute\&lt;TService&gt;.ServiceType Property<a class="headerlink" href="#decoratorforattributetserviceservicetype-property" title="Permanent link">&para;</a></h2>
+<h2 id="decoratorforattributetserviceservicetype-property">DecoratorForAttribute&lt;TService&gt;.ServiceType Property<a class="headerlink" href="#decoratorforattributetserviceservicetype-property" title="Permanent link">&para;</a></h2>
 <p>Gets the service type that this decorator wraps.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">ServiceType</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
