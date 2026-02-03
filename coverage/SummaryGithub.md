@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 02/03/2026 - 02:50:58 |
-| Coverage date: | 02/03/2026 - 02:49:57 - 02/03/2026 - 02:50:54 |
+| Generated on: | 02/03/2026 - 04:07:27 |
+| Coverage date: | 02/03/2026 - 04:06:21 - 02/03/2026 - 04:07:23 |
 | Parser: | MultiReport (16x Cobertura) |
 | Assemblies: | 16 |
 | Classes: | 182 |
 | Files: | 156 |
-| **Line coverage:** | 88.9% (8288 of 9316) |
-| Covered lines: | 8288 |
-| Uncovered lines: | 1028 |
+| **Line coverage:** | 88.9% (8289 of 9316) |
+| Covered lines: | 8289 |
+| Uncovered lines: | 1027 |
 | Coverable lines: | 9316 |
 | Total lines: | 24592 |
-| **Branch coverage:** | 78.4% (3907 of 4982) |
-| Covered branches: | 3907 |
+| **Branch coverage:** | 78.4% (3908 of 4982) |
+| Covered branches: | 3908 |
 | Total branches: | 4982 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -168,16 +168,16 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 68.8%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 69.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**68.8%**|**32.3%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**69.2%**|**33.8%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|65.3%|40%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|66.1%|42.5%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
