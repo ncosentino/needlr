@@ -77,8 +77,8 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install MkDocs
-      run: pip install mkdocs-material
+    - name: Install MkDocs and mike
+      run: pip install mkdocs-material mike
 
     - name: Restore dotnet tools
       run: dotnet tool restore
@@ -135,25 +135,30 @@ jobs:
     - name: Build Documentation
       run: python -m mkdocs build
 
-    - name: Deploy Coverage Report to GitHub Pages
+    - name: Configure Git for mike
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # MkDocs output is in site/
-        # Coverage goes into site/coverage/
-        mkdir -p site/coverage
-        cp -r coverage/report/* site/coverage/
-        
-        # API docs go into site/api/dev/
-        mkdir -p site/api
-        cp -r docs/api/dev site/api/
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin gh-pages --depth=1 || true
 
-    - name: Publish to GitHub Pages
+    - name: Deploy with mike (dev version)
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
-        keep_files: true
+      run: |
+        # Deploy as 'dev' version (overwrites each time)
+        mike deploy --push --update-aliases dev
+        
+    - name: Deploy Coverage Report
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Coverage needs to go into gh-pages manually since mike manages the site
+        git checkout gh-pages
+        mkdir -p coverage
+        cp -r ${{ github.workspace }}/coverage/report/* coverage/
+        git add coverage/
+        git diff --staged --quiet || git commit -m "Update coverage report [skip ci]"
+        git push origin gh-pages
+        git checkout main
 
     - name: Update Coverage Badge JSON
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

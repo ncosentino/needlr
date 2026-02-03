@@ -92,7 +92,10 @@ nav:
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
-  - API Reference: "https://ncosentino.github.io/needlr/api/stable/"
+  - API Reference:
+    - Overview: api/index.md
+    - Development: api/dev/index.md
+    - Stable: api/stable/index.md
   - Video Tutorials: video-tutorials.md
 
 plugins:
@@ -125,6 +128,9 @@ markdown_extensions:
       permalink: true
 
 extra:
+  version:
+    provider: mike
+    default: stable
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/ncosentino/needlr

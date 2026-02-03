@@ -134,7 +134,7 @@ jobs:
     - name: Setup Python for MkDocs
       run: |
         python3 -m pip install --upgrade pip
-        pip install mkdocs-material
+        pip install mkdocs-material mike
 
     - name: Restore dotnet tools
       run: dotnet tool restore
@@ -231,16 +231,21 @@ jobs:
           fi
         done
 
-    - name: Build Documentation
-      run: python -m mkdocs build
+    - name: Configure Git for mike
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin gh-pages --depth=1 || true
 
-    - name: Deploy API Docs to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
-        keep_files: true
-        destination_dir: .
+    - name: Deploy with mike (versioned release)
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
+        
+        # Deploy this version and update 'stable' alias to point to it
+        mike deploy --push --update-aliases "$VERSION" stable
+        
+        # Set stable as the default version
+        mike set-default --push stable
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
