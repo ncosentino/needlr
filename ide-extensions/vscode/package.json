@@ -1,0 +1,93 @@
+{
+  "name": "needlr-tools",
+  "displayName": "Needlr Tools",
+  "description": "Dependency injection visualization and diagnostics for Needlr",
+  "version": "0.1.0",
+  "publisher": "nexus-labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncosentino/needlr"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "dependency injection",
+    "DI",
+    "needlr",
+    "dotnet",
+    "csharp"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/needlr-graph.json",
+    "workspaceContains:**/*.csproj"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "needlr.showDependencyGraph",
+        "title": "Needlr: Show Dependency Graph"
+      },
+      {
+        "command": "needlr.refreshGraph",
+        "title": "Needlr: Refresh Dependency Graph"
+      },
+      {
+        "command": "needlr.goToService",
+        "title": "Needlr: Go to Service Definition"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "needlrServices",
+          "name": "Needlr Services",
+          "when": "needlr:hasGraph"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "needlr.refreshGraph",
+          "when": "view == needlrServices",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Needlr",
+      "properties": {
+        "needlr.graphFilePath": {
+          "type": "string",
+          "default": "**/obj/**/needlr-graph.json",
+          "description": "Glob pattern to find the Needlr graph file"
+        },
+        "needlr.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh the graph when the file changes"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "typescript": "^5.3.0"
+  }
+}
