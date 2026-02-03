@@ -158,6 +158,10 @@ jobs:
         mkdir -p /tmp/coverage-report
         cp -r coverage/report/* /tmp/coverage-report/
         
+        # Clean working directory (docs already deployed by peaceiris action)
+        git checkout -- .
+        git clean -fd
+        
         # Switch to gh-pages and add coverage
         git fetch origin gh-pages --depth=1
         git checkout gh-pages
