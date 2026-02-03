@@ -84,58 +84,7 @@ jobs:
       run: dotnet tool restore
 
     - name: Generate API Documentation
-      run: |
-        mkdir -p docs/api/dev
-        
-        # Find source project directories (exclude Examples, Tests, Benchmarks)
-        for PROJECT_DIR in src/NexusLabs.Needlr*/; do
-          PROJECT_NAME=$(basename "$PROJECT_DIR")
-          
-          # Skip test and benchmark projects
-          if [[ "$PROJECT_NAME" == *Tests ]] || [[ "$PROJECT_NAME" == *Benchmarks ]] || [[ "$PROJECT_NAME" == *IntegrationTests ]]; then
-            continue
-          fi
-          
-          # Find the XML file for this project
-          XML_FILE=$(find "$PROJECT_DIR" -path "*/bin/Release/*/$PROJECT_NAME.xml" 2>/dev/null | head -1)
-          
-          if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
-            DLL_FILE="${XML_FILE%.xml}.dll"
-            
-            if [ -f "$DLL_FILE" ]; then
-              echo "Generating docs for $PROJECT_NAME..."
-              mkdir -p "docs/api/dev/$PROJECT_NAME"
-              dotnet defaultdocumentation \
-                --AssemblyFilePath "$DLL_FILE" \
-                --DocumentationFilePath "$XML_FILE" \
-                --OutputDirectoryPath "docs/api/dev/$PROJECT_NAME" \
-                --ConfigurationFilePath defaultdocumentation.json \
-                || echo "Warning: Failed to generate docs for $PROJECT_NAME"
-            fi
-          fi
-        done
-        
-        # Update API index page - remove old package links and append new ones
-        # Keep everything up to "## Packages" line, then add fresh package links
-        if [ -f "docs/api/dev/index.md" ]; then
-          # Remove any existing package links (lines starting with "- [NexusLabs")
-          sed -i '/^- \[NexusLabs/d' docs/api/dev/index.md
-          # Remove "No API documentation" message if present
-          sed -i '/No API documentation generated/d' docs/api/dev/index.md
-        fi
-        
-        for dir in docs/api/dev/NexusLabs.Needlr*/; do
-          if [ -f "$dir/index.md" ]; then
-            name=$(basename "$dir")
-            echo "- [$name]($name/index.md)" >> docs/api/dev/index.md
-          fi
-        done
-        
-        # If no packages were documented, add a note
-        if ! grep -q "NexusLabs" docs/api/dev/index.md; then
-          echo "" >> docs/api/dev/index.md
-          echo "*No API documentation generated. This may indicate a build issue.*" >> docs/api/dev/index.md
-        fi
+      run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
 
     - name: Build Documentation
       run: python -m mkdocs build

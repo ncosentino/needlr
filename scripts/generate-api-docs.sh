@@ -1,10 +1,15 @@
 #!/bin/bash
 # Generate API documentation from XML doc comments
-# Usage: ./scripts/generate-api-docs.sh [output-dir]
+# Usage: ./scripts/generate-api-docs.sh <output-dir> [--update-index]
+#
+# Examples:
+#   ./scripts/generate-api-docs.sh docs/api/dev --update-index
+#   ./scripts/generate-api-docs.sh docs/api/v0.0.2
 
 set -e
 
-OUTPUT_DIR="${1:-docs/api/dev}"
+OUTPUT_DIR="${1:?Usage: $0 <output-dir> [--update-index]}"
+UPDATE_INDEX="${2:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
@@ -13,29 +18,27 @@ echo "Generating API documentation to $OUTPUT_DIR..."
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
 
-# Build the solution first to ensure XML files are generated
-echo "Building solution..."
-dotnet build "$ROOT_DIR/src/NexusLabs.Needlr.slnx" -c Release --no-restore -v quiet
-
 # Find all XML documentation files for publishable projects (exclude Tests, Benchmarks, Examples)
 XML_FILES=$(find "$ROOT_DIR/src" -path "*/bin/Release/*/NexusLabs.Needlr*.xml" \
     ! -name "*Tests.xml" \
     ! -name "*Benchmarks.xml" \
     ! -name "*IntegrationTests.xml" \
-    | sort)
+    2>/dev/null | sort | uniq)
 
 if [ -z "$XML_FILES" ]; then
-    echo "No XML documentation files found. Ensure projects have <GenerateDocumentationFile>true</GenerateDocumentationFile>"
+    echo "No XML documentation files found. Ensure the project was built with Release configuration."
     exit 1
 fi
 
 echo "Found XML documentation files:"
 echo "$XML_FILES" | while read -r f; do echo "  - $(basename "$f")"; done
 
+# Keep track of generated packages
+GENERATED_PACKAGES=""
+
 # Generate documentation for each XML file
 for XML_FILE in $XML_FILES; do
     PROJECT_NAME=$(basename "$XML_FILE" .xml)
-    echo "Generating docs for $PROJECT_NAME..."
     
     # Get the corresponding DLL
     DLL_FILE="${XML_FILE%.xml}.dll"
@@ -49,33 +52,36 @@ for XML_FILE in $XML_FILES; do
     PROJECT_OUTPUT="$OUTPUT_DIR/$PROJECT_NAME"
     mkdir -p "$PROJECT_OUTPUT"
     
+    echo "Generating docs for $PROJECT_NAME..."
+    
     # Run DefaultDocumentation
-    dotnet defaultdocumentation \
+    if dotnet defaultdocumentation \
         --AssemblyFilePath "$DLL_FILE" \
         --DocumentationFilePath "$XML_FILE" \
         --OutputDirectoryPath "$PROJECT_OUTPUT" \
-        --ConfigurationFilePath "$ROOT_DIR/defaultdocumentation.json" \
-        || echo "  Warning: Failed to generate docs for $PROJECT_NAME"
-done
-
-# Create index page
-echo "Creating index page..."
-cat > "$OUTPUT_DIR/index.md" << 'EOF'
-# API Reference
-
-This documentation is auto-generated from XML doc comments in the source code.
-
-## Packages
-
-EOF
-
-# Add links to each package
-for XML_FILE in $XML_FILES; do
-    PROJECT_NAME=$(basename "$XML_FILE" .xml)
-    if [ -d "$OUTPUT_DIR/$PROJECT_NAME" ]; then
-        echo "- [$PROJECT_NAME]($PROJECT_NAME/index.md)" >> "$OUTPUT_DIR/index.md"
+        --ConfigurationFilePath "$ROOT_DIR/defaultdocumentation.json" 2>&1; then
+        GENERATED_PACKAGES="$GENERATED_PACKAGES $PROJECT_NAME"
+    else
+        echo "  Warning: Failed to generate docs for $PROJECT_NAME"
     fi
 done
+
+# Update index if requested
+if [ "$UPDATE_INDEX" = "--update-index" ] && [ -f "$OUTPUT_DIR/index.md" ]; then
+    echo "Updating index page..."
+    
+    # Remove old package links and placeholder text
+    sed -i '/^- \[NexusLabs/d' "$OUTPUT_DIR/index.md"
+    sed -i '/No API documentation generated/d' "$OUTPUT_DIR/index.md"
+    sed -i '/API documentation will be generated/d' "$OUTPUT_DIR/index.md"
+    
+    # Add links to each generated package
+    for PROJECT_NAME in $GENERATED_PACKAGES; do
+        if [ -f "$OUTPUT_DIR/$PROJECT_NAME/index.md" ]; then
+            echo "- [$PROJECT_NAME]($PROJECT_NAME/index.md)" >> "$OUTPUT_DIR/index.md"
+        fi
+    done
+fi
 
 echo ""
 echo "API documentation generated successfully at $OUTPUT_DIR"
