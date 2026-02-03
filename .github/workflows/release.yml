@@ -131,6 +131,117 @@ jobs:
           echo "CHANGELOG_EOF"
         } >> "$GITHUB_OUTPUT"
 
+    - name: Setup Python for MkDocs
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install mkdocs-material
+
+    - name: Restore dotnet tools
+      run: dotnet tool restore
+
+    - name: Generate Versioned API Documentation
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
+        
+        mkdir -p "docs/api/v$VERSION"
+        mkdir -p "docs/api/stable"
+        
+        # Find source project directories (exclude Examples, Tests, Benchmarks)
+        for PROJECT_DIR in src/NexusLabs.Needlr*/; do
+          PROJECT_NAME=$(basename "$PROJECT_DIR")
+          
+          # Skip test and benchmark projects
+          if [[ "$PROJECT_NAME" == *Tests ]] || [[ "$PROJECT_NAME" == *Benchmarks ]] || [[ "$PROJECT_NAME" == *IntegrationTests ]]; then
+            continue
+          fi
+          
+          # Find the XML file for this project
+          XML_FILE=$(find "$PROJECT_DIR" -path "*/bin/Release/*/$PROJECT_NAME.xml" 2>/dev/null | head -1)
+          
+          if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+            DLL_FILE="${XML_FILE%.xml}.dll"
+            
+            if [ -f "$DLL_FILE" ]; then
+              echo "Generating docs for $PROJECT_NAME..."
+              mkdir -p "docs/api/v$VERSION/$PROJECT_NAME"
+              dotnet defaultdocumentation \
+                --AssemblyFilePath "$DLL_FILE" \
+                --DocumentationFilePath "$XML_FILE" \
+                --OutputDirectoryPath "docs/api/v$VERSION/$PROJECT_NAME" \
+                --ConfigurationFilePath defaultdocumentation.json \
+                || echo "Warning: Failed to generate docs for $PROJECT_NAME"
+            fi
+          fi
+        done
+        
+        # Create version-specific index
+        cat > "docs/api/v$VERSION/index.md" << APIEOF
+        # API Reference v$VERSION
+        
+        This documentation is for version **$VERSION**.
+        
+        ## Packages
+        APIEOF
+        
+        for dir in docs/api/v$VERSION/NexusLabs.Needlr*/; do
+          if [ -d "$dir" ]; then
+            name=$(basename "$dir")
+            echo "- [$name]($name/index.md)" >> "docs/api/v$VERSION/index.md"
+          fi
+        done
+        
+        # Copy to stable (latest release)
+        cp -r "docs/api/v$VERSION/"* "docs/api/stable/"
+        
+        # Update stable index to indicate it's the latest
+        cat > "docs/api/stable/index.md" << APIEOF
+        # API Reference (Stable)
+        
+        This documentation is for the latest stable release: **v$VERSION**.
+        
+        For development (unreleased) documentation, see [dev](../dev/).
+        
+        ## Packages
+        APIEOF
+        
+        for dir in docs/api/stable/NexusLabs.Needlr*/; do
+          if [ -d "$dir" ]; then
+            name=$(basename "$dir")
+            echo "- [$name]($name/index.md)" >> "docs/api/stable/index.md"
+          fi
+        done
+        
+        # Create main API index with version links
+        cat > "docs/api/index.md" << 'APIEOF'
+        # API Reference
+        
+        Select a version:
+        
+        - [Stable (Latest Release)](stable/) - Recommended for most users
+        - [Development](dev/) - Latest from main branch (may be unstable)
+        
+        ## All Versions
+        APIEOF
+        
+        # List all version directories
+        for vdir in docs/api/v*/; do
+          if [ -d "$vdir" ]; then
+            vname=$(basename "$vdir")
+            echo "- [$vname]($vname/)" >> "docs/api/index.md"
+          fi
+        done
+
+    - name: Build Documentation
+      run: python -m mkdocs build
+
+    - name: Deploy API Docs to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+        keep_files: true
+        destination_dir: .
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:

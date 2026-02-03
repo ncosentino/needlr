@@ -80,6 +80,58 @@ jobs:
     - name: Install MkDocs
       run: pip install mkdocs-material
 
+    - name: Restore dotnet tools
+      run: dotnet tool restore
+
+    - name: Generate API Documentation
+      run: |
+        mkdir -p docs/api/dev
+        
+        # Find source project directories (exclude Examples, Tests, Benchmarks)
+        for PROJECT_DIR in src/NexusLabs.Needlr*/; do
+          PROJECT_NAME=$(basename "$PROJECT_DIR")
+          
+          # Skip test and benchmark projects
+          if [[ "$PROJECT_NAME" == *Tests ]] || [[ "$PROJECT_NAME" == *Benchmarks ]] || [[ "$PROJECT_NAME" == *IntegrationTests ]]; then
+            continue
+          fi
+          
+          # Find the XML file for this project
+          XML_FILE=$(find "$PROJECT_DIR" -path "*/bin/Release/*/$PROJECT_NAME.xml" 2>/dev/null | head -1)
+          
+          if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+            DLL_FILE="${XML_FILE%.xml}.dll"
+            
+            if [ -f "$DLL_FILE" ]; then
+              echo "Generating docs for $PROJECT_NAME..."
+              mkdir -p "docs/api/dev/$PROJECT_NAME"
+              dotnet defaultdocumentation \
+                --AssemblyFilePath "$DLL_FILE" \
+                --DocumentationFilePath "$XML_FILE" \
+                --OutputDirectoryPath "docs/api/dev/$PROJECT_NAME" \
+                --ConfigurationFilePath defaultdocumentation.json \
+                || echo "Warning: Failed to generate docs for $PROJECT_NAME"
+            fi
+          fi
+        done
+        
+        # Create API index page
+        cat > docs/api/dev/index.md << 'APIEOF'
+        # API Reference (Development)
+        
+        This documentation is auto-generated from the latest `main` branch.
+        For stable release documentation, see [stable](../stable/).
+        
+        ## Packages
+        APIEOF
+        
+        for dir in docs/api/dev/NexusLabs.Needlr*/; do
+          if [ -d "$dir" ]; then
+            name=$(basename "$dir")
+            echo "- [$name]($name/index.md)" >> docs/api/dev/index.md
+          fi
+        done
+
     - name: Build Documentation
       run: python -m mkdocs build
 
@@ -90,6 +142,10 @@ jobs:
         # Coverage goes into site/coverage/
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
+        
+        # API docs go into site/api/dev/
+        mkdir -p site/api
+        cp -r docs/api/dev site/api/
 
     - name: Publish to GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

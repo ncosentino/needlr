@@ -92,6 +92,7 @@ nav:
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
+  - API Reference: "https://ncosentino.github.io/needlr/api/stable/"
   - Video Tutorials: video-tutorials.md
 
 plugins:

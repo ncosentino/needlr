@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Doraku/DefaultDocumentation/master/documentation/schema.json",
+  "GeneratedAccessModifiers": "Public",
+  "GeneratedPages": "Namespaces,Types",
+  "IncludeUndocumentedItems": false,
+  "RemoveFileExtensionFromLinks": true,
+  "NestedTypeVisibilities": "Public",
+  "FileNameFactory": "Name",
+  "Markdown": {
+    "SkipHeader": false,
+    "TableOfContents": false,
+    "HandleLineBreak": true
+  }
+}
