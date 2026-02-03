@@ -105,6 +105,14 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Enables IDE graph export generation.
+    /// </summary>
+    public GeneratorTestRunner WithGraphExportEnabled(bool enabled = true)
+    {
+        return WithAnalyzerConfigOption("build_property.NeedlrExportGraph", enabled ? "true" : "false");
+    }
+
+    /// <summary>
     /// Sets the breadcrumb level for diagnostics.
     /// </summary>
     public GeneratorTestRunner WithBreadcrumbLevel(string level)

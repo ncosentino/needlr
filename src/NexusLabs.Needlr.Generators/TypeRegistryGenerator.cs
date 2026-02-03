@@ -166,6 +166,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var diagnosticsText = DiagnosticsGenerator.GenerateDiagnosticsSource(discoveryResult, assemblyName, projectDirectory, diagnosticOptions, referencedAssemblies, referencedAssemblyTypes);
                 spc.AddSource("NeedlrDiagnostics.g.cs", SourceText.From(diagnosticsText, Encoding.UTF8));
             }
+
+            // Generate IDE graph export if configured
+            if (ShouldExportGraph(configOptions))
+            {
+                var graphJson = Export.GraphExporter.GenerateGraphJson(
+                    discoveryResult,
+                    assemblyName,
+                    projectDirectory);
+                
+                // Embed graph as a comment in a generated file so it's accessible
+                // The actual JSON is written to obj folder via the generated code
+                var graphSourceText = GenerateGraphExportSource(graphJson, assemblyName, breadcrumbs, projectDirectory);
+                spc.AddSource("NeedlrGraph.g.cs", SourceText.From(graphSourceText, Encoding.UTF8));
+            }
         });
     }
 
@@ -324,6 +338,65 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnosticsFilter", out var filter);
         
         return DiagnosticOptions.Parse(enabled, outputPath, filter);
+    }
+
+    /// <summary>
+    /// Checks if the IDE graph export is enabled.
+    /// </summary>
+    private static bool ShouldExportGraph(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        if (configOptions.GlobalOptions.TryGetValue("build_property.NeedlrExportGraph", out var exportGraph) &&
+            exportGraph.Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Generates source code that writes the graph JSON to a file at build time.
+    /// The graph is embedded in the source and written via a module initializer.
+    /// </summary>
+    private static string GenerateGraphExportSource(string graphJson, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var sb = new StringBuilder();
+        
+        breadcrumbs.WriteFileHeader(sb, assemblyName, "Needlr IDE Graph Export");
+        
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.IO;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {assemblyName}.Generated");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// Provides the Needlr dependency graph for IDE tooling.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    internal static class NeedlrGraphExport");
+        sb.AppendLine("    {");
+        sb.AppendLine("        /// <summary>");
+        sb.AppendLine("        /// Gets the dependency graph JSON.");
+        sb.AppendLine("        /// </summary>");
+        sb.AppendLine("        public static string GraphJson => GraphJsonContent;");
+        sb.AppendLine();
+        sb.AppendLine("        private const string GraphJsonContent = @\"");
+        
+        // Escape the JSON for C# verbatim string (double quotes only)
+        var escapedJson = graphJson.Replace("\"", "\"\"");
+        sb.Append(escapedJson);
+        
+        sb.AppendLine("\";");
+        sb.AppendLine();
+        sb.AppendLine("        /// <summary>");
+        sb.AppendLine("        /// Writes the graph to the specified path.");
+        sb.AppendLine("        /// </summary>");
+        sb.AppendLine("        public static void WriteGraphToFile(string path)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            File.WriteAllText(path, GraphJson);");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
     }
     
     /// <summary>

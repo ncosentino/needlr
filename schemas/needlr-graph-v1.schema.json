@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://needlr.dev/schemas/needlr-graph-v1.schema.json",
+  "title": "Needlr Dependency Graph",
+  "description": "Schema for the Needlr dependency graph export file (needlr-graph.json)",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "services", "statistics"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Schema version for forward compatibility",
+      "const": "1.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when the graph was generated"
+    },
+    "projectPath": {
+      "type": ["string", "null"],
+      "description": "Path to the project directory"
+    },
+    "assemblyName": {
+      "type": ["string", "null"],
+      "description": "Name of the assembly"
+    },
+    "services": {
+      "type": "array",
+      "description": "List of discovered services",
+      "items": { "$ref": "#/definitions/service" }
+    },
+    "diagnostics": {
+      "type": "array",
+      "description": "List of diagnostics (warnings/errors) from generation",
+      "items": { "$ref": "#/definitions/diagnostic" }
+    },
+    "statistics": {
+      "$ref": "#/definitions/statistics",
+      "description": "Summary statistics of the generated graph"
+    }
+  },
+  "definitions": {
+    "service": {
+      "type": "object",
+      "required": ["id", "typeName", "fullTypeName", "lifetime"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier (fully qualified type name)"
+        },
+        "typeName": {
+          "type": "string",
+          "description": "Simple type name without namespace"
+        },
+        "fullTypeName": {
+          "type": "string",
+          "description": "Fully qualified type name"
+        },
+        "interfaces": {
+          "type": "array",
+          "description": "Interfaces implemented by this service",
+          "items": { "$ref": "#/definitions/interface" }
+        },
+        "lifetime": {
+          "type": "string",
+          "enum": ["Singleton", "Scoped", "Transient"],
+          "description": "DI lifetime of the service"
+        },
+        "location": {
+          "$ref": "#/definitions/location",
+          "description": "Source file location"
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Constructor dependencies",
+          "items": { "$ref": "#/definitions/dependency" }
+        },
+        "decorators": {
+          "type": "array",
+          "description": "Decorators applied to this service",
+          "items": { "$ref": "#/definitions/decorator" }
+        },
+        "interceptors": {
+          "type": "array",
+          "description": "Interceptors applied to this service",
+          "items": { "type": "string" }
+        },
+        "attributes": {
+          "type": "array",
+          "description": "Needlr attributes on this service",
+          "items": { "type": "string" }
+        },
+        "serviceKeys": {
+          "type": "array",
+          "description": "Keyed service keys",
+          "items": { "type": "string" }
+        },
+        "metadata": {
+          "$ref": "#/definitions/serviceMetadata",
+          "description": "Additional metadata about the service"
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "required": ["name", "fullName"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Simple interface name"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Fully qualified interface name"
+        }
+      }
+    },
+    "location": {
+      "type": ["object", "null"],
+      "properties": {
+        "filePath": {
+          "type": ["string", "null"],
+          "description": "Path to the source file"
+        },
+        "line": {
+          "type": "integer",
+          "description": "Line number (1-based)"
+        },
+        "column": {
+          "type": "integer",
+          "description": "Column number (1-based)"
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "required": ["parameterName", "typeName", "fullTypeName"],
+      "properties": {
+        "parameterName": {
+          "type": "string",
+          "description": "Constructor parameter name"
+        },
+        "typeName": {
+          "type": "string",
+          "description": "Simple type name of the dependency"
+        },
+        "fullTypeName": {
+          "type": "string",
+          "description": "Fully qualified type name of the dependency"
+        },
+        "resolvedTo": {
+          "type": ["string", "null"],
+          "description": "Fully qualified type that resolves this dependency"
+        },
+        "resolvedLifetime": {
+          "type": ["string", "null"],
+          "description": "Lifetime of the resolved dependency"
+        },
+        "isKeyed": {
+          "type": "boolean",
+          "description": "Whether this is a keyed service dependency"
+        },
+        "serviceKey": {
+          "type": ["string", "null"],
+          "description": "Service key for keyed dependencies"
+        }
+      }
+    },
+    "decorator": {
+      "type": "object",
+      "required": ["typeName", "order"],
+      "properties": {
+        "typeName": {
+          "type": "string",
+          "description": "Fully qualified decorator type name"
+        },
+        "order": {
+          "type": "integer",
+          "description": "Order in the decorator chain"
+        }
+      }
+    },
+    "serviceMetadata": {
+      "type": "object",
+      "properties": {
+        "hasFactory": {
+          "type": "boolean",
+          "description": "Whether a factory is generated for this service"
+        },
+        "hasOptions": {
+          "type": "boolean",
+          "description": "Whether this is an options type"
+        },
+        "isHostedService": {
+          "type": "boolean",
+          "description": "Whether this is a hosted service"
+        },
+        "isDisposable": {
+          "type": "boolean",
+          "description": "Whether this service is disposable"
+        },
+        "isPlugin": {
+          "type": "boolean",
+          "description": "Whether this is a Needlr plugin"
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["id", "severity", "message"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Diagnostic ID (e.g., NDLRGEN022)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["Error", "Warning", "Info"],
+          "description": "Diagnostic severity"
+        },
+        "message": {
+          "type": "string",
+          "description": "Diagnostic message"
+        },
+        "location": {
+          "$ref": "#/definitions/location",
+          "description": "Source location of the diagnostic"
+        },
+        "relatedServices": {
+          "type": "array",
+          "description": "Services related to this diagnostic",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "totalServices": {
+          "type": "integer",
+          "description": "Total number of services"
+        },
+        "singletons": {
+          "type": "integer",
+          "description": "Number of singleton services"
+        },
+        "scoped": {
+          "type": "integer",
+          "description": "Number of scoped services"
+        },
+        "transient": {
+          "type": "integer",
+          "description": "Number of transient services"
+        },
+        "decorators": {
+          "type": "integer",
+          "description": "Number of decorators"
+        },
+        "interceptors": {
+          "type": "integer",
+          "description": "Number of intercepted services"
+        },
+        "factories": {
+          "type": "integer",
+          "description": "Number of generated factories"
+        },
+        "options": {
+          "type": "integer",
+          "description": "Number of options types"
+        },
+        "hostedServices": {
+          "type": "integer",
+          "description": "Number of hosted services"
+        },
+        "plugins": {
+          "type": "integer",
+          "description": "Number of Needlr plugins"
+        }
+      }
+    }
+  }
+}

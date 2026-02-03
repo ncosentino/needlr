@@ -11,6 +11,9 @@
     
     <!-- Filter diagnostics to specific types (comma-separated fully qualified names). Default: empty (all types) -->
     <NeedlrDiagnosticsFilter Condition="'$(NeedlrDiagnosticsFilter)' == ''"></NeedlrDiagnosticsFilter>
+    
+    <!-- Enable IDE graph export (true/false). Default: false. Generates needlr-graph.json for IDE tooling. -->
+    <NeedlrExportGraph Condition="'$(NeedlrExportGraph)' == ''">false</NeedlrExportGraph>
   </PropertyGroup>
 
   <!-- Expose MSBuild properties to source generators via CompilerVisibleProperty -->
@@ -19,6 +22,7 @@
     <CompilerVisibleProperty Include="NeedlrDiagnostics" />
     <CompilerVisibleProperty Include="NeedlrDiagnosticsPath" />
     <CompilerVisibleProperty Include="NeedlrDiagnosticsFilter" />
+    <CompilerVisibleProperty Include="NeedlrExportGraph" />
     <CompilerVisibleProperty Include="ProjectDir" />
   </ItemGroup>
 </Project>
