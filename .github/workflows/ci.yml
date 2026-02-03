@@ -86,6 +86,9 @@ jobs:
     - name: Generate API Documentation
       run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
 
+    - name: Generate Articles Page
+      run: python scripts/generate-articles.py docs/articles.md
+
     - name: Build Documentation
       run: python -m mkdocs build
 

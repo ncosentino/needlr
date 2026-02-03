@@ -96,6 +96,8 @@ nav:
     - Overview: api/index.md
     - Development: api/dev/index.md
     - Stable: api/stable/index.md
+  - Coverage: coverage.md
+  - Articles: articles.md
   - Video Tutorials: video-tutorials.md
 
 plugins:
