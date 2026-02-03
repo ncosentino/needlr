@@ -182,9 +182,10 @@ jobs:
         
         ## Packages
         APIEOF
+        sed -i 's/^        //' "docs/api/v$VERSION/index.md"
         
         for dir in docs/api/v$VERSION/NexusLabs.Needlr*/; do
-          if [ -d "$dir" ]; then
+          if [ -f "$dir/index.md" ]; then
             name=$(basename "$dir")
             echo "- [$name]($name/index.md)" >> "docs/api/v$VERSION/index.md"
           fi
@@ -199,13 +200,14 @@ jobs:
         
         This documentation is for the latest stable release: **v$VERSION**.
         
-        For development (unreleased) documentation, see [dev](../dev/).
+        For development (unreleased) documentation, see [dev](../dev/index.md).
         
         ## Packages
         APIEOF
+        sed -i 's/^        //' "docs/api/stable/index.md"
         
         for dir in docs/api/stable/NexusLabs.Needlr*/; do
-          if [ -d "$dir" ]; then
+          if [ -f "$dir/index.md" ]; then
             name=$(basename "$dir")
             echo "- [$name]($name/index.md)" >> "docs/api/stable/index.md"
           fi
@@ -217,11 +219,12 @@ jobs:
         
         Select a version:
         
-        - [Stable (Latest Release)](stable/) - Recommended for most users
-        - [Development](dev/) - Latest from main branch (may be unstable)
+        - [Stable (Latest Release)](stable/index.md) - Recommended for most users
+        - [Development](dev/index.md) - Latest from main branch (may be unstable)
         
         ## All Versions
         APIEOF
+        sed -i 's/^        //' "docs/api/index.md"
         
         # List all version directories
         for vdir in docs/api/v*/; do

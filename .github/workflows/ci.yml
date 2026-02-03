@@ -115,22 +115,31 @@ jobs:
           fi
         done
         
-        # Create API index page
+        # Create API index page - only link to directories that have index.md
         cat > docs/api/dev/index.md << 'APIEOF'
         # API Reference (Development)
         
         This documentation is auto-generated from the latest `main` branch.
-        For stable release documentation, see [stable](../stable/).
+        For stable release documentation, see [stable](../stable/index.md).
         
         ## Packages
         APIEOF
         
+        # Remove leading spaces from heredoc (they were needed for YAML)
+        sed -i 's/^        //' docs/api/dev/index.md
+        
         for dir in docs/api/dev/NexusLabs.Needlr*/; do
-          if [ -d "$dir" ]; then
+          if [ -f "$dir/index.md" ]; then
             name=$(basename "$dir")
             echo "- [$name]($name/index.md)" >> docs/api/dev/index.md
           fi
         done
+        
+        # If no packages were documented, add a note
+        if ! grep -q "NexusLabs" docs/api/dev/index.md; then
+          echo "" >> docs/api/dev/index.md
+          echo "*No API documentation generated. This may indicate a build issue.*" >> docs/api/dev/index.md
+        fi
 
     - name: Build Documentation
       run: python -m mkdocs build
