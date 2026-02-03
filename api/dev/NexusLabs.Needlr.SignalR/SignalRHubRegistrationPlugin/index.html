@@ -2577,7 +2577,7 @@
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">SignalRHubRegistrationPlugin</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AspNet</span><span class="p">.</span><span class="n">IWebApplicationPlugin</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; SignalRHubRegistrationPlugin</p>
-<p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.aspnet.iwebapplicationplugin" title="NexusLabs.Needlr.AspNet.IWebApplicationPlugin">NexusLabs.Needlr.AspNet.IWebApplicationPlugin</a></p>
+<p>Implements [NexusLabs.Needlr.AspNet.IWebApplicationPlugin]../NexusLabs.Needlr.AspNet/index.md</p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>This plugin uses reflection to invoke MapHub<T>() at runtime because the SignalR API
 does not provide a non-generic overload.</p>
@@ -2585,7 +2585,7 @@ does not provide a non-generic overload.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">builder</span><span class="p">.</span><span class="n">Build</span><span class="p">();</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">app</span><span class="p">.</span><span class="n">MapGeneratedHubs</span><span class="p">();</span><span class="w"> </span><span class="c1">// Generated at compile-time, no reflection</span>
 </span></code></pre></div>
-<p>This plugin is marked with <a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.donotautoregisterattribute" title="NexusLabs.Needlr.DoNotAutoRegisterAttribute">NexusLabs.Needlr.DoNotAutoRegisterAttribute</a> to prevent automatic
+<p>This plugin is marked with [NexusLabs.Needlr.DoNotAutoRegisterAttribute]../NexusLabs.Needlr/index.md to prevent automatic
 registration in source-gen scenarios. To use this reflection-based approach, explicitly
 register the plugin or call <a href="../SignalRExtensions/#NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(thisMicrosoft.AspNetCore.Builder.WebApplication,NexusLabs.Needlr.IPluginFactory,System.Collections.Generic.IEnumerable_System.Reflection.Assembly_)" title="NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(this Microsoft.AspNetCore.Builder.WebApplication, NexusLabs.Needlr.IPluginFactory, System.Collections.Generic.IEnumerable\&lt;System.Reflection.Assembly&gt;)">UseSignalRHubsWithReflection(this WebApplication, IPluginFactory, IEnumerable&lt;Assembly&gt;)</a>.</p>
 

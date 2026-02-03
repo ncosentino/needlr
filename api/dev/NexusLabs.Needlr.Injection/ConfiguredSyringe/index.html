@@ -2590,7 +2590,7 @@ This type has access to all configuration extension methods and can build a serv
 <p><a name='NexusLabs.Needlr.Injection.ConfiguredSyringe.BuildServiceProvider(Microsoft.Extensions.Configuration.IConfiguration)'></a></p>
 <h2 id="configuredsyringebuildserviceprovidericonfiguration-method">ConfiguredSyringe.BuildServiceProvider(IConfiguration) Method<a class="headerlink" href="#configuredsyringebuildserviceprovidericonfiguration-method" title="Permanent link">&para;</a></h2>
 <p>Builds a service provider with the configured settings.
-Automatically runs container verification based on <a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.injection.configuredsyringe.verificationoptions" title="NexusLabs.Needlr.Injection.ConfiguredSyringe.VerificationOptions">NexusLabs.Needlr.Injection.ConfiguredSyringe.VerificationOptions</a>.</p>
+Automatically runs container verification based on [NexusLabs.Needlr.Injection.ConfiguredSyringe.VerificationOptions]../NexusLabs.Needlr.Injection/index.md.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IServiceProvider</span><span class="w"> </span><span class="n">BuildServiceProvider</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">IConfiguration</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
@@ -2603,8 +2603,8 @@ The configured <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iser
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
 Thrown if required components (TypeRegistrar, TypeFilterer, PluginFactory, AssemblyProvider) are not configured.</p>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.containerverificationexception" title="NexusLabs.Needlr.ContainerVerificationException">NexusLabs.Needlr.ContainerVerificationException</a><br />
-Thrown if verification issues are detected and the configured behavior is <a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.verificationbehavior.throw" title="NexusLabs.Needlr.VerificationBehavior.Throw">NexusLabs.Needlr.VerificationBehavior.Throw</a>.</p>
+<p>[NexusLabs.Needlr.ContainerVerificationException]../NexusLabs.Needlr/index.md<br />
+Thrown if verification issues are detected and the configured behavior is [NexusLabs.Needlr.VerificationBehavior.Throw]../NexusLabs.Needlr/index.md.</p>
 <p><a name='NexusLabs.Needlr.Injection.ConfiguredSyringe.GetAdditionalAssemblies()'></a></p>
 <h2 id="configuredsyringegetadditionalassemblies-method">ConfiguredSyringe.GetAdditionalAssemblies() Method<a class="headerlink" href="#configuredsyringegetadditionalassemblies-method" title="Permanent link">&para;</a></h2>
 <p>Gets the configured additional assemblies.</p>
@@ -2629,7 +2629,7 @@ via UsingReflection(), UsingSourceGen(), or UsingAutoConfiguration().</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">IPluginFactory</span><span class="w"> </span><span class="n">GetOrCreatePluginFactory</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.ipluginfactory" title="NexusLabs.Needlr.IPluginFactory">NexusLabs.Needlr.IPluginFactory</a></p>
+<p>[NexusLabs.Needlr.IPluginFactory]../NexusLabs.Needlr/index.md</p>
 <h4 id="exceptions_2">Exceptions<a class="headerlink" href="#exceptions_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
 Thrown if no plugin factory is configured. This should not happen if the syringe was created
@@ -2645,7 +2645,7 @@ via UsingReflection(), UsingSourceGen(), or UsingAutoConfiguration().</p>
 <p><a name='NexusLabs.Needlr.Injection.ConfiguredSyringe.GetOrCreateServiceCollectionPopulator(NexusLabs.Needlr.Injection.ITypeRegistrar,NexusLabs.Needlr.Injection.ITypeFilterer,NexusLabs.Needlr.IPluginFactory).typeFilterer'></a></p>
 <p><code>typeFilterer</code> <a href="../ITypeFilterer/" title="NexusLabs.Needlr.Injection.ITypeFilterer">ITypeFilterer</a></p>
 <p><a name='NexusLabs.Needlr.Injection.ConfiguredSyringe.GetOrCreateServiceCollectionPopulator(NexusLabs.Needlr.Injection.ITypeRegistrar,NexusLabs.Needlr.Injection.ITypeFilterer,NexusLabs.Needlr.IPluginFactory).pluginFactory'></a></p>
-<p><code>pluginFactory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/nexuslabs.needlr.ipluginfactory" title="NexusLabs.Needlr.IPluginFactory">NexusLabs.Needlr.IPluginFactory</a></p>
+<p><code>pluginFactory</code> [NexusLabs.Needlr.IPluginFactory]../NexusLabs.Needlr/index.md</p>
 <h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
 <p><a href="../IServiceCollectionPopulator/" title="NexusLabs.Needlr.Injection.IServiceCollectionPopulator">IServiceCollectionPopulator</a></p>
 <p><a name='NexusLabs.Needlr.Injection.ConfiguredSyringe.GetOrCreateServiceProviderBuilder(NexusLabs.Needlr.Injection.IServiceCollectionPopulator,NexusLabs.Needlr.Injection.IAssemblyProvider,System.Collections.Generic.IReadOnlyList_System.Reflection.Assembly_)'></a></p>
