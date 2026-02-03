@@ -115,18 +115,14 @@ jobs:
           fi
         done
         
-        # Create API index page - only link to directories that have index.md
-        cat > docs/api/dev/index.md << 'APIEOF'
-        # API Reference (Development)
-        
-        This documentation is auto-generated from the latest `main` branch.
-        For stable release documentation, see [stable](../stable/index.md).
-        
-        ## Packages
-        APIEOF
-        
-        # Remove leading spaces from heredoc (they were needed for YAML)
-        sed -i 's/^        //' docs/api/dev/index.md
+        # Update API index page - remove old package links and append new ones
+        # Keep everything up to "## Packages" line, then add fresh package links
+        if [ -f "docs/api/dev/index.md" ]; then
+          # Remove any existing package links (lines starting with "- [NexusLabs")
+          sed -i '/^- \[NexusLabs/d' docs/api/dev/index.md
+          # Remove "No API documentation" message if present
+          sed -i '/No API documentation generated/d' docs/api/dev/index.md
+        fi
         
         for dir in docs/api/dev/NexusLabs.Needlr*/; do
           if [ -f "$dir/index.md" ]; then
@@ -144,27 +140,26 @@ jobs:
     - name: Build Documentation
       run: python -m mkdocs build
 
-    - name: Configure Git for mike
+    - name: Deploy Documentation
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin gh-pages --depth=1 || true
-
-    - name: Deploy with mike (dev version)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        # Deploy as 'dev' version (overwrites each time)
-        mike deploy --push --update-aliases dev
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+        keep_files: true
         
     - name: Deploy Coverage Report
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
         # Save coverage to temp location before switching branches
         mkdir -p /tmp/coverage-report
         cp -r coverage/report/* /tmp/coverage-report/
         
         # Switch to gh-pages and add coverage
+        git fetch origin gh-pages --depth=1
         git checkout gh-pages
         mkdir -p coverage
         cp -r /tmp/coverage-report/* coverage/

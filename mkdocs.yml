@@ -128,9 +128,6 @@ markdown_extensions:
       permalink: true
 
 extra:
-  version:
-    provider: mike
-    default: stable
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/ncosentino/needlr

@@ -234,21 +234,15 @@ jobs:
           fi
         done
 
-    - name: Configure Git for mike
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin gh-pages --depth=1 || true
+    - name: Build Documentation
+      run: python -m mkdocs build
 
-    - name: Deploy with mike (versioned release)
-      run: |
-        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
-        
-        # Deploy this version and update 'stable' alias to point to it
-        mike deploy --push --update-aliases "$VERSION" stable
-        
-        # Set stable as the default version
-        mike set-default --push stable
+    - name: Deploy Documentation
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+        keep_files: true
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
