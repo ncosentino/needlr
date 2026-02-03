@@ -25,14 +25,19 @@ echo "Generating API documentation to $OUTPUT_DIR..."
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
 
-# Find all XML documentation files for publishable projects (exclude Tests, Benchmarks, Examples)
-# Deduplicate by basename (same package can exist in multiple TFMs and Examples output)
+# Find all XML documentation files for publishable projects
+# Look directly in the project's own bin folder (not in Test project folders that reference them)
+# Exclude Tests, Benchmarks, Examples, IntegrationTests, and Roslyn.Shared (internal)
 declare -A SEEN_PACKAGES
 XML_FILES_UNIQUE=""
 
 while IFS= read -r xml_file; do
     pkg_name=$(basename "$xml_file" .xml)
-    if [ -z "${SEEN_PACKAGES[$pkg_name]:-}" ]; then
+    project_folder=$(dirname "$xml_file" | sed 's|/bin/Release/.*||' | xargs basename)
+    
+    # Only include if the XML is in a folder matching its package name
+    # This excludes DLLs that are copied to other projects as references
+    if [ "$pkg_name" = "$project_folder" ] && [ -z "${SEEN_PACKAGES[$pkg_name]:-}" ]; then
         SEEN_PACKAGES[$pkg_name]=1
         XML_FILES_UNIQUE="$XML_FILES_UNIQUE $xml_file"
     fi
@@ -41,6 +46,7 @@ done < <(find "$ROOT_DIR/src" -path "*/bin/Release/*/NexusLabs.Needlr*.xml" \
     ! -name "*Tests.xml" \
     ! -name "*Benchmarks.xml" \
     ! -name "*IntegrationTests.xml" \
+    ! -name "NexusLabs.Needlr.Roslyn.Shared.xml" \
     2>/dev/null | sort)
 
 XML_FILES="$XML_FILES_UNIQUE"
@@ -92,16 +98,18 @@ if [ "$UPDATE_INDEX" = "--update-index" ] && [ -f "$OUTPUT_DIR/index.md" ]; then
     
     # Remove old package links and placeholder text
     sed -i '/^- \[NexusLabs/d' "$OUTPUT_DIR/index.md"
+    sed -i '/^\* \[NexusLabs/d' "$OUTPUT_DIR/index.md"
     sed -i '/No API documentation generated/d' "$OUTPUT_DIR/index.md"
     sed -i '/API documentation will be generated/d' "$OUTPUT_DIR/index.md"
     
-    # Add links to each generated package
-    for PROJECT_NAME in $GENERATED_PACKAGES; do
-        if [ -f "$OUTPUT_DIR/$PROJECT_NAME/index.md" ]; then
-            echo "- [$PROJECT_NAME]($PROJECT_NAME/index.md)" >> "$OUTPUT_DIR/index.md"
+    # Sort and add links to each generated package
+    for PROJECT_NAME in $(echo $GENERATED_PACKAGES | tr ' ' '\n' | sort); do
+        if [ -d "$OUTPUT_DIR/$PROJECT_NAME" ]; then
+            echo "* [$PROJECT_NAME]($PROJECT_NAME/)" >> "$OUTPUT_DIR/index.md"
         fi
     done
 fi
 
 echo ""
 echo "API documentation generated successfully at $OUTPUT_DIR"
+echo "Generated packages: $(echo $GENERATED_PACKAGES | wc -w)"

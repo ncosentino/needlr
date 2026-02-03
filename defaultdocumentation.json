@@ -9,6 +9,7 @@
   "Markdown": {
     "SkipHeader": false,
     "TableOfContents": false,
-    "HandleLineBreak": true
+    "HandleLineBreak": true,
+    "MarkdownSanitizationRegex": "[\\\\\\`\\*_\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\|]"
   }
 }
