@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 02/03/2026 - 02:11:17 |
-| Coverage date: | 02/03/2026 - 02:10:14 - 02/03/2026 - 02:11:14 |
+| Generated on: | 02/03/2026 - 02:32:31 |
+| Coverage date: | 02/03/2026 - 02:31:33 - 02/03/2026 - 02:32:28 |
 | Parser: | MultiReport (16x Cobertura) |
 | Assemblies: | 16 |
 | Classes: | 182 |
 | Files: | 156 |
-| **Line coverage:** | 88.9% (8287 of 9316) |
-| Covered lines: | 8287 |
-| Uncovered lines: | 1029 |
+| **Line coverage:** | 88.9% (8288 of 9316) |
+| Covered lines: | 8288 |
+| Uncovered lines: | 1028 |
 | Coverable lines: | 9316 |
 | Total lines: | 24592 |
-| **Branch coverage:** | 78.4% (3906 of 4982) |
-| Covered branches: | 3906 |
+| **Branch coverage:** | 78.4% (3907 of 4982) |
+| Covered branches: | 3907 |
 | Total branches: | 4982 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -233,15 +233,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.5%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.5%**|**89%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.5%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|96%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
