@@ -6,8 +6,9 @@
 
   <Commands package="guidNeedlrToolsPackage">
     <Groups>
+      <!-- Place in View > Other Windows submenu -->
       <Group guid="guidNeedlrToolsCmdSet" id="NeedlrMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_VIEW"/>
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
       </Group>
     </Groups>
 

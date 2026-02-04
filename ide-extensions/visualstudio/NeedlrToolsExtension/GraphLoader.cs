@@ -26,35 +26,45 @@ namespace NeedlrToolsExtension
             var solution = await Community.VisualStudio.Toolkit.VS.Solutions.GetCurrentSolutionAsync();
             if (solution == null || string.IsNullOrEmpty(solution.FullPath))
             {
+                System.Diagnostics.Debug.WriteLine("Needlr: No solution loaded");
                 return null;
             }
 
             var solutionDir = Path.GetDirectoryName(solution.FullPath);
             if (string.IsNullOrEmpty(solutionDir))
             {
+                System.Diagnostics.Debug.WriteLine("Needlr: Could not determine solution directory");
                 return null;
             }
+
+            System.Diagnostics.Debug.WriteLine($"Needlr: Searching for graph in {solutionDir}");
 
             // Search for needlr-graph.json in obj folders
             var graphFiles = Directory.GetFiles(solutionDir, "needlr-graph.json", SearchOption.AllDirectories)
                 .Where(f => f.Contains("obj"))
                 .ToList();
 
+            System.Diagnostics.Debug.WriteLine($"Needlr: Found {graphFiles.Count} needlr-graph.json files");
+
             if (graphFiles.Count > 0)
             {
+                System.Diagnostics.Debug.WriteLine($"Needlr: Loading graph from {graphFiles[0]}");
                 return await LoadGraphFileAsync(graphFiles[0]);
             }
 
             // Fall back to searching for embedded graph in generated source files
             var sourceFiles = Directory.GetFiles(solutionDir, "NeedlrGraph.g.cs", SearchOption.AllDirectories)
-                .Where(f => f.Contains("obj") || f.Contains("Generated"))
                 .ToList();
+
+            System.Diagnostics.Debug.WriteLine($"Needlr: Found {sourceFiles.Count} NeedlrGraph.g.cs files");
 
             if (sourceFiles.Count > 0)
             {
+                System.Diagnostics.Debug.WriteLine($"Needlr: Loading graph from source file {sourceFiles[0]}");
                 return await LoadGraphFromSourceFileAsync(sourceFiles[0]);
             }
 
+            System.Diagnostics.Debug.WriteLine("Needlr: No graph files found");
             return null;
         }
 
@@ -87,26 +97,28 @@ namespace NeedlrToolsExtension
             {
                 var content = await Task.Run(() => File.ReadAllText(filePath));
 
-                // Extract JSON from the C# source file using regex
+                // Extract JSON from the C# source file - look for GraphJsonContent or GraphJson
+                // Try raw string literal format first (C# 11+)
                 var match = System.Text.RegularExpressions.Regex.Match(
                     content,
-                    @"GraphJson\s*=\s*""""""([\s\S]*?)""""""",
+                    @"GraphJson(?:Content)?\s*=\s*""""""([\s\S]*?)""""""",
                     System.Text.RegularExpressions.RegexOptions.Singleline);
 
                 if (!match.Success)
                 {
-                    // Try verbatim string format
+                    // Try verbatim string format @"..."
                     match = System.Text.RegularExpressions.Regex.Match(
                         content,
-                        @"GraphJson\s*=\s*@""([^""]+(?:""""[^""]*)*)"";",
+                        @"GraphJson(?:Content)?\s*=\s*@""((?:[^""]|"""")*)""",
                         System.Text.RegularExpressions.RegexOptions.Singleline);
 
                     if (!match.Success)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Could not find GraphJson pattern in {filePath}");
                         return null;
                     }
 
-                    // Unescape the verbatim string
+                    // Unescape the verbatim string (doubled quotes become single)
                     var jsonString = match.Groups[1].Value.Replace("\"\"", "\"");
                     var graph = JsonConvert.DeserializeObject<NeedlrGraph>(jsonString);
                     
