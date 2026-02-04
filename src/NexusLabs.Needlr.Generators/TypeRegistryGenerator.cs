@@ -1129,8 +1129,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
                     }
                     
-                    // Get source file path for breadcrumbs (null for external assemblies)
-                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                    // Get source file path and line for breadcrumbs (null for external assemblies)
+                    var location = typeSymbol.Locations.FirstOrDefault();
+                    var sourceFilePath = location?.SourceTree?.FilePath;
+                    var sourceLine = location?.GetLineSpan().StartLinePosition.Line + 1 ?? 0; // Convert to 1-based
 
                     // Get [Keyed] attribute keys
                     var serviceKeys = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
@@ -1138,7 +1140,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // Check if this type implements IDisposable or IAsyncDisposable
                     var isDisposable = TypeDiscoveryHelper.IsDisposableType(typeSymbol);
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath, isDisposable));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath, sourceLine, isDisposable));
                 }
             }
 

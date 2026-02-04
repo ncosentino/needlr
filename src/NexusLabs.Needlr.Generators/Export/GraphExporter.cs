@@ -108,7 +108,7 @@ internal static class GraphExporter
             Location = type.SourceFilePath != null ? new GraphLocation
             {
                 FilePath = type.SourceFilePath,
-                Line = 0,
+                Line = type.SourceLine,
                 Column = 0
             } : null,
             ServiceKeys = type.ServiceKeys.ToList(),

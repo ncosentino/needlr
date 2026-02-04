@@ -1,12 +1,14 @@
 using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace NeedlrToolsExtension
 {
@@ -37,6 +39,7 @@ namespace NeedlrToolsExtension
 
     /// <summary>
     /// WPF control for the Needlr Services tool window.
+    /// Uses VS theme colors for proper integration.
     /// </summary>
     public class NeedlrServicesControl : UserControl
     {
@@ -45,28 +48,99 @@ namespace NeedlrToolsExtension
 
         public NeedlrServicesControl()
         {
+            // Use VS environment colors
+            SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowBackgroundBrushKey);
+
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Toolbar
-            var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5) };
-            var refreshButton = new Button { Content = "Refresh", Padding = new Thickness(10, 2, 10, 2) };
+            // Toolbar with VS styling
+            var toolbar = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal, 
+                Margin = new Thickness(4, 4, 4, 2)
+            };
+            toolbar.SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarGradientBrushKey);
+            
+            // Create a button style with proper hover/pressed states
+            var buttonStyle = new Style(typeof(Button));
+            buttonStyle.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(8, 4, 8, 4)));
+            buttonStyle.Setters.Add(new Setter(Button.MarginProperty, new Thickness(2)));
+            buttonStyle.Setters.Add(new Setter(Button.CursorProperty, System.Windows.Input.Cursors.Hand));
+            buttonStyle.Setters.Add(new Setter(Button.ForegroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey)));
+            buttonStyle.Setters.Add(new Setter(Button.BackgroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarGradientBrushKey)));
+            buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarBorderBrushKey)));
+            
+            // Hover trigger - use CommandBarTextHover for proper contrast
+            var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarMouseOverBackgroundGradientBrushKey)));
+            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarSelectedBorderBrushKey)));
+            hoverTrigger.Setters.Add(new Setter(Button.ForegroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarTextHoverBrushKey)));
+            buttonStyle.Triggers.Add(hoverTrigger);
+            
+            // Pressed trigger
+            var pressedTrigger = new Trigger { Property = Button.IsPressedProperty, Value = true };
+            pressedTrigger.Setters.Add(new Setter(Button.BackgroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarMouseDownBackgroundGradientBrushKey)));
+            pressedTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarMouseDownBorderBrushKey)));
+            pressedTrigger.Setters.Add(new Setter(Button.ForegroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarTextMouseDownBrushKey)));
+            buttonStyle.Triggers.Add(pressedTrigger);
+            
+            var refreshButton = new Button { Content = "↻ Refresh", Style = buttonStyle };
             refreshButton.Click += async (s, e) => await RefreshAsync();
             toolbar.Children.Add(refreshButton);
             Grid.SetRow(toolbar, 0);
             grid.Children.Add(toolbar);
 
-            // Tree view
-            _treeView = new TreeView { Margin = new Thickness(5) };
+            // Tree view with VS colors
+            _treeView = new TreeView 
+            { 
+                Margin = new Thickness(4, 2, 4, 2),
+                BorderThickness = new Thickness(0)
+            };
+            _treeView.SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowBackgroundBrushKey);
+            _treeView.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
+            
+            // Create a style for TreeViewItems - set ItemContainerStyle recursively
+            var treeViewItemStyle = new Style(typeof(TreeViewItem));
+            treeViewItemStyle.Setters.Add(new Setter(TreeViewItem.ForegroundProperty, 
+                new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey)));
+            // This makes nested items also use this style
+            treeViewItemStyle.Setters.Add(new Setter(ItemsControl.ItemContainerStyleProperty, 
+                new DynamicResourceExtension(typeof(TreeViewItem))));
+            _treeView.ItemContainerStyle = treeViewItemStyle;
+            // Also add to resources so nested items can find it
+            _treeView.Resources.Add(typeof(TreeViewItem), treeViewItemStyle);
+            
             Grid.SetRow(_treeView, 1);
             grid.Children.Add(_treeView);
 
-            // Status bar
-            _statusText = new TextBlock { Margin = new Thickness(5), Text = "Loading..." };
-            Grid.SetRow(_statusText, 2);
-            grid.Children.Add(_statusText);
+            // Status bar with VS colors
+            var statusBorder = new Border
+            {
+                Padding = new Thickness(4, 2, 4, 2)
+            };
+            statusBorder.SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarGradientBrushKey);
+            
+            _statusText = new TextBlock 
+            { 
+                Text = "Loading...",
+                FontSize = 11
+            };
+            _statusText.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
+            statusBorder.Child = _statusText;
+            Grid.SetRow(statusBorder, 2);
+            grid.Children.Add(statusBorder);
 
             Content = grid;
 
@@ -122,10 +196,10 @@ namespace NeedlrToolsExtension
         {
             _treeView.Items.Clear();
 
-            // Group by lifetime
-            var singletons = new TreeViewItem { Header = $"Singletons ({graph.Statistics.Singletons})" };
-            var scoped = new TreeViewItem { Header = $"Scoped ({graph.Statistics.Scoped})" };
-            var transient = new TreeViewItem { Header = $"Transient ({graph.Statistics.Transient})" };
+            // Group by lifetime with icons
+            var singletons = CreateLifetimeHeader($"🔷 Singletons ({graph.Statistics.Singletons})", true);
+            var scoped = CreateLifetimeHeader($"🔶 Scoped ({graph.Statistics.Scoped})", false);
+            var transient = CreateLifetimeHeader($"⚪ Transient ({graph.Statistics.Transient})", false);
 
             foreach (var service in graph.Services)
             {
@@ -149,24 +223,46 @@ namespace NeedlrToolsExtension
             _treeView.Items.Add(scoped);
             _treeView.Items.Add(transient);
 
-            _statusText.Text = $"Loaded {graph.Statistics.TotalServices} services";
+            _statusText.Text = $"✓ Loaded {graph.Statistics.TotalServices} services from {graph.AssemblyName}";
+        }
+
+        private TreeViewItem CreateLifetimeHeader(string text, bool isExpanded)
+        {
+            var item = new TreeViewItem 
+            { 
+                Header = text,
+                IsExpanded = isExpanded,
+                FontWeight = FontWeights.SemiBold
+            };
+            return item;
         }
 
         private TreeViewItem CreateServiceItem(GraphService service)
         {
+            // Create header with type name and dependency count
+            var headerText = service.Dependencies.Count > 0 
+                ? $"{service.TypeName} ({service.Dependencies.Count} deps)"
+                : service.TypeName;
+            
             var item = new TreeViewItem
             {
-                Header = service.TypeName,
-                Tag = service
+                Header = headerText,
+                Tag = service,
+                ToolTip = $"{service.FullTypeName}\nDouble-click to navigate"
             };
 
             // Add interfaces
             if (service.Interfaces.Count > 0)
             {
-                var interfacesItem = new TreeViewItem { Header = $"Interfaces ({service.Interfaces.Count})" };
+                var interfacesItem = new TreeViewItem { Header = $"📋 Interfaces ({service.Interfaces.Count})" };
                 foreach (var iface in service.Interfaces)
                 {
-                    interfacesItem.Items.Add(new TreeViewItem { Header = iface.Name });
+                    interfacesItem.Items.Add(new TreeViewItem 
+                    { 
+                        Header = iface.Name,
+                        ToolTip = iface.FullName,
+                        FontStyle = FontStyles.Italic
+                    });
                 }
                 item.Items.Add(interfacesItem);
             }
@@ -174,10 +270,17 @@ namespace NeedlrToolsExtension
             // Add dependencies
             if (service.Dependencies.Count > 0)
             {
-                var depsItem = new TreeViewItem { Header = $"Dependencies ({service.Dependencies.Count})" };
+                var depsItem = new TreeViewItem { Header = $"🔗 Dependencies ({service.Dependencies.Count})" };
                 foreach (var dep in service.Dependencies)
                 {
-                    depsItem.Items.Add(new TreeViewItem { Header = $"{dep.ParameterName}: {dep.TypeName}" });
+                    var depText = dep.ResolvedTo != null 
+                        ? $"{dep.ParameterName}: {dep.TypeName} → {GetSimpleTypeName(dep.ResolvedTo)}"
+                        : $"{dep.ParameterName}: {dep.TypeName}";
+                    depsItem.Items.Add(new TreeViewItem 
+                    { 
+                        Header = depText,
+                        ToolTip = $"Resolved: {dep.ResolvedTo ?? "Unknown"}\nLifetime: {dep.ResolvedLifetime ?? "Unknown"}"
+                    });
                 }
                 item.Items.Add(depsItem);
             }
@@ -185,33 +288,64 @@ namespace NeedlrToolsExtension
             // Add decorators
             if (service.Decorators.Count > 0)
             {
-                var decsItem = new TreeViewItem { Header = $"Decorators ({service.Decorators.Count})" };
+                var decsItem = new TreeViewItem { Header = $"🎨 Decorators ({service.Decorators.Count})" };
                 foreach (var dec in service.Decorators)
                 {
-                    decsItem.Items.Add(new TreeViewItem { Header = $"{dec.Order}: {dec.TypeName}" });
+                    decsItem.Items.Add(new TreeViewItem { Header = $"#{dec.Order}: {dec.TypeName}" });
                 }
                 item.Items.Add(decsItem);
             }
 
-            // Double-click to navigate
-            item.MouseDoubleClick += async (s, e) =>
+            // Double-click to navigate - use JoinableTaskFactory for proper async handling
+            item.MouseDoubleClick += (s, e) =>
             {
-                if (service.Location?.FilePath != null)
+                if (service.Location?.FilePath != null && service.Location.Line > 0)
                 {
-                    var docView = await VS.Documents.OpenAsync(service.Location.FilePath);
-                    if (docView?.TextView != null && service.Location.Line > 0)
-                    {
-                        var line = service.Location.Line - 1; // Convert to 0-based
-                        var textView = docView.TextView;
-                        var snapshotLine = textView.TextSnapshot.GetLineFromLineNumber(Math.Min(line, textView.TextSnapshot.LineCount - 1));
-                        textView.Caret.MoveTo(snapshotLine.Start);
-                        textView.ViewScroller.EnsureSpanVisible(snapshotLine.Extent);
-                    }
                     e.Handled = true;
+                    ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        try
+                        {
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            System.Diagnostics.Debug.WriteLine($"Needlr: Navigating to {service.Location.FilePath}:{service.Location.Line}");
+                            
+                            var docView = await VS.Documents.OpenAsync(service.Location.FilePath);
+                            if (docView?.TextView != null)
+                            {
+                                var textView = docView.TextView;
+                                var lineNumber = Math.Max(0, Math.Min(service.Location.Line - 1, textView.TextSnapshot.LineCount - 1));
+                                var snapshotLine = textView.TextSnapshot.GetLineFromLineNumber(lineNumber);
+                                
+                                // Move caret and center the line in view
+                                textView.Caret.MoveTo(snapshotLine.Start);
+                                textView.Caret.EnsureVisible();
+                                textView.ViewScroller.EnsureSpanVisible(
+                                    new Microsoft.VisualStudio.Text.SnapshotSpan(snapshotLine.Start, snapshotLine.End),
+                                    EnsureSpanVisibleOptions.AlwaysCenter);
+                                
+                                System.Diagnostics.Debug.WriteLine($"Needlr: Navigated to line {lineNumber + 1}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Needlr: Failed to get TextView for {service.Location.FilePath}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Needlr: Navigation error: {ex.Message}");
+                        }
+                    });
                 }
             };
 
             return item;
+        }
+
+        private static string GetSimpleTypeName(string fullTypeName)
+        {
+            if (string.IsNullOrEmpty(fullTypeName)) return fullTypeName;
+            var lastDot = fullTypeName.LastIndexOf('.');
+            return lastDot >= 0 ? fullTypeName.Substring(lastDot + 1) : fullTypeName;
         }
     }
 }
