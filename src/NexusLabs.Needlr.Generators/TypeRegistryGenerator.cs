@@ -170,10 +170,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Generate IDE graph export if configured
             if (ShouldExportGraph(configOptions))
             {
+                // Discover types from referenced assemblies with [GenerateTypeRegistry] for graph inclusion
+                var referencedAssemblyTypesForGraph = DiscoverReferencedAssemblyTypesForGraph(compilation);
+
                 var graphJson = Export.GraphExporter.GenerateGraphJson(
                     discoveryResult,
                     assemblyName,
-                    projectDirectory);
+                    projectDirectory,
+                    diagnostics: null,
+                    referencedAssemblyTypes: referencedAssemblyTypesForGraph);
                 
                 // Embed graph as a comment in a generated file so it's accessible
                 // The actual JSON is written to obj folder via the generated code
@@ -3083,6 +3088,83 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         keyedValue,
                         isInterceptor: hasInterceptAttr,
                         hasInterceptorProxy: hasInterceptorProxy));
+                }
+
+                if (assemblyTypes.Count > 0)
+                {
+                    result[assemblySymbol.Name] = assemblyTypes;
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    /// <summary>
+    /// Discovers types from referenced assemblies with [GenerateTypeRegistry] for graph export.
+    /// Unlike the main discovery, this includes internal types since they are registered by their own TypeRegistry.
+    /// Returns DiscoveredType objects that can be included in the graph export.
+    /// </summary>
+    private static Dictionary<string, IReadOnlyList<DiscoveredType>> DiscoverReferencedAssemblyTypesForGraph(Compilation compilation)
+    {
+        var result = new Dictionary<string, IReadOnlyList<DiscoveredType>>();
+        
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
+            {
+                // Skip the current assembly
+                if (SymbolEqualityComparer.Default.Equals(assemblySymbol, compilation.Assembly))
+                    continue;
+                    
+                if (!TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
+                    continue;
+
+                var assemblyTypes = new List<DiscoveredType>();
+                
+                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
+                {
+                    // Check if it's a registerable type
+                    var hasFactoryAttr = FactoryDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
+                    
+                    // Skip types that are only factories (handled separately)
+                    if (hasFactoryAttr)
+                        continue;
+
+                    if (!TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
+                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                        continue;
+
+                    // Skip decorators - they modify other services, not registered directly as services
+                    if (TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) || 
+                        OpenDecoratorDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol))
+                        continue;
+
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol)
+                        .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
+                        .ToArray();
+                    var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
+                    var constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() 
+                        ?? Array.Empty<TypeDiscoveryHelper.ConstructorParameterInfo>();
+                    var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
+                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                    var sourceLine = typeSymbol.Locations.FirstOrDefault() is { } location
+                        ? location.GetLineSpan().StartLinePosition.Line + 1
+                        : 0;
+
+                    var discoveredType = new DiscoveredType(
+                        typeName,
+                        interfaces,
+                        assemblySymbol.Name,
+                        lifetime,
+                        constructorParams,
+                        keyedValues,
+                        sourceFilePath,
+                        sourceLine,
+                        TypeDiscoveryHelper.IsDisposableType(typeSymbol));
+
+                    assemblyTypes.Add(discoveredType);
                 }
 
                 if (assemblyTypes.Count > 0)

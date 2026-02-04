@@ -26,6 +26,7 @@ internal sealed class GraphService
     public string Id { get; set; } = string.Empty;
     public string TypeName { get; set; } = string.Empty;
     public string FullTypeName { get; set; } = string.Empty;
+    public string? AssemblyName { get; set; }
     public List<GraphInterface> Interfaces { get; set; } = new();
     public string Lifetime { get; set; } = string.Empty;
     public GraphLocation? Location { get; set; }

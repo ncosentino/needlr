@@ -56,6 +56,10 @@
           "type": "string",
           "description": "Fully qualified type name"
         },
+        "assemblyName": {
+          "type": ["string", "null"],
+          "description": "Name of the assembly containing this service"
+        },
         "interfaces": {
           "type": "array",
           "description": "Interfaces implemented by this service",

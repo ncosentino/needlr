@@ -18,9 +18,10 @@ internal static class GraphExporter
         DiscoveryResult discoveryResult,
         string assemblyName,
         string? projectPath,
-        IReadOnlyList<CollectedDiagnostic>? diagnostics = null)
+        IReadOnlyList<CollectedDiagnostic>? diagnostics = null,
+        IReadOnlyDictionary<string, IReadOnlyList<DiscoveredType>>? referencedAssemblyTypes = null)
     {
-        var graph = BuildGraph(discoveryResult, assemblyName, projectPath, diagnostics);
+        var graph = BuildGraph(discoveryResult, assemblyName, projectPath, diagnostics, referencedAssemblyTypes);
         return SerializeToJson(graph);
     }
 
@@ -28,7 +29,8 @@ internal static class GraphExporter
         DiscoveryResult discoveryResult,
         string assemblyName,
         string? projectPath,
-        IReadOnlyList<CollectedDiagnostic>? diagnostics)
+        IReadOnlyList<CollectedDiagnostic>? diagnostics,
+        IReadOnlyDictionary<string, IReadOnlyList<DiscoveredType>>? referencedAssemblyTypes)
     {
         var graph = new NeedlrGraph
         {
@@ -38,14 +40,29 @@ internal static class GraphExporter
             AssemblyName = assemblyName
         };
 
-        // Build type lookup for resolving dependencies
-        var typeLookup = BuildTypeLookup(discoveryResult);
+        // Build type lookup for resolving dependencies (include referenced assembly types)
+        var typeLookup = BuildTypeLookup(discoveryResult, referencedAssemblyTypes);
 
-        // Map injectable types to graph services
+        // Map injectable types from current assembly to graph services
         foreach (var type in discoveryResult.InjectableTypes)
         {
-            var service = MapToGraphService(type, typeLookup, discoveryResult);
+            var service = MapToGraphService(type, assemblyName, typeLookup, discoveryResult);
             graph.Services.Add(service);
+        }
+
+        // Add types from referenced assemblies with [GenerateTypeRegistry]
+        if (referencedAssemblyTypes != null)
+        {
+            foreach (var kvp in referencedAssemblyTypes)
+            {
+                var refAssemblyName = kvp.Key;
+                var types = kvp.Value;
+                foreach (var type in types)
+                {
+                    var service = MapToGraphService(type, refAssemblyName, typeLookup, discoveryResult);
+                    graph.Services.Add(service);
+                }
+            }
         }
 
         // Add diagnostics if provided
@@ -69,16 +86,19 @@ internal static class GraphExporter
             }
         }
 
-        // Compute statistics
-        graph.Statistics = ComputeStatistics(discoveryResult);
+        // Compute statistics (include referenced assembly types in count)
+        graph.Statistics = ComputeStatistics(discoveryResult, referencedAssemblyTypes);
 
         return graph;
     }
 
-    private static Dictionary<string, DiscoveredType> BuildTypeLookup(DiscoveryResult discoveryResult)
+    private static Dictionary<string, DiscoveredType> BuildTypeLookup(
+        DiscoveryResult discoveryResult,
+        IReadOnlyDictionary<string, IReadOnlyList<DiscoveredType>>? referencedAssemblyTypes)
     {
         var lookup = new Dictionary<string, DiscoveredType>();
         
+        // Add types from current assembly
         foreach (var type in discoveryResult.InjectableTypes)
         {
             lookup[type.TypeName] = type;
@@ -90,12 +110,35 @@ internal static class GraphExporter
                 }
             }
         }
+
+        // Add types from referenced assemblies for dependency resolution
+        if (referencedAssemblyTypes != null)
+        {
+            foreach (var kvp in referencedAssemblyTypes)
+            {
+                foreach (var type in kvp.Value)
+                {
+                    if (!lookup.ContainsKey(type.TypeName))
+                    {
+                        lookup[type.TypeName] = type;
+                    }
+                    foreach (var iface in type.InterfaceNames)
+                    {
+                        if (!lookup.ContainsKey(iface))
+                        {
+                            lookup[iface] = type;
+                        }
+                    }
+                }
+            }
+        }
         
         return lookup;
     }
 
     private static GraphService MapToGraphService(
         DiscoveredType type,
+        string assemblyName,
         Dictionary<string, DiscoveredType> typeLookup,
         DiscoveryResult discoveryResult)
     {
@@ -104,6 +147,7 @@ internal static class GraphExporter
             Id = type.TypeName,
             TypeName = GetSimpleTypeName(type.TypeName),
             FullTypeName = type.TypeName,
+            AssemblyName = assemblyName,
             Lifetime = type.Lifetime.ToString(),
             Location = type.SourceFilePath != null ? new GraphLocation
             {
@@ -186,14 +230,26 @@ internal static class GraphExporter
         return service;
     }
 
-    private static GraphStatistics ComputeStatistics(DiscoveryResult discoveryResult)
+    private static GraphStatistics ComputeStatistics(
+        DiscoveryResult discoveryResult,
+        IReadOnlyDictionary<string, IReadOnlyList<DiscoveredType>>? referencedAssemblyTypes)
     {
+        // Get all types for statistics - current assembly + referenced assemblies
+        var allTypes = new List<DiscoveredType>(discoveryResult.InjectableTypes);
+        if (referencedAssemblyTypes != null)
+        {
+            foreach (var kvp in referencedAssemblyTypes)
+            {
+                allTypes.AddRange(kvp.Value);
+            }
+        }
+
         return new GraphStatistics
         {
-            TotalServices = discoveryResult.InjectableTypes.Count,
-            Singletons = discoveryResult.InjectableTypes.Count(t => t.Lifetime == GeneratorLifetime.Singleton),
-            Scoped = discoveryResult.InjectableTypes.Count(t => t.Lifetime == GeneratorLifetime.Scoped),
-            Transient = discoveryResult.InjectableTypes.Count(t => t.Lifetime == GeneratorLifetime.Transient),
+            TotalServices = allTypes.Count,
+            Singletons = allTypes.Count(t => t.Lifetime == GeneratorLifetime.Singleton),
+            Scoped = allTypes.Count(t => t.Lifetime == GeneratorLifetime.Scoped),
+            Transient = allTypes.Count(t => t.Lifetime == GeneratorLifetime.Transient),
             Decorators = discoveryResult.Decorators.Count,
             Interceptors = discoveryResult.InterceptedServices.Count,
             Factories = discoveryResult.Factories.Count,
@@ -270,6 +326,7 @@ internal static class GraphExporter
         sb.AppendLine($"      \"id\": \"{Escape(service.Id)}\",");
         sb.AppendLine($"      \"typeName\": \"{Escape(service.TypeName)}\",");
         sb.AppendLine($"      \"fullTypeName\": \"{Escape(service.FullTypeName)}\",");
+        sb.AppendLine($"      \"assemblyName\": {NullableString(service.AssemblyName)},");
         
         // Interfaces
         sb.AppendLine("      \"interfaces\": [");
