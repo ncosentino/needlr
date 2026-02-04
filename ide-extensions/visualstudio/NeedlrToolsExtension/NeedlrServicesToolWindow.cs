@@ -198,7 +198,15 @@ namespace NeedlrToolsExtension
             {
                 if (service.Location?.FilePath != null)
                 {
-                    await VS.Documents.OpenAsync(service.Location.FilePath);
+                    var docView = await VS.Documents.OpenAsync(service.Location.FilePath);
+                    if (docView?.TextView != null && service.Location.Line > 0)
+                    {
+                        var line = service.Location.Line - 1; // Convert to 0-based
+                        var textView = docView.TextView;
+                        var snapshotLine = textView.TextSnapshot.GetLineFromLineNumber(Math.Min(line, textView.TextSnapshot.LineCount - 1));
+                        textView.Caret.MoveTo(snapshotLine.Start);
+                        textView.ViewScroller.EnsureSpanVisible(snapshotLine.Extent);
+                    }
                     e.Handled = true;
                 }
             };

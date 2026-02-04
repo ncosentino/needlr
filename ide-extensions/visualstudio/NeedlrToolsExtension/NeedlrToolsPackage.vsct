@@ -5,45 +5,22 @@
   <Extern href="vsshlids.h"/>
 
   <Commands package="guidNeedlrToolsPackage">
-    <Groups>
-      <!-- Place in View > Other Windows submenu -->
-      <Group guid="guidNeedlrToolsCmdSet" id="NeedlrMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-      </Group>
-    </Groups>
-
     <Buttons>
       <Button guid="guidNeedlrToolsCmdSet" id="ShowServicesWindowCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidNeedlrToolsCmdSet" id="NeedlrMenuGroup" />
-        <Icon guid="guidImages" id="bmpNeedlr" />
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <Strings>
           <ButtonText>Needlr Services</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidNeedlrToolsCmdSet" id="RefreshGraphCommandId" priority="0x0101" type="Button">
-        <Parent guid="guidNeedlrToolsCmdSet" id="NeedlrMenuGroup" />
-        <Strings>
-          <ButtonText>Refresh Needlr Graph</ButtonText>
-        </Strings>
-      </Button>
     </Buttons>
-
-    <Bitmaps>
-      <Bitmap guid="guidImages" href="Resources\icon.png" usedList="bmpNeedlr"/>
-    </Bitmaps>
   </Commands>
 
   <Symbols>
     <GuidSymbol name="guidNeedlrToolsPackage" value="{b69b7450-4333-4185-a9cb-e9e78c9be817}" />
-    
-    <GuidSymbol name="guidNeedlrToolsCmdSet" value="{b69b7451-4333-4185-a9cb-e9e78c9be818}">
-      <IDSymbol name="NeedlrMenuGroup" value="0x1020" />
-      <IDSymbol name="ShowServicesWindowCommandId" value="0x0100" />
-      <IDSymbol name="RefreshGraphCommandId" value="0x0101" />
-    </GuidSymbol>
 
-    <GuidSymbol name="guidImages" value="{b69b7453-4333-4185-a9cb-e9e78c9be820}">
-      <IDSymbol name="bmpNeedlr" value="1" />
+    <GuidSymbol name="guidNeedlrToolsCmdSet" value="{b69b7451-4333-4185-a9cb-e9e78c9be818}">
+      <IDSymbol name="ShowServicesWindowCommandId" value="0x0100" />
     </GuidSymbol>
   </Symbols>
+
 </CommandTable>

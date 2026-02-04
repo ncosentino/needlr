@@ -15,6 +15,7 @@ namespace NeedlrToolsExtension
     [Guid(PackageGuids.NeedlrToolsPackageString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(NeedlrServicesToolWindow.Pane), Style = VsDockStyle.Tabbed, DockedWidth = 300, Window = "DocumentWell", Orientation = ToolWindowOrientation.Left)]
+    [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class NeedlrToolsPackage : ToolkitPackage
     {
@@ -29,9 +30,11 @@ namespace NeedlrToolsExtension
             // Initialize the graph loader
             GraphLoader = new GraphLoader();
             
-            // Register commands
-            await ShowServicesWindowCommand.InitializeAsync(this);
-            await RefreshGraphCommand.InitializeAsync(this);
+            // Register tool windows - this is required for BaseToolWindow to work
+            this.RegisterToolWindows();
+            
+            // Register commands - this must come AFTER base.InitializeAsync
+            await this.RegisterCommandsAsync();
             
             // Initialize graph loader after solution loads
             VS.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionOpened;
