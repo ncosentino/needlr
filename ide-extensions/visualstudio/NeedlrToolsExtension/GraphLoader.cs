@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 namespace NeedlrToolsExtension
 {
     /// <summary>
-    /// Watches for and loads Needlr graph files from the solution.
+    /// Loads and merges Needlr graph files from all projects in the solution.
     /// </summary>
     public class GraphLoader : IDisposable
     {
-        private FileSystemWatcher? _watcher;
+        private readonly List<FileSystemWatcher> _watchers = new();
         private NeedlrGraph? _currentGraph;
         private bool _disposed;
 
@@ -37,52 +37,154 @@ namespace NeedlrToolsExtension
                 return null;
             }
 
-            System.Diagnostics.Debug.WriteLine($"Needlr: Searching for graph in {solutionDir}");
+            System.Diagnostics.Debug.WriteLine($"Needlr: Searching for graphs in {solutionDir}");
 
-            // Search for needlr-graph.json in obj folders
-            var graphFiles = Directory.GetFiles(solutionDir, "needlr-graph.json", SearchOption.AllDirectories)
+            // Load and merge all graphs from multiple projects
+            return await LoadAndMergeAllGraphsAsync(solutionDir);
+        }
+
+        private async Task<NeedlrGraph?> LoadAndMergeAllGraphsAsync(string solutionDir)
+        {
+            var allServices = new Dictionary<string, GraphService>();
+            var allDiagnostics = new List<GraphDiagnostic>();
+            string? primaryAssemblyName = null;
+            string? primaryProjectPath = null;
+
+            // Clear existing watchers
+            foreach (var watcher in _watchers)
+            {
+                watcher.Dispose();
+            }
+            _watchers.Clear();
+
+            // Find all NeedlrGraph.g.cs files (each project with [GenerateTypeRegistry] has one)
+            var sourceFiles = Directory.GetFiles(solutionDir, "NeedlrGraph.g.cs", SearchOption.AllDirectories).ToList();
+            System.Diagnostics.Debug.WriteLine($"Needlr: Found {sourceFiles.Count} NeedlrGraph.g.cs files");
+
+            foreach (var sourceFile in sourceFiles)
+            {
+                var graph = await LoadGraphFromSourceFileInternalAsync(sourceFile);
+                if (graph == null) continue;
+
+                System.Diagnostics.Debug.WriteLine($"Needlr: Loaded graph from {sourceFile} with {graph.Services.Count} services");
+
+                // Use first graph's metadata as primary
+                if (primaryAssemblyName == null)
+                {
+                    primaryAssemblyName = graph.AssemblyName;
+                    primaryProjectPath = graph.ProjectPath;
+                }
+
+                // Merge services - prefer entries with source locations
+                foreach (var service in graph.Services)
+                {
+                    if (!allServices.TryGetValue(service.FullTypeName, out var existing))
+                    {
+                        allServices[service.FullTypeName] = service;
+                    }
+                    else if (HasBetterLocation(service, existing))
+                    {
+                        allServices[service.FullTypeName] = service;
+                    }
+                }
+
+                // Merge diagnostics
+                allDiagnostics.AddRange(graph.Diagnostics);
+
+                // Watch this file for changes
+                SetupFileWatcher(sourceFile);
+            }
+
+            // Also check for needlr-graph.json files
+            var jsonFiles = Directory.GetFiles(solutionDir, "needlr-graph.json", SearchOption.AllDirectories)
                 .Where(f => f.Contains("obj"))
                 .ToList();
 
-            System.Diagnostics.Debug.WriteLine($"Needlr: Found {graphFiles.Count} needlr-graph.json files");
-
-            if (graphFiles.Count > 0)
+            foreach (var jsonFile in jsonFiles)
             {
-                System.Diagnostics.Debug.WriteLine($"Needlr: Loading graph from {graphFiles[0]}");
-                return await LoadGraphFileAsync(graphFiles[0]);
+                var graph = await LoadGraphFileInternalAsync(jsonFile);
+                if (graph == null) continue;
+
+                System.Diagnostics.Debug.WriteLine($"Needlr: Loaded graph from {jsonFile} with {graph.Services.Count} services");
+
+                if (primaryAssemblyName == null)
+                {
+                    primaryAssemblyName = graph.AssemblyName;
+                    primaryProjectPath = graph.ProjectPath;
+                }
+
+                foreach (var service in graph.Services)
+                {
+                    if (!allServices.TryGetValue(service.FullTypeName, out var existing))
+                    {
+                        allServices[service.FullTypeName] = service;
+                    }
+                    else if (HasBetterLocation(service, existing))
+                    {
+                        allServices[service.FullTypeName] = service;
+                    }
+                }
+
+                allDiagnostics.AddRange(graph.Diagnostics);
+                SetupFileWatcher(jsonFile);
             }
 
-            // Fall back to searching for embedded graph in generated source files
-            var sourceFiles = Directory.GetFiles(solutionDir, "NeedlrGraph.g.cs", SearchOption.AllDirectories)
-                .ToList();
-
-            System.Diagnostics.Debug.WriteLine($"Needlr: Found {sourceFiles.Count} NeedlrGraph.g.cs files");
-
-            if (sourceFiles.Count > 0)
+            if (allServices.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine($"Needlr: Loading graph from source file {sourceFiles[0]}");
-                return await LoadGraphFromSourceFileAsync(sourceFiles[0]);
+                System.Diagnostics.Debug.WriteLine("Needlr: No services found in any graph");
+                return null;
             }
 
-            System.Diagnostics.Debug.WriteLine("Needlr: No graph files found");
-            return null;
+            // Create merged graph
+            var mergedGraph = new NeedlrGraph
+            {
+                SchemaVersion = "1.0",
+                GeneratedAt = DateTime.UtcNow.ToString("O"),
+                AssemblyName = primaryAssemblyName ?? "Merged",
+                ProjectPath = primaryProjectPath,
+                Services = allServices.Values.ToList(),
+                Diagnostics = allDiagnostics,
+                Statistics = CalculateStatistics(allServices.Values)
+            };
+
+            _currentGraph = mergedGraph;
+            GraphLoaded?.Invoke(this, mergedGraph);
+
+            System.Diagnostics.Debug.WriteLine($"Needlr: Merged graph has {mergedGraph.Services.Count} services");
+            return mergedGraph;
         }
 
-        public async Task<NeedlrGraph?> LoadGraphFileAsync(string filePath)
+        private static bool HasBetterLocation(GraphService newService, GraphService existing)
+        {
+            var newHasLocation = !string.IsNullOrEmpty(newService.Location?.FilePath) && newService.Location.Line > 0;
+            var existingHasLocation = !string.IsNullOrEmpty(existing.Location?.FilePath) && existing.Location.Line > 0;
+            return newHasLocation && !existingHasLocation;
+        }
+
+        private static GraphStatistics CalculateStatistics(IEnumerable<GraphService> services)
+        {
+            var list = services.ToList();
+            return new GraphStatistics
+            {
+                TotalServices = list.Count,
+                Singletons = list.Count(s => s.Lifetime == "Singleton"),
+                Scoped = list.Count(s => s.Lifetime == "Scoped"),
+                Transient = list.Count(s => s.Lifetime == "Transient"),
+                Decorators = list.Sum(s => s.Decorators.Count),
+                Interceptors = list.Sum(s => s.Interceptors.Count),
+                Factories = list.Count(s => s.Metadata.HasFactory),
+                Options = list.Count(s => s.Metadata.HasOptions),
+                HostedServices = list.Count(s => s.Metadata.IsHostedService),
+                Plugins = list.Count(s => s.Metadata.IsPlugin)
+            };
+        }
+
+        private async Task<NeedlrGraph?> LoadGraphFileInternalAsync(string filePath)
         {
             try
             {
                 var content = await Task.Run(() => File.ReadAllText(filePath));
-                var graph = JsonConvert.DeserializeObject<NeedlrGraph>(content);
-
-                if (graph != null)
-                {
-                    _currentGraph = graph;
-                    GraphLoaded?.Invoke(this, graph);
-                    SetupFileWatcher(filePath);
-                }
-
-                return graph;
+                return JsonConvert.DeserializeObject<NeedlrGraph>(content);
             }
             catch (Exception ex)
             {
@@ -91,13 +193,12 @@ namespace NeedlrToolsExtension
             }
         }
 
-        public async Task<NeedlrGraph?> LoadGraphFromSourceFileAsync(string filePath)
+        private async Task<NeedlrGraph?> LoadGraphFromSourceFileInternalAsync(string filePath)
         {
             try
             {
                 var content = await Task.Run(() => File.ReadAllText(filePath));
 
-                // Extract JSON from the C# source file - look for GraphJsonContent or GraphJson
                 // Try raw string literal format first (C# 11+)
                 var match = System.Text.RegularExpressions.Regex.Match(
                     content,
@@ -118,30 +219,11 @@ namespace NeedlrToolsExtension
                         return null;
                     }
 
-                    // Unescape the verbatim string (doubled quotes become single)
                     var jsonString = match.Groups[1].Value.Replace("\"\"", "\"");
-                    var graph = JsonConvert.DeserializeObject<NeedlrGraph>(jsonString);
-                    
-                    if (graph != null)
-                    {
-                        _currentGraph = graph;
-                        GraphLoaded?.Invoke(this, graph);
-                    }
-                    
-                    return graph;
+                    return JsonConvert.DeserializeObject<NeedlrGraph>(jsonString);
                 }
-                else
-                {
-                    var graph = JsonConvert.DeserializeObject<NeedlrGraph>(match.Groups[1].Value);
-                    
-                    if (graph != null)
-                    {
-                        _currentGraph = graph;
-                        GraphLoaded?.Invoke(this, graph);
-                    }
-                    
-                    return graph;
-                }
+
+                return JsonConvert.DeserializeObject<NeedlrGraph>(match.Groups[1].Value);
             }
             catch (Exception ex)
             {
@@ -150,10 +232,30 @@ namespace NeedlrToolsExtension
             }
         }
 
+        public async Task<NeedlrGraph?> LoadGraphFileAsync(string filePath)
+        {
+            var graph = await LoadGraphFileInternalAsync(filePath);
+            if (graph != null)
+            {
+                _currentGraph = graph;
+                GraphLoaded?.Invoke(this, graph);
+            }
+            return graph;
+        }
+
+        public async Task<NeedlrGraph?> LoadGraphFromSourceFileAsync(string filePath)
+        {
+            var graph = await LoadGraphFromSourceFileInternalAsync(filePath);
+            if (graph != null)
+            {
+                _currentGraph = graph;
+                GraphLoaded?.Invoke(this, graph);
+            }
+            return graph;
+        }
+
         private void SetupFileWatcher(string filePath)
         {
-            _watcher?.Dispose();
-
             var directory = Path.GetDirectoryName(filePath);
             var fileName = Path.GetFileName(filePath);
 
@@ -162,26 +264,45 @@ namespace NeedlrToolsExtension
                 return;
             }
 
-            _watcher = new FileSystemWatcher(directory, fileName)
+            var watcher = new FileSystemWatcher(directory, fileName)
             {
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime
             };
 
-            _watcher.Changed += async (s, e) => await LoadGraphFileAsync(e.FullPath);
-            _watcher.Deleted += (s, e) =>
+            watcher.Changed += async (s, e) =>
+            {
+                // Reload all graphs when any changes
+                var solutionDir = Path.GetDirectoryName(directory);
+                while (!string.IsNullOrEmpty(solutionDir) && !Directory.GetFiles(solutionDir, "*.sln*").Any())
+                {
+                    solutionDir = Path.GetDirectoryName(solutionDir);
+                }
+                
+                if (!string.IsNullOrEmpty(solutionDir))
+                {
+                    await LoadAndMergeAllGraphsAsync(solutionDir);
+                }
+            };
+
+            watcher.Deleted += (s, e) =>
             {
                 _currentGraph = null;
                 GraphCleared?.Invoke(this, EventArgs.Empty);
             };
 
-            _watcher.EnableRaisingEvents = true;
+            watcher.EnableRaisingEvents = true;
+            _watchers.Add(watcher);
         }
 
         public void Dispose()
         {
             if (!_disposed)
             {
-                _watcher?.Dispose();
+                foreach (var watcher in _watchers)
+                {
+                    watcher.Dispose();
+                }
+                _watchers.Clear();
                 _disposed = true;
             }
         }

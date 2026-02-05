@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,9 @@ namespace NeedlrToolsExtension
     {
         private readonly TreeView _treeView;
         private readonly TextBlock _statusText;
+        private readonly TextBox _searchBox;
+        private NeedlrGraph? _currentGraph;
+        private string _searchFilter = "";
 
         public NeedlrServicesControl()
         {
@@ -52,6 +57,7 @@ namespace NeedlrToolsExtension
             SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowBackgroundBrushKey);
 
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -76,7 +82,7 @@ namespace NeedlrToolsExtension
             buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, 
                 new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarBorderBrushKey)));
             
-            // Hover trigger - use CommandBarTextHover for proper contrast
+            // Hover trigger
             var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, 
                 new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.CommandBarMouseOverBackgroundGradientBrushKey)));
@@ -102,6 +108,67 @@ namespace NeedlrToolsExtension
             Grid.SetRow(toolbar, 0);
             grid.Children.Add(toolbar);
 
+            // Search box
+            var searchPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(4, 2, 4, 2)
+            };
+            
+            var searchLabel = new TextBlock
+            {
+                Text = "🔍",
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 4, 0)
+            };
+            searchLabel.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
+            searchPanel.Children.Add(searchLabel);
+            
+            _searchBox = new TextBox
+            {
+                Width = 200,
+                Padding = new Thickness(4, 2, 4, 2),
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+            _searchBox.SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.SearchBoxBackgroundBrushKey);
+            _searchBox.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
+            _searchBox.SetResourceReference(BorderBrushProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.SearchBoxBorderBrushKey);
+            _searchBox.TextChanged += OnSearchTextChanged;
+            
+            // Add watermark text
+            var watermark = new TextBlock
+            {
+                Text = "Filter services...",
+                IsHitTestVisible = false,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(6, 0, 0, 0),
+                Opacity = 0.5
+            };
+            watermark.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
+            
+            var searchContainer = new Grid();
+            searchContainer.Children.Add(_searchBox);
+            searchContainer.Children.Add(watermark);
+            
+            // Hide watermark when textbox has text
+            _searchBox.TextChanged += (s, e) => watermark.Visibility = string.IsNullOrEmpty(_searchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            
+            searchPanel.Children.Add(searchContainer);
+            
+            var clearButton = new Button 
+            { 
+                Content = "✕", 
+                Style = buttonStyle, 
+                Padding = new Thickness(4, 2, 4, 2),
+                Margin = new Thickness(2, 0, 0, 0),
+                ToolTip = "Clear search"
+            };
+            clearButton.Click += (s, e) => { _searchBox.Text = ""; _searchBox.Focus(); };
+            searchPanel.Children.Add(clearButton);
+            
+            Grid.SetRow(searchPanel, 1);
+            grid.Children.Add(searchPanel);
+
             // Tree view with VS colors
             _treeView = new TreeView 
             { 
@@ -111,18 +178,16 @@ namespace NeedlrToolsExtension
             _treeView.SetResourceReference(BackgroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowBackgroundBrushKey);
             _treeView.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
             
-            // Create a style for TreeViewItems - set ItemContainerStyle recursively
+            // Create a style for TreeViewItems
             var treeViewItemStyle = new Style(typeof(TreeViewItem));
             treeViewItemStyle.Setters.Add(new Setter(TreeViewItem.ForegroundProperty, 
                 new DynamicResourceExtension(Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey)));
-            // This makes nested items also use this style
             treeViewItemStyle.Setters.Add(new Setter(ItemsControl.ItemContainerStyleProperty, 
                 new DynamicResourceExtension(typeof(TreeViewItem))));
             _treeView.ItemContainerStyle = treeViewItemStyle;
-            // Also add to resources so nested items can find it
             _treeView.Resources.Add(typeof(TreeViewItem), treeViewItemStyle);
             
-            Grid.SetRow(_treeView, 1);
+            Grid.SetRow(_treeView, 2);
             grid.Children.Add(_treeView);
 
             // Status bar with VS colors
@@ -139,7 +204,7 @@ namespace NeedlrToolsExtension
             };
             _statusText.SetResourceReference(ForegroundProperty, Microsoft.VisualStudio.PlatformUI.EnvironmentColors.ToolWindowTextBrushKey);
             statusBorder.Child = _statusText;
-            Grid.SetRow(statusBorder, 2);
+            Grid.SetRow(statusBorder, 3);
             grid.Children.Add(statusBorder);
 
             Content = grid;
@@ -153,12 +218,22 @@ namespace NeedlrToolsExtension
                 // Load current graph if available
                 if (NeedlrToolsPackage.GraphLoader.CurrentGraph != null)
                 {
-                    PopulateTree(NeedlrToolsPackage.GraphLoader.CurrentGraph);
+                    _currentGraph = NeedlrToolsPackage.GraphLoader.CurrentGraph;
+                    PopulateTree(_currentGraph);
                 }
                 else
                 {
-                    _statusText.Text = "No graph loaded. Build your project with NeedlrExportGraph=true";
+                    _statusText.Text = "No graph loaded. Build your project to load services.";
                 }
+            }
+        }
+
+        private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+        {
+            _searchFilter = _searchBox.Text.Trim();
+            if (_currentGraph != null)
+            {
+                PopulateTree(_currentGraph);
             }
         }
 
@@ -167,6 +242,7 @@ namespace NeedlrToolsExtension
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _currentGraph = graph;
                 PopulateTree(graph);
             });
         }
@@ -176,6 +252,7 @@ namespace NeedlrToolsExtension
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _currentGraph = null;
                 _treeView.Items.Clear();
                 _statusText.Text = "Graph cleared";
             });
@@ -196,34 +273,76 @@ namespace NeedlrToolsExtension
         {
             _treeView.Items.Clear();
 
-            // Group by lifetime with icons
-            var singletons = CreateLifetimeHeader($"🔷 Singletons ({graph.Statistics.Singletons})", true);
-            var scoped = CreateLifetimeHeader($"🔶 Scoped ({graph.Statistics.Scoped})", false);
-            var transient = CreateLifetimeHeader($"⚪ Transient ({graph.Statistics.Transient})", false);
+            // Filter services based on search
+            var filteredServices = string.IsNullOrEmpty(_searchFilter)
+                ? graph.Services
+                : graph.Services.Where(s => MatchesFilter(s, _searchFilter)).ToList();
 
-            foreach (var service in graph.Services)
+            // Group by lifetime with icons
+            var singletonServices = filteredServices.Where(s => s.Lifetime == "Singleton").ToList();
+            var scopedServices = filteredServices.Where(s => s.Lifetime == "Scoped").ToList();
+            var transientServices = filteredServices.Where(s => s.Lifetime == "Transient").ToList();
+
+            var singletons = CreateLifetimeHeader($"🔷 Singletons ({singletonServices.Count})", true);
+            var scoped = CreateLifetimeHeader($"🔶 Scoped ({scopedServices.Count})", false);
+            var transient = CreateLifetimeHeader($"⚪ Transient ({transientServices.Count})", false);
+
+            foreach (var service in singletonServices)
             {
-                var serviceItem = CreateServiceItem(service);
-                
-                switch (service.Lifetime)
-                {
-                    case "Singleton":
-                        singletons.Items.Add(serviceItem);
-                        break;
-                    case "Scoped":
-                        scoped.Items.Add(serviceItem);
-                        break;
-                    case "Transient":
-                        transient.Items.Add(serviceItem);
-                        break;
-                }
+                singletons.Items.Add(CreateServiceItem(service));
+            }
+            foreach (var service in scopedServices)
+            {
+                scoped.Items.Add(CreateServiceItem(service));
+            }
+            foreach (var service in transientServices)
+            {
+                transient.Items.Add(CreateServiceItem(service));
             }
 
             _treeView.Items.Add(singletons);
             _treeView.Items.Add(scoped);
             _treeView.Items.Add(transient);
 
-            _statusText.Text = $"✓ Loaded {graph.Statistics.TotalServices} services from {graph.AssemblyName}";
+            // Update status
+            if (string.IsNullOrEmpty(_searchFilter))
+            {
+                _statusText.Text = $"✓ Loaded {graph.Statistics.TotalServices} services from {graph.AssemblyName}";
+            }
+            else
+            {
+                _statusText.Text = $"🔍 Showing {filteredServices.Count} of {graph.Statistics.TotalServices} services";
+            }
+        }
+
+        private static bool MatchesFilter(GraphService service, string filter)
+        {
+            var lowerFilter = filter.ToLowerInvariant();
+            
+            // Match type name
+            if (service.TypeName.ToLowerInvariant().Contains(lowerFilter))
+                return true;
+            if (service.FullTypeName.ToLowerInvariant().Contains(lowerFilter))
+                return true;
+            
+            // Match interfaces
+            if (service.Interfaces.Any(i => 
+                i.Name.ToLowerInvariant().Contains(lowerFilter) || 
+                i.FullName.ToLowerInvariant().Contains(lowerFilter)))
+                return true;
+            
+            // Match dependencies
+            if (service.Dependencies.Any(d => 
+                d.TypeName.ToLowerInvariant().Contains(lowerFilter) ||
+                d.ParameterName.ToLowerInvariant().Contains(lowerFilter) ||
+                (d.ResolvedTo?.ToLowerInvariant().Contains(lowerFilter) ?? false)))
+                return true;
+            
+            // Match assembly name
+            if (service.AssemblyName?.ToLowerInvariant().Contains(lowerFilter) ?? false)
+                return true;
+            
+            return false;
         }
 
         private TreeViewItem CreateLifetimeHeader(string text, bool isExpanded)
@@ -231,7 +350,7 @@ namespace NeedlrToolsExtension
             var item = new TreeViewItem 
             { 
                 Header = text,
-                IsExpanded = isExpanded,
+                IsExpanded = isExpanded || !string.IsNullOrEmpty(_searchFilter), // Expand all when filtering
                 FontWeight = FontWeights.SemiBold
             };
             return item;
@@ -262,7 +381,8 @@ namespace NeedlrToolsExtension
                 Tag = service,
                 ToolTip = tooltipText,
                 Cursor = canNavigate ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Arrow,
-                FontStyle = canNavigate ? FontStyles.Normal : FontStyles.Italic
+                FontStyle = canNavigate ? FontStyles.Normal : FontStyles.Italic,
+                IsExpanded = !string.IsNullOrEmpty(_searchFilter) // Expand when filtering
             };
 
             // Add interfaces
@@ -310,7 +430,7 @@ namespace NeedlrToolsExtension
                 item.Items.Add(decsItem);
             }
 
-            // Double-click to navigate - use JoinableTaskFactory for proper async handling
+            // Double-click to navigate
             item.MouseDoubleClick += (s, e) =>
             {
                 if (service.Location?.FilePath != null && service.Location.Line > 0)

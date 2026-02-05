@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="NeedlrToolsExtension.b69b745-4333-4185-a9cb-e9e78c9be817" Version="0.1.0" Language="en-US" Publisher="Nexus Labs" />
+    <Identity Id="NeedlrToolsExtension.b69b745-4333-4185-a9cb-e9e78c9be817" Version="2.0.0" Language="en-US" Publisher="Nexus Labs" />
     <DisplayName>Needlr Tools</DisplayName>
     <Description>Dependency injection visualization and diagnostics for Needlr</Description>
     <MoreInfo>https://github.com/ncosentino/needlr</MoreInfo>
