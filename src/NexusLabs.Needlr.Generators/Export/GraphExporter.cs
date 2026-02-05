@@ -268,9 +268,80 @@ internal static class GraphExporter
             name = name.Substring(8);
         }
         
+        // Handle generic types like Lazy<T> or IReadOnlyList<Assembly>
+        // We want to preserve the generic structure but simplify inner types
+        var genericStart = name.IndexOf('<');
+        if (genericStart >= 0)
+        {
+            // Get the outer type name (before generic params)
+            var outerPart = name.Substring(0, genericStart);
+            var lastDot = outerPart.LastIndexOf('.');
+            var simpleOuter = lastDot >= 0 ? outerPart.Substring(lastDot + 1) : outerPart;
+            
+            // Get the generic parameters and simplify them recursively
+            var genericEnd = name.LastIndexOf('>');
+            if (genericEnd > genericStart)
+            {
+                var genericParams = name.Substring(genericStart + 1, genericEnd - genericStart - 1);
+                // Simplify each generic parameter (split by comma, handle nested generics)
+                var simplifiedParams = SimplifyGenericParameters(genericParams);
+                return $"{simpleOuter}<{simplifiedParams}>";
+            }
+            
+            return simpleOuter;
+        }
+        
         // Get just the type name (after last dot)
-        var lastDot = name.LastIndexOf('.');
-        return lastDot >= 0 ? name.Substring(lastDot + 1) : name;
+        var idx = name.LastIndexOf('.');
+        return idx >= 0 ? name.Substring(idx + 1) : name;
+    }
+
+    private static string SimplifyGenericParameters(string genericParams)
+    {
+        // Handle nested generics by tracking depth
+        var result = new StringBuilder();
+        var depth = 0;
+        var currentParam = new StringBuilder();
+        
+        foreach (var c in genericParams)
+        {
+            if (c == '<')
+            {
+                depth++;
+                currentParam.Append(c);
+            }
+            else if (c == '>')
+            {
+                depth--;
+                currentParam.Append(c);
+            }
+            else if (c == ',' && depth == 0)
+            {
+                // End of parameter at top level
+                if (result.Length > 0)
+                {
+                    result.Append(", ");
+                }
+                result.Append(GetSimpleTypeName(currentParam.ToString().Trim()));
+                currentParam.Clear();
+            }
+            else
+            {
+                currentParam.Append(c);
+            }
+        }
+        
+        // Add last parameter
+        if (currentParam.Length > 0)
+        {
+            if (result.Length > 0)
+            {
+                result.Append(", ");
+            }
+            result.Append(GetSimpleTypeName(currentParam.ToString().Trim()));
+        }
+        
+        return result.ToString();
     }
 
     /// <summary>

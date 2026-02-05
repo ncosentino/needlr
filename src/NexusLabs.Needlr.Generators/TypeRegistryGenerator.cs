@@ -350,12 +350,14 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     /// </summary>
     private static bool ShouldExportGraph(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
     {
+        // Export graph by default for IDE tooling support
+        // Can be disabled with NeedlrExportGraph=false if desired
         if (configOptions.GlobalOptions.TryGetValue("build_property.NeedlrExportGraph", out var exportGraph) &&
-            exportGraph.Equals("true", StringComparison.OrdinalIgnoreCase))
+            exportGraph.Equals("false", StringComparison.OrdinalIgnoreCase))
         {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /// <summary>

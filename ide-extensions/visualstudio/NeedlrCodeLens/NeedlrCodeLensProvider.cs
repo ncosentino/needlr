@@ -1,6 +1,7 @@
 namespace NeedlrCodeLens;
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +37,12 @@ internal class NeedlrCodeLensProvider : ExtensionPart, ICodeLensProvider
         CodeElementContext codeElementContext, 
         CancellationToken token)
     {
+        Debug.WriteLine($"[NeedlrCodeLens] TryCreateCodeLensAsync called for: {codeElement.Kind} - {codeElement.UniqueIdentifier ?? codeElement.Description}");
+
         // Only show CodeLens for type declarations (classes, structs)
         if (codeElement.Kind != CodeElementKind.KnownValues.Type)
         {
+            Debug.WriteLine($"[NeedlrCodeLens] Skipping - not a type (Kind={codeElement.Kind})");
             return null;
         }
 
@@ -46,22 +50,55 @@ internal class NeedlrCodeLensProvider : ExtensionPart, ICodeLensProvider
         var identifier = codeElement.UniqueIdentifier ?? codeElement.Description;
         if (string.IsNullOrEmpty(identifier))
         {
+            Debug.WriteLine("[NeedlrCodeLens] Skipping - no identifier");
             return null;
         }
 
-        // Get the project GUID to help narrow down which graph to use
-        var projectGuid = codeElement.ProjectGuid;
+        Debug.WriteLine($"[NeedlrCodeLens] Type identifier: {identifier}");
+
+        // Log all available properties
+        foreach (var prop in codeElementContext.Properties)
+        {
+            Debug.WriteLine($"[NeedlrCodeLens] Property: {prop.Key} = {prop.Value}");
+        }
+
+        // Try to get file path from Properties bag
+        string? filePath = null;
+        if (codeElementContext.Properties.TryGetValue("DocumentMoniker", out var monikerPath))
+        {
+            filePath = monikerPath;
+            Debug.WriteLine($"[NeedlrCodeLens] Got file path from DocumentMoniker: {filePath}");
+        }
+        else if (codeElementContext.Properties.TryGetValue("FilePath", out var path))
+        {
+            filePath = path;
+            Debug.WriteLine($"[NeedlrCodeLens] Got file path from FilePath: {filePath}");
+        }
 
         // Try to find the Needlr graph
-        var graph = await GraphLoader.GetGraphAsync(projectGuid);
+        NeedlrGraph? graph;
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            graph = await GraphLoader.GetGraphForFileAsync(filePath);
+        }
+        else
+        {
+            // Fall back to project GUID search
+            graph = await GraphLoader.GetGraphAsync(codeElement.ProjectGuid);
+        }
         
         if (graph == null)
         {
+            Debug.WriteLine("[NeedlrCodeLens] No graph found");
             return null;
         }
 
+        Debug.WriteLine($"[NeedlrCodeLens] Graph loaded with {graph.Services.Count} services");
+
         // Find service by type name - extract simple type name from identifier
         var typeName = ExtractTypeName(identifier);
+        Debug.WriteLine($"[NeedlrCodeLens] Looking for service: {typeName}");
+
         var service = graph.Services.FirstOrDefault(s => 
             s.TypeName == typeName || 
             s.FullTypeName == identifier ||
@@ -69,10 +106,12 @@ internal class NeedlrCodeLensProvider : ExtensionPart, ICodeLensProvider
         
         if (service == null)
         {
+            Debug.WriteLine($"[NeedlrCodeLens] Service not found for: {typeName}");
             return null;
         }
 
-        return new NeedlrDependencyCodeLens(codeElement, service, this.Extensibility);
+        Debug.WriteLine($"[NeedlrCodeLens] Found service: {service.FullTypeName} ({service.Lifetime})");
+        return new NeedlrDependencyCodeLens(codeElement, service, graph, this.Extensibility);
     }
 
     private static string ExtractTypeName(string identifier)

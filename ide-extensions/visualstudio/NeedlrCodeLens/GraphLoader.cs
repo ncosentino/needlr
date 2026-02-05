@@ -1,49 +1,40 @@
 namespace NeedlrCodeLens;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 /// <summary>
-/// Loads Needlr graph files from the project's obj folder.
+/// Loads and merges Needlr graph files from multiple projects.
+/// Each project with [GenerateTypeRegistry] and NeedlrExportGraph=true generates its own graph.
+/// We merge them to get complete source location information for all types.
 /// </summary>
 internal static class GraphLoader
 {
-    // Cache graphs by assembly name to avoid repeated file system lookups
-    private static readonly ConcurrentDictionary<string, NeedlrGraph?> _graphCache = new();
-    private static NeedlrGraph? _lastLoadedGraph;
+    private static NeedlrGraph? _mergedGraph;
+    private static readonly HashSet<string> _loadedGraphFiles = new();
     
     /// <summary>
-    /// Get graph for a project GUID. Since we can't map GUIDs directly to files,
-    /// we try to find any available Needlr graph. For multi-project solutions,
-    /// we load all graphs and match by assembly/type name.
+    /// Get merged graph for a project. Loads all available graphs and merges them.
     /// </summary>
     public static async Task<NeedlrGraph?> GetGraphAsync(Guid projectGuid)
     {
-        // For now, return the cached graph or search common locations
-        if (_lastLoadedGraph != null)
+        Debug.WriteLine($"[NeedlrCodeLens] GetGraphAsync called for project: {projectGuid}");
+
+        if (_mergedGraph != null)
         {
-            return _lastLoadedGraph;
+            Debug.WriteLine($"[NeedlrCodeLens] Returning cached merged graph with {_mergedGraph.Services.Count} services");
+            return _mergedGraph;
         }
 
-        // Search for Needlr graphs in common VS solution locations
-        var searchPaths = GetPossibleSearchPaths();
-        
-        foreach (var searchPath in searchPaths)
-        {
-            var graph = await TryLoadGraphFromDirectoryAsync(searchPath);
-            if (graph != null)
-            {
-                _lastLoadedGraph = graph;
-                return graph;
-            }
-        }
-
-        return null;
+        // Search for all Needlr graphs and merge them
+        _mergedGraph = await LoadAndMergeAllGraphsAsync();
+        return _mergedGraph;
     }
 
     /// <summary>
@@ -51,30 +42,83 @@ internal static class GraphLoader
     /// </summary>
     public static void InvalidateCache()
     {
-        _graphCache.Clear();
-        _lastLoadedGraph = null;
+        _mergedGraph = null;
+        _loadedGraphFiles.Clear();
     }
 
-    private static IEnumerable<string> GetPossibleSearchPaths()
+    /// <summary>
+    /// Get merged graph for a file path. Searches from the file's directory up to find graphs.
+    /// </summary>
+    public static async Task<NeedlrGraph?> GetGraphForFileAsync(string filePath)
     {
-        // Try current directory and parent directories
-        var currentDir = Environment.CurrentDirectory;
-        yield return currentDir;
-
-        // Try user's common solution locations
-        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        yield return Path.Combine(userProfile, "source", "repos");
-        yield return Path.Combine(userProfile, "Projects");
-
-        // Try common VS paths
-        var vsPath = Environment.GetEnvironmentVariable("VSAPPIDDIR");
-        if (!string.IsNullOrEmpty(vsPath))
+        Debug.WriteLine($"[NeedlrCodeLens] GetGraphForFileAsync called for: {filePath}");
+        
+        if (_mergedGraph != null)
         {
-            yield return Path.GetDirectoryName(vsPath) ?? vsPath;
+            return _mergedGraph;
         }
+
+        // Find the solution/repo root by walking up
+        var directory = Path.GetDirectoryName(filePath);
+        string? solutionRoot = null;
+        
+        while (!string.IsNullOrEmpty(directory))
+        {
+            // Check for common solution indicators
+            if (Directory.GetFiles(directory, "*.slnx").Length > 0 ||
+                Directory.GetFiles(directory, "*.sln").Length > 0 ||
+                Directory.Exists(Path.Combine(directory, ".git")))
+            {
+                solutionRoot = directory;
+                break;
+            }
+            var parent = Directory.GetParent(directory);
+            directory = parent?.FullName;
+        }
+
+        if (solutionRoot != null)
+        {
+            _mergedGraph = await LoadAndMergeGraphsFromDirectoryAsync(solutionRoot);
+        }
+        
+        // Fallback to hardcoded path for development
+        if (_mergedGraph == null)
+        {
+            var needlrPath = @"C:\dev\nexus-labs\needlr";
+            if (Directory.Exists(needlrPath))
+            {
+                _mergedGraph = await LoadAndMergeGraphsFromDirectoryAsync(needlrPath);
+            }
+        }
+
+        return _mergedGraph;
     }
 
-    private static async Task<NeedlrGraph?> TryLoadGraphFromDirectoryAsync(string directory)
+    private static async Task<NeedlrGraph?> LoadAndMergeAllGraphsAsync()
+    {
+        var searchPaths = new[]
+        {
+            @"C:\dev\nexus-labs\needlr",
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\source\repos",
+            @"C:\dev"
+        };
+
+        foreach (var path in searchPaths)
+        {
+            if (Directory.Exists(path))
+            {
+                var graph = await LoadAndMergeGraphsFromDirectoryAsync(path);
+                if (graph != null && graph.Services.Count > 0)
+                {
+                    return graph;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task<NeedlrGraph?> LoadAndMergeGraphsFromDirectoryAsync(string directory)
     {
         if (!Directory.Exists(directory))
         {
@@ -83,53 +127,85 @@ internal static class GraphLoader
 
         try
         {
-            // Search for NeedlrGraph.g.cs files
+            // Find ALL NeedlrGraph.g.cs files
             var graphFiles = Directory.GetFiles(directory, "NeedlrGraph.g.cs", SearchOption.AllDirectories);
+            Debug.WriteLine($"[NeedlrCodeLens] Found {graphFiles.Length} graph files in {directory}");
+
+            if (graphFiles.Length == 0)
+            {
+                return null;
+            }
+
+            // Load all graphs
+            var graphs = new List<NeedlrGraph>();
             foreach (var graphFile in graphFiles)
             {
+                if (_loadedGraphFiles.Contains(graphFile))
+                    continue;
+                    
+                Debug.WriteLine($"[NeedlrCodeLens] Loading graph from: {graphFile}");
                 var graph = await LoadGraphFromSourceFileAsync(graphFile);
                 if (graph != null)
                 {
-                    return graph;
+                    Debug.WriteLine($"[NeedlrCodeLens] Loaded {graph.AssemblyName} with {graph.Services.Count} services");
+                    graphs.Add(graph);
+                    _loadedGraphFiles.Add(graphFile);
                 }
             }
-        }
-        catch
-        {
-            // Ignore file system errors
-        }
 
-        return null;
+            if (graphs.Count == 0)
+            {
+                return null;
+            }
+
+            // Merge all graphs - services from each graph bring their own source locations
+            var merged = MergeGraphs(graphs);
+            Debug.WriteLine($"[NeedlrCodeLens] Merged graph has {merged.Services.Count} services from {graphs.Count} projects");
+            return merged;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[NeedlrCodeLens] Error loading graphs from {directory}: {ex.Message}");
+            return null;
+        }
     }
 
-    public static async Task<NeedlrGraph?> GetGraphForFileAsync(string filePath)
+    /// <summary>
+    /// Merge multiple graphs into one. Later graphs with source locations override earlier ones.
+    /// </summary>
+    private static NeedlrGraph MergeGraphs(List<NeedlrGraph> graphs)
     {
-        // Find the obj folder relative to the file and look for NeedlrGraph.g.cs
-        var directory = Path.GetDirectoryName(filePath);
-        while (!string.IsNullOrEmpty(directory))
+        var merged = new NeedlrGraph
         {
-            var objDir = Path.Combine(directory, "obj");
-            if (Directory.Exists(objDir))
+            SchemaVersion = "1.0",
+            GeneratedAt = DateTime.UtcNow.ToString("O"),
+            AssemblyName = "Merged"
+        };
+
+        // Use dictionary to dedupe by full type name, preferring entries with source locations
+        var servicesByType = new Dictionary<string, GraphService>();
+
+        foreach (var graph in graphs)
+        {
+            foreach (var service in graph.Services)
             {
-                try
+                var key = service.FullTypeName;
+                
+                // Add or replace if this one has a source location and existing doesn't
+                if (!servicesByType.TryGetValue(key, out var existing))
                 {
-                    var graphFiles = Directory.GetFiles(objDir, "NeedlrGraph.g.cs", SearchOption.AllDirectories);
-                    if (graphFiles.Length > 0)
-                    {
-                        return await LoadGraphFromSourceFileAsync(graphFiles[0]);
-                    }
+                    servicesByType[key] = service;
                 }
-                catch
+                else if (service.Location?.FilePath != null && existing.Location?.FilePath == null)
                 {
-                    // Ignore file system errors
+                    // This service has source location, existing doesn't - prefer this one
+                    servicesByType[key] = service;
                 }
             }
-
-            var parent = Directory.GetParent(directory);
-            directory = parent?.FullName;
         }
 
-        return null;
+        merged.Services = servicesByType.Values.ToList();
+        return merged;
     }
 
     private static async Task<NeedlrGraph?> LoadGraphFromSourceFileAsync(string filePath)
@@ -147,12 +223,17 @@ internal static class GraphLoader
             if (match.Success)
             {
                 var jsonString = match.Groups[1].Value.Replace("\"\"", "\"");
-                return JsonConvert.DeserializeObject<NeedlrGraph>(jsonString);
+                var graph = JsonConvert.DeserializeObject<NeedlrGraph>(jsonString);
+                return graph;
+            }
+            else
+            {
+                Debug.WriteLine($"[NeedlrCodeLens] Could not find GraphJson in {filePath}");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore parsing errors
+            Debug.WriteLine($"[NeedlrCodeLens] Error loading graph from {filePath}: {ex.Message}");
         }
 
         return null;

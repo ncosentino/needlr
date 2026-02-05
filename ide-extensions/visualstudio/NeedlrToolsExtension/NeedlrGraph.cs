@@ -41,6 +41,9 @@ namespace NeedlrToolsExtension
         [JsonProperty("fullTypeName")]
         public string FullTypeName { get; set; } = "";
 
+        [JsonProperty("assemblyName")]
+        public string? AssemblyName { get; set; }
+
         [JsonProperty("interfaces")]
         public List<GraphInterface> Interfaces { get; set; } = new();
 

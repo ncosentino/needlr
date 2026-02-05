@@ -16,6 +16,10 @@ internal class ExtensionEntrypoint : Extension
             this.ExtensionAssemblyVersion,
             "Nexus Labs",
             "Needlr CodeLens",
-            "Shows dependency injection information above Needlr service classes."),
+            "Shows dependency injection information above Needlr service classes.")
+        {
+            // Support VS 2022 17.14+ through VS 2026 (18.x)
+            InstallationTargetVersion = "[17.14,19.0)",
+        },
     };
 }

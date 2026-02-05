@@ -244,11 +244,25 @@ namespace NeedlrToolsExtension
                 ? $"{service.TypeName} ({service.Dependencies.Count} deps)"
                 : service.TypeName;
             
+            // Check if navigation is available
+            var canNavigate = !string.IsNullOrEmpty(service.Location?.FilePath) && service.Location.Line > 0;
+            var tooltipText = canNavigate 
+                ? $"{service.FullTypeName}\nDouble-click to navigate to source"
+                : $"{service.FullTypeName}\n(Source location not available - from referenced assembly)";
+            
+            // Add assembly indicator for external types
+            if (!string.IsNullOrEmpty(service.AssemblyName))
+            {
+                headerText = $"{headerText} [{service.AssemblyName}]";
+            }
+            
             var item = new TreeViewItem
             {
                 Header = headerText,
                 Tag = service,
-                ToolTip = $"{service.FullTypeName}\nDouble-click to navigate"
+                ToolTip = tooltipText,
+                Cursor = canNavigate ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Arrow,
+                FontStyle = canNavigate ? FontStyles.Normal : FontStyles.Italic
             };
 
             // Add interfaces
