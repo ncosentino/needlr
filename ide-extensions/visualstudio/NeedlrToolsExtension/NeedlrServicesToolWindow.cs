@@ -385,18 +385,56 @@ namespace NeedlrToolsExtension
                 IsExpanded = !string.IsNullOrEmpty(_searchFilter) // Expand when filtering
             };
 
-            // Add interfaces
+            // Add interfaces with navigation
             if (service.Interfaces.Count > 0)
             {
                 var interfacesItem = new TreeViewItem { Header = $"📋 Interfaces ({service.Interfaces.Count})" };
                 foreach (var iface in service.Interfaces)
                 {
-                    interfacesItem.Items.Add(new TreeViewItem 
+                    var ifaceCanNavigate = !string.IsNullOrEmpty(iface.Location?.FilePath) && iface.Location.Line > 0;
+                    var ifaceItem = new TreeViewItem 
                     { 
                         Header = iface.Name,
-                        ToolTip = iface.FullName,
-                        FontStyle = FontStyles.Italic
-                    });
+                        ToolTip = ifaceCanNavigate 
+                            ? $"{iface.FullName}\nDouble-click to navigate"
+                            : iface.FullName,
+                        FontStyle = FontStyles.Italic,
+                        Cursor = ifaceCanNavigate ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Arrow,
+                        Tag = iface
+                    };
+                    
+                    if (ifaceCanNavigate)
+                    {
+                        ifaceItem.MouseDoubleClick += (s, e) =>
+                        {
+                            e.Handled = true;
+                            ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                            {
+                                try
+                                {
+                                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                    var docView = await VS.Documents.OpenAsync(iface.Location!.FilePath!);
+                                    if (docView?.TextView != null)
+                                    {
+                                        var textView = docView.TextView;
+                                        var lineNumber = Math.Max(0, Math.Min(iface.Location.Line - 1, textView.TextSnapshot.LineCount - 1));
+                                        var snapshotLine = textView.TextSnapshot.GetLineFromLineNumber(lineNumber);
+                                        textView.Caret.MoveTo(snapshotLine.Start);
+                                        textView.Caret.EnsureVisible();
+                                        textView.ViewScroller.EnsureSpanVisible(
+                                            new Microsoft.VisualStudio.Text.SnapshotSpan(snapshotLine.Start, snapshotLine.End),
+                                            EnsureSpanVisibleOptions.AlwaysCenter);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Needlr: Interface navigation error: {ex.Message}");
+                                }
+                            });
+                        };
+                    }
+                    
+                    interfacesItem.Items.Add(ifaceItem);
                 }
                 item.Items.Add(interfacesItem);
             }

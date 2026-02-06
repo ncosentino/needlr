@@ -126,11 +126,27 @@ internal class NeedlrCodeLensViewModel
             _ => "○"
         };
         
-        // Dependencies with location info for navigation
+        // Dependencies with location info for navigation - prefer interface location over implementation
         Dependencies = service.Dependencies.Select(d => 
         {
             var resolvedService = graph.Services.FirstOrDefault(s => 
                 s.FullTypeName == d.ResolvedTo || s.FullTypeName == d.FullTypeName);
+            
+            // Check if this dependency is an interface - find its location from any service that implements it
+            GraphLocation? interfaceLocation = null;
+            foreach (var s in graph.Services)
+            {
+                var iface = s.Interfaces.FirstOrDefault(i => i.FullName == d.FullTypeName);
+                if (iface?.Location?.FilePath != null && iface.Location.Line > 0)
+                {
+                    interfaceLocation = iface.Location;
+                    break;
+                }
+            }
+            
+            // Prefer interface location over resolved service location
+            var navigationLocation = interfaceLocation ?? resolvedService?.Location;
+            
             return new DependencyItem
             {
                 TypeName = d.TypeName,
@@ -139,9 +155,9 @@ internal class NeedlrCodeLensViewModel
                 Lifetime = d.ResolvedLifetime ?? "",
                 IsCaptive = IsCaptiveDependency(service.Lifetime, d.ResolvedLifetime),
                 IsCaptiveVisibility = IsCaptiveDependency(service.Lifetime, d.ResolvedLifetime) ? "Visible" : "Collapsed",
-                FilePath = resolvedService?.Location?.FilePath,
-                Line = resolvedService?.Location?.Line ?? 0,
-                NavigateCommand = new NavigateToTypeCommand(resolvedService?.Location, d.ResolvedTo ?? d.FullTypeName, extensibility)
+                FilePath = navigationLocation?.FilePath,
+                Line = navigationLocation?.Line ?? 0,
+                NavigateCommand = new NavigateToTypeCommand(navigationLocation, d.ResolvedTo ?? d.FullTypeName, extensibility)
             };
         }).ToList();
         

@@ -46,6 +46,7 @@ namespace NeedlrToolsExtension
         private async Task<NeedlrGraph?> LoadAndMergeAllGraphsAsync(string solutionDir)
         {
             var allServices = new Dictionary<string, GraphService>();
+            var interfaceLocations = new Dictionary<string, GraphLocation>();
             var allDiagnostics = new List<GraphDiagnostic>();
             string? primaryAssemblyName = null;
             string? primaryProjectPath = null;
@@ -73,6 +74,19 @@ namespace NeedlrToolsExtension
                 {
                     primaryAssemblyName = graph.AssemblyName;
                     primaryProjectPath = graph.ProjectPath;
+                }
+
+                // Collect interface locations from all graphs
+                foreach (var service in graph.Services)
+                {
+                    foreach (var iface in service.Interfaces)
+                    {
+                        if (!string.IsNullOrEmpty(iface.Location?.FilePath) && iface.Location.Line > 0 
+                            && !interfaceLocations.ContainsKey(iface.FullName))
+                        {
+                            interfaceLocations[iface.FullName] = iface.Location;
+                        }
+                    }
                 }
 
                 // Merge services - prefer entries with source locations
@@ -113,6 +127,19 @@ namespace NeedlrToolsExtension
                     primaryProjectPath = graph.ProjectPath;
                 }
 
+                // Collect interface locations
+                foreach (var service in graph.Services)
+                {
+                    foreach (var iface in service.Interfaces)
+                    {
+                        if (!string.IsNullOrEmpty(iface.Location?.FilePath) && iface.Location.Line > 0 
+                            && !interfaceLocations.ContainsKey(iface.FullName))
+                        {
+                            interfaceLocations[iface.FullName] = iface.Location;
+                        }
+                    }
+                }
+
                 foreach (var service in graph.Services)
                 {
                     if (!allServices.TryGetValue(service.FullTypeName, out var existing))
@@ -133,6 +160,18 @@ namespace NeedlrToolsExtension
             {
                 System.Diagnostics.Debug.WriteLine("Needlr: No services found in any graph");
                 return null;
+            }
+
+            // Apply collected interface locations to all services
+            foreach (var service in allServices.Values)
+            {
+                foreach (var iface in service.Interfaces)
+                {
+                    if (iface.Location == null && interfaceLocations.TryGetValue(iface.FullName, out var loc))
+                    {
+                        iface.Location = loc;
+                    }
+                }
             }
 
             // Create merged graph
