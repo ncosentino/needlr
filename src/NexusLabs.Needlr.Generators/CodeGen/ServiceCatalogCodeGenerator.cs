@@ -93,8 +93,21 @@ internal static class ServiceCatalogCodeGenerator
                 ? $"\"{GeneratorHelpers.EscapeStringLiteral(sourceFilePath)}\"" 
                 : "null";
 
-            // Build interfaces array
+            // Build interfaces array (for backwards compat)
             var interfacesArray = $"new string[] {{ {string.Join(", ", type.InterfaceNames.Select(i => $"\"{GeneratorHelpers.EscapeStringLiteral(i)}\""))} }}";
+            
+            // Build interface entries array with locations
+            var interfaceEntriesBuilder = new StringBuilder();
+            interfaceEntriesBuilder.Append("new global::NexusLabs.Needlr.Catalog.InterfaceEntry[] { ");
+            foreach (var ifaceInfo in type.InterfaceInfos)
+            {
+                var ifaceFilePath = GetRelativeSourcePath(ifaceInfo.SourceFilePath, projectDirectory);
+                var ifaceFilePathLiteral = ifaceFilePath != null 
+                    ? $"\"{GeneratorHelpers.EscapeStringLiteral(ifaceFilePath)}\"" 
+                    : "null";
+                interfaceEntriesBuilder.Append($"new global::NexusLabs.Needlr.Catalog.InterfaceEntry(\"{GeneratorHelpers.EscapeStringLiteral(ifaceInfo.FullName)}\", {ifaceFilePathLiteral}, {ifaceInfo.SourceLine}), ");
+            }
+            interfaceEntriesBuilder.Append('}');
             
             // Build constructor parameters array
             var constructorParamsBuilder = new StringBuilder();
@@ -112,7 +125,7 @@ internal static class ServiceCatalogCodeGenerator
             // Build service keys array
             var serviceKeysArray = $"new string[] {{ {string.Join(", ", type.ServiceKeys.Select(k => $"\"{GeneratorHelpers.EscapeStringLiteral(k)}\""))} }}";
 
-            builder.AppendLine($"        new global::NexusLabs.Needlr.Catalog.ServiceCatalogEntry(\"{GeneratorHelpers.EscapeStringLiteral(type.TypeName)}\", \"{GeneratorHelpers.EscapeStringLiteral(shortName)}\", \"{GeneratorHelpers.EscapeStringLiteral(type.AssemblyName)}\", {lifetimeStr}, {interfacesArray}, {constructorParamsBuilder}, {serviceKeysArray}, {sourceFilePathLiteral}),");
+            builder.AppendLine($"        new global::NexusLabs.Needlr.Catalog.ServiceCatalogEntry(\"{GeneratorHelpers.EscapeStringLiteral(type.TypeName)}\", \"{GeneratorHelpers.EscapeStringLiteral(shortName)}\", \"{GeneratorHelpers.EscapeStringLiteral(type.AssemblyName)}\", {lifetimeStr}, {interfacesArray}, {constructorParamsBuilder}, {serviceKeysArray}, {sourceFilePathLiteral}, {type.SourceLine}, {interfaceEntriesBuilder}),");
         }
 
         builder.AppendLine("    };");

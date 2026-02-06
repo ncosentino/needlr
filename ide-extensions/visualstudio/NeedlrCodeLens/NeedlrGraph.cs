@@ -64,6 +64,9 @@ public class GraphInterface
 
     [JsonProperty("fullName")]
     public string FullName { get; set; } = "";
+
+    [JsonProperty("location")]
+    public GraphLocation? Location { get; set; }
 }
 
 public class GraphLocation

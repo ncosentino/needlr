@@ -184,7 +184,24 @@ internal static class GraphLoader
 
         // Use dictionary to dedupe by full type name, preferring entries with source locations
         var servicesByType = new Dictionary<string, GraphService>();
+        var interfaceLocations = new Dictionary<string, GraphLocation>();
 
+        // First pass: collect all interface locations from all graphs
+        foreach (var graph in graphs)
+        {
+            foreach (var service in graph.Services)
+            {
+                foreach (var iface in service.Interfaces)
+                {
+                    if (iface.Location?.FilePath != null && !interfaceLocations.ContainsKey(iface.FullName))
+                    {
+                        interfaceLocations[iface.FullName] = iface.Location;
+                    }
+                }
+            }
+        }
+
+        // Second pass: merge services, applying collected interface locations
         foreach (var graph in graphs)
         {
             foreach (var service in graph.Services)
@@ -198,8 +215,19 @@ internal static class GraphLoader
                 }
                 else if (service.Location?.FilePath != null && existing.Location?.FilePath == null)
                 {
-                    // This service has source location, existing doesn't - prefer this one
                     servicesByType[key] = service;
+                }
+            }
+        }
+
+        // Apply interface locations to all services
+        foreach (var service in servicesByType.Values)
+        {
+            foreach (var iface in service.Interfaces)
+            {
+                if (iface.Location == null && interfaceLocations.TryGetValue(iface.FullName, out var loc))
+                {
+                    iface.Location = loc;
                 }
             }
         }

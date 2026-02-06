@@ -1,8 +1,8 @@
 {
   "name": "needlr-tools",
   "displayName": "Needlr Tools",
-  "description": "Dependency injection visualization and diagnostics for Needlr",
-  "version": "0.1.0",
+  "description": "Dependency injection visualization, CodeLens, and diagnostics for Needlr",
+  "version": "2.0.5",
   "publisher": "nexus-labs",
   "repository": {
     "type": "git",
@@ -20,10 +20,12 @@
     "DI",
     "needlr",
     "dotnet",
-    "csharp"
+    "csharp",
+    "codelens"
   ],
   "activationEvents": [
     "workspaceContains:**/needlr-graph.json",
+    "workspaceContains:**/NeedlrGraph.g.cs",
     "workspaceContains:**/*.csproj"
   ],
   "main": "./out/extension.js",
@@ -31,15 +33,32 @@
     "commands": [
       {
         "command": "needlr.showDependencyGraph",
-        "title": "Needlr: Show Dependency Graph"
+        "title": "Needlr: Show Dependency Graph",
+        "icon": "$(graph)"
       },
       {
         "command": "needlr.refreshGraph",
-        "title": "Needlr: Refresh Dependency Graph"
+        "title": "Needlr: Refresh Dependency Graph",
+        "icon": "$(refresh)"
       },
       {
         "command": "needlr.goToService",
-        "title": "Needlr: Go to Service Definition"
+        "title": "Needlr: Go to Service Definition",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "needlr.filterServices",
+        "title": "Needlr: Filter Services",
+        "icon": "$(search)"
+      },
+      {
+        "command": "needlr.clearFilter",
+        "title": "Needlr: Clear Filter",
+        "icon": "$(close)"
+      },
+      {
+        "command": "needlr.showServiceDetails",
+        "title": "Needlr: Show Service Details"
       }
     ],
     "views": {
@@ -54,24 +73,29 @@
     "menus": {
       "view/title": [
         {
+          "command": "needlr.filterServices",
+          "when": "view == needlrServices",
+          "group": "navigation@1"
+        },
+        {
           "command": "needlr.refreshGraph",
           "when": "view == needlrServices",
-          "group": "navigation"
+          "group": "navigation@2"
         }
       ]
     },
     "configuration": {
       "title": "Needlr",
       "properties": {
-        "needlr.graphFilePath": {
-          "type": "string",
-          "default": "**/obj/**/needlr-graph.json",
-          "description": "Glob pattern to find the Needlr graph file"
+        "needlr.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens above service classes showing dependency information"
         },
         "needlr.autoRefresh": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically refresh the graph when the file changes"
+          "description": "Automatically refresh the graph when files change"
         }
       }
     }
@@ -80,13 +104,16 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/vsce": "^2.22.0",
     "eslint": "^8.50.0",
     "typescript": "^5.3.0"
   }

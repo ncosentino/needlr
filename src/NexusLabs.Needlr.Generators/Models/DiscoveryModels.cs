@@ -5,11 +5,30 @@ using Microsoft.CodeAnalysis;
 namespace NexusLabs.Needlr.Generators.Models;
 
 /// <summary>
+/// Information about an interface implemented by a service, including its source location.
+/// </summary>
+internal readonly struct InterfaceInfo
+{
+    public InterfaceInfo(string fullName, string? sourceFilePath = null, int sourceLine = 0)
+    {
+        FullName = fullName;
+        SourceFilePath = sourceFilePath;
+        SourceLine = sourceLine;
+    }
+
+    public string FullName { get; }
+    public string? SourceFilePath { get; }
+    public int SourceLine { get; }
+
+    public bool HasLocation => SourceFilePath != null && SourceLine > 0;
+}
+
+/// <summary>
 /// Information about a discovered injectable type.
 /// </summary>
 internal readonly struct DiscoveredType
 {
-    public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null, int sourceLine = 0, bool isDisposable = false)
+    public DiscoveredType(string typeName, string[] interfaceNames, string assemblyName, GeneratorLifetime lifetime, TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParameters, string[] serviceKeys, string? sourceFilePath = null, int sourceLine = 0, bool isDisposable = false, InterfaceInfo[]? interfaceInfos = null)
     {
         TypeName = typeName;
         InterfaceNames = interfaceNames;
@@ -20,10 +39,15 @@ internal readonly struct DiscoveredType
         SourceFilePath = sourceFilePath;
         SourceLine = sourceLine;
         IsDisposable = isDisposable;
+        InterfaceInfos = interfaceInfos ?? Array.Empty<InterfaceInfo>();
     }
 
     public string TypeName { get; }
     public string[] InterfaceNames { get; }
+    /// <summary>
+    /// Detailed interface information including source locations.
+    /// </summary>
+    public InterfaceInfo[] InterfaceInfos { get; }
     public string AssemblyName { get; }
     public GeneratorLifetime Lifetime { get; }
     public TypeDiscoveryHelper.ConstructorParameterInfo[] ConstructorParameters { get; }

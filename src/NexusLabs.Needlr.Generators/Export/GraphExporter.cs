@@ -165,14 +165,32 @@ internal static class GraphExporter
             }
         };
 
-        // Map interfaces
-        foreach (var iface in type.InterfaceNames)
+        // Map interfaces with locations
+        foreach (var ifaceInfo in type.InterfaceInfos)
         {
             service.Interfaces.Add(new GraphInterface
             {
-                Name = GetSimpleTypeName(iface),
-                FullName = iface
+                Name = GetSimpleTypeName(ifaceInfo.FullName),
+                FullName = ifaceInfo.FullName,
+                Location = ifaceInfo.HasLocation ? new GraphLocation
+                {
+                    FilePath = ifaceInfo.SourceFilePath!,
+                    Line = ifaceInfo.SourceLine,
+                    Column = 0
+                } : null
             });
+        }
+        // Fall back to InterfaceNames if no InterfaceInfos (for backwards compat)
+        if (type.InterfaceInfos.Length == 0)
+        {
+            foreach (var iface in type.InterfaceNames)
+            {
+                service.Interfaces.Add(new GraphInterface
+                {
+                    Name = GetSimpleTypeName(iface),
+                    FullName = iface
+                });
+            }
         }
 
         // Map dependencies from constructor parameters
@@ -405,7 +423,22 @@ internal static class GraphExporter
         {
             var iface = service.Interfaces[i];
             var comma = i < service.Interfaces.Count - 1 ? "," : "";
-            sb.AppendLine($"        {{ \"name\": \"{Escape(iface.Name)}\", \"fullName\": \"{Escape(iface.FullName)}\" }}{comma}");
+            sb.AppendLine("        {");
+            sb.AppendLine($"          \"name\": \"{Escape(iface.Name)}\",");
+            sb.AppendLine($"          \"fullName\": \"{Escape(iface.FullName)}\",");
+            if (iface.Location != null)
+            {
+                sb.AppendLine("          \"location\": {");
+                sb.AppendLine($"            \"filePath\": {NullableString(iface.Location.FilePath)},");
+                sb.AppendLine($"            \"line\": {iface.Location.Line},");
+                sb.AppendLine($"            \"column\": {iface.Location.Column}");
+                sb.AppendLine("          }");
+            }
+            else
+            {
+                sb.AppendLine("          \"location\": null");
+            }
+            sb.AppendLine($"        }}{comma}");
         }
         sb.AppendLine("      ],");
         

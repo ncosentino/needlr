@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { GraphLoader } from './graphLoader';
 import { ServicesTreeProvider } from './servicesTreeProvider';
+import { NeedlrCodeLensProvider } from './codeLensProvider';
+import { GraphService } from './types';
 
 let graphLoader: GraphLoader;
 let servicesTreeProvider: ServicesTreeProvider;
@@ -20,11 +22,24 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(treeView);
 
+    // Initialize CodeLens provider
+    const codeLensProvider = new NeedlrCodeLensProvider(graphLoader);
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            { language: 'csharp', scheme: 'file' },
+            codeLensProvider
+        )
+    );
+
     // Register commands
     context.subscriptions.push(
         vscode.commands.registerCommand('needlr.showDependencyGraph', showDependencyGraph),
         vscode.commands.registerCommand('needlr.refreshGraph', refreshGraph),
-        vscode.commands.registerCommand('needlr.goToService', goToService)
+        vscode.commands.registerCommand('needlr.goToService', goToService),
+        vscode.commands.registerCommand('needlr.filterServices', filterServices),
+        vscode.commands.registerCommand('needlr.clearFilter', () => servicesTreeProvider.clearFilter()),
+        vscode.commands.registerCommand('needlr.showServiceDetails', showServiceDetails),
+        vscode.commands.registerCommand('needlr.navigateToLocation', navigateToLocation)
     );
 
     // Initialize the graph loader
@@ -34,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const graph = graphLoader.getGraph();
     if (!graph) {
         vscode.window.showInformationMessage(
-            'Needlr Tools: No dependency graph found. Build your project with NeedlrExportGraph=true to generate one.',
+            'Needlr Tools: No dependency graph found. Build your project to generate one.',
             'Learn More'
         ).then(selection => {
             if (selection === 'Learn More') {
@@ -42,6 +57,139 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
     }
+}
+
+async function filterServices() {
+    const filter = await vscode.window.showInputBox({
+        prompt: 'Filter services by name, interface, or dependency',
+        placeHolder: 'Enter search term...'
+    });
+    
+    if (filter !== undefined) {
+        servicesTreeProvider.setFilter(filter);
+    }
+}
+
+async function showServiceDetails(service: GraphService) {
+    const graph = graphLoader.getGraph();
+    if (!graph) return;
+
+    // Find services that use this service
+    const usedBy = graph.services.filter(s =>
+        s.dependencies.some(d =>
+            d.fullTypeName === service.fullTypeName ||
+            service.interfaces.some(i => i.fullName === d.fullTypeName)
+        )
+    );
+
+    // Build quick pick items with associated service data
+    interface NavigableQuickPickItem extends vscode.QuickPickItem {
+        targetService?: GraphService;
+        interfaceLocation?: { filePath: string | null; line: number; column: number };
+    }
+    
+    const items: NavigableQuickPickItem[] = [];
+    
+    // Dependencies section
+    if (service.dependencies.length > 0) {
+        items.push({ label: '$(arrow-right) Dependencies', kind: vscode.QuickPickItemKind.Separator });
+        for (const dep of service.dependencies) {
+            const resolvedService = graph.services.find(s => 
+                s.fullTypeName === dep.resolvedTo || 
+                s.fullTypeName === dep.fullTypeName ||
+                s.interfaces.some(i => i.fullName === dep.fullTypeName)
+            );
+            
+            // Check if this dependency is an interface - find its location from any service that implements it
+            let interfaceLocation: { filePath: string | null; line: number; column: number } | undefined;
+            for (const s of graph.services) {
+                const iface = s.interfaces.find(i => i.fullName === dep.fullTypeName);
+                if (iface?.location?.filePath && iface.location.line > 0) {
+                    interfaceLocation = iface.location;
+                    break;
+                }
+            }
+            
+            const hasInterfaceLocation = interfaceLocation?.filePath && interfaceLocation.line > 0;
+            const hasServiceLocation = resolvedService?.location?.filePath && resolvedService.location.line > 0;
+            
+            items.push({
+                label: `  ${dep.typeName}`,
+                description: dep.resolvedTo ? `→ ${getSimpleTypeName(dep.resolvedTo)}` : undefined,
+                detail: hasInterfaceLocation ? 'Click to navigate to interface' : (hasServiceLocation ? 'Click to navigate' : '(No source location)'),
+                targetService: resolvedService,
+                interfaceLocation: interfaceLocation
+            });
+        }
+    }
+    
+    // Used by section
+    if (usedBy.length > 0) {
+        items.push({ label: '$(arrow-left) Used By', kind: vscode.QuickPickItemKind.Separator });
+        for (const consumer of usedBy) {
+            const hasLocation = consumer.location?.filePath && consumer.location.line > 0;
+            items.push({
+                label: `  ${consumer.typeName}`,
+                description: consumer.lifetime,
+                detail: hasLocation ? 'Click to navigate' : '(No source location)',
+                targetService: consumer
+            });
+        }
+    }
+    
+    // Interfaces section - with navigation when location available
+    if (service.interfaces.length > 0) {
+        items.push({ label: '$(symbol-interface) Interfaces', kind: vscode.QuickPickItemKind.Separator });
+        for (const iface of service.interfaces) {
+            const hasLocation = iface.location?.filePath && iface.location.line > 0;
+            items.push({
+                label: `  ${iface.name}`,
+                description: iface.fullName,
+                detail: hasLocation ? 'Click to navigate' : '(No source location)',
+                interfaceLocation: hasLocation ? iface.location : undefined
+            } as NavigableQuickPickItem);
+        }
+    }
+
+    const selected = await vscode.window.showQuickPick(items, {
+        title: `${service.typeName} - ${service.lifetime}`,
+        placeHolder: 'Select to navigate'
+    }) as NavigableQuickPickItem | undefined;
+
+    if (selected && selected.kind !== vscode.QuickPickItemKind.Separator) {
+        // Handle interface navigation
+        if (selected.interfaceLocation?.filePath && selected.interfaceLocation.line > 0) {
+            const uri = vscode.Uri.file(selected.interfaceLocation.filePath);
+            const position = new vscode.Position(selected.interfaceLocation.line - 1, 0);
+            const document = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(document);
+            editor.selection = new vscode.Selection(position, position);
+            editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        }
+        // Handle service navigation
+        else if (selected.targetService?.location?.filePath && selected.targetService.location.line > 0) {
+            const uri = vscode.Uri.file(selected.targetService.location.filePath);
+            const position = new vscode.Position(selected.targetService.location.line - 1, 0);
+            const document = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(document);
+            editor.selection = new vscode.Selection(position, position);
+            editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        }
+    }
+}
+
+async function navigateToLocation(filePath: string, line: number) {
+    const uri = vscode.Uri.file(filePath);
+    const position = new vscode.Position(line - 1, 0);
+    const document = await vscode.workspace.openTextDocument(uri);
+    const editor = await vscode.window.showTextDocument(document);
+    editor.selection = new vscode.Selection(position, position);
+    editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+}
+
+function getSimpleTypeName(fullTypeName: string): string {
+    const lastDot = fullTypeName.lastIndexOf('.');
+    return lastDot >= 0 ? fullTypeName.substring(lastDot + 1) : fullTypeName;
 }
 
 async function showDependencyGraph() {
@@ -103,13 +251,13 @@ async function goToService() {
         const uri = vscode.Uri.file(selected.service.location.filePath);
         const position = new vscode.Position(
             selected.service.location.line - 1,
-            selected.service.location.column - 1
+            0
         );
         
         const document = await vscode.workspace.openTextDocument(uri);
         const editor = await vscode.window.showTextDocument(document);
         editor.selection = new vscode.Selection(position, position);
-        editor.revealRange(new vscode.Range(position, position));
+        editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
     }
 }
 

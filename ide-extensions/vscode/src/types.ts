@@ -31,6 +31,7 @@ export interface GraphService {
 export interface GraphInterface {
     name: string;
     fullName: string;
+    location?: GraphLocation | null;
 }
 
 export interface GraphLocation {

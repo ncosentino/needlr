@@ -1123,6 +1123,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     
+                    // Capture interface locations for navigation
+                    var interfaceInfos = interfaces.Select(i =>
+                    {
+                        var ifaceLocation = i.Locations.FirstOrDefault();
+                        var ifaceFilePath = ifaceLocation?.SourceTree?.FilePath;
+                        var ifaceLine = ifaceLocation?.GetLineSpan().StartLinePosition.Line + 1 ?? 0;
+                        return new InterfaceInfo(TypeDiscoveryHelper.GetFullyQualifiedName(i), ifaceFilePath, ifaceLine);
+                    }).ToArray();
+                    
                     // Check for [DeferToContainer] attribute - use declared types instead of discovered constructors
                     var deferredParams = TypeDiscoveryHelper.GetDeferToContainerParameterTypes(typeSymbol);
                     TypeDiscoveryHelper.ConstructorParameterInfo[] constructorParams;
@@ -1147,7 +1156,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     // Check if this type implements IDisposable or IAsyncDisposable
                     var isDisposable = TypeDiscoveryHelper.IsDisposableType(typeSymbol);
 
-                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath, sourceLine, isDisposable));
+                    injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath, sourceLine, isDisposable, interfaceInfos));
                 }
             }
 
@@ -3122,6 +3131,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 if (!TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
                     continue;
 
+                // Try to get interface locations from the assembly's ServiceCatalog
+                var interfaceLocationLookup = GetInterfaceLocationsFromServiceCatalog(assemblySymbol);
+
                 var assemblyTypes = new List<DiscoveredType>();
                 
                 foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
@@ -3143,9 +3155,29 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         continue;
 
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol)
+                    var interfaceSymbols = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var interfaces = interfaceSymbols
                         .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
                         .ToArray();
+                    
+                    // Get interface locations from ServiceCatalog lookup, falling back to symbol locations
+                    var interfaceInfos = interfaceSymbols.Select(i =>
+                    {
+                        var ifaceFullName = TypeDiscoveryHelper.GetFullyQualifiedName(i);
+                        
+                        // First try the ServiceCatalog lookup
+                        if (interfaceLocationLookup.TryGetValue(ifaceFullName, out var catalogInfo))
+                        {
+                            return catalogInfo;
+                        }
+                        
+                        // Fall back to symbol locations (works for source references)
+                        var ifaceLocation = i.Locations.FirstOrDefault();
+                        var ifaceFilePath = ifaceLocation?.SourceTree?.FilePath;
+                        var ifaceLine = ifaceLocation?.GetLineSpan().StartLinePosition.Line + 1 ?? 0;
+                        return new InterfaceInfo(ifaceFullName, ifaceFilePath, ifaceLine);
+                    }).ToArray();
+                    
                     var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
                     var constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() 
                         ?? Array.Empty<TypeDiscoveryHelper.ConstructorParameterInfo>();
@@ -3164,7 +3196,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         keyedValues,
                         sourceFilePath,
                         sourceLine,
-                        TypeDiscoveryHelper.IsDisposableType(typeSymbol));
+                        TypeDiscoveryHelper.IsDisposableType(typeSymbol),
+                        interfaceInfos);
 
                     assemblyTypes.Add(discoveredType);
                 }
@@ -3173,6 +3206,64 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     result[assemblySymbol.Name] = assemblyTypes;
                 }
+            }
+        }
+        
+        return result;
+    }
+
+    /// <summary>
+    /// Extracts interface location information from a referenced assembly's ServiceCatalog.
+    /// The ServiceCatalog is generated by Needlr and contains compile-time interface location data.
+    /// </summary>
+    private static Dictionary<string, InterfaceInfo> GetInterfaceLocationsFromServiceCatalog(IAssemblySymbol assemblySymbol)
+    {
+        var result = new Dictionary<string, InterfaceInfo>(StringComparer.Ordinal);
+        
+        // Look for the ServiceCatalog class in the Generated namespace
+        var serviceCatalogTypeName = $"{assemblySymbol.Name}.Generated.ServiceCatalog";
+        var serviceCatalogType = assemblySymbol.GetTypeByMetadataName(serviceCatalogTypeName);
+        
+        if (serviceCatalogType == null)
+            return result;
+        
+        // Find the Services property
+        var servicesProperty = serviceCatalogType.GetMembers("Services")
+            .OfType<IPropertySymbol>()
+            .FirstOrDefault();
+        
+        if (servicesProperty == null)
+            return result;
+        
+        // The Services property has an initializer with ServiceCatalogEntry array
+        // We need to parse the initializer to extract interface locations
+        // This requires looking at the declaring syntax reference
+        var syntaxRef = servicesProperty.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxRef == null)
+            return result;
+        
+        var syntax = syntaxRef.GetSyntax();
+        if (syntax == null)
+            return result;
+        
+        // Parse the array initializer to extract InterfaceEntry data
+        // The format is: new InterfaceEntry("fullName", "filePath", line)
+        var text = syntax.ToFullString();
+        
+        // Use regex to extract InterfaceEntry values
+        var interfaceEntryPattern = new System.Text.RegularExpressions.Regex(
+            @"new\s+global::NexusLabs\.Needlr\.Catalog\.InterfaceEntry\(\s*""([^""]+)""\s*,\s*(""([^""]+)""|null)\s*,\s*(\d+)\s*\)",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+        
+        foreach (System.Text.RegularExpressions.Match match in interfaceEntryPattern.Matches(text))
+        {
+            var fullName = match.Groups[1].Value;
+            var filePath = match.Groups[3].Success ? match.Groups[3].Value : null;
+            var line = int.Parse(match.Groups[4].Value);
+            
+            if (!result.ContainsKey(fullName))
+            {
+                result[fullName] = new InterfaceInfo(fullName, filePath, line);
             }
         }
         
