@@ -125,3 +125,7 @@ site/
 docs/api/dev/NexusLabs.Needlr*/
 docs/api/stable/NexusLabs.Needlr*/
 docs/api/v*/
+# Node.js
+node_modules/
+*.vsix
+
