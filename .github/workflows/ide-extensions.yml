@@ -1,0 +1,184 @@
+name: IDE Extensions
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 2.1.0)'
+        required: true
+        type: string
+      create_release:
+        description: 'Create GitHub Release with artifacts'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: '20'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  build-vscode:
+    name: Build VSCode Extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Update version in package.json
+        working-directory: ide-extensions/vscode
+        run: |
+          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
+
+      - name: Install dependencies
+        working-directory: ide-extensions/vscode
+        run: npm ci
+
+      - name: Compile TypeScript
+        working-directory: ide-extensions/vscode
+        run: npm run compile
+
+      - name: Package VSIX
+        working-directory: ide-extensions/vscode
+        run: npx vsce package --no-dependencies -o needlr-tools-${{ inputs.version }}.vsix
+
+      - name: Upload VSCode VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: ide-extensions/vscode/needlr-tools-${{ inputs.version }}.vsix
+
+  build-vs-codelens:
+    name: Build VS CodeLens Extension
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Update version in csproj
+        shell: pwsh
+        run: |
+          $csproj = 'ide-extensions/visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj'
+          $content = Get-Content $csproj -Raw
+          $content = $content -replace '<Version>[^<]+</Version>', "<Version>${{ inputs.version }}</Version>"
+          Set-Content $csproj $content
+
+      - name: Restore
+        run: dotnet restore ide-extensions/visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj
+
+      - name: Build
+        run: dotnet build ide-extensions/visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj --configuration Release --no-restore
+
+      - name: Rename VSIX with version
+        shell: pwsh
+        run: |
+          $source = 'ide-extensions/visualstudio/NeedlrCodeLens/bin/Release/net8.0-windows8.0/NeedlrCodeLens.vsix'
+          $dest = "ide-extensions/visualstudio/NeedlrCodeLens/bin/Release/net8.0-windows8.0/NeedlrCodeLens-${{ inputs.version }}.vsix"
+          Copy-Item $source $dest
+
+      - name: Upload VS CodeLens VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: vs-codelens-extension
+          path: ide-extensions/visualstudio/NeedlrCodeLens/bin/Release/net8.0-windows8.0/NeedlrCodeLens-${{ inputs.version }}.vsix
+
+  build-vs-toolwindow:
+    name: Build VS Tool Window Extension
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Update version in vsixmanifest
+        shell: pwsh
+        run: |
+          $manifest = 'ide-extensions/visualstudio/NeedlrToolsExtension/source.extension.vsixmanifest'
+          $content = Get-Content $manifest -Raw
+          $content = $content -replace 'Version="[^"]*"(\s+Language)', "Version=`"${{ inputs.version }}`"`$1"
+          Set-Content $manifest $content
+
+      - name: Restore
+        run: dotnet restore ide-extensions/visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj
+
+      - name: Build with MSBuild
+        run: msbuild ide-extensions/visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj /p:Configuration=Release /p:DeployExtension=false
+
+      - name: Rename VSIX with version
+        shell: pwsh
+        run: |
+          $source = 'ide-extensions/visualstudio/NeedlrToolsExtension/bin/Release/net48/win/NeedlrToolsExtension.vsix'
+          $dest = "ide-extensions/visualstudio/NeedlrToolsExtension/bin/Release/net48/win/NeedlrToolsExtension-${{ inputs.version }}.vsix"
+          Copy-Item $source $dest
+
+      - name: Upload VS Tool Window VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: vs-toolwindow-extension
+          path: ide-extensions/visualstudio/NeedlrToolsExtension/bin/Release/net48/win/NeedlrToolsExtension-${{ inputs.version }}.vsix
+
+  release:
+    name: Create GitHub Release
+    needs: [build-vscode, build-vs-codelens, build-vs-toolwindow]
+    runs-on: ubuntu-latest
+    if: ${{ inputs.create_release }}
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f -name "*.vsix"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ide-v${{ inputs.version }}
+          name: IDE Extensions v${{ inputs.version }}
+          body: |
+            ## Needlr IDE Extensions v${{ inputs.version }}
+            
+            ### Downloads
+            
+            | Extension | Description |
+            |-----------|-------------|
+            | `needlr-tools-${{ inputs.version }}.vsix` | **VSCode** - Tree view, CodeLens, dependency visualization |
+            | `NeedlrCodeLens-${{ inputs.version }}.vsix` | **Visual Studio** - CodeLens with inline popup |
+            | `NeedlrToolsExtension-${{ inputs.version }}.vsix` | **Visual Studio** - Tool window with service tree |
+            
+            ### Installation
+            
+            **VSCode:** 
+            - Download the `.vsix` file
+            - Run: `code --install-extension needlr-tools-${{ inputs.version }}.vsix`
+            
+            **Visual Studio:**
+            - Download the `.vsix` file(s)
+            - Double-click to install
+            - Restart Visual Studio
+          draft: false
+          prerelease: ${{ contains(inputs.version, '-') }}
+          files: |
+            artifacts/**/*.vsix
