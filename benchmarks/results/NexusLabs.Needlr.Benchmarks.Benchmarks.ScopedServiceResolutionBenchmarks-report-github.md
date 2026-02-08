@@ -12,6 +12,6 @@ WarmupCount=3
 ```
 | Method                                  | Mean     | Error     | StdDev    | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
 |---------------------------------------- |---------:|----------:|----------:|------:|-----:|-------:|----------:|------------:|
-| ManualDI_CreateScopeAndResolve          | 2.159 μs | 0.0103 μs | 0.0027 μs |  1.00 |    1 | 0.0229 |     408 B |        1.00 |
-| Needlr_Reflection_CreateScopeAndResolve | 2.148 μs | 0.0138 μs | 0.0021 μs |  0.99 |    1 | 0.0229 |     408 B |        1.00 |
-| Needlr_SourceGen_CreateScopeAndResolve  | 2.236 μs | 0.0254 μs | 0.0066 μs |  1.04 |    1 | 0.0229 |     408 B |        1.00 |
+| ManualDI_CreateScopeAndResolve          | 2.151 μs | 0.0105 μs | 0.0027 μs |  1.00 |    1 | 0.0229 |     408 B |        1.00 |
+| Needlr_Reflection_CreateScopeAndResolve | 2.148 μs | 0.0184 μs | 0.0048 μs |  1.00 |    1 | 0.0229 |     408 B |        1.00 |
+| Needlr_SourceGen_CreateScopeAndResolve  | 2.259 μs | 0.0100 μs | 0.0026 μs |  1.05 |    1 | 0.0229 |     408 B |        1.00 |

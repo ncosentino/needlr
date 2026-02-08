@@ -10,8 +10,8 @@ Job=ShortRun  InvocationCount=1  IterationCount=5
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
 ```
-| Method                                 | Mean        | Error      | StdDev    | Ratio  | RatioSD | Rank | Allocated | Alloc Ratio |
-|--------------------------------------- |------------:|-----------:|----------:|-------:|--------:|-----:|----------:|------------:|
-| ManualDI_BuildAndResolveFirst          |    30.30 μs |   2.606 μs |  0.403 μs |   1.00 |    0.02 |    1 |         - |          NA |
-| Needlr_Reflection_BuildAndResolveFirst | 5,886.22 μs | 140.363 μs | 36.452 μs | 194.31 |    2.58 |    3 | 1333928 B |          NA |
-| Needlr_SourceGen_BuildAndResolveFirst  |   462.42 μs |  75.092 μs | 11.620 μs |  15.27 |    0.39 |    2 |  206848 B |          NA |
+| Method                                 | Mean        | Error    | StdDev    | Median      | Ratio  | RatioSD | Rank | Allocated | Alloc Ratio |
+|--------------------------------------- |------------:|---------:|----------:|------------:|-------:|--------:|-----:|----------:|------------:|
+| ManualDI_BuildAndResolveFirst          |    33.43 μs | 40.28 μs | 10.461 μs |    26.15 μs |   1.07 |    0.42 |    1 |         - |          NA |
+| Needlr_Reflection_BuildAndResolveFirst | 5,901.96 μs | 11.98 μs |  1.854 μs | 5,901.88 μs | 189.79 |   48.61 |    3 | 1333928 B |          NA |
+| Needlr_SourceGen_BuildAndResolveFirst  |   468.99 μs | 88.84 μs | 23.071 μs |   470.80 μs |  15.08 |    3.91 |    2 |  206848 B |          NA |

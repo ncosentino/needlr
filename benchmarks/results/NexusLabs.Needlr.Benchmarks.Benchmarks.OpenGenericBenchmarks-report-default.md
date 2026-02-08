@@ -8,8 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                               | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
-------------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|-------:|----------:|------------:|
- ManualDI_ResolveOpenGeneric          | 20.57 ns | 0.312 ns | 0.081 ns |  1.00 |    0.01 |    1 | 0.0014 |      24 B |        1.00 |
- Needlr_Reflection_ResolveOpenGeneric | 19.10 ns | 1.732 ns | 0.450 ns |  0.93 |    0.02 |    1 | 0.0014 |      24 B |        1.00 |
- Needlr_SourceGen_ResolveOpenGeneric  | 18.80 ns | 0.246 ns | 0.038 ns |  0.91 |    0.00 |    1 | 0.0014 |      24 B |        1.00 |
+ Method                               | Mean     | Error    | StdDev   | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
+------------------------------------- |---------:|---------:|---------:|------:|-----:|-------:|----------:|------------:|
+ ManualDI_ResolveOpenGeneric          | 19.87 ns | 0.284 ns | 0.044 ns |  1.00 |    1 | 0.0014 |      24 B |        1.00 |
+ Needlr_Reflection_ResolveOpenGeneric | 19.07 ns | 0.489 ns | 0.127 ns |  0.96 |    1 | 0.0014 |      24 B |        1.00 |
+ Needlr_SourceGen_ResolveOpenGeneric  | 19.20 ns | 0.661 ns | 0.172 ns |  0.97 |    1 | 0.0014 |      24 B |        1.00 |
