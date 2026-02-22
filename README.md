@@ -24,6 +24,7 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 - **Post-Build Plugins**: Execute configuration after the main service collection has been built
 - **Configuration Integration**: Automatic IConfiguration registration and support
 - **Assembly Provider**: Flexible assembly scanning with filtering and sorting options
+- **AI Integrations**: First-class support for Semantic Kernel and Microsoft Agent Framework
 
 ## 📚 Documentation
 
@@ -123,6 +124,9 @@ Add the core package and choose your discovery strategy:
 
 <!-- Optional: Semantic Kernel integration -->
 <PackageReference Include="NexusLabs.Needlr.SemanticKernel" />
+
+<!-- Optional: Microsoft Agent Framework integration -->
+<PackageReference Include="NexusLabs.Needlr.AgentFramework" />
 ```
 
 ## Core Concepts
@@ -564,7 +568,81 @@ await webApplication.RunAsync();
 - Scanning assemblies not known at compile time
 - Using Scrutor for advanced registration patterns
 
+## AI Integrations
+
+Needlr provides first-class integrations for AI agent frameworks, handling function discovery, DI wiring, and factory lifecycle — so you focus on writing agent functions, not plumbing.
+
+### Microsoft Agent Framework
+
+[Microsoft Agent Framework](https://github.com/microsoft/agent-framework) (built on `Microsoft.Extensions.AI`) is Microsoft's multi-agent orchestration framework. Needlr's `NexusLabs.Needlr.AgentFramework` integration auto-discovers methods marked with `[AgentFunction]` and wires them as `AIFunction` tools on any `IChatClient`.
+
+```csharp
+using NexusLabs.Needlr.AgentFramework;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
+
+// Mark methods as agent tools
+internal sealed class WeatherTools
+{
+    [AgentFunction]
+    [Description("Gets the current temperature for a city.")]
+    public string GetTemperature(string city) => $"22°C in {city}";
+}
+
+// Wire everything up via Needlr
+var agentFactory = new Syringe()
+    .UsingReflection()
+    .UsingAgentFramework(af => af
+        .Configure(opts => opts.ChatClientFactory = sp =>
+            // provide your IChatClient here (e.g. AzureOpenAI, OpenAI, etc.)
+            sp.GetRequiredService<IChatClient>())
+        .AddAgentFunctionsFromAssemblies())
+    .BuildServiceProvider(configuration)
+    .GetRequiredService<IAgentFactory>();
+
+// Create a scoped agent — optionally restrict which function types it has access to
+var agent = agentFactory.CreateAgent(opts =>
+{
+    opts.Instructions = "You are a helpful weather assistant.";
+    opts.FunctionTypes = [typeof(WeatherTools)];
+});
+
+// Run with multi-turn session state
+var session = await agent.CreateSessionAsync();
+var response = await agent.RunAsync("What is the temperature in Tokyo?", session);
+Console.WriteLine(response.Text);
+```
+
+**Key features:**
+- `[AgentFunction]` attribute marks methods for discovery (static or instance)
+- `IAgentFactory` is registered as a singleton — create as many agents as needed
+- `AgentFactoryOptions.FunctionTypes` scopes tools per-agent from a shared pool
+- Source generator (`NexusLabs.Needlr.AgentFramework.Generators`) enables AOT-safe compile-time discovery
+
+### Semantic Kernel
+
+Needlr's `NexusLabs.Needlr.SemanticKernel` integration auto-discovers `[KernelFunction]`-attributed plugin classes and wires them into a `Kernel` via `IKernelFactory`.
+
+```csharp
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.SemanticKernel;
+
+var kernelFactory = new Syringe()
+    .UsingReflection()
+    .UsingSemanticKernel(sk => sk
+        .Configure(opts => opts.KernelBuilderFactory = sp =>
+            Kernel.CreateBuilder()
+                .AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey))
+        .AddKernelPluginsFromAssemblies())
+    .BuildServiceProvider(configuration)
+    .GetRequiredService<IKernelFactory>();
+
+var kernel = kernelFactory.CreateKernel();
+var result = await kernel.InvokePromptAsync("What is the weather today?");
+```
+
 ## Requirements
 
-- .NET 9 or later
+- .NET 10 or later
 - C# 13.0 or later

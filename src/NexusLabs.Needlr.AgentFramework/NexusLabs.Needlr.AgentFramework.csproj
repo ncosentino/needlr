@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <!-- Main generator for TypeRegistry generation -->
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <!-- Include AgentFramework generators in the NuGet package -->
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.AgentFramework.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.AgentFramework.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="..\NexusLabs.Needlr.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

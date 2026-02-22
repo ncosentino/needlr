@@ -32,6 +32,9 @@
   <Folder Name="/Examples/SemanticKernel/">
     <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
   </Folder>
+  <Folder Name="/Examples/AgentFramework/">
+    <Project Path="Examples/AgentFramework/SimpleAgentFrameworkApp/SimpleAgentFrameworkApp.csproj" />
+  </Folder>
   <Folder Name="/Examples/SignalR/">
     <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
   </Folder>
@@ -75,6 +78,11 @@
     <Project Path="NexusLabs.Needlr.SemanticKernel.Generators/NexusLabs.Needlr.SemanticKernel.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.SemanticKernel.Tests/NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
+  </Folder>
+  <Folder Name="/Integrations/AgentFramework/">
+    <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.csproj" />
   </Folder>
   <Folder Name="/Integrations/SignalR/">
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
