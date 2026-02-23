@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.AgentFramework.FunctionScanners;
 
@@ -12,6 +13,35 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// </summary>
 public static class AgentFrameworkSyringeExtensions
 {
+    /// <summary>
+    /// Sets the <see cref="IChatClient"/> used by all agents created from the factory.
+    /// This is the preferred alternative to calling
+    /// <see cref="Configure"/> and setting <see cref="AgentFrameworkConfigureOptions.ChatClientFactory"/>.
+    /// </summary>
+    public static AgentFrameworkSyringe UsingChatClient(
+        this AgentFrameworkSyringe syringe,
+        IChatClient chatClient)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(chatClient);
+
+        return syringe.Configure(opts => opts.ChatClientFactory = _ => chatClient);
+    }
+
+    /// <summary>
+    /// Sets a factory that creates the <see cref="IChatClient"/> used by all agents.
+    /// The factory receives the DI <see cref="IServiceProvider"/> for resolving dependencies.
+    /// </summary>
+    public static AgentFrameworkSyringe UsingChatClient(
+        this AgentFrameworkSyringe syringe,
+        Func<IServiceProvider, IChatClient> chatClientFactory)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(chatClientFactory);
+
+        return syringe.Configure(opts => opts.ChatClientFactory = chatClientFactory);
+    }
+
     public static AgentFrameworkSyringe Configure(
         this AgentFrameworkSyringe syringe,
         Action<AgentFrameworkConfigureOptions> configure)
