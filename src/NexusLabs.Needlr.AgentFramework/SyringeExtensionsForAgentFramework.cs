@@ -78,6 +78,27 @@ public static class SyringeExtensionsForAgentFramework
                     ServiceProvider = provider,
                 };
                 afSyringe = configure.Invoke(afSyringe);
+
+                // Auto-populate from [ModuleInitializer] bootstrap if nothing was explicitly configured.
+                // Explicit calls (Add*FromGenerated, AddAgentFunctions*, etc.) take precedence.
+                if ((afSyringe.FunctionTypes is null || afSyringe.FunctionTypes.Count == 0) &&
+                    AgentFrameworkGeneratedBootstrap.TryGetFunctionTypes(out var functionProvider))
+                {
+                    afSyringe = afSyringe with { FunctionTypes = functionProvider().ToList() };
+                }
+
+                if ((afSyringe.FunctionGroupMap is null || afSyringe.FunctionGroupMap.Count == 0) &&
+                    AgentFrameworkGeneratedBootstrap.TryGetGroupTypes(out var groupProvider))
+                {
+                    afSyringe = afSyringe with { FunctionGroupMap = groupProvider() };
+                }
+
+                if ((afSyringe.AgentTypes is null || afSyringe.AgentTypes.Count == 0) &&
+                    AgentFrameworkGeneratedBootstrap.TryGetAgentTypes(out var agentProvider))
+                {
+                    afSyringe = afSyringe with { AgentTypes = agentProvider().ToList() };
+                }
+
                 return afSyringe.BuildAgentFactory();
             });
         });

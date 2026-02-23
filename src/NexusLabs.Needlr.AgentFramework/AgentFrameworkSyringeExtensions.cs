@@ -222,8 +222,38 @@ public static class AgentFrameworkSyringeExtensions
         return syringe.MergeFunctionGroups(groups);
     }
 
-    private static AgentFrameworkSyringe MergeFunctionGroups(
+    /// <summary>
+    /// Registers a single declared agent type for string-based lookup via
+    /// <see cref="IAgentFactory.CreateAgent(string)"/>.
+    /// The type must be decorated with <see cref="NeedlrAiAgentAttribute"/>.
+    /// </summary>
+    public static AgentFrameworkSyringe AddAgent<TAgent>(
+        this AgentFrameworkSyringe syringe)
+        where TAgent : class
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe.AddAgentsFromGenerated([typeof(TAgent)]);
+    }
+
+    /// <summary>
+    /// Registers a compile-time generated list of declared agent types for
+    /// string-based lookup via <see cref="IAgentFactory.CreateAgent(string)"/>.
+    /// Typically called with the output of the generated <c>AgentRegistry.AllAgentTypes</c>.
+    /// </summary>
+    public static AgentFrameworkSyringe AddAgentsFromGenerated(
         this AgentFrameworkSyringe syringe,
+        IReadOnlyList<Type> agentTypes)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(agentTypes);
+
+        return syringe with
+        {
+            AgentTypes = (syringe.AgentTypes ?? []).Concat(agentTypes).Distinct().ToList()
+        };
+    }
+
+    private static AgentFrameworkSyringe MergeFunctionGroups(        this AgentFrameworkSyringe syringe,
         IReadOnlyDictionary<string, IReadOnlyList<Type>> newGroups)
     {
         if (newGroups.Count == 0)

@@ -3,7 +3,7 @@ using Microsoft.Agents.AI;
 namespace NexusLabs.Needlr.AgentFramework;
 
 /// <summary>
-/// Per-agent configuration options passed to <see cref="IAgentFactory.CreateAgent"/>.
+/// Per-agent configuration options passed to <c>IAgentFactory.CreateAgent(configure)</c>.
 /// </summary>
 public sealed class AgentFactoryOptions
 {

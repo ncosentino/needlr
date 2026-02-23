@@ -25,6 +25,8 @@ public sealed record AgentFrameworkSyringe
 
     internal IReadOnlyDictionary<string, IReadOnlyList<Type>>? FunctionGroupMap { get; init; }
 
+    internal List<Type>? AgentTypes { get; init; } = [];
+
     public IAgentFactory BuildAgentFactory()
     {
         var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
@@ -35,10 +37,14 @@ public sealed record AgentFrameworkSyringe
             .Distinct()
             .ToList();
 
+        var agentTypeMap = (AgentTypes ?? [])
+            .ToDictionary(t => t.Name, t => t);
+
         return new AgentFactory(
             serviceProvider: ServiceProvider,
             configureCallbacks: ConfigureAgentFactory ?? [],
             functionTypes: allFunctionTypes,
-            functionGroupMap: FunctionGroupMap);
+            functionGroupMap: FunctionGroupMap,
+            agentTypeMap: agentTypeMap);
     }
 }

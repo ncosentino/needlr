@@ -18,19 +18,56 @@ internal sealed class AgentFactory : IAgentFactory
     private readonly Lazy<AgentFrameworkConfigureOptions> _lazyConfiguredOptions;
     private readonly Lazy<IReadOnlyDictionary<Type, IReadOnlyList<AIFunction>>> _lazyFunctionsCache;
 
+    private readonly IReadOnlyDictionary<string, Type> _agentTypeMap;
+
     public AgentFactory(
         IServiceProvider serviceProvider,
         List<Action<AgentFrameworkConfigureOptions>> configureCallbacks,
         IReadOnlyList<Type> functionTypes,
-        IReadOnlyDictionary<string, IReadOnlyList<Type>>? functionGroupMap = null)
+        IReadOnlyDictionary<string, IReadOnlyList<Type>>? functionGroupMap = null,
+        IReadOnlyDictionary<string, Type>? agentTypeMap = null)
     {
         _serviceProvider = serviceProvider;
         _configureCallbacks = configureCallbacks;
         _functionTypes = functionTypes;
         _functionGroupMap = functionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>();
+        _agentTypeMap = agentTypeMap ?? new Dictionary<string, Type>();
 
         _lazyConfiguredOptions = new(() => BuildConfiguredOptions());
         _lazyFunctionsCache = new(() => BuildFunctionsCache());
+    }
+
+    public AIAgent CreateAgent<TAgent>() where TAgent : class
+        => CreateAgentFromType(typeof(TAgent));
+
+    public AIAgent CreateAgent(string agentClassName)
+    {
+        ArgumentNullException.ThrowIfNull(agentClassName);
+
+        if (!_agentTypeMap.TryGetValue(agentClassName, out var type))
+            throw new InvalidOperationException(
+                $"No agent named '{agentClassName}' is registered. " +
+                $"Ensure the class is decorated with [NeedlrAiAgent] and registered via " +
+                $"AddAgent<T>(), AddAgentsFromGenerated(), or the source generator [ModuleInitializer].");
+
+        return CreateAgentFromType(type);
+    }
+
+    private AIAgent CreateAgentFromType(Type agentType)
+    {
+        var attr = agentType.GetCustomAttribute<NeedlrAiAgentAttribute>()
+            ?? throw new InvalidOperationException(
+                $"'{agentType.Name}' is not decorated with [NeedlrAiAgent]. " +
+                $"Apply [NeedlrAiAgent] to the class or use CreateAgent(configure) to set options manually.");
+
+        return CreateAgent(opts =>
+        {
+            opts.Name = agentType.Name;
+            opts.Description = attr.Description;
+            opts.Instructions = attr.Instructions;
+            opts.FunctionTypes = attr.FunctionTypes;
+            opts.FunctionGroups = attr.FunctionGroups;
+        });
     }
 
     public AIAgent CreateAgent(Action<AgentFactoryOptions>? configure = null)

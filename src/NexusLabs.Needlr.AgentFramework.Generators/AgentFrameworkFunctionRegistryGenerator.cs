@@ -18,36 +18,54 @@ namespace NexusLabs.Needlr.AgentFramework.Generators;
 /// Source generator for Microsoft Agent Framework functions.
 /// Discovers classes with [AgentFunction] methods and generates a compile-time type registry.
 /// Also discovers classes with [AgentFunctionGroup] attributes and generates a group registry.
+/// Also discovers classes with [NeedlrAiAgent] attributes and generates an agent registry.
+/// Always emits a [ModuleInitializer] that auto-registers all discovered types with
+/// AgentFrameworkGeneratedBootstrap on assembly load.
 /// </summary>
 [Generator]
 public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 {
     private const string AgentFunctionAttributeName = "NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute";
     private const string AgentFunctionGroupAttributeName = "NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute";
+    private const string NeedlrAiAgentAttributeName = "NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Pipeline 1 — [AgentFunction] method discovery → AgentFrameworkFunctionRegistry
-        var classDeclarations = context.SyntaxProvider
+        // Pipeline A: [AgentFunction] method-bearing classes → AgentFrameworkFunctionRegistry
+        var functionClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetAgentFunctionTypeInfo(ctx, ct))
             .Where(static m => m is not null);
 
-        var compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
-        context.RegisterSourceOutput(compilationAndClasses,
-            static (spc, source) => Execute(source.Left, source.Right!, spc));
-
-        // Pipeline 2 — [AgentFunctionGroup] class discovery → AgentFrameworkFunctionGroupRegistry
-        var classGroupDeclarations = context.SyntaxProvider
+        // Pipeline B: [AgentFunctionGroup] class-level annotations → AgentFrameworkFunctionGroupRegistry
+        var groupClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetAgentFunctionGroupEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        var compilationAndGroups = context.CompilationProvider.Combine(classGroupDeclarations.Collect());
-        context.RegisterSourceOutput(compilationAndGroups,
-            static (spc, source) => ExecuteGroups(source.Left, source.Right!, spc));
+        // Pipeline C: [NeedlrAiAgent] declared agent types → AgentRegistry + partial companions
+        var agentClasses = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                NeedlrAiAgentAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GetNeedlrAiAgentTypeInfo(ctx, ct))
+            .Where(static m => m is not null);
+
+        // Unified output: all three pipelines combined with compilation metadata.
+        // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
+        var combined = functionClasses.Collect()
+            .Combine(groupClasses.Collect())
+            .Combine(agentClasses.Collect())
+            .Combine(context.CompilationProvider);
+
+        context.RegisterSourceOutput(combined,
+            static (spc, data) =>
+            {
+                var (((functionData, groupData), agentData), compilation) = data;
+                ExecuteAll(functionData, groupData, agentData, compilation, spc);
+            });
     }
 
     private static AgentFunctionTypeInfo? GetAgentFunctionTypeInfo(
@@ -139,6 +157,28 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return entries.ToImmutable();
     }
 
+    private static NeedlrAiAgentTypeInfo? GetNeedlrAiAgentTypeInfo(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return null;
+
+        var classDeclaration = context.TargetNode as ClassDeclarationSyntax;
+        var isPartial = classDeclaration?.Modifiers.Any(m => m.ValueText == "partial") ?? false;
+
+        var namespaceName = typeSymbol.ContainingNamespace?.IsGlobalNamespace == true
+            ? null
+            : typeSymbol.ContainingNamespace?.ToDisplayString();
+
+        return new NeedlrAiAgentTypeInfo(
+            GetFullyQualifiedName(typeSymbol),
+            typeSymbol.Name,
+            namespaceName,
+            isPartial);
+    }
+
     private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.DeclaredAccessibility == Accessibility.Private ||
@@ -186,45 +226,56 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return string.Join(".", segments.Where(s => s.Length > 0));
     }
 
-    private static void Execute(
+    private static void ExecuteAll(
+        ImmutableArray<AgentFunctionTypeInfo?> functionData,
+        ImmutableArray<ImmutableArray<AgentFunctionGroupEntry>> groupData,
+        ImmutableArray<NeedlrAiAgentTypeInfo?> agentData,
         Compilation compilation,
-        ImmutableArray<AgentFunctionTypeInfo?> types,
-        SourceProductionContext context)
+        SourceProductionContext spc)
     {
-        var validTypes = types
+        var assemblyName = compilation.AssemblyName ?? "UnknownAssembly";
+        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+
+        var validFunctionTypes = functionData
             .Where(t => t.HasValue)
             .Select(t => t!.Value)
             .ToList();
 
-        if (validTypes.Count == 0)
-            return;
-
-        var assemblyName = compilation.AssemblyName ?? "UnknownAssembly";
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
-
-        var source = GenerateRegistrySource(validTypes, safeAssemblyName);
-        context.AddSource("AgentFrameworkFunctions.g.cs", SourceText.From(source, Encoding.UTF8));
-    }
-
-    private static void ExecuteGroups(
-        Compilation compilation,
-        ImmutableArray<ImmutableArray<AgentFunctionGroupEntry>> groupArrays,
-        SourceProductionContext context)
-    {
-        var allEntries = groupArrays.SelectMany(a => a).ToList();
-
-        if (allEntries.Count == 0)
-            return;
-
-        var groupedByName = allEntries
+        var allGroupEntries = groupData.SelectMany(a => a).ToList();
+        var groupedByName = allGroupEntries
             .GroupBy(e => e.GroupName)
             .ToDictionary(g => g.Key, g => g.Select(e => e.TypeName).Distinct().ToList());
 
-        var assemblyName = compilation.AssemblyName ?? "UnknownAssembly";
-        var safeAssemblyName = SanitizeIdentifier(assemblyName);
+        var validAgentTypes = agentData
+            .Where(t => t.HasValue)
+            .Select(t => t!.Value)
+            .ToList();
 
-        var source = GenerateGroupRegistrySource(groupedByName, safeAssemblyName);
-        context.AddSource("AgentFrameworkFunctionGroups.g.cs", SourceText.From(source, Encoding.UTF8));
+        // Always emit all registries (may be empty) and the bootstrap
+        spc.AddSource("AgentFrameworkFunctions.g.cs",
+            SourceText.From(GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("AgentFrameworkFunctionGroups.g.cs",
+            SourceText.From(GenerateGroupRegistrySource(groupedByName, safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("AgentRegistry.g.cs",
+            SourceText.From(GenerateAgentRegistrySource(validAgentTypes, safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("NeedlrAgentFrameworkBootstrap.g.cs",
+            SourceText.From(GenerateBootstrapSource(safeAssemblyName), Encoding.UTF8));
+
+        // Partial companions for [NeedlrAiAgent] classes declared as partial
+        foreach (var agentType in validAgentTypes.Where(a => a.IsPartial))
+        {
+            var safeTypeName = agentType.TypeName
+                .Replace("global::", "")
+                .Replace(".", "_")
+                .Replace("<", "_")
+                .Replace(">", "_");
+
+            spc.AddSource($"{safeTypeName}.NeedlrAiAgent.g.cs",
+                SourceText.From(GeneratePartialCompanionSource(agentType), Encoding.UTF8));
+        }
     }
 
     private static string GenerateRegistrySource(
@@ -321,6 +372,100 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
+    private static string GenerateAgentRegistrySource(
+        List<NeedlrAiAgentTypeInfo> types,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("// Needlr AgentFramework Agent Registry");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// Generated registry for agent types declared with [NeedlrAiAgent], discovered at compile time.");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static class AgentRegistry");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// All types decorated with [NeedlrAiAgent], discovered at compile time.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public static IReadOnlyList<Type> AllAgentTypes { get; } = new Type[]");
+        sb.AppendLine("    {");
+
+        foreach (var type in types)
+        {
+            sb.AppendLine($"        typeof({type.TypeName}),");
+        }
+
+        sb.AppendLine("    };");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// Gets the number of agent types discovered at compile time.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine($"    public static int Count => {types.Count};");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
+
+    private static string GenerateBootstrapSource(string safeAssemblyName)
+    {
+        return $@"// <auto-generated/>
+// Needlr AgentFramework Module Initializer
+#nullable enable
+
+using System.Runtime.CompilerServices;
+
+namespace {safeAssemblyName}.Generated;
+
+/// <summary>
+/// Auto-registers source-generated Agent Framework types with the Needlr bootstrap.
+/// Fires automatically when the assembly loads — no explicit <c>Add*FromGenerated()</c> calls needed.
+/// </summary>
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute(""NexusLabs.Needlr.AgentFramework.Generators"", ""1.0.0"")]
+internal static class NeedlrAgentFrameworkModuleInitializer
+{{
+    [ModuleInitializer]
+    internal static void Initialize()
+    {{
+        global::NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap.Register(
+            () => AgentFrameworkFunctionRegistry.AllFunctionTypes,
+            () => AgentFrameworkFunctionGroupRegistry.AllGroups,
+            () => AgentRegistry.AllAgentTypes);
+    }}
+}}
+";
+    }
+
+    private static string GeneratePartialCompanionSource(NeedlrAiAgentTypeInfo agentType)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+
+        if (agentType.NamespaceName is not null)
+        {
+            sb.AppendLine($"namespace {agentType.NamespaceName};");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"partial class {agentType.ClassName}");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>The declared name of this agent, equal to the class name.</summary>");
+        sb.AppendLine($"    public static string AgentName => nameof({agentType.ClassName});");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
+
     private readonly struct AgentFunctionTypeInfo
     {
         public AgentFunctionTypeInfo(string typeName, string assemblyName)
@@ -343,5 +488,21 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
         public string TypeName { get; }
         public string GroupName { get; }
+    }
+
+    private readonly struct NeedlrAiAgentTypeInfo
+    {
+        public NeedlrAiAgentTypeInfo(string typeName, string className, string? namespaceName, bool isPartial)
+        {
+            TypeName = typeName;
+            ClassName = className;
+            NamespaceName = namespaceName;
+            IsPartial = isPartial;
+        }
+
+        public string TypeName { get; }
+        public string ClassName { get; }
+        public string? NamespaceName { get; }
+        public bool IsPartial { get; }
     }
 }
