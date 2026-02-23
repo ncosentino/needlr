@@ -1,13 +1,13 @@
 using Azure;
 using Azure.AI.OpenAI;
 
-using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
+using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -29,7 +29,7 @@ IChatClient chatClient = new AzureOpenAIClient(
         ?? throw new InvalidOperationException("No AzureOpenAI:DeploymentName set"))
     .AsIChatClient();
 
-// Needlr discovers all [AgentFunction] methods across the assembly at startup.
+// Needlr discovers all [AgentFunction] and [AgentFunctionGroup] at startup.
 // IAgentFactory is injected wherever you need to create agents.
 var agentFactory = new Syringe()
     .UsingReflection()
@@ -40,68 +40,59 @@ var agentFactory = new Syringe()
     .BuildServiceProvider(configuration)
     .GetRequiredService<IAgentFactory>();
 
-// ResearchAgent: scoped to the "research" function group via [AgentFunctionGroup("research")].
-// Adding a new function class with [AgentFunctionGroup("research")] auto-includes it here.
-var researchAgent = agentFactory.CreateAgent(opts =>
+// TriageAgent: no tools — it reasons about the question and routes via handoff.
+var triageAgent = agentFactory.CreateAgent(opts =>
 {
-    opts.Name = "ResearchAgent";
+    opts.Name = "TriageAgent";
     opts.Instructions = """
-        You are a research assistant. Use your tools to gather all available facts about Nick —
-        his favorite cities, the countries he has lived in, his hobbies, and his food preferences.
-        Compile a thorough summary of everything you find. Include all details.
-        """;
-    opts.FunctionGroups = ["research"];
-});
-
-// WriterAgent: pure LLM — no tools needed. FunctionTypes = [] opts it out of all functions.
-var writerAgent = agentFactory.CreateAgent(opts =>
-{
-    opts.Name = "WriterAgent";
-    opts.Instructions = """
-        You are a skilled writer. You will receive a research summary about a person named Nick.
-        Turn it into a short, engaging personal profile — friendly, narrative tone, two paragraphs.
+        You are a triage assistant. Based on the question, decide whether to hand off to the
+        GeographyAgent (for questions about Nick's cities, countries, travel) or the LifestyleAgent
+        (for questions about Nick's hobbies, food preferences, or daily life).
+        Do not answer directly — always hand off to the right specialist.
         """;
     opts.FunctionTypes = [];
 });
 
-// Connect the agents: research output flows directly into the writer via the MAF workflow graph.
-var workflow = new WorkflowBuilder(researchAgent)
-    .AddEdge(researchAgent, writerAgent)
-    .Build();
+// GeographyAgent: has access only to geography functions via the "geography" group.
+var geographyAgent = agentFactory.CreateAgent(opts =>
+{
+    opts.Name = "GeographyAgent";
+    opts.Instructions = "You are Nick's geography expert. Answer questions about his cities and countries.";
+    opts.FunctionGroups = ["geography"];
+});
 
-Console.WriteLine("=== Needlr + Microsoft Agent Framework: Multi-Agent Research Pipeline ===");
+// LifestyleAgent: has access only to lifestyle functions via the "lifestyle" group.
+var lifestyleAgent = agentFactory.CreateAgent(opts =>
+{
+    opts.Name = "LifestyleAgent";
+    opts.Instructions = "You are Nick's lifestyle expert. Answer questions about his hobbies and food.";
+    opts.FunctionGroups = ["lifestyle"];
+});
+
+// BuildHandoffWorkflow is a Needlr helper that wraps MAF's handoff builder.
+// It hides the asymmetric API (where you'd otherwise pass triageAgent twice).
+var workflow = agentFactory.BuildHandoffWorkflow(
+    triageAgent,
+    (geographyAgent, "For questions about Nick's cities, countries, or travel"),
+    (lifestyleAgent, "For questions about Nick's hobbies, food, or daily life"));
+
+Console.WriteLine("=== Needlr + MAF: Triage → Handoff Multi-Agent Workflow ===");
 Console.WriteLine();
 
 await using StreamingRun run = await InProcessExecution.RunStreamingAsync(
     workflow,
-    new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, "Research everything about Nick and pass it along."));
+    new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, "What are Nick's favorite cities and his top hobbies?"));
 
 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-string currentExecutor = "";
-await foreach (WorkflowEvent evt in run.WatchStreamAsync())
+// CollectAgentResponsesAsync is a Needlr helper that replaces the manual
+// await-foreach + Dictionary<string, StringBuilder> pattern.
+var responses = await run.CollectAgentResponsesAsync();
+
+foreach (var (executorId, text) in responses)
 {
-    if (evt is AgentResponseUpdateEvent update && !string.IsNullOrEmpty(update.Data?.ToString()))
-    {
-        if (currentExecutor != update.ExecutorId)
-        {
-            if (currentExecutor != "")
-                Console.WriteLine();
-            currentExecutor = update.ExecutorId;
-            Console.WriteLine($"--- {currentExecutor} ---");
-        }
-
-        Console.Write(update.Data);
-    }
-    else if (evt is ExecutorFailedEvent failure)
-    {
-        Console.Error.WriteLine($"[ERROR] {failure.ExecutorId}: {failure.Data?.Message ?? failure.Data?.ToString()}");
-    }
-    else if (evt is WorkflowErrorEvent workflowError)
-    {
-        Console.Error.WriteLine($"[WORKFLOW ERROR] {workflowError.Exception?.Message ?? workflowError.Exception?.ToString()}");
-    }
+    Console.WriteLine($"--- {executorId} ---");
+    Console.WriteLine(text);
+    Console.WriteLine();
 }
-
-Console.WriteLine();
 

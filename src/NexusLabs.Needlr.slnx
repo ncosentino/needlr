@@ -82,6 +82,7 @@
   <Folder Name="/Integrations/AgentFramework/">
     <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Workflows/NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.csproj" />
   </Folder>
   <Folder Name="/Integrations/SignalR/">

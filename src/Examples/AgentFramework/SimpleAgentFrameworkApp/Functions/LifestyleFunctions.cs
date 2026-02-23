@@ -7,7 +7,7 @@ namespace SimpleAgentFrameworkApp;
 /// <summary>
 /// Static function class — no DI dependencies needed, all data is hard-coded.
 /// </summary>
-[AgentFunctionGroup("research")]
+[AgentFunctionGroup("lifestyle")]
 internal static class LifestyleFunctions
 {
     [AgentFunction]
