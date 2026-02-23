@@ -40,59 +40,77 @@ var agentFactory = new Syringe()
     .BuildServiceProvider(configuration)
     .GetRequiredService<IAgentFactory>();
 
-// TriageAgent: no tools — it reasons about the question and routes via handoff.
+// TriageAgent: no tools — reasons about the question and routes via handoff.
 var triageAgent = agentFactory.CreateAgent(opts =>
 {
     opts.Name = "TriageAgent";
     opts.Instructions = """
-        You are a triage assistant. Based on the question, decide whether to hand off to the
-        GeographyAgent (for questions about Nick's cities, countries, travel) or the LifestyleAgent
-        (for questions about Nick's hobbies, food preferences, or daily life).
-        Do not answer directly — always hand off to the right specialist.
+        You are a triage assistant for questions about Nick. Route each question to exactly one specialist:
+        - GeographyAgent: cities, countries, travel, places Nick has lived
+        - LifestyleAgent: hobbies, food, ice cream, daily life, interests
+        Always hand off. Never answer directly.
         """;
     opts.FunctionTypes = [];
 });
 
-// GeographyAgent: has access only to geography functions via the "geography" group.
+// GeographyAgent: answers location/travel questions using its function group.
 var geographyAgent = agentFactory.CreateAgent(opts =>
 {
     opts.Name = "GeographyAgent";
-    opts.Instructions = "You are Nick's geography expert. Answer questions about his cities and countries.";
+    opts.Instructions = """
+        You are Nick's geography expert. Use your tools to look up his cities and countries,
+        then give a short, friendly answer.
+        """;
     opts.FunctionGroups = ["geography"];
 });
 
-// LifestyleAgent: has access only to lifestyle functions via the "lifestyle" group.
+// LifestyleAgent: answers hobbies/food questions using its function group.
 var lifestyleAgent = agentFactory.CreateAgent(opts =>
 {
     opts.Name = "LifestyleAgent";
-    opts.Instructions = "You are Nick's lifestyle expert. Answer questions about his hobbies and food.";
+    opts.Instructions = """
+        You are Nick's lifestyle expert. Use your tools to look up his hobbies and food preferences,
+        then give a short, friendly answer.
+        """;
     opts.FunctionGroups = ["lifestyle"];
 });
 
-// BuildHandoffWorkflow is a Needlr helper that wraps MAF's handoff builder.
-// It hides the asymmetric API (where you'd otherwise pass triageAgent twice).
+// BuildHandoffWorkflow hides MAF's asymmetric builder API — no need to pass triageAgent twice.
+// With reasons, the LLM has explicit guidance on when to route to each specialist.
 var workflow = agentFactory.BuildHandoffWorkflow(
     triageAgent,
-    (geographyAgent, "For questions about Nick's cities, countries, or travel"),
-    (lifestyleAgent, "For questions about Nick's hobbies, food, or daily life"));
+    (geographyAgent, "For questions about Nick's cities, countries, or places he has lived"),
+    (lifestyleAgent, "For questions about Nick's hobbies, food preferences, or daily life"));
 
 Console.WriteLine("=== Needlr + MAF: Triage → Handoff Multi-Agent Workflow ===");
 Console.WriteLine();
 
-await using StreamingRun run = await InProcessExecution.RunStreamingAsync(
-    workflow,
-    new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, "What are Nick's favorite cities and his top hobbies?"));
-
-await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-// CollectAgentResponsesAsync is a Needlr helper that replaces the manual
-// await-foreach + Dictionary<string, StringBuilder> pattern.
-var responses = await run.CollectAgentResponsesAsync();
-
-foreach (var (executorId, text) in responses)
+var questions = new[]
 {
-    Console.WriteLine($"--- {executorId} ---");
-    Console.WriteLine(text);
+    "Which countries has Nick lived in?",
+    "What are Nick's top hobbies?",
+    "What's Nick's favorite ice cream?",
+    "What cities does Nick love?",
+};
+
+foreach (var question in questions)
+{
+    Console.WriteLine($"Q: {question}");
+
+    await using var run = await InProcessExecution.RunStreamingAsync(
+        workflow,
+        new ChatMessage(ChatRole.User, question));
+
+    await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+    // CollectAgentResponsesAsync replaces the manual await-foreach + Dictionary<string,StringBuilder>.
+    var responses = await run.CollectAgentResponsesAsync();
+
+    foreach (var (executorId, text) in responses)
+    {
+        Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+    }
+
     Console.WriteLine();
 }
 
