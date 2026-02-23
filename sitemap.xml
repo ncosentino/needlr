@@ -2,238 +2,1298 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://ncosentino.github.io/needlr/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/advanced-usage/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/articles/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/benchmarks/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/breadcrumbs/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/core-concepts/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/coverage/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/factories/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/getting-started/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/hosted-services/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/interceptors/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/keyed-services/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/open-generic-decorators/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/options/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/plugin-development/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/providers/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/register-as/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/service-catalog/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/video-tutorials/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR001/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR002/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR003/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR004/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR005/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR006/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR007/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR008/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR009/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR010/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR011/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR012/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRCOR015/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN001/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN002/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN003/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN004/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN005/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN006/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN007/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN008/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN014/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN015/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN016/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN017/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN018/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN019/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN020/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN021/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN022/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN031/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN032/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN033/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRGEN034/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRSIG001/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/analyzers/NDLRSIG002/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/dev/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ConstructorParameterEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ContainerVerificationException/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DecoratorCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DecoratorForAttribute_TService_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DeferToContainerAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DoNotAutoRegisterAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DoNotInjectAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DumpExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/DumpOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/HostedServiceCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IMethodInterceptor/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IMethodInvocation/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IPluginFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IPostBuildServiceCollectionPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IServiceCatalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/IServiceCollectionPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/InterceptAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/InterceptAttribute_TInterceptor_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/InterceptedServiceCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/InterfaceEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/KeyedAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/LifetimeMismatch/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/LifetimeMismatchExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/MethodInvocation/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/NexusLabs.Needlr.Catalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/NexusLabs.Needlr/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/OptionsCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/PluginCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/PluginOrderAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/PostBuildServiceCollectionPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/RegisterAsAttribute_TInterface_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ScopedAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceCatalogEntry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceCatalogLifetime/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceCollectionExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceCollectionPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceCollectionVerificationExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceProviderExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/ServiceRegistrationInfo/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/SingletonAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/SourceGenRegistry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/TransientAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/TypeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationBehavior/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationIssue/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationIssueType/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationOptionsBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr/VerificationResult/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AIAgentBuilderPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFactoryOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFrameworkConfigureOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFrameworkSyringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFrameworkSyringeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFunctionAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GeneratedAgentFunctionScanner/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAIAgentBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAgentFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAgentFrameworkFunctionScanner/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.FunctionScanners/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.Generated/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/ServiceCatalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/SyringeExtensionsForAgentFramework/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework/TypeRegistry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Generators/AgentFrameworkFunctionRegistryGenerator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/CircularDependencyAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/CollectionResolutionAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/DeferToContainerInGeneratedCodeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/DiagnosticDescriptors/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/DiagnosticIds/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/DisposableCaptiveDependencyAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/GlobalNamespaceTypeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/InterceptAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/KeyedServiceResolutionAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/LazyResolutionAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/LifetimeMismatchAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Roslyn.Shared/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/PluginConstructorDependenciesAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/ReflectionInAotProjectAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/RegisterAsAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Analyzers/TypeDiscoveryHelper/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/CreateWebApplicationOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/CreateWebApplicationOptionsExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationFactoryExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/ServiceCollectionBuilderExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/SyringeAspNetExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/WebApplicationBuilderPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/WebApplicationFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/WebApplicationPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/WebApplicationSyringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.AspNet/WebApplicationSyringeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/CarterWebApplicationBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/CarterWebApplicationPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.Generated/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/ServiceCatalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Carter/TypeRegistry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Extensions.Logging/PostBuildServiceCollectionPluginOptionsExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/FluentOptionsValidator_TOptions_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/FluentValidationOptionsAdapter_TOptions_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/FluentValidationServiceCollectionExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/FluentValidatorWrapper_TOptions%2CTValidator_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/NexusLabs.Needlr.FluentValidation/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation/ValidationFailureConverter/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation.Generators/FluentValidationAdapterGenerator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.FluentValidation.Generators/NexusLabs.Needlr.FluentValidation.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/GenerateFactoryAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.Helpers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Roslyn.Shared/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/OpenDecoratorForAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/OptionsAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/OptionsNamingHelper/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/ProviderAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/TypeDiscoveryHelper/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/TypeRegistryGenerator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators/UnsupportedDataAnnotationAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/FactoryGenerationMode/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/GenerateFactoryAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/GenerateFactoryAttribute_TInterface_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/GenerateTypeRegistryAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/IOptionsValidator_T_/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/InjectableLifetime/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/InjectableTypeInfo/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/NeedlrSourceGenBootstrap/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/OpenDecoratorForAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/OptionsAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/PluginTypeInfo/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/ProviderAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/ValidationError/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/ValidationSeverity/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Generators.Attributes/ValidatorProviderAttribute/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/CreateHostOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/CreateHostOptionsExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostApplicationBuilderNeedlrExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostApplicationBuilderPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostSyringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/HostSyringeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/IHostApplicationBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/IHostFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/IHostFactoryExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/IHostPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Hosting/SyringeHostingExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/AssemblyInfo/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/AssemblyOrder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/AssemblyOrderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/AssemblyOrderRule/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/ConfiguredSyringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/EmptyTypeFilterer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/IAssemblyLoader/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/IAssemblyProvider/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/IServiceCollectionPopulator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/IServiceProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/ITypeFilterer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/ITypeFiltererExtensionMethods/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/ITypeRegistrar/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.AssemblyOrdering/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.TypeFilterers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/ServiceCollectionPopulator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/Syringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/SyringeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/TypeFilterDecorator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/TypeFiltererLifetime/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection/TypeFiltering/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/NexusLabs.Needlr.Injection.Bundle/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/ServiceProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Bundle/SyringeBundleExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/AllAssembliesLoader/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/AssemblyProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/FileMatchAssemblyLoader/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/IAssemblyProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/IAssemblyProviderBuilderExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.Loaders/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.PluginFactories/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.TypeFilterers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.TypeRegistrars/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionAssemblyLoader/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionFallbackContext/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionFallbackHandlers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionPluginFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionServiceProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionTypeFilterer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/ReflectionTypeRegistrar/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Reflection/SyringeReflectionExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Scrutor/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Scrutor/ScrutorTypeRegistrar/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.Scrutor/SyringeScrutorExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/GeneratedAssemblyProvider/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/GeneratedPluginFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/GeneratedServiceProviderBuilder/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/GeneratedTypeFilterer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/GeneratedTypeRegistrar/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.Loaders/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.PluginFactories/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.TypeFilterers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.TypeRegistrars/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/SyringeSourceGenExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/GeneratedSemanticKernelPluginScanner/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/IKernelBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/IKernelFactory/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/ISemanticKernelPluginScanner/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/KernelBuilderPluginOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/KernelFactoryOptions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.Generated/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.PluginScanners/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/SemanticKernelSyringe/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/SemanticKernelSyringeExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/ServiceCatalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/SyringeExtensionsForSemanticKernel/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel/TypeRegistry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel.Generators/NexusLabs.Needlr.SemanticKernel.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SemanticKernel.Generators/SemanticKernelPluginRegistryGenerator/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/GeneratedSignalRHubRegistration/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/IHubRegistrationPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/NexusLabs.Needlr.SignalR.Generated/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/NexusLabs.Needlr.SignalR/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/ServiceCatalog/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/SignalRExtensions/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/SignalRHubRegistrationPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/SignalRWebApplicationBuilderPlugin/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR/TypeRegistry/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/DiagnosticDescriptors/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/DiagnosticIds/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/HubPathAttributeAnalyzer/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Generators/NexusLabs.Needlr.SignalR.Generators/</loc>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://ncosentino.github.io/needlr/api/dev/NexusLabs.Needlr.SignalR.Generators/SignalRHubRegistryGenerator/</loc>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://ncosentino.github.io/needlr/api/stable/</loc>
-         <lastmod>2026-02-08</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
 </urlset>
