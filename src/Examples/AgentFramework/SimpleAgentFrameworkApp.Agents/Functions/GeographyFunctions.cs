@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 using NexusLabs.Needlr.AgentFramework;
 
-namespace SimpleAgentFrameworkApp;
+namespace SimpleAgentFrameworkApp.Agents;
 
 /// <summary>
 /// Instance-based function class — non-static so that <see cref="PersonalDataProvider"/>

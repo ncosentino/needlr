@@ -11,7 +11,7 @@ using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
-using SimpleAgentFrameworkApp;
+using SimpleAgentFrameworkApp.Agents;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
@@ -29,51 +29,24 @@ IChatClient chatClient = new AzureOpenAIClient(
         ?? throw new InvalidOperationException("No AzureOpenAI:DeploymentName set"))
     .AsIChatClient();
 
-// Needlr discovers all [AgentFunction] and [AgentFunctionGroup] at startup.
-// IAgentFactory is injected wherever you need to create agents.
+// Scan both the host and the plugin assembly for injectable types (e.g. PersonalDataProvider).
+// The [ModuleInitializer] emitted by the source generator in SimpleAgentFrameworkApp.Agents
+// fires on assembly load and registers all [NeedlrAiAgent] types, [AgentFunction] types, and
+// [AgentFunctionGroup] groups with AgentFrameworkGeneratedBootstrap.
+// UsingAgentFramework() detects these and auto-populates — no explicit Add* calls needed.
 var agentFactory = new Syringe()
     .UsingReflection()
-    .UsingAgentFramework(af => af
-        .UsingChatClient(chatClient)
-        .AddAgentFunctionsFromAssemblies()
-        .AddAgentFunctionGroupsFromAssemblies())
+    .UsingAssemblyProvider(b => b.MatchingAssemblies(path =>
+        path.Contains("SimpleAgentFrameworkApp", StringComparison.OrdinalIgnoreCase)).Build())
+    .UsingAgentFramework(af => af.UsingChatClient(chatClient))
     .BuildServiceProvider(configuration)
     .GetRequiredService<IAgentFactory>();
 
-// TriageAgent: no tools — reasons about the question and routes via handoff.
-var triageAgent = agentFactory.CreateAgent(opts =>
-{
-    opts.Name = "TriageAgent";
-    opts.Instructions = """
-        You are a triage assistant for questions about Nick. Route each question to exactly one specialist:
-        - GeographyAgent: cities, countries, travel, places Nick has lived
-        - LifestyleAgent: hobbies, food, ice cream, daily life, interests
-        Always hand off. Never answer directly.
-        """;
-    opts.FunctionTypes = [];
-});
-
-// GeographyAgent: answers location/travel questions using its function group.
-var geographyAgent = agentFactory.CreateAgent(opts =>
-{
-    opts.Name = "GeographyAgent";
-    opts.Instructions = """
-        You are Nick's geography expert. Use your tools to look up his cities and countries,
-        then give a short, friendly answer.
-        """;
-    opts.FunctionGroups = ["geography"];
-});
-
-// LifestyleAgent: answers hobbies/food questions using its function group.
-var lifestyleAgent = agentFactory.CreateAgent(opts =>
-{
-    opts.Name = "LifestyleAgent";
-    opts.Instructions = """
-        You are Nick's lifestyle expert. Use your tools to look up his hobbies and food preferences,
-        then give a short, friendly answer.
-        """;
-    opts.FunctionGroups = ["lifestyle"];
-});
+// Agent creation by type — Instructions, FunctionGroups, and Description all come from
+// the [NeedlrAiAgent] attribute declared in SimpleAgentFrameworkApp.Agents.
+var triageAgent = agentFactory.CreateAgent<TriageAgent>();
+var geographyAgent = agentFactory.CreateAgent<GeographyAgent>();
+var lifestyleAgent = agentFactory.CreateAgent<LifestyleAgent>();
 
 // BuildHandoffWorkflow hides MAF's asymmetric builder API — no need to pass triageAgent twice.
 // With reasons, the LLM has explicit guidance on when to route to each specialist.

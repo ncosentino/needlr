@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 using NexusLabs.Needlr.AgentFramework;
 
-namespace SimpleAgentFrameworkApp;
+namespace SimpleAgentFrameworkApp.Agents;
 
 /// <summary>
 /// Static function class — no DI dependencies needed, all data is hard-coded.

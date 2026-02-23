@@ -1,8 +1,7 @@
-namespace SimpleAgentFrameworkApp;
+namespace SimpleAgentFrameworkApp.Agents;
 
 /// <summary>
 /// Provides personal data injected into function classes via Needlr's DI wiring.
-/// Registered as a singleton in DI.
 /// </summary>
 internal sealed class PersonalDataProvider
 {
