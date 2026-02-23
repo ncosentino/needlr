@@ -1,3 +1,4 @@
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,4 +86,45 @@ public sealed class AgentFrameworkSyringeExtensionsTests
 
         Assert.True(agentOptionsCalled);
     }
+
+    [Fact]
+    public void CreateAgent_WithName_AgentNameMatchesGivenName()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        var factory = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object))
+            .BuildServiceProvider(config)
+            .GetRequiredService<IAgentFactory>();
+
+        var agent = factory.CreateAgent(opts =>
+        {
+            opts.Name = "ResearchAgent";
+            opts.FunctionTypes = [];
+        });
+
+        Assert.Equal("ResearchAgent", agent.Name);
+    }
+
+    [Fact]
+    public void CreateAgent_WithoutName_AgentIdIsPlainGuid()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        var factory = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object))
+            .BuildServiceProvider(config)
+            .GetRequiredService<IAgentFactory>();
+
+        var agent = factory.CreateAgent(opts => opts.FunctionTypes = []);
+
+        Assert.True(Guid.TryParse(agent.Id, out _));
+    }
 }
+
