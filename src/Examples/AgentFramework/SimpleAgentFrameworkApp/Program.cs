@@ -16,6 +16,7 @@ using SimpleAgentFrameworkApp;
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
     .AddJsonFile("appsettings.Development.json", optional: true)
+    .AddEnvironmentVariables()
     .Build();
 
 var azureSection = configuration.GetSection("AzureOpenAI");
@@ -85,6 +86,14 @@ await foreach (WorkflowEvent evt in run.WatchStreamAsync())
         }
 
         Console.Write(update.Data);
+    }
+    else if (evt is ExecutorFailedEvent failure)
+    {
+        Console.Error.WriteLine($"[ERROR] {failure.ExecutorId}: {failure.Data?.Message ?? failure.Data?.ToString()}");
+    }
+    else if (evt is WorkflowErrorEvent workflowError)
+    {
+        Console.Error.WriteLine($"[WORKFLOW ERROR] {workflowError.Exception?.Message ?? workflowError.Exception?.ToString()}");
     }
 }
 
