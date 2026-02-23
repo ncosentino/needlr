@@ -168,4 +168,87 @@ public static class AgentFrameworkSyringeExtensions
             FunctionTypes = (syringe.FunctionTypes ?? []).Concat(typesToAdd).Distinct().ToList()
         };
     }
+
+    /// <summary>
+    /// Adds agent function groups from a compile-time generated group map.
+    /// This is the recommended approach for AOT/trimmed applications.
+    /// </summary>
+    /// <param name="syringe">The agent framework syringe to configure.</param>
+    /// <param name="groups">
+    /// Compile-time discovered group map, typically from the generated
+    /// <c>AgentFrameworkFunctionGroupRegistry.AllGroups</c>.
+    /// </param>
+    public static AgentFrameworkSyringe AddAgentFunctionGroupsFromGenerated(
+        this AgentFrameworkSyringe syringe,
+        IReadOnlyDictionary<string, IReadOnlyList<Type>> groups)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(groups);
+
+        return syringe.MergeFunctionGroups(groups);
+    }
+
+    /// <summary>
+    /// Scans registered assemblies for classes decorated with
+    /// <see cref="AgentFunctionGroupAttribute"/> and registers them by group name.
+    /// Requires <c>UsingReflection()</c> to be configured.
+    /// </summary>
+    [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [AgentFunctionGroup] attributes.")]
+    [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
+    public static AgentFrameworkSyringe AddAgentFunctionGroupsFromAssemblies(
+        this AgentFrameworkSyringe syringe)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+
+        var assemblies = syringe.ServiceProvider.GetRequiredService<IReadOnlyList<Assembly>>();
+        return syringe.AddAgentFunctionGroupsFromAssemblies(assemblies);
+    }
+
+    /// <summary>
+    /// Scans the provided assemblies for classes decorated with
+    /// <see cref="AgentFunctionGroupAttribute"/> and registers them by group name.
+    /// </summary>
+    [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [AgentFunctionGroup] attributes.")]
+    [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
+    public static AgentFrameworkSyringe AddAgentFunctionGroupsFromAssemblies(
+        this AgentFrameworkSyringe syringe,
+        IReadOnlyList<Assembly> assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        var scanner = new FunctionScanners.AssemblyAgentFunctionGroupScanner(assemblies);
+        var groups = scanner.ScanForFunctionGroups();
+        return syringe.MergeFunctionGroups(groups);
+    }
+
+    private static AgentFrameworkSyringe MergeFunctionGroups(
+        this AgentFrameworkSyringe syringe,
+        IReadOnlyDictionary<string, IReadOnlyList<Type>> newGroups)
+    {
+        if (newGroups.Count == 0)
+            return syringe;
+
+        var merged = new Dictionary<string, List<Type>>();
+
+        foreach (var (k, v) in syringe.FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
+            merged[k] = new List<Type>(v);
+
+        foreach (var (groupName, types) in newGroups)
+        {
+            if (!merged.TryGetValue(groupName, out var list))
+                merged[groupName] = list = [];
+
+            foreach (var t in types)
+                if (!list.Contains(t))
+                    list.Add(t);
+        }
+
+        return syringe with
+        {
+            FunctionGroupMap = merged.ToDictionary(
+                k => k.Key,
+                v => (IReadOnlyList<Type>)v.Value.AsReadOnly())
+        };
+    }
 }

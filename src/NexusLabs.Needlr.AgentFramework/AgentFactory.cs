@@ -14,17 +14,20 @@ internal sealed class AgentFactory : IAgentFactory
     private readonly IServiceProvider _serviceProvider;
     private readonly List<Action<AgentFrameworkConfigureOptions>> _configureCallbacks;
     private readonly IReadOnlyList<Type> _functionTypes;
+    private readonly IReadOnlyDictionary<string, IReadOnlyList<Type>> _functionGroupMap;
     private readonly Lazy<AgentFrameworkConfigureOptions> _lazyConfiguredOptions;
     private readonly Lazy<IReadOnlyDictionary<Type, IReadOnlyList<AIFunction>>> _lazyFunctionsCache;
 
     public AgentFactory(
         IServiceProvider serviceProvider,
         List<Action<AgentFrameworkConfigureOptions>> configureCallbacks,
-        IReadOnlyList<Type> functionTypes)
+        IReadOnlyList<Type> functionTypes,
+        IReadOnlyDictionary<string, IReadOnlyList<Type>>? functionGroupMap = null)
     {
         _serviceProvider = serviceProvider;
         _configureCallbacks = configureCallbacks;
         _functionTypes = functionTypes;
+        _functionGroupMap = functionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>();
 
         _lazyConfiguredOptions = new(() => BuildConfiguredOptions());
         _lazyFunctionsCache = new(() => BuildFunctionsCache());
@@ -38,7 +41,7 @@ internal sealed class AgentFactory : IAgentFactory
         var configuredOpts = _lazyConfiguredOptions.Value;
         var allFunctions = _lazyFunctionsCache.Value;
 
-        var applicableTypes = agentOptions.FunctionTypes ?? _functionTypes;
+        var applicableTypes = GetApplicableTypes(agentOptions);
         var tools = new List<AITool>();
 
         foreach (var type in applicableTypes)
@@ -55,9 +58,35 @@ internal sealed class AgentFactory : IAgentFactory
         var instructions = agentOptions.Instructions ?? configuredOpts.DefaultInstructions;
 
         return chatClient.AsAIAgent(
+            name: agentOptions.Name,
+            description: agentOptions.Description,
             instructions: instructions,
             tools: tools,
             services: _serviceProvider);
+    }
+
+    private IEnumerable<Type> GetApplicableTypes(AgentFactoryOptions agentOptions)
+    {
+        bool hasExplicitScope = agentOptions.FunctionTypes != null || agentOptions.FunctionGroups != null;
+
+        if (!hasExplicitScope)
+            return _functionTypes;
+
+        var types = new List<Type>();
+
+        if (agentOptions.FunctionTypes != null)
+            types.AddRange(agentOptions.FunctionTypes);
+
+        if (agentOptions.FunctionGroups != null)
+        {
+            foreach (var group in agentOptions.FunctionGroups)
+            {
+                if (_functionGroupMap.TryGetValue(group, out var groupTypes))
+                    types.AddRange(groupTypes);
+            }
+        }
+
+        return types.Distinct();
     }
 
     private AgentFrameworkConfigureOptions BuildConfiguredOptions()

@@ -8,6 +8,7 @@ namespace SimpleAgentFrameworkApp;
 /// Instance-based function class — non-static so that <see cref="PersonalDataProvider"/>
 /// can be injected by Needlr's DI wiring.
 /// </summary>
+[AgentFunctionGroup("research")]
 internal sealed class GeographyFunctions(PersonalDataProvider dataProvider)
 {
     [AgentFunction]

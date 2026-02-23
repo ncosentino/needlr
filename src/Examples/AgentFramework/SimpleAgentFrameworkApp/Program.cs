@@ -35,22 +35,28 @@ var agentFactory = new Syringe()
     .UsingReflection()
     .UsingAgentFramework(af => af
         .UsingChatClient(chatClient)
-        .AddAgentFunctionsFromAssemblies())
+        .AddAgentFunctionsFromAssemblies()
+        .AddAgentFunctionGroupsFromAssemblies())
     .BuildServiceProvider(configuration)
     .GetRequiredService<IAgentFactory>();
 
-// ResearchAgent: Needlr auto-wires ALL discovered [AgentFunction] tools.
-// No manual AIFunctionFactory.Create() calls needed.
+// ResearchAgent: scoped to the "research" function group via [AgentFunctionGroup("research")].
+// Adding a new function class with [AgentFunctionGroup("research")] auto-includes it here.
 var researchAgent = agentFactory.CreateAgent(opts =>
+{
+    opts.Name = "ResearchAgent";
     opts.Instructions = """
         You are a research assistant. Use your tools to gather all available facts about Nick —
         his favorite cities, the countries he has lived in, his hobbies, and his food preferences.
         Compile a thorough summary of everything you find. Include all details.
-        """);
+        """;
+    opts.FunctionGroups = ["research"];
+});
 
 // WriterAgent: pure LLM — no tools needed. FunctionTypes = [] opts it out of all functions.
 var writerAgent = agentFactory.CreateAgent(opts =>
 {
+    opts.Name = "WriterAgent";
     opts.Instructions = """
         You are a skilled writer. You will receive a research summary about a person named Nick.
         Turn it into a short, engaging personal profile — friendly, narrative tone, two paragraphs.

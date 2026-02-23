@@ -23,11 +23,22 @@ public sealed record AgentFrameworkSyringe
 
     internal List<Type>? FunctionTypes { get; init; } = [];
 
+    internal IReadOnlyDictionary<string, IReadOnlyList<Type>>? FunctionGroupMap { get; init; }
+
     public IAgentFactory BuildAgentFactory()
     {
+        var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
+            .SelectMany(kvp => kvp.Value);
+
+        var allFunctionTypes = (FunctionTypes ?? [])
+            .Concat(groupTypes)
+            .Distinct()
+            .ToList();
+
         return new AgentFactory(
             serviceProvider: ServiceProvider,
             configureCallbacks: ConfigureAgentFactory ?? [],
-            functionTypes: FunctionTypes ?? []);
+            functionTypes: allFunctionTypes,
+            functionGroupMap: FunctionGroupMap);
     }
 }
