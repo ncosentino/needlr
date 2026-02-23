@@ -572,6 +572,13 @@ await webApplication.RunAsync();
 
 Needlr provides first-class integrations for AI agent frameworks, handling function discovery, DI wiring, and factory lifecycle — so you focus on writing agent functions, not plumbing.
 
+Both integrations follow a **two-layer model**:
+
+- **Layer 1 — Discovery** (Needlr): identifying which types contain annotated methods. Source gen handles this at compile time (AOT-safe); reflection handles it at runtime (dev convenience, not AOT-safe).
+- **Layer 2 — Instantiation** (upstream framework): building JSON schemas and wiring tools into agents/kernels. Both `Microsoft.Extensions.AI` and `Microsoft.SemanticKernel` use reflection here regardless of which Needlr path you choose — this is an upstream framework ceiling, not a Needlr limitation.
+
+See the **[AI Integrations docs](docs/ai-integrations.md)** for a full explanation of the two-layer model, source gen setup, and the design direction for future multi-agent support.
+
 ### Microsoft Agent Framework
 
 [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) (built on `Microsoft.Extensions.AI`) is Microsoft's multi-agent orchestration framework. Needlr's `NexusLabs.Needlr.AgentFramework` integration auto-discovers methods marked with `[AgentFunction]` and wires them as `AIFunction` tools on any `IChatClient`.
@@ -593,9 +600,7 @@ internal sealed class WeatherTools
 var agentFactory = new Syringe()
     .UsingReflection()
     .UsingAgentFramework(af => af
-        .Configure(opts => opts.ChatClientFactory = sp =>
-            // provide your IChatClient here (e.g. AzureOpenAI, OpenAI, etc.)
-            sp.GetRequiredService<IChatClient>())
+        .UsingChatClient(sp => sp.GetRequiredService<IChatClient>())
         .AddAgentFunctionsFromAssemblies())
     .BuildServiceProvider(configuration)
     .GetRequiredService<IAgentFactory>();
@@ -617,7 +622,7 @@ Console.WriteLine(response.Text);
 - `[AgentFunction]` attribute marks methods for discovery (static or instance)
 - `IAgentFactory` is registered as a singleton — create as many agents as needed
 - `AgentFactoryOptions.FunctionTypes` scopes tools per-agent from a shared pool
-- Source generator (`NexusLabs.Needlr.AgentFramework.Generators`) enables AOT-safe compile-time discovery
+- Source generator (`NexusLabs.Needlr.AgentFramework.Generators`) enables compile-time discovery (Layer 1 AOT-safe)
 
 ### Semantic Kernel
 

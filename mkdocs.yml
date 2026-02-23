@@ -48,6 +48,7 @@ nav:
     - Open Generic Decorators: open-generic-decorators.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
+    - AI Integrations: ai-integrations.md
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Plugin Development: plugin-development.md
