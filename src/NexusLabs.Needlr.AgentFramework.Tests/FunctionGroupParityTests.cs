@@ -126,51 +126,11 @@ public class FunctionGroupParityTests
         Assert.IsAssignableFrom<AIAgent>(generatedAgent);
     }
 
-    [Fact]
-    public void AddAgentFunctionGroupsFromGenerated_MergesWithExistingGroups()
-    {
-        var config = new ConfigurationBuilder().Build();
-        var mockChatClient = new Mock<IChatClient>();
-
-        var factory = new Syringe()
-            .UsingReflection()
-            .UsingAgentFramework(af => af
-                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
-                .AddAgentFunctionsFromGenerated([typeof(ParityResearchFunctions), typeof(ParityWriterFunctions)])
-                .AddAgentFunctionGroupsFromGenerated(new Dictionary<string, IReadOnlyList<Type>>
-                {
-                    ["parity-research"] = [typeof(ParityResearchFunctions)]
-                })
-                .AddAgentFunctionGroupsFromGenerated(new Dictionary<string, IReadOnlyList<Type>>
-                {
-                    ["parity-research"] = [typeof(ParityWriterFunctions)],
-                    ["parity-writer"] = [typeof(ParityWriterFunctions)]
-                }))
-            .BuildServiceProvider(config)
-            .GetRequiredService<IAgentFactory>();
-
-        // Both types were merged into "parity-research", so agent should be created
-        var researchAgent = factory.CreateAgent(opts => opts.FunctionGroups = ["parity-research"]);
-        var writerAgent = factory.CreateAgent(opts => opts.FunctionGroups = ["parity-writer"]);
-
-        Assert.NotNull(researchAgent);
-        Assert.NotNull(writerAgent);
-        Assert.IsAssignableFrom<AIAgent>(researchAgent);
-        Assert.IsAssignableFrom<AIAgent>(writerAgent);
-    }
-
     [AgentFunctionGroup("parity-research")]
     public sealed class ParityResearchFunctions
     {
         [AgentFunction]
         [Description("Returns research data for parity testing.")]
         public string GetResearchData() => "data";
-    }
-
-    public sealed class ParityWriterFunctions
-    {
-        [AgentFunction]
-        [Description("Writes content for parity testing.")]
-        public string WriteContent(string input) => $"Written: {input}";
     }
 }

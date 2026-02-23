@@ -95,6 +95,38 @@ public class AgentFunctionGroupScannerTests
         Assert.NotNull(syringe.GetService<IAgentFactory>());
     }
 
+    [Fact]
+    public void AddAgentFunctionGroupsFromGenerated_CalledTwice_MergesGroups()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        var factory = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
+                .AddAgentFunctionsFromGenerated([typeof(ScannerToolsFunctions), typeof(ScannerWriterFunctions)])
+                .AddAgentFunctionGroupsFromGenerated(new Dictionary<string, IReadOnlyList<Type>>
+                {
+                    ["scanner-tools"] = [typeof(ScannerToolsFunctions)]
+                })
+                .AddAgentFunctionGroupsFromGenerated(new Dictionary<string, IReadOnlyList<Type>>
+                {
+                    ["scanner-tools"] = [typeof(ScannerWriterFunctions)],
+                    ["scanner-writer"] = [typeof(ScannerWriterFunctions)]
+                }))
+            .BuildServiceProvider(config)
+            .GetRequiredService<IAgentFactory>();
+
+        var toolsAgent = factory.CreateAgent(opts => opts.FunctionGroups = ["scanner-tools"]);
+        var writerAgent = factory.CreateAgent(opts => opts.FunctionGroups = ["scanner-writer"]);
+
+        Assert.NotNull(toolsAgent);
+        Assert.NotNull(writerAgent);
+        Assert.IsAssignableFrom<AIAgent>(toolsAgent);
+        Assert.IsAssignableFrom<AIAgent>(writerAgent);
+    }
+
     [AgentFunctionGroup("scanner-tools")]
     public sealed class ScannerToolsFunctions
     {
@@ -110,5 +142,12 @@ public class AgentFunctionGroupScannerTests
         [AgentFunction]
         [Description("Returns a utility value.")]
         public int GetUtilityValue() => 1;
+    }
+
+    public sealed class ScannerWriterFunctions
+    {
+        [AgentFunction]
+        [Description("Writes scanner content.")]
+        public string WriteContent(string input) => $"Written: {input}";
     }
 }
