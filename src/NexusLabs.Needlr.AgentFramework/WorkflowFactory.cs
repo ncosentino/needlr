@@ -1,0 +1,174 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
+
+namespace NexusLabs.Needlr.AgentFramework;
+
+/// <summary>
+/// Default implementation of <see cref="IWorkflowFactory"/> that assembles MAF workflows from
+/// topology declared via <see cref="AgentHandoffsToAttribute"/> and
+/// <see cref="AgentGroupChatMemberAttribute"/>.
+/// </summary>
+/// <remarks>
+/// When the source generator bootstrap is registered (i.e., the generator package is included
+/// and <c>UsingAgentFramework()</c> detected a <c>[ModuleInitializer]</c>-emitted registration),
+/// topology data is read from the compile-time registry for zero-allocation discovery.
+/// When no bootstrap data is available, topology is discovered via reflection at workflow
+/// creation time; that path is annotated <see cref="RequiresUnreferencedCodeAttribute"/>.
+/// </remarks>
+internal sealed class WorkflowFactory : IWorkflowFactory
+{
+    private readonly IAgentFactory _agentFactory;
+
+    public WorkflowFactory(IAgentFactory agentFactory)
+    {
+        ArgumentNullException.ThrowIfNull(agentFactory);
+        _agentFactory = agentFactory;
+    }
+
+    /// <inheritdoc/>
+    public Workflow CreateHandoffWorkflow<TInitialAgent>() where TInitialAgent : class
+    {
+        var targets = ResolveHandoffTargets(typeof(TInitialAgent));
+        var initialAgent = _agentFactory.CreateAgent<TInitialAgent>();
+        return BuildHandoff(initialAgent, targets);
+    }
+
+    /// <inheritdoc/>
+    public Workflow CreateGroupChatWorkflow(string groupName, int maxIterations = 10)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
+
+        var memberTypes = ResolveGroupChatMembers(groupName);
+
+        if (memberTypes.Count < 2)
+        {
+            throw new InvalidOperationException(
+                $"CreateGroupChatWorkflow(\"{groupName}\") failed: {memberTypes.Count} agent(s) are " +
+                $"registered as members of group \"{groupName}\". At least two are required. " +
+                $"Add [AgentGroupChatMember(\"{groupName}\")] to the agent classes and ensure their " +
+                $"assemblies are scanned.");
+        }
+
+        var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.Name)).ToList();
+
+        return AgentWorkflowBuilder
+            .CreateGroupChatBuilderWith(a => new RoundRobinGroupChatManager(a) { MaximumIterationCount = maxIterations })
+            .AddParticipants(agents)
+            .Build();
+    }
+
+    /// <inheritdoc/>
+    public Workflow CreateSequentialWorkflow(params AIAgent[] agents)
+    {
+        ArgumentNullException.ThrowIfNull(agents);
+
+        if (agents.Length == 0)
+            throw new ArgumentException("At least one agent is required.", nameof(agents));
+
+        return AgentWorkflowBuilder.BuildSequential(agents);
+    }
+
+    private IReadOnlyList<(Type TargetType, string? HandoffReason)> ResolveHandoffTargets(Type initialAgentType)
+    {
+        if (AgentFrameworkGeneratedBootstrap.TryGetHandoffTopology(out var provider))
+        {
+            var topology = provider();
+            if (topology.TryGetValue(initialAgentType, out var targets))
+                return targets;
+
+            // Type was registered but has no handoff entries — same error as reflection path below
+        }
+        else
+        {
+            // Reflection fallback
+            return ResolveHandoffTargetsViaReflection(initialAgentType);
+        }
+
+        throw new InvalidOperationException(
+            $"CreateHandoffWorkflow<{initialAgentType.Name}>() failed: {initialAgentType.Name} has no " +
+            $"[AgentHandoffsTo] attributes. Declare at least one " +
+            $"[AgentHandoffsTo(typeof(TargetAgent))] on {initialAgentType.Name} to specify its handoff targets.");
+    }
+
+    [RequiresUnreferencedCode("Reflection-based topology discovery may not work after trimming. Use the source generator package instead.")]
+    private static IReadOnlyList<(Type TargetType, string? HandoffReason)> ResolveHandoffTargetsViaReflection(Type initialAgentType)
+    {
+        var attrs = initialAgentType.GetCustomAttributes<AgentHandoffsToAttribute>().ToList();
+
+        if (attrs.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"CreateHandoffWorkflow<{initialAgentType.Name}>() failed: {initialAgentType.Name} has no " +
+                $"[AgentHandoffsTo] attributes. Declare at least one " +
+                $"[AgentHandoffsTo(typeof(TargetAgent))] on {initialAgentType.Name} to specify its handoff targets.");
+        }
+
+        return attrs
+            .Select(a => (a.TargetAgentType, a.HandoffReason))
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private IReadOnlyList<Type> ResolveGroupChatMembers(string groupName)
+    {
+        if (AgentFrameworkGeneratedBootstrap.TryGetGroupChatGroups(out var provider))
+        {
+            var groups = provider();
+            if (groups.TryGetValue(groupName, out var members))
+                return members;
+
+            // Group name not found in bootstrap — return empty so the caller produces the right error
+            return Array.Empty<Type>();
+        }
+
+        // Reflection fallback
+        return ResolveGroupChatMembersViaReflection(groupName);
+    }
+
+    [RequiresUnreferencedCode("Reflection-based group chat discovery may not work after trimming. Use the source generator package instead.")]
+    private static IReadOnlyList<Type> ResolveGroupChatMembersViaReflection(string groupName)
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a =>
+            {
+                try { return a.GetTypes(); }
+                catch { return []; }
+            })
+            .Where(t => t.GetCustomAttributes<AgentGroupChatMemberAttribute>()
+                         .Any(attr => string.Equals(attr.GroupName, groupName, StringComparison.Ordinal)))
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private Workflow BuildHandoff(
+        AIAgent initialAgent,
+        IReadOnlyList<(Type TargetType, string? HandoffReason)> targets)
+    {
+        if (targets.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Cannot build handoff workflow for agent '{initialAgent.Name ?? initialAgent.Id}': no handoff targets found.");
+        }
+
+        var targetPairs = targets
+            .Select(t => (_agentFactory.CreateAgent(t.TargetType.Name), t.HandoffReason))
+            .ToArray();
+
+        var builder = AgentWorkflowBuilder.CreateHandoffBuilderWith(initialAgent);
+
+        var withoutReason = targetPairs
+            .Where(t => string.IsNullOrEmpty(t.HandoffReason))
+            .Select(t => t.Item1)
+            .ToArray();
+
+        if (withoutReason.Length > 0)
+            builder.WithHandoffs(initialAgent, withoutReason);
+
+        foreach (var (target, reason) in targetPairs.Where(t => !string.IsNullOrEmpty(t.HandoffReason)))
+            builder.WithHandoff(initialAgent, target, reason!);
+
+        return builder.Build();
+    }
+}

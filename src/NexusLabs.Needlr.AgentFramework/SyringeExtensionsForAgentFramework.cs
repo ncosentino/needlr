@@ -101,6 +101,9 @@ public static class SyringeExtensionsForAgentFramework
 
                 return afSyringe.BuildAgentFactory();
             });
+
+            services.AddSingleton<IWorkflowFactory>(provider =>
+                new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
         });
     }
 
@@ -116,6 +119,9 @@ public static class SyringeExtensionsForAgentFramework
     /// used to build the agent factory. Useful when configuration does
     /// not need the service provider.
     /// </param>
+    /// <returns>
+    /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
+    /// </returns>
     [RequiresUnreferencedCode("Agent Framework uses reflection to build AIFunction schemas from method signatures.")]
     [RequiresDynamicCode("Agent Framework uses reflection APIs that require dynamic code generation.")]
     public static ConfiguredSyringe UsingAgentFramework(
@@ -132,6 +138,9 @@ public static class SyringeExtensionsForAgentFramework
                 var afSyringe = configure.Invoke();
                 return afSyringe.BuildAgentFactory();
             });
+
+            services.AddSingleton<IWorkflowFactory>(provider =>
+                new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
         });
     }
 }

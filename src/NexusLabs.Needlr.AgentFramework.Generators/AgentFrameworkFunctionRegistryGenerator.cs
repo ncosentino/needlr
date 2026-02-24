@@ -28,6 +28,8 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string AgentFunctionAttributeName = "NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute";
     private const string AgentFunctionGroupAttributeName = "NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute";
     private const string NeedlrAiAgentAttributeName = "NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute";
+    private const string AgentHandoffsToAttributeName = "NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute";
+    private const string AgentGroupChatMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -53,18 +55,36 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetNeedlrAiAgentTypeInfo(ctx, ct))
             .Where(static m => m is not null);
 
-        // Unified output: all three pipelines combined with compilation metadata.
+        // Pipeline D: [AgentHandoffsTo] annotations → handoff topology registry
+        var handoffEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentHandoffsToAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GetHandoffEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Pipeline E: [AgentGroupChatMember] annotations → group chat registry
+        var groupChatEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentGroupChatMemberAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GetGroupChatEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all five pipelines combined with compilation metadata.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
             .Combine(agentClasses.Collect())
+            .Combine(handoffEntries.Collect())
+            .Combine(groupChatEntries.Collect())
             .Combine(context.CompilationProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var (((functionData, groupData), agentData), compilation) = data;
-                ExecuteAll(functionData, groupData, agentData, compilation, spc);
+                var ((((( functionData, groupData), agentData), handoffData), groupChatData), compilation) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, compilation, spc);
             });
     }
 
@@ -179,6 +199,61 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             isPartial);
     }
 
+    private static ImmutableArray<HandoffEntry> GetHandoffEntries(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return ImmutableArray<HandoffEntry>.Empty;
+
+        var initialTypeName = GetFullyQualifiedName(typeSymbol);
+        var entries = ImmutableArray.CreateBuilder<HandoffEntry>();
+
+        foreach (var attr in context.Attributes)
+        {
+            if (attr.ConstructorArguments.Length < 1)
+                continue;
+
+            var typeArg = attr.ConstructorArguments[0];
+            if (typeArg.Kind != TypedConstantKind.Type || typeArg.Value is not INamedTypeSymbol targetTypeSymbol)
+                continue;
+
+            var targetTypeName = GetFullyQualifiedName(targetTypeSymbol);
+            var reason = attr.ConstructorArguments.Length > 1 ? attr.ConstructorArguments[1].Value as string : null;
+
+            entries.Add(new HandoffEntry(initialTypeName, typeSymbol.Name, targetTypeName, reason));
+        }
+
+        return entries.ToImmutable();
+    }
+
+    private static ImmutableArray<GroupChatEntry> GetGroupChatEntries(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return ImmutableArray<GroupChatEntry>.Empty;
+
+        var agentTypeName = GetFullyQualifiedName(typeSymbol);
+        var entries = ImmutableArray.CreateBuilder<GroupChatEntry>();
+
+        foreach (var attr in context.Attributes)
+        {
+            if (attr.ConstructorArguments.Length < 1)
+                continue;
+
+            var groupName = attr.ConstructorArguments[0].Value as string;
+            if (string.IsNullOrWhiteSpace(groupName))
+                continue;
+
+            entries.Add(new GroupChatEntry(agentTypeName, groupName!));
+        }
+
+        return entries.ToImmutable();
+    }
+
     private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.DeclaredAccessibility == Accessibility.Private ||
@@ -230,6 +305,8 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<AgentFunctionTypeInfo?> functionData,
         ImmutableArray<ImmutableArray<AgentFunctionGroupEntry>> groupData,
         ImmutableArray<NeedlrAiAgentTypeInfo?> agentData,
+        ImmutableArray<ImmutableArray<HandoffEntry>> handoffData,
+        ImmutableArray<ImmutableArray<GroupChatEntry>> groupChatData,
         Compilation compilation,
         SourceProductionContext spc)
     {
@@ -251,6 +328,18 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .Select(t => t!.Value)
             .ToList();
 
+        var allHandoffEntries = handoffData.SelectMany(a => a).ToList();
+        var handoffByInitialAgent = allHandoffEntries
+            .GroupBy(e => (e.InitialAgentTypeName, e.InitialAgentClassName))
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => (e.TargetAgentTypeName, e.HandoffReason)).ToList());
+
+        var allGroupChatEntries = groupChatData.SelectMany(a => a).ToList();
+        var groupChatByGroupName = allGroupChatEntries
+            .GroupBy(e => e.GroupName)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.AgentTypeName).Distinct().ToList());
+
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
             SourceText.From(GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
@@ -261,8 +350,18 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         spc.AddSource("AgentRegistry.g.cs",
             SourceText.From(GenerateAgentRegistrySource(validAgentTypes, safeAssemblyName), Encoding.UTF8));
 
+        spc.AddSource("AgentHandoffTopologyRegistry.g.cs",
+            SourceText.From(GenerateHandoffTopologyRegistrySource(handoffByInitialAgent, safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("AgentGroupChatRegistry.g.cs",
+            SourceText.From(GenerateGroupChatRegistrySource(groupChatByGroupName, safeAssemblyName), Encoding.UTF8));
+
         spc.AddSource("NeedlrAgentFrameworkBootstrap.g.cs",
             SourceText.From(GenerateBootstrapSource(safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("WorkflowFactoryExtensions.g.cs",
+            SourceText.From(GenerateWorkflowFactoryExtensionsSource(
+                handoffByInitialAgent, groupChatByGroupName, safeAssemblyName), Encoding.UTF8));
 
         // Partial companions for [NeedlrAiAgent] classes declared as partial
         foreach (var agentType in validAgentTypes.Where(a => a.IsPartial))
@@ -415,6 +514,178 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
+    private static string GenerateHandoffTopologyRegistrySource(
+        Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("// Needlr AgentFramework Handoff Topology Registry");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// Generated registry of agent handoff topology declared via [AgentHandoffsTo] attributes.");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static class AgentHandoffTopologyRegistry");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// All handoff relationships, mapping initial agent type to its declared handoff targets.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public static IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>> AllHandoffs { get; } =");
+        sb.AppendLine("        new Dictionary<Type, IReadOnlyList<(Type, string?)>>()");
+        sb.AppendLine("        {");
+
+        foreach (var kvp in handoffByInitialAgent.OrderBy(k => k.Key.InitialAgentClassName))
+        {
+            sb.AppendLine($"            [typeof({kvp.Key.InitialAgentTypeName})] = new (Type, string?)[]");
+            sb.AppendLine("            {");
+            foreach (var (targetType, reason) in kvp.Value)
+            {
+                var reasonLiteral = reason is null ? "null" : $"\"{reason.Replace("\"", "\\\"")}\"";
+                sb.AppendLine($"                (typeof({targetType}), {reasonLiteral}),");
+            }
+            sb.AppendLine("            },");
+        }
+
+        sb.AppendLine("        };");
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private static string GenerateGroupChatRegistrySource(
+        Dictionary<string, List<string>> groupChatByGroupName,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("// Needlr AgentFramework Group Chat Registry");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// Generated registry of agent group chat memberships declared via [AgentGroupChatMember] attributes.");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static class AgentGroupChatRegistry");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// All group chat groups, mapping group name to the agent types in that group.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public static IReadOnlyDictionary<string, IReadOnlyList<Type>> AllGroups { get; } =");
+        sb.AppendLine("        new Dictionary<string, IReadOnlyList<Type>>()");
+        sb.AppendLine("        {");
+
+        foreach (var kvp in groupChatByGroupName.OrderBy(k => k.Key))
+        {
+            var escapedName = kvp.Key.Replace("\"", "\\\"");
+            sb.AppendLine($"            [\"{escapedName}\"] = new Type[]");
+            sb.AppendLine("            {");
+            foreach (var typeName in kvp.Value)
+                sb.AppendLine($"                typeof({typeName}),");
+            sb.AppendLine("            },");
+        }
+
+        sb.AppendLine("        };");
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private static string GenerateWorkflowFactoryExtensionsSource(
+        Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
+        Dictionary<string, List<string>> groupChatByGroupName,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("// Needlr AgentFramework IWorkflowFactory Extension Methods");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using Microsoft.Agents.AI.Workflows;");
+        sb.AppendLine("using NexusLabs.Needlr.AgentFramework;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// Generated strongly-typed extension methods on <see cref=\"IWorkflowFactory\"/>.");
+        sb.AppendLine("/// Each method encapsulates an agent type or group name so the composition root");
+        sb.AppendLine("/// requires no direct agent type references or magic strings.");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static partial class WorkflowFactoryExtensions");
+        sb.AppendLine("{");
+
+        foreach (var kvp in handoffByInitialAgent.OrderBy(k => k.Key.InitialAgentClassName))
+        {
+            var className = kvp.Key.InitialAgentClassName;
+            var typeName = kvp.Key.InitialAgentTypeName;
+            var methodName = $"Create{StripAgentSuffix(className)}HandoffWorkflow";
+
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Creates a handoff workflow starting from <see cref=\"{typeName.Replace("global::", "")}\"/>,");
+            sb.AppendLine($"    /// with {kvp.Value.Count} handoff target(s) as declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute\"/>.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory)");
+            sb.AppendLine($"        => workflowFactory.CreateHandoffWorkflow<{typeName}>();");
+            sb.AppendLine();
+        }
+
+        foreach (var kvp in groupChatByGroupName.OrderBy(k => k.Key))
+        {
+            var groupName = kvp.Key;
+            var methodSuffix = GroupNameToPascalCase(groupName);
+            var methodName = $"Create{methodSuffix}GroupChatWorkflow";
+            var escapedGroupName = groupName.Replace("\"", "\\\"");
+
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Creates a round-robin group chat workflow for the \"{escapedGroupName}\" group,");
+            sb.AppendLine($"    /// with {kvp.Value.Count} participant(s) as declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute\"/>.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory, int maxIterations = 10)");
+            sb.AppendLine($"        => workflowFactory.CreateGroupChatWorkflow(\"{escapedGroupName}\", maxIterations);");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private static string StripAgentSuffix(string className)
+    {
+        const string suffix = "Agent";
+        return className.EndsWith(suffix, StringComparison.Ordinal) && className.Length > suffix.Length
+            ? className.Substring(0, className.Length - suffix.Length)
+            : className;
+    }
+
+    private static string GroupNameToPascalCase(string groupName)
+    {
+        var sb = new StringBuilder();
+        var capitalizeNext = true;
+        foreach (var c in groupName)
+        {
+            if (c == '-' || c == '_' || c == ' ')
+            {
+                capitalizeNext = true;
+            }
+            else if (char.IsLetterOrDigit(c))
+            {
+                sb.Append(capitalizeNext ? char.ToUpperInvariant(c) : c);
+                capitalizeNext = false;
+            }
+        }
+        return sb.ToString();
+    }
+
     private static string GenerateBootstrapSource(string safeAssemblyName)
     {
         return $@"// <auto-generated/>
@@ -438,7 +709,9 @@ internal static class NeedlrAgentFrameworkModuleInitializer
         global::NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap.Register(
             () => AgentFrameworkFunctionRegistry.AllFunctionTypes,
             () => AgentFrameworkFunctionGroupRegistry.AllGroups,
-            () => AgentRegistry.AllAgentTypes);
+            () => AgentRegistry.AllAgentTypes,
+            () => AgentHandoffTopologyRegistry.AllHandoffs,
+            () => AgentGroupChatRegistry.AllGroups);
     }}
 }}
 ";
@@ -504,5 +777,33 @@ internal static class NeedlrAgentFrameworkModuleInitializer
         public string ClassName { get; }
         public string? NamespaceName { get; }
         public bool IsPartial { get; }
+    }
+
+    private readonly struct HandoffEntry
+    {
+        public HandoffEntry(string initialAgentTypeName, string initialAgentClassName, string targetAgentTypeName, string? handoffReason)
+        {
+            InitialAgentTypeName = initialAgentTypeName;
+            InitialAgentClassName = initialAgentClassName;
+            TargetAgentTypeName = targetAgentTypeName;
+            HandoffReason = handoffReason;
+        }
+
+        public string InitialAgentTypeName { get; }
+        public string InitialAgentClassName { get; }
+        public string TargetAgentTypeName { get; }
+        public string? HandoffReason { get; }
+    }
+
+    private readonly struct GroupChatEntry
+    {
+        public GroupChatEntry(string agentTypeName, string groupName)
+        {
+            AgentTypeName = agentTypeName;
+            GroupName = groupName;
+        }
+
+        public string AgentTypeName { get; }
+        public string GroupName { get; }
     }
 }

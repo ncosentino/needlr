@@ -19,16 +19,22 @@ public static class AgentFrameworkGeneratedBootstrap
         public Registration(
             Func<IReadOnlyList<Type>> functionTypes,
             Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
-            Func<IReadOnlyList<Type>> agentTypes)
+            Func<IReadOnlyList<Type>> agentTypes,
+            Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> handoffTopology,
+            Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups)
         {
             FunctionTypes = functionTypes;
             GroupTypes = groupTypes;
             AgentTypes = agentTypes;
+            HandoffTopology = handoffTopology;
+            GroupChatGroups = groupChatGroups;
         }
 
         public Func<IReadOnlyList<Type>> FunctionTypes { get; }
         public Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupTypes { get; }
         public Func<IReadOnlyList<Type>> AgentTypes { get; }
+        public Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> HandoffTopology { get; }
+        public Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups { get; }
     }
 
     private static readonly object _gate = new();
@@ -38,7 +44,9 @@ public static class AgentFrameworkGeneratedBootstrap
     private static (
         Func<IReadOnlyList<Type>> Functions,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> Groups,
-        Func<IReadOnlyList<Type>> Agents)? _cachedCombined;
+        Func<IReadOnlyList<Type>> Agents,
+        Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> HandoffTopology,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups)? _cachedCombined;
 
     /// <summary>
     /// Registers the generated type providers for this assembly.
@@ -47,15 +55,19 @@ public static class AgentFrameworkGeneratedBootstrap
     public static void Register(
         Func<IReadOnlyList<Type>> functionTypes,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
-        Func<IReadOnlyList<Type>> agentTypes)
+        Func<IReadOnlyList<Type>> agentTypes,
+        Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> handoffTopology,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups)
     {
         ArgumentNullException.ThrowIfNull(functionTypes);
         ArgumentNullException.ThrowIfNull(groupTypes);
         ArgumentNullException.ThrowIfNull(agentTypes);
+        ArgumentNullException.ThrowIfNull(handoffTopology);
+        ArgumentNullException.ThrowIfNull(groupChatGroups);
 
         lock (_gate)
         {
-            _registrations.Add(new Registration(functionTypes, groupTypes, agentTypes));
+            _registrations.Add(new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups));
             _cachedCombined = null;
         }
     }
@@ -139,16 +151,74 @@ public static class AgentFrameworkGeneratedBootstrap
     }
 
     /// <summary>
+    /// Gets the combined handoff topology provider from all registered assemblies.
+    /// </summary>
+    public static bool TryGetHandoffTopology(
+        [NotNullWhen(true)] out Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>>? provider)
+    {
+        var local = _asyncLocalOverride.Value;
+        if (local is not null)
+        {
+            provider = local.HandoffTopology;
+            return true;
+        }
+
+        lock (_gate)
+        {
+            if (_registrations.Count == 0)
+            {
+                provider = null;
+                return false;
+            }
+
+            EnsureCombined();
+            provider = _cachedCombined!.Value.HandoffTopology;
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Gets the combined group chat groups provider from all registered assemblies.
+    /// </summary>
+    public static bool TryGetGroupChatGroups(
+        [NotNullWhen(true)] out Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? provider)
+    {
+        var local = _asyncLocalOverride.Value;
+        if (local is not null)
+        {
+            provider = local.GroupChatGroups;
+            return true;
+        }
+
+        lock (_gate)
+        {
+            if (_registrations.Count == 0)
+            {
+                provider = null;
+                return false;
+            }
+
+            EnsureCombined();
+            provider = _cachedCombined!.Value.GroupChatGroups;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Creates a test-scoped override that replaces bootstrap discovery for the current async context.
     /// Dispose the returned scope to restore the previous state.
     /// </summary>
     internal static IDisposable BeginTestScope(
         Func<IReadOnlyList<Type>> functionTypes,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
-        Func<IReadOnlyList<Type>> agentTypes)
+        Func<IReadOnlyList<Type>> agentTypes,
+        Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>>? handoffTopology = null,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? groupChatGroups = null)
     {
+        handoffTopology ??= static () => new Dictionary<Type, IReadOnlyList<(Type, string?)>>();
+        groupChatGroups ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
         var prior = _asyncLocalOverride.Value;
-        _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes);
+        _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups);
         return new Scope(prior);
     }
 
@@ -160,6 +230,8 @@ public static class AgentFrameworkGeneratedBootstrap
         var functionProviders = _registrations.Select(r => r.FunctionTypes).ToArray();
         var groupProviders = _registrations.Select(r => r.GroupTypes).ToArray();
         var agentProviders = _registrations.Select(r => r.AgentTypes).ToArray();
+        var topologyProviders = _registrations.Select(r => r.HandoffTopology).ToArray();
+        var groupChatProviders = _registrations.Select(r => r.GroupChatGroups).ToArray();
 
         Func<IReadOnlyList<Type>> combinedFunctions = () =>
         {
@@ -200,7 +272,41 @@ public static class AgentFrameworkGeneratedBootstrap
             return result;
         };
 
-        _cachedCombined = (combinedFunctions, combinedGroups, combinedAgents);
+        Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> combinedTopology = () =>
+        {
+            var merged = new Dictionary<Type, List<(Type, string?)>>();
+            foreach (var p in topologyProviders)
+                foreach (var (agentType, targets) in p())
+                {
+                    if (!merged.TryGetValue(agentType, out var list))
+                        merged[agentType] = list = [];
+                    foreach (var target in targets)
+                        if (!list.Contains(target))
+                            list.Add(target);
+                }
+            return merged.ToDictionary(
+                kv => kv.Key,
+                kv => (IReadOnlyList<(Type, string?)>)kv.Value.AsReadOnly());
+        };
+
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> combinedGroupChatGroups = () =>
+        {
+            var merged = new Dictionary<string, List<Type>>();
+            foreach (var p in groupChatProviders)
+                foreach (var (key, types) in p())
+                {
+                    if (!merged.TryGetValue(key, out var list))
+                        merged[key] = list = [];
+                    foreach (var t in types)
+                        if (!list.Contains(t))
+                            list.Add(t);
+                }
+            return merged.ToDictionary(
+                kv => kv.Key,
+                kv => (IReadOnlyList<Type>)kv.Value.AsReadOnly());
+        };
+
+        _cachedCombined = (combinedFunctions, combinedGroups, combinedAgents, combinedTopology, combinedGroupChatGroups);
     }
 
     private sealed class Scope : IDisposable
