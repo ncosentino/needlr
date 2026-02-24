@@ -35,6 +35,8 @@
   <Folder Name="/Examples/AgentFramework/">
     <Project Path="Examples/AgentFramework/SimpleAgentFrameworkApp/SimpleAgentFrameworkApp.csproj" />
     <Project Path="Examples/AgentFramework/SimpleAgentFrameworkApp.Agents/SimpleAgentFrameworkApp.Agents.csproj" />
+    <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp/GroupChatAgentFrameworkApp.csproj" />
+    <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp.Agents/GroupChatAgentFrameworkApp.Agents.csproj" />
   </Folder>
   <Folder Name="/Examples/SignalR/">
     <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
