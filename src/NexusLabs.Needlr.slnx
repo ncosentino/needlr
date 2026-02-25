@@ -119,6 +119,7 @@
     <Project Path="NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj" />
   </Folder>
   <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
+  <Project Path="NexusLabs.Needlr.AgentFramework.Generators.Tests/NexusLabs.Needlr.AgentFramework.Generators.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
