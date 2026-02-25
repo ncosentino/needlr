@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2582,11 +2610,15 @@
 <tbody>
 <tr>
 <td style="text-align: left;"><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a></td>
-<td style="text-align: left;">Per-agent configuration options passed to <a href="../IAgentFactory/#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action\&lt;NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;)">CreateAgent(Action&lt;AgentFactoryOptions&gt;)</a>.</td>
+<td style="text-align: left;">Per-agent configuration options passed to <code>IAgentFactory.CreateAgent(configure)</code>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../AgentFrameworkConfigureOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions">AgentFrameworkConfigureOptions</a></td>
 <td style="text-align: left;">Factory-level configuration options passed to <a href="../">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.Configure(NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action{NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions})</a> callbacks.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentFrameworkGeneratedBootstrap/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap">AgentFrameworkGeneratedBootstrap</a></td>
+<td style="text-align: left;">Runtime bootstrap registry for source-generated Agent Framework components.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></td>
@@ -2601,8 +2633,28 @@
 <td style="text-align: left;">Marks a method as an agent function that can be auto-discovered by Needlr and registered as an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> tool for Microsoft Agent Framework agents.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../AgentFunctionGroupAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute">AgentFunctionGroupAttribute</a></td>
+<td style="text-align: left;">Assigns a class to a named function group so that it can be wired to agents by group name rather than by explicit type reference.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentGroupChatMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute">AgentGroupChatMemberAttribute</a></td>
+<td style="text-align: left;">Declares that a <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>-annotated agent participates in a named group chat workflow. Apply this attribute to include the agent in a round-robin group chat created via <a href="../IWorkflowFactory/#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int)" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string, int)">CreateGroupChatWorkflow(string, int)</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a></td>
+<td style="text-align: left;">Declares a handoff target for a <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>-annotated agent. Apply this attribute one or more times to specify which agents the decorated agent can hand off to when used as the initial agent in a handoff workflow via <a href="../IWorkflowFactory/#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow_TInitialAgent_()" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow\&lt;TInitialAgent&gt;()">CreateHandoffWorkflow&lt;TInitialAgent&gt;()</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a></td>
+<td style="text-align: left;">Marks an agent class as a member of a named sequential pipeline, specifying its position. The source generator reads these declarations to emit a strongly-typed <code>Create{PipelineName}SequentialWorkflow()</code> extension method on <a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../AIAgentBuilderPluginOptions/" title="NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions">AIAgentBuilderPluginOptions</a></td>
 <td style="text-align: left;">Options passed to <a href="../IAIAgentBuilderPlugin/#NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)">Configure(AIAgentBuilderPluginOptions)</a> to allow plugins to participate in agent-builder configuration.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a></td>
+<td style="text-align: left;">Marks a class as a declared agent type for Needlr's Agent Framework integration. Apply this attribute to a class to enable compile-time registration via the source generator and <a href="../IAgentFactory/#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_()" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;()">CreateAgent&lt;TAgent&gt;()</a> lookup.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../SyringeExtensionsForAgentFramework/" title="NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework">SyringeExtensionsForAgentFramework</a></td>
@@ -2629,6 +2681,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IAIAgentBuilderPlugin/" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin">IAIAgentBuilderPlugin</a></td>
 <td style="text-align: left;">Marker interface for classes that participate in configuring the agent builder pipeline (e.g., adding middleware layers).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a></td>
+<td style="text-align: left;">Creates MAF <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> instances from topology declared on agent classes via <a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a>, <a href="../AgentGroupChatMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute">AgentGroupChatMemberAttribute</a>, and <a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a>. Registered in DI by <code>UsingAgentFramework()</code> — inject via constructor or resolve from <code>IServiceProvider</code>.</td>
 </tr>
 </tbody>
 </table>

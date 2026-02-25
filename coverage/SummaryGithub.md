@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 02/23/2026 - 00:33:49 |
-| Coverage date: | 02/23/2026 - 00:32:48 - 02/23/2026 - 00:33:46 |
-| Parser: | MultiReport (17x Cobertura) |
-| Assemblies: | 17 |
-| Classes: | 208 |
-| Files: | 171 |
-| **Line coverage:** | 87.4% (8809 of 10068) |
-| Covered lines: | 8809 |
-| Uncovered lines: | 1259 |
-| Coverable lines: | 10068 |
-| Total lines: | 26326 |
-| **Branch coverage:** | 77.4% (4058 of 5238) |
-| Covered branches: | 4058 |
-| Total branches: | 5238 |
+| Generated on: | 02/25/2026 - 05:32:34 |
+| Coverage date: | 02/25/2026 - 05:31:30 - 02/25/2026 - 05:32:31 |
+| Parser: | MultiReport (19x Cobertura) |
+| Assemblies: | 20 |
+| Classes: | 230 |
+| Files: | 193 |
+| **Line coverage:** | 88.2% (10060 of 11405) |
+| Covered lines: | 10060 |
+| Uncovered lines: | 1345 |
+| Coverable lines: | 11405 |
+| Total lines: | 29033 |
+| **Branch coverage:** | 77.4% (4426 of 5714) |
+| Covered branches: | 4426 |
+| Total branches: | 5714 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,24 +62,67 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 62.3%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 79.3%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**62.3%**|**71.6%**|
-|NexusLabs.Needlr.AgentFramework.AgentFactory|100%|92.3%|
+|**NexusLabs.Needlr.AgentFramework**|**79.3%**|**71.8%**|
+|NexusLabs.Needlr.AgentFramework.AgentFactory|100%|90.9%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
+|NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap|77.8%|51.1%|
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe|100%|50%|
-|NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions|63.8%|57.1%|
+|NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions|83.1%|80%|
+|NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute|100%||
+|NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute|100%||
+|NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute|100%||
+|NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute|100%||
 |NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions|0%||
-|NexusLabs.Needlr.AgentFramework.FunctionScanners.AssemblyAgentFunctionScann<br/>er|94.4%|83.3%|
+|NexusLabs.Needlr.AgentFramework.FunctionScanners.AssemblyAgentFunctionGroup<br/>Scanner|93.3%|100%|
+|NexusLabs.Needlr.AgentFramework.FunctionScanners.AssemblyAgentFunctionScann<br/>er|94.4%|100%|
 |NexusLabs.Needlr.AgentFramework.FunctionScanners.GeneratedAgentFunctionScan<br/>ner|100%||
 |NexusLabs.Needlr.AgentFramework.FunctionScanners.ServiceProviderAgentFuncti<br/>onScanner|0%|0%|
+|NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionGroupRegist<br/>ry|100%||
+|NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionRegistry|75%||
+|NexusLabs.Needlr.AgentFramework.Generated.AgentGroupChatRegistry|100%||
+|NexusLabs.Needlr.AgentFramework.Generated.AgentHandoffTopologyRegistry|100%||
+|NexusLabs.Needlr.AgentFramework.Generated.AgentRegistry|75%||
+|NexusLabs.Needlr.AgentFramework.Generated.AgentSequentialTopologyRegistry|100%||
+|NexusLabs.Needlr.AgentFramework.Generated.NeedlrAgentFrameworkModuleInitial<br/>izer|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Generated.NeedlrSourceGenModuleInitializer|83.3%|100%|
 |NexusLabs.Needlr.AgentFramework.Generated.ServiceCatalog|0%||
 |NexusLabs.Needlr.AgentFramework.Generated.TypeRegistry|0%||
-|NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework|61.5%|50%|
+|NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute|100%||
+|NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework|75.4%|90.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|87%|73.5%|
+
+</details>
+<details><summary>NexusLabs.Needlr.AgentFramework.Analyzers - 100%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**NexusLabs.Needlr.AgentFramework.Analyzers**|**100%**|**84.8%**|
+|NexusLabs.Needlr.AgentFramework.Analyzers.AgentCyclicHandoffAnalyzer|100%|88%|
+|NexusLabs.Needlr.AgentFramework.Analyzers.AgentGroupChatSingletonAnalyzer|100%|85%|
+|NexusLabs.Needlr.AgentFramework.Analyzers.AgentTopologyAnalyzer|100%|79.1%|
+|NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticDescriptors|100%||
+
+</details>
+<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 96.9%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**NexusLabs.Needlr.AgentFramework.Generators**|**96.9%**|**77.4%**|
+|NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGe<br/>nerator|96.9%|77.4%|
+
+</details>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 94.2%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**94.2%**|**100%**|
+|NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
+|NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions|87.5%|100%|
 
 </details>
 <details><summary>NexusLabs.Needlr.Analyzers - 91.2%</summary>

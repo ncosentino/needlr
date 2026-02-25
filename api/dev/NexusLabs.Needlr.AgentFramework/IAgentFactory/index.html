@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2578,19 +2606,52 @@ auto-discovered <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.Age
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IAgentFactory</span>
 </span></code></pre></div>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(string)'></a></p>
+<h2 id="iagentfactorycreateagentstring-method">IAgentFactory.CreateAgent(string) Method<a class="headerlink" href="#iagentfactorycreateagentstring-method" title="Permanent link">&para;</a></h2>
+<p>Creates a new <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a> by looking up the registered type for
+<a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(string).agentClassName" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(string).agentClassName">agentClassName</a> and reading its <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="w"> </span><span class="n">CreateAgent</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentClassName</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(string).agentClassName'></a></p>
+<p><code>agentClassName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The simple class name of an agent type registered via <code>AddAgent&lt;T&gt;()</code>,
+<code>AddAgentsFromGenerated()</code>, or the source generator bootstrap.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a></p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
+Thrown when no agent with the given name is registered.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)'></a></p>
 <h2 id="iagentfactorycreateagentactionagentfactoryoptions-method">IAgentFactory.CreateAgent(Action&lt;AgentFactoryOptions&gt;) Method<a class="headerlink" href="#iagentfactorycreateagentactionagentfactoryoptions-method" title="Permanent link">&para;</a></h2>
 <p>Creates a new <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a> with the registered function tools applied.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="w"> </span><span class="n">CreateAgent</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFactoryOptions</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">configure</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="w"> </span><span class="n">CreateAgent</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFactoryOptions</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">configure</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configure'></a></p>
 <p><code>configure</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
 <p>Optional callback to configure per-agent options such as instructions
 or a subset of function types to wire for this specific agent instance.</p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a><br />
 A fully configured <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a> ready to run.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_()'></a></p>
+<h2 id="iagentfactorycreateagenttagent-method">IAgentFactory.CreateAgent&lt;TAgent&gt;() Method<a class="headerlink" href="#iagentfactorycreateagenttagent-method" title="Permanent link">&para;</a></h2>
+<p>Creates a new <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a> by reading configuration directly from the
+<a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a> on <a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_().TAgent" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;().TAgent">TAgent</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="w"> </span><span class="n">CreateAgent</span><span class="o">&lt;</span><span class="n">TAgent</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">TAgent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="type-parameters">Type parameters<a class="headerlink" href="#type-parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_().TAgent'></a></p>
+<p><code>TAgent</code></p>
+<p>A class decorated with <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.
+The class name becomes the agent's <code>Name</code>.</p>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a></p>
+<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
+Thrown when <a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_().TAgent" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;().TAgent">TAgent</a> is not decorated with <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.</p>
 
 
 

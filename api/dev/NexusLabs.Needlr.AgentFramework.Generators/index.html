@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2581,7 +2609,7 @@
 <tbody>
 <tr>
 <td style="text-align: left;"><a href="AgentFrameworkFunctionRegistryGenerator/" title="NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator">AgentFrameworkFunctionRegistryGenerator</a></td>
-<td style="text-align: left;">Source generator for Microsoft Agent Framework functions. Discovers classes with [AgentFunction] methods and generates a compile-time type registry.</td>
+<td style="text-align: left;">Source generator for Microsoft Agent Framework functions. Discovers classes with [AgentFunction] methods and generates a compile-time type registry. Also discovers classes with [AgentFunctionGroup] attributes and generates a group registry. Also discovers classes with [NeedlrAiAgent] attributes and generates an agent registry. Always emits a [ModuleInitializer] that auto-registers all discovered types with AgentFrameworkGeneratedBootstrap on assembly load.</td>
 </tr>
 </tbody>
 </table>

@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2573,28 +2601,54 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframework_1"><a href="../NexusLabs.Needlr.AgentFramework/" title="NexusLabs.Needlr.AgentFramework">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework_1" title="Permanent link">&para;</a></h3>
 <h2 id="agentfactoryoptions-class">AgentFactoryOptions Class<a class="headerlink" href="#agentfactoryoptions-class" title="Permanent link">&para;</a></h2>
-<p>Per-agent configuration options passed to <a href="../IAgentFactory/#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent(System.Action\&lt;NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;)">CreateAgent(Action&lt;AgentFactoryOptions&gt;)</a>.</p>
+<p>Per-agent configuration options passed to <code>IAgentFactory.CreateAgent(configure)</code>.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentFactoryOptions</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; AgentFactoryOptions</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.Description'></a></p>
+<h2 id="agentfactoryoptionsdescription-property">AgentFactoryOptions.Description Property<a class="headerlink" href="#agentfactoryoptionsdescription-property" title="Permanent link">&para;</a></h2>
+<p>Gets or sets a human-readable description of this agent's purpose.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Description</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionGroups'></a></p>
+<h2 id="agentfactoryoptionsfunctiongroups-property">AgentFactoryOptions.FunctionGroups Property<a class="headerlink" href="#agentfactoryoptionsfunctiongroups-property" title="Permanent link">&para;</a></h2>
+<p>Gets or sets the named function groups to wire as tools for this agent.
+Groups are declared using <a href="../AgentFunctionGroupAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute">AgentFunctionGroupAttribute</a> on function classes
+and registered via <code>AddAgentFunctionGroupsFromAssemblies()</code> or
+<code>AddAgentFunctionGroupsFromGenerated()</code>.
+When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> and <a href="./#NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionTypes" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionTypes">FunctionTypes</a> is also <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>,
+all registered function types are used.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">FunctionGroups</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionTypes'></a></p>
 <h2 id="agentfactoryoptionsfunctiontypes-property">AgentFactoryOptions.FunctionTypes Property<a class="headerlink" href="#agentfactoryoptionsfunctiontypes-property" title="Permanent link">&para;</a></h2>
 <p>Gets or sets the subset of function types to wire as tools for this agent.
-When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, all function types registered with the factory are used.
-When set, only methods from the listed types decorated with
-<a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a> are wired as <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> tools.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">FunctionTypes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> and <a href="./#NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionGroups" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionGroups">FunctionGroups</a> is also <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>,
+all function types registered with the factory are used.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">FunctionTypes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" title="System.Type">System.Type</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.Instructions'></a></p>
 <h2 id="agentfactoryoptionsinstructions-property">AgentFactoryOptions.Instructions Property<a class="headerlink" href="#agentfactoryoptionsinstructions-property" title="Permanent link">&para;</a></h2>
 <p>Gets or sets the system instructions for this specific agent.
 When set, overrides the default instructions configured on the factory.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Instructions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Instructions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.Name'></a></p>
+<h2 id="agentfactoryoptionsname-property">AgentFactoryOptions.Name Property<a class="headerlink" href="#agentfactoryoptionsname-property" title="Permanent link">&para;</a></h2>
+<p>Gets or sets the agent's name. Used by MAF to populate <code>ExecutorId</code> in workflow events,
+making multi-agent output readable. When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, MAF assigns a generated identifier.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 

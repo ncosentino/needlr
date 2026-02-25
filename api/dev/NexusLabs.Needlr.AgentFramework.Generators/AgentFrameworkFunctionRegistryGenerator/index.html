@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2573,7 +2601,11 @@
 <h3 id="nexuslabsneedlragentframeworkgenerators"><a href="../NexusLabs.Needlr.AgentFramework.Generators/" title="NexusLabs.Needlr.AgentFramework.Generators">NexusLabs.Needlr.AgentFramework.Generators</a><a class="headerlink" href="#nexuslabsneedlragentframeworkgenerators" title="Permanent link">&para;</a></h3>
 <h2 id="agentframeworkfunctionregistrygenerator-class">AgentFrameworkFunctionRegistryGenerator Class<a class="headerlink" href="#agentframeworkfunctionregistrygenerator-class" title="Permanent link">&para;</a></h2>
 <p>Source generator for Microsoft Agent Framework functions.
-Discovers classes with [AgentFunction] methods and generates a compile-time type registry.</p>
+Discovers classes with [AgentFunction] methods and generates a compile-time type registry.
+Also discovers classes with [AgentFunctionGroup] attributes and generates a group registry.
+Also discovers classes with [NeedlrAiAgent] attributes and generates an agent registry.
+Always emits a [ModuleInitializer] that auto-registers all discovered types with
+AgentFrameworkGeneratedBootstrap on assembly load.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentFrameworkFunctionRegistryGenerator</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.iincrementalgenerator" title="Microsoft.CodeAnalysis.IIncrementalGenerator">Microsoft.CodeAnalysis.IIncrementalGenerator</a> &#129106; AgentFrameworkFunctionRegistryGenerator</p>

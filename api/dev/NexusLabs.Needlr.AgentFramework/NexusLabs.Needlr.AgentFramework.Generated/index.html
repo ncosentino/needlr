@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -875,6 +875,34 @@
     
   
     Breadcrumbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../ai-integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Integrations
   
 
     
@@ -2581,12 +2609,40 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../AgentFrameworkFunctionGroupRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionGroupRegistry">AgentFrameworkFunctionGroupRegistry</a></td>
+<td style="text-align: left;">Generated registry for Microsoft Agent Framework function groups discovered at compile time. Pass <a href="../AgentFrameworkFunctionGroupRegistry/#NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionGroupRegistry.AllGroups" title="NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionGroupRegistry.AllGroups">AllGroups</a> to <code>AgentFrameworkSyringeExtensions.AddAgentFunctionGroupsFromGenerated</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentFrameworkFunctionRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionRegistry">AgentFrameworkFunctionRegistry</a></td>
+<td style="text-align: left;">Generated registry for Microsoft Agent Framework function types discovered at compile time. Pass <a href="../AgentFrameworkFunctionRegistry/#NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionRegistry.AllFunctionTypes" title="NexusLabs.Needlr.AgentFramework.Generated.AgentFrameworkFunctionRegistry.AllFunctionTypes">AllFunctionTypes</a> to <code>AgentFrameworkSyringeExtensions.AddAgentFunctionsFromGenerated</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentGroupChatRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentGroupChatRegistry">AgentGroupChatRegistry</a></td>
+<td style="text-align: left;">Generated registry of agent group chat memberships declared via [AgentGroupChatMember] attributes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentHandoffTopologyRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentHandoffTopologyRegistry">AgentHandoffTopologyRegistry</a></td>
+<td style="text-align: left;">Generated registry of agent handoff topology declared via [AgentHandoffsTo] attributes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentRegistry">AgentRegistry</a></td>
+<td style="text-align: left;">Generated registry for agent types declared with [NeedlrAiAgent], discovered at compile time.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentSequentialTopologyRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.AgentSequentialTopologyRegistry">AgentSequentialTopologyRegistry</a></td>
+<td style="text-align: left;">Generated registry of sequential pipeline memberships declared via [AgentSequenceMember] attributes. Agents within each pipeline are stored in ascending order value order.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ServiceCatalog/" title="NexusLabs.Needlr.AgentFramework.Generated.ServiceCatalog">ServiceCatalog</a></td>
 <td style="text-align: left;">Compile-time service catalog containing all discovered registrations.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TypeRegistry/" title="NexusLabs.Needlr.AgentFramework.Generated.TypeRegistry">TypeRegistry</a></td>
 <td style="text-align: left;">Compile-time generated registry of injectable types and plugins. This eliminates the need for runtime reflection-based type discovery.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../WorkflowFactoryExtensions/" title="NexusLabs.Needlr.AgentFramework.Generated.WorkflowFactoryExtensions">WorkflowFactoryExtensions</a></td>
+<td style="text-align: left;">Generated strongly-typed extension methods on <a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a>. Each method encapsulates an agent type or group name so the composition root requires no direct agent type references or magic strings.</td>
 </tr>
 </tbody>
 </table>
