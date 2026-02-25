@@ -631,9 +631,21 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             var methodName = $"Create{StripAgentSuffix(className)}HandoffWorkflow";
 
             sb.AppendLine($"    /// <summary>");
-            sb.AppendLine($"    /// Creates a handoff workflow starting from <see cref=\"{typeName.Replace("global::", "")}\"/>,");
-            sb.AppendLine($"    /// with {kvp.Value.Count} handoff target(s) as declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute\"/>.");
+            sb.AppendLine($"    /// Creates a handoff workflow starting from <see cref=\"{typeName.Replace("global::", "")}\"/>.");
             sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    /// <remarks>");
+            sb.AppendLine($"    /// Handoff targets declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute\"/>:");
+            sb.AppendLine($"    /// <list type=\"bullet\">");
+            foreach (var (targetTypeName, reason) in kvp.Value)
+            {
+                var cref = targetTypeName.Replace("global::", "");
+                if (string.IsNullOrEmpty(reason))
+                    sb.AppendLine($"    /// <item><description><see cref=\"{cref}\"/></description></item>");
+                else
+                    sb.AppendLine($"    /// <item><description><see cref=\"{cref}\"/> — {reason}</description></item>");
+            }
+            sb.AppendLine($"    /// </list>");
+            sb.AppendLine($"    /// </remarks>");
             sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory)");
             sb.AppendLine($"        => workflowFactory.CreateHandoffWorkflow<{typeName}>();");
             sb.AppendLine();
@@ -647,9 +659,18 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             var escapedGroupName = groupName.Replace("\"", "\\\"");
 
             sb.AppendLine($"    /// <summary>");
-            sb.AppendLine($"    /// Creates a round-robin group chat workflow for the \"{escapedGroupName}\" group,");
-            sb.AppendLine($"    /// with {kvp.Value.Count} participant(s) as declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute\"/>.");
+            sb.AppendLine($"    /// Creates a round-robin group chat workflow for the \"{escapedGroupName}\" group.");
             sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    /// <remarks>");
+            sb.AppendLine($"    /// Participants declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute\"/>:");
+            sb.AppendLine($"    /// <list type=\"bullet\">");
+            foreach (var participantTypeName in kvp.Value)
+            {
+                var cref = participantTypeName.Replace("global::", "");
+                sb.AppendLine($"    /// <item><description><see cref=\"{cref}\"/></description></item>");
+            }
+            sb.AppendLine($"    /// </list>");
+            sb.AppendLine($"    /// </remarks>");
             sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory, int maxIterations = 10)");
             sb.AppendLine($"        => workflowFactory.CreateGroupChatWorkflow(\"{escapedGroupName}\", maxIterations);");
             sb.AppendLine();
