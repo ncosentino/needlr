@@ -63,4 +63,60 @@ public static class MafDiagnosticDescriptors
         description: "A handoff cycle exists where an agent can eventually hand off back to itself. While MAF may handle termination conditions in practice, this is usually a topology design error. Review the [AgentHandoffsTo] declarations and break the cycle.",
         helpLinkUri: HelpLinkBase + "NDLRMAF004.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF005: An agent declares a FunctionGroups entry with no matching [AgentFunctionGroup] class.
+    /// </summary>
+    public static readonly DiagnosticDescriptor UnresolvedFunctionGroupReference = new(
+        id: MafDiagnosticIds.UnresolvedFunctionGroupReference,
+        title: "FunctionGroups references an unregistered group name",
+        messageFormat: "'{0}' declares FunctionGroups entry '{1}' but no class decorated with [AgentFunctionGroup(\"{1}\")] exists in this compilation. The agent will silently receive zero tools from this group at runtime.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "When an agent declares FunctionGroups = new[] { \"name\" }, a class with [AgentFunctionGroup(\"name\")] must exist in the same compilation. If no such class is registered, the group resolves to zero tools and the agent silently loses access to those functions. Check for typos or register the missing function group class.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF005.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF006: Duplicate Order value within the same [AgentSequenceMember] pipeline.
+    /// </summary>
+    public static readonly DiagnosticDescriptor DuplicateSequenceOrder = new(
+        id: MafDiagnosticIds.DuplicateSequenceOrder,
+        title: "Duplicate Order value in sequential pipeline",
+        messageFormat: "Pipeline '{0}' has a duplicate Order value ({1}) on '{2}'. Each agent in a sequential pipeline must have a unique Order.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Two or more agents in the same [AgentSequenceMember] pipeline declare the same Order value. This is ambiguous and will cause incorrect pipeline ordering or runtime errors. Assign a unique Order to each agent in the pipeline.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF006.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF007: Gap in Order sequence within the same [AgentSequenceMember] pipeline.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GapInSequenceOrder = new(
+        id: MafDiagnosticIds.GapInSequenceOrder,
+        title: "Gap in sequential pipeline Order values",
+        messageFormat: "Pipeline '{0}' has a gap in its Order sequence — Order {1} is missing. Use contiguous Order values to avoid potential agent omission.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The Order values declared via [AgentSequenceMember] for this pipeline are not contiguous. This is not necessarily an error but may indicate an unregistered agent has been accidentally omitted from the pipeline. Review the pipeline members and ensure no agent is missing.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF007.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF008: Agent participates in no topology declaration.
+    /// </summary>
+    public static readonly DiagnosticDescriptor OrphanAgent = new(
+        id: MafDiagnosticIds.OrphanAgent,
+        title: "Agent participates in no topology declaration",
+        messageFormat: "'{0}' is decorated with [NeedlrAiAgent] but does not appear in any topology declaration ([AgentHandoffsTo], [AgentGroupChatMember], or [AgentSequenceMember]). It will not be wired into any generated workflow.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "An agent registered with [NeedlrAiAgent] is not referenced in any topology. It will not appear in any source-generated workflow method. This may be intentional (e.g. the agent is used programmatically), but is often an oversight. Add a topology attribute or remove [NeedlrAiAgent] if the class is not an agent.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF008.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }

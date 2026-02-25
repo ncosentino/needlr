@@ -9,3 +9,7 @@ NDLRMAF001 | NexusLabs.Needlr.AgentFramework | Error | AgentHandoffsTo target ty
 NDLRMAF002 | NexusLabs.Needlr.AgentFramework | Error | AgentGroupChatMember group has fewer than two members in this compilation
 NDLRMAF003 | NexusLabs.Needlr.AgentFramework | Warning | Class with [AgentHandoffsTo] is not itself decorated with [NeedlrAiAgent]
 NDLRMAF004 | NexusLabs.Needlr.AgentFramework | Warning | Cyclic handoff chain detected
+NDLRMAF005 | NexusLabs.Needlr.AgentFramework | Warning | FunctionGroups references a group name with no matching [AgentFunctionGroup] class
+NDLRMAF006 | NexusLabs.Needlr.AgentFramework | Error | Duplicate Order value in [AgentSequenceMember] pipeline
+NDLRMAF007 | NexusLabs.Needlr.AgentFramework | Warning | Gap in [AgentSequenceMember] Order sequence
+NDLRMAF008 | NexusLabs.Needlr.AgentFramework | Info | Agent participates in no topology declaration

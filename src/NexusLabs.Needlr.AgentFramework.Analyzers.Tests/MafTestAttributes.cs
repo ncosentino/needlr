@@ -7,7 +7,8 @@ namespace NexusLabs.Needlr.AgentFramework.Analyzers.Tests;
 internal static class MafTestAttributes
 {
     /// <summary>
-    /// Core MAF agent attributes: NeedlrAiAgent, AgentHandoffsTo, AgentGroupChatMember.
+    /// Core MAF agent attributes: NeedlrAiAgent, AgentHandoffsTo, AgentGroupChatMember,
+    /// AgentFunctionGroup, AgentSequenceMember.
     /// </summary>
     public const string All = @"
 namespace NexusLabs.Needlr.AgentFramework
@@ -17,6 +18,8 @@ namespace NexusLabs.Needlr.AgentFramework
     {
         public string? Instructions { get; set; }
         public string? Description { get; set; }
+        public System.Type[]? FunctionTypes { get; set; }
+        public string[]? FunctionGroups { get; set; }
     }
 
     [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
@@ -36,6 +39,25 @@ namespace NexusLabs.Needlr.AgentFramework
     {
         public AgentGroupChatMemberAttribute(string groupName) => GroupName = groupName;
         public string GroupName { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentFunctionGroupAttribute : System.Attribute
+    {
+        public AgentFunctionGroupAttribute(string groupName) => GroupName = groupName;
+        public string GroupName { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentSequenceMemberAttribute : System.Attribute
+    {
+        public AgentSequenceMemberAttribute(string pipelineName, int order)
+        {
+            PipelineName = pipelineName;
+            Order = order;
+        }
+        public string PipelineName { get; }
+        public int Order { get; }
     }
 }";
 }

@@ -27,4 +27,29 @@ public static class MafDiagnosticIds
     /// NDLRMAF004: A cyclic handoff chain was detected (e.g. A → B → A).
     /// </summary>
     public const string CyclicHandoffChain = "NDLRMAF004";
+
+    /// <summary>
+    /// NDLRMAF005: An agent declares a <c>FunctionGroups</c> entry whose name has no matching
+    /// <c>[AgentFunctionGroup("name")]</c> class in this compilation.
+    /// </summary>
+    public const string UnresolvedFunctionGroupReference = "NDLRMAF005";
+
+    /// <summary>
+    /// NDLRMAF006: Two or more agents in the same <c>[AgentSequenceMember]</c> pipeline declare
+    /// the same <c>Order</c> value.
+    /// </summary>
+    public const string DuplicateSequenceOrder = "NDLRMAF006";
+
+    /// <summary>
+    /// NDLRMAF007: The <c>Order</c> values within a named <c>[AgentSequenceMember]</c> pipeline
+    /// are not contiguous (a gap exists).
+    /// </summary>
+    public const string GapInSequenceOrder = "NDLRMAF007";
+
+    /// <summary>
+    /// NDLRMAF008: A class decorated with <c>[NeedlrAiAgent]</c> participates in no topology
+    /// declaration (<c>[AgentHandoffsTo]</c>, <c>[AgentGroupChatMember]</c>, or
+    /// <c>[AgentSequenceMember]</c>).
+    /// </summary>
+    public const string OrphanAgent = "NDLRMAF008";
 }
