@@ -21,13 +21,15 @@ public static class AgentFrameworkGeneratedBootstrap
             Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
             Func<IReadOnlyList<Type>> agentTypes,
             Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> handoffTopology,
-            Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups)
+            Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups,
+            Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> sequentialTopology)
         {
             FunctionTypes = functionTypes;
             GroupTypes = groupTypes;
             AgentTypes = agentTypes;
             HandoffTopology = handoffTopology;
             GroupChatGroups = groupChatGroups;
+            SequentialTopology = sequentialTopology;
         }
 
         public Func<IReadOnlyList<Type>> FunctionTypes { get; }
@@ -35,6 +37,7 @@ public static class AgentFrameworkGeneratedBootstrap
         public Func<IReadOnlyList<Type>> AgentTypes { get; }
         public Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> HandoffTopology { get; }
         public Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups { get; }
+        public Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> SequentialTopology { get; }
     }
 
     private static readonly object _gate = new();
@@ -46,7 +49,8 @@ public static class AgentFrameworkGeneratedBootstrap
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> Groups,
         Func<IReadOnlyList<Type>> Agents,
         Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> HandoffTopology,
-        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups)? _cachedCombined;
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> SequentialTopology)? _cachedCombined;
 
     /// <summary>
     /// Registers the generated type providers for this assembly.
@@ -57,17 +61,19 @@ public static class AgentFrameworkGeneratedBootstrap
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
         Func<IReadOnlyList<Type>> agentTypes,
         Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> handoffTopology,
-        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups)
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupChatGroups,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? sequentialTopology = null)
     {
         ArgumentNullException.ThrowIfNull(functionTypes);
         ArgumentNullException.ThrowIfNull(groupTypes);
         ArgumentNullException.ThrowIfNull(agentTypes);
         ArgumentNullException.ThrowIfNull(handoffTopology);
         ArgumentNullException.ThrowIfNull(groupChatGroups);
+        sequentialTopology ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
 
         lock (_gate)
         {
-            _registrations.Add(new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups));
+            _registrations.Add(new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups, sequentialTopology));
             _cachedCombined = null;
         }
     }
@@ -205,6 +211,33 @@ public static class AgentFrameworkGeneratedBootstrap
     }
 
     /// <summary>
+    /// Gets the combined sequential topology provider from all registered assemblies.
+    /// </summary>
+    public static bool TryGetSequentialTopology(
+        [NotNullWhen(true)] out Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? provider)
+    {
+        var local = _asyncLocalOverride.Value;
+        if (local is not null)
+        {
+            provider = local.SequentialTopology;
+            return true;
+        }
+
+        lock (_gate)
+        {
+            if (_registrations.Count == 0)
+            {
+                provider = null;
+                return false;
+            }
+
+            EnsureCombined();
+            provider = _cachedCombined!.Value.SequentialTopology;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Creates a test-scoped override that replaces bootstrap discovery for the current async context.
     /// Dispose the returned scope to restore the previous state.
     /// </summary>
@@ -213,12 +246,14 @@ public static class AgentFrameworkGeneratedBootstrap
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
         Func<IReadOnlyList<Type>> agentTypes,
         Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>>? handoffTopology = null,
-        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? groupChatGroups = null)
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? groupChatGroups = null,
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? sequentialTopology = null)
     {
         handoffTopology ??= static () => new Dictionary<Type, IReadOnlyList<(Type, string?)>>();
         groupChatGroups ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
+        sequentialTopology ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
         var prior = _asyncLocalOverride.Value;
-        _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups);
+        _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups, sequentialTopology);
         return new Scope(prior);
     }
 
@@ -232,6 +267,7 @@ public static class AgentFrameworkGeneratedBootstrap
         var agentProviders = _registrations.Select(r => r.AgentTypes).ToArray();
         var topologyProviders = _registrations.Select(r => r.HandoffTopology).ToArray();
         var groupChatProviders = _registrations.Select(r => r.GroupChatGroups).ToArray();
+        var sequentialProviders = _registrations.Select(r => r.SequentialTopology).ToArray();
 
         Func<IReadOnlyList<Type>> combinedFunctions = () =>
         {
@@ -306,7 +342,24 @@ public static class AgentFrameworkGeneratedBootstrap
                 kv => (IReadOnlyList<Type>)kv.Value.AsReadOnly());
         };
 
-        _cachedCombined = (combinedFunctions, combinedGroups, combinedAgents, combinedTopology, combinedGroupChatGroups);
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> combinedSequentialTopology = () =>
+        {
+            var merged = new Dictionary<string, List<Type>>();
+            foreach (var p in sequentialProviders)
+                foreach (var (key, types) in p())
+                {
+                    if (!merged.TryGetValue(key, out var list))
+                        merged[key] = list = [];
+                    foreach (var t in types)
+                        if (!list.Contains(t))
+                            list.Add(t);
+                }
+            return merged.ToDictionary(
+                kv => kv.Key,
+                kv => (IReadOnlyList<Type>)kv.Value.AsReadOnly());
+        };
+
+        _cachedCombined = (combinedFunctions, combinedGroups, combinedAgents, combinedTopology, combinedGroupChatGroups, combinedSequentialTopology);
     }
 
     private sealed class Scope : IDisposable

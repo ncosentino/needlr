@@ -30,6 +30,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string NeedlrAiAgentAttributeName = "NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute";
     private const string AgentHandoffsToAttributeName = "NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute";
     private const string AgentGroupChatMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute";
+    private const string AgentSequenceMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -71,20 +72,29 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetGroupChatEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Unified output: all five pipelines combined with compilation metadata.
+        // Pipeline F: [AgentSequenceMember] annotations → sequential pipeline registry
+        var sequenceEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentSequenceMemberAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GetSequenceEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all six pipelines combined with compilation metadata.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
             .Combine(agentClasses.Collect())
             .Combine(handoffEntries.Collect())
             .Combine(groupChatEntries.Collect())
+            .Combine(sequenceEntries.Collect())
             .Combine(context.CompilationProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var ((((( functionData, groupData), agentData), handoffData), groupChatData), compilation) = data;
-                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, compilation, spc);
+                var (((((( functionData, groupData), agentData), handoffData), groupChatData), sequenceData), compilation) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, compilation, spc);
             });
     }
 
@@ -254,6 +264,35 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return entries.ToImmutable();
     }
 
+    private static ImmutableArray<SequenceEntry> GetSequenceEntries(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return ImmutableArray<SequenceEntry>.Empty;
+
+        var agentTypeName = GetFullyQualifiedName(typeSymbol);
+        var entries = ImmutableArray.CreateBuilder<SequenceEntry>();
+
+        foreach (var attr in context.Attributes)
+        {
+            if (attr.ConstructorArguments.Length < 2)
+                continue;
+
+            var pipelineName = attr.ConstructorArguments[0].Value as string;
+            if (string.IsNullOrWhiteSpace(pipelineName))
+                continue;
+
+            if (attr.ConstructorArguments[1].Value is not int order)
+                continue;
+
+            entries.Add(new SequenceEntry(agentTypeName, pipelineName!, order));
+        }
+
+        return entries.ToImmutable();
+    }
+
     private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.DeclaredAccessibility == Accessibility.Private ||
@@ -307,6 +346,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<NeedlrAiAgentTypeInfo?> agentData,
         ImmutableArray<ImmutableArray<HandoffEntry>> handoffData,
         ImmutableArray<ImmutableArray<GroupChatEntry>> groupChatData,
+        ImmutableArray<ImmutableArray<SequenceEntry>> sequenceData,
         Compilation compilation,
         SourceProductionContext spc)
     {
@@ -340,6 +380,13 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .GroupBy(e => e.GroupName)
             .ToDictionary(g => g.Key, g => g.Select(e => e.AgentTypeName).Distinct().ToList());
 
+        var allSequenceEntries = sequenceData.SelectMany(a => a).ToList();
+        var sequenceByPipelineName = allSequenceEntries
+            .GroupBy(e => e.PipelineName)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(e => e.Order).Select(e => e.AgentTypeName).ToList());
+
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
             SourceText.From(GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
@@ -356,12 +403,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         spc.AddSource("AgentGroupChatRegistry.g.cs",
             SourceText.From(GenerateGroupChatRegistrySource(groupChatByGroupName, safeAssemblyName), Encoding.UTF8));
 
+        spc.AddSource("AgentSequentialTopologyRegistry.g.cs",
+            SourceText.From(GenerateSequentialTopologyRegistrySource(sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
+
         spc.AddSource("NeedlrAgentFrameworkBootstrap.g.cs",
             SourceText.From(GenerateBootstrapSource(safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("WorkflowFactoryExtensions.g.cs",
             SourceText.From(GenerateWorkflowFactoryExtensionsSource(
-                handoffByInitialAgent, groupChatByGroupName, safeAssemblyName), Encoding.UTF8));
+                handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
 
         // Partial companions for [NeedlrAiAgent] classes declared as partial
         foreach (var agentType in validAgentTypes.Where(a => a.IsPartial))
@@ -600,9 +650,53 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
+    private static string GenerateSequentialTopologyRegistrySource(
+        Dictionary<string, List<string>> sequenceByPipelineName,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("// Needlr AgentFramework Sequential Pipeline Registry");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// Generated registry of sequential pipeline memberships declared via [AgentSequenceMember] attributes.");
+        sb.AppendLine("/// Agents within each pipeline are stored in ascending order value order.");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static class AgentSequentialTopologyRegistry");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// All sequential pipelines, mapping pipeline name to the ordered agent types.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public static IReadOnlyDictionary<string, IReadOnlyList<Type>> AllPipelines { get; } =");
+        sb.AppendLine("        new Dictionary<string, IReadOnlyList<Type>>()");
+        sb.AppendLine("        {");
+
+        foreach (var kvp in sequenceByPipelineName.OrderBy(k => k.Key))
+        {
+            var escapedName = kvp.Key.Replace("\"", "\\\"");
+            sb.AppendLine($"            [\"{escapedName}\"] = new Type[]");
+            sb.AppendLine("            {");
+            foreach (var typeName in kvp.Value)
+                sb.AppendLine($"                typeof({typeName}),");
+            sb.AppendLine("            },");
+        }
+
+        sb.AppendLine("        };");
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
     private static string GenerateWorkflowFactoryExtensionsSource(
         Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
         Dictionary<string, List<string>> groupChatByGroupName,
+        Dictionary<string, List<string>> sequenceByPipelineName,
         string safeAssemblyName)
     {
         var sb = new StringBuilder();
@@ -676,6 +770,31 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        foreach (var kvp in sequenceByPipelineName.OrderBy(k => k.Key))
+        {
+            var pipelineName = kvp.Key;
+            var methodSuffix = GroupNameToPascalCase(pipelineName);
+            var methodName = $"Create{methodSuffix}SequentialWorkflow";
+            var escapedPipelineName = pipelineName.Replace("\"", "\\\"");
+
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Creates a sequential pipeline workflow for the \"{escapedPipelineName}\" pipeline.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    /// <remarks>");
+            sb.AppendLine($"    /// Agents declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute\"/> (in order):");
+            sb.AppendLine($"    /// <list type=\"number\">");
+            foreach (var memberTypeName in kvp.Value)
+            {
+                var cref = memberTypeName.Replace("global::", "");
+                sb.AppendLine($"    /// <item><description><see cref=\"{cref}\"/></description></item>");
+            }
+            sb.AppendLine($"    /// </list>");
+            sb.AppendLine($"    /// </remarks>");
+            sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory)");
+            sb.AppendLine($"        => workflowFactory.CreateSequentialWorkflow(\"{escapedPipelineName}\");");
+            sb.AppendLine();
+        }
+
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -732,7 +851,8 @@ internal static class NeedlrAgentFrameworkModuleInitializer
             () => AgentFrameworkFunctionGroupRegistry.AllGroups,
             () => AgentRegistry.AllAgentTypes,
             () => AgentHandoffTopologyRegistry.AllHandoffs,
-            () => AgentGroupChatRegistry.AllGroups);
+            () => AgentGroupChatRegistry.AllGroups,
+            () => AgentSequentialTopologyRegistry.AllPipelines);
     }}
 }}
 ";
@@ -826,5 +946,19 @@ internal static class NeedlrAgentFrameworkModuleInitializer
 
         public string AgentTypeName { get; }
         public string GroupName { get; }
+    }
+
+    private readonly struct SequenceEntry
+    {
+        public SequenceEntry(string agentTypeName, string pipelineName, int order)
+        {
+            AgentTypeName = agentTypeName;
+            PipelineName = pipelineName;
+            Order = order;
+        }
+
+        public string AgentTypeName { get; }
+        public string PipelineName { get; }
+        public int Order { get; }
     }
 }

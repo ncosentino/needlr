@@ -70,6 +70,16 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         return AgentWorkflowBuilder.BuildSequential(agents);
     }
 
+    /// <inheritdoc/>
+    public Workflow CreateSequentialWorkflow(string pipelineName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pipelineName);
+
+        var memberTypes = ResolveSequentialMembers(pipelineName);
+        var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.Name)).ToArray();
+        return AgentWorkflowBuilder.BuildSequential(agents);
+    }
+
     private IReadOnlyList<(Type TargetType, string? HandoffReason)> ResolveHandoffTargets(Type initialAgentType)
     {
         if (AgentFrameworkGeneratedBootstrap.TryGetHandoffTopology(out var provider))
@@ -134,6 +144,45 @@ internal sealed class WorkflowFactory : IWorkflowFactory
                          .Any(attr => string.Equals(attr.GroupName, groupName, StringComparison.Ordinal)))
             .ToList()
             .AsReadOnly();
+    }
+
+    private static IReadOnlyList<Type> ResolveSequentialMembers(string pipelineName)
+    {
+        if (AgentFrameworkGeneratedBootstrap.TryGetSequentialTopology(out var provider))
+        {
+            var topology = provider();
+            if (topology.TryGetValue(pipelineName, out var members) && members.Count > 0)
+                return members;
+
+            return ResolveSequentialMembersViaReflection(pipelineName);
+        }
+
+        return ResolveSequentialMembersViaReflection(pipelineName);
+    }
+
+    [RequiresUnreferencedCode("Reflection-based sequential pipeline discovery may not work after trimming. Use the source generator package instead.")]
+    private static IReadOnlyList<Type> ResolveSequentialMembersViaReflection(string pipelineName)
+    {
+        var members = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a =>
+            {
+                try { return a.GetTypes(); }
+                catch { return []; }
+            })
+            .SelectMany(t => t.GetCustomAttributes<AgentSequenceMemberAttribute>()
+                .Where(attr => string.Equals(attr.PipelineName, pipelineName, StringComparison.Ordinal))
+                .Select(attr => (Type: t, attr.Order)))
+            .OrderBy(x => x.Order)
+            .Select(x => x.Type)
+            .ToList()
+            .AsReadOnly();
+
+        if (members.Count == 0)
+            throw new InvalidOperationException(
+                $"No agents found for sequential pipeline '{pipelineName}'. " +
+                $"Decorate agent classes with [AgentSequenceMember(\"{pipelineName}\", order)] and ensure their assemblies are loaded.");
+
+        return members;
     }
 
     private Workflow BuildHandoff(

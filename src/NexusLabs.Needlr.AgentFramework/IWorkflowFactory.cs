@@ -6,7 +6,8 @@ namespace NexusLabs.Needlr.AgentFramework;
 
 /// <summary>
 /// Creates MAF <see cref="Workflow"/> instances from topology declared on agent classes via
-/// <see cref="AgentHandoffsToAttribute"/> and <see cref="AgentGroupChatMemberAttribute"/>.
+/// <see cref="AgentHandoffsToAttribute"/>, <see cref="AgentGroupChatMemberAttribute"/>, and
+/// <see cref="AgentSequenceMemberAttribute"/>.
 /// Registered in DI by <c>UsingAgentFramework()</c> — inject via constructor or resolve from
 /// <c>IServiceProvider</c>.
 /// </summary>
@@ -14,14 +15,15 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <para>
 /// When the <c>NexusLabs.Needlr.AgentFramework.Generators</c> source generator is used, strongly-typed
 /// extension methods are emitted directly into the agents assembly — for example,
-/// <c>CreateTriageHandoffWorkflow()</c> and <c>CreateCodeReviewGroupChatWorkflow()</c>. These generated
-/// methods call the core <see cref="CreateHandoffWorkflow{TInitialAgent}"/> and
-/// <see cref="CreateGroupChatWorkflow"/> methods internally, encapsulating type references and group
-/// name strings so the composition root requires neither.
+/// <c>CreateTriageHandoffWorkflow()</c>, <c>CreateCodeReviewGroupChatWorkflow()</c>, and
+/// <c>CreateContentPipelineSequentialWorkflow()</c>. These generated methods call the core
+/// <see cref="CreateHandoffWorkflow{TInitialAgent}"/>, <see cref="CreateGroupChatWorkflow"/>, and
+/// <see cref="CreateSequentialWorkflow(string)"/> methods internally, encapsulating type references
+/// and pipeline name strings so the composition root requires neither.
 /// </para>
 /// <para>
-/// When the generator is not used, <see cref="CreateHandoffWorkflow{TInitialAgent}"/> and
-/// <see cref="CreateGroupChatWorkflow"/> fall back to reading attributes via reflection.
+/// When the generator is not used, all three factory methods fall back to reading attributes via
+/// reflection.
 /// </para>
 /// </remarks>
 public interface IWorkflowFactory
@@ -70,4 +72,19 @@ public interface IWorkflowFactory
     /// </param>
     /// <returns>A built <see cref="Workflow"/> ready to run via MAF's execution environment.</returns>
     Workflow CreateSequentialWorkflow(params AIAgent[] agents);
+
+    /// <summary>
+    /// Creates a sequential pipeline <see cref="Workflow"/> from a named pipeline declared via
+    /// <see cref="AgentSequenceMemberAttribute"/>. Agents are assembled in ascending order.
+    /// </summary>
+    /// <param name="pipelineName">
+    /// The pipeline name. Must match the <see cref="AgentSequenceMemberAttribute.PipelineName"/> value
+    /// (case-sensitive) on at least one agent type. Prefer using a generated extension method
+    /// (e.g. <c>CreateContentPipelineSequentialWorkflow()</c>) to avoid referencing this string directly.
+    /// </param>
+    /// <returns>A built <see cref="Workflow"/> ready to run via MAF's execution environment.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="pipelineName"/> has no registered members.
+    /// </exception>
+    Workflow CreateSequentialWorkflow(string pipelineName);
 }
