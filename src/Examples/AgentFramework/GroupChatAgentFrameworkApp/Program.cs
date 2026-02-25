@@ -1,7 +1,6 @@
 using Azure;
 using Azure.AI.OpenAI;
 
-using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,13 +83,8 @@ Console.WriteLine();
 Console.WriteLine("--- Review panel responses ---");
 Console.WriteLine();
 
-await using var run = await InProcessExecution.RunStreamingAsync(
-    workflow,
-    new ChatMessage(ChatRole.User, $"Please review this code:\n\n```csharp\n{codeToReview}\n```"));
-
-await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-var responses = await run.CollectAgentResponsesAsync();
+var responses = await workflow.RunAsync(
+    $"Please review this code:\n\n```csharp\n{codeToReview}\n```");
 
 foreach (var (executorId, text) in responses)
 {

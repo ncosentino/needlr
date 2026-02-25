@@ -1,8 +1,14 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Workflows;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
@@ -122,5 +128,69 @@ public class CollectAgentResponsesExtensionsTests
         Assert.Equal(manualResult.Count, needlrResult.Count);
         foreach (var (key, value) in manualResult)
             Assert.Equal(value, needlrResult[key]);
+    }
+}
+
+/// <summary>
+/// Guard tests for <see cref="StreamingRunWorkflowExtensions.RunAsync(Workflow, string, CancellationToken)"/>
+/// and <see cref="StreamingRunWorkflowExtensions.RunAsync(Workflow, ChatMessage, CancellationToken)"/>.
+/// </summary>
+public class WorkflowRunExtensionsTests
+{
+    private static Workflow CreatePlaceholderWorkflow()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+        var factory = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
+                .AddAgent<TriageWfAgent>()
+                .AddAgent<BillingWfAgent>()
+                .AddAgent<TechWfAgent>())
+            .BuildServiceProvider(config)
+            .GetRequiredService<IWorkflowFactory>();
+        return factory.CreateHandoffWorkflow<TriageWfAgent>();
+    }
+
+    [Fact]
+    public async Task RunAsync_StringOverload_NullWorkflow_ThrowsArgumentNullException()
+    {
+        Workflow? workflow = null;
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            workflow!.RunAsync("hello", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RunAsync_StringOverload_NullMessage_ThrowsArgumentNullException()
+    {
+        var workflow = CreatePlaceholderWorkflow();
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            workflow.RunAsync((string)null!, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RunAsync_StringOverload_EmptyMessage_ThrowsArgumentException()
+    {
+        var workflow = CreatePlaceholderWorkflow();
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            workflow.RunAsync(string.Empty, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RunAsync_ChatMessageOverload_NullWorkflow_ThrowsArgumentNullException()
+    {
+        Workflow? workflow = null;
+        var message = new ChatMessage(ChatRole.User, "hello");
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            workflow!.RunAsync(message, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RunAsync_ChatMessageOverload_NullMessage_ThrowsArgumentNullException()
+    {
+        var workflow = CreatePlaceholderWorkflow();
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            workflow.RunAsync((ChatMessage)null!, TestContext.Current.CancellationToken));
     }
 }

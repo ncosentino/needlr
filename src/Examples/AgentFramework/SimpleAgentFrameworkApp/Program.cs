@@ -1,7 +1,6 @@
 using Azure;
 using Azure.AI.OpenAI;
 
-using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,13 +62,7 @@ foreach (var question in questions)
 {
     Console.WriteLine($"Q: {question}");
 
-    await using var run = await InProcessExecution.RunStreamingAsync(
-        handoffWorkflow,
-        new ChatMessage(ChatRole.User, question));
-
-    await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-    var responses = await run.CollectAgentResponsesAsync();
+    var responses = await handoffWorkflow.RunAsync(question);
 
     foreach (var (executorId, text) in responses)
     {
@@ -99,13 +92,7 @@ foreach (var topic in topics)
 {
     Console.WriteLine($"Topic: {topic}");
 
-    await using var run = await InProcessExecution.RunStreamingAsync(
-        sequentialWorkflow,
-        new ChatMessage(ChatRole.User, topic));
-
-    await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-    var responses = await run.CollectAgentResponsesAsync();
+    var responses = await sequentialWorkflow.RunAsync(topic);
 
     foreach (var (executorId, text) in responses)
     {
