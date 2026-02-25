@@ -83,6 +83,8 @@
     <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
   </Folder>
   <Folder Name="/Integrations/AgentFramework/">
+    <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers.Tests/NexusLabs.Needlr.AgentFramework.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Workflows/NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
