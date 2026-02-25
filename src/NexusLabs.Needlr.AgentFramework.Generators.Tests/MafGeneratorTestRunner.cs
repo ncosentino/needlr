@@ -74,6 +74,8 @@ internal sealed class MafGeneratorTestRunner
             public sealed class NeedlrAiAgentAttribute : System.Attribute
             {
                 public string? Instructions { get; set; }
+                public string[]? FunctionGroups { get; set; }
+                public System.Type[]? FunctionTypes { get; set; }
             }
 
             [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = false)]

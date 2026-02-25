@@ -220,6 +220,109 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Null(companion);
     }
 
+    [Fact]
+    public void PipelineC_PartialAgent_NoToolDeclarations_UsesAllRegisteredToolsDoc()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public partial class OrchestratorAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .RunGenerator();
+
+        var companion = files.First(f => f.FilePath.Contains("OrchestratorAgent") && f.FilePath.EndsWith(".g.cs"));
+        Assert.Contains("all registered function types", companion.Content);
+    }
+
+    [Fact]
+    public void PipelineC_PartialAgent_EmptyFunctionTypes_NoToolsDoc()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(FunctionTypes = new System.Type[0])]
+                public partial class TriageAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .RunGenerator();
+
+        var companion = files.First(f => f.FilePath.Contains("TriageAgent") && f.FilePath.EndsWith(".g.cs"));
+        Assert.Contains("no tools assigned", companion.Content);
+    }
+
+    [Fact]
+    public void PipelineC_PartialAgent_FunctionGroupDeclared_ResolvesGroupToTypeInDoc()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("math-tools")]
+                public class MathFunctions { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(FunctionGroups = new[] { "math-tools" })]
+                public partial class MathAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .RunGenerator();
+
+        var companion = files.First(f => f.FilePath.Contains("MathAgent") && f.FilePath.EndsWith(".g.cs"));
+        Assert.Contains("MathFunctions", companion.Content);
+        Assert.Contains("math-tools", companion.Content);
+    }
+
+    [Fact]
+    public void PipelineC_PartialAgent_FunctionGroupUnresolved_ShowsUnresolvedInDoc()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(FunctionGroups = new[] { "missing-group" })]
+                public partial class BrokenAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .RunGenerator();
+
+        var companion = files.First(f => f.FilePath.Contains("BrokenAgent") && f.FilePath.EndsWith(".g.cs"));
+        Assert.Contains("unresolved group", companion.Content);
+        Assert.Contains("missing-group", companion.Content);
+    }
+
+    [Fact]
+    public void PipelineC_PartialAgent_ExplicitFunctionTypes_ShowsTypesInDoc()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class WritingFunctions { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(FunctionTypes = new[] { typeof(WritingFunctions) })]
+                public partial class WriterAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .RunGenerator();
+
+        var companion = files.First(f => f.FilePath.Contains("WriterAgent") && f.FilePath.EndsWith(".g.cs"));
+        Assert.Contains("WritingFunctions", companion.Content);
+        Assert.Contains("explicit type", companion.Content);
+    }
+
     // -------------------------------------------------------------------------
     // Pipeline D — AgentHandoffsTo
     // -------------------------------------------------------------------------
