@@ -6,6 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="NexusLabs.Needlr.AgentFramework.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />

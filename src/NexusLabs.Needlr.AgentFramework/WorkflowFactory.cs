@@ -78,18 +78,12 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             if (topology.TryGetValue(initialAgentType, out var targets))
                 return targets;
 
-            // Type was registered but has no handoff entries — same error as reflection path below
-        }
-        else
-        {
-            // Reflection fallback
+            // Type is not in the bootstrap topology — it may be from an assembly that didn't run the
+            // generator. Fall back to reflection so multi-assembly and test scenarios work correctly.
             return ResolveHandoffTargetsViaReflection(initialAgentType);
         }
 
-        throw new InvalidOperationException(
-            $"CreateHandoffWorkflow<{initialAgentType.Name}>() failed: {initialAgentType.Name} has no " +
-            $"[AgentHandoffsTo] attributes. Declare at least one " +
-            $"[AgentHandoffsTo(typeof(TargetAgent))] on {initialAgentType.Name} to specify its handoff targets.");
+        return ResolveHandoffTargetsViaReflection(initialAgentType);
     }
 
     [RequiresUnreferencedCode("Reflection-based topology discovery may not work after trimming. Use the source generator package instead.")]
@@ -119,11 +113,11 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             if (groups.TryGetValue(groupName, out var members))
                 return members;
 
-            // Group name not found in bootstrap — return empty so the caller produces the right error
-            return Array.Empty<Type>();
+            // Group not in the bootstrap — may be from an assembly that didn't run the generator.
+            // Fall back to reflection so multi-assembly and test scenarios work correctly.
+            return ResolveGroupChatMembersViaReflection(groupName);
         }
 
-        // Reflection fallback
         return ResolveGroupChatMembersViaReflection(groupName);
     }
 
