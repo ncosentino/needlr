@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="build\NexusLabs.Needlr.AgentFramework.Generators.props" Pack="true" PackagePath="build" />
+    <None Include="build\NexusLabs.Needlr.AgentFramework.Generators.targets" Pack="true" PackagePath="build" />
   </ItemGroup>
 
 </Project>
