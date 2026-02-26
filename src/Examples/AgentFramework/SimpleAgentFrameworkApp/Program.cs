@@ -123,7 +123,8 @@ foreach (var (executorId, text) in earlyResponses)
     Console.WriteLine($"  [{executorId}]: {text.Trim()}");
 }
 
-var publisherRan = earlyResponses.ContainsKey("PublisherSeqAgent");
+var publisherRan = earlyResponses.Keys.Any(k =>
+    k == "PublisherSeqAgent" || k.StartsWith("PublisherSeqAgent_", StringComparison.Ordinal));
 Console.WriteLine();
 Console.WriteLine(publisherRan
     ? "  (publisher ran — STATUS: EDIT_COMPLETE keyword was not found in editor response)"

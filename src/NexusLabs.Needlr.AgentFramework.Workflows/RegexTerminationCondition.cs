@@ -61,8 +61,9 @@ public sealed class RegexTerminationCondition : IWorkflowTerminationCondition
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (_agentId is not null &&
-            !string.Equals(context.AgentId, _agentId, StringComparison.Ordinal))
+        if (_agentId is not null
+            && !string.Equals(context.AgentId, _agentId, StringComparison.Ordinal)
+            && !context.AgentId.StartsWith(_agentId + "_", StringComparison.Ordinal))
         {
             return false;
         }

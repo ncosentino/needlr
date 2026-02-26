@@ -70,6 +70,15 @@ public class KeywordTerminationConditionTests
     }
 
     [Fact]
+    public void ShouldTerminate_AgentFilter_MatchingAgentWithHashSuffix_ReturnsTrue()
+    {
+        var condition = new KeywordTerminationCondition("APPROVED", "ApprovalAgent");
+        var ctx = MakeContext("ApprovalAgent_a1b2c3d4e5f64a5b84a8b1850a83e94c", "APPROVED");
+
+        Assert.True(condition.ShouldTerminate(ctx));
+    }
+
+    [Fact]
     public void ShouldTerminate_AgentFilter_WrongAgent_ReturnsFalse()
     {
         var condition = new KeywordTerminationCondition("APPROVED", "ApprovalAgent");
