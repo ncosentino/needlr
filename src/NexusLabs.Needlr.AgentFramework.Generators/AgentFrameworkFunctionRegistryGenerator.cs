@@ -531,24 +531,14 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
             configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnosticsPath", out var diagPath);
             configOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectDirectory", out var projectDir);
-            configOptions.GlobalOptions.TryGetValue("build_property.OutputPath", out var outputPath);
 
-            if (!string.IsNullOrEmpty(projectDir) && !string.IsNullOrEmpty(outputPath))
+            if (!string.IsNullOrEmpty(projectDir))
             {
                 try
                 {
-                    string? outputDir;
-                    if (!string.IsNullOrEmpty(diagPath))
-                    {
-                        outputDir = diagPath;
-                    }
-                    else
-                    {
-                        var absOutputPath = System.IO.Path.IsPathRooted(outputPath)
-                            ? outputPath
-                            : System.IO.Path.Combine(projectDir, outputPath);
-                        outputDir = System.IO.Path.Combine(absOutputPath, "NeedlrDiagnostics");
-                    }
+                    var outputDir = string.IsNullOrEmpty(diagPath)
+                        ? System.IO.Path.Combine(projectDir, "NeedlrDiagnostics")
+                        : diagPath;
 
 #pragma warning disable RS1035
                     System.IO.Directory.CreateDirectory(outputDir);

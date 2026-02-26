@@ -3,6 +3,5 @@
     <CompilerVisibleProperty Include="NeedlrDiagnostics" />
     <CompilerVisibleProperty Include="NeedlrDiagnosticsPath" />
     <CompilerVisibleProperty Include="MSBuildProjectDirectory" />
-    <CompilerVisibleProperty Include="OutputPath" />
   </ItemGroup>
 </Project>

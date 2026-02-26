@@ -6,7 +6,7 @@
 
     <PropertyGroup>
       <_NeedlrMafOutputPath Condition="'$(NeedlrDiagnosticsPath)' != ''">$(NeedlrDiagnosticsPath)</_NeedlrMafOutputPath>
-      <_NeedlrMafOutputPath Condition="'$(_NeedlrMafOutputPath)' == ''">$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(OutputPath), 'NeedlrDiagnostics'))</_NeedlrMafOutputPath>
+      <_NeedlrMafOutputPath Condition="'$(_NeedlrMafOutputPath)' == ''">$(MSBuildProjectDirectory)NeedlrDiagnostics\</_NeedlrMafOutputPath>
     </PropertyGroup>
 
     <Message Importance="high"
