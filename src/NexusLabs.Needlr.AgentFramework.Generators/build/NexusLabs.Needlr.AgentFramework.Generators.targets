@@ -6,7 +6,7 @@
 
     <PropertyGroup>
       <_NeedlrMafGeneratedPath Condition="'$(CompilerGeneratedFilesOutputPath)' != ''">$(CompilerGeneratedFilesOutputPath)</_NeedlrMafGeneratedPath>
-      <_NeedlrMafGeneratedPath Condition="'$(_NeedlrMafGeneratedPath)' == ''">$(BaseIntermediateOutputPath)Generated</_NeedlrMafGeneratedPath>
+      <_NeedlrMafGeneratedPath Condition="'$(_NeedlrMafGeneratedPath)' == ''">$(IntermediateOutputPath)generated</_NeedlrMafGeneratedPath>
       <_NeedlrMafSourceFile>$(_NeedlrMafGeneratedPath)\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator\AgentTopologyGraph.g.cs</_NeedlrMafSourceFile>
       <_NeedlrMafOutputPath Condition="'$(NeedlrDiagnosticsPath)' != ''">$(NeedlrDiagnosticsPath)</_NeedlrMafOutputPath>
       <_NeedlrMafOutputPath Condition="'$(_NeedlrMafOutputPath)' == ''">$(OutputPath)NeedlrDiagnostics</_NeedlrMafOutputPath>

@@ -3,7 +3,10 @@
   <PropertyGroup>
     <!-- Write generated files to disk so the [ModuleInitializer] bootstrap is visible -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
     <NeedlrDiagnostics>true</NeedlrDiagnostics>
+    <!-- Output diagnostics to the exe entry point's bin folder, not this library's bin -->
+    <NeedlrDiagnosticsPath>$(MSBuildProjectDirectory)\..\SimpleAgentFrameworkApp\bin\$(Configuration)\$(TargetFramework)\NeedlrDiagnostics</NeedlrDiagnosticsPath>
   </PropertyGroup>
 
   <ItemGroup>
