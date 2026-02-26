@@ -15,7 +15,6 @@ public class KeywordTerminationConditionTests
             ConversationHistory = [],
         };
 
-    // ----- constructor guard -----
 
     [Fact]
     public void Ctor_NullKeyword_ThrowsArgumentNullException()
@@ -29,7 +28,6 @@ public class KeywordTerminationConditionTests
         Assert.Throws<ArgumentException>(() => new KeywordTerminationCondition("   "));
     }
 
-    // ----- ShouldTerminate guard -----
 
     [Fact]
     public void ShouldTerminate_NullContext_ThrowsArgumentNullException()
@@ -38,7 +36,6 @@ public class KeywordTerminationConditionTests
         Assert.Throws<ArgumentNullException>(() => condition.ShouldTerminate(null!));
     }
 
-    // ----- keyword matching -----
 
     [Theory]
     [InlineData("Task APPROVED by reviewer")]
@@ -62,7 +59,6 @@ public class KeywordTerminationConditionTests
         Assert.False(condition.ShouldTerminate(ctx));
     }
 
-    // ----- agent filter -----
 
     [Fact]
     public void ShouldTerminate_AgentFilter_MatchingAgent_ReturnsTrue()
@@ -91,7 +87,6 @@ public class KeywordTerminationConditionTests
         Assert.True(condition.ShouldTerminate(ctx));
     }
 
-    // ----- custom comparison -----
 
     [Fact]
     public void ShouldTerminate_CaseSensitiveComparison_DoesNotMatchWrongCase()

@@ -57,9 +57,7 @@ public class WorkflowFactoryTerminationTests
     }
 }
 
-// ---------------------------------------------------------------------------
 // Test agents for termination condition wiring tests
-// ---------------------------------------------------------------------------
 
 [NeedlrAiAgent(Instructions = "Review code and output APPROVED when satisfied.")]
 [AgentGroupChatMember("term-code-review")]

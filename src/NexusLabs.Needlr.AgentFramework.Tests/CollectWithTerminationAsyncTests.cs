@@ -29,7 +29,6 @@ public class CollectWithTerminationAsyncTests
     private static IReadOnlyList<IWorkflowTerminationCondition> Keyword(string keyword) =>
         [new KeywordTerminationCondition(keyword)];
 
-    // ----- no conditions -----
 
     [Fact]
     public async Task CollectWithTermination_EmptyConditions_ReturnsAllResponses()
@@ -51,7 +50,6 @@ public class CollectWithTerminationAsyncTests
         Assert.Equal("Goodbye", result["Agent2"]);
     }
 
-    // ----- turn-boundary detection -----
 
     [Fact]
     public async Task CollectWithTermination_NoKeywordMatch_ReturnsAllResponses()
@@ -144,7 +142,6 @@ public class CollectWithTerminationAsyncTests
         Assert.Empty(result);
     }
 
-    // ----- agent-filtered conditions -----
 
     [Fact]
     public async Task CollectWithTermination_AgentFilteredCondition_WrongAgent_DoesNotTerminate()

@@ -17,7 +17,6 @@ public class RegexTerminationConditionTests
             ConversationHistory = [],
         };
 
-    // ----- constructor guard -----
 
     [Fact]
     public void Ctor_NullPattern_ThrowsArgumentNullException()
@@ -31,7 +30,6 @@ public class RegexTerminationConditionTests
         Assert.Throws<ArgumentException>(() => new RegexTerminationCondition("   "));
     }
 
-    // ----- ShouldTerminate guard -----
 
     [Fact]
     public void ShouldTerminate_NullContext_ThrowsArgumentNullException()
@@ -40,7 +38,6 @@ public class RegexTerminationConditionTests
         Assert.Throws<ArgumentNullException>(() => condition.ShouldTerminate(null!));
     }
 
-    // ----- pattern matching -----
 
     [Theory]
     [InlineData(@"\bLGTM\b", "The PR looks great. LGTM.")]
@@ -66,7 +63,6 @@ public class RegexTerminationConditionTests
         Assert.False(condition.ShouldTerminate(ctx));
     }
 
-    // ----- agent filter -----
 
     [Fact]
     public void ShouldTerminate_AgentFilter_MatchingAgent_ReturnsTrue()
@@ -86,7 +82,6 @@ public class RegexTerminationConditionTests
         Assert.False(condition.ShouldTerminate(ctx));
     }
 
-    // ----- custom options -----
 
     [Fact]
     public void ShouldTerminate_CaseSensitiveOptions_DoesNotMatchWrongCase()
