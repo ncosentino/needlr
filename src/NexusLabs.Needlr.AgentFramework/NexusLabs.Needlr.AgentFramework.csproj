@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <PackageDescription>NexusLabs.Needlr integration for Microsoft Agent Framework (MAF). Provides AgentFactory, WorkflowFactory, and topology declarations for multi-agent orchestrations.</PackageDescription>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows" />
@@ -29,6 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.AgentFramework.Analyzers\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.AgentFramework.Analyzers.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
     <None Include="..\NexusLabs.Needlr.AgentFramework.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.AgentFramework.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"

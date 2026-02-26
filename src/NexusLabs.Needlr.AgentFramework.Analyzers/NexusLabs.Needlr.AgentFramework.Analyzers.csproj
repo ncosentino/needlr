@@ -7,6 +7,7 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
     <Description>Roslyn analyzers for Needlr's Microsoft Agent Framework integration. Catches topology mistakes at compile time: missing [NeedlrAiAgent] on handoff targets, under-populated group chats, and cyclic handoff chains.</Description>
+    <PackageDescription>Roslyn analyzers for NexusLabs.Needlr Agent Framework integrations. Provides compile-time topology validation diagnostics (NDLRMAF001-008) and code fixes.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

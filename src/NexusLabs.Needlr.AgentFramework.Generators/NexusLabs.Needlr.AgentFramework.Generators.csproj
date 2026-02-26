@@ -9,6 +9,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <Description>Source generator for Microsoft Agent Framework function registration with Needlr. Automatically discovers classes with [AgentFunction] methods and generates registration code.</Description>
+    <PackageDescription>Roslyn source generators for NexusLabs.Needlr Agent Framework integrations. Emits WorkflowFactory extension methods, agent registries, and Run*Async workflow execution helpers at compile time.</PackageDescription>
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
