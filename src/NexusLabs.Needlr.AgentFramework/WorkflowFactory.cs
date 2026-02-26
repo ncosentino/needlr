@@ -53,8 +53,14 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
         var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.Name)).ToList();
 
+        var conditions = BuildTerminationConditions(memberTypes);
+
+        Func<IReadOnlyList<AIAgent>, RoundRobinGroupChatManager> managerFactory = conditions.Count > 0
+            ? a => new RoundRobinGroupChatManager(a, ShouldTerminateAsync(conditions)) { MaximumIterationCount = maxIterations }
+            : a => new RoundRobinGroupChatManager(a) { MaximumIterationCount = maxIterations };
+
         return AgentWorkflowBuilder
-            .CreateGroupChatBuilderWith(a => new RoundRobinGroupChatManager(a) { MaximumIterationCount = maxIterations })
+            .CreateGroupChatBuilderWith(managerFactory)
             .AddParticipants(agents)
             .Build();
     }
@@ -213,5 +219,51 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             builder.WithHandoff(initialAgent, target, reason!);
 
         return builder.Build();
+    }
+
+    private static IReadOnlyList<(string AgentName, IWorkflowTerminationCondition Condition)> BuildTerminationConditions(
+        IReadOnlyList<Type> memberTypes)
+    {
+        var result = new List<(string, IWorkflowTerminationCondition)>();
+        foreach (var type in memberTypes)
+        {
+            foreach (var attr in type.GetCustomAttributes<AgentTerminationConditionAttribute>())
+            {
+                var condition = (IWorkflowTerminationCondition)Activator.CreateInstance(
+                    attr.ConditionType, attr.CtorArgs)!;
+                result.Add((type.Name, condition));
+            }
+        }
+        return result;
+    }
+
+    private static Func<RoundRobinGroupChatManager, IEnumerable<Microsoft.Extensions.AI.ChatMessage>, CancellationToken, ValueTask<bool>> ShouldTerminateAsync(
+        IReadOnlyList<(string AgentName, IWorkflowTerminationCondition Condition)> conditions)
+    {
+        return (manager, history, ct) =>
+        {
+            var historyList = history.ToList();
+            if (historyList.Count == 0)
+                return ValueTask.FromResult(false);
+
+            var lastMessage = historyList[^1];
+            var agentId = lastMessage.AuthorName ?? string.Empty;
+            var responseText = lastMessage.Text ?? string.Empty;
+            var ctx = new TerminationContext
+            {
+                AgentId = agentId,
+                ResponseText = responseText,
+                TurnCount = historyList.Count,
+                ConversationHistory = historyList,
+            };
+
+            foreach (var (_, condition) in conditions)
+            {
+                if (condition.ShouldTerminate(ctx))
+                    return ValueTask.FromResult(true);
+            }
+
+            return ValueTask.FromResult(false);
+        };
     }
 }
