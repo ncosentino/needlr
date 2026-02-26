@@ -528,30 +528,6 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
             spc.AddSource("AgentTopologyGraph.g.cs",
                 SourceText.From(GenerateTopologyGraphSource(mermaid, safeAssemblyName), Encoding.UTF8));
-
-            configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnosticsPath", out var diagPath);
-            configOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectDirectory", out var projectDir);
-
-            if (!string.IsNullOrEmpty(projectDir))
-            {
-                try
-                {
-                    var outputDir = string.IsNullOrEmpty(diagPath)
-                        ? System.IO.Path.Combine(projectDir, "NeedlrDiagnostics")
-                        : diagPath;
-
-#pragma warning disable RS1035
-                    System.IO.Directory.CreateDirectory(outputDir);
-                    System.IO.File.WriteAllText(
-                        System.IO.Path.Combine(outputDir, "AgentTopologyGraph.md"),
-                        mermaid);
-#pragma warning restore RS1035
-                }
-                catch
-                {
-                    // Best effort — don't fail the build
-                }
-            }
         }
 
         // Partial companions for [NeedlrAiAgent] classes declared as partial

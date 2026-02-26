@@ -41,7 +41,6 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 coverage/
-NeedlrDiagnostics/
 
 # MSBuild Binary and Structured Log
 *.binlog

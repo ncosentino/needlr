@@ -2,6 +2,5 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="NeedlrDiagnostics" />
     <CompilerVisibleProperty Include="NeedlrDiagnosticsPath" />
-    <CompilerVisibleProperty Include="MSBuildProjectDirectory" />
   </ItemGroup>
 </Project>
