@@ -3,7 +3,6 @@
   <PropertyGroup>
     <!-- Write generated files to disk so the [ModuleInitializer] bootstrap is visible -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <NeedlrDiagnostics>true</NeedlrDiagnostics>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,8 +10,5 @@
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
-
-  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.props" />
-  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.targets" />
 
 </Project>
