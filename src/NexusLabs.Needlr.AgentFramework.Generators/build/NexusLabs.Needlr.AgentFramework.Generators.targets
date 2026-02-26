@@ -5,72 +5,13 @@
           Condition="'$(NeedlrDiagnostics)' == 'true'">
 
     <PropertyGroup>
-      <_NeedlrMafGeneratedPath Condition="'$(CompilerGeneratedFilesOutputPath)' != ''">$(CompilerGeneratedFilesOutputPath)</_NeedlrMafGeneratedPath>
-      <_NeedlrMafGeneratedPath Condition="'$(_NeedlrMafGeneratedPath)' == ''">$(BaseIntermediateOutputPath)Generated</_NeedlrMafGeneratedPath>
-      <_NeedlrMafTopologySourceFile>$([MSBuild]::NormalizePath($(_NeedlrMafGeneratedPath), 'NexusLabs.Needlr.AgentFramework.Generators', 'NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator', 'AgentTopologyGraph.g.cs'))</_NeedlrMafTopologySourceFile>
       <_NeedlrMafOutputPath Condition="'$(NeedlrDiagnosticsPath)' != ''">$(NeedlrDiagnosticsPath)</_NeedlrMafOutputPath>
       <_NeedlrMafOutputPath Condition="'$(_NeedlrMafOutputPath)' == ''">$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(OutputPath), 'NeedlrDiagnostics'))</_NeedlrMafOutputPath>
     </PropertyGroup>
-
-    <MakeDir Directories="$(_NeedlrMafOutputPath)" Condition="!Exists('$(_NeedlrMafOutputPath)')" />
-
-    <NeedlrExtractMafTopology
-        SourceFile="$(_NeedlrMafTopologySourceFile)"
-        OutputDirectory="$(_NeedlrMafOutputPath)" />
 
     <Message Importance="high"
              Text="Needlr MAF topology graph written to $(_NeedlrMafOutputPath)"
              Condition="Exists('$(_NeedlrMafOutputPath)')" />
   </Target>
-
-  <UsingTask TaskName="NeedlrExtractMafTopology" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <SourceFile ParameterType="System.String" Required="true" />
-      <OutputDirectory ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Text.RegularExpressions" />
-      <Code Type="Fragment" Language="cs">
-<![CDATA[
-try
-{
-    if (!File.Exists(SourceFile))
-    {
-        Log.LogMessage(MessageImportance.Normal, "AgentTopologyGraph.g.cs not found: " + SourceFile);
-        return true;
-    }
-
-    var sourceContent = File.ReadAllText(SourceFile);
-
-    Directory.CreateDirectory(OutputDirectory);
-
-    var pattern = @"public\s+const\s+string\s+AgentTopologyGraph\s*=\s*@""([^""]*(?:""""[^""]*)*)"";";
-    var match = Regex.Match(sourceContent, pattern, RegexOptions.Singleline);
-
-    if (match.Success)
-    {
-        var content = match.Groups[1].Value.Replace("\"\"", "\"");
-        var filePath = Path.Combine(OutputDirectory, "AgentTopologyGraph.md");
-        File.WriteAllText(filePath, content);
-        Log.LogMessage(MessageImportance.Normal, "Wrote " + filePath);
-    }
-    else
-    {
-        Log.LogMessage(MessageImportance.Low, "AgentTopologyGraph field not found in source file.");
-    }
-
-    return true;
-}
-catch (Exception ex)
-{
-    Log.LogWarning("Needlr MAF topology extraction failed: " + ex.Message);
-    return true;
-}
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
 
 </Project>

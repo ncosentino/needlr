@@ -524,9 +524,44 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnostics", out var diagValue);
         if (string.Equals(diagValue, "true", StringComparison.OrdinalIgnoreCase))
         {
+            var mermaid = GenerateMermaidDiagram(handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName);
+
             spc.AddSource("AgentTopologyGraph.g.cs",
-                SourceText.From(GenerateTopologyGraphSource(
-                    handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
+                SourceText.From(GenerateTopologyGraphSource(mermaid, safeAssemblyName), Encoding.UTF8));
+
+            configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnosticsPath", out var diagPath);
+            configOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectDirectory", out var projectDir);
+            configOptions.GlobalOptions.TryGetValue("build_property.OutputPath", out var outputPath);
+
+            if (!string.IsNullOrEmpty(projectDir) && !string.IsNullOrEmpty(outputPath))
+            {
+                try
+                {
+                    string? outputDir;
+                    if (!string.IsNullOrEmpty(diagPath))
+                    {
+                        outputDir = diagPath;
+                    }
+                    else
+                    {
+                        var absOutputPath = System.IO.Path.IsPathRooted(outputPath)
+                            ? outputPath
+                            : System.IO.Path.Combine(projectDir, outputPath);
+                        outputDir = System.IO.Path.Combine(absOutputPath, "NeedlrDiagnostics");
+                    }
+
+#pragma warning disable RS1035
+                    System.IO.Directory.CreateDirectory(outputDir);
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(outputDir, "AgentTopologyGraph.md"),
+                        mermaid);
+#pragma warning restore RS1035
+                }
+                catch
+                {
+                    // Best effort — don't fail the build
+                }
+            }
         }
 
         // Partial companions for [NeedlrAiAgent] classes declared as partial
@@ -544,12 +579,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     }
 
     private static string GenerateTopologyGraphSource(
-        Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
-        Dictionary<string, List<string>> groupChatByGroupName,
-        Dictionary<string, List<string>> sequenceByPipelineName,
+        string diagram,
         string safeAssemblyName)
     {
-        var diagram = GenerateMermaidDiagram(handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName);
         var escaped = diagram.Replace("\"", "\"\"");
 
         var sb = new StringBuilder();
