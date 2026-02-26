@@ -260,6 +260,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute", "rp": "NexusLabs.Needlr.AgentFramework_AgentGroupChatMemberAttribute.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 34, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute", "rp": "NexusLabs.Needlr.AgentFramework_AgentHandoffsToAttribute.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 41, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute", "rp": "NexusLabs.Needlr.AgentFramework_AgentSequenceMemberAttribute.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 21, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute", "rp": "NexusLabs.Needlr.AgentFramework_AgentTerminationConditionAttribute.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 52, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions", "rp": "NexusLabs.Needlr.AgentFramework_AIAgentBuilderPluginOptions.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 15, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.FunctionScanners.AssemblyAgentFunctionGroupScanner", "rp": "NexusLabs.Needlr.AgentFramework_AssemblyAgentFunctionGroupScanner.html", "cl": 14, "ucl": 1, "cal": 15, "tl": 38, "cb": 14, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.FunctionScanners.AssemblyAgentFunctionScanner", "rp": "NexusLabs.Needlr.AgentFramework_AssemblyAgentFunctionScanner.html", "cl": 17, "ucl": 1, "cal": 18, "tl": 40, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -277,26 +278,33 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.AgentFramework.Generated.TypeRegistry", "rp": "NexusLabs.Needlr.AgentFramework_TypeRegistry.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 61, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute", "rp": "NexusLabs.Needlr.AgentFramework_NeedlrAiAgentAttribute.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 39, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework", "rp": "NexusLabs.Needlr.AgentFramework_SyringeExtensionsForAgentFramework.html", "cl": 40, "ucl": 13, "cal": 53, "tl": 146, "cb": 20, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "rp": "NexusLabs.Needlr.AgentFramework_WorkflowFactory.html", "cl": 87, "ucl": 13, "cal": 100, "tl": 217, "cb": 25, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.TerminationContext", "rp": "NexusLabs.Needlr.AgentFramework_TerminationContext.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "rp": "NexusLabs.Needlr.AgentFramework_WorkflowFactory.html", "cl": 98, "ucl": 38, "cal": 136, "tl": 269, "cb": 31, "tb": 50, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute", "rp": "NexusLabs.Needlr.AgentFramework_WorkflowRunTerminationConditionAttribute.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 60, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.AgentFramework.Analyzers",
     "classes": [
       { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentCyclicHandoffAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentCyclicHandoffAnalyzer.html", "cl": 90, "ucl": 0, "cal": 90, "tl": 154, "cb": 37, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentFunctionGroupReferenceAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentFunctionGroupReferenceAnalyzer.html", "cl": 65, "ucl": 0, "cal": 65, "tl": 94, "cb": 29, "tb": 32, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentGroupChatSingletonAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentGroupChatSingletonAnalyzer.html", "cl": 55, "ucl": 0, "cal": 55, "tl": 81, "cb": 17, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentOrphanAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentOrphanAnalyzer.html", "cl": 69, "ucl": 0, "cal": 69, "tl": 99, "cb": 27, "tb": 30, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentSequenceOrderAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentSequenceOrderAnalyzer.html", "cl": 86, "ucl": 0, "cal": 86, "tl": 117, "cb": 31, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentTopologyAnalyzer", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentTopologyAnalyzer.html", "cl": 35, "ucl": 0, "cal": 35, "tl": 90, "cb": 19, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticDescriptors", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_MafDiagnosticDescriptors.html", "cl": 38, "ucl": 0, "cal": 38, "tl": 66, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticDescriptors", "rp": "NexusLabs.Needlr.AgentFramework.Analyzers_MafDiagnosticDescriptors.html", "cl": 78, "ucl": 0, "cal": 78, "tl": 122, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.AgentFramework.Generators",
     "classes": [
-      { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "rp": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "cl": 568, "ucl": 18, "cal": 586, "tl": 964, "cb": 141, "tb": 182, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "rp": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "cl": 629, "ucl": 18, "cal": 647, "tl": 1081, "cb": 180, "tb": 224, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.AgentFramework.Workflows",
     "classes": [
       { "name": "NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions", "rp": "NexusLabs.Needlr.AgentFramework.Workflows_AgentFactoryWorkflowExtensions.html", "cl": 19, "ucl": 0, "cal": 19, "tl": 64, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions", "rp": "NexusLabs.Needlr.AgentFramework.Workflows_StreamingRunWorkflowExtensions.html", "cl": 14, "ucl": 2, "cal": 16, "tl": 51, "cb": 12, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition", "rp": "NexusLabs.Needlr.AgentFramework.Workflows_KeywordTerminationCondition.html", "cl": 16, "ucl": 0, "cal": 16, "tl": 74, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Workflows.RegexTerminationCondition", "rp": "NexusLabs.Needlr.AgentFramework.Workflows_RegexTerminationCondition.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 73, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions", "rp": "NexusLabs.Needlr.AgentFramework.Workflows_StreamingRunWorkflowExtensions.html", "cl": 68, "ucl": 26, "cal": 94, "tl": 253, "cb": 40, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "NexusLabs.Needlr.Analyzers",
@@ -599,6 +607,12 @@ var riskHotspots = [
       { "value": 56, "exceeded": true },
     ]},
   {
+    "assembly": "NexusLabs.Needlr.AgentFramework", "class": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "reportPath": "NexusLabs.Needlr.AgentFramework_WorkflowFactory.html", "methodName": "ShouldTerminateAsync(System.Collections.Generic.IReadOnlyList`1<System.ValueTuple`2<System.String,NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition>>)", "methodShortName": "ShouldTerminateAsync(...)", "fileIndex": 0, "line": 243,
+    "metrics": [
+      { "value": 110, "exceeded": true },
+      { "value": 10, "exceeded": false },
+    ]},
+  {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.TypeRegistryGenerator", "reportPath": "NexusLabs.Needlr.Generators_TypeRegistryGenerator.html", "methodName": "CollectTypesFromAssembly(Microsoft.CodeAnalysis.IAssemblySymbol,System.Collections.Generic.IReadOnlyList`1<System.String>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredType>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredPlugin>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredDecorator>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredOpenDecorator>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredInterceptedService>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredFactory>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredOptions>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredHostedService>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.DiscoveredProvider>,System.Collections.Generic.List`1<NexusLabs.Needlr.Generators.Models.InaccessibleType>,Microsoft.CodeAnalysis.Compilation,System.Boolean,System.String)", "methodShortName": "CollectTypesFromAssembly(...)", "fileIndex": 0, "line": 957,
     "metrics": [
       { "value": 106, "exceeded": true },
@@ -707,6 +721,12 @@ var riskHotspots = [
       { "value": 24, "exceeded": true },
     ]},
   {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Workflows", "class": "NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions", "reportPath": "NexusLabs.Needlr.AgentFramework.Workflows_StreamingRunWorkflowExtensions.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 106,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 6, "exceeded": false },
+    ]},
+  {
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_PluginConstructorDependenciesAnalyzer.html", "methodName": "ImplementsPluginInterface(Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax,Microsoft.CodeAnalysis.SemanticModel)", "methodShortName": "ImplementsPluginInterface(...)", "fileIndex": 0, "line": 88,
     "metrics": [
       { "value": 42, "exceeded": true },
@@ -797,6 +817,12 @@ var riskHotspots = [
       { "value": 16, "exceeded": true },
     ]},
   {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Analyzers", "class": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentSequenceOrderAnalyzer", "reportPath": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentSequenceOrderAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 33,
+    "metrics": [
+      { "value": 34, "exceeded": true },
+      { "value": 34, "exceeded": true },
+    ]},
+  {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.DiagnosticsGenerator", "reportPath": "NexusLabs.Needlr.Generators_DiagnosticsGenerator.html", "methodName": "GenerateOptionsSummaryMarkdown(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.String,System.String,System.Collections.Generic.HashSet`1<System.String>)", "methodShortName": "GenerateOptionsSummaryMarkdown(...)", "fileIndex": 0, "line": 1038,
     "metrics": [
       { "value": 34, "exceeded": true },
@@ -827,7 +853,7 @@ var riskHotspots = [
       { "value": 30, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "methodName": "SanitizeIdentifier(System.String)", "methodShortName": "SanitizeIdentifier(...)", "fileIndex": 0, "line": 320,
+    "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "methodName": "SanitizeIdentifier(System.String)", "methodShortName": "SanitizeIdentifier(...)", "fileIndex": 0, "line": 351,
     "metrics": [
       { "value": 33, "exceeded": true },
       { "value": 22, "exceeded": true },
@@ -836,6 +862,12 @@ var riskHotspots = [
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.GlobalNamespaceTypeAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_GlobalNamespaceTypeAnalyzer.html", "methodName": "IsLikelyInjectableType(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsLikelyInjectableType(...)", "fileIndex": 0, "line": 121,
     "metrics": [
       { "value": 33, "exceeded": true },
+      { "value": 32, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Analyzers", "class": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentFunctionGroupReferenceAnalyzer", "reportPath": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentFunctionGroupReferenceAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 29,
+    "metrics": [
+      { "value": 32, "exceeded": true },
       { "value": 32, "exceeded": true },
     ]},
   {
@@ -855,6 +887,12 @@ var riskHotspots = [
     "metrics": [
       { "value": 31, "exceeded": true },
       { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Analyzers", "class": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentOrphanAnalyzer", "reportPath": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentOrphanAnalyzer.html", "methodName": "Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext)", "methodShortName": "Initialize(...)", "fileIndex": 0, "line": 30,
+    "metrics": [
+      { "value": 30, "exceeded": false },
+      { "value": 30, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.OptionsAttributeHelper", "reportPath": "NexusLabs.Needlr.Generators_OptionsAttributeHelper.html", "methodName": "GetOptionsAttributes(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "GetOptionsAttributes(...)", "fileIndex": 0, "line": 75,
@@ -912,6 +950,24 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.AgentFramework.Analyzers", "class": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentTopologyAnalyzer", "reportPath": "NexusLabs.Needlr.AgentFramework.Analyzers_AgentTopologyAnalyzer.html", "methodName": "AnalyzeNamedType(Microsoft.CodeAnalysis.Diagnostics.SymbolAnalysisContext)", "methodShortName": "AnalyzeNamedType(...)", "fileIndex": 0, "line": 42,
+    "metrics": [
+      { "value": 24, "exceeded": false },
+      { "value": 24, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "methodName": "GetNeedlrAiAgentTypeInfo(Microsoft.CodeAnalysis.GeneratorAttributeSyntaxContext,System.Threading.CancellationToken)", "methodShortName": "GetNeedlrAiAgentTypeInfo(...)", "fileIndex": 0, "line": 194,
+    "metrics": [
+      { "value": 24, "exceeded": false },
+      { "value": 24, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_AgentFrameworkFunctionRegistryGenerator.html", "methodName": "BuildToolsDocComment(NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator/NeedlrAiAgentTypeInfo,System.Collections.Generic.Dictionary`2<System.String,System.Collections.Generic.List`1<System.String>>)", "methodShortName": "BuildToolsDocComment(...)", "fileIndex": 0, "line": 933,
+    "metrics": [
+      { "value": 24, "exceeded": false },
+      { "value": 24, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Workflows", "class": "NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions", "reportPath": "NexusLabs.Needlr.AgentFramework.Workflows_StreamingRunWorkflowExtensions.html", "methodName": "CollectWithTerminationAsync()", "methodShortName": "CollectWithTerminationAsync()", "fileIndex": 0, "line": 167,
     "metrics": [
       { "value": 24, "exceeded": false },
       { "value": 24, "exceeded": true },

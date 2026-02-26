@@ -2614,26 +2614,59 @@
 </span></code></pre></div>
 <h4 id="field-value">Field Value<a class="headerlink" href="#field-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.DuplicateSequenceOrder'></a></p>
+<h2 id="mafdiagnosticidsduplicatesequenceorder-field">MafDiagnosticIds.DuplicateSequenceOrder Field<a class="headerlink" href="#mafdiagnosticidsduplicatesequenceorder-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF006: Two or more agents in the same <code>[AgentSequenceMember]</code> pipeline declare
+the same <code>Order</code> value.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">DuplicateSequenceOrder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF006&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_1">Field Value<a class="headerlink" href="#field-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.GapInSequenceOrder'></a></p>
+<h2 id="mafdiagnosticidsgapinsequenceorder-field">MafDiagnosticIds.GapInSequenceOrder Field<a class="headerlink" href="#mafdiagnosticidsgapinsequenceorder-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF007: The <code>Order</code> values within a named <code>[AgentSequenceMember]</code> pipeline
+are not contiguous (a gap exists).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GapInSequenceOrder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF007&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_2">Field Value<a class="headerlink" href="#field-value_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.GroupChatTooFewMembers'></a></p>
 <h2 id="mafdiagnosticidsgroupchattoofewmembers-field">MafDiagnosticIds.GroupChatTooFewMembers Field<a class="headerlink" href="#mafdiagnosticidsgroupchattoofewmembers-field" title="Permanent link">&para;</a></h2>
 <p>NDLRMAF002: <code>[AgentGroupChatMember("g")]</code> group "g" has fewer than two members in this compilation.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GroupChatTooFewMembers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF002&quot;</span><span class="p">;</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GroupChatTooFewMembers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF002&quot;</span><span class="p">;</span>
 </span></code></pre></div>
-<h4 id="field-value_1">Field Value<a class="headerlink" href="#field-value_1" title="Permanent link">&para;</a></h4>
+<h4 id="field-value_3">Field Value<a class="headerlink" href="#field-value_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.HandoffsToSourceNotNeedlrAgent'></a></p>
 <h2 id="mafdiagnosticidshandoffstosourcenotneedlragent-field">MafDiagnosticIds.HandoffsToSourceNotNeedlrAgent Field<a class="headerlink" href="#mafdiagnosticidshandoffstosourcenotneedlragent-field" title="Permanent link">&para;</a></h2>
 <p>NDLRMAF003: A class has <code>[AgentHandoffsTo]</code> but is not itself decorated with <code>[NeedlrAiAgent]</code>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">HandoffsToSourceNotNeedlrAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF003&quot;</span><span class="p">;</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">HandoffsToSourceNotNeedlrAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF003&quot;</span><span class="p">;</span>
 </span></code></pre></div>
-<h4 id="field-value_2">Field Value<a class="headerlink" href="#field-value_2" title="Permanent link">&para;</a></h4>
+<h4 id="field-value_4">Field Value<a class="headerlink" href="#field-value_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.HandoffsToTargetNotNeedlrAgent'></a></p>
 <h2 id="mafdiagnosticidshandoffstotargetnotneedlragent-field">MafDiagnosticIds.HandoffsToTargetNotNeedlrAgent Field<a class="headerlink" href="#mafdiagnosticidshandoffstotargetnotneedlragent-field" title="Permanent link">&para;</a></h2>
 <p>NDLRMAF001: <code>[AgentHandoffsTo(typeof(X))]</code> target type X is not decorated with <code>[NeedlrAiAgent]</code>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">HandoffsToTargetNotNeedlrAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF001&quot;</span><span class="p">;</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">HandoffsToTargetNotNeedlrAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF001&quot;</span><span class="p">;</span>
 </span></code></pre></div>
-<h4 id="field-value_3">Field Value<a class="headerlink" href="#field-value_3" title="Permanent link">&para;</a></h4>
+<h4 id="field-value_5">Field Value<a class="headerlink" href="#field-value_5" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.OrphanAgent'></a></p>
+<h2 id="mafdiagnosticidsorphanagent-field">MafDiagnosticIds.OrphanAgent Field<a class="headerlink" href="#mafdiagnosticidsorphanagent-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF008: A class decorated with <code>[NeedlrAiAgent]</code> participates in no topology
+declaration (<code>[AgentHandoffsTo]</code>, <code>[AgentGroupChatMember]</code>, or
+<code>[AgentSequenceMember]</code>).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">OrphanAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF008&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_6">Field Value<a class="headerlink" href="#field-value_6" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.UnresolvedFunctionGroupReference'></a></p>
+<h2 id="mafdiagnosticidsunresolvedfunctiongroupreference-field">MafDiagnosticIds.UnresolvedFunctionGroupReference Field<a class="headerlink" href="#mafdiagnosticidsunresolvedfunctiongroupreference-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF005: An agent declares a <code>FunctionGroups</code> entry whose name has no matching
+<code>[AgentFunctionGroup("name")]</code> class in this compilation.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">UnresolvedFunctionGroupReference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF005&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_7">Field Value<a class="headerlink" href="#field-value_7" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 

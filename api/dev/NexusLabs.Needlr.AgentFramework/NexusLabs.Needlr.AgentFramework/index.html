@@ -2649,6 +2649,10 @@
 <td style="text-align: left;">Marks an agent class as a member of a named sequential pipeline, specifying its position. The source generator reads these declarations to emit a strongly-typed <code>Create{PipelineName}SequentialWorkflow()</code> extension method on <a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a>.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../AgentTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute">AgentTerminationConditionAttribute</a></td>
+<td style="text-align: left;">Declares a termination condition that is wired into the group chat manager for this agent (Layer 1). The condition is evaluated inside MAF's group chat loop, before the next agent turn starts, giving a clean early exit.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../AIAgentBuilderPluginOptions/" title="NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions">AIAgentBuilderPluginOptions</a></td>
 <td style="text-align: left;">Options passed to <a href="../IAIAgentBuilderPlugin/#NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)">Configure(AIAgentBuilderPluginOptions)</a> to allow plugins to participate in agent-builder configuration.</td>
 </tr>
@@ -2659,6 +2663,14 @@
 <tr>
 <td style="text-align: left;"><a href="../SyringeExtensionsForAgentFramework/" title="NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework">SyringeExtensionsForAgentFramework</a></td>
 <td style="text-align: left;">Extension methods for <a href="../../NexusLabs.Needlr.Injection/">NexusLabs.Needlr.Injection.ConfiguredSyringe</a> that enable registering Microsoft Agent Framework infrastructure (namely <a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a>) as part of the Needlr build pipeline.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TerminationContext/" title="NexusLabs.Needlr.AgentFramework.TerminationContext">TerminationContext</a></td>
+<td style="text-align: left;">Provides context to an <a href="../IWorkflowTerminationCondition/" title="NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition">IWorkflowTerminationCondition</a> when evaluating whether a workflow should stop after an agent's response.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../WorkflowRunTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute">WorkflowRunTerminationConditionAttribute</a></td>
+<td style="text-align: left;">Declares a termination condition that is evaluated by Needlr's <code>RunAsync</code> execution helpers after each completed agent turn (Layer 2). Unlike <a href="../AgentTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute">AgentTerminationConditionAttribute</a>, this works with all workflow types (group chat, handoff, sequential).</td>
 </tr>
 </tbody>
 </table>
@@ -2685,6 +2697,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a></td>
 <td style="text-align: left;">Creates MAF <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> instances from topology declared on agent classes via <a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a>, <a href="../AgentGroupChatMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute">AgentGroupChatMemberAttribute</a>, and <a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a>. Registered in DI by <code>UsingAgentFramework()</code> — inject via constructor or resolve from <code>IServiceProvider</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IWorkflowTerminationCondition/" title="NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition">IWorkflowTerminationCondition</a></td>
+<td style="text-align: left;">Evaluates whether a workflow should terminate early after an agent response.</td>
 </tr>
 </tbody>
 </table>
