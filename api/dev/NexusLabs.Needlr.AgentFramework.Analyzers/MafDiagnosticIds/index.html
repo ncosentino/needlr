@@ -2660,13 +2660,39 @@ declaration (<code>[AgentHandoffsTo]</code>, <code>[AgentGroupChatMember]</code>
 </span></code></pre></div>
 <h4 id="field-value_6">Field Value<a class="headerlink" href="#field-value_6" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.PreferAgentTerminationConditionForGroupChat'></a></p>
+<h2 id="mafdiagnosticidspreferagentterminationconditionforgroupchat-field">MafDiagnosticIds.PreferAgentTerminationConditionForGroupChat Field<a class="headerlink" href="#mafdiagnosticidspreferagentterminationconditionforgroupchat-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF011: <code>[WorkflowRunTerminationCondition]</code> is declared on a
+<code>[AgentGroupChatMember]</code> class; prefer <code>[AgentTerminationCondition]</code> for group
+chat members.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">PreferAgentTerminationConditionForGroupChat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF011&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_7">Field Value<a class="headerlink" href="#field-value_7" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.TerminationConditionTypeInvalid'></a></p>
+<h2 id="mafdiagnosticidsterminationconditiontypeinvalid-field">MafDiagnosticIds.TerminationConditionTypeInvalid Field<a class="headerlink" href="#mafdiagnosticidsterminationconditiontypeinvalid-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF010: The <code>conditionType</code> passed to <code>[WorkflowRunTerminationCondition]</code>
+or <code>[AgentTerminationCondition]</code> does not implement
+<code>IWorkflowTerminationCondition</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">TerminationConditionTypeInvalid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF010&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_8">Field Value<a class="headerlink" href="#field-value_8" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.UnresolvedFunctionGroupReference'></a></p>
 <h2 id="mafdiagnosticidsunresolvedfunctiongroupreference-field">MafDiagnosticIds.UnresolvedFunctionGroupReference Field<a class="headerlink" href="#mafdiagnosticidsunresolvedfunctiongroupreference-field" title="Permanent link">&para;</a></h2>
 <p>NDLRMAF005: An agent declares a <code>FunctionGroups</code> entry whose name has no matching
 <code>[AgentFunctionGroup("name")]</code> class in this compilation.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">UnresolvedFunctionGroupReference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF005&quot;</span><span class="p">;</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">UnresolvedFunctionGroupReference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF005&quot;</span><span class="p">;</span>
 </span></code></pre></div>
-<h4 id="field-value_7">Field Value<a class="headerlink" href="#field-value_7" title="Permanent link">&para;</a></h4>
+<h4 id="field-value_9">Field Value<a class="headerlink" href="#field-value_9" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticIds.WorkflowRunTerminationConditionOnNonAgent'></a></p>
+<h2 id="mafdiagnosticidsworkflowrunterminationconditiononnonagent-field">MafDiagnosticIds.WorkflowRunTerminationConditionOnNonAgent Field<a class="headerlink" href="#mafdiagnosticidsworkflowrunterminationconditiononnonagent-field" title="Permanent link">&para;</a></h2>
+<p>NDLRMAF009: <code>[WorkflowRunTerminationCondition]</code> is declared on a class that is not
+decorated with <code>[NeedlrAiAgent]</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">WorkflowRunTerminationConditionOnNonAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NDLRMAF009&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="field-value_10">Field Value<a class="headerlink" href="#field-value_10" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 
