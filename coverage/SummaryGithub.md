@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 02/26/2026 - 05:16:26 |
-| Coverage date: | 02/26/2026 - 05:15:15 - 02/26/2026 - 05:16:21 |
+| Generated on: | 02/26/2026 - 06:01:13 |
+| Coverage date: | 02/26/2026 - 06:00:02 - 02/26/2026 - 06:01:09 |
 | Parser: | MultiReport (19x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 238 |
 | Files: | 201 |
-| **Line coverage:** | 88.2% (10489 of 11890) |
-| Covered lines: | 10489 |
-| Uncovered lines: | 1401 |
-| Coverable lines: | 11890 |
-| Total lines: | 30060 |
-| **Branch coverage:** | 77.6% (4599 of 5920) |
-| Covered branches: | 4599 |
-| Total branches: | 5920 |
+| **Line coverage:** | 88.3% (10634 of 12043) |
+| Covered lines: | 10634 |
+| Uncovered lines: | 1409 |
+| Coverable lines: | 12043 |
+| Total lines: | 30269 |
+| **Branch coverage:** | 77.5% (4642 of 5984) |
+| Covered branches: | 4642 |
+| Total branches: | 5984 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -114,12 +114,12 @@
 |NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticDescriptors|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 97.2%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 96.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Generators**|**97.2%**|**80.3%**|
-|NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGe<br/>nerator|97.2%|80.3%|
+|**NexusLabs.Needlr.AgentFramework.Generators**|**96.7%**|**77.4%**|
+|NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGe<br/>nerator|96.7%|77.4%|
 
 </details>
 <details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 81.9%</summary>
