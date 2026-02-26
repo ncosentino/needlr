@@ -53,7 +53,8 @@ var workflow = workflowFactory.CreateCodeReviewGroupChatWorkflow(maxIterations: 
 
 Console.WriteLine("=== Needlr + MAF: Round-Robin Group Chat Code Review ===");
 Console.WriteLine("  Group membership declared via [AgentGroupChatMember] on each reviewer.");
-Console.WriteLine("  Workflow assembled by IWorkflowFactory — Program.cs is topology-agnostic.");
+Console.WriteLine("  ReviewOrchestratorAgent carries [AgentTerminationCondition] — the workflow");
+Console.WriteLine("  stops as soon as it outputs CONSENSUS: APPROVED or CONSENSUS: CHANGES REQUIRED.");
 Console.WriteLine();
 
 // A deliberately flawed code snippet to review — has security, performance, and style issues.

@@ -102,3 +102,31 @@ foreach (var topic in topics)
     Console.WriteLine();
 }
 
+Console.WriteLine("=== Demo 3: Layer 2 Termination — Stop Pipeline After Editor ===");
+Console.WriteLine("  EditorSeqAgent always appends STATUS: EDIT_COMPLETE.");
+Console.WriteLine("  RunAsync receives a KeywordTerminationCondition scoped to EditorSeqAgent.");
+Console.WriteLine("  When the editor's turn ends and the keyword is found, the publisher is skipped.");
+Console.WriteLine();
+
+var terminationConditions = new[]
+{
+    new KeywordTerminationCondition("STATUS: EDIT_COMPLETE", "EditorSeqAgent"),
+};
+
+var earlyTopic = "The future of agentic AI pipelines";
+Console.WriteLine($"Topic: {earlyTopic}");
+
+var earlyResponses = await sequentialWorkflow.RunAsync(earlyTopic, terminationConditions);
+
+foreach (var (executorId, text) in earlyResponses)
+{
+    Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+}
+
+var publisherRan = earlyResponses.ContainsKey("PublisherSeqAgent");
+Console.WriteLine();
+Console.WriteLine(publisherRan
+    ? "  (publisher ran — STATUS: EDIT_COMPLETE keyword was not found in editor response)"
+    : "  Terminated early: PublisherSeqAgent was skipped.");
+Console.WriteLine();
+
