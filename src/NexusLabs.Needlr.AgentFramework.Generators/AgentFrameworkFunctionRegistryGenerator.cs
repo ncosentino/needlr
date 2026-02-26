@@ -35,21 +35,21 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Pipeline A: [AgentFunction] method-bearing classes → AgentFrameworkFunctionRegistry
+        // [AgentFunction] method-bearing classes → AgentFrameworkFunctionRegistry
         var functionClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetAgentFunctionTypeInfo(ctx, ct))
             .Where(static m => m is not null);
 
-        // Pipeline B: [AgentFunctionGroup] class-level annotations → AgentFrameworkFunctionGroupRegistry
+        // [AgentFunctionGroup] class-level annotations → AgentFrameworkFunctionGroupRegistry
         var groupClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetAgentFunctionGroupEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Pipeline C: [NeedlrAiAgent] declared agent types → AgentRegistry + partial companions
+        // [NeedlrAiAgent] declared agent types → AgentRegistry + partial companions
         var agentClasses = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 NeedlrAiAgentAttributeName,
@@ -57,7 +57,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetNeedlrAiAgentTypeInfo(ctx, ct))
             .Where(static m => m is not null);
 
-        // Pipeline D: [AgentHandoffsTo] annotations → handoff topology registry
+        // [AgentHandoffsTo] annotations → handoff topology registry
         var handoffEntries = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 AgentHandoffsToAttributeName,
@@ -65,7 +65,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetHandoffEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Pipeline E: [AgentGroupChatMember] annotations → group chat registry
+        // [AgentGroupChatMember] annotations → group chat registry
         var groupChatEntries = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 AgentGroupChatMemberAttributeName,
@@ -73,7 +73,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetGroupChatEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Pipeline F: [AgentSequenceMember] annotations → sequential pipeline registry
+        // [AgentSequenceMember] annotations → sequential pipeline registry
         var sequenceEntries = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 AgentSequenceMemberAttributeName,
@@ -81,7 +81,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetSequenceEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Pipeline G: [WorkflowRunTerminationCondition] → termination conditions per agent
+        // [WorkflowRunTerminationCondition] → termination conditions per agent
         var terminationConditionEntries = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 WorkflowRunTerminationConditionAttributeName,

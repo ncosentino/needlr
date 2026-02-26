@@ -3,9 +3,9 @@ using Xunit;
 namespace NexusLabs.Needlr.AgentFramework.Generators.Tests;
 
 /// <summary>
-/// Tests for <see cref="AgentFrameworkFunctionRegistryGenerator"/> covering all six pipelines:
-/// A (AgentFunction), B (AgentFunctionGroup), C (NeedlrAiAgent),
-/// D (AgentHandoffsTo), E (AgentGroupChatMember), F (AgentSequenceMember),
+/// Tests for <see cref="AgentFrameworkFunctionRegistryGenerator"/> covering all pipelines:
+/// AgentFunction, AgentFunctionGroup, NeedlrAiAgent,
+/// AgentHandoffsTo, AgentGroupChatMember, AgentSequenceMember, WorkflowRunTerminationCondition,
 /// plus the bootstrap and workflow extension outputs.
 /// </summary>
 public sealed class AgentFrameworkFunctionRegistryGeneratorTests
@@ -678,5 +678,204 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         var agentOutput = MafGeneratorTestRunner.Create().GetFile("AgentRegistry.g.cs");
 
         Assert.Contains("[global::System.CodeDom.Compiler.GeneratedCodeAttribute", agentOutput);
+    }
+
+    // -------------------------------------------------------------------------
+    // WorkflowRunTerminationCondition — Run*Async() generation
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void TerminationCondition_SequentialWorkflow_GeneratesRunAsyncMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("review-pipeline", 1)]
+                public class WriterAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("review-pipeline", 2)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "DONE")]
+                public class EditorAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("RunReviewPipelineSequentialWorkflowAsync", output);
+        Assert.Contains("CreateReviewPipelineSequentialWorkflow", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_SequentialWorkflow_ConditionTypeAndArgEmitted()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("review-pipeline", 1)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "STATUS: DONE")]
+                public class ReviewAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("KeywordTerminationCondition", output);
+        Assert.Contains("\"STATUS: DONE\"", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_SequentialWorkflow_MultipleConditions_AllEmitted()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("my-pipeline", 1)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "KEYWORD_STOP")]
+                public class AgentA { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("my-pipeline", 2)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.RegexTerminationCondition), "ERROR:.*")]
+                public class AgentB { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("KeywordTerminationCondition", output);
+        Assert.Contains("\"KEYWORD_STOP\"", output);
+        Assert.Contains("RegexTerminationCondition", output);
+        Assert.Contains("\"ERROR:.*\"", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_HandoffWorkflow_GeneratesRunAsyncMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class SpecialistAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentHandoffsTo(typeof(SpecialistAgent))]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "DONE")]
+                public class RouterAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("RunRouterHandoffWorkflowAsync", output);
+        Assert.Contains("CreateRouterHandoffWorkflow", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_GroupChatWorkflow_GeneratesRunAsyncMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGroupChatMember("review")]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "APPROVED")]
+                public class ReviewerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGroupChatMember("review")]
+                public class CriticAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("RunReviewGroupChatWorkflowAsync", output);
+        Assert.Contains("CreateReviewGroupChatWorkflow", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_NoConditionDeclared_NoRunAsyncMethodEmitted()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("plain-pipeline", 1)]
+                public class AgentOne { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("plain-pipeline", 2)]
+                public class AgentTwo { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("CreatePlainPipelineSequentialWorkflow", output);
+        Assert.DoesNotContain("RunPlainPipelineSequentialWorkflowAsync", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_RunAsyncMethod_UsesFullyQualifiedStreamingRunWorkflowExtensions()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("check-pipeline", 1)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "OK")]
+                public class CheckAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("global::NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions.RunAsync", output);
+    }
+
+    [Fact]
+    public void TerminationCondition_RunAsyncMethod_ReturnsIReadOnlyDictionary()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("output-pipeline", 1)]
+                [NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationCondition(
+                    typeof(NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition), "DONE")]
+                public class OutputAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("IReadOnlyDictionary<string, string>", output);
     }
 }

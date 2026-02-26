@@ -114,6 +114,14 @@ internal sealed class MafGeneratorTestRunner
                 public int Order { get; }
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class WorkflowRunTerminationConditionAttribute : System.Attribute
+            {
+                public WorkflowRunTerminationConditionAttribute(System.Type conditionType, params object[] ctorArgs) { }
+            }
+
+            public interface IWorkflowTerminationCondition { }
+
             public static class AgentFrameworkGeneratedBootstrap
             {
                 public static void Register(
@@ -132,6 +140,28 @@ internal sealed class MafGeneratorTestRunner
         namespace Microsoft.Agents.AI.Workflows
         {
             public sealed class Workflow { }
+        }
+
+        namespace NexusLabs.Needlr.AgentFramework.Workflows
+        {
+            public class KeywordTerminationCondition : NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition
+            {
+                public KeywordTerminationCondition(string keyword, string agentId = null) { }
+            }
+
+            public class RegexTerminationCondition : NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition
+            {
+                public RegexTerminationCondition(string pattern, string agentId = null) { }
+            }
+
+            public static class StreamingRunWorkflowExtensions
+            {
+                public static System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, string>> RunAsync(
+                    Microsoft.Agents.AI.Workflows.Workflow workflow,
+                    string message,
+                    System.Collections.Generic.IReadOnlyList<NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition> conditions,
+                    System.Threading.CancellationToken cancellationToken = default) => null;
+            }
         }
         """;
 }
