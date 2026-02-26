@@ -52,4 +52,24 @@ public static class MafDiagnosticIds
     /// <c>[AgentSequenceMember]</c>).
     /// </summary>
     public const string OrphanAgent = "NDLRMAF008";
+
+    /// <summary>
+    /// NDLRMAF009: <c>[WorkflowRunTerminationCondition]</c> is declared on a class that is not
+    /// decorated with <c>[NeedlrAiAgent]</c>.
+    /// </summary>
+    public const string WorkflowRunTerminationConditionOnNonAgent = "NDLRMAF009";
+
+    /// <summary>
+    /// NDLRMAF010: The <c>conditionType</c> passed to <c>[WorkflowRunTerminationCondition]</c>
+    /// or <c>[AgentTerminationCondition]</c> does not implement
+    /// <c>IWorkflowTerminationCondition</c>.
+    /// </summary>
+    public const string TerminationConditionTypeInvalid = "NDLRMAF010";
+
+    /// <summary>
+    /// NDLRMAF011: <c>[WorkflowRunTerminationCondition]</c> is declared on a
+    /// <c>[AgentGroupChatMember]</c> class; prefer <c>[AgentTerminationCondition]</c> for group
+    /// chat members.
+    /// </summary>
+    public const string PreferAgentTerminationConditionForGroupChat = "NDLRMAF011";
 }

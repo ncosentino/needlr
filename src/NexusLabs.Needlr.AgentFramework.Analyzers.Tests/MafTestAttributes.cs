@@ -59,5 +59,35 @@ namespace NexusLabs.Needlr.AgentFramework
         public string PipelineName { get; }
         public int Order { get; }
     }
-}";
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class WorkflowRunTerminationConditionAttribute : System.Attribute
+    {
+        public WorkflowRunTerminationConditionAttribute(System.Type conditionType, params object[] ctorArgs)
+        {
+            ConditionType = conditionType;
+            CtorArgs = ctorArgs ?? System.Array.Empty<object>();
+        }
+        public System.Type ConditionType { get; }
+        public object[] CtorArgs { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentTerminationConditionAttribute : System.Attribute
+    {
+        public AgentTerminationConditionAttribute(System.Type conditionType, params object[] ctorArgs)
+        {
+            ConditionType = conditionType;
+            CtorArgs = ctorArgs ?? System.Array.Empty<object>();
+        }
+        public System.Type ConditionType { get; }
+        public object[] CtorArgs { get; }
+    }
+
+    public interface IWorkflowTerminationCondition
+    {
+        bool ShouldTerminate(object context);
+    }
+}
+";
 }

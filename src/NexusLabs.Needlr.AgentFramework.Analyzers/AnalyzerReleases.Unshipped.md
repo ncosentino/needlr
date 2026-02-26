@@ -13,3 +13,6 @@ NDLRMAF005 | NexusLabs.Needlr.AgentFramework | Warning | FunctionGroups referenc
 NDLRMAF006 | NexusLabs.Needlr.AgentFramework | Error | Duplicate Order value in [AgentSequenceMember] pipeline
 NDLRMAF007 | NexusLabs.Needlr.AgentFramework | Warning | Gap in [AgentSequenceMember] Order sequence
 NDLRMAF008 | NexusLabs.Needlr.AgentFramework | Info | Agent participates in no topology declaration
+NDLRMAF009 | NexusLabs.Needlr.AgentFramework | Warning | [WorkflowRunTerminationCondition] declared on a non-agent class
+NDLRMAF010 | NexusLabs.Needlr.AgentFramework | Error | Termination condition type does not implement IWorkflowTerminationCondition
+NDLRMAF011 | NexusLabs.Needlr.AgentFramework | Info | Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members

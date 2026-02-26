@@ -119,4 +119,44 @@ public static class MafDiagnosticDescriptors
         description: "An agent registered with [NeedlrAiAgent] is not referenced in any topology. It will not appear in any source-generated workflow method. This may be intentional (e.g. the agent is used programmatically), but is often an oversight. Add a topology attribute or remove [NeedlrAiAgent] if the class is not an agent.",
         helpLinkUri: HelpLinkBase + "NDLRMAF008.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF009: <c>[WorkflowRunTerminationCondition]</c> declared on a non-agent class.
+    /// </summary>
+    public static readonly DiagnosticDescriptor WorkflowRunTerminationConditionOnNonAgent = new(
+        id: MafDiagnosticIds.WorkflowRunTerminationConditionOnNonAgent,
+        title: "[WorkflowRunTerminationCondition] declared on a non-agent class",
+        messageFormat: "'{0}' has [WorkflowRunTerminationCondition] but is not decorated with [NeedlrAiAgent]. Termination conditions are only evaluated for registered agents.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "A class carries [WorkflowRunTerminationCondition] but is not decorated with [NeedlrAiAgent], so it will never be part of a generated workflow and the condition will never be evaluated. Either add [NeedlrAiAgent] to make it a registered agent, or remove [WorkflowRunTerminationCondition].",
+        helpLinkUri: HelpLinkBase + "NDLRMAF009.md");
+
+    /// <summary>
+    /// NDLRMAF010: Condition type does not implement <c>IWorkflowTerminationCondition</c>.
+    /// </summary>
+    public static readonly DiagnosticDescriptor TerminationConditionTypeInvalid = new(
+        id: MafDiagnosticIds.TerminationConditionTypeInvalid,
+        title: "Termination condition type does not implement IWorkflowTerminationCondition",
+        messageFormat: "'{0}' does not implement IWorkflowTerminationCondition and cannot be used as a termination condition on '{1}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The conditionType argument passed to [WorkflowRunTerminationCondition] or [AgentTerminationCondition] must be a class that implements IWorkflowTerminationCondition. The condition will be instantiated at runtime via Activator.CreateInstance and cast to IWorkflowTerminationCondition; using an incompatible type will throw at runtime.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF010.md");
+
+    /// <summary>
+    /// NDLRMAF011: Prefer <c>[AgentTerminationCondition]</c> over
+    /// <c>[WorkflowRunTerminationCondition]</c> for group chat members.
+    /// </summary>
+    public static readonly DiagnosticDescriptor PreferAgentTerminationConditionForGroupChat = new(
+        id: MafDiagnosticIds.PreferAgentTerminationConditionForGroupChat,
+        title: "Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members",
+        messageFormat: "'{0}' is an [AgentGroupChatMember] with [WorkflowRunTerminationCondition]. Consider using [AgentTerminationCondition] instead, which fires before the next agent turn (Layer 1) rather than after the response is emitted (Layer 2).",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "For group chat agents, [AgentTerminationCondition] is evaluated inside MAF's group chat loop before the next turn begins, allowing a clean early exit. [WorkflowRunTerminationCondition] fires after the full response is emitted (Layer 2). Both work, but [AgentTerminationCondition] provides a more immediate stop for group chat workflows.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF011.md");
 }
