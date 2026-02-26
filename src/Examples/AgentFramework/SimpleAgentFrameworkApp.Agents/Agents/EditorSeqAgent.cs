@@ -1,4 +1,5 @@
 using NexusLabs.Needlr.AgentFramework;
+using NexusLabs.Needlr.AgentFramework.Workflows;
 
 namespace SimpleAgentFrameworkApp.Agents;
 
@@ -15,4 +16,5 @@ namespace SimpleAgentFrameworkApp.Agents;
         """,
     FunctionTypes = new Type[0])]
 [AgentSequenceMember("content-pipeline", 2)]
+[WorkflowRunTerminationCondition(typeof(KeywordTerminationCondition), "STATUS: EDIT_COMPLETE", "EditorSeqAgent")]
 public partial class EditorSeqAgent { }

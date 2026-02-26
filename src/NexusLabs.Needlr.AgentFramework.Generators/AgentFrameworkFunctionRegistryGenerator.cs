@@ -31,6 +31,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string AgentHandoffsToAttributeName = "NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute";
     private const string AgentGroupChatMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute";
     private const string AgentSequenceMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute";
+    private const string WorkflowRunTerminationConditionAttributeName = "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -80,7 +81,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GetSequenceEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Unified output: all six pipelines combined with compilation metadata.
+        // Pipeline G: [WorkflowRunTerminationCondition] → termination conditions per agent
+        var terminationConditionEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                WorkflowRunTerminationConditionAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GetTerminationConditionEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all seven pipelines combined with compilation metadata.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
@@ -88,13 +97,14 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .Combine(handoffEntries.Collect())
             .Combine(groupChatEntries.Collect())
             .Combine(sequenceEntries.Collect())
+            .Combine(terminationConditionEntries.Collect())
             .Combine(context.CompilationProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var (((((( functionData, groupData), agentData), handoffData), groupChatData), sequenceData), compilation) = data;
-                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, compilation, spc);
+                var ((((((( functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), compilation) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, compilation, spc);
             });
     }
 
@@ -324,6 +334,64 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return entries.ToImmutable();
     }
 
+    private static ImmutableArray<TerminationConditionEntry> GetTerminationConditionEntries(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return ImmutableArray<TerminationConditionEntry>.Empty;
+
+        var agentTypeName = GetFullyQualifiedName(typeSymbol);
+        var entries = ImmutableArray.CreateBuilder<TerminationConditionEntry>();
+
+        foreach (var attr in context.Attributes)
+        {
+            if (attr.ConstructorArguments.Length < 1)
+                continue;
+
+            var typeArg = attr.ConstructorArguments[0];
+            if (typeArg.Kind != TypedConstantKind.Type || typeArg.Value is not INamedTypeSymbol condTypeSymbol)
+                continue;
+
+            var condTypeFQN = GetFullyQualifiedName(condTypeSymbol);
+            var ctorArgLiterals = ImmutableArray<string>.Empty;
+
+            if (attr.ConstructorArguments.Length > 1)
+            {
+                var paramsArg = attr.ConstructorArguments[1];
+                if (paramsArg.Kind == TypedConstantKind.Array)
+                {
+                    ctorArgLiterals = paramsArg.Values
+                        .Select(SerializeTypedConstant)
+                        .Where(s => s is not null)
+                        .Select(s => s!)
+                        .ToImmutableArray();
+                }
+            }
+
+            entries.Add(new TerminationConditionEntry(agentTypeName, condTypeFQN, ctorArgLiterals));
+        }
+
+        return entries.ToImmutable();
+    }
+
+    private static string? SerializeTypedConstant(TypedConstant constant)
+    {
+        return constant.Kind switch
+        {
+            TypedConstantKind.Primitive when constant.Value is string s =>
+                "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"",
+            TypedConstantKind.Primitive when constant.Value is int i => i.ToString(),
+            TypedConstantKind.Primitive when constant.Value is long l => l.ToString() + "L",
+            TypedConstantKind.Primitive when constant.Value is bool b => b ? "true" : "false",
+            TypedConstantKind.Primitive when constant.Value is null => "null",
+            TypedConstantKind.Type when constant.Value is ITypeSymbol ts =>
+                $"typeof({GetFullyQualifiedName(ts)})",
+            _ => null,
+        };
+    }
+
     private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.DeclaredAccessibility == Accessibility.Private ||
@@ -378,6 +446,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<ImmutableArray<HandoffEntry>> handoffData,
         ImmutableArray<ImmutableArray<GroupChatEntry>> groupChatData,
         ImmutableArray<ImmutableArray<SequenceEntry>> sequenceData,
+        ImmutableArray<ImmutableArray<TerminationConditionEntry>> terminationData,
         Compilation compilation,
         SourceProductionContext spc)
     {
@@ -418,6 +487,11 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 g => g.Key,
                 g => g.OrderBy(e => e.Order).Select(e => e.AgentTypeName).ToList());
 
+        var conditionsByAgentTypeName = terminationData
+            .SelectMany(a => a)
+            .GroupBy(e => e.AgentTypeName)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
             SourceText.From(GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
@@ -442,7 +516,8 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
         spc.AddSource("WorkflowFactoryExtensions.g.cs",
             SourceText.From(GenerateWorkflowFactoryExtensionsSource(
-                handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
+                handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName,
+                conditionsByAgentTypeName, safeAssemblyName), Encoding.UTF8));
 
         // Partial companions for [NeedlrAiAgent] classes declared as partial
         foreach (var agentType in validAgentTypes.Where(a => a.IsPartial))
@@ -728,6 +803,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
         Dictionary<string, List<string>> groupChatByGroupName,
         Dictionary<string, List<string>> sequenceByPipelineName,
+        Dictionary<string, List<TerminationConditionEntry>> conditionsByAgentTypeName,
         string safeAssemblyName)
     {
         var sb = new StringBuilder();
@@ -774,6 +850,47 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory)");
             sb.AppendLine($"        => workflowFactory.CreateHandoffWorkflow<{typeName}>();");
             sb.AppendLine();
+
+            var allHandoffAgents = new[] { typeName }
+                .Concat(kvp.Value.Select(v => v.TargetAgentTypeName))
+                .ToList();
+            var handoffConditions = allHandoffAgents
+                .SelectMany(t => conditionsByAgentTypeName.TryGetValue(t, out var c) ? c : Enumerable.Empty<TerminationConditionEntry>())
+                .ToList();
+
+            if (handoffConditions.Count > 0)
+            {
+                var runMethodName = $"Run{StripAgentSuffix(className)}HandoffWorkflowAsync";
+                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine($"    /// Creates and runs the handoff workflow starting from <see cref=\"{typeName.Replace("global::", "")}\"/>, applying declared termination conditions.");
+                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine($"    /// <remarks>");
+                sb.AppendLine($"    /// Termination conditions are evaluated after each completed agent turn (Layer 2).");
+                sb.AppendLine($"    /// The workflow stops early when any condition is satisfied.");
+                sb.AppendLine($"    /// </remarks>");
+                sb.AppendLine($"    /// <param name=\"workflowFactory\">The workflow factory.</param>");
+                sb.AppendLine($"    /// <param name=\"message\">The input message to start the workflow.</param>");
+                sb.AppendLine($"    /// <param name=\"cancellationToken\">Optional cancellation token.</param>");
+                sb.AppendLine($"    /// <returns>A dictionary mapping executor IDs to their response text.</returns>");
+                sb.AppendLine($"    public static async global::System.Threading.Tasks.Task<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> {runMethodName}(");
+                sb.AppendLine($"        this IWorkflowFactory workflowFactory,");
+                sb.AppendLine($"        string message,");
+                sb.AppendLine($"        global::System.Threading.CancellationToken cancellationToken = default)");
+                sb.AppendLine($"    {{");
+                sb.AppendLine($"        var workflow = workflowFactory.{methodName}();");
+                sb.AppendLine($"        global::System.Collections.Generic.IReadOnlyList<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition> conditions =");
+                sb.AppendLine($"            new global::System.Collections.Generic.List<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition>");
+                sb.AppendLine($"            {{");
+                foreach (var cond in handoffConditions)
+                {
+                    var args = cond.CtorArgLiterals.IsEmpty ? "" : string.Join(", ", cond.CtorArgLiterals);
+                    sb.AppendLine($"                new {cond.ConditionTypeFQN}({args}),");
+                }
+                sb.AppendLine($"            }};");
+                sb.AppendLine($"        return await global::NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions.RunAsync(workflow, message, conditions, cancellationToken).ConfigureAwait(false);");
+                sb.AppendLine($"    }}");
+                sb.AppendLine();
+            }
         }
 
         foreach (var kvp in groupChatByGroupName.OrderBy(k => k.Key))
@@ -799,6 +916,46 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory, int maxIterations = 10)");
             sb.AppendLine($"        => workflowFactory.CreateGroupChatWorkflow(\"{escapedGroupName}\", maxIterations);");
             sb.AppendLine();
+
+            var gcConditions = kvp.Value
+                .SelectMany(t => conditionsByAgentTypeName.TryGetValue(t, out var c) ? c : Enumerable.Empty<TerminationConditionEntry>())
+                .ToList();
+
+            if (gcConditions.Count > 0)
+            {
+                var runMethodName = $"Run{methodSuffix}GroupChatWorkflowAsync";
+                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine($"    /// Creates and runs the \"{escapedGroupName}\" group chat workflow, applying declared termination conditions.");
+                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine($"    /// <remarks>");
+                sb.AppendLine($"    /// Termination conditions are evaluated after each completed agent turn (Layer 2).");
+                sb.AppendLine($"    /// The workflow stops early when any condition is satisfied.");
+                sb.AppendLine($"    /// </remarks>");
+                sb.AppendLine($"    /// <param name=\"workflowFactory\">The workflow factory.</param>");
+                sb.AppendLine($"    /// <param name=\"message\">The input message to start the workflow.</param>");
+                sb.AppendLine($"    /// <param name=\"maxIterations\">Maximum number of group chat iterations.</param>");
+                sb.AppendLine($"    /// <param name=\"cancellationToken\">Optional cancellation token.</param>");
+                sb.AppendLine($"    /// <returns>A dictionary mapping executor IDs to their response text.</returns>");
+                sb.AppendLine($"    public static async global::System.Threading.Tasks.Task<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> {runMethodName}(");
+                sb.AppendLine($"        this IWorkflowFactory workflowFactory,");
+                sb.AppendLine($"        string message,");
+                sb.AppendLine($"        int maxIterations = 10,");
+                sb.AppendLine($"        global::System.Threading.CancellationToken cancellationToken = default)");
+                sb.AppendLine($"    {{");
+                sb.AppendLine($"        var workflow = workflowFactory.{methodName}(maxIterations);");
+                sb.AppendLine($"        global::System.Collections.Generic.IReadOnlyList<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition> conditions =");
+                sb.AppendLine($"            new global::System.Collections.Generic.List<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition>");
+                sb.AppendLine($"            {{");
+                foreach (var cond in gcConditions)
+                {
+                    var args = cond.CtorArgLiterals.IsEmpty ? "" : string.Join(", ", cond.CtorArgLiterals);
+                    sb.AppendLine($"                new {cond.ConditionTypeFQN}({args}),");
+                }
+                sb.AppendLine($"            }};");
+                sb.AppendLine($"        return await global::NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions.RunAsync(workflow, message, conditions, cancellationToken).ConfigureAwait(false);");
+                sb.AppendLine($"    }}");
+                sb.AppendLine();
+            }
         }
 
         foreach (var kvp in sequenceByPipelineName.OrderBy(k => k.Key))
@@ -824,6 +981,44 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             sb.AppendLine($"    public static Workflow {methodName}(this IWorkflowFactory workflowFactory)");
             sb.AppendLine($"        => workflowFactory.CreateSequentialWorkflow(\"{escapedPipelineName}\");");
             sb.AppendLine();
+
+            var seqConditions = kvp.Value
+                .SelectMany(t => conditionsByAgentTypeName.TryGetValue(t, out var c) ? c : Enumerable.Empty<TerminationConditionEntry>())
+                .ToList();
+
+            if (seqConditions.Count > 0)
+            {
+                var runMethodName = $"Run{methodSuffix}SequentialWorkflowAsync";
+                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine($"    /// Creates and runs the \"{escapedPipelineName}\" sequential workflow, applying declared termination conditions.");
+                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine($"    /// <remarks>");
+                sb.AppendLine($"    /// Termination conditions are evaluated after each completed agent turn (Layer 2).");
+                sb.AppendLine($"    /// The workflow stops early when any condition is satisfied.");
+                sb.AppendLine($"    /// </remarks>");
+                sb.AppendLine($"    /// <param name=\"workflowFactory\">The workflow factory.</param>");
+                sb.AppendLine($"    /// <param name=\"message\">The input message to start the workflow.</param>");
+                sb.AppendLine($"    /// <param name=\"cancellationToken\">Optional cancellation token.</param>");
+                sb.AppendLine($"    /// <returns>A dictionary mapping executor IDs to their response text.</returns>");
+                sb.AppendLine($"    public static async global::System.Threading.Tasks.Task<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> {runMethodName}(");
+                sb.AppendLine($"        this IWorkflowFactory workflowFactory,");
+                sb.AppendLine($"        string message,");
+                sb.AppendLine($"        global::System.Threading.CancellationToken cancellationToken = default)");
+                sb.AppendLine($"    {{");
+                sb.AppendLine($"        var workflow = workflowFactory.{methodName}();");
+                sb.AppendLine($"        global::System.Collections.Generic.IReadOnlyList<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition> conditions =");
+                sb.AppendLine($"            new global::System.Collections.Generic.List<global::NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition>");
+                sb.AppendLine($"            {{");
+                foreach (var cond in seqConditions)
+                {
+                    var args = cond.CtorArgLiterals.IsEmpty ? "" : string.Join(", ", cond.CtorArgLiterals);
+                    sb.AppendLine($"                new {cond.ConditionTypeFQN}({args}),");
+                }
+                sb.AppendLine($"            }};");
+                sb.AppendLine($"        return await global::NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions.RunAsync(workflow, message, conditions, cancellationToken).ConfigureAwait(false);");
+                sb.AppendLine($"    }}");
+                sb.AppendLine();
+            }
         }
 
         sb.AppendLine("}");
@@ -1077,5 +1272,19 @@ internal static class NeedlrAgentFrameworkModuleInitializer
         public string AgentTypeName { get; }
         public string PipelineName { get; }
         public int Order { get; }
+    }
+
+    private readonly struct TerminationConditionEntry
+    {
+        public TerminationConditionEntry(string agentTypeName, string conditionTypeFQN, ImmutableArray<string> ctorArgLiterals)
+        {
+            AgentTypeName = agentTypeName;
+            ConditionTypeFQN = conditionTypeFQN;
+            CtorArgLiterals = ctorArgLiterals;
+        }
+
+        public string AgentTypeName { get; }
+        public string ConditionTypeFQN { get; }
+        public ImmutableArray<string> CtorArgLiterals { get; }
     }
 }

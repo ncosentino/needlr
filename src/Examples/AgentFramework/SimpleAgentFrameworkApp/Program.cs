@@ -10,9 +10,9 @@ using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
-// Generated extension methods: CreateTriageHandoffWorkflow() and CreateContentPipelineSequentialWorkflow()
-// on IWorkflowFactory. These are emitted by the source generator in SimpleAgentFrameworkApp.Agents based on
-// [AgentHandoffsTo] on TriageAgent and [AgentSequenceMember] on Writer/Editor/PublisherSeqAgent.
+// Generated extension methods on IWorkflowFactory — emitted by the source generator in
+// SimpleAgentFrameworkApp.Agents based on [AgentHandoffsTo], [AgentSequenceMember], and
+// [WorkflowRunTerminationCondition] declarations on agent classes.
 using SimpleAgentFrameworkApp.Agents.Generated;
 
 var configuration = new ConfigurationBuilder()
@@ -103,20 +103,15 @@ foreach (var topic in topics)
 }
 
 Console.WriteLine("=== Demo 3: Layer 2 Termination — Stop Pipeline After Editor ===");
-Console.WriteLine("  EditorSeqAgent always appends STATUS: EDIT_COMPLETE.");
-Console.WriteLine("  RunAsync receives a KeywordTerminationCondition scoped to EditorSeqAgent.");
+Console.WriteLine("  EditorSeqAgent declares [WorkflowRunTerminationCondition(typeof(KeywordTerminationCondition), ...)].");
+Console.WriteLine("  RunContentPipelineSequentialWorkflowAsync() is generated — conditions are baked in.");
 Console.WriteLine("  When the editor's turn ends and the keyword is found, the publisher is skipped.");
 Console.WriteLine();
-
-var terminationConditions = new[]
-{
-    new KeywordTerminationCondition("STATUS: EDIT_COMPLETE", "EditorSeqAgent"),
-};
 
 var earlyTopic = "The future of agentic AI pipelines";
 Console.WriteLine($"Topic: {earlyTopic}");
 
-var earlyResponses = await sequentialWorkflow.RunAsync(earlyTopic, terminationConditions);
+var earlyResponses = await workflowFactory.RunContentPipelineSequentialWorkflowAsync(earlyTopic);
 
 foreach (var (executorId, text) in earlyResponses)
 {
