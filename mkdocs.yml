@@ -7,6 +7,7 @@ strict: true
 
 theme:
   name: material
+  custom_dir: docs/overrides
   logo: assets/needlr.webp
   favicon: assets/needlr.webp
   features:
@@ -145,6 +146,9 @@ markdown_extensions:
       toc_depth: 4
 
 extra:
+  analytics:
+    provider: google
+    property: G-F9P4TGM7EZ
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/ncosentino/needlr

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if page and page.is_homepage %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Needlr",
+    "description": "Opinionated fluent dependency injection for .NET with source generation. Automate service registration, factories, providers, decorators, and interceptors with compile-time safety.",
+    "url": "https://github.devleader.ca/needlr/",
+    "downloadUrl": "https://www.nuget.org/packages?q=NexusLabs.Needlr",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": ".NET 8, .NET 9, .NET 10",
+    "programmingLanguage": "C#",
+    "softwareVersion": "{{ config.extra.version | default('') }}",
+    "license": "https://github.com/ncosentino/needlr/blob/main/LICENSE",
+    "author": {
+      "@type": "Person",
+      "name": "Nick Cosentino",
+      "url": "https://www.devleader.ca"
+    },
+    "codeRepository": "https://github.com/ncosentino/needlr",
+    "keywords": ["dependency injection", ".NET", "C#", "source generation", "DI container", "IoC", "service registration", "decorator pattern", "interceptor", "Needlr"]
+  }
+  </script>
+  {% endif %}
+{% endblock %}
