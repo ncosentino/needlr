@@ -8,8 +8,32 @@ using System.Diagnostics.CodeAnalysis;
 namespace NexusLabs.Needlr.SignalR;
 
 /// <summary>
-/// Extension methods for configuring SignalR hub registration.
+/// Extension methods for configuring SignalR hub registration via Needlr.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Two approaches are supported:
+/// </para>
+/// <list type="bullet">
+/// <item><description>
+/// <b>Reflection-based</b> (<see cref="UseSignalRHubsWithReflection"/>): discovers and maps hubs at
+/// runtime. Convenient but incompatible with AOT/trimmed builds.
+/// </description></item>
+/// <item><description>
+/// <b>Source-generated</b> (<c>app.MapGeneratedHubs()</c>): emits hub mappings at compile time.
+/// Required for AOT/trimmed applications.
+/// </description></item>
+/// </list>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Reflection-based (not AOT-safe)
+/// app.UseSignalRHubsWithReflection();
+///
+/// // Source-generated (AOT-safe) — requires NexusLabs.Needlr.SignalR.Generators
+/// app.MapGeneratedHubs();
+/// </code>
+/// </example>
 public static class SignalRExtensions
 {
     /// <summary>

@@ -14,6 +14,20 @@ namespace NexusLabs.Needlr.SemanticKernel;
 /// This class uses reflection to discover methods with <see cref="KernelFunctionAttribute"/>.
 /// For AOT/trimmed applications, consider registering kernel functions explicitly.
 /// </remarks>
+/// <example>
+/// <code>
+/// // Obtained from SyringeExtensionsForSemanticKernel.UsingSemanticKernel()
+/// SemanticKernelSyringe syringe = app.Services.UsingSemanticKernel();
+///
+/// // Register plugins and build the kernel factory
+/// IKernelFactory kernelFactory = syringe
+///     .AddSemanticKernelPluginsFromGenerated(GeneratedSemanticKernelPlugins.AllPluginTypes)
+///     .BuildKernelFactory();
+///
+/// // Create a Kernel instance from the factory
+/// Kernel kernel = kernelFactory.CreateKernel();
+/// </code>
+/// </example>
 [DoNotAutoRegister]
 [RequiresUnreferencedCode("SemanticKernel plugin setup uses reflection to discover [KernelFunction] methods.")]
 [RequiresDynamicCode("SemanticKernel plugin setup uses reflection APIs that require dynamic code generation.")]
