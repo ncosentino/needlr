@@ -13,6 +13,30 @@
   <meta name="twitter:description" content="{{ page.meta.description | default(config.site_description) }}" />
   <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   {% endif %}
+  {% if page and page.ancestors %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {% for ancestor in page.ancestors %}
+      {
+        "@type": "ListItem",
+        "position": {{ loop.index }},
+        "name": "{{ ancestor.title | e }}",
+        "item": "{{ config.site_url }}{{ ancestor.url }}"
+      }{% if not loop.last or true %},{% endif %}
+      {% endfor %}
+      {
+        "@type": "ListItem",
+        "position": {{ page.ancestors | length + 1 }},
+        "name": "{{ page.title | e }}",
+        "item": "{{ page.canonical_url }}"
+      }
+    ]
+  }
+  </script>
+  {% endif %}
   {% if page and page.is_homepage %}
   <script type="application/ld+json">
   {
