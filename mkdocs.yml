@@ -1,5 +1,5 @@
 site_name: Needlr
-site_url: https://ncosentino.github.io/needlr/
+site_url: https://github.devleader.ca/needlr/
 site_description: Opinionated fluent dependency injection for .NET with source generation
 repo_url: https://github.com/ncosentino/needlr
 repo_name: ncosentino/needlr
@@ -91,6 +91,18 @@ nav:
       - NDLRGEN032: analyzers/NDLRGEN032.md
       - NDLRGEN033: analyzers/NDLRGEN033.md
       - NDLRGEN034: analyzers/NDLRGEN034.md
+    - MAF Analyzers:
+      - NDLRMAF001: analyzers/NDLRMAF001.md
+      - NDLRMAF002: analyzers/NDLRMAF002.md
+      - NDLRMAF003: analyzers/NDLRMAF003.md
+      - NDLRMAF004: analyzers/NDLRMAF004.md
+      - NDLRMAF005: analyzers/NDLRMAF005.md
+      - NDLRMAF006: analyzers/NDLRMAF006.md
+      - NDLRMAF007: analyzers/NDLRMAF007.md
+      - NDLRMAF008: analyzers/NDLRMAF008.md
+      - NDLRMAF009: analyzers/NDLRMAF009.md
+      - NDLRMAF010: analyzers/NDLRMAF010.md
+      - NDLRMAF011: analyzers/NDLRMAF011.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
