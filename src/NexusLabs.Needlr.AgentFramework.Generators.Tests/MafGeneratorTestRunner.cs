@@ -135,6 +135,17 @@ internal sealed class MafGeneratorTestRunner
             }
 
             public interface IWorkflowFactory { }
+
+            [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("")]
+            [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("")]
+            public sealed record AgentFrameworkSyringe
+            {
+                public required System.IServiceProvider ServiceProvider { get; init; }
+
+                [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("AgentFramework function setup uses reflection to discover [AgentFunction] methods.")]
+                [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("AgentFramework function setup uses reflection APIs that require dynamic code generation.")]
+                public AgentFrameworkSyringe AddAgentFunctions(System.Collections.Generic.IReadOnlyList<System.Type> functionTypes) => this;
+            }
         }
 
         namespace Microsoft.Agents.AI.Workflows

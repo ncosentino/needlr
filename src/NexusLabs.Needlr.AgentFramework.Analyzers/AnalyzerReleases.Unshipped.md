@@ -16,3 +16,6 @@ NDLRMAF008 | NexusLabs.Needlr.AgentFramework | Info | Agent participates in no t
 NDLRMAF009 | NexusLabs.Needlr.AgentFramework | Warning | [WorkflowRunTerminationCondition] declared on a non-agent class
 NDLRMAF010 | NexusLabs.Needlr.AgentFramework | Error | Termination condition type does not implement IWorkflowTerminationCondition
 NDLRMAF011 | NexusLabs.Needlr.AgentFramework | Info | Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members
+NDLRMAF012 | NexusLabs.Needlr.AgentFramework | Warning | [AgentFunction] method is missing a [Description] attribute
+NDLRMAF013 | NexusLabs.Needlr.AgentFramework | Warning | [AgentFunction] method parameter is missing a [Description] attribute
+NDLRMAF014 | NexusLabs.Needlr.AgentFramework | Warning | FunctionTypes entry has no [AgentFunction] methods

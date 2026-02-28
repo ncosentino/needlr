@@ -72,4 +72,23 @@ public static class MafDiagnosticIds
     /// chat members.
     /// </summary>
     public const string PreferAgentTerminationConditionForGroupChat = "NDLRMAF011";
+
+    /// <summary>
+    /// NDLRMAF012: A method decorated with <c>[AgentFunction]</c> has no
+    /// <c>[System.ComponentModel.Description]</c> attribute.
+    /// </summary>
+    public const string AgentFunctionMissingDescription = "NDLRMAF012";
+
+    /// <summary>
+    /// NDLRMAF013: A parameter of an <c>[AgentFunction]</c> method (other than
+    /// <c>CancellationToken</c>) has no <c>[System.ComponentModel.Description]</c> attribute.
+    /// </summary>
+    public const string AgentFunctionParameterMissingDescription = "NDLRMAF013";
+
+    /// <summary>
+    /// NDLRMAF014: A type listed in <c>FunctionTypes</c> on a <c>[NeedlrAiAgent]</c> has no
+    /// methods decorated with <c>[AgentFunction]</c>, so the agent silently receives zero tools
+    /// from that type.
+    /// </summary>
+    public const string AgentFunctionTypesMiswired = "NDLRMAF014";
 }

@@ -10,9 +10,9 @@ using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
-// Generated extension methods on IWorkflowFactory — emitted by the source generator in
-// SimpleAgentFrameworkApp.Agents based on [AgentHandoffsTo], [AgentSequenceMember], and
-// [WorkflowRunTerminationCondition] declarations on agent classes.
+// Generated extension methods emitted by the source generator in SimpleAgentFrameworkApp.Agents.
+// Includes: IWorkflowFactory extensions, IAgentFactory extensions, named constants,
+// and AgentFrameworkSyringe group registration extensions.
 using SimpleAgentFrameworkApp.Agents.Generated;
 
 var configuration = new ConfigurationBuilder()
@@ -43,6 +43,12 @@ var serviceProvider = new Syringe()
     .BuildServiceProvider(configuration);
 
 var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
+var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
+
+// Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
+// No magic strings; renaming the class regenerates these methods automatically.
+var triageAgent = agentFactory.CreateTriageAgent();
+Console.WriteLine($"Created: {AgentNames.TriageAgent} (ID: {triageAgent.Id})");
 
 // --- Demo 1: Handoff workflow ---
 // CreateTriageHandoffWorkflow() is generated because TriageAgent is decorated with [AgentHandoffsTo].
@@ -119,7 +125,7 @@ foreach (var (executorId, text) in earlyResponses)
 }
 
 var publisherRan = earlyResponses.Keys.Any(k =>
-    k == "PublisherSeqAgent" || k.StartsWith("PublisherSeqAgent_", StringComparison.Ordinal));
+    k == AgentNames.PublisherSeqAgent || k.StartsWith($"{AgentNames.PublisherSeqAgent}_", StringComparison.Ordinal));
 Console.WriteLine();
 Console.WriteLine(publisherRan
     ? "  (publisher ran — STATUS: EDIT_COMPLETE keyword was not found in editor response)"

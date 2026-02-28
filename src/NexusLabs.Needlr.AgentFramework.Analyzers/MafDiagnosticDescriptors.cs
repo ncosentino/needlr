@@ -159,4 +159,44 @@ public static class MafDiagnosticDescriptors
         isEnabledByDefault: true,
         description: "For group chat agents, [AgentTerminationCondition] is evaluated inside MAF's group chat loop before the next turn begins, allowing a clean early exit. [WorkflowRunTerminationCondition] fires after the full response is emitted (Layer 2). Both work, but [AgentTerminationCondition] provides a more immediate stop for group chat workflows.",
         helpLinkUri: HelpLinkBase + "NDLRMAF011.md");
+
+    /// <summary>
+    /// NDLRMAF012: <c>[AgentFunction]</c> method has no <c>[Description]</c> attribute.
+    /// </summary>
+    public static readonly DiagnosticDescriptor AgentFunctionMissingDescription = new(
+        id: MafDiagnosticIds.AgentFunctionMissingDescription,
+        title: "[AgentFunction] method is missing a [Description] attribute",
+        messageFormat: "'{0}' is decorated with [AgentFunction] but has no [Description] attribute. Without a description, the LLM cannot determine when to use this tool.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The LLM uses the [Description] text to decide when to invoke an agent function tool. A method without [Description] will appear as an unlabelled tool and the LLM may ignore it or call it incorrectly. Add [Description(\"...\")].",
+        helpLinkUri: HelpLinkBase + "NDLRMAF012.md");
+
+    /// <summary>
+    /// NDLRMAF013: Parameter of an <c>[AgentFunction]</c> method is missing a <c>[Description]</c> attribute.
+    /// </summary>
+    public static readonly DiagnosticDescriptor AgentFunctionParameterMissingDescription = new(
+        id: MafDiagnosticIds.AgentFunctionParameterMissingDescription,
+        title: "[AgentFunction] method parameter is missing a [Description] attribute",
+        messageFormat: "Parameter '{0}' on [AgentFunction] method '{1}' has no [Description] attribute. Without a description, the LLM may misuse this parameter.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Each parameter of an [AgentFunction] method should carry a [Description] attribute so the LLM knows what value to supply. CancellationToken parameters are exempt. Add [Description(\"...\")] to the parameter.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF013.md");
+
+    /// <summary>
+    /// NDLRMAF014: A type in <c>FunctionTypes</c> on <c>[NeedlrAiAgent]</c> has no
+    /// <c>[AgentFunction]</c> methods.
+    /// </summary>
+    public static readonly DiagnosticDescriptor AgentFunctionTypesMiswired = new(
+        id: MafDiagnosticIds.AgentFunctionTypesMiswired,
+        title: "FunctionTypes entry has no [AgentFunction] methods",
+        messageFormat: "'{0}' is listed in FunctionTypes on '{1}' but has no methods decorated with [AgentFunction]. The agent will receive zero tools from this type at runtime.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "A type referenced in FunctionTypes must contain at least one method decorated with [AgentFunction]; otherwise the agent silently receives no tools from it. Either add [AgentFunction] to a method on the type, or remove it from FunctionTypes.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF014.md");
 }

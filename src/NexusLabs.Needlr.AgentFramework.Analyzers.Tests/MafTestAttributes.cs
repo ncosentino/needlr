@@ -84,6 +84,9 @@ namespace NexusLabs.Needlr.AgentFramework
         public object[] CtorArgs { get; }
     }
 
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public sealed class AgentFunctionAttribute : System.Attribute { }
+
     public interface IWorkflowTerminationCondition
     {
         bool ShouldTerminate(object context);

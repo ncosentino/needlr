@@ -878,4 +878,250 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
 
         Assert.Contains("IReadOnlyDictionary<string, string>", output);
     }
+
+    // -------------------------------------------------------------------------
+    // AgentFactoryExtensions.g.cs
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void AgentFactory_SingleAgent_EmitsCreateMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TriageAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions.g.cs");
+
+        Assert.Contains("CreateTriageAgent", output);
+        Assert.Contains("IAgentFactory", output);
+    }
+
+    [Fact]
+    public void AgentFactory_MultipleAgents_EmitsCreateMethodPerAgent()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TriageAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class ExpertAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions.g.cs");
+
+        Assert.Contains("CreateTriageAgent", output);
+        Assert.Contains("CreateExpertAgent", output);
+    }
+
+    [Fact]
+    public void AgentFactory_NoAgents_EmitsEmptyClass()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("AgentFactoryExtensions.g.cs");
+
+        Assert.Contains("GeneratedAgentFactoryExtensions", output);
+        Assert.DoesNotContain("CreateAgent", output);
+    }
+
+    [Fact]
+    public void AgentFactory_EmittedFile_HasGeneratedCodeAttribute()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TriageAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions.g.cs");
+
+        Assert.Contains("[global::System.CodeDom.Compiler.GeneratedCodeAttribute", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // AgentTopologyConstants.g.cs
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Constants_AgentNames_EmittedPerAgent()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TriageAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class ExpertAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class AgentNames", output);
+        Assert.Contains("TriageAgent", output);
+        Assert.Contains("ExpertAgent", output);
+    }
+
+    [Fact]
+    public void Constants_GroupNames_EmittedPerGroup()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("math-tools")]
+                public class MathFunctions { }
+
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("geo-tools")]
+                public class GeoFunctions { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class GroupNames", output);
+        Assert.Contains("MathTools", output);
+        Assert.Contains("GeoTools", output);
+        Assert.Contains("\"math-tools\"", output);
+        Assert.Contains("\"geo-tools\"", output);
+    }
+
+    [Fact]
+    public void Constants_PipelineNames_EmittedPerPipeline()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("content-pipeline", 1)]
+                public class WriterAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentSequenceMember("content-pipeline", 2)]
+                public class EditorAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class PipelineNames", output);
+        Assert.Contains("ContentPipeline", output);
+        Assert.Contains("\"content-pipeline\"", output);
+    }
+
+    [Fact]
+    public void Constants_NoAgents_EmitsEmptyAgentNamesClass()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class AgentNames", output);
+        Assert.Contains("class GroupNames", output);
+        Assert.Contains("class PipelineNames", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // AgentFrameworkSyringeExtensions.g.cs
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Syringe_SingleGroup_EmitsWithMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("math-tools")]
+                public class MathFunctions { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFrameworkSyringeExtensions.g.cs");
+
+        Assert.Contains("WithMathTools", output);
+        Assert.Contains("AgentFrameworkSyringe", output);
+    }
+
+    [Fact]
+    public void Syringe_MultipleGroups_EmitsWithMethodPerGroup()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("math-tools")]
+                public class MathFunctions { }
+
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("geo-tools")]
+                public class GeoFunctions { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFrameworkSyringeExtensions.g.cs");
+
+        Assert.Contains("WithMathTools", output);
+        Assert.Contains("WithGeoTools", output);
+    }
+
+    [Fact]
+    public void Syringe_NoGroups_EmitsEmptyClass()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("AgentFrameworkSyringeExtensions.g.cs");
+
+        Assert.Contains("GeneratedAgentFrameworkSyringeExtensions", output);
+        Assert.DoesNotContain("With", output.Replace("Without", ""));
+    }
+
+    [Fact]
+    public void Syringe_WithMethod_HasRequiresUnreferencedCodeAttribute()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("my-tools")]
+                public class MyFunctions { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentFrameworkSyringeExtensions.g.cs");
+
+        Assert.Contains("RequiresUnreferencedCode", output);
+        Assert.Contains("RequiresDynamicCode", output);
+    }
+
+    [Fact]
+    public void Generator_EmitsAllExpectedFilesIncludingNew()
+    {
+        var files = MafGeneratorTestRunner.Create().RunGenerator();
+
+        var fileNames = files.Select(f => System.IO.Path.GetFileName(f.FilePath)).ToArray();
+        Assert.Contains("AgentFactoryExtensions.g.cs", fileNames);
+        Assert.Contains("AgentTopologyConstants.g.cs", fileNames);
+        Assert.Contains("AgentFrameworkSyringeExtensions.g.cs", fileNames);
+    }
 }
