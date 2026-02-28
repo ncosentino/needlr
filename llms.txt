@@ -1,0 +1,103 @@
+# Needlr
+
+> Opinionated fluent dependency injection for .NET with source generation.
+
+Needlr automates service registration, decorator wiring, hosted service
+discovery, keyed services, factories, interceptors, and AI agent integrations
+(Semantic Kernel, Microsoft Agent Framework) with compile-time safety.
+Author: Nick Cosentino (https://www.devleader.ca).
+
+- [Home](https://github.devleader.ca/needlr/) -- Needlr is an opinionated fluent dependency injection library for .NET with source generation -- automate service registration, decorators, interceptors, factories, and AI integrations with compile-time safety.
+- [Getting Started](https://github.devleader.ca/needlr/getting-started/) -- Learn how to install and set up Needlr for dependency injection in .NET -- step-by-step guide covering NuGet packages, source generation, reflection, and your first console and web application.
+- [Core Concepts](https://github.devleader.ca/needlr/core-concepts/) -- Understand Needlr's architecture -- the Syringe class, source generation vs reflection discovery strategies, service lifetimes, and automatic registration rules for .NET dependency injection.
+
+## Features
+
+- [Service Registration](https://github.devleader.ca/needlr/register-as/) -- Use the RegisterAs attribute to control exactly which interfaces a class is registered as in .NET dependency injection, overriding Needlr's default all-interface registration.
+- [Hosted Services](https://github.devleader.ca/needlr/hosted-services/) -- Automatically discover and register IHostedService and BackgroundService implementations in .NET using Needlr -- no attributes required for hosted service auto-discovery.
+- [Keyed Services](https://github.devleader.ca/needlr/keyed-services/) -- Register and resolve multiple implementations of the same interface in .NET 8+ using Needlr's Keyed attribute -- keyed service support with source generation and reflection.
+- [Options Binding](https://github.devleader.ca/needlr/options/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Factories](https://github.devleader.ca/needlr/factories/) -- Generate factory interfaces and delegates for .NET classes that require runtime constructor parameters using Needlr's GenerateFactory attribute -- source generation only.
+- [Providers](https://github.devleader.ca/needlr/providers/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Interceptors](https://github.devleader.ca/needlr/interceptors/) -- Add cross-cutting concerns to .NET services using Needlr interceptors -- intercept method calls with a single implementation that works across any service without modifying business logic.
+- [Open Generic Decorators](https://github.devleader.ca/needlr/open-generic-decorators/) -- Define a single decorator class that automatically wraps all closed implementations of an open generic interface in .NET using Needlr's open generic decorator support -- source generation only.
+- [Service Catalog](https://github.devleader.ca/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Breadcrumbs](https://github.devleader.ca/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
+- [AI Integrations](https://github.devleader.ca/needlr/ai-integrations/) -- Integrate AI agent frameworks with Needlr in .NET -- automatic function discovery, DI wiring, and lifecycle management for Semantic Kernel and Microsoft Agent Framework.
+
+## Advanced
+
+- [Advanced Usage](https://github.devleader.ca/needlr/advanced-usage/) -- Advanced patterns for Needlr -- custom assembly scanning, conditional registration, multi-project setups, and edge cases for complex .NET dependency injection scenarios.
+- [Plugin Development](https://github.devleader.ca/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
+- [Benchmarks](https://github.devleader.ca/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## Analyzers
+
+
+## Core Analyzers
+
+- [NDLRCOR001](https://github.devleader.ca/needlr/analyzers/NDLRCOR001/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR002](https://github.devleader.ca/needlr/analyzers/NDLRCOR002/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR003](https://github.devleader.ca/needlr/analyzers/NDLRCOR003/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR004](https://github.devleader.ca/needlr/analyzers/NDLRCOR004/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR005](https://github.devleader.ca/needlr/analyzers/NDLRCOR005/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR006](https://github.devleader.ca/needlr/analyzers/NDLRCOR006/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR007](https://github.devleader.ca/needlr/analyzers/NDLRCOR007/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR008](https://github.devleader.ca/needlr/analyzers/NDLRCOR008/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR009](https://github.devleader.ca/needlr/analyzers/NDLRCOR009/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR010](https://github.devleader.ca/needlr/analyzers/NDLRCOR010/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR011](https://github.devleader.ca/needlr/analyzers/NDLRCOR011/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR012](https://github.devleader.ca/needlr/analyzers/NDLRCOR012/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR015](https://github.devleader.ca/needlr/analyzers/NDLRCOR015/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## Generator Analyzers
+
+- [NDLRGEN001](https://github.devleader.ca/needlr/analyzers/NDLRGEN001/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN002](https://github.devleader.ca/needlr/analyzers/NDLRGEN002/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN003](https://github.devleader.ca/needlr/analyzers/NDLRGEN003/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN004](https://github.devleader.ca/needlr/analyzers/NDLRGEN004/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN005](https://github.devleader.ca/needlr/analyzers/NDLRGEN005/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN006](https://github.devleader.ca/needlr/analyzers/NDLRGEN006/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN007](https://github.devleader.ca/needlr/analyzers/NDLRGEN007/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN008](https://github.devleader.ca/needlr/analyzers/NDLRGEN008/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN014](https://github.devleader.ca/needlr/analyzers/NDLRGEN014/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN015](https://github.devleader.ca/needlr/analyzers/NDLRGEN015/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN016](https://github.devleader.ca/needlr/analyzers/NDLRGEN016/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN017](https://github.devleader.ca/needlr/analyzers/NDLRGEN017/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN018](https://github.devleader.ca/needlr/analyzers/NDLRGEN018/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN019](https://github.devleader.ca/needlr/analyzers/NDLRGEN019/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN020](https://github.devleader.ca/needlr/analyzers/NDLRGEN020/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN021](https://github.devleader.ca/needlr/analyzers/NDLRGEN021/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN022](https://github.devleader.ca/needlr/analyzers/NDLRGEN022/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN031](https://github.devleader.ca/needlr/analyzers/NDLRGEN031/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN032](https://github.devleader.ca/needlr/analyzers/NDLRGEN032/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN033](https://github.devleader.ca/needlr/analyzers/NDLRGEN033/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN034](https://github.devleader.ca/needlr/analyzers/NDLRGEN034/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## MAF Analyzers
+
+- [NDLRMAF001](https://github.devleader.ca/needlr/analyzers/NDLRMAF001/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF002](https://github.devleader.ca/needlr/analyzers/NDLRMAF002/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF003](https://github.devleader.ca/needlr/analyzers/NDLRMAF003/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF004](https://github.devleader.ca/needlr/analyzers/NDLRMAF004/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF005](https://github.devleader.ca/needlr/analyzers/NDLRMAF005/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF006](https://github.devleader.ca/needlr/analyzers/NDLRMAF006/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF007](https://github.devleader.ca/needlr/analyzers/NDLRMAF007/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF008](https://github.devleader.ca/needlr/analyzers/NDLRMAF008/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF009](https://github.devleader.ca/needlr/analyzers/NDLRMAF009/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF010](https://github.devleader.ca/needlr/analyzers/NDLRMAF010/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF011](https://github.devleader.ca/needlr/analyzers/NDLRMAF011/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## SignalR Analyzers
+
+- [NDLRSIG001](https://github.devleader.ca/needlr/analyzers/NDLRSIG001/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRSIG002](https://github.devleader.ca/needlr/analyzers/NDLRSIG002/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## API Reference
+
+- [Overview](https://github.devleader.ca/needlr/api/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Development](https://github.devleader.ca/needlr/api/dev/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Stable](https://github.devleader.ca/needlr/api/stable/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Coverage](https://github.devleader.ca/needlr/coverage/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Articles](https://github.devleader.ca/needlr/articles/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Video Tutorials](https://github.devleader.ca/needlr/video-tutorials/) -- Opinionated fluent dependency injection for .NET with source generation

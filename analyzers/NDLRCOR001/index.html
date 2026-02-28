@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR001 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR001/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR001 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR001",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR001/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3210,7 +3253,39 @@
 <ul>
 <li><a href="../../getting-started/">Getting Started Guide</a></li>
 <li><a href="../../core-concepts/">Source Generation vs Reflection</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You are using a reflection-based Needlr API in a project that has AOT (Ahead-of-Time) compilation or trimming enabled."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Replace reflection-based APIs with their source-generation equivalents:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRCOR001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress this warning if you are certain the reflection code path will not be executed at runtime, such as in conditional compilation scenarios where the reflection code is only used in non-AOT builds."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

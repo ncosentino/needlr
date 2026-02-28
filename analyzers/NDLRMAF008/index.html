@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF008 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF008/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF008 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF008",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF008/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3158,7 +3201,39 @@
 <ul>
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF002/">NDLRMAF002</a> — group chat has fewer than two members</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF008?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A class decorated with [NeedlrAiAgent] does not appear in any handoff chain, group chat, or sequential pipeline."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF008?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Add the agent to an appropriate topology, or remove the [NeedlrAiAgent] attribute if the agent is no longer needed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF008?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Suppress when declaring a standalone agent that will be invoked programmatically via IAgentFactory, not through a generated workflow."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

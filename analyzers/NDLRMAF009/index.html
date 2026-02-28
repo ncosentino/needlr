@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF009 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF009/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF009 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF009",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF009/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3160,7 +3203,39 @@
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF010/">NDLRMAF010</a> — condition type does not implement IWorkflowTerminationCondition</li>
 <li><a href="../NDLRMAF011/">NDLRMAF011</a> — prefer [AgentTerminationCondition] for group chat members</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF009?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A class bearing [WorkflowRunTerminationCondition] is not decorated with any topology attribute ([AgentHandoffsTo], [AgentGroupChatMember], or [AgentSequenceMember])."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF009?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Add the appropriate topology attribute, or move the [WorkflowRunTerminationCondition] to a class that participates in a workflow."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF009?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress if you are attaching a condition to an agent that you plan to invoke programmatically and the topology will be configured at runtime."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

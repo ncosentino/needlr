@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF003 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF003/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF003 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF003",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF003/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3163,7 +3206,39 @@
 <ul>
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF001/">NDLRMAF001</a> — target type is not a declared agent</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF003?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A class bearing [AgentHandoffsTo] is not itself decorated with [NeedlrAiAgent]."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF003?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Add [NeedlrAiAgent] to the class that declares [AgentHandoffsTo]."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF003?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress if the class is a temporary scaffold during development."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR012 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR012/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR012 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR012",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR012/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3313,7 +3356,39 @@
 <ul>
 <li><a href="../NDLRCOR005/">NDLRCOR005: Lifetime mismatch</a> - General captive dependency warning</li>
 <li><a href="../NDLRCOR006/">NDLRCOR006: Circular dependency detected</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR012?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A service with a longer lifetime holds a reference to an IDisposable or IAsyncDisposable dependency with a shorter lifetime. When the shorter-lived scope ends, the dependency will be disposed while the longer-lived service still holds a reference, causing ObjectDisposedException at runtime."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR012?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Make the consumer's lifetime equal or shorter than its dependencies:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRCOR012?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You should rarely suppress this error. Consider suppressing only if:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

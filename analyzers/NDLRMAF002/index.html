@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF002 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF002/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF002 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF002",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF002/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3166,7 +3209,39 @@
 <ul>
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF008/">NDLRMAF008</a> — agent participates in no topology</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A group chat named \"X\" has only one class decorated with [AgentGroupChatMember(\"X\")] in the compilation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Either add a second agent to the group chat, or remove the [AgentGroupChatMember] attribute if the group chat was declared in error."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress if you are building a group chat incrementally across multiple assemblies where the second member is defined elsewhere and will be merged at link time."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

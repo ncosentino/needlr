@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF007 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF007/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF007 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF007",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF007/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3174,7 +3217,39 @@
 <ul>
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF006/">NDLRMAF006</a> — duplicate order value</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Order values declared for a sequential pipeline are non-consecutive (e.g. 1, 2, 4 — missing 3)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Renumber the agents in the pipeline to fill the gap, or confirm the gap is intentional."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Suppress if you are deliberately reserving order values for future agents and want to avoid renumbering."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR007 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR007/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR007 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR007",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR007/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3164,7 +3207,39 @@
 <ul>
 <li><a href="../../interceptors/">Interceptors</a> - Full interceptor documentation</li>
 <li><a href="../../interceptors/#imethodinvocation-interface">IMethodInterceptor</a> - Interface details</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A type used in an [Intercept] or [Intercept&lt;T&gt;] attribute does not implement the IMethodInterceptor interface."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Implement IMethodInterceptor on the interceptor class:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRCOR007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Do not suppress this diagnostic. Using a type that doesn't implement IMethodInterceptor will cause a compilation error in the generated code."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

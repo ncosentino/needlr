@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR003 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR003/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR003 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR003",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR003/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3239,7 +3282,31 @@
 <ul>
 <li><a href="../../advanced-usage/#working-with-other-source-generators">Advanced Usage - Working with Other Source Generators</a></li>
 <li><a href="../../core-concepts/">DeferToContainer Attribute</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR003?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A [DeferToContainer] attribute was found in generated code (a .g.cs, .generated.cs, or .designer.cs file, or in an obj/*/generated/ folder)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR003?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Move the [DeferToContainer] attribute to your original source file - the partial class declaration you wrote, not the one generated."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

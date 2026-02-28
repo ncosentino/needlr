@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRGEN006 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRGEN006/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRGEN006 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Generator Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRGEN006",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRGEN006/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3212,7 +3255,31 @@
 <li><a href="../NDLRGEN007/">NDLRGEN007</a> - Decorator class must be an open generic</li>
 <li><a href="../NDLRGEN008/">NDLRGEN008</a> - Decorator must implement the interface</li>
 <li><a href="../../open-generic-decorators/">Open Generic Decorators Guide</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRGEN006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The type argument passed to [OpenDecoratorFor] is not an open generic interface (unbound generic type)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRGEN006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the open generic typeof() syntax with empty angle brackets:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

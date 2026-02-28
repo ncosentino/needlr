@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR006 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR006/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR006 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR006",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR006/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3395,7 +3438,39 @@
 <li><a href="../../advanced-usage/#container-verification">Advanced Usage - Container Verification</a></li>
 <li><a href="../NDLRCOR005/">NDLRCOR005: Lifetime mismatch</a></li>
 <li><a href="https://martinfowler.com/articles/injection.html">Martin Fowler: Inversion of Control Containers</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A service directly or indirectly depends on itself, creating a circular reference chain. This will cause a runtime exception when the dependency injection container attempts to resolve the service."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Often circular dependencies indicate a design problem. Consider:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRCOR006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Generally, do not suppress this diagnostic. Circular dependencies will cause runtime failures."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

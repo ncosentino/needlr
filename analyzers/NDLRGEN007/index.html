@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRGEN007 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRGEN007/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRGEN007 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Generator Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRGEN007",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRGEN007/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3218,7 +3261,31 @@
 <li><a href="../NDLRGEN006/">NDLRGEN006</a> - Type argument must be an open generic interface</li>
 <li><a href="../NDLRGEN008/">NDLRGEN008</a> - Decorator must implement the interface</li>
 <li><a href="../../open-generic-decorators/">Open Generic Decorators Guide</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRGEN007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A class marked with [OpenDecoratorFor(typeof(IInterface&lt;&gt;))] is either: 1. Not a generic class, or 2. Has a different number of type parameters than the interface"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRGEN007?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ensure your decorator class: 1. Is a generic class 2. Has the same number of type parameters as the target interface"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

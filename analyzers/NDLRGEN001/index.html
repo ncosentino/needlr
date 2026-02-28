@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRGEN001 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRGEN001/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRGEN001 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Generator Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRGEN001",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRGEN001/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3234,7 +3277,39 @@
 <li><a href="../NDLRGEN002/">NDLRGEN002</a> - Missing type registry for internal plugin types</li>
 <li><a href="../../advanced-usage/#multi-project-solutions-with-source-generation">Advanced Usage - Multi-Project Solutions</a></li>
 <li><a href="../../getting-started/">Getting Started Guide</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRGEN001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You are scanning a namespace that contains internal types in a referenced assembly, but those types cannot be registered because they are not accessible from the generated code."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRGEN001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You have two options:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRGEN001?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress this error if you intentionally don't want the internal type to be registered:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

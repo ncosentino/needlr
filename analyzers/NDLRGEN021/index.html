@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRGEN021 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRGEN021/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRGEN021 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Generator Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRGEN021",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRGEN021/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3171,7 +3214,39 @@
 <ul>
 <li><a href="../../options/">Options Binding</a></li>
 <li><a href="../NDLRGEN020/">NDLRGEN020 - Options not compatible with AOT</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRGEN021?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A positional record (a record with primary constructor parameters) has the [Options] attribute but is not declared as partial."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRGEN021?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Add the partial modifier to the positional record:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRGEN021?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Suppress this warning only if you are manually providing a parameterless constructor or if you are not using the record with configuration binding:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

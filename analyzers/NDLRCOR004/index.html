@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR004 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR004/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR004 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR004",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR004/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3288,7 +3331,39 @@
 <li><a href="../../advanced-usage/">Advanced Usage</a></li>
 <li><a href="../NDLRCOR001/">NDLRCOR001: Plugin constructor dependency not registered</a></li>
 <li><a href="../../core-concepts/">Core Concepts</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR004?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A type that appears to be designed for dependency injection is defined in the global namespace (no namespace declaration), but the assembly's [GenerateTypeRegistry] attribute has IncludeNamespacePrefixes set to values that don't include an empty string (\"\")."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR004?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Move the type into an appropriate namespace:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRCOR004?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Suppress this warning if:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

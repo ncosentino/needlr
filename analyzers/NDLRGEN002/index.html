@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRGEN002 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRGEN002/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRGEN002 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Generator Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRGEN002",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRGEN002/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3290,7 +3333,39 @@
 <li><a href="../NDLRGEN001/">NDLRGEN001</a> - Internal type in referenced assembly cannot be registered</li>
 <li><a href="../../advanced-usage/#multi-project-solutions-with-source-generation">Advanced Usage - Multi-Project Solutions</a></li>
 <li><a href="../../getting-started/">Getting Started Guide</a></li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRGEN002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A referenced assembly contains internal types that implement Needlr plugin interfaces (e.g., IServiceCollectionPlugin), but the assembly does not have a [GenerateTypeRegistry] attribute."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRGEN002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You have two options:"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRGEN002?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only suppress this error if you intentionally don't want the plugin to be discovered:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

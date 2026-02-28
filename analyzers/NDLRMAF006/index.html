@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF006 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF006/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF006 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF006",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF006/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3164,7 +3207,39 @@
 <ul>
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF007/">NDLRMAF007</a> — gap in sequential pipeline order values</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Two or more agents in the same sequential pipeline share the same Order value in their [AgentSequenceMember] attribute."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Assign a unique Order value to each agent in the pipeline. Convention is to use consecutive integers starting from 1."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF006?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "This should not be suppressed. Duplicate order values produce unpredictable pipeline execution."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

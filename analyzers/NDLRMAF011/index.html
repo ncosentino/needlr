@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRMAF011 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRMAF011/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRMAF011 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "MAF Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRMAF011",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRMAF011/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3168,7 +3211,39 @@
 <li><a href="../../ai-integrations/#multi-agent-orchestration">AI Integrations — Multi-Agent Orchestration</a></li>
 <li><a href="../NDLRMAF009/">NDLRMAF009</a> — condition declared on a non-agent class</li>
 <li><a href="../NDLRMAF010/">NDLRMAF010</a> — condition type does not implement IWorkflowTerminationCondition</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRMAF011?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A class decorated with [AgentGroupChatMember] also declares [WorkflowRunTerminationCondition]."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRMAF011?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Replace [WorkflowRunTerminationCondition] with [AgentTerminationCondition] on the group chat member."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I suppress NDLRMAF011?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Suppress if you intentionally want the condition to fire in Layer 2 (e.g. you are also using the raw workflow object in code that bypasses the generated Run*Async() method and need consistent termination semantics)."
+      }
+    }
+  ]
+}
+</script>
+
 
 
 

@@ -71,6 +71,49 @@
     
   
   
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NDLRCOR011 – Needlr" />
+  <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/analyzers/NDLRCOR011/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NDLRCOR011 – Needlr" />
+  <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Core Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Analyzers",
+        "item": "https://github.devleader.ca/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "NDLRCOR011",
+        "item": "https://github.devleader.ca/needlr/analyzers/NDLRCOR011/"
+      }
+    ]
+  }
+  </script>
+  
+  
+  
 
   </head>
   
@@ -3259,7 +3302,31 @@ that <code>[FromKeyedServices("key")]</code> parameters reference keys that are 
 <ul>
 <li><a href="../../keyed-services/">Keyed Services</a> - Static keyed service registration</li>
 <li><a href="../../breadcrumbs/#analyzer-status">AnalyzerStatus.md</a> - View all active analyzers</li>
-</ul>
+</ul><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes NDLRCOR011?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A constructor parameter uses [FromKeyedServices(\"key\")] to resolve a keyed service, but no [Keyed(\"key\")] registration was found in the compilation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix NDLRCOR011?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Register the service with a matching key:"
+      }
+    }
+  ]
+}
+</script>
+
 
 
 
