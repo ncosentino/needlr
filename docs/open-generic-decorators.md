@@ -1,3 +1,7 @@
+---
+description: Define a single decorator class that automatically wraps all closed implementations of an open generic interface in .NET using Needlr's open generic decorator support -- source generation only.
+---
+
 # Open Generic Decorators
 
 Open generic decorators allow you to define a single decorator class that automatically wraps **all** closed implementations of an open generic interface. This is a **source-generation-only** feature.

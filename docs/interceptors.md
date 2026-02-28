@@ -1,3 +1,7 @@
+---
+description: Add cross-cutting concerns to .NET services using Needlr interceptors -- intercept method calls with a single implementation that works across any service without modifying business logic.
+---
+
 # Interceptors
 
 Interceptors provide a powerful way to add cross-cutting concerns to your services without modifying their implementation. Unlike decorators, which require implementing every method of an interface, interceptors handle method invocations with a single implementation that works across any service.

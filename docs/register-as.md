@@ -1,3 +1,7 @@
+---
+description: Use the RegisterAs attribute to control exactly which interfaces a class is registered as in .NET dependency injection, overriding Needlr's default all-interface registration.
+---
+
 # RegisterAs&lt;T&gt; - Explicit Interface Registration
 
 The `[RegisterAs<T>]` attribute gives you explicit control over which interfaces a class is registered as in dependency injection. By default, Needlr registers a class as all non-system interfaces it implements. Use `[RegisterAs<T>]` when you want to limit which interfaces are publicly resolvable.

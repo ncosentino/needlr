@@ -1,3 +1,7 @@
+---
+description: Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
+---
+
 # Plugin Development Guide
 
 Plugins are a powerful way to extend Needlr's functionality and configure your application in a modular, reusable way.

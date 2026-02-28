@@ -1,3 +1,7 @@
+---
+description: Integrate AI agent frameworks with Needlr in .NET -- automatic function discovery, DI wiring, and lifecycle management for Semantic Kernel and Microsoft Agent Framework.
+---
+
 # AI Integrations
 
 Needlr provides first-class integrations for AI agent frameworks, taking care of function discovery, DI wiring, and factory lifecycle so that you focus on writing agent logic rather than plumbing.

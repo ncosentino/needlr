@@ -1,3 +1,7 @@
+---
+description: Understand Needlr's architecture -- the Syringe class, source generation vs reflection discovery strategies, service lifetimes, and automatic registration rules for .NET dependency injection.
+---
+
 # Core Concepts
 
 This guide explains the fundamental concepts and architecture of Needlr.

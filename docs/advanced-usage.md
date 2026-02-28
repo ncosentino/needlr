@@ -1,3 +1,7 @@
+---
+description: Advanced patterns for Needlr -- custom assembly scanning, conditional registration, multi-project setups, and edge cases for complex .NET dependency injection scenarios.
+---
+
 # Advanced Usage
 
 This guide covers advanced scenarios and techniques for using Needlr in complex applications.

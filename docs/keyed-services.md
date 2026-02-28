@@ -1,3 +1,7 @@
+---
+description: Register and resolve multiple implementations of the same interface in .NET 8+ using Needlr's Keyed attribute -- keyed service support with source generation and reflection.
+---
+
 # Keyed Services
 
 Keyed services allow multiple implementations of the same interface to be registered with different keys, enabling consumers to resolve specific implementations.

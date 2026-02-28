@@ -1,3 +1,7 @@
+---
+description: Needlr is an opinionated fluent dependency injection library for .NET with source generation -- automate service registration, decorators, interceptors, factories, and AI integrations with compile-time safety.
+---
+
 # Needlr
 
 ![Needlr](assets/needlr.webp){ width="200" }

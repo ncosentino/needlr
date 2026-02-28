@@ -1,3 +1,7 @@
+---
+description: Learn how to install and set up Needlr for dependency injection in .NET -- step-by-step guide covering NuGet packages, source generation, reflection, and your first console and web application.
+---
+
 # Getting Started with Needlr
 
 Needlr is an opinionated dependency injection library for .NET that simplifies service registration and web application setup through automatic discovery and a fluent API.

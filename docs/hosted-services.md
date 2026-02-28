@@ -1,3 +1,7 @@
+---
+description: Automatically discover and register IHostedService and BackgroundService implementations in .NET using Needlr -- no attributes required for hosted service auto-discovery.
+---
+
 # Hosted Service Auto-Discovery
 
 Needlr automatically discovers and registers classes that inherit from `BackgroundService` or implement `IHostedService`. No additional attributes are required.

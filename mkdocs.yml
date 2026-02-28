@@ -117,6 +117,7 @@ nav:
 
 plugins:
   - search
+  - meta
 
 hooks:
   - docs/hooks/schema.py

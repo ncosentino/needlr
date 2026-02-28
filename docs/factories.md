@@ -1,3 +1,7 @@
+---
+description: Generate factory interfaces and delegates for .NET classes that require runtime constructor parameters using Needlr's GenerateFactory attribute -- source generation only.
+---
+
 # Factory Delegates (Source Generation Only)
 
 When a class has constructor parameters that cannot be auto-injected (value types, strings, delegates), Needlr typically excludes it from auto-registration. The `[GenerateFactory]` attribute solves this by generating factory interfaces and delegates that handle the injectable parameters while letting you provide the runtime parameters.
