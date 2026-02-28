@@ -3025,8 +3025,16 @@
 <td style="text-align: left;">Analyzer that detects cyclic handoff chains in <code>[AgentHandoffsTo]</code> topology declarations.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../AgentFunctionDescriptionAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.AgentFunctionDescriptionAnalyzer">AgentFunctionDescriptionAnalyzer</a></td>
+<td style="text-align: left;">Analyzer that detects <code>[AgentFunction]</code> methods and their parameters that are missing <code>[System.ComponentModel.Description]</code> attributes.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../AgentFunctionGroupReferenceAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.AgentFunctionGroupReferenceAnalyzer">AgentFunctionGroupReferenceAnalyzer</a></td>
 <td style="text-align: left;">Analyzer that validates <code>FunctionGroups</code> references in <code>[NeedlrAiAgent]</code> declarations.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AgentFunctionTypesMiswiredAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.AgentFunctionTypesMiswiredAnalyzer">AgentFunctionTypesMiswiredAnalyzer</a></td>
+<td style="text-align: left;">Analyzer that detects types listed in <code>FunctionTypes</code> on <code>[NeedlrAiAgent]</code> that have no <code>[AgentFunction]</code> methods, causing the agent to silently receive zero tools.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../AgentGroupChatSingletonAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.AgentGroupChatSingletonAnalyzer">AgentGroupChatSingletonAnalyzer</a></td>

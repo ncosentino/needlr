@@ -541,6 +541,10 @@
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentNames/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
          <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentRegistry/</loc>
          <lastmod>2026-02-28</lastmod>
     </url>
@@ -557,7 +561,19 @@
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GeneratedAgentFactoryExtensions/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GeneratedAgentFrameworkSyringeExtensions/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
          <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GeneratedAgentFunctionScanner/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GroupNames/</loc>
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
@@ -597,6 +613,10 @@
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/PipelineNames/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
          <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/ServiceCatalog/</loc>
          <lastmod>2026-02-28</lastmod>
     </url>
@@ -629,7 +649,15 @@
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Analyzers/AgentFunctionDescriptionAnalyzer/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
          <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Analyzers/AgentFunctionGroupReferenceAnalyzer/</loc>
+         <lastmod>2026-02-28</lastmod>
+    </url>
+    <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Analyzers/AgentFunctionTypesMiswiredAnalyzer/</loc>
          <lastmod>2026-02-28</lastmod>
     </url>
     <url>
