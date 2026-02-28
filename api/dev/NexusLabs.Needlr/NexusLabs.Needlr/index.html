@@ -52,9 +52,22 @@
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-F9P4TGM7EZ"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-F9P4TGM7EZ",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-F9P4TGM7EZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
+  
+  
+
   </head>
   
   
@@ -2980,7 +2993,7 @@
 <tbody>
 <tr>
 <td style="text-align: left;"><a href="../ContainerVerificationException/" title="NexusLabs.Needlr.ContainerVerificationException">ContainerVerificationException</a></td>
-<td style="text-align: left;">Exception thrown when container verification fails with issues configured to throw.</td>
+<td style="text-align: left;">Exception thrown when Needlr container verification detects one or more registered issues that are configured to fail-fast at startup.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../DecoratorForAttribute_TService_/" title="NexusLabs.Needlr.DecoratorForAttribute\&lt;TService&gt;">DecoratorForAttribute&lt;TService&gt;</a></td>
@@ -2992,11 +3005,11 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../DoNotAutoRegisterAttribute/" title="NexusLabs.Needlr.DoNotAutoRegisterAttribute">DoNotAutoRegisterAttribute</a></td>
-<td style="text-align: left;">Used to mark a class that will not be automatically registered via the  Needlr dependency injection system.</td>
+<td style="text-align: left;">Prevents a class or interface from being automatically registered by Needlr's dependency injection discovery pipeline.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../DoNotInjectAttribute/" title="NexusLabs.Needlr.DoNotInjectAttribute">DoNotInjectAttribute</a></td>
-<td style="text-align: left;">Marks a class or interface to be excluded from automatic dependency injection registration. Types decorated with this attribute will be discovered but not registered in the service collection.</td>
+<td style="text-align: left;">Prevents a class or interface from being injected as a dependency by Needlr. Types decorated with this attribute are discovered but excluded from service collection registration.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../DumpExtensions/" title="NexusLabs.Needlr.DumpExtensions">DumpExtensions</a></td>
@@ -3044,11 +3057,11 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ScopedAttribute/" title="NexusLabs.Needlr.ScopedAttribute">ScopedAttribute</a></td>
-<td style="text-align: left;">Specifies that the decorated class should be registered with Scoped lifetime. Scoped services are created once per scope (e.g., per HTTP request in ASP.NET Core).</td>
+<td style="text-align: left;">Specifies that the decorated class should be registered with \&lt;b&gt;Scoped\&lt;/b&gt; lifetime. Scoped services are created once per scope — for example, once per HTTP request in ASP.NET Core.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ServiceCollectionExtensions/" title="NexusLabs.Needlr.ServiceCollectionExtensions">ServiceCollectionExtensions</a></td>
-<td style="text-align: left;">Extension methods for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> to provide decorator functionality.</td>
+<td style="text-align: left;">Extension methods for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> that add decorator wiring, service inspection, and registration-check utilities to the standard Microsoft DI container.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ServiceCollectionPluginOptions/" title="NexusLabs.Needlr.ServiceCollectionPluginOptions">ServiceCollectionPluginOptions</a></td>
@@ -3064,7 +3077,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../SingletonAttribute/" title="NexusLabs.Needlr.SingletonAttribute">SingletonAttribute</a></td>
-<td style="text-align: left;">Specifies that the decorated class should be registered with Singleton lifetime. This is the default lifetime in Needlr, so this attribute is only needed when overriding a different default configuration.</td>
+<td style="text-align: left;">Specifies that the decorated class should be registered with \&lt;b&gt;Singleton\&lt;/b&gt; lifetime. Singleton services are created once for the lifetime of the application and reused for every request.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../SourceGenRegistry/" title="NexusLabs.Needlr.SourceGenRegistry">SourceGenRegistry</a></td>
@@ -3072,7 +3085,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TransientAttribute/" title="NexusLabs.Needlr.TransientAttribute">TransientAttribute</a></td>
-<td style="text-align: left;">Specifies that the decorated class should be registered with Transient lifetime. Transient services are created each time they are requested.</td>
+<td style="text-align: left;">Specifies that the decorated class should be registered with \&lt;b&gt;Transient\&lt;/b&gt; lifetime. Transient services are created fresh every time they are resolved from the container.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TypeExtensions/" title="NexusLabs.Needlr.TypeExtensions">TypeExtensions</a></td>
@@ -3136,7 +3149,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IServiceCollectionPlugin/" title="NexusLabs.Needlr.IServiceCollectionPlugin">IServiceCollectionPlugin</a></td>
-<td style="text-align: left;">Defines a plugin that can configure the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> for dependency injection.</td>
+<td style="text-align: left;">Defines a plugin that participates in Needlr's <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> configuration pipeline. Implement this interface to encapsulate a cohesive block of service registrations that can be discovered and applied automatically during startup.</td>
 </tr>
 </tbody>
 </table>
@@ -3166,6 +3179,8 @@
 
 
 
+
+  
 
 
 

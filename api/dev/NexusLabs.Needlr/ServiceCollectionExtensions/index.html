@@ -52,9 +52,22 @@
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-F9P4TGM7EZ"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-F9P4TGM7EZ",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-F9P4TGM7EZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
+  
+  
+
   </head>
   
   
@@ -2971,10 +2984,16 @@
 <h4 id="nexuslabsneedlr"><a href="../" title="index">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlr_1"><a href="../NexusLabs.Needlr/" title="NexusLabs.Needlr">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr_1" title="Permanent link">&para;</a></h3>
 <h2 id="servicecollectionextensions-class">ServiceCollectionExtensions Class<a class="headerlink" href="#servicecollectionextensions-class" title="Permanent link">&para;</a></h2>
-<p>Extension methods for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> to provide decorator functionality.</p>
+<p>Extension methods for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> that add decorator wiring, service inspection,
+and registration-check utilities to the standard Microsoft DI container.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ServiceCollectionExtensions</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; ServiceCollectionExtensions</p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>The primary extension in this class is <code>AddDecorator</code>, which wraps an already-registered
+service with a decorator while preserving the original service's lifetime. This complements
+the attribute-based <a href="../DecoratorForAttribute_TService_/" title="NexusLabs.Needlr.DecoratorForAttribute\&lt;TService&gt;">DecoratorForAttribute&lt;TService&gt;</a> used with Needlr's
+source generation and reflection scanning.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.ServiceCollectionExtensions.AddDecorator(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection,System.Type,System.Type)'></a></p>
 <h2 id="servicecollectionextensionsadddecoratorthis-iservicecollection-type-type-method">ServiceCollectionExtensions.AddDecorator(this IServiceCollection, Type, Type) Method<a class="headerlink" href="#servicecollectionextensionsadddecoratorthis-iservicecollection-type-type-method" title="Permanent link">&para;</a></h2>
@@ -3132,6 +3151,8 @@ True if the service is registered; otherwise, false.</p>
 
 
 
+
+  
 
 
 

@@ -52,9 +52,22 @@
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-F9P4TGM7EZ"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-F9P4TGM7EZ",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-F9P4TGM7EZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
+  
+  
+
   </head>
   
   
@@ -2978,6 +2991,16 @@ to when used as the initial agent in a handoff workflow via
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentHandoffsToAttribute</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Attribute</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; <a href="https://learn.microsoft.com/en-us/dotnet/api/system.attribute" title="System.Attribute">System.Attribute</a> &#129106; AgentHandoffsToAttribute</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="na">[NeedlrAiAgent(Instructions = &quot;Triage incoming customer requests.&quot;)]</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="na">[AgentHandoffsTo(typeof(BillingAgent),  &quot;Route billing or payment questions to the billing agent&quot;)]</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="na">[AgentHandoffsTo(typeof(SupportAgent),  &quot;Route general support requests to the support agent&quot;)]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">TriageAgent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1">// The source generator emits:</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1">//   workflowFactory.CreateTriageAgentHandoffWorkflow()</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1">// which wires all handoffs without requiring direct type references at the call site.</span>
+</span></code></pre></div>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>When the <code>NexusLabs.Needlr.AgentFramework.Generators</code> package is referenced, the source
 generator emits a strongly-typed extension method (e.g. <code>CreateTriageHandoffWorkflow</code>)
@@ -2987,7 +3010,7 @@ method encapsulates the agent type so the composition root requires no direct ty
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.AgentHandoffsToAttribute(System.Type,string)'></a></p>
 <h2 id="agenthandoffstoattributetype-string-constructor">AgentHandoffsToAttribute(Type, string) Constructor<a class="headerlink" href="#agenthandoffstoattributetype-string-constructor" title="Permanent link">&para;</a></h2>
 <p>Initializes a new instance of <a href="./" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">AgentHandoffsToAttribute</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">targetAgentType</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">handoffReason</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">AgentHandoffsToAttribute</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">targetAgentType</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">handoffReason</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.AgentHandoffsToAttribute(System.Type,string).targetAgentType'></a></p>
@@ -3002,14 +3025,14 @@ MAF derives the reason from the target agent's description or name.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.HandoffReason'></a></p>
 <h2 id="agenthandoffstoattributehandoffreason-property">AgentHandoffsToAttribute.HandoffReason Property<a class="headerlink" href="#agenthandoffstoattributehandoffreason-property" title="Permanent link">&para;</a></h2>
 <p>Gets the optional reason describing when to hand off to <a href="./#NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.TargetAgentType" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.TargetAgentType">TargetAgentType</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">HandoffReason</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">HandoffReason</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute.TargetAgentType'></a></p>
 <h2 id="agenthandoffstoattributetargetagenttype-property">AgentHandoffsToAttribute.TargetAgentType Property<a class="headerlink" href="#agenthandoffstoattributetargetagenttype-property" title="Permanent link">&para;</a></h2>
 <p>Gets the type of the target agent to hand off to.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">TargetAgentType</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">TargetAgentType</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" title="System.Type">System.Type</a></p>
@@ -3021,6 +3044,8 @@ MAF derives the reason from the target agent's description or name.</p>
 
 
 
+
+  
 
 
 

@@ -52,9 +52,22 @@
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-F9P4TGM7EZ"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-F9P4TGM7EZ",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-F9P4TGM7EZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
+  
+  
+
   </head>
   
   
@@ -2971,15 +2984,28 @@
 <h4 id="nexuslabsneedlrsignalr"><a href="../" title="index">NexusLabs.Needlr.SignalR</a><a class="headerlink" href="#nexuslabsneedlrsignalr" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlrsignalr_1"><a href="../NexusLabs.Needlr.SignalR/" title="NexusLabs.Needlr.SignalR">NexusLabs.Needlr.SignalR</a><a class="headerlink" href="#nexuslabsneedlrsignalr_1" title="Permanent link">&para;</a></h3>
 <h2 id="signalrextensions-class">SignalRExtensions Class<a class="headerlink" href="#signalrextensions-class" title="Permanent link">&para;</a></h2>
-<p>Extension methods for configuring SignalR hub registration.</p>
+<p>Extension methods for configuring SignalR hub registration via Needlr.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">SignalRExtensions</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; SignalRExtensions</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Reflection-based (not AOT-safe)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">app</span><span class="p">.</span><span class="n">UseSignalRHubsWithReflection</span><span class="p">();</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// Source-generated (AOT-safe) — requires NexusLabs.Needlr.SignalR.Generators</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">app</span><span class="p">.</span><span class="n">MapGeneratedHubs</span><span class="p">();</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Two approaches are supported:
+- <b>Reflection-based</b> (<a href="./#NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(thisMicrosoft.AspNetCore.Builder.WebApplication,NexusLabs.Needlr.IPluginFactory,System.Collections.Generic.IEnumerable_System.Reflection.Assembly_)" title="NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(this Microsoft.AspNetCore.Builder.WebApplication, NexusLabs.Needlr.IPluginFactory, System.Collections.Generic.IEnumerable\&lt;System.Reflection.Assembly&gt;)">UseSignalRHubsWithReflection(this WebApplication, IPluginFactory, IEnumerable&lt;Assembly&gt;)</a>): discovers and maps hubs at
+               runtime. Convenient but incompatible with AOT/trimmed builds.
+- <b>Source-generated</b> (<code>app.MapGeneratedHubs()</code>): emits hub mappings at compile time.
+               Required for AOT/trimmed applications.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.SignalR.SignalRExtensions.AddSignalRHubRegistrationWithReflection(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection)'></a></p>
 <h2 id="signalrextensionsaddsignalrhubregistrationwithreflectionthis-iservicecollection-method">SignalRExtensions.AddSignalRHubRegistrationWithReflection(this IServiceCollection) Method<a class="headerlink" href="#signalrextensionsaddsignalrhubregistrationwithreflectionthis-iservicecollection-method" title="Permanent link">&para;</a></h2>
 <p>Adds the reflection-based SignalR hub registration plugin to the service collection.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">DependencyInjection</span><span class="p">.</span><span class="n">IServiceCollection</span><span class="w"> </span><span class="n">AddSignalRHubRegistrationWithReflection</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">DependencyInjection</span><span class="p">.</span><span class="n">IServiceCollection</span><span class="w"> </span><span class="n">services</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">DependencyInjection</span><span class="p">.</span><span class="n">IServiceCollection</span><span class="w"> </span><span class="n">AddSignalRHubRegistrationWithReflection</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">DependencyInjection</span><span class="p">.</span><span class="n">IServiceCollection</span><span class="w"> </span><span class="n">services</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.SignalR.SignalRExtensions.AddSignalRHubRegistrationWithReflection(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection).services'></a></p>
@@ -2988,7 +3014,7 @@
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a><br />
 The service collection for chaining.</p>
-<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
 <p>This registers the <a href="../SignalRHubRegistrationPlugin/" title="NexusLabs.Needlr.SignalR.SignalRHubRegistrationPlugin">SignalRHubRegistrationPlugin</a> which uses reflection
 to discover and map SignalR hubs at runtime.</p>
 <p><strong>For AOT/trimmed applications</strong>, do not use this method. Instead,
@@ -2996,7 +3022,7 @@ to discover and map SignalR hubs at runtime.</p>
 <p><a name='NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(thisMicrosoft.AspNetCore.Builder.WebApplication,NexusLabs.Needlr.IPluginFactory,System.Collections.Generic.IEnumerable_System.Reflection.Assembly_)'></a></p>
 <h2 id="signalrextensionsusesignalrhubswithreflectionthis-webapplication-ipluginfactory-ienumerableassembly-method">SignalRExtensions.UseSignalRHubsWithReflection(this WebApplication, IPluginFactory, IEnumerable&lt;Assembly&gt;) Method<a class="headerlink" href="#signalrextensionsusesignalrhubswithreflectionthis-webapplication-ipluginfactory-ienumerableassembly-method" title="Permanent link">&para;</a></h2>
 <p>Registers SignalR hubs using reflection-based discovery.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">AspNetCore</span><span class="p">.</span><span class="n">Builder</span><span class="p">.</span><span class="n">WebApplication</span><span class="w"> </span><span class="n">UseSignalRHubsWithReflection</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">AspNetCore</span><span class="p">.</span><span class="n">Builder</span><span class="p">.</span><span class="n">WebApplication</span><span class="w"> </span><span class="n">app</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">IPluginFactory</span><span class="o">?</span><span class="w"> </span><span class="n">pluginFactory</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Reflection</span><span class="p">.</span><span class="n">Assembly</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">assemblies</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">AspNetCore</span><span class="p">.</span><span class="n">Builder</span><span class="p">.</span><span class="n">WebApplication</span><span class="w"> </span><span class="n">UseSignalRHubsWithReflection</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">AspNetCore</span><span class="p">.</span><span class="n">Builder</span><span class="p">.</span><span class="n">WebApplication</span><span class="w"> </span><span class="n">app</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">IPluginFactory</span><span class="o">?</span><span class="w"> </span><span class="n">pluginFactory</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Reflection</span><span class="p">.</span><span class="n">Assembly</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">assemblies</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.SignalR.SignalRExtensions.UseSignalRHubsWithReflection(thisMicrosoft.AspNetCore.Builder.WebApplication,NexusLabs.Needlr.IPluginFactory,System.Collections.Generic.IEnumerable_System.Reflection.Assembly_).app'></a></p>
@@ -3011,11 +3037,11 @@ to discover and map SignalR hubs at runtime.</p>
 <h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.webapplication" title="Microsoft.AspNetCore.Builder.WebApplication">Microsoft.AspNetCore.Builder.WebApplication</a><br />
 The web application for chaining.</p>
-<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
 <p>This method uses reflection to discover <a href="../IHubRegistrationPlugin/" title="NexusLabs.Needlr.SignalR.IHubRegistrationPlugin">IHubRegistrationPlugin</a> implementations
 and invoke <code>MapHub&lt;T&gt;()</code> at runtime.</p>
 <p><strong>For AOT/trimmed applications</strong>, use the source-generated approach instead:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">app</span><span class="p">.</span><span class="n">MapGeneratedHubs</span><span class="p">();</span><span class="w"> </span><span class="c1">// Generated at compile-time, no reflection</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">app</span><span class="p">.</span><span class="n">MapGeneratedHubs</span><span class="p">();</span><span class="w"> </span><span class="c1">// Generated at compile-time, no reflection</span>
 </span></code></pre></div>
 
 
@@ -3025,6 +3051,8 @@ and invoke <code>MapHub&lt;T&gt;()</code> at runtime.</p>
 
 
 
+
+  
 
 
 

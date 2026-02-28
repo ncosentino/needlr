@@ -52,9 +52,22 @@
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-F9P4TGM7EZ"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-F9P4TGM7EZ",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-F9P4TGM7EZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
+  
+  
+
   </head>
   
   
@@ -2971,12 +2984,24 @@
 <h4 id="nexuslabsneedlr"><a href="../" title="index">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlr_1"><a href="../NexusLabs.Needlr/" title="NexusLabs.Needlr">NexusLabs.Needlr</a><a class="headerlink" href="#nexuslabsneedlr_1" title="Permanent link">&para;</a></h3>
 <h2 id="singletonattribute-class">SingletonAttribute Class<a class="headerlink" href="#singletonattribute-class" title="Permanent link">&para;</a></h2>
-<p>Specifies that the decorated class should be registered with Singleton lifetime.
-This is the default lifetime in Needlr, so this attribute is only needed when
-overriding a different default configuration.</p>
+<p>Specifies that the decorated class should be registered with \&lt;b&gt;Singleton\&lt;/b&gt; lifetime.
+Singleton services are created once for the lifetime of the application and reused for every request.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">SingletonAttribute</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Attribute</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; <a href="https://learn.microsoft.com/en-us/dotnet/api/system.attribute" title="System.Attribute">System.Attribute</a> &#129106; SingletonAttribute</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="na">[Singleton]</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationCache</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IConfigurationCache</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="c1">// Created once for the application lifetime</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p><b>Singleton is the default lifetime in Needlr.</b> You only need to apply this attribute explicitly
+            when you want to document intent clearly, or when overriding a different default set in your
+            Needlr configuration.</p>
+<p>Be careful with Singleton services that depend on Scoped or Transient services — resolving a
+shorter-lived dependency from a Singleton creates a "captive dependency" and can cause bugs.</p>
 
 
 
@@ -2985,6 +3010,8 @@ overriding a different default configuration.</p>
 
 
 
+
+  
 
 
 
