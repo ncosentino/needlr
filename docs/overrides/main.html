@@ -2,6 +2,17 @@
 
 {% block extrahead %}
   {{ super() }}
+  {% if page %}
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{{ page.title }} – Needlr" />
+  <meta property="og:description" content="{{ page.meta.description | default(config.site_description) }}" />
+  <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  <meta property="og:url" content="{{ page.canonical_url }}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ page.title }} – Needlr" />
+  <meta name="twitter:description" content="{{ page.meta.description | default(config.site_description) }}" />
+  <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
+  {% endif %}
   {% if page and page.is_homepage %}
   <script type="application/ld+json">
   {
