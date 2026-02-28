@@ -43,7 +43,7 @@ def on_post_build(config) -> None:
     lines: list[str] = [_PREAMBLE]
 
     def _section_header(title: str) -> str:
-        return f'## {title}\n\n'
+        return f'\n## {title}\n\n'
 
     def _page_line(url: str) -> str:
         url_clean = url.strip('/')
@@ -65,13 +65,18 @@ def on_post_build(config) -> None:
                         _walk_nav(children, indent + 1)
                     elif isinstance(children, str):
                         page_url = _url_from_path(children)
-                        lines.append(_page_line(page_url))
+                        if page_url is not None:
+                            lines.append(_page_line(page_url))
             elif isinstance(item, str):
                 page_url = _url_from_path(item)
-                lines.append(_page_line(page_url))
+                if page_url is not None:
+                    lines.append(_page_line(page_url))
 
     def _url_from_path(md_path: str) -> str:
         """Convert a docs-relative .md path to its URL segment."""
+        # Skip the analyzers overview README -- it has no useful standalone URL
+        if md_path.lower().endswith('readme.md'):
+            return None
         url = md_path.replace('.md', '/')
         if url == 'index/':
             url = ''
