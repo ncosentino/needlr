@@ -226,3 +226,6 @@ public class RetryDecorator<T> : IHandler<T>
 1. **Source-generation only**: This feature is not available in the reflection path
 2. **Compile-time discovery**: Only implementations visible at compile time are decorated
 3. **Same assembly or referenced assemblies**: Implementations must be discoverable by the source generator
+
+!!! info "Read More on Dev Leader"
+    - [Decorator Pattern in C# with Needlr: Adding Cross-Cutting Concerns](https://www.devleader.ca/2026/02/17/decorator-pattern-in-c-with-needlr-adding-crosscutting-concerns)

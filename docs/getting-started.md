@@ -363,3 +363,6 @@ var webApplication = new Syringe()
 - Discover [Factory Delegates](factories.md) for types with runtime parameters
 - Read about [Interceptors](interceptors.md) for cross-cutting concerns
 - See [Advanced Usage](advanced-usage.md) for complex scenarios
+!!! info "Read More on Dev Leader"
+    - [Getting Started with Needlr: Fluent DI for .NET Applications](https://www.devleader.ca/2026/02/05/getting-started-with-needlr-fluent-di-for-net-applications)
+    - [Automatic Dependency Injection in C#: The Complete Guide to Needlr](https://www.devleader.ca/2026/02/03/automatic-dependency-injection-in-c-the-complete-guide-to-needlr)

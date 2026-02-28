@@ -94,3 +94,6 @@ public sealed class PaymentServicesPlugin : IServiceCollectionPlugin
 - The key is a string value passed to `[FromKeyedServices("key")]` when resolving
 - This feature requires .NET 8+ (where keyed services were introduced)
 - Both source-gen and reflection paths support keyed services
+
+!!! info "Read More on Dev Leader"
+    - [Keyed Services in Needlr: Managing Multiple Implementations](https://www.devleader.ca/2026/02/19/keyed-services-in-needlr-managing-multiple-implementations)

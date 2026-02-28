@@ -159,3 +159,6 @@ A type is discovered as a hosted service if:
 - Hosted services are always registered as **Singleton** lifetime
 - Decorators with `[DecoratorFor<IHostedService>]` are excluded from hosted service discovery to prevent circular dependencies
 - Works with both source-gen and reflection paths
+
+!!! info "Read More on Dev Leader"
+    - [Hosted Services with Needlr: Background Workers and Lifecycle Management](https://www.devleader.ca/2026/02/21/hosted-services-with-needlr-background-workers-and-lifecycle-management)

@@ -143,3 +143,6 @@ public class TransientReader : IReader, IWriter
 - [Getting Started](getting-started.md)
 - [DoNotAutoRegister](core-concepts.md) - Exclude from all registration
 - [NDLRCOR015](analyzers/NDLRCOR015.md) - Analyzer documentation
+
+!!! info "Read More on Dev Leader"
+    - [Plugin Architecture with Needlr in .NET: Building Modular Applications](https://www.devleader.ca/2026/02/15/plugin-architecture-with-needlr-in-net-building-modular-applications)

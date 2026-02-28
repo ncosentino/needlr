@@ -512,3 +512,7 @@ var configured = new Syringe()
     .UsingConfiguration();
 // Chain all configuration before building
 ```
+!!! info "Read More on Dev Leader"
+    - [Source Generation vs Reflection in Needlr: Choosing the Right Approach](https://www.devleader.ca/2026/02/07/source-generation-vs-reflection-in-needlr-choosing-the-right-approach)
+    - [Automatic Service Discovery in C# with Needlr: How It Works](https://www.devleader.ca/2026/02/09/automatic-service-discovery-in-c-with-needlr-how-it-works)
+    - [The Syringe Class: Needlr's Fluent API Explained](https://www.devleader.ca/2026/02/11/the-syringe-class-needlrs-fluent-api-explained)
