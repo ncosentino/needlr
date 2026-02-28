@@ -12,6 +12,18 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// on <see cref="IWorkflowFactory"/> for each agent type that carries this attribute. The generated
 /// method encapsulates the agent type so the composition root requires no direct type references.
 /// </remarks>
+/// <example>
+/// <code>
+/// [NeedlrAiAgent(Instructions = "Triage incoming customer requests.")]
+/// [AgentHandoffsTo(typeof(BillingAgent),  "Route billing or payment questions to the billing agent")]
+/// [AgentHandoffsTo(typeof(SupportAgent),  "Route general support requests to the support agent")]
+/// public class TriageAgent { }
+///
+/// // The source generator emits:
+/// //   workflowFactory.CreateTriageAgentHandoffWorkflow()
+/// // which wires all handoffs without requiring direct type references at the call site.
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class AgentHandoffsToAttribute : Attribute
 {

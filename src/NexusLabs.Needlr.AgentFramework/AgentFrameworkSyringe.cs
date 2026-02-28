@@ -12,6 +12,20 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// This class uses reflection to discover methods with <see cref="AgentFunctionAttribute"/>.
 /// For AOT/trimmed applications, consider registering agent functions explicitly.
 /// </remarks>
+/// <example>
+/// <code>
+/// // Obtained from SyringeAgentFrameworkExtensions.UsingAgentFramework()
+/// AgentFrameworkSyringe syringe = app.Services.UsingAgentFramework();
+///
+/// // Register function types and build the factory
+/// IAgentFactory factory = syringe
+///     .AddAgentFunctionsFromGenerated(GeneratedAgentFunctions.AllFunctionTypes)
+///     .BuildAgentFactory();
+///
+/// // Create agents from the factory
+/// var supportAgent = factory.CreateAgent&lt;CustomerSupportAgent&gt;();
+/// </code>
+/// </example>
 [DoNotAutoRegister]
 [RequiresUnreferencedCode("AgentFramework function setup uses reflection to discover [AgentFunction] methods.")]
 [RequiresDynamicCode("AgentFramework function setup uses reflection APIs that require dynamic code generation.")]

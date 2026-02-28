@@ -10,6 +10,24 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <paramref name="pipelineName"/> to declare the full sequence. Agents are executed in ascending
 /// <paramref name="order"/> — output from each agent is passed as input to the next.
 /// </remarks>
+/// <example>
+/// <code>
+/// [NeedlrAiAgent(Instructions = "Extract key facts from the user's input.")]
+/// [AgentSequenceMember("ContentPipeline", order: 0)]
+/// public class ExtractorAgent { }
+///
+/// [NeedlrAiAgent(Instructions = "Summarize extracted facts into a concise paragraph.")]
+/// [AgentSequenceMember("ContentPipeline", order: 1)]
+/// public class SummarizerAgent { }
+///
+/// [NeedlrAiAgent(Instructions = "Format the summary as a structured JSON report.")]
+/// [AgentSequenceMember("ContentPipeline", order: 2)]
+/// public class FormatterAgent { }
+///
+/// // The source generator emits:
+/// //   workflowFactory.CreateContentPipelineSequentialWorkflow()
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class AgentSequenceMemberAttribute(string pipelineName, int order) : Attribute
 {

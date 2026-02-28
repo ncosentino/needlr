@@ -11,6 +11,21 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// with <see cref="AgentFrameworkGeneratedBootstrap"/>. <c>UsingAgentFramework()</c>
 /// then discovers and registers these types without any explicit <c>Add*FromGenerated()</c> calls.
 /// </remarks>
+/// <example>
+/// <code>
+/// [NeedlrAiAgent(
+///     Instructions = "You are a helpful customer support agent. Answer questions about orders.",
+///     Description = "Customer support agent for order inquiries")]
+/// [AgentHandoffsTo(typeof(BillingAgent), "Escalate billing or payment questions to the billing agent")]
+/// public class CustomerSupportAgent
+/// {
+/// }
+///
+/// // In your composition root:
+/// var agentFactory = syringe.BuildAgentFactory();
+/// var agent = agentFactory.CreateAgent&lt;CustomerSupportAgent&gt;();
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public sealed class NeedlrAiAgentAttribute : Attribute
 {

@@ -14,5 +14,24 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// Use <see cref="System.ComponentModel.DescriptionAttribute"/> to provide
 /// LLM-friendly descriptions for methods and parameters.
 /// </remarks>
+/// <example>
+/// <code>
+/// public class OrderTools
+/// {
+///     [AgentFunction]
+///     [Description("Look up the status of an order by its ID")]
+///     public string GetOrderStatus(
+///         [Description("The order identifier")] string orderId)
+///     {
+///         return orderId == "123" ? "Shipped" : "Processing";
+///     }
+/// }
+///
+/// // Wire the function group to an agent:
+/// [NeedlrAiAgent(Instructions = "Help users track their orders")]
+/// [AgentFunctionGroup(typeof(OrderTools))]
+/// public class OrderTrackingAgent { }
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class AgentFunctionAttribute : Attribute;
