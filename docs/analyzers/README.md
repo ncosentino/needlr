@@ -22,6 +22,24 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR012](NDLRCOR012.md) | Error | Disposable captive dependency |
 | [NDLRCOR015](NDLRCOR015.md) | Error | [RegisterAs<T>] type T not implemented by class |
 
+## MAF Analyzers (NexusLabs.Needlr.AgentFramework.Analyzers)
+
+These analyzers are included with the `NexusLabs.Needlr.AgentFramework.Analyzers` package.
+
+| Rule ID | Severity | Description |
+|---------|----------|-------------|
+| [NDLRMAF001](NDLRMAF001.md) | Error | [AgentHandoffsTo] target type is not a declared agent |
+| [NDLRMAF002](NDLRMAF002.md) | Error | Group chat has fewer than two members |
+| [NDLRMAF003](NDLRMAF003.md) | Warning | [AgentHandoffsTo] source class is not a declared agent |
+| [NDLRMAF004](NDLRMAF004.md) | Warning | Cyclic handoff chain detected |
+| [NDLRMAF005](NDLRMAF005.md) | Warning | FunctionGroups references an unregistered group name |
+| [NDLRMAF006](NDLRMAF006.md) | Error | Duplicate Order value in sequential pipeline |
+| [NDLRMAF007](NDLRMAF007.md) | Warning | Gap in sequential pipeline Order values |
+| [NDLRMAF008](NDLRMAF008.md) | Info | Agent participates in no topology declaration |
+| [NDLRMAF009](NDLRMAF009.md) | Warning | [WorkflowRunTerminationCondition] declared on a non-agent class |
+| [NDLRMAF010](NDLRMAF010.md) | Error | Termination condition type does not implement IWorkflowTerminationCondition |
+| [NDLRMAF011](NDLRMAF011.md) | Info | Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members |
+
 ## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
 
 These analyzers are included with the `NexusLabs.Needlr.SignalR` package.
@@ -66,6 +84,7 @@ Needlr uses a component-based naming convention for diagnostic IDs:
 | Component | Prefix | Example |
 |-----------|--------|---------|
 | Core Analyzers | `NDLRCOR` | `NDLRCOR001` |
+| MAF Analyzers | `NDLRMAF` | `NDLRMAF001` |
 | SignalR Analyzers | `NDLRSIG` | `NDLRSIG001` |
 | Source Generators | `NDLRGEN` | `NDLRGEN001` |
 
