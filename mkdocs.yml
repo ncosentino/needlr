@@ -118,6 +118,9 @@ nav:
 plugins:
   - search
 
+hooks:
+  - docs/hooks/schema.py
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
