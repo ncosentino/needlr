@@ -121,6 +121,7 @@ plugins:
 
 hooks:
   - docs/hooks/schema.py
+  - docs/hooks/llms_txt.py
 
 markdown_extensions:
   - pymdownx.highlight:
