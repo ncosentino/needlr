@@ -1,75 +1,140 @@
 #!/usr/bin/env python3
 """
-Generate articles.md from Dev Leader RSS feed filtered by Needlr tag.
+Generate articles.md from the Dev Leader Needlr tag page.
 Usage: python scripts/generate-articles.py docs/articles.md
 """
 
 import sys
 import urllib.request
-import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 from datetime import datetime
 
+_VOID_ELEMENTS = frozenset({
+    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+    'link', 'meta', 'param', 'source', 'track', 'wbr',
+})
 
-def fetch_rss_feed(url: str) -> str:
-    """Fetch RSS feed content from URL."""
-    with urllib.request.urlopen(url, timeout=30) as response:
-        return response.read().decode('utf-8')
+
+class _NeedlrArticleParser(HTMLParser):
+    """Parse Needlr-tagged articles from the devleader.ca tags page."""
+
+    def __init__(self):
+        super().__init__()
+        self.articles = []
+        self._cur = None
+        self._depth = 0
+        self._section = None
+        self._section_depth = 0
+        self._state = None
+
+    def _attrs_dict(self, attrs):
+        return {k: (v or '') for k, v in attrs}
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in _VOID_ELEMENTS:
+            self._depth += 1
+        a = self._attrs_dict(attrs)
+        classes = a.get('class', '')
+
+        if tag == 'article':
+            self._cur = {'title': '', 'link': '', 'description': '', 'date': '', 'image': None, 'categories': []}
+            self._section = None
+            self._state = None
+            return
+
+        if self._cur is None:
+            return
+
+        if self._section is None:
+            if tag == 'div' and 'photo' in classes:
+                self._section = 'photo'
+                self._section_depth = self._depth
+            elif tag == 'li' and 'date' in classes:
+                self._section = 'date'
+                self._section_depth = self._depth
+            elif tag == 'li' and 'tags' in classes:
+                self._section = 'tags'
+                self._section_depth = self._depth
+            elif tag == 'div' and 'description' in classes:
+                self._section = 'description'
+                self._section_depth = self._depth
+            return
+
+        if self._section == 'photo' and tag == 'img':
+            self._cur['image'] = a.get('src')
+        elif self._section == 'date' and tag == 'span' and self._state is None:
+            self._state = 'date_span'
+        elif self._section == 'tags' and tag == 'a' and 'goto-tag' in classes:
+            self._state = 'tag_a'
+        elif self._section == 'description':
+            if tag == 'h2' and self._state is None:
+                self._state = 'h2'
+            elif tag == 'p' and 'read-more' in classes:
+                self._state = 'read_more'
+            elif tag == 'a' and self._state == 'read_more':
+                href = a.get('href', '')
+                if href.startswith('/'):
+                    self._cur['link'] = 'https://www.devleader.ca' + href
+            elif tag == 'p' and self._state is None:
+                self._state = 'desc_p'
+
+    def handle_endtag(self, tag):
+        self._depth -= 1
+
+        if tag == 'article':
+            if self._cur and self._cur['title'] and self._cur['link']:
+                self.articles.append(self._cur)
+            self._cur = None
+            self._section = None
+            self._state = None
+            return
+
+        if self._cur is None:
+            return
+
+        if self._section is not None and self._depth < self._section_depth:
+            self._section = None
+            self._state = None
+            return
+
+        if self._state == 'date_span' and tag == 'span':
+            self._state = None
+        elif self._state == 'tag_a' and tag == 'a':
+            self._state = None
+        elif self._state == 'h2' and tag == 'h2':
+            self._state = None
+        elif self._state == 'read_more' and tag == 'p':
+            self._state = None
+        elif self._state == 'desc_p' and tag == 'p':
+            self._state = None
+
+    def handle_data(self, data):
+        data = data.strip()
+        if not data or self._cur is None:
+            return
+
+        if self._state == 'h2':
+            self._cur['title'] += data
+        elif self._state == 'desc_p':
+            self._cur['description'] += data
+        elif self._state == 'date_span':
+            try:
+                dt = datetime.strptime(data, '%m/%d/%Y')
+                self._cur['date'] = dt.strftime('%B %d, %Y')
+            except ValueError:
+                self._cur['date'] = data
+        elif self._state == 'tag_a' and data != 'Needlr':
+            self._cur['categories'].append(data)
 
 
-def parse_articles(xml_content: str, tag_filter: str) -> list[dict]:
-    """Parse RSS feed and filter articles by tag."""
-    root = ET.fromstring(xml_content)
-    articles = []
-    
-    for item in root.findall('.//item'):
-        # Check if article has the Needlr tag
-        categories = [cat.text for cat in item.findall('category') if cat.text]
-        if tag_filter not in categories:
-            continue
-        
-        title = item.find('title')
-        link = item.find('link')
-        description = item.find('description')
-        pub_date = item.find('pubDate')
-        
-        # Parse media image
-        media_ns = {'media': 'http://search.yahoo.com/mrss/'}
-        media = item.find('media:content', media_ns)
-        image_url = media.get('url') if media is not None else None
-        
-        if title is not None and link is not None:
-            # Parse date
-            date_str = ""
-            if pub_date is not None and pub_date.text:
-                try:
-                    dt = datetime.strptime(pub_date.text, "%a, %d %b %Y %H:%M:%S %z")
-                    date_str = dt.strftime("%B %d, %Y")
-                except ValueError:
-                    date_str = pub_date.text
-            
-            # Clean description
-            desc = ""
-            if description is not None and description.text:
-                desc = description.text.strip()
-                # Remove CDATA wrapper if present
-                if desc.startswith('<![CDATA['):
-                    desc = desc[9:]
-                if desc.endswith(']]>'):
-                    desc = desc[:-3]
-                # Remove HTML tags
-                import re
-                desc = re.sub(r'<[^>]+>', '', desc).strip()
-            
-            articles.append({
-                'title': title.text,
-                'link': link.text,
-                'description': desc,
-                'date': date_str,
-                'image': image_url,
-                'categories': [c for c in categories if c != tag_filter]
-            })
-    
-    return articles
+def fetch_articles(url: str) -> list[dict]:
+    """Fetch and parse Needlr articles from the Dev Leader tags page."""
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    with urllib.request.urlopen(req, timeout=30) as response:
+        html = response.read().decode('utf-8')
+    parser = _NeedlrArticleParser()
+    parser.feed(html)
+    return parser.articles
 
 
 def generate_markdown(articles: list[dict]) -> str:
@@ -111,10 +176,9 @@ def generate_markdown(articles: list[dict]) -> str:
             lines.append("---")
             lines.append("")
     
-    # Add footer
     lines.extend([
         "",
-        "*This page is automatically generated from the Dev Leader RSS feed.*",
+        "*This page is automatically generated from the Dev Leader blog.*",
     ])
     
     return "\n".join(lines)
@@ -122,30 +186,27 @@ def generate_markdown(articles: list[dict]) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python generate-articles.py <output-file>")
+        print('Usage: python generate-articles.py <output-file>')
         sys.exit(1)
-    
+
     output_file = sys.argv[1]
-    rss_url = "https://devleader.ca/feed"
-    tag_filter = "Needlr"
-    
-    print(f"Fetching articles from {rss_url}...")
-    
+    url = 'https://www.devleader.ca/tags/Needlr'
+
+    print(f'Fetching Needlr articles from {url}...')
+
     try:
-        xml_content = fetch_rss_feed(rss_url)
-        articles = parse_articles(xml_content, tag_filter)
-        print(f"Found {len(articles)} articles tagged with '{tag_filter}'")
-        
+        articles = fetch_articles(url)
+        print(f'Found {len(articles)} articles')
+
         markdown = generate_markdown(articles)
-        
+
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(markdown)
-        
-        print(f"Generated {output_file}")
-        
+
+        print(f'Generated {output_file}')
+
     except Exception as e:
-        print(f"Error: {e}")
-        # Create a fallback page
+        print(f'Error: {e}')
         fallback = """# Articles & Blog Posts
 
 Blog posts and articles about Needlr from [Dev Leader](https://devleader.ca).
@@ -157,7 +218,7 @@ Blog posts and articles about Needlr from [Dev Leader](https://devleader.ca).
 """
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(fallback)
-        print(f"Created fallback {output_file}")
+        print(f'Created fallback {output_file}')
 
 
 if __name__ == "__main__":
