@@ -5,8 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace NexusLabs.Needlr;
 
 /// <summary>
-/// Extension methods for <see cref="IServiceCollection"/> to provide decorator functionality.
+/// Extension methods for <see cref="IServiceCollection"/> that add decorator wiring, service inspection,
+/// and registration-check utilities to the standard Microsoft DI container.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The primary extension in this class is <c>AddDecorator</c>, which wraps an already-registered
+/// service with a decorator while preserving the original service's lifetime. This complements
+/// the attribute-based <see cref="DecoratorForAttribute{TService}"/> used with Needlr's
+/// source generation and reflection scanning.
+/// </para>
+/// </remarks>
 public static class ServiceCollectionExtensions
 {
     /// <summary>

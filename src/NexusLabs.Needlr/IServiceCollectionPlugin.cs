@@ -3,8 +3,35 @@
 namespace NexusLabs.Needlr;
 
 /// <summary>
-/// Defines a plugin that can configure the <see cref="IServiceCollection"/> for dependency injection.
+/// Defines a plugin that participates in Needlr's <see cref="IServiceCollection"/> configuration pipeline.
+/// Implement this interface to encapsulate a cohesive block of service registrations that can be
+/// discovered and applied automatically during startup.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Plugins are discovered and invoked by the Needlr startup pipeline
+/// as part of its fluent setup chain.
+/// The <see cref="DoNotAutoRegisterAttribute"/> and <see cref="DoNotInjectAttribute"/> on this interface
+/// prevent Needlr from mistakenly registering it as a concrete service.
+/// </para>
+/// <para>
+/// Create a class that implements <see cref="IServiceCollectionPlugin"/> and place your
+/// registration logic in <see cref="Configure"/>. Needlr will call <see cref="Configure"/> once
+/// during the startup assembly scan.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// public class InfrastructurePlugin : IServiceCollectionPlugin
+/// {
+///     public void Configure(ServiceCollectionPluginOptions options)
+///     {
+///         options.Services.AddSingleton&lt;IConnectionFactory, SqlConnectionFactory&gt;();
+///         options.Services.AddScoped&lt;IUnitOfWork, SqlUnitOfWork&gt;();
+///     }
+/// }
+/// </code>
+/// </example>
 [DoNotAutoRegister]
 [DoNotInject]
 public interface IServiceCollectionPlugin

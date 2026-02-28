@@ -1,8 +1,38 @@
 namespace NexusLabs.Needlr;
 
 /// <summary>
-/// Exception thrown when container verification fails with issues configured to throw.
+/// Exception thrown when Needlr container verification detects one or more registered issues
+/// that are configured to fail-fast at startup.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Container verification is triggered by calling <c>VerifyContainer()</c> (or the equivalent
+/// extension) after building the service provider. Each <see cref="VerificationIssue"/> in
+/// <see cref="Issues"/> describes one problem — for example, a missing required dependency or
+/// a misconfigured lifetime.
+/// </para>
+/// <para>
+/// Only issues whose configured severity is set to throw will produce this exception.
+/// Issues configured to warn are reported through the logging pipeline instead.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// try
+/// {
+///     var provider = services.BuildServiceProvider();
+///     provider.VerifyContainer();
+/// }
+/// catch (ContainerVerificationException ex)
+/// {
+///     foreach (var issue in ex.Issues)
+///     {
+///         Console.Error.WriteLine($"[{issue.Type}] {issue.Message}");
+///     }
+///     throw;
+/// }
+/// </code>
+/// </example>
 public sealed class ContainerVerificationException : Exception
 {
     /// <summary>
