@@ -61,4 +61,22 @@
   }
   </script>
   {% endif %}
+  {% if page and page.url and page.url.startswith('api/') %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "Needlr API Reference",
+    "codeRepository": "https://github.com/ncosentino/needlr",
+    "programmingLanguage": "C#",
+    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
+    "author": {
+      "@type": "Person",
+      "name": "Nick Cosentino",
+      "url": "https://www.devleader.ca"
+    },
+    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
+  }
+  </script>
+  {% endif %}
 {% endblock %}
