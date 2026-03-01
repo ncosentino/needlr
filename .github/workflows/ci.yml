@@ -197,3 +197,37 @@ jobs:
       run: |
         test -f artifacts/webapp/AotSourceGenApp
         file artifacts/webapp/AotSourceGenApp
+
+  aot-agent-app:
+    runs-on: ubuntu-latest
+    # Runs in parallel with build-and-test (no 'needs')
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Install AOT dependencies
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+    - name: Publish AOT Agent Framework App
+      run: |
+        dotnet publish src/Examples/AgentFramework/AotAgentFrameworkApp/AotAgentFrameworkApp.csproj \
+          -c Release \
+          -r linux-x64 \
+          --self-contained \
+          -o artifacts/agent
+
+    - name: Verify Agent App Executable
+      run: |
+        test -f artifacts/agent/AotAgentFrameworkApp
+        file artifacts/agent/AotAgentFrameworkApp
+
+    - name: Run Agent App
+      run: artifacts/agent/AotAgentFrameworkApp
