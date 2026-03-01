@@ -29,6 +29,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 
 - [Advanced Usage](https://github.devleader.ca/needlr/advanced-usage/) -- Advanced patterns for Needlr -- custom assembly scanning, conditional registration, multi-project setups, and edge cases for complex .NET dependency injection scenarios.
 - [Plugin Development](https://github.devleader.ca/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
+- [Solution-Wide Source Generation](https://github.devleader.ca/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Benchmarks](https://github.devleader.ca/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Analyzers
@@ -49,6 +50,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [NDLRCOR011](https://github.devleader.ca/needlr/analyzers/NDLRCOR011/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRCOR012](https://github.devleader.ca/needlr/analyzers/NDLRCOR012/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRCOR015](https://github.devleader.ca/needlr/analyzers/NDLRCOR015/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR016](https://github.devleader.ca/needlr/analyzers/NDLRCOR016/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Generator Analyzers
 

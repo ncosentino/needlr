@@ -77,6 +77,10 @@
          <lastmod>2026-03-01</lastmod>
     </url>
     <url>
+         <loc>https://github.devleader.ca/needlr/solution-wide-source-generation/</loc>
+         <lastmod>2026-03-01</lastmod>
+    </url>
+    <url>
          <loc>https://github.devleader.ca/needlr/video-tutorials/</loc>
          <lastmod>2026-03-01</lastmod>
     </url>
@@ -134,6 +138,10 @@
     </url>
     <url>
          <loc>https://github.devleader.ca/needlr/analyzers/NDLRCOR015/</loc>
+         <lastmod>2026-03-01</lastmod>
+    </url>
+    <url>
+         <loc>https://github.devleader.ca/needlr/analyzers/NDLRCOR016/</loc>
          <lastmod>2026-03-01</lastmod>
     </url>
     <url>
@@ -758,6 +766,10 @@
     </url>
     <url>
          <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Analyzers/DisposableCaptiveDependencyAnalyzer/</loc>
+         <lastmod>2026-03-01</lastmod>
+    </url>
+    <url>
+         <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Analyzers/DoNotAutoRegisterOnPluginAnalyzer/</loc>
          <lastmod>2026-03-01</lastmod>
     </url>
     <url>

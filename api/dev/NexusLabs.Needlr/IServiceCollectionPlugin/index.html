@@ -1076,6 +1076,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../solution-wide-source-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solution-Wide Source Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1597,6 +1625,34 @@
     
   
     NDLRCOR015
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRCOR016/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRCOR016
   
 
     
@@ -3037,6 +3093,10 @@ prevent Needlr from mistakenly registering it as a concrete service.</p>
 <p>Create a class that implements <a href="./" title="NexusLabs.Needlr.IServiceCollectionPlugin">IServiceCollectionPlugin</a> and place your
 registration logic in <a href="./#NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)" title="NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)">Configure(ServiceCollectionPluginOptions)</a>. Needlr will call <a href="./#NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)" title="NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)">Configure(ServiceCollectionPluginOptions)</a> once
 during the startup assembly scan.</p>
+<p>Do <b>not</b> apply <a href="../DoNotAutoRegisterAttribute/" title="NexusLabs.Needlr.DoNotAutoRegisterAttribute">DoNotAutoRegisterAttribute</a> directly to an implementing class.
+This interface already carries the attribute to prevent DI registration of the interface itself;
+adding it to the class too is redundant and was historically a silent bug that suppressed plugin
+discovery. Analyzer NDLRCOR016 will warn you if you do this.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.IServiceCollectionPlugin.Configure(NexusLabs.Needlr.ServiceCollectionPluginOptions)'></a></p>
 <h2 id="iservicecollectionpluginconfigureservicecollectionpluginoptions-method">IServiceCollectionPlugin.Configure(ServiceCollectionPluginOptions) Method<a class="headerlink" href="#iservicecollectionpluginconfigureservicecollectionpluginoptions-method" title="Permanent link">&para;</a></h2>
