@@ -40,6 +40,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SimpleAgentFrameworkApp.Agents\SimpleAgentFrameworkApp.Agents.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
       OutputItemType="Analyzer"
