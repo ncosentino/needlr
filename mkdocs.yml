@@ -53,6 +53,7 @@ nav:
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Plugin Development: plugin-development.md
+    - Solution-Wide Source Generation: solution-wide-source-generation.md
   - Benchmarks: benchmarks.md
   - Analyzers:
     - Overview: analyzers/README.md
@@ -70,6 +71,7 @@ nav:
       - NDLRCOR011: analyzers/NDLRCOR011.md
       - NDLRCOR012: analyzers/NDLRCOR012.md
       - NDLRCOR015: analyzers/NDLRCOR015.md
+      - NDLRCOR016: analyzers/NDLRCOR016.md
     - Generator Analyzers:
       - NDLRGEN001: analyzers/NDLRGEN001.md
       - NDLRGEN002: analyzers/NDLRGEN002.md
