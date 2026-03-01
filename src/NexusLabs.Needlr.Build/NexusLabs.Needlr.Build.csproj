@@ -9,6 +9,7 @@
     <PackageDescription>MSBuild build package for NexusLabs.Needlr solution-wide source generation setup. Add this package to Directory.Build.props to enable Needlr source generation across all projects in a solution with a single opt-in property.</PackageDescription>
     <PackageTags>MSBuild build source-generation needlr</PackageTags>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>
