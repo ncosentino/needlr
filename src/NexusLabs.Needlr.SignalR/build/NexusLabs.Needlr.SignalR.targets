@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    Defense-in-depth: if NexusLabs.Needlr.Generators somehow ends up in the Analyzer item group
+    more than once (e.g. both as a transitive dependency and a direct reference), remove all
+    copies and re-add exactly one. This prevents duplicate source-generator runs and the
+    resulting duplicate TypeRegistry compilation errors.
+  -->
+  <Target Name="DeduplicateNeedlrGeneratorAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_AllNeedlrGeneratorAnalyzers Include="@(Analyzer)"
+        Condition="'%(Filename)' == 'NexusLabs.Needlr.Generators'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Analyzer Remove="@(_AllNeedlrGeneratorAnalyzers)" />
+    </ItemGroup>
+    <ItemGroup>
+      <Analyzer Include="@(_AllNeedlrGeneratorAnalyzers->Distinct())" />
+    </ItemGroup>
+  </Target>
+</Project>
