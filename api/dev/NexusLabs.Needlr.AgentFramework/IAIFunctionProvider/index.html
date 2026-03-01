@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework/">
+        <link rel="canonical" href="https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAIFunctionProvider/">
       
       
       
@@ -23,7 +23,7 @@
     
     
       
-        <title>NexusLabs.Needlr.AgentFramework - Needlr</title>
+        <title>IAIFunctionProvider - Needlr</title>
       
     
     
@@ -68,12 +68,12 @@
   
   
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="NexusLabs.Needlr.AgentFramework – Needlr" />
+  <meta property="og:title" content="IAIFunctionProvider – Needlr" />
   <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
-  <meta property="og:url" content="https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework/" />
+  <meta property="og:url" content="https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAIFunctionProvider/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="NexusLabs.Needlr.AgentFramework – Needlr" />
+  <meta name="twitter:title" content="IAIFunctionProvider – Needlr" />
   <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   
@@ -150,7 +150,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              NexusLabs.Needlr.AgentFramework
+              IAIFunctionProvider
             
           </span>
         </div>
@@ -3009,118 +3009,35 @@
   
 
 
-  <h1>NexusLabs.Needlr.AgentFramework</h1>
+  <h1>IAIFunctionProvider</h1>
 
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
-<h2 id="nexuslabsneedlragentframework-namespace">NexusLabs.Needlr.AgentFramework Namespace<a class="headerlink" href="#nexuslabsneedlragentframework-namespace" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Classes</th>
-<th style="text-align: left;"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a></td>
-<td style="text-align: left;">Per-agent configuration options passed to <code>IAgentFactory.CreateAgent(configure)</code>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFrameworkConfigureOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions">AgentFrameworkConfigureOptions</a></td>
-<td style="text-align: left;">Factory-level configuration options passed to <a href="../">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.Configure(NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action{NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions})</a> callbacks.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFrameworkGeneratedBootstrap/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap">AgentFrameworkGeneratedBootstrap</a></td>
-<td style="text-align: left;">Runtime bootstrap registry for source-generated Agent Framework components.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></td>
-<td style="text-align: left;">Fluent builder for configuring the Microsoft Agent Framework with Needlr function discovery.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFrameworkSyringeExtensions/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions">AgentFrameworkSyringeExtensions</a></td>
-<td style="text-align: left;">Extension methods for <a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a> providing fluent configuration of the Microsoft Agent Framework integration.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a></td>
-<td style="text-align: left;">Marks a method as an agent function that can be auto-discovered by Needlr and registered as an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> tool for Microsoft Agent Framework agents.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentFunctionGroupAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute">AgentFunctionGroupAttribute</a></td>
-<td style="text-align: left;">Assigns a class to a named function group so that it can be wired to agents by group name rather than by explicit type reference.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentGroupChatMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute">AgentGroupChatMemberAttribute</a></td>
-<td style="text-align: left;">Declares that a <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>-annotated agent participates in a named group chat workflow. Apply this attribute to include the agent in a round-robin group chat created via <a href="../IWorkflowFactory/#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int)" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string, int)">CreateGroupChatWorkflow(string, int)</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a></td>
-<td style="text-align: left;">Declares a handoff target for a <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>-annotated agent. Apply this attribute one or more times to specify which agents the decorated agent can hand off to when used as the initial agent in a handoff workflow via <a href="../IWorkflowFactory/#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow_TInitialAgent_()" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow\&lt;TInitialAgent&gt;()">CreateHandoffWorkflow&lt;TInitialAgent&gt;()</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a></td>
-<td style="text-align: left;">Marks an agent class as a member of a named sequential pipeline, specifying its position. The source generator reads these declarations to emit a strongly-typed <code>Create{PipelineName}SequentialWorkflow()</code> extension method on <a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AgentTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute">AgentTerminationConditionAttribute</a></td>
-<td style="text-align: left;">Declares a termination condition that is wired into the group chat manager for this agent (Layer 1). The condition is evaluated inside MAF's group chat loop, before the next agent turn starts, giving a clean early exit.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../AIAgentBuilderPluginOptions/" title="NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions">AIAgentBuilderPluginOptions</a></td>
-<td style="text-align: left;">Options passed to <a href="../IAIAgentBuilderPlugin/#NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)">Configure(AIAgentBuilderPluginOptions)</a> to allow plugins to participate in agent-builder configuration.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a></td>
-<td style="text-align: left;">Marks a class as a declared agent type for Needlr's Agent Framework integration. Apply this attribute to a class to enable compile-time registration via the source generator and <a href="../IAgentFactory/#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_()" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;()">CreateAgent&lt;TAgent&gt;()</a> lookup.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../SyringeExtensionsForAgentFramework/" title="NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework">SyringeExtensionsForAgentFramework</a></td>
-<td style="text-align: left;">Extension methods for <a href="../../NexusLabs.Needlr.Injection/">NexusLabs.Needlr.Injection.ConfiguredSyringe</a> that enable registering Microsoft Agent Framework infrastructure (namely <a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a>) as part of the Needlr build pipeline.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../TerminationContext/" title="NexusLabs.Needlr.AgentFramework.TerminationContext">TerminationContext</a></td>
-<td style="text-align: left;">Provides context to an <a href="../IWorkflowTerminationCondition/" title="NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition">IWorkflowTerminationCondition</a> when evaluating whether a workflow should stop after an agent's response.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../WorkflowRunTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute">WorkflowRunTerminationConditionAttribute</a></td>
-<td style="text-align: left;">Declares a termination condition that is evaluated by Needlr's <code>RunAsync</code> execution helpers after each completed agent turn (Layer 2). Unlike <a href="../AgentTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute">AgentTerminationConditionAttribute</a>, this works with all workflow types (group chat, handoff, sequential).</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Interfaces</th>
-<th style="text-align: left;"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a></td>
-<td style="text-align: left;">Factory for creating configured <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a> instances with auto-discovered <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a> tools wired up.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../IAgentFrameworkFunctionScanner/" title="NexusLabs.Needlr.AgentFramework.IAgentFrameworkFunctionScanner">IAgentFrameworkFunctionScanner</a></td>
-<td style="text-align: left;">Defines a scanner that discovers types containing <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>-decorated methods.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../IAIAgentBuilderPlugin/" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin">IAIAgentBuilderPlugin</a></td>
-<td style="text-align: left;">Marker interface for classes that participate in configuring the agent builder pipeline (e.g., adding middleware layers).</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../IAIFunctionProvider/" title="NexusLabs.Needlr.AgentFramework.IAIFunctionProvider">IAIFunctionProvider</a></td>
-<td style="text-align: left;">Provides pre-built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> instances for agent function types. Implemented by the source generator to eliminate reflection-based function discovery.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../IWorkflowFactory/" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory">IWorkflowFactory</a></td>
-<td style="text-align: left;">Creates MAF <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> instances from topology declared on agent classes via <a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a>, <a href="../AgentGroupChatMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute">AgentGroupChatMemberAttribute</a>, and <a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a>. Registered in DI by <code>UsingAgentFramework()</code> — inject via constructor or resolve from <code>IServiceProvider</code>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="../IWorkflowTerminationCondition/" title="NexusLabs.Needlr.AgentFramework.IWorkflowTerminationCondition">IWorkflowTerminationCondition</a></td>
-<td style="text-align: left;">Evaluates whether a workflow should terminate early after an agent response.</td>
-</tr>
-</tbody>
-</table>
+<h3 id="nexuslabsneedlragentframework_1"><a href="../NexusLabs.Needlr.AgentFramework/" title="NexusLabs.Needlr.AgentFramework">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework_1" title="Permanent link">&para;</a></h3>
+<h2 id="iaifunctionprovider-interface">IAIFunctionProvider Interface<a class="headerlink" href="#iaifunctionprovider-interface" title="Permanent link">&para;</a></h2>
+<p>Provides pre-built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> instances for agent function types.
+Implemented by the source generator to eliminate reflection-based function discovery.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IAIFunctionProvider</span>
+</span></code></pre></div>
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type,System.IServiceProvider,System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.AIFunction_)'></a></p>
+<h2 id="iaifunctionprovidertrygetfunctionstype-iserviceprovider-ireadonlylistaifunction-method">IAIFunctionProvider.TryGetFunctions(Type, IServiceProvider, IReadOnlyList&lt;AIFunction&gt;) Method<a class="headerlink" href="#iaifunctionprovidertrygetfunctionstype-iserviceprovider-ireadonlylistaifunction-method" title="Permanent link">&para;</a></h2>
+<p>Attempts to retrieve the pre-built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> instances for a given function type.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetFunctions</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="n">functionType</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IServiceProvider</span><span class="w"> </span><span class="n">serviceProvider</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIFunction</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">functions</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type,System.IServiceProvider,System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.AIFunction_).functionType'></a></p>
+<p><code>functionType</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" title="System.Type">System.Type</a></p>
+<p>The function class type to look up.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type,System.IServiceProvider,System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.AIFunction_).serviceProvider'></a></p>
+<p><code>serviceProvider</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iserviceprovider" title="System.IServiceProvider">System.IServiceProvider</a></p>
+<p>The service provider used to resolve the function class instance when needed.
+The provider handles instance creation to avoid reflection-based activation.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type,System.IServiceProvider,System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.AIFunction_).functions'></a></p>
+<p><code>functions</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
+<p>When this method returns <code>true</code>, contains the pre-built functions for the type.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a><br />
+<code>true</code> if the provider has pre-built functions for <a href="./#NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type,System.IServiceProvider,System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.AIFunction_).functionType" title="NexusLabs.Needlr.AgentFramework.IAIFunctionProvider.TryGetFunctions(System.Type, System.IServiceProvider, System.Collections.Generic.IReadOnlyList\&lt;Microsoft.Extensions.AI.AIFunction&gt;).functionType">functionType</a>; otherwise <code>false</code>.</p>
 
 
 

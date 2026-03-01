@@ -3024,10 +3024,11 @@ as part of the Needlr build pipeline.</p>
 <p>These helpers defer service registration using the Syringe
 post-plugin registration callback so that function discovery and
 registration are completed before the agent factory is added.</p>
-<p><strong>Note:</strong> Microsoft.Extensions.AI internally uses reflection to build
-            <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> JSON schemas from method signatures.
-            This integration therefore requires reflection and is not fully AOT-compatible.
-            For AOT scenarios, consider using the source generator and registering agent functions explicitly.</p>
+<p>When the Needlr source generator is active, the generated <code>[ModuleInitializer]</code> registers
+an <a href="../IAIFunctionProvider/" title="NexusLabs.Needlr.AgentFramework.IAIFunctionProvider">IAIFunctionProvider</a> that is used instead of reflection. This makes the
+integration NativeAOT-compatible without any code changes.</p>
+<p>When the source generator is not used, the integration falls back to reflection-based
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> schema generation, which requires dynamic code.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework.UsingAgentFramework(thisNexusLabs.Needlr.Injection.ConfiguredSyringe)'></a></p>
 <h2 id="syringeextensionsforagentframeworkusingagentframeworkthis-configuredsyringe-method">SyringeExtensionsForAgentFramework.UsingAgentFramework(this ConfiguredSyringe) Method<a class="headerlink" href="#syringeextensionsforagentframeworkusingagentframeworkthis-configuredsyringe-method" title="Permanent link">&para;</a></h2>

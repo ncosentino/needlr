@@ -3032,8 +3032,12 @@
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="kt">var</span><span class="w"> </span><span class="n">supportAgent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">.</span><span class="n">CreateAgent</span><span class="o">&lt;</span><span class="n">CustomerSupportAgent</span><span class="o">&gt;</span><span class="p">();</span>
 </span></code></pre></div>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
-<p>This class uses reflection to discover methods with <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>.
-For AOT/trimmed applications, consider registering agent functions explicitly.</p>
+<p>When the Needlr source generator is active (the common case), this class uses pre-built
+<a href="../IAIFunctionProvider/" title="NexusLabs.Needlr.AgentFramework.IAIFunctionProvider">IAIFunctionProvider</a> instances registered by the generated <code>[ModuleInitializer]</code>.
+No reflection is required in that path.</p>
+<p>When the source generator is not used, this class falls back to reflection to discover
+methods decorated with <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>. That path carries
+<code>[RequiresDynamicCode]</code> and is not NativeAOT-compatible.</p>
 
 
 
