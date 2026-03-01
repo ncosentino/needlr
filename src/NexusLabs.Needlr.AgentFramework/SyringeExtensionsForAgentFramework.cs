@@ -2,8 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Injection;
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace NexusLabs.Needlr.AgentFramework;
 
 /// <summary>
@@ -18,10 +16,13 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// registration are completed before the agent factory is added.
 /// </para>
 /// <para>
-/// <strong>Note:</strong> Microsoft.Extensions.AI internally uses reflection to build
-/// <see cref="Microsoft.Extensions.AI.AIFunction"/> JSON schemas from method signatures.
-/// This integration therefore requires reflection and is not fully AOT-compatible.
-/// For AOT scenarios, consider using the source generator and registering agent functions explicitly.
+/// When the Needlr source generator is active, the generated <c>[ModuleInitializer]</c> registers
+/// an <see cref="IAIFunctionProvider"/> that is used instead of reflection. This makes the
+/// integration NativeAOT-compatible without any code changes.
+/// </para>
+/// <para>
+/// When the source generator is not used, the integration falls back to reflection-based
+/// <see cref="Microsoft.Extensions.AI.AIFunction"/> schema generation, which requires dynamic code.
 /// </para>
 /// </remarks>
 public static class SyringeExtensionsForAgentFramework
@@ -36,8 +37,6 @@ public static class SyringeExtensionsForAgentFramework
     /// <returns>
     /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
-    [RequiresUnreferencedCode("Agent Framework uses reflection to build AIFunction schemas from method signatures.")]
-    [RequiresDynamicCode("Agent Framework uses reflection APIs that require dynamic code generation.")]
     public static ConfiguredSyringe UsingAgentFramework(
         this ConfiguredSyringe syringe)
     {
@@ -60,8 +59,6 @@ public static class SyringeExtensionsForAgentFramework
     /// <returns>
     /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
-    [RequiresUnreferencedCode("Agent Framework uses reflection to build AIFunction schemas from method signatures.")]
-    [RequiresDynamicCode("Agent Framework uses reflection APIs that require dynamic code generation.")]
     public static ConfiguredSyringe UsingAgentFramework(
         this ConfiguredSyringe syringe,
         Func<AgentFrameworkSyringe, AgentFrameworkSyringe> configure)
@@ -122,8 +119,6 @@ public static class SyringeExtensionsForAgentFramework
     /// <returns>
     /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
     /// </returns>
-    [RequiresUnreferencedCode("Agent Framework uses reflection to build AIFunction schemas from method signatures.")]
-    [RequiresDynamicCode("Agent Framework uses reflection APIs that require dynamic code generation.")]
     public static ConfiguredSyringe UsingAgentFramework(
         this ConfiguredSyringe syringe,
         Func<AgentFrameworkSyringe> configure)

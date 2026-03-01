@@ -1,10 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace NexusLabs.Needlr.AgentFramework.FunctionScanners;
 
+[DoNotAutoRegister]
 [RequiresUnreferencedCode("Service provider scanning uses reflection to discover types with [AgentFunction] methods.")]
 [RequiresDynamicCode("Service provider scanning uses reflection APIs that may require dynamic code generation.")]
 internal sealed class ServiceProviderAgentFunctionScanner(

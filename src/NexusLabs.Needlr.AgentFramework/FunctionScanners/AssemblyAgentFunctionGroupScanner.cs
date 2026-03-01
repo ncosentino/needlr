@@ -1,8 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+using NexusLabs.Needlr;
+
 namespace NexusLabs.Needlr.AgentFramework.FunctionScanners;
 
+[DoNotAutoRegister]
 [RequiresUnreferencedCode("Assembly scanning uses reflection to discover types with [AgentFunctionGroup] attributes.")]
 [RequiresDynamicCode("Assembly scanning uses reflection APIs that may require dynamic code generation.")]
 internal sealed class AssemblyAgentFunctionGroupScanner(IReadOnlyList<Assembly> _assemblies)

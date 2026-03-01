@@ -7,8 +7,6 @@ using System.Reflection;
 
 namespace NexusLabs.Needlr.AgentFramework;
 
-[RequiresUnreferencedCode("AgentFramework function setup uses reflection to discover [AgentFunction] methods.")]
-[RequiresDynamicCode("AgentFramework function setup uses reflection APIs that require dynamic code generation.")]
 internal sealed class AgentFactory : IAgentFactory
 {
     private readonly IServiceProvider _serviceProvider;
@@ -17,6 +15,7 @@ internal sealed class AgentFactory : IAgentFactory
     private readonly IReadOnlyDictionary<string, IReadOnlyList<Type>> _functionGroupMap;
     private readonly Lazy<AgentFrameworkConfigureOptions> _lazyConfiguredOptions;
     private readonly Lazy<IReadOnlyDictionary<Type, IReadOnlyList<AIFunction>>> _lazyFunctionsCache;
+    private readonly IAIFunctionProvider? _generatedProvider;
 
     private readonly IReadOnlyDictionary<string, Type> _agentTypeMap;
 
@@ -25,13 +24,15 @@ internal sealed class AgentFactory : IAgentFactory
         List<Action<AgentFrameworkConfigureOptions>> configureCallbacks,
         IReadOnlyList<Type> functionTypes,
         IReadOnlyDictionary<string, IReadOnlyList<Type>>? functionGroupMap = null,
-        IReadOnlyDictionary<string, Type>? agentTypeMap = null)
+        IReadOnlyDictionary<string, Type>? agentTypeMap = null,
+        IAIFunctionProvider? generatedProvider = null)
     {
         _serviceProvider = serviceProvider;
         _configureCallbacks = configureCallbacks;
         _functionTypes = functionTypes;
         _functionGroupMap = functionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>();
         _agentTypeMap = agentTypeMap ?? new Dictionary<string, Type>();
+        _generatedProvider = generatedProvider;
 
         _lazyConfiguredOptions = new(() => BuildConfiguredOptions());
         _lazyFunctionsCache = new(() => BuildFunctionsCache());
@@ -157,14 +158,26 @@ internal sealed class AgentFactory : IAgentFactory
         return dict;
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Reflection branch is unreachable when GeneratedAIFunctionProvider is registered via ModuleInitializer in AOT-compiled assemblies.")]
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2026", Justification = "Reflection fallback path is unreachable in AOT builds where GeneratedAIFunctionProvider is registered.")]
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2067", Justification = "ActivatorUtilities.CreateInstance is only reached in non-AOT builds where all member metadata is available.")]
     private IReadOnlyList<AIFunction> BuildFunctionsForType(Type type)
     {
-        var isStatic = type.IsAbstract && type.IsSealed;
+        if (_generatedProvider?.TryGetFunctions(type, _serviceProvider, out var generated) == true)
+            return generated!;
 
+        var isStatic = type.IsAbstract && type.IsSealed;
         object? instance = isStatic
             ? null
             : ActivatorUtilities.CreateInstance(_serviceProvider, type);
 
+        return BuildFunctionsForTypeViaReflection(type, isStatic, instance);
+    }
+
+    [RequiresDynamicCode("Reflection-based AIFunction building requires dynamic code generation.")]
+    [RequiresUnreferencedCode("Reflection-based AIFunction building requires unreferenced code access.")]
+    private static IReadOnlyList<AIFunction> BuildFunctionsForTypeViaReflection(Type type, bool isStatic, object? instance)
+    {
         var bindingFlags = isStatic
             ? BindingFlags.Public | BindingFlags.Static
             : BindingFlags.Public | BindingFlags.Instance;

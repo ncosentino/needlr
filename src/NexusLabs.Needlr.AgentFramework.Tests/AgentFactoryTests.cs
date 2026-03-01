@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Microsoft.Agents.AI;
@@ -37,6 +38,25 @@ public class AgentFactoryTests
             })
             .BuildServiceProvider(config)
             .GetRequiredService<IAgentFactory>();
+    }
+
+    private static IServiceProvider CreateServiceProvider(
+        Func<AgentFrameworkSyringe, Assembly, AgentFrameworkSyringe>? configure = null)
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+        var assembly = Assembly.GetExecutingAssembly();
+
+        return new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af =>
+            {
+                af = af.Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object);
+                if (configure != null)
+                    af = configure(af, assembly);
+                return af;
+            })
+            .BuildServiceProvider(config);
     }
 
     // -------------------------------------------------------------------------
@@ -195,6 +215,74 @@ public class AgentFactoryTests
 
         Assert.Throws<InvalidOperationException>(() =>
             factory.CreateAgent<UndecoratedFactoryAgent>());
+    }
+
+    // Provider path
+
+    [Fact]
+    public void BuildFunctions_WhenGeneratedProviderSucceeds_DoesNotFallbackToReflection()
+    {
+        var stubFn = AIFunctionFactory.Create(() => "stub", name: "Stub");
+        IReadOnlyList<AIFunction>? outFunctions = new List<AIFunction> { stubFn }.AsReadOnly();
+
+        var mockProvider = new Mock<IAIFunctionProvider>();
+        mockProvider
+            .Setup(p => p.TryGetFunctions(typeof(FactoryTestFunctions), It.IsAny<IServiceProvider>(), out outFunctions))
+            .Returns(true);
+
+        var serviceProvider = CreateServiceProvider((af, asm) =>
+            af.AddAgentFunctions([typeof(FactoryTestFunctions)]));
+
+        using var scope = AgentFrameworkGeneratedBootstrap.BeginTestScope(
+            functionTypes: () => [typeof(FactoryTestFunctions)],
+            groupTypes: () => new Dictionary<string, IReadOnlyList<Type>>(),
+            agentTypes: () => [],
+            aiFunctionProvider: mockProvider.Object);
+
+        var factory = serviceProvider.GetRequiredService<IAgentFactory>();
+        var agent = factory.CreateAgent(opts => opts.FunctionTypes = [typeof(FactoryTestFunctions)]);
+
+        Assert.NotNull(agent);
+        Assert.NotEmpty(mockProvider.Invocations);
+    }
+
+    [Fact]
+    public void BuildFunctions_WhenGeneratedProviderReturnsFalse_FallsBackToReflection()
+    {
+        IReadOnlyList<AIFunction>? outFunctions = null;
+
+        var mockProvider = new Mock<IAIFunctionProvider>();
+        mockProvider
+            .Setup(p => p.TryGetFunctions(It.IsAny<Type>(), It.IsAny<IServiceProvider>(), out outFunctions))
+            .Returns(false);
+
+        var serviceProvider = CreateServiceProvider((af, asm) =>
+            af.AddAgentFunctions([typeof(FactoryTestFunctions)]));
+
+        using var scope = AgentFrameworkGeneratedBootstrap.BeginTestScope(
+            functionTypes: () => [typeof(FactoryTestFunctions)],
+            groupTypes: () => new Dictionary<string, IReadOnlyList<Type>>(),
+            agentTypes: () => [],
+            aiFunctionProvider: mockProvider.Object);
+
+        var factory = serviceProvider.GetRequiredService<IAgentFactory>();
+        var agent = factory.CreateAgent(opts => opts.FunctionTypes = [typeof(FactoryTestFunctions)]);
+
+        Assert.NotNull(agent);
+        Assert.NotEmpty(mockProvider.Invocations);
+    }
+
+    [Fact]
+    public void UsingAgentFramework_DoesNotCarry_RequiresDynamicCodeAttribute()
+    {
+        var methods = typeof(SyringeExtensionsForAgentFramework)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(m => m.Name == "UsingAgentFramework")
+            .ToList();
+
+        Assert.NotEmpty(methods);
+        foreach (var method in methods)
+            Assert.Null(method.GetCustomAttribute<RequiresDynamicCodeAttribute>());
     }
 }
 

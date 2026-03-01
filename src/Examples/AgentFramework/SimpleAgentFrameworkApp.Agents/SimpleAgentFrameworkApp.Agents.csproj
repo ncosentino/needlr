@@ -13,9 +13,12 @@
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.props" />
   <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.targets" />
+  <Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
 
 </Project>

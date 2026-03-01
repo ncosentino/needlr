@@ -43,6 +43,8 @@ public static class AgentFrameworkGeneratedBootstrap
     private static readonly object _gate = new();
     private static readonly List<Registration> _registrations = [];
     private static readonly AsyncLocal<Registration?> _asyncLocalOverride = new();
+    private static IAIFunctionProvider? _aiFunctionProvider;
+    private static readonly AsyncLocal<IAIFunctionProvider?> _asyncLocalProviderOverride = new();
 
     private static (
         Func<IReadOnlyList<Type>> Functions,
@@ -51,6 +53,32 @@ public static class AgentFrameworkGeneratedBootstrap
         Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>> HandoffTopology,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> GroupChatGroups,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> SequentialTopology)? _cachedCombined;
+
+    /// <summary>
+    /// Registers the generated <see cref="IAIFunctionProvider"/> for this assembly.
+    /// Called automatically by the generator-emitted <c>[ModuleInitializer]</c>.
+    /// </summary>
+    public static void RegisterAIFunctionProvider(IAIFunctionProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        _aiFunctionProvider = provider;
+    }
+
+    /// <summary>
+    /// Gets the registered <see cref="IAIFunctionProvider"/>, if one has been registered.
+    /// </summary>
+    public static bool TryGetAIFunctionProvider([NotNullWhen(true)] out IAIFunctionProvider? provider)
+    {
+        var local = _asyncLocalProviderOverride.Value;
+        if (local is not null)
+        {
+            provider = local;
+            return true;
+        }
+
+        provider = _aiFunctionProvider;
+        return provider is not null;
+    }
 
     /// <summary>
     /// Registers the generated type providers for this assembly.
@@ -247,14 +275,17 @@ public static class AgentFrameworkGeneratedBootstrap
         Func<IReadOnlyList<Type>> agentTypes,
         Func<IReadOnlyDictionary<Type, IReadOnlyList<(Type TargetType, string? HandoffReason)>>>? handoffTopology = null,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? groupChatGroups = null,
-        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? sequentialTopology = null)
+        Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>>? sequentialTopology = null,
+        IAIFunctionProvider? aiFunctionProvider = null)
     {
         handoffTopology ??= static () => new Dictionary<Type, IReadOnlyList<(Type, string?)>>();
         groupChatGroups ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
         sequentialTopology ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
         var prior = _asyncLocalOverride.Value;
+        var priorProvider = _asyncLocalProviderOverride.Value;
         _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups, sequentialTopology);
-        return new Scope(prior);
+        _asyncLocalProviderOverride.Value = aiFunctionProvider;
+        return new Scope(prior, priorProvider);
     }
 
     private static void EnsureCombined()
@@ -365,9 +396,18 @@ public static class AgentFrameworkGeneratedBootstrap
     private sealed class Scope : IDisposable
     {
         private readonly Registration? _prior;
+        private readonly IAIFunctionProvider? _priorProvider;
 
-        public Scope(Registration? prior) => _prior = prior;
+        public Scope(Registration? prior, IAIFunctionProvider? priorProvider)
+        {
+            _prior = prior;
+            _priorProvider = priorProvider;
+        }
 
-        public void Dispose() => _asyncLocalOverride.Value = _prior;
+        public void Dispose()
+        {
+            _asyncLocalOverride.Value = _prior;
+            _asyncLocalProviderOverride.Value = _priorProvider;
+        }
     }
 }

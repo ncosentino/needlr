@@ -1124,4 +1124,206 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("AgentTopologyConstants.g.cs", fileNames);
         Assert.Contains("AgentFrameworkSyringeExtensions.g.cs", fileNames);
     }
+
+    // GeneratedAIFunctionProvider.g.cs
+
+    [Fact]
+    public void GeneratedProvider_NoFunctionTypes_EmitsEmptyProvider()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("GeneratedAIFunctionProvider", output);
+        Assert.Contains("functions = null;", output);
+        Assert.Contains("return false;", output);
+        Assert.DoesNotContain("typeof(", output);
+        Assert.DoesNotContain("if (functionType ==", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_InstanceFunctionClass_EmitsTypeDispatch()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Calculator
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string Add(int a, int b) => (a + b).ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("if (functionType == typeof(global::MyApp.Calculator))", output);
+        Assert.Contains("var typed = serviceProvider.GetRequiredService<global::MyApp.Calculator>();", output);
+        Assert.Contains("new Calculator_Add(typed),", output);
+        Assert.Contains("class Calculator_Add : global::Microsoft.Extensions.AI.AIFunction", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_StaticFunctionClass_NoInstanceField()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public static class MyStaticFunctions
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public static void DoWork() { }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("new MyStaticFunctions_DoWork(),", output);
+        Assert.DoesNotContain("_instance", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_AsyncMethod_EmitsAwait()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class DataFetcher
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public async System.Threading.Tasks.Task<string> FetchData()
+                        => await System.Threading.Tasks.Task.FromResult("data");
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("await", output);
+        Assert.Contains(".ConfigureAwait(false)", output);
+        Assert.Contains("async", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_VoidMethod_ReturnsNullTask()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Worker
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public void DoWork() { }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("Task.FromResult<object?>(null)", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_CancellationTokenParam_SkippedInSchema_PassedAsCt()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Processor
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string Process(string name, System.Threading.CancellationToken ct) => name;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.DoesNotContain("\"ct\":", output);
+        Assert.Contains("_instance.Process(name, ct)", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_StringParamWithDescription_SchemaHasDescription()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Greeter
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string Greet([System.ComponentModel.Description("The person's name")] string name) => $"Hello {name}";
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("\"description\":\"The person's name\"", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_RequiredIntParam_InRequiredArray()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Counter
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public int Increment(int count) => count + 1;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("\"required\":[\"count\"]", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_OptionalStringParam_NotInRequiredArray()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Labeler
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string Label(string label = "default") => label;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.DoesNotContain("\"required\":[\"label\"]", output);
+    }
+
+    [Fact]
+    public void Bootstrap_RegistersAIFunctionProvider()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("NeedlrAgentFrameworkBootstrap.g.cs");
+
+        Assert.Contains("RegisterAIFunctionProvider", output);
+        Assert.Contains("new global::", output);
+        Assert.Contains("GeneratedAIFunctionProvider()", output);
+    }
 }

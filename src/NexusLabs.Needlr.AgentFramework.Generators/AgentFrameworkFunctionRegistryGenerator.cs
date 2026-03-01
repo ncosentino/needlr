@@ -162,9 +162,74 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         if (!hasAgentFunction)
             return null;
 
+        var methodInfos = ImmutableArray.CreateBuilder<AgentFunctionMethodInfo>();
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is not IMethodSymbol method)
+                continue;
+
+            if (method.MethodKind != MethodKind.Ordinary)
+                continue;
+
+            if (method.DeclaredAccessibility != Accessibility.Public)
+                continue;
+
+            bool isAgentFunction = false;
+            foreach (var attribute in method.GetAttributes())
+            {
+                if (attribute.AttributeClass?.ToDisplayString() == AgentFunctionAttributeName)
+                {
+                    isAgentFunction = true;
+                    break;
+                }
+            }
+
+            if (!isAgentFunction)
+                continue;
+
+            var returnType = method.ReturnType;
+            bool isVoid = returnType.SpecialType == SpecialType.System_Void;
+            bool isTask = returnType is INamedTypeSymbol nt &&
+                nt.ContainingNamespace?.ToDisplayString() == "System.Threading.Tasks" &&
+                (nt.MetadataName == "Task" || nt.MetadataName == "ValueTask");
+            bool isTaskOfT = returnType is INamedTypeSymbol nt2 &&
+                nt2.ContainingNamespace?.ToDisplayString() == "System.Threading.Tasks" &&
+                (nt2.MetadataName == "Task`1" || nt2.MetadataName == "ValueTask`1") &&
+                nt2.TypeArguments.Length == 1;
+            bool isAsync = isTask || isTaskOfT;
+            bool isVoidLike = isVoid || isTask;
+            string? returnValueTypeFQN = isVoidLike ? null : isTaskOfT
+                ? GetFullyQualifiedName(((INamedTypeSymbol)returnType).TypeArguments[0])
+                : GetFullyQualifiedName(returnType);
+
+            string? methodDesc = GetDescriptionFromAttributes(method.GetAttributes());
+
+            var parameters = ImmutableArray.CreateBuilder<AgentFunctionParameterInfo>();
+            foreach (var param in method.Parameters)
+            {
+                bool isCancellationToken = param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.Threading.CancellationToken";
+                bool isNullable = param.NullableAnnotation == NullableAnnotation.Annotated ||
+                    (param.Type is INamedTypeSymbol pnt && pnt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T);
+                bool hasDefault = param.HasExplicitDefaultValue;
+                string? paramDesc = GetDescriptionFromAttributes(param.GetAttributes());
+                string jsonSchemaType = GetJsonSchemaType(param.Type, out string? itemJsonSchemaType);
+                string typeFullName = GetFullyQualifiedName(param.Type);
+
+                parameters.Add(new AgentFunctionParameterInfo(
+                    param.Name, typeFullName, jsonSchemaType, itemJsonSchemaType,
+                    isCancellationToken, isNullable, hasDefault, paramDesc));
+            }
+
+            methodInfos.Add(new AgentFunctionMethodInfo(
+                method.Name, isAsync, isVoidLike, returnValueTypeFQN,
+                parameters.ToImmutable(), methodDesc ?? ""));
+        }
+
         return new AgentFunctionTypeInfo(
             GetFullyQualifiedName(typeSymbol),
-            typeSymbol.ContainingAssembly?.Name ?? "Unknown");
+            typeSymbol.ContainingAssembly?.Name ?? "Unknown",
+            typeSymbol.IsStatic,
+            methodInfos.ToImmutable());
     }
 
     private static ImmutableArray<AgentFunctionGroupEntry> GetAgentFunctionGroupEntries(
@@ -393,6 +458,65 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         };
     }
 
+    private static string? GetDescriptionFromAttributes(ImmutableArray<AttributeData> attributes)
+    {
+        foreach (var attr in attributes)
+        {
+            if (attr.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ==
+                "global::System.ComponentModel.DescriptionAttribute" &&
+                attr.ConstructorArguments.Length == 1 &&
+                attr.ConstructorArguments[0].Value is string desc)
+                return desc;
+        }
+        return null;
+    }
+
+    private static string GetJsonSchemaType(ITypeSymbol type, out string? itemType)
+    {
+        itemType = null;
+        if (type is INamedTypeSymbol nullable && nullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            type = nullable.TypeArguments[0];
+
+        switch (type.SpecialType)
+        {
+            case SpecialType.System_String: return "string";
+            case SpecialType.System_Boolean: return "boolean";
+            case SpecialType.System_Byte:
+            case SpecialType.System_SByte:
+            case SpecialType.System_Int16:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_Int32:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_Int64:
+            case SpecialType.System_UInt64: return "integer";
+            case SpecialType.System_Single:
+            case SpecialType.System_Double:
+            case SpecialType.System_Decimal: return "number";
+        }
+
+        if (type is IArrayTypeSymbol arrayType)
+        {
+            itemType = GetJsonSchemaType(arrayType.ElementType, out _);
+            return "array";
+        }
+
+        if (type is INamedTypeSymbol named && named.IsGenericType && named.TypeArguments.Length == 1)
+        {
+            var baseName = named.ConstructedFrom.ToDisplayString();
+            if (baseName == "System.Collections.Generic.IEnumerable<T>" ||
+                baseName == "System.Collections.Generic.List<T>" ||
+                baseName == "System.Collections.Generic.IReadOnlyList<T>" ||
+                baseName == "System.Collections.Generic.ICollection<T>" ||
+                baseName == "System.Collections.Generic.IList<T>")
+            {
+                itemType = GetJsonSchemaType(named.TypeArguments[0], out _);
+                return "array";
+            }
+        }
+
+        return "";
+    }
+
     private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.DeclaredAccessibility == Accessibility.Private ||
@@ -529,6 +653,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
 
         spc.AddSource("AgentFrameworkSyringeExtensions.g.cs",
             SourceText.From(GenerateSyringeExtensionsSource(allGroupEntries, safeAssemblyName), Encoding.UTF8));
+
+        spc.AddSource("GeneratedAIFunctionProvider.g.cs",
+            SourceText.From(GenerateAIFunctionProviderSource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
 
         configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnostics", out var diagValue);
         if (string.Equals(diagValue, "true", StringComparison.OrdinalIgnoreCase))
@@ -1272,6 +1399,296 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
+    private static string GenerateAIFunctionProviderSource(
+        List<AgentFunctionTypeInfo> types,
+        string safeAssemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using global::Microsoft.Extensions.DependencyInjection;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        sb.AppendLine();
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("internal sealed class GeneratedAIFunctionProvider : global::NexusLabs.Needlr.AgentFramework.IAIFunctionProvider");
+        sb.AppendLine("{");
+        sb.AppendLine("    public bool TryGetFunctions(");
+        sb.AppendLine("        global::System.Type functionType,");
+        sb.AppendLine("        global::System.IServiceProvider serviceProvider,");
+        sb.AppendLine("        [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)]");
+        sb.AppendLine("        out global::System.Collections.Generic.IReadOnlyList<global::Microsoft.Extensions.AI.AIFunction>? functions)");
+        sb.AppendLine("    {");
+
+        if (types.Count == 0)
+        {
+            sb.AppendLine("        functions = null;");
+            sb.AppendLine("        return false;");
+        }
+        else
+        {
+            var first = true;
+            foreach (var type in types)
+            {
+                var keyword = first ? "if" : "else if";
+                first = false;
+                sb.AppendLine($"        {keyword} (functionType == typeof({type.TypeName}))");
+                sb.AppendLine("        {");
+                if (!type.IsStatic)
+                    sb.AppendLine($"            var typed = serviceProvider.GetRequiredService<{type.TypeName}>();");
+                sb.AppendLine("            functions = new global::System.Collections.Generic.List<global::Microsoft.Extensions.AI.AIFunction>");
+                sb.AppendLine("            {");
+                foreach (var m in type.Methods)
+                {
+                    var nestedName = $"{GetShortName(type.TypeName)}_{m.MethodName}";
+                    if (type.IsStatic)
+                        sb.AppendLine($"                new {nestedName}(),");
+                    else
+                        sb.AppendLine($"                new {nestedName}(typed),");
+                }
+                sb.AppendLine("            }.AsReadOnly();");
+                sb.AppendLine("            return true;");
+                sb.AppendLine("        }");
+            }
+            sb.AppendLine("        functions = null;");
+            sb.AppendLine("        return false;");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine();
+
+        foreach (var type in types)
+        {
+            var shortTypeName = GetShortName(type.TypeName);
+            foreach (var m in type.Methods)
+            {
+                var nestedName = $"{shortTypeName}_{m.MethodName}";
+                AppendAIFunctionNestedClass(sb, type, m, nestedName);
+            }
+        }
+
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private static void AppendAIFunctionNestedClass(
+        StringBuilder sb,
+        AgentFunctionTypeInfo type,
+        AgentFunctionMethodInfo method,
+        string nestedClassName)
+    {
+        sb.AppendLine($"    private sealed class {nestedClassName} : global::Microsoft.Extensions.AI.AIFunction");
+        sb.AppendLine("    {");
+
+        if (!type.IsStatic)
+            sb.AppendLine($"        private readonly {type.TypeName} _instance;");
+
+        var schemaJson = BuildJsonSchema(method.Parameters);
+        sb.AppendLine("        private static readonly global::System.Text.Json.JsonElement _schema =");
+        sb.AppendLine($"            global::System.Text.Json.JsonDocument.Parse(\"\"\"{schemaJson}\"\"\").RootElement.Clone();");
+        sb.AppendLine();
+
+        if (!type.IsStatic)
+            sb.AppendLine($"        public {nestedClassName}({type.TypeName} instance) {{ _instance = instance; }}");
+        else
+            sb.AppendLine($"        public {nestedClassName}() {{ }}");
+
+        sb.AppendLine();
+
+        var escapedName = method.MethodName.Replace("\"", "\\\"");
+        var escapedDesc = method.Description.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        sb.AppendLine($"        public override string Name => \"{escapedName}\";");
+        sb.AppendLine($"        public override string Description => \"{escapedDesc}\";");
+        sb.AppendLine("        public override global::System.Text.Json.JsonElement JsonSchema => _schema;");
+        sb.AppendLine();
+
+        if (method.IsAsync)
+            sb.AppendLine("        protected override async global::System.Threading.Tasks.ValueTask<object?> InvokeCoreAsync(");
+        else
+            sb.AppendLine("        protected override global::System.Threading.Tasks.ValueTask<object?> InvokeCoreAsync(");
+
+        sb.AppendLine("            global::Microsoft.Extensions.AI.AIFunctionArguments arguments,");
+        sb.AppendLine("            global::System.Threading.CancellationToken ct)");
+        sb.AppendLine("        {");
+
+        foreach (var param in method.Parameters)
+        {
+            if (param.IsCancellationToken)
+                continue;
+            AppendParameterExtraction(sb, param);
+        }
+
+        var paramList = string.Join(", ", method.Parameters.Select(p => p.IsCancellationToken ? "ct" : p.Name));
+        var instanceExpr = type.IsStatic ? type.TypeName : "_instance";
+
+        if (method.IsAsync)
+        {
+            if (method.IsVoidLike)
+            {
+                sb.AppendLine($"            await {instanceExpr}.{method.MethodName}({paramList}).ConfigureAwait(false);");
+                sb.AppendLine("            return null;");
+            }
+            else
+            {
+                sb.AppendLine($"            var result = await {instanceExpr}.{method.MethodName}({paramList}).ConfigureAwait(false);");
+                sb.AppendLine("            return result;");
+            }
+        }
+        else
+        {
+            if (method.IsVoidLike)
+            {
+                sb.AppendLine($"            {instanceExpr}.{method.MethodName}({paramList});");
+                sb.AppendLine("            return global::System.Threading.Tasks.ValueTask.FromResult<object?>(null);");
+            }
+            else
+            {
+                sb.AppendLine($"            var result = {instanceExpr}.{method.MethodName}({paramList});");
+                sb.AppendLine("            return global::System.Threading.Tasks.ValueTask.FromResult<object?>(result);");
+            }
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+    }
+
+    private static string BuildJsonSchema(ImmutableArray<AgentFunctionParameterInfo> parameters)
+    {
+        var nonCtParams = parameters.Where(p => !p.IsCancellationToken).ToList();
+        if (nonCtParams.Count == 0)
+            return "{\"type\":\"object\",\"properties\":{}}";
+
+        var props = new StringBuilder();
+        var required = new List<string>();
+
+        props.Append("{");
+        var firstProp = true;
+        foreach (var param in nonCtParams)
+        {
+            if (!firstProp) props.Append(",");
+            firstProp = false;
+            var escapedParamName = param.Name.Replace("\"", "\\\"");
+            props.Append($"\"{escapedParamName}\":");
+            props.Append(BuildJsonSchemaTypeEntry(param));
+            if (param.IsRequired)
+                required.Add(param.Name);
+        }
+        props.Append("}");
+
+        var sb = new StringBuilder();
+        sb.Append("{\"type\":\"object\",\"properties\":");
+        sb.Append(props);
+        if (required.Count > 0)
+        {
+            sb.Append(",\"required\":[");
+            sb.Append(string.Join(",", required.Select(r => "\"" + r.Replace("\"", "\\\"") + "\"")));
+            sb.Append("]");
+        }
+        sb.Append("}");
+        return sb.ToString();
+    }
+
+    private static string BuildJsonSchemaTypeEntry(AgentFunctionParameterInfo param)
+    {
+        if (string.IsNullOrEmpty(param.JsonSchemaType))
+            return "{}";
+
+        if (param.JsonSchemaType == "array")
+        {
+            var desc = string.IsNullOrEmpty(param.Description)
+                ? ""
+                : $",\"description\":\"{param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+            if (!string.IsNullOrEmpty(param.ItemJsonSchemaType))
+                return $"{{\"type\":\"array\",\"items\":{{\"type\":\"{param.ItemJsonSchemaType}\"}}{desc}}}";
+            return $"{{\"type\":\"array\"{desc}}}";
+        }
+
+        if (!string.IsNullOrEmpty(param.Description))
+        {
+            var escapedDesc = param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            return $"{{\"type\":\"{param.JsonSchemaType}\",\"description\":\"{escapedDesc}\"}}";
+        }
+
+        return $"{{\"type\":\"{param.JsonSchemaType}\"}}";
+    }
+
+    private static void AppendParameterExtraction(StringBuilder sb, AgentFunctionParameterInfo param)
+    {
+        var rawVar = $"_raw_{param.Name}";
+        var jVar = $"_j_{param.Name}";
+        sb.AppendLine($"            arguments.TryGetValue(\"{param.Name}\", out var {rawVar});");
+
+        switch (param.JsonSchemaType)
+        {
+            case "string":
+                sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.GetString() ?? \"\" : {rawVar}?.ToString() ?? \"\";");
+                break;
+            case "boolean":
+            {
+                var bVar = $"_b_{param.Name}";
+                sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.GetBoolean() : {rawVar} is bool {bVar} ? {bVar} : global::System.Convert.ToBoolean({rawVar});");
+                break;
+            }
+            case "integer":
+                AppendIntegerExtraction(sb, param, rawVar, jVar);
+                break;
+            case "number":
+                AppendNumberExtraction(sb, param, rawVar, jVar);
+                break;
+            default:
+            {
+                var cVar = $"_c_{param.Name}";
+                var nullSuppress = param.IsNullable ? "" : "!";
+                sb.AppendLine($"            var {param.Name} = {rawVar} is {param.TypeFullName} {cVar} ? {cVar} : default({param.TypeFullName}){nullSuppress};");
+                break;
+            }
+        }
+    }
+
+    private static void AppendIntegerExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar, string jVar)
+    {
+        var typeFqn = param.TypeFullName;
+        string getMethod, castType, convertMethod;
+        var iVar = $"_i_{param.Name}";
+
+        if (typeFqn.Contains("System.Int64"))
+        { getMethod = "GetInt64()"; castType = "long"; convertMethod = "ToInt64"; }
+        else if (typeFqn.Contains("System.Int16"))
+        { getMethod = "GetInt16()"; castType = "short"; convertMethod = "ToInt16"; }
+        else if (typeFqn.Contains("System.SByte"))
+        { getMethod = "GetSByte()"; castType = "sbyte"; convertMethod = "ToSByte"; }
+        else if (typeFqn.Contains("System.Byte"))
+        { getMethod = "GetByte()"; castType = "byte"; convertMethod = "ToByte"; }
+        else if (typeFqn.Contains("System.UInt64"))
+        { getMethod = "GetUInt64()"; castType = "ulong"; convertMethod = "ToUInt64"; }
+        else if (typeFqn.Contains("System.UInt32"))
+        { getMethod = "GetUInt32()"; castType = "uint"; convertMethod = "ToUInt32"; }
+        else if (typeFqn.Contains("System.UInt16"))
+        { getMethod = "GetUInt16()"; castType = "ushort"; convertMethod = "ToUInt16"; }
+        else
+        { getMethod = "GetInt32()"; castType = "int"; convertMethod = "ToInt32"; }
+
+        sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.{getMethod} : {rawVar} is {castType} {iVar} ? {iVar} : global::System.Convert.{convertMethod}({rawVar});");
+    }
+
+    private static void AppendNumberExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar, string jVar)
+    {
+        var typeFqn = param.TypeFullName;
+        string getMethod, castType, convertMethod;
+        var nVar = $"_n_{param.Name}";
+
+        if (typeFqn.Contains("System.Single"))
+        { getMethod = "GetSingle()"; castType = "float"; convertMethod = "ToSingle"; }
+        else if (typeFqn.Contains("System.Decimal"))
+        { getMethod = "GetDecimal()"; castType = "decimal"; convertMethod = "ToDecimal"; }
+        else
+        { getMethod = "GetDouble()"; castType = "double"; convertMethod = "ToDouble"; }
+
+        sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.{getMethod} : {rawVar} is {castType} {nVar} ? {nVar} : global::System.Convert.{convertMethod}({rawVar});");
+    }
+
     private static string StripAgentSuffix(string className)
     {
         const string suffix = "Agent";
@@ -1326,6 +1743,8 @@ internal static class NeedlrAgentFrameworkModuleInitializer
             () => AgentHandoffTopologyRegistry.AllHandoffs,
             () => AgentGroupChatRegistry.AllGroups,
             () => AgentSequentialTopologyRegistry.AllPipelines);
+        global::NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap.RegisterAIFunctionProvider(
+            new global::{safeAssemblyName}.Generated.GeneratedAIFunctionProvider());
     }}
 }}
 ";
@@ -1428,14 +1847,15 @@ internal static class NeedlrAgentFrameworkModuleInitializer
 
     private readonly struct AgentFunctionTypeInfo
     {
-        public AgentFunctionTypeInfo(string typeName, string assemblyName)
+        public AgentFunctionTypeInfo(string typeName, string assemblyName, bool isStatic, ImmutableArray<AgentFunctionMethodInfo> methods)
         {
-            TypeName = typeName;
-            AssemblyName = assemblyName;
+            TypeName = typeName; AssemblyName = assemblyName; IsStatic = isStatic; Methods = methods;
         }
 
         public string TypeName { get; }
         public string AssemblyName { get; }
+        public bool IsStatic { get; }
+        public ImmutableArray<AgentFunctionMethodInfo> Methods { get; }
     }
 
     private readonly struct AgentFunctionGroupEntry
@@ -1533,5 +1953,48 @@ internal static class NeedlrAgentFrameworkModuleInitializer
         public string AgentTypeName { get; }
         public string ConditionTypeFQN { get; }
         public ImmutableArray<string> CtorArgLiterals { get; }
+    }
+
+    private readonly struct AgentFunctionParameterInfo
+    {
+        public AgentFunctionParameterInfo(
+            string name, string typeFullName,
+            string jsonSchemaType, string? itemJsonSchemaType,
+            bool isCancellationToken, bool isNullable, bool hasDefault, string? description)
+        {
+            Name = name; TypeFullName = typeFullName;
+            JsonSchemaType = jsonSchemaType; ItemJsonSchemaType = itemJsonSchemaType;
+            IsCancellationToken = isCancellationToken; IsNullable = isNullable;
+            HasDefault = hasDefault; Description = description;
+        }
+
+        public string Name { get; }
+        public string TypeFullName { get; }
+        public string JsonSchemaType { get; }
+        public string? ItemJsonSchemaType { get; }
+        public bool IsCancellationToken { get; }
+        public bool IsNullable { get; }
+        public bool HasDefault { get; }
+        public string? Description { get; }
+        public bool IsRequired => !IsCancellationToken && !IsNullable && !HasDefault;
+    }
+
+    private readonly struct AgentFunctionMethodInfo
+    {
+        public AgentFunctionMethodInfo(
+            string methodName, bool isAsync, bool isVoidLike,
+            string? returnValueTypeFQN, ImmutableArray<AgentFunctionParameterInfo> parameters,
+            string description)
+        {
+            MethodName = methodName; IsAsync = isAsync; IsVoidLike = isVoidLike;
+            ReturnValueTypeFQN = returnValueTypeFQN; Parameters = parameters; Description = description;
+        }
+
+        public string MethodName { get; }
+        public bool IsAsync { get; }
+        public bool IsVoidLike { get; }
+        public string? ReturnValueTypeFQN { get; }
+        public ImmutableArray<AgentFunctionParameterInfo> Parameters { get; }
+        public string Description { get; }
     }
 }
