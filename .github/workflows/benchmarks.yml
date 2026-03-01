@@ -162,7 +162,10 @@ jobs:
           python-version: '3.x'
 
       - name: Install MkDocs
-        run: pip install mkdocs-material
+        run: pip install "mkdocs>=1.5,<2.0" mkdocs-material
+
+      - name: Generate Articles Page
+        run: python scripts/generate-articles.py docs/articles.md
 
       - name: Build Documentation
         run: python -m mkdocs build
