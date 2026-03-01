@@ -1191,6 +1191,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keeping-source-generation-enabled-in-test-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keeping Source Generation Enabled in Test Projects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-the-generator-can-appear-twice-and-how-we-handle-it" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3229,6 +3240,20 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">&lt;/PropertyGroup&gt;</span>
 </span></code></pre></div>
 <p>The generator DLL is still in the NuGet graph (so attribute types compile), but it won't run and produce output for that project.</p>
+<h2 id="keeping-source-generation-enabled-in-test-projects">Keeping Source Generation Enabled in Test Projects<a class="headerlink" href="#keeping-source-generation-enabled-in-test-projects" title="Permanent link">&para;</a></h2>
+<p>Some test projects need their <em>own</em> plugin types discovered — for example, a test project that registers test fakes or overrides via a plugin class. Leave <code>NeedlrAutoGenerate</code> at its default (<code>true</code>) for those projects.</p>
+<blockquote>
+<p><strong>Important — generator references are not transitively propagated as Analyzer items.</strong> A project that enables source generation must explicitly add the generator references, even if a referenced project already uses them:</p>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Generators.Attributes&quot;</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Generators&quot;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">                  </span><span class="na">OutputItemType=</span><span class="s">&quot;Analyzer&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">                  </span><span class="na">ReferenceOutputAssembly=</span><span class="s">&quot;false&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span></code></pre></div>
+<p>Without these, the generator silently doesn't run and no <code>TypeRegistry</code> is produced for the project.</p>
+</blockquote>
+<p>Use <code>IncludeNamespacePrefixes</code> to scope type discovery to the test assembly only:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = [&quot;MyFeature.Tests&quot;]</span><span class="p">)]</span>
+</span></code></pre></div>
 <h2 id="why-the-generator-can-appear-twice-and-how-we-handle-it">Why the Generator Can Appear Twice (and How We Handle It)<a class="headerlink" href="#why-the-generator-can-appear-twice-and-how-we-handle-it" title="Permanent link">&para;</a></h2>
 <p>If your project references both <code>NexusLabs.Needlr.Build</code> and an integration package like <code>NexusLabs.Needlr.AgentFramework</code> or <code>NexusLabs.Needlr.SemanticKernel</code>, Roslyn could theoretically see two copies of <code>NexusLabs.Needlr.Generators.dll</code> — one from each package path. Running the generator twice produces duplicate type registration code that fails to compile.</p>
 <p><code>NexusLabs.Needlr.Build</code> ships a <code>DeduplicateNeedlrGeneratorAnalyzers</code> MSBuild target that runs before compilation and ensures only one copy of the generator DLL is passed to Roslyn, regardless of how many are present in the analyzer item group. The integration packages (<code>AgentFramework</code>, <code>SemanticKernel</code>, <code>SignalR</code>) ship the same target as defense-in-depth.</p>
@@ -3245,7 +3270,8 @@
 <li>Feature projects (<code>Notifications</code>, <code>Reporting</code>) each have their own TypeRegistry</li>
 <li><code>Bootstrap</code> references both feature projects, acting as the single "pull everything in" anchor</li>
 <li>Entry points (<code>ConsoleApp</code>, <code>WorkerApp</code>) reference only Bootstrap</li>
-<li>Test projects set <code>NeedlrAutoGenerate=false</code> and consume the assembled TypeRegistry from the projects they reference</li>
+<li><code>ConsoleApp.Tests</code> and <code>Features.Reporting.Tests</code> set <code>NeedlrAutoGenerate=false</code> — they consume TypeRegistries from referenced projects but don't produce their own</li>
+<li><code>Integration.Tests</code> keeps source gen enabled and registers test-only plugin types (<code>TestInfrastructurePlugin</code>) that are discovered automatically alongside the real feature plugins</li>
 </ul>
 <p>See the <a href="https://github.com/ncosentino/needlr/tree/main/src/Examples/MultiProjectApp">example README</a> for the full structure.</p>
 

@@ -1,33 +1,28 @@
 {
   "summary": {
-    "generatedon": "2026-03-01T22:20:11Z",
-    "parser": "MultiReport (21x Cobertura)",
-    "assemblies": 24,
-    "classes": 263,
-    "files": 223,
-    "coveredlines": 11384,
-    "uncoveredlines": 1664,
-    "coverablelines": 13048,
-    "totallines": 32654,
-    "linecoverage": 87.2,
-    "coveredbranches": 4925,
+    "generatedon": "2026-03-01T22:55:35Z",
+    "parser": "MultiReport (22x Cobertura)",
+    "assemblies": 23,
+    "classes": 259,
+    "files": 219,
+    "coveredlines": 11385,
+    "uncoveredlines": 1612,
+    "coverablelines": 12997,
+    "totallines": 32466,
+    "linecoverage": 87.5,
+    "coveredbranches": 4926,
     "totalbranches": 6379,
     "branchcoverage": 77.2,
     "coveredmethods": 1398,
-    "fullcoveredmethods": 1148,
-    "totalmethods": 1667,
-    "methodcoverage": 83.8,
-    "fullmethodcoverage": 68.8
+    "fullcoveredmethods": 1149,
+    "totalmethods": 1651,
+    "methodcoverage": 84.6,
+    "fullmethodcoverage": 69.5
  },
   "coverage": {
     "assemblies": [
-      { "name": "MultiProjectApp.Bootstrap", "classes": 4, "coverage": 0, "coveredlines": 0, "coverablelines": 50, "totallines": 187, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 16, "classesinassembly": [
-        { "name": "MultiProjectApp.Bootstrap.BootstrapPlugin", "coverage": 0, "coveredlines": 0, "coverablelines": 1, "totallines": 24, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 1 },
-        { "name": "MultiProjectApp.Bootstrap.Generated.NeedlrSourceGenModuleInitializer", "coverage": 0, "coveredlines": 0, "coverablelines": 10, "totallines": 45, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
-        { "name": "MultiProjectApp.Bootstrap.Generated.ServiceCatalog", "coverage": 0, "coveredlines": 0, "coverablelines": 21, "totallines": 52, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 9 },
-        { "name": "MultiProjectApp.Bootstrap.Generated.TypeRegistry", "coverage": 0, "coveredlines": 0, "coverablelines": 18, "totallines": 66, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 4 } ] },
-      { "name": "MultiProjectApp.ConsoleApp", "classes": 4, "coverage": 0, "coveredlines": 0, "coverablelines": 49, "totallines": 174, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 16, "classesinassembly": [
-        { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "coverage": 0, "coveredlines": 0, "coverablelines": 11, "totallines": 46, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
+      { "name": "MultiProjectApp.ConsoleApp", "classes": 4, "coverage": 0, "coveredlines": 0, "coverablelines": 48, "totallines": 173, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 16, "classesinassembly": [
+        { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "coverage": 0, "coveredlines": 0, "coverablelines": 10, "totallines": 45, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
         { "name": "MultiProjectApp.ConsoleApp.Generated.ServiceCatalog", "coverage": 0, "coveredlines": 0, "coverablelines": 20, "totallines": 51, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 9 },
         { "name": "MultiProjectApp.ConsoleApp.Generated.TypeRegistry", "coverage": 0, "coveredlines": 0, "coverablelines": 10, "totallines": 58, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 4 },
         { "name": "Program", "coverage": 0, "coveredlines": 0, "coverablelines": 8, "totallines": 19, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 1 } ] },
@@ -261,11 +256,11 @@
       { "name": "NexusLabs.Needlr.Injection.Bundle", "classes": 2, "coverage": 93.2, "coveredlines": 111, "coverablelines": 119, "totallines": 302, "branchcoverage": 75, "coveredbranches": 24, "totalbranches": 32, "methodcoverage": 100, "fullmethodcoverage": 66.6, "coveredmethods": 12, "fullcoveredmethods": 8, "totalmethods": 12, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "coverage": 95.2, "coveredlines": 81, "coverablelines": 85, "totallines": 170, "branchcoverage": 69.2, "coveredbranches": 18, "totalbranches": 26, "methodcoverage": 100, "fullmethodcoverage": 75, "coveredmethods": 8, "fullcoveredmethods": 6, "totalmethods": 8 },
         { "name": "NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions", "coverage": 88.2, "coveredlines": 30, "coverablelines": 34, "totallines": 132, "branchcoverage": 100, "coveredbranches": 6, "totalbranches": 6, "methodcoverage": 100, "fullmethodcoverage": 50, "coveredmethods": 4, "fullcoveredmethods": 2, "totalmethods": 4 } ] },
-      { "name": "NexusLabs.Needlr.Injection.Reflection", "classes": 12, "coverage": 93.4, "coveredlines": 417, "coverablelines": 446, "totallines": 1337, "branchcoverage": 88.8, "coveredbranches": 176, "totalbranches": 198, "methodcoverage": 95.5, "fullmethodcoverage": 83.8, "coveredmethods": 65, "fullcoveredmethods": 57, "totalmethods": 68, "classesinassembly": [
+      { "name": "NexusLabs.Needlr.Injection.Reflection", "classes": 12, "coverage": 93.7, "coveredlines": 418, "coverablelines": 446, "totallines": 1337, "branchcoverage": 89.3, "coveredbranches": 177, "totalbranches": 198, "methodcoverage": 95.5, "fullmethodcoverage": 85.2, "coveredmethods": 65, "fullcoveredmethods": 58, "totalmethods": 68, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder", "coverage": 100, "coveredlines": 15, "coverablelines": 15, "totallines": 60, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 5 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions", "coverage": 65.7, "coveredlines": 23, "coverablelines": 35, "totallines": 153, "branchcoverage": 50, "coveredbranches": 4, "totalbranches": 8, "methodcoverage": 71.4, "fullmethodcoverage": 71.4, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 7 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader", "coverage": 100, "coveredlines": 11, "coverablelines": 11, "totallines": 27, "branchcoverage": 50, "coveredbranches": 1, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
-        { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "coverage": 97.2, "coveredlines": 36, "coverablelines": 37, "totallines": 64, "branchcoverage": 50, "coveredbranches": 1, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 50, "coveredmethods": 2, "fullcoveredmethods": 1, "totalmethods": 2 },
+        { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader", "coverage": 100, "coveredlines": 37, "coverablelines": 37, "totallines": 64, "branchcoverage": 100, "coveredbranches": 2, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader", "coverage": 100, "coveredlines": 13, "coverablelines": 13, "totallines": 37, "branchcoverage": 50, "coveredbranches": 2, "totalbranches": 4, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFactory", "coverage": 95.9, "coveredlines": 47, "coverablelines": 49, "totallines": 188, "branchcoverage": 100, "coveredbranches": 46, "totalbranches": 46, "methodcoverage": 100, "fullmethodcoverage": 88.8, "coveredmethods": 9, "fullcoveredmethods": 8, "totalmethods": 9 },
         { "name": "NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext", "coverage": 100, "coveredlines": 4, "coverablelines": 4, "totallines": 30, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 4, "fullcoveredmethods": 4, "totalmethods": 4 },
