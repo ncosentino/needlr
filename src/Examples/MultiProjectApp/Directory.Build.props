@@ -1,0 +1,20 @@
+<Project>
+  <!-- Import parent Directory.Build.props to inherit TargetFramework, package metadata, etc. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Import Needlr generator props for all projects in this folder -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props')" />
+
+  <!--
+    In a real solution you would instead add NexusLabs.Needlr.Build to Directory.Build.props:
+      <PackageReference Include="NexusLabs.Needlr.Build" Version="..." PrivateAssets="all" />
+    and set NeedlrAutoGenerate here. The package handles the generator activation/dedup logic.
+
+    Enable Needlr source generation for all projects in this example by default.
+    Individual projects (e.g. test projects) override this to false in their own .csproj.
+  -->
+  <PropertyGroup>
+    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+  </PropertyGroup>
+</Project>
