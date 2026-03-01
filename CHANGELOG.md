@@ -5,6 +5,22 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.20] - 2026-03-01
+
+### Added
+
+- **`NexusLabs.Needlr.Build` MSBuild package**: New build-only package for solution-wide source generation setup. Add to `Directory.Build.props` with `<NeedlrAutoGenerate>true</NeedlrAutoGenerate>` to enable source generation across all projects; individual projects opt out with `<NeedlrAutoGenerate>false</NeedlrAutoGenerate>`.
+
+- **NDLRCOR016 Analyzer**: New warning fires when `[DoNotAutoRegister]` is placed directly on a class that implements a plugin interface. The attribute is redundant there (the interface already carries it) and was the root cause of the silent plugin suppression bug (see Fixed below).
+
+- **`MultiProjectApp` reference example**: New example in `src/Examples/MultiProjectApp/` demonstrating canonical multi-project solution setup — Bootstrap anchor project, feature plugin projects, multiple entry points, and test projects with generation opt-out.
+
+### Fixed
+
+- **`[DoNotAutoRegister]` on plugin class silently prevented plugin discovery**: Placing `[DoNotAutoRegister]` directly on a class implementing `IServiceCollectionPlugin` (or any plugin interface) caused the plugin to be silently excluded from both the source generator's TypeRegistry and the runtime `ReflectionPluginFactory`. The attribute is documented as "don't register as a DI service" — it should not affect plugin discovery. Both code paths have been corrected. The new NDLRCOR016 analyzer warns when this pattern is used.
+
+- **Generator bundling in integration packages caused duplicate TypeRegistry compilation**: `NexusLabs.Needlr.AgentFramework`, `NexusLabs.Needlr.SemanticKernel`, and `NexusLabs.Needlr.SignalR` bundled `NexusLabs.Needlr.Generators.dll` in their NuGet `analyzers/` folder with `PrivateAssets="all"`. When a project also referenced `NexusLabs.Needlr.Generators` directly, Roslyn ran the generator twice, producing duplicate type registration code that failed to compile. The bundled DLL is removed; each package now declares the generator as a proper transitive NuGet dependency. A `DeduplicateNeedlrGeneratorAnalyzers` MSBuild target is included in each package as defense-in-depth.
+
 ## [0.0.2-alpha.19] - 2026-03-01
 
 ### Added
