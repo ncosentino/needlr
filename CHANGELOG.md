@@ -5,6 +5,81 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.19] - 2026-03-01
+
+### Added
+
+- **Microsoft Agent Framework (MAF) Integration**: First-class support for building multi-agent orchestrations with `NexusLabs.Needlr.AgentFramework`
+  - `[NeedlrAiAgent]` attribute for named agent declarations with source-generated bootstrap
+  - `IAgentFactory.CreateAgent<T>()` / `CreateAgent(string name)` for DI-wired agent construction
+  - `IWorkflowFactory` with `CreateHandoffWorkflow<T>()`, `CreateSequentialWorkflow(name)`, `CreateGroupChatWorkflow(name)`
+  - `UsingAgentFramework()` / `UsingChatClient()` Syringe extensions for fluent MAF wiring
+
+- **MAF Topology Declarations**: Compile-time workflow structure via attributes
+  - `[AgentHandoffsTo(typeof(T))]` — declares agent handoff edges
+  - `[AgentSequenceMember(pipeline, order)]` — declares sequential pipeline membership
+  - `[AgentGroupChatMember(groupName)]` — declares group chat membership
+  - `[WorkflowRunTerminationCondition]` — marks methods as early-exit predicates for pipeline workflows
+  - `[AgentFunctionGroup]` — scopes AI functions to a named group for multi-agent isolation
+
+- **MAF Workflow Execution Helpers** (`NexusLabs.Needlr.AgentFramework.Workflows`)
+  - `StreamingRunWorkflowExtensions.RunAsync()` — executes a workflow and collects all agent responses as `IReadOnlyDictionary<string, string>`
+  - Source-generated `WorkflowFactoryExtensions` with typed `Create*Workflow()` and `Run*WorkflowAsync()` methods per declared workflow
+
+- **MAF Source Generator** (`NexusLabs.Needlr.AgentFramework.Generators`)
+  - `AgentFrameworkBootstrapGenerator`: emits `AgentFrameworkGeneratedBootstrap` with handoff, sequential, and group-chat topology tables registered via `[ModuleInitializer]`
+  - `AgentFrameworkFunctionRegistryGenerator`: emits `GeneratedAIFunctionProvider` — AOT-safe, source-generated `IAIFunctionProvider` using `IServiceProvider.GetRequiredService<T>()` for instance creation
+  - `WorkflowExtensionsGenerator`: emits typed `WorkflowFactoryExtensions` per workflow with full XML doc comments per agent
+  - `AgentTopologyExportGenerator`: emits `AgentTopologyGraph.md` when `NeedlrDiagnostics=true`
+
+- **MAF Analyzers** (12 new diagnostics)
+  - `NDLRMAF001`: Missing `[AgentHandoffsTo]` target registration
+  - `NDLRMAF002`: Circular handoff chain detected
+  - `NDLRMAF003`: Unreachable agent (no inbound handoff edges)
+  - `NDLRMAF004`: `[AgentSequenceMember]` order gap or duplicate
+  - `NDLRMAF005`: `[AgentFunctionGroup]` declared on non-injectable type
+  - `NDLRMAF006`: Agent function group not registered in any agent
+  - `NDLRMAF007`: `[NeedlrAiAgent]` missing required `IChatClient` dependency
+  - `NDLRMAF008`: Duplicate agent name
+  - `NDLRMAF009`: `[WorkflowRunTerminationCondition]` on wrong return type
+  - `NDLRMAF010`: `[WorkflowRunTerminationCondition]` on non-sequential-member class
+  - `NDLRMAF011`: Multiple termination conditions on same sequential pipeline
+  - `NDLRMAF012`–`NDLRMAF014`: Function provider, group membership, and agent registration cross-checks
+  - Code fix providers for `NDLRMAF001` and `NDLRMAF003` (add missing attribute scaffolding)
+
+- **AOT-Safe MAF** (`AotAgentFrameworkApp` example)
+  - NativeAOT proof with `IlcDisableReflection=true`, full `IL2026`/`IL3050` `WarningsAsErrors`, `TrimMode=full`
+  - `[DoNotAutoRegister]` on reflection-based scanners prevents ILC tracing their `[RequiresDynamicCode]` constructors
+  - `[UnconditionalSuppressMessage]` on `AgentFactory.BuildFunctionsForType` and `WorkflowFactory.Resolve*` fallback callers — reflection branches are unreachable when the source-gen bootstrap is registered
+  - Demonstrates handoff workflow, sequential pipeline, and termination condition under NativeAOT
+  - CI job `aot-agent-app` publishes for `linux-x64` in parallel with existing AOT jobs
+
+- **Plugin assembly example**: `[NeedlrAiAgent]` source gen across assembly boundaries via separate `.Agents` library pattern
+
+- **SemanticKernel / SignalR XML documentation enrichment**: All public types have comprehensive XML doc comments
+
+### Changed
+
+- **`IAIFunctionProvider.TryGetFunctions` signature**: Parameter changed from `object? instance` to `IServiceProvider serviceProvider`
+  - Generated provider now calls `serviceProvider.GetRequiredService<T>()` (AOT-safe) instead of casting the passed instance
+  - `AgentFactory.BuildFunctionsForType` checks the generated provider *before* calling `ActivatorUtilities.CreateInstance`
+
+### Fixed
+
+- MAF diagnostics now output to entry-point exe bin directory (not the `.Agents` library bin)
+- `NeedlrExportGraph` defaults to `false` to match props file expectation
+
+### Documentation
+
+- AI integrations page covering the two-layer discovery model
+- MAF feature page with topology declarations, workflow execution, and source generation guide
+- NDLRMAF001–014 analyzer reference pages
+- `llms.txt` for AI tool accessibility
+- Open Graph / Twitter Card meta tags, BreadcrumbList and SoftwareSourceCode structured data
+- Per-page descriptions and cross-references to published articles
+
+_(366 files changed, +39873/-3108 lines)_
+
 ## [0.0.2-alpha.18] - 2026-01-30
 
 ### Added
