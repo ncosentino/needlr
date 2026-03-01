@@ -1,0 +1,6 @@
+<Project>
+  <!-- Default NeedlrAutoGenerate to false unless the consuming project or Directory.Build.props overrides it. -->
+  <PropertyGroup Condition="'$(NeedlrAutoGenerate)' == ''">
+    <NeedlrAutoGenerate>false</NeedlrAutoGenerate>
+  </PropertyGroup>
+</Project>

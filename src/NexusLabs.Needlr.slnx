@@ -39,6 +39,15 @@
     <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp.Agents/GroupChatAgentFrameworkApp.Agents.csproj" />
     <Project Path="Examples/AgentFramework/AotAgentFrameworkApp/AotAgentFrameworkApp.csproj" />
   </Folder>
+  <Folder Name="/Examples/MultiProjectApp/">
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.ConsoleApp/MultiProjectApp.ConsoleApp.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.ConsoleApp.Tests/MultiProjectApp.ConsoleApp.Tests.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Notifications/MultiProjectApp.Features.Notifications.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Reporting/MultiProjectApp.Features.Reporting.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Reporting.Tests/MultiProjectApp.Features.Reporting.Tests.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.WorkerApp/MultiProjectApp.WorkerApp.csproj" />
+  </Folder>
   <Folder Name="/Examples/SignalR/">
     <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
   </Folder>
@@ -122,6 +131,7 @@
   <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
   <Project Path="NexusLabs.Needlr.AgentFramework.Generators.Tests/NexusLabs.Needlr.AgentFramework.Generators.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
+  <Project Path="NexusLabs.Needlr.Build/NexusLabs.Needlr.Build.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />
   <Project Path="NexusLabs.Needlr.Generators.Attributes/NexusLabs.Needlr.Generators.Attributes.csproj" />
   <Project Path="NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj" />

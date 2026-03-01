@@ -1,0 +1,30 @@
+<Project>
+  <!--
+    Deduplicates NexusLabs.Needlr.Generators if it appears more than once in the Analyzer item
+    group (e.g. when referenced both directly and transitively). Runs unconditionally before CoreCompile.
+  -->
+  <Target Name="DeduplicateNeedlrGeneratorAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_AllNeedlrGeneratorAnalyzers Include="@(Analyzer)"
+        Condition="'%(Filename)' == 'NexusLabs.Needlr.Generators'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Analyzer Remove="@(_AllNeedlrGeneratorAnalyzers)" />
+    </ItemGroup>
+    <ItemGroup>
+      <Analyzer Include="@(_AllNeedlrGeneratorAnalyzers->Distinct())" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    When NeedlrAutoGenerate is not 'true', remove the generator DLL from the Roslyn Analyzer
+    item group so it never runs for this project. The DLL remains in the NuGet cache but is
+    not passed to the compiler.
+  -->
+  <Target Name="SuppressNeedlrGeneratorsWhenNotEnabled" BeforeTargets="CoreCompile"
+          Condition="'$(NeedlrAutoGenerate)' != 'true'">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'NexusLabs.Needlr.Generators'" />
+    </ItemGroup>
+  </Target>
+</Project>

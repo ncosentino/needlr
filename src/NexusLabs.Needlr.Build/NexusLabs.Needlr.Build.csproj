@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+    <PackageDescription>MSBuild build package for NexusLabs.Needlr solution-wide source generation setup. Add this package to Directory.Build.props to enable Needlr source generation across all projects in a solution with a single opt-in property.</PackageDescription>
+    <PackageTags>MSBuild build source-generation needlr</PackageTags>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Always carry Generators and Attributes as real transitive dependencies -->
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="build/" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive/" />
+  </ItemGroup>
+
+</Project>
