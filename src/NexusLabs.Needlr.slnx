@@ -46,6 +46,7 @@
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Notifications/MultiProjectApp.Features.Notifications.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Reporting/MultiProjectApp.Features.Reporting.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Reporting.Tests/MultiProjectApp.Features.Reporting.Tests.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Integration.Tests/MultiProjectApp.Integration.Tests.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.WorkerApp/MultiProjectApp.WorkerApp.csproj" />
   </Folder>
   <Folder Name="/Examples/SignalR/">
