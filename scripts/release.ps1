@@ -2,7 +2,8 @@ param(
   [Parameter(Position=0)][string]$Version,
   [string]$Prerelease,
   [string]$Base,
-  [switch]$DryRun
+  [switch]$DryRun,
+  [switch]$SkipCiCheck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -79,6 +80,43 @@ if (Test-Path $changelogPath) {
 }
 
 if (-not $DryRun) { Ensure-CleanRepo }
+
+# CI gate: verify all check runs on HEAD are green before releasing
+if (-not $SkipCiCheck -and -not $DryRun) {
+  $sha = (git rev-parse HEAD).Trim()
+  $remoteUrl = (git remote get-url origin).Trim()
+  $repoSlug = if ($remoteUrl -match 'github\.com[:/](.+?)(?:\.git)?$') { $Matches[1] } else { $null }
+
+  if (-not $repoSlug) {
+    Write-Host "WARNING: Could not parse repo slug from remote URL. Skipping CI check." -ForegroundColor Yellow
+  } else {
+    Write-Host "Checking CI status for $repoSlug @ $sha ..." -ForegroundColor Cyan
+
+    $ghCheck = Get-Command gh -ErrorAction SilentlyContinue
+    if (-not $ghCheck) {
+      Write-Host "WARNING: gh CLI not found. Skipping CI check. Install gh to enable this gate." -ForegroundColor Yellow
+    } else {
+      $runsJson = gh api "repos/$repoSlug/commits/$sha/check-runs" --paginate --jq '.check_runs[] | {name: .name, status: .status, conclusion: .conclusion}' 2>&1
+      if ($LASTEXITCODE -ne 0) {
+        Write-Host "WARNING: Could not retrieve check runs (API error). Skipping CI check." -ForegroundColor Yellow
+      } else {
+        $runs = $runsJson | ForEach-Object { $_ | ConvertFrom-Json }
+        $notGreen = $runs | Where-Object {
+          $_.status -ne 'completed' -or ($_.conclusion -notin @('success', 'skipped', 'neutral'))
+        }
+        if ($notGreen) {
+          Write-Host "BLOCKED: CI is not fully green on HEAD ($sha)" -ForegroundColor Red
+          $notGreen | ForEach-Object {
+            $marker = if ($_.status -ne 'completed') { "[$($_.status)]" } else { "[$($_.conclusion)]" }
+            Write-Host "  $marker  $($_.name)" -ForegroundColor Yellow
+          }
+          throw "Fix failing CI checks before releasing. Use -SkipCiCheck to override."
+        }
+        Write-Host "CI gate passed ($($runs.Count) check(s) green)." -ForegroundColor Green
+      }
+    }
+  }
+}
 
 # Build and pack validation - MUST pass before any release actions
 Write-Host "Validating build and pack..." -ForegroundColor Cyan

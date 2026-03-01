@@ -134,7 +134,7 @@ jobs:
     - name: Setup Python for MkDocs
       run: |
         python3 -m pip install --upgrade pip
-        pip install mkdocs-material mike
+        pip install "mkdocs>=1.5,<2.0" mkdocs-material mike
 
     - name: Restore dotnet tools
       run: dotnet tool restore
@@ -143,6 +143,9 @@ jobs:
       run: |
         VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
         ./scripts/generate-versioned-api-docs.sh "$VERSION"
+
+    - name: Generate Articles Page
+      run: python scripts/generate-articles.py docs/articles.md
 
     - name: Build Documentation
       run: python -m mkdocs build
