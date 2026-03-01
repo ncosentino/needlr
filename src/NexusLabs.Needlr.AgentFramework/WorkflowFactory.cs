@@ -86,6 +86,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         return AgentWorkflowBuilder.BuildSequential(agents);
     }
 
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2026", Justification = "Reflection fallback is unreachable in AOT builds where the source generator bootstrap is registered via ModuleInitializer.")]
     private IReadOnlyList<(Type TargetType, string? HandoffReason)> ResolveHandoffTargets(Type initialAgentType)
     {
         if (AgentFrameworkGeneratedBootstrap.TryGetHandoffTopology(out var provider))
@@ -121,6 +122,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             .AsReadOnly();
     }
 
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2026", Justification = "Reflection fallback is unreachable in AOT builds where the source generator bootstrap is registered via ModuleInitializer.")]
     private IReadOnlyList<Type> ResolveGroupChatMembers(string groupName)
     {
         if (AgentFrameworkGeneratedBootstrap.TryGetGroupChatGroups(out var provider))
@@ -152,6 +154,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             .AsReadOnly();
     }
 
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2026", Justification = "Reflection fallback is unreachable in AOT builds where the source generator bootstrap is registered via ModuleInitializer.")]
     private static IReadOnlyList<Type> ResolveSequentialMembers(string pipelineName)
     {
         if (AgentFrameworkGeneratedBootstrap.TryGetSequentialTopology(out var provider))

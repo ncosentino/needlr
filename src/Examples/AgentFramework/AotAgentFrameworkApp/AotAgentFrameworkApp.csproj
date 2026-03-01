@@ -11,6 +11,9 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
 
+    <!-- Make reflection usage fail loudly -->
+    <IlcDisableReflection>true</IlcDisableReflection>
+
     <InvariantGlobalization>true</InvariantGlobalization>
     <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
 
@@ -19,12 +22,7 @@
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
 
-    <WarningsAsErrors>$(WarningsAsErrors);IL3050</WarningsAsErrors>
-
-    <!-- ILC enforces IL3050 transitively through all dependency paths, including generated
-         code and reflection-fallback branches that are never reached at runtime.
-         We prove IL3050-freedom at Roslyn compile time (above); ILC warnings are informational. -->
-    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2060;IL2072;IL2075;IL2091;IL3050</WarningsAsErrors>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
