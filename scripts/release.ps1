@@ -86,10 +86,12 @@ Write-Host "Validating build and pack..." -ForegroundColor Cyan
 # Find all packable projects (those with IsPackable not explicitly false)
 $srcDir = Join-Path $PSScriptRoot "..\src"
 $projects = Get-ChildItem -Path $srcDir -Filter "*.csproj" -Recurse | Where-Object {
+  $relativePath = $_.FullName.Replace($srcDir, '')
   $content = Get-Content $_.FullName -Raw
-  # Exclude test projects and projects with IsPackable=false
+  # Exclude test projects, projects with IsPackable=false, and bin/obj artifacts
   -not ($_.Name -match "\.Tests\.") -and
-  -not ($content -match "<IsPackable>false</IsPackable>")
+  -not ($content -match "<IsPackable>false</IsPackable>") -and
+  -not ($relativePath -match "[\\/](bin|obj)[\\/]")
 }
 
 foreach ($proj in $projects) {
