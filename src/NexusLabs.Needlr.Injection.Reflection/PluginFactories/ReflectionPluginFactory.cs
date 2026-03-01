@@ -130,18 +130,7 @@ public sealed class ReflectionPluginFactory : IPluginFactory
         return type.IsClass && 
                !type.IsAbstract && 
                !type.IsGenericTypeDefinition &&
-               HasParameterlessConstructor(type) &&
-               !HasDoNotAutoRegisterAttribute(type);
-    }
-
-    /// <summary>
-    /// Determines if a type has the [DoNotAutoRegister] attribute directly applied.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns>True if the type has the attribute; otherwise, false.</returns>
-    private static bool HasDoNotAutoRegisterAttribute(Type type)
-    {
-        return type.GetCustomAttribute<DoNotAutoRegisterAttribute>(inherit: false) is not null;
+               HasParameterlessConstructor(type);
     }
 
     /// <summary>

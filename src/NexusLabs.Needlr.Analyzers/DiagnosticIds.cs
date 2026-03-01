@@ -72,4 +72,9 @@ public static class DiagnosticIds
     /// NDLRCOR012: Disposable captive dependency - longer-lived service holds IDisposable with shorter lifetime.
     /// </summary>
     public const string DisposableCaptiveDependency = "NDLRCOR012";
+
+    /// <summary>
+    /// NDLRCOR016: [DoNotAutoRegister] applied directly to a plugin class is redundant.
+    /// </summary>
+    public const string DoNotAutoRegisterOnPluginClass = "NDLRCOR016";
 }

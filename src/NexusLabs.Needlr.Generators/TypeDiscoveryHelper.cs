@@ -778,6 +778,11 @@ internal static class TypeDiscoveryHelper
         // Records are excluded from IsInjectableType (auto-registration) but not from plugin discovery.
         // Use case: CacheConfiguration records can be discovered via IPluginFactory.CreatePluginsFromAssemblies<T>()
 
+        // Exclude hosted service types — they have their own dedicated registration path
+        // (RegisterHostedServices) and must not be included in plugin types.
+        if (InheritsFromBackgroundService(typeSymbol) || ImplementsIHostedService(typeSymbol))
+            return false;
+
         // Must have a parameterless constructor
         if (!HasParameterlessConstructor(typeSymbol))
             return false;
@@ -785,13 +790,6 @@ internal static class TypeDiscoveryHelper
         // Exclude types with required members that can't be set via constructor
         // These would cause compilation errors: "Required member 'X' must be set"
         if (HasUnsatisfiedRequiredMembers(typeSymbol))
-            return false;
-
-        // Skip types with [DoNotAutoRegister] directly on the type itself
-        // NOTE: We use the "Direct" version because [DoNotAutoRegister] on interfaces
-        // (like IServiceCollectionPlugin) means "don't inject as DI service", not
-        // "don't discover plugins implementing this interface"
-        if (HasDoNotAutoRegisterAttributeDirect(typeSymbol))
             return false;
 
         return true;

@@ -182,4 +182,17 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "A longer-lived service holds a reference to a shorter-lived IDisposable/IAsyncDisposable. When the shorter-lived scope ends, the dependency will be disposed while the longer-lived service still holds a reference, causing ObjectDisposedException at runtime. Use a factory pattern (Func<T>) or IServiceScopeFactory to resolve scoped dependencies on demand.",
         helpLinkUri: HelpLinkBase + "NDLRCOR012.md");
+
+    /// <summary>
+    /// NDLRCOR016: [DoNotAutoRegister] applied directly to a plugin class is redundant.
+    /// </summary>
+    public static readonly DiagnosticDescriptor DoNotAutoRegisterOnPluginClass = new(
+        id: DiagnosticIds.DoNotAutoRegisterOnPluginClass,
+        title: "[DoNotAutoRegister] on plugin class is redundant",
+        messageFormat: "'{0}' has [DoNotAutoRegister] directly applied. The plugin interface it implements already carries this attribute, so applying it to the implementing class is not needed and was previously incorrectly suppressing plugin discovery.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Plugin interfaces such as IServiceCollectionPlugin already carry [DoNotAutoRegister] to prevent the interface itself from being registered as a DI service. Adding [DoNotAutoRegister] directly to an implementing class is redundant and was incorrectly suppressing plugin discovery in earlier versions. Remove the attribute from the class.",
+        helpLinkUri: HelpLinkBase + "NDLRCOR016.md");
 }

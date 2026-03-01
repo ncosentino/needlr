@@ -952,4 +952,61 @@ namespace TestNamespace
 
         Assert.True(result);
     }
+
+    [Fact]
+    public void IsPluginType_ClassWithDirectDoNotAutoRegisterAttribute_ReturnsTrue()
+    {
+        // [DoNotAutoRegister] on the implementing class is redundant (the plugin interface
+        // already carries it) but must NOT prevent the class from being discovered as a plugin.
+        // Regression test: before the fix, IsPluginType() incorrectly returned false here.
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface)]
+    public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
+}
+
+namespace TestNamespace
+{
+    public interface IPlugin { }
+
+    [NexusLabs.Needlr.DoNotAutoRegister]
+    public class PluginWithDoNotAutoRegister : IPlugin { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.PluginWithDoNotAutoRegister");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsPluginType_ClassWithDirectDoNotAutoRegisterAndDoNotInjectAttributes_ReturnsTrue()
+    {
+        // Both attributes together should still not suppress plugin discovery.
+        // [DoNotAutoRegister] and [DoNotInject] govern DI registration, not plugin discovery.
+        var source = @"
+namespace NexusLabs.Needlr
+{
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface)]
+    public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
+
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface)]
+    public sealed class DoNotInjectAttribute : System.Attribute { }
+}
+
+namespace TestNamespace
+{
+    public interface IPlugin { }
+
+    [NexusLabs.Needlr.DoNotAutoRegister]
+    [NexusLabs.Needlr.DoNotInject]
+    public class PluginWithBothAttributes : IPlugin { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.PluginWithBothAttributes");
+
+        var result = TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly: true);
+
+        Assert.True(result);
+    }
 }

@@ -19,6 +19,12 @@ namespace NexusLabs.Needlr;
 /// registration logic in <see cref="Configure"/>. Needlr will call <see cref="Configure"/> once
 /// during the startup assembly scan.
 /// </para>
+/// <para>
+/// Do <b>not</b> apply <see cref="DoNotAutoRegisterAttribute"/> directly to an implementing class.
+/// This interface already carries the attribute to prevent DI registration of the interface itself;
+/// adding it to the class too is redundant and was historically a silent bug that suppressed plugin
+/// discovery. Analyzer NDLRCOR016 will warn you if you do this.
+/// </para>
 /// </remarks>
 /// <example>
 /// <code>

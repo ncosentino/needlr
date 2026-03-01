@@ -136,7 +136,7 @@ public sealed class PluginDiscoveryParityTests
     }
 
     [Fact]
-    public void PluginParity_ManualRegistrationTestPlugin_ExcludedByBothFactories()
+    public void PluginParity_ManualRegistrationTestPlugin_DiscoveredByBothFactories()
     {
         var assemblies = new[] { Assembly.GetExecutingAssembly() };
         var reflectionFactory = new ReflectionPluginFactory();
@@ -151,9 +151,9 @@ public sealed class PluginDiscoveryParityTests
             .CreatePluginsFromAssemblies<ITestPlugin>(assemblies)
             .ToList();
 
-        // Types with [DoNotAutoRegister] are excluded from plugin discovery
-        Assert.DoesNotContain(reflectionPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
-        Assert.DoesNotContain(generatedPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
+        // [DoNotAutoRegister] on a plugin class does NOT suppress plugin discovery
+        Assert.Contains(reflectionPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
+        Assert.Contains(generatedPlugins, p => p.GetType() == typeof(ManualRegistrationTestPlugin));
     }
 
     [Fact]
@@ -233,9 +233,9 @@ public sealed class PluginDiscoveryParityTests
             .Count();
 
         Assert.Equal(reflectionCount, generatedCount);
-        // 9 plugins: ManualRegistrationTestPlugin is excluded due to [DoNotAutoRegister]
-        Assert.Equal(9, reflectionCount);
-        Assert.Equal(9, generatedCount);
+        // 10 plugins: ManualRegistrationTestPlugin is now included ([DoNotAutoRegister] does not suppress plugin discovery)
+        Assert.Equal(10, reflectionCount);
+        Assert.Equal(10, generatedCount);
     }
 
     // NOTE: Carter and SignalR parity tests have been moved to their dedicated test projects:

@@ -47,7 +47,8 @@ public sealed class AnotherTestPlugin : ITestPlugin
 }
 
 /// <summary>
-/// A plugin with DoNotAutoRegister attribute - should NOT be discovered as a plugin.
+/// A plugin with DoNotAutoRegister attribute - WILL still be discovered as a plugin.
+/// [DoNotAutoRegister] prevents DI auto-registration but does NOT suppress plugin discovery.
 /// </summary>
 [DoNotAutoRegister]
 public sealed class ManualRegistrationTestPlugin : ITestPlugin
