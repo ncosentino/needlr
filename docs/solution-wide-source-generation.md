@@ -46,6 +46,27 @@ Test helper libraries and shared test infrastructure typically don't need their 
 
 The generator DLL is still in the NuGet graph (so attribute types compile), but it won't run and produce output for that project.
 
+## Keeping Source Generation Enabled in Test Projects
+
+Some test projects need their *own* plugin types discovered — for example, a test project that registers test fakes or overrides via a plugin class. Leave `NeedlrAutoGenerate` at its default (`true`) for those projects.
+
+> **Important — generator references are not transitively propagated as Analyzer items.** A project that enables source generation must explicitly add the generator references, even if a referenced project already uses them:
+>
+> ```xml
+> <ProjectReference Include="NexusLabs.Needlr.Generators.Attributes" ... />
+> <ProjectReference Include="NexusLabs.Needlr.Generators"
+>                   OutputItemType="Analyzer"
+>                   ReferenceOutputAssembly="false" />
+> ```
+>
+> Without these, the generator silently doesn't run and no `TypeRegistry` is produced for the project.
+
+Use `IncludeNamespacePrefixes` to scope type discovery to the test assembly only:
+
+```csharp
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = ["MyFeature.Tests"])]
+```
+
 ## Why the Generator Can Appear Twice (and How We Handle It)
 
 If your project references both `NexusLabs.Needlr.Build` and an integration package like `NexusLabs.Needlr.AgentFramework` or `NexusLabs.Needlr.SemanticKernel`, Roslyn could theoretically see two copies of `NexusLabs.Needlr.Generators.dll` — one from each package path. Running the generator twice produces duplicate type registration code that fails to compile.
@@ -68,6 +89,7 @@ The `src/Examples/MultiProjectApp/` example in this repository demonstrates this
 - Feature projects (`Notifications`, `Reporting`) each have their own TypeRegistry
 - `Bootstrap` references both feature projects, acting as the single "pull everything in" anchor
 - Entry points (`ConsoleApp`, `WorkerApp`) reference only Bootstrap
-- Test projects set `NeedlrAutoGenerate=false` and consume the assembled TypeRegistry from the projects they reference
+- `ConsoleApp.Tests` and `Features.Reporting.Tests` set `NeedlrAutoGenerate=false` — they consume TypeRegistries from referenced projects but don't produce their own
+- `Integration.Tests` keeps source gen enabled and registers test-only plugin types (`TestInfrastructurePlugin`) that are discovered automatically alongside the real feature plugins
 
 See the [example README](https://github.com/ncosentino/needlr/tree/main/src/Examples/MultiProjectApp) for the full structure.

@@ -13,7 +13,8 @@ MultiProjectApp/
 ├── MultiProjectApp.ConsoleApp/              ← entry point: console app
 ├── MultiProjectApp.WorkerApp/               ← entry point: hosted service / background worker
 ├── MultiProjectApp.ConsoleApp.Tests/        ← integration tests (source gen opted out)
-└── MultiProjectApp.Features.Reporting.Tests/← feature unit tests (source gen opted out)
+├── MultiProjectApp.Features.Reporting.Tests/← feature unit tests (source gen opted out)
+└── MultiProjectApp.Integration.Tests/       ← integration tests (source gen enabled — test types discovered)
 ```
 
 ## Key Patterns
@@ -57,13 +58,24 @@ Test projects that don't need a TypeRegistry override `NeedlrAutoGenerate` in th
 
 This prevents the generator from running in those projects while still allowing them to consume TypeRegistries from the projects they reference (via module initializers).
 
+### Keeping Source Generation Enabled in Test Projects
+
+`MultiProjectApp.Integration.Tests` shows the opposite pattern: source generation is intentionally left **enabled** so that test-only plugin types (like `TestInfrastructurePlugin`) are discovered automatically alongside the real feature plugins.
+
+> **Important:** Generator references are *not* transitively propagated as Roslyn Analyzer items. A test project that keeps source gen enabled must explicitly reference `NexusLabs.Needlr.Generators.Attributes` and add `NexusLabs.Needlr.Generators` with `OutputItemType="Analyzer"`, just like any non-test project:
+>
+> ```xml
+> <ProjectReference Include="path/to/NexusLabs.Needlr.Generators.Attributes.csproj" />
+> <ProjectReference Include="path/to/NexusLabs.Needlr.Generators.csproj"
+>                   OutputItemType="Analyzer"
+>                   ReferenceOutputAssembly="false" />
+> ```
+
+A `[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = ["MyTest.Assembly"])]` attribute in the test project scopes type discovery to that assembly, avoiding unintended pickup of types from referenced feature assemblies (which have their own TypeRegistries already).
+
 ### Bootstrap Pattern
 
 `MultiProjectApp.Bootstrap` exists solely to pull all feature projects into the build graph. Both entry points reference only Bootstrap — not the individual feature projects. This means adding a new feature project only requires updating Bootstrap.
-
-### `[DoNotAutoRegister]` on a Plugin Class
-
-`BootstrapPlugin` in `MultiProjectApp.Bootstrap` has `[DoNotAutoRegister]` applied directly. This demonstrates that the attribute does **not** suppress plugin discovery — it only affects DI auto-registration of the class itself as a service. The plugin's `Configure` method is still called during startup.
 
 ## Running the Example
 
