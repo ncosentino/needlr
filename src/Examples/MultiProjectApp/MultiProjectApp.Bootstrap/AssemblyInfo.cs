@@ -1,3 +1,1 @@
-using NexusLabs.Needlr.Generators;
-
-[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = ["MultiProjectApp.Bootstrap"])]
+// No types to register in this assembly — feature assemblies register themselves via their own TypeRegistry.
