@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'    # e.g., v1.2.3 or v1.2.3-rc.1
+  workflow_dispatch:  # allow manual trigger; select the tag ref in the UI or --ref with gh CLI
 
 env:
   DOTNET_VERSION: '9.0.x'
