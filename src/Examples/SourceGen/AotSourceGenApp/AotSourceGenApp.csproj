@@ -26,6 +26,11 @@
 		<TrimmerSingleWarn>false</TrimmerSingleWarn>
 		<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
 		<WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2060;IL2072;IL2075;IL2091</WarningsAsErrors>
+
+		<!-- Enable Needlr source generation. Both namespaces are included because AotSourceGenPlugin
+		     types are registered in the host's TypeRegistry rather than in a separate plugin registry. -->
+		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+		<NeedlrNamespacePrefix>AotSourceGen;AotSourceGenPlugin</NeedlrNamespacePrefix>
 	</PropertyGroup>
 
 	<ItemGroup>

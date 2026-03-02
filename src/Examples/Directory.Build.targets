@@ -1,0 +1,7 @@
+<Project>
+  <!-- Import NexusLabs.Needlr.Build targets so examples dog-food the NeedlrWriteTypeRegistryAttributeFile
+       target and other Build-package behaviour. Projects with NeedlrAutoGenerate=true will have the
+       [assembly: GenerateTypeRegistry] file auto-generated; all others are unaffected. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.targets')" />
+</Project>

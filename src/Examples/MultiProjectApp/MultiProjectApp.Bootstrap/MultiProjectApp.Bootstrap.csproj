@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- Bootstrap has no injectable types — suppress auto-attribute generation. -->
+    <NeedlrAutoGenerateAttribute>false</NeedlrAutoGenerateAttribute>
   </PropertyGroup>
 
   <ItemGroup>

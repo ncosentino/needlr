@@ -21,4 +21,9 @@
   -->
   <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props" 
           Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props')" />
+  <!-- Import NexusLabs.Needlr.Build props so examples dog-food the same auto-attribute-generation
+       feature that NuGet consumers get. NeedlrAutoGenerate defaults to false; individual source gen
+       example projects set it to true in their .csproj. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.props')" />
 </Project>

@@ -137,6 +137,119 @@ foreach ($entry in $assertions) {
     }
 }
 
+function Test-AttributeFileTarget {
+    param(
+        [string]$RepoRoot,
+        [string]$Description,
+        [hashtable]$Properties = @{},
+        $ExpectedContains = $null,  # $null = expect file NOT created
+        [ref]$Failed
+    )
+
+    Write-Host "  Test: $Description..." -NoNewline
+
+    $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "needlr-build-test-$([System.IO.Path]::GetRandomFileName())"
+    New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
+
+    # Use forward slashes so the paths are valid in MSBuild XML
+    $buildPropsPath   = (Join-Path $RepoRoot 'src/NexusLabs.Needlr.Build/build/NexusLabs.Needlr.Build.props')   -replace '\\', '/'
+    $buildTargetsPath = (Join-Path $RepoRoot 'src/NexusLabs.Needlr.Build/build/NexusLabs.Needlr.Build.targets') -replace '\\', '/'
+    $objDirFwd        = (Join-Path $tmpDir 'obj') -replace '\\', '/'
+
+    $propLines = $Properties.GetEnumerator() | ForEach-Object {
+        "    <$($_.Key)>$([System.Security.SecurityElement]::Escape($_.Value))</$($_.Key)>"
+    }
+    $propBlock = ($propLines -join "`n")
+
+    $projContent = @"
+<Project>
+  <PropertyGroup>
+    <IntermediateOutputPath>$objDirFwd/</IntermediateOutputPath>
+$propBlock
+  </PropertyGroup>
+  <Import Project="$buildPropsPath" />
+  <Import Project="$buildTargetsPath" />
+</Project>
+"@
+
+    $projPath = Join-Path $tmpDir 'test.proj'
+    Set-Content -Path $projPath -Value $projContent -Encoding UTF8
+
+    $msbuildOut = & dotnet msbuild $projPath /t:NeedlrWriteTypeRegistryAttributeFile /v:q /nologo 2>&1
+
+    $generatedFile = Join-Path $tmpDir 'obj' 'NeedlrGeneratedTypeRegistry.g.cs'
+    $fileExists    = Test-Path $generatedFile
+
+    try {
+        if ($null -eq $ExpectedContains) {
+            if ($fileExists) {
+                Write-Host " FAIL - file generated when it should not have been" -ForegroundColor Red
+                $Failed.Value = $true
+            } else {
+                Write-Host " OK" -ForegroundColor Green
+            }
+        } else {
+            if (-not $fileExists) {
+                Write-Host " FAIL - file not generated" -ForegroundColor Red
+                Write-Host "    MSBuild output: $($msbuildOut -join ' ')"
+                $Failed.Value = $true
+            } else {
+                $content = Get-Content $generatedFile -Raw
+                if (-not $content.Contains($ExpectedContains)) {
+                    Write-Host " FAIL - unexpected content" -ForegroundColor Red
+                    Write-Host "    Expected to contain: $ExpectedContains"
+                    Write-Host "    Actual: $content"
+                    $Failed.Value = $true
+                } else {
+                    Write-Host " OK" -ForegroundColor Green
+                }
+            }
+        }
+    } finally {
+        Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+Write-Host ""
+Write-Host "=== NeedlrWriteTypeRegistryAttributeFile target ==" -ForegroundColor Cyan
+
+$failedRef = [ref]$failed
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "NeedlrAutoGenerate=false (default) does not write file" `
+    -Properties @{ NeedlrAutoGenerate = 'false' } `
+    -ExpectedContains $null `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "NeedlrAutoGenerate=true, empty prefix writes no-arg attribute" `
+    -Properties @{ NeedlrAutoGenerate = 'true' } `
+    -ExpectedContains '[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]' `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "NeedlrAutoGenerate=true, single prefix writes single-element array" `
+    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrNamespacePrefix = 'MyNamespace' } `
+    -ExpectedContains 'IncludeNamespacePrefixes = new[] { "MyNamespace" }' `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "NeedlrAutoGenerate=true, multi-prefix writes multi-element array" `
+    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrNamespacePrefix = 'Foo;Bar' } `
+    -ExpectedContains '"Foo", "Bar"' `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "NeedlrAutoGenerateAttribute=false suppresses file generation" `
+    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrAutoGenerateAttribute = 'false' } `
+    -ExpectedContains $null `
+    -Failed $failedRef
+
 Write-Host ""
 if ($failed) {
     Write-Host "Package validation FAILED." -ForegroundColor Red

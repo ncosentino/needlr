@@ -3,4 +3,14 @@
   <PropertyGroup Condition="'$(NeedlrAutoGenerate)' == ''">
     <NeedlrAutoGenerate>false</NeedlrAutoGenerate>
   </PropertyGroup>
+  <!-- NeedlrNamespacePrefix: semicolon-delimited namespace prefix filter for GenerateTypeRegistry.
+       Default is empty (include all types). Set explicitly to scope per-project.
+       Example: <NeedlrNamespacePrefix>MyApp;MyApp.Plugins</NeedlrNamespacePrefix> -->
+  <PropertyGroup Condition="'$(NeedlrNamespacePrefix)' == ''">
+    <NeedlrNamespacePrefix></NeedlrNamespacePrefix>
+  </PropertyGroup>
+  <!-- NeedlrAutoGenerateAttribute: controls whether NexusLabs.Needlr.Build automatically writes
+       the [assembly: GenerateTypeRegistry] attribute file when NeedlrAutoGenerate=true.
+       Set to 'false' if you declare the attribute yourself (avoids CS0579 duplicate attribute error).
+       Default: not set (auto-generation enabled when NeedlrAutoGenerate=true). -->
 </Project>

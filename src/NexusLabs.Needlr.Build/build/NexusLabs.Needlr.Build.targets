@@ -17,14 +17,34 @@
   </Target>
 
   <!--
-    When NeedlrAutoGenerate is not 'true', remove the generator DLL from the Roslyn Analyzer
-    item group so it never runs for this project. The DLL remains in the NuGet cache but is
-    not passed to the compiler.
+    When NeedlrAutoGenerate and NeedlrAutoGenerateAttribute are both 'true', write
+    [assembly: GenerateTypeRegistry] to a generated file so the source generator has
+    something to act on. Consumers who declare the attribute themselves should set
+    NeedlrAutoGenerateAttribute=false to suppress this target (avoids CS0579).
+    NeedlrNamespacePrefix controls IncludeNamespacePrefixes; empty means include all types.
+    Multiple prefixes are supported as a semicolon-delimited list (e.g. "Foo;Bar").
   -->
-  <Target Name="SuppressNeedlrGeneratorsWhenNotEnabled" BeforeTargets="CoreCompile"
-          Condition="'$(NeedlrAutoGenerate)' != 'true'">
+  <Target Name="NeedlrWriteTypeRegistryAttributeFile"
+          BeforeTargets="CoreCompile"
+          Condition="'$(NeedlrAutoGenerate)' == 'true' AND '$(NeedlrAutoGenerateAttribute)' != 'false'">
+    <PropertyGroup>
+      <_NeedlrAttributeFile>$(IntermediateOutputPath)NeedlrGeneratedTypeRegistry.g.cs</_NeedlrAttributeFile>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(NeedlrNamespacePrefix)' != ''">
+      <_NeedlrNamespacePrefix Include="$(NeedlrNamespacePrefix)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_NeedlrPrefixList Condition="'$(NeedlrNamespacePrefix)' != ''">@(_NeedlrNamespacePrefix -> '&quot;%(Identity)&quot;', ', ')</_NeedlrPrefixList>
+      <_NeedlrAttributeContent Condition="'$(NeedlrNamespacePrefix)' != ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { $(_NeedlrPrefixList) })]</_NeedlrAttributeContent>
+      <_NeedlrAttributeContent Condition="'$(NeedlrNamespacePrefix)' == ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]</_NeedlrAttributeContent>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile
+      File="$(_NeedlrAttributeFile)"
+      Lines="// &lt;auto-generated /&gt;;$(_NeedlrAttributeContent)"
+      Overwrite="true" />
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'NexusLabs.Needlr.Generators'" />
+      <Compile Include="$(_NeedlrAttributeFile)" />
     </ItemGroup>
   </Target>
 </Project>

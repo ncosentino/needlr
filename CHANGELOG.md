@@ -5,6 +5,24 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.24] - 2026-07-02
+
+### Added
+
+- **`NexusLabs.Needlr.Build` auto-generates `[assembly: GenerateTypeRegistry]`**: When `NeedlrAutoGenerate=true`, the `NeedlrWriteTypeRegistryAttributeFile` MSBuild target now writes a `NeedlrGeneratedTypeRegistry.g.cs` file to the intermediate output directory automatically. This eliminates the MSBuild boilerplate consumers previously needed in their own `Directory.Build.targets` to write the attribute file.
+
+- **`NeedlrNamespacePrefix` MSBuild property**: Controls the `IncludeNamespacePrefixes` argument on the generated `[assembly: GenerateTypeRegistry]` attribute. Accepts a semicolon-delimited list of namespace prefixes (e.g., `<NeedlrNamespacePrefix>MyApp.Features;MyApp.Core</NeedlrNamespacePrefix>`). When empty (the default), the no-arg form `[assembly: GenerateTypeRegistry()]` is emitted, meaning all types in the assembly are included.
+
+- **`NeedlrAutoGenerateAttribute` escape hatch MSBuild property**: Set to `false` to suppress the auto-generated attribute file while keeping `NeedlrAutoGenerate=true`. Use this for projects that declare `[assembly: GenerateTypeRegistry]` manually, or for projects in a solution-wide opt-in setup that intentionally have no types to register.
+
+### Changed
+
+- **Example projects use `NeedlrNamespacePrefix` instead of manual attribute files**: All `src/Examples/` source-gen projects now dog-food the new feature. The `GeneratorAssemblyInfo.cs` / `AssemblyInfo.cs` files containing the assembly attribute have been removed; namespace scoping is declared via `<NeedlrNamespacePrefix>` in each project's `.csproj`.
+
+### Breaking Change
+
+- **CS0579 if you already declare `[assembly: GenerateTypeRegistry]` and have `NeedlrAutoGenerate=true`**: The new auto-generated attribute file and any existing manual declaration cannot coexist (`AllowMultiple = false`). If you have both, you will get a compile error. **Fix**: either delete your manual attribute declaration (let `NeedlrAutoGenerate` handle it), or add `<NeedlrAutoGenerateAttribute>false</NeedlrAutoGenerateAttribute>` to your project to suppress the new target.
+
 ## [0.0.2-alpha.23] - 2026-05-16
 
 ### Fixed
