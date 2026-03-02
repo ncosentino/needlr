@@ -1,4 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+		<NeedlrNamespacePrefix>ChatHubExample</NeedlrNamespacePrefix>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.SignalR\NexusLabs.Needlr.SignalR.csproj" />
@@ -8,3 +13,4 @@
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.SignalR.Generators\NexusLabs.Needlr.SignalR.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 </Project>
+

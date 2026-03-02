@@ -68,6 +68,36 @@ function Assert-NuspecDependency {
     return $true
 }
 
+function Assert-NupkgContainsFile {
+    param(
+        [string]$NupkgPath,
+        [string]$EntryPath,        # path inside the zip e.g. "build/NexusLabs.Needlr.Build.targets"
+        [string]$RequiredContent   # if set, the file must contain this string
+    )
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($NupkgPath)
+    try {
+        $entry = $zip.Entries | Where-Object { $_.FullName -eq $EntryPath } | Select-Object -First 1
+        if (-not $entry) {
+            Write-Host "  ERROR: '$EntryPath' not found inside package" -ForegroundColor Red
+            return $false
+        }
+        if ($RequiredContent) {
+            $reader  = New-Object System.IO.StreamReader($entry.Open())
+            $content = $reader.ReadToEnd()
+            $reader.Dispose()
+            if (-not $content.Contains($RequiredContent)) {
+                Write-Host "  ERROR: '$EntryPath' exists but does not contain: $RequiredContent" -ForegroundColor Red
+                return $false
+            }
+        }
+        return $true
+    } finally {
+        $zip.Dispose()
+    }
+}
+
 $assertions = @(
     @{
         Project    = 'src/NexusLabs.Needlr.Build/NexusLabs.Needlr.Build.csproj'
@@ -85,6 +115,12 @@ $assertions = @(
                 ForbiddenExclude = $null
                 Description     = 'Generators.Attributes must be a dependency'
             }
+        )
+        FileChecks = @(
+            @{ Entry = 'build/NexusLabs.Needlr.Build.props';             Content = 'NeedlrNamespacePrefix';              Description = 'build/props contains NeedlrNamespacePrefix' },
+            @{ Entry = 'build/NexusLabs.Needlr.Build.targets';           Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'build/targets contains NeedlrWriteTypeRegistryAttributeFile target' },
+            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.props';   Content = 'NeedlrNamespacePrefix';              Description = 'buildTransitive/props contains NeedlrNamespacePrefix' },
+            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.targets'; Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'buildTransitive/targets contains NeedlrWriteTypeRegistryAttributeFile target' }
         )
     }
 )
@@ -128,6 +164,20 @@ foreach ($entry in $assertions) {
             -DependencyId    $check.Id `
             -RequiredExclude $check.RequiredExclude `
             -ForbiddenExclude $check.ForbiddenExclude
+
+        if ($ok) {
+            Write-Host " OK" -ForegroundColor Green
+        } else {
+            $failed = $true
+        }
+    }
+
+    foreach ($fc in $entry.FileChecks) {
+        Write-Host "  Checking: $($fc.Description)..." -NoNewline
+        $ok = Assert-NupkgContainsFile `
+            -NupkgPath      $nupkg.FullName `
+            -EntryPath      $fc.Entry `
+            -RequiredContent $fc.Content
 
         if ($ok) {
             Write-Host " OK" -ForegroundColor Green

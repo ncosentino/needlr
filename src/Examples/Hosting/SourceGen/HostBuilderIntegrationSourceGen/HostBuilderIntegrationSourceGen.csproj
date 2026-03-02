@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+    <NeedlrNamespacePrefix>HostBuilderIntegrationSourceGen</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <ItemGroup>

@@ -26,6 +26,9 @@
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+
+    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+    <NeedlrNamespacePrefix>AotAgentFrameworkApp</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />

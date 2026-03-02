@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
+    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
+    <NeedlrNamespacePrefix>WorkerServiceSourceGen</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <ItemGroup>
