@@ -5,6 +5,12 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.23] - 2026-05-16
+
+### Fixed
+
+- **`NexusLabs.Needlr.Build` still did not deliver `NexusLabs.Needlr.Generators` to consuming projects (alpha.22 regression)**: The alpha.22 fix only removed `OutputItemType="Analyzer"` but left `ReferenceOutputAssembly="false"` on the `ProjectReference`. `ReferenceOutputAssembly="false"` alone causes NuGet restore to exclude the referenced project from `project.assets.json` entirely, so Pack (which reads the assets file via `GetProjectReferencesFromAssetsFileTask`) never saw Generators and never emitted it as a nuspec dependency. Fixed by removing `ReferenceOutputAssembly="false"` and replacing it with `ExcludeAssets="compile;runtime;native;contentFiles" PrivateAssets="none"` — this preserves the original intent (don't compile Build against the generator DLL) while correctly registering Generators as a public transitive NuGet dependency in the assets file and nuspec.
+
 ## [0.0.2-alpha.22] - 2026-03-02
 
 ### Fixed
