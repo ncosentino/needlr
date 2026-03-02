@@ -5,6 +5,25 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.21] - 2026-03-02
+
+### Added
+
+- **`MultiProjectApp.Integration.Tests` example**: New test project in the MultiProjectApp example demonstrating source generation enabled inside a test project. Shows how `ITestNotificationCapture` (a test-only interface) and its implementation are discovered via a generated TypeRegistry, illustrating the pattern for test infrastructure that uses Needlr plugin discovery without interfering with production plugins.
+
+### Fixed
+
+- **`.snupkg` 400 error / NU5128 warning for `NexusLabs.Needlr.Build`**: Build-only packages that contain only `.props`/`.targets` files must not generate symbol packages (`.snupkg`). Added `<IncludeSymbols>false</IncludeSymbols>` and `<NoWarn>NU5128</NoWarn>` to `NexusLabs.Needlr.Build.csproj`.
+
+### Changed
+
+- **`MultiProjectApp` example simplified**: Removed the now-unnecessary `BootstrapPlugin` class. The Bootstrap project no longer needs a concrete `IServiceCollectionPlugin` implementation to anchor type discovery; the assembly reference chain is sufficient.
+
+### Documentation
+
+- Updated `MultiProjectApp/README.md`: added `Integration.Tests` to project structure, added "Keeping Source Gen Enabled in Test Projects" section, removed stale `BootstrapPlugin` content.
+- Updated `docs/solution-wide-source-generation.md`: split opt-out/opt-in sections, added critical caveat that `OutputItemType="Analyzer"` project references are **not** transitively propagated, fixed example showing test projects with source gen kept enabled.
+
 ## [0.0.2-alpha.20] - 2026-03-01
 
 ### Added
