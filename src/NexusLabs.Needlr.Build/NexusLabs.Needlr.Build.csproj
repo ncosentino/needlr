@@ -16,8 +16,7 @@
     <!-- Always carry Generators and Attributes as real transitive dependencies -->
     <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Analyzer" />
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

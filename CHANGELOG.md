@@ -5,6 +5,12 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.22] - 2026-03-02
+
+### Fixed
+
+- **`NexusLabs.Needlr.Build` did not deliver `NexusLabs.Needlr.Generators` to consuming projects**: The `ProjectReference` to `NexusLabs.Needlr.Generators` in `NexusLabs.Needlr.Build.csproj` used `OutputItemType="Analyzer"`, which causes NuGet Pack to omit the reference from the nuspec dependency list. As a result, projects that referenced only `NexusLabs.Needlr.Build` never received the generator DLL and no `TypeRegistry` was produced. Removed `OutputItemType="Analyzer"` from the reference; since `NexusLabs.Needlr.Generators` already places its DLL in `analyzers/dotnet/cs/` within its own package, NuGet now correctly delivers and wires it up as an analyzer for all consuming projects.
+
 ## [0.0.2-alpha.21] - 2026-03-02
 
 ### Added
