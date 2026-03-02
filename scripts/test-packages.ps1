@@ -117,9 +117,11 @@ $assertions = @(
             }
         )
         FileChecks = @(
-            @{ Entry = 'build/NexusLabs.Needlr.Build.props';             Content = 'NeedlrNamespacePrefix';              Description = 'build/props contains NeedlrNamespacePrefix' },
+            @{ Entry = 'build/NexusLabs.Needlr.Build.props';             Content = 'NeedlrAutoGenerate';               Description = 'build/props defines NeedlrAutoGenerate' },
+            @{ Entry = 'build/NexusLabs.Needlr.Build.targets';           Content = 'RootNamespace';                    Description = 'build/targets falls back to RootNamespace for NeedlrNamespacePrefix' },
             @{ Entry = 'build/NexusLabs.Needlr.Build.targets';           Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'build/targets contains NeedlrWriteTypeRegistryAttributeFile target' },
-            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.props';   Content = 'NeedlrNamespacePrefix';              Description = 'buildTransitive/props contains NeedlrNamespacePrefix' },
+            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.props';   Content = 'NeedlrAutoGenerate';               Description = 'buildTransitive/props defines NeedlrAutoGenerate' },
+            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.targets'; Content = 'RootNamespace';                    Description = 'buildTransitive/targets falls back to RootNamespace for NeedlrNamespacePrefix' },
             @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.targets'; Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'buildTransitive/targets contains NeedlrWriteTypeRegistryAttributeFile target' }
         )
     }
@@ -192,6 +194,7 @@ function Test-AttributeFileTarget {
         [string]$RepoRoot,
         [string]$Description,
         [hashtable]$Properties = @{},
+        [switch]$IncludeGeneratorAnalyzer,  # add a fake NexusLabs.Needlr.Generators Analyzer item
         $ExpectedContains = $null,  # $null = expect file NOT created
         [ref]$Failed
     )
@@ -211,6 +214,13 @@ function Test-AttributeFileTarget {
     }
     $propBlock = ($propLines -join "`n")
 
+    # When testing the generator-presence guard we add a fake Analyzer item whose %(Filename) is
+    # NexusLabs.Needlr.Generators. MSBuild derives %(Filename) from the Include path at evaluation
+    # time — the file does not need to exist on disk.
+    $analyzerBlock = if ($IncludeGeneratorAnalyzer) {
+        "`n  <ItemGroup>`n    <Analyzer Include=`"$($tmpDir -replace '\\', '/')/NexusLabs.Needlr.Generators.dll`" />`n  </ItemGroup>"
+    } else { '' }
+
     $projContent = @"
 <Project>
   <PropertyGroup>
@@ -218,7 +228,7 @@ function Test-AttributeFileTarget {
 $propBlock
   </PropertyGroup>
   <Import Project="$buildPropsPath" />
-  <Import Project="$buildTargetsPath" />
+  <Import Project="$buildTargetsPath" />$analyzerBlock
 </Project>
 "@
 
@@ -267,37 +277,49 @@ $failedRef = [ref]$failed
 
 Test-AttributeFileTarget `
     -RepoRoot $repoRoot `
-    -Description "NeedlrAutoGenerate=false (default) does not write file" `
-    -Properties @{ NeedlrAutoGenerate = 'false' } `
+    -Description "No generator analyzer present — file not written (safety guard)" `
+    -Properties @{} `
     -ExpectedContains $null `
     -Failed $failedRef
 
 Test-AttributeFileTarget `
     -RepoRoot $repoRoot `
-    -Description "NeedlrAutoGenerate=true, empty prefix writes no-arg attribute" `
-    -Properties @{ NeedlrAutoGenerate = 'true' } `
-    -ExpectedContains '[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]' `
+    -Description "NeedlrAutoGenerate=false suppresses file even when generator present" `
+    -Properties @{ NeedlrAutoGenerate = 'false' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains $null `
     -Failed $failedRef
 
 Test-AttributeFileTarget `
     -RepoRoot $repoRoot `
-    -Description "NeedlrAutoGenerate=true, single prefix writes single-element array" `
-    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrNamespacePrefix = 'MyNamespace' } `
-    -ExpectedContains 'IncludeNamespacePrefixes = new[] { "MyNamespace" }' `
+    -Description "Generator present, RootNamespace set — writes single-element array" `
+    -Properties @{ RootNamespace = 'MyProject' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains 'IncludeNamespacePrefixes = new[] { "MyProject" }' `
     -Failed $failedRef
 
 Test-AttributeFileTarget `
     -RepoRoot $repoRoot `
-    -Description "NeedlrAutoGenerate=true, multi-prefix writes multi-element array" `
-    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrNamespacePrefix = 'Foo;Bar' } `
+    -Description "Explicit multi-prefix overrides RootNamespace default" `
+    -Properties @{ RootNamespace = 'MyProject'; NeedlrNamespacePrefix = 'Foo;Bar' } `
+    -IncludeGeneratorAnalyzer `
     -ExpectedContains '"Foo", "Bar"' `
     -Failed $failedRef
 
 Test-AttributeFileTarget `
     -RepoRoot $repoRoot `
     -Description "NeedlrAutoGenerateAttribute=false suppresses file generation" `
-    -Properties @{ NeedlrAutoGenerate = 'true'; NeedlrAutoGenerateAttribute = 'false' } `
+    -Properties @{ RootNamespace = 'MyProject'; NeedlrAutoGenerateAttribute = 'false' } `
+    -IncludeGeneratorAnalyzer `
     -ExpectedContains $null `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "No RootNamespace and no explicit prefix — writes no-arg attribute (all types)" `
+    -Properties @{} `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains '[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]' `
     -Failed $failedRef
 
 Write-Host ""

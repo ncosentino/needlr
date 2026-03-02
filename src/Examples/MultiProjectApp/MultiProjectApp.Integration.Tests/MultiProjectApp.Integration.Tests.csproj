@@ -4,8 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Source generation is ENABLED for this test project so its own plugin types are discovered. -->
-    <NeedlrNamespacePrefix>MultiProjectApp.Integration.Tests</NeedlrNamespacePrefix>
+
   </PropertyGroup>
 
   <ItemGroup>

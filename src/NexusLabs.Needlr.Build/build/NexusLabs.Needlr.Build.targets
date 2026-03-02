@@ -28,22 +28,31 @@
           BeforeTargets="CoreCompile"
           Condition="'$(NeedlrAutoGenerate)' == 'true' AND '$(NeedlrAutoGenerateAttribute)' != 'false'">
     <PropertyGroup>
-      <_NeedlrAttributeFile>$(IntermediateOutputPath)NeedlrGeneratedTypeRegistry.g.cs</_NeedlrAttributeFile>
+      <!-- Only write the attribute when the Needlr source generator is actually present as an
+           Analyzer. This prevents compile errors in projects that import these targets (e.g. via
+           Directory.Build.targets) but do not reference NexusLabs.Needlr.Generators. -->
+      <_NeedlrHasGenerator>@(Analyzer->AnyHaveMetadataValue('Filename', 'NexusLabs.Needlr.Generators'))</_NeedlrHasGenerator>
+      <_NeedlrAttributeFile Condition="'$(_NeedlrHasGenerator)' == 'true'">$(IntermediateOutputPath)NeedlrGeneratedTypeRegistry.g.cs</_NeedlrAttributeFile>
+      <!-- Resolve prefix at target execution time (not in .props) so $(RootNamespace) is available.
+           If the user has not set NeedlrNamespacePrefix, fall back to $(RootNamespace). -->
+      <_NeedlrEffectivePrefix Condition="'$(NeedlrNamespacePrefix)' != ''">$(NeedlrNamespacePrefix)</_NeedlrEffectivePrefix>
+      <_NeedlrEffectivePrefix Condition="'$(NeedlrNamespacePrefix)' == ''">$(RootNamespace)</_NeedlrEffectivePrefix>
     </PropertyGroup>
-    <ItemGroup Condition="'$(NeedlrNamespacePrefix)' != ''">
-      <_NeedlrNamespacePrefix Include="$(NeedlrNamespacePrefix)" />
+    <ItemGroup Condition="'$(_NeedlrHasGenerator)' == 'true' AND '$(_NeedlrEffectivePrefix)' != ''">
+      <_NeedlrNamespacePrefix Include="$(_NeedlrEffectivePrefix)" />
     </ItemGroup>
-    <PropertyGroup>
-      <_NeedlrPrefixList Condition="'$(NeedlrNamespacePrefix)' != ''">@(_NeedlrNamespacePrefix -> '&quot;%(Identity)&quot;', ', ')</_NeedlrPrefixList>
-      <_NeedlrAttributeContent Condition="'$(NeedlrNamespacePrefix)' != ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { $(_NeedlrPrefixList) })]</_NeedlrAttributeContent>
-      <_NeedlrAttributeContent Condition="'$(NeedlrNamespacePrefix)' == ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]</_NeedlrAttributeContent>
+    <PropertyGroup Condition="'$(_NeedlrHasGenerator)' == 'true'">
+      <_NeedlrPrefixList Condition="'$(_NeedlrEffectivePrefix)' != ''">@(_NeedlrNamespacePrefix -> '&quot;%(Identity)&quot;', ', ')</_NeedlrPrefixList>
+      <_NeedlrAttributeContent Condition="'$(_NeedlrEffectivePrefix)' != ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { $(_NeedlrPrefixList) })]</_NeedlrAttributeContent>
+      <_NeedlrAttributeContent Condition="'$(_NeedlrEffectivePrefix)' == ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]</_NeedlrAttributeContent>
     </PropertyGroup>
-    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="'$(_NeedlrHasGenerator)' == 'true'" />
     <WriteLinesToFile
       File="$(_NeedlrAttributeFile)"
       Lines="// &lt;auto-generated /&gt;;$(_NeedlrAttributeContent)"
-      Overwrite="true" />
-    <ItemGroup>
+      Overwrite="true"
+      Condition="'$(_NeedlrHasGenerator)' == 'true'" />
+    <ItemGroup Condition="'$(_NeedlrHasGenerator)' == 'true'">
       <Compile Include="$(_NeedlrAttributeFile)" />
     </ItemGroup>
   </Target>

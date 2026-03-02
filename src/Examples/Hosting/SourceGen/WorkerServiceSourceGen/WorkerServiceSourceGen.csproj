@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-    <NeedlrNamespacePrefix>WorkerServiceSourceGen</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,10 +8,6 @@
 		<!-- Emit generated files for debugging -->
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
-
-		<!-- Enable Needlr source generation for this feature assembly. -->
-		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-		<NeedlrNamespacePrefix>TransitiveDemo.FeatureA</NeedlrNamespacePrefix>
 	</PropertyGroup>
 
 	<ItemGroup>

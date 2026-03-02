@@ -11,9 +11,6 @@
     
     <!-- Enable Needlr diagnostics (outputs to bin/Debug/net10.0/NeedlrDiagnostics by default) -->
     <NeedlrDiagnostics>true</NeedlrDiagnostics>
-
-    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-    <NeedlrNamespacePrefix>OptionsValidationExample</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <!-- Import Needlr targets for diagnostic file extraction -->

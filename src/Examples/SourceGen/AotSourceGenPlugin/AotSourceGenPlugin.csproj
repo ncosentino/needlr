@@ -5,6 +5,9 @@
 		<Nullable>enable</Nullable>
 		<IsAotCompatible>true</IsAotCompatible>
 		<EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+		<!-- The host (AotSourceGenApp) includes this namespace in its own TypeRegistry prefix,
+		     so suppress auto-generation here to avoid double-registration. -->
+		<NeedlrAutoGenerateAttribute>false</NeedlrAutoGenerateAttribute>
 	</PropertyGroup>
 
 	<ItemGroup>

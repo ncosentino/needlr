@@ -27,14 +27,6 @@
 		<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
 		<WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2060;IL2072;IL2075;IL2091</WarningsAsErrors>
 
-		<!-- Enable Needlr source generation. NeedlrNamespacePrefix is intentionally scoped to only
-		     AotSourceGenConsoleApp, not AotSourceGenConsolePlugin. Because some types are internal in
-		     the plugin assembly, the plugin generates its own TypeRegistry — host and plugin are separate.
-		     (Alternatively: AotSourceGenConsoleApp;AotSourceGenConsolePlugin would include plugin types
-		     in the host's registry, but internal plugin types would be missed.) -->
-		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-		<NeedlrNamespacePrefix>AotSourceGenConsoleApp</NeedlrNamespacePrefix>
-
 		<!-- Emit generated files for debugging -->
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>

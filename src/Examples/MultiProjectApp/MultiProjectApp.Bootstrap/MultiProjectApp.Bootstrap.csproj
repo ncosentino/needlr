@@ -5,8 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <!-- Bootstrap has no injectable types — suppress auto-attribute generation. -->
+    <!-- Optional optimization: this project has no injectable types of its own. Without this,
+         the generator still runs but produces an empty TypeRegistry. No errors or warnings occur
+         either way — uncomment to skip the unnecessary codegen for this assembly.
     <NeedlrAutoGenerateAttribute>false</NeedlrAutoGenerateAttribute>
+    -->
   </PropertyGroup>
 
   <ItemGroup>

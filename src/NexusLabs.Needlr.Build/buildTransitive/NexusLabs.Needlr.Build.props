@@ -1,11 +1,12 @@
 <Project>
-  <!-- Default NeedlrAutoGenerate to false unless the consuming project or Directory.Build.props overrides it. -->
+  <!-- NeedlrAutoGenerate defaults to true. Set to false in projects that should not generate a TypeRegistry. -->
   <PropertyGroup Condition="'$(NeedlrAutoGenerate)' == ''">
-    <NeedlrAutoGenerate>false</NeedlrAutoGenerate>
+    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
   </PropertyGroup>
   <!-- NeedlrNamespacePrefix: semicolon-delimited namespace prefix filter for GenerateTypeRegistry.
-       Default is empty (include all types). Set explicitly to scope per-project.
-       Example: <NeedlrNamespacePrefix>MyApp;MyApp.Plugins</NeedlrNamespacePrefix> -->
+       When left empty (the default), the target resolves it to $(RootNamespace) at build time, scoping
+       generation to the project's own namespace and sub-namespaces. Override to use a different or
+       multiple namespaces. Example: <NeedlrNamespacePrefix>MyApp;MyApp.Plugins</NeedlrNamespacePrefix> -->
   <PropertyGroup Condition="'$(NeedlrNamespacePrefix)' == ''">
     <NeedlrNamespacePrefix></NeedlrNamespacePrefix>
   </PropertyGroup>

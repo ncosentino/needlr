@@ -15,10 +15,6 @@
 		<NeedlrDiagnostics>true</NeedlrDiagnostics>
 		<NeedlrBreadcrumbLevel>Verbose</NeedlrBreadcrumbLevel>
 		<NeedlrExportGraph>true</NeedlrExportGraph>
-
-		<!-- Enable Needlr source generation for this plugin assembly. -->
-		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-		<NeedlrNamespacePrefix>AotSourceGenConsolePlugin</NeedlrNamespacePrefix>
 	</PropertyGroup>
 
 	<!-- Import Needlr targets for diagnostic file extraction -->

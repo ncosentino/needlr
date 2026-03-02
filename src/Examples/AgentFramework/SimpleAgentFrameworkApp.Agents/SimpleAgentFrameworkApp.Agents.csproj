@@ -7,8 +7,6 @@
     <NeedlrDiagnostics>true</NeedlrDiagnostics>
     <!-- Output diagnostics to the exe entry point's bin folder, not this library's bin -->
     <NeedlrDiagnosticsPath>$(MSBuildProjectDirectory)\..\SimpleAgentFrameworkApp\bin\$(Configuration)\$(TargetFramework)\NeedlrDiagnostics</NeedlrDiagnosticsPath>
-    <NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-    <NeedlrNamespacePrefix>SimpleAgentFrameworkApp.Agents</NeedlrNamespacePrefix>
   </PropertyGroup>
 
   <ItemGroup>

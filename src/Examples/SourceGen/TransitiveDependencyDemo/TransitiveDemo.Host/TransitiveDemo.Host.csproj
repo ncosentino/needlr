@@ -24,10 +24,6 @@
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
 
-		<!-- Enable Needlr source generation. The host assembly triggers generation scoped to its own
-		     namespace — FeatureA and FeatureB types are registered in their own assemblies. -->
-		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
-		<NeedlrNamespacePrefix>TransitiveDemo.Host</NeedlrNamespacePrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
