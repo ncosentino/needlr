@@ -144,6 +144,14 @@ foreach ($proj in $projects) {
 }
 Write-Host "Build and pack validation passed." -ForegroundColor Green
 
+# Assert nuspec contents for key packages
+Write-Host "Validating package contents (nuspec assertions)..." -ForegroundColor Cyan
+& (Join-Path $PSScriptRoot "test-packages.ps1") -NoBuild
+if ($LASTEXITCODE -ne 0) {
+  throw "Package content validation failed. Fix the packaging issue before releasing."
+}
+Write-Host "Package content validation passed." -ForegroundColor Green
+
 if ($DryRun) {
   Write-Host ""
   Write-Host "=== CHANGELOG ENTRY ===" -ForegroundColor Cyan

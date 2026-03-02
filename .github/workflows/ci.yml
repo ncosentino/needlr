@@ -133,6 +133,29 @@ jobs:
         publish_dir: ./site
         keep_files: true
 
+  package-validation:
+    runs-on: ubuntu-latest
+    # Runs in parallel with build-and-test (no 'needs')
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          10.0.x
+
+    - name: Restore
+      run: dotnet restore src/NexusLabs.Needlr.slnx
+
+    - name: Validate package contents
+      shell: pwsh
+      run: scripts/test-packages.ps1
+
   aot-console-app:
     runs-on: ubuntu-latest
     # Runs in parallel with build-and-test (no 'needs')
