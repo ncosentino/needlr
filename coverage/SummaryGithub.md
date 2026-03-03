@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 03/03/2026 - 06:59:24 |
-| Coverage date: | 03/03/2026 - 06:58:02 - 03/03/2026 - 06:59:21 |
-| Parser: | MultiReport (22x Cobertura) |
-| Assemblies: | 24 |
-| Classes: | 262 |
-| Files: | 222 |
-| **Line coverage:** | 87.4% (11427 of 13060) |
-| Covered lines: | 11427 |
-| Uncovered lines: | 1633 |
-| Coverable lines: | 13060 |
-| Total lines: | 32643 |
-| **Branch coverage:** | 77.3% (4948 of 6401) |
-| Covered branches: | 4948 |
-| Total branches: | 6401 |
+| Generated on: | 03/03/2026 - 21:11:37 |
+| Coverage date: | 03/03/2026 - 21:10:14 - 03/03/2026 - 21:11:33 |
+| Parser: | MultiReport (23x Cobertura) |
+| Assemblies: | 25 |
+| Classes: | 267 |
+| Files: | 227 |
+| **Line coverage:** | 87.2% (11450 of 13128) |
+| Covered lines: | 11450 |
+| Uncovered lines: | 1678 |
+| Coverable lines: | 13128 |
+| Total lines: | 32865 |
+| **Branch coverage:** | 77% (4938 of 6405) |
+| Covered branches: | 4938 |
+| Total branches: | 6405 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -66,6 +66,18 @@
 |MultiProjectApp.Features.Reporting.Generated.TypeRegistry|93.7%||
 |MultiProjectApp.Features.Reporting.ReportingInternals|0%||
 |MultiProjectApp.Features.Reporting.ReportingPlugin|100%||
+
+</details>
+<details><summary>MultiProjectApp.WorkerApp - 46.2%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**MultiProjectApp.WorkerApp**|**46.2%**|**0%**|
+|MultiProjectApp.WorkerApp.Generated.NeedlrSourceGenModuleInitializer|100%||
+|MultiProjectApp.WorkerApp.Generated.ServiceCatalog|0%||
+|MultiProjectApp.WorkerApp.Generated.TypeRegistry|95.2%||
+|MultiProjectApp.WorkerApp.NotificationWorker|0%|0%|
+|Program|0%||
 
 </details>
 <details><summary>NexusLabs.Needlr - 83.6%</summary>
@@ -238,20 +250,20 @@
 |NexusLabs.Needlr.FluentValidation.ValidationFailureConverter|88.8%|50%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 88.1%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 88%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**88.1%**|**76.7%**|
+|**NexusLabs.Needlr.Generators**|**88%**|**76.3%**|
 |NexusLabs.Needlr.Generators.BreadcrumbWriter|91.4%|83.3%|
 |NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator|98.8%|81.5%|
 |NexusLabs.Needlr.Generators.CodeGen.InterceptorCodeGenerator|88.8%|68.1%|
 |NexusLabs.Needlr.Generators.CodeGen.OptionsCodeGenerator|84.7%|57.3%|
 |NexusLabs.Needlr.Generators.CodeGen.ProviderCodeGenerator|88.9%|71.4%|
-|NexusLabs.Needlr.Generators.CodeGen.ServiceCatalogCodeGenerator|95.7%|81.8%|
+|NexusLabs.Needlr.Generators.CodeGen.ServiceCatalogCodeGenerator|95.7%|78.7%|
 |NexusLabs.Needlr.Generators.DiagnosticDescriptors|100%||
 |NexusLabs.Needlr.Generators.DiagnosticOptions|100%|87.5%|
-|NexusLabs.Needlr.Generators.DiagnosticsGenerator|94.9%|84.8%|
+|NexusLabs.Needlr.Generators.DiagnosticsGenerator|93.6%|82.7%|
 |NexusLabs.Needlr.Generators.Export.CollectedDiagnostic|0%||
 |NexusLabs.Needlr.Generators.Export.GraphDecorator|100%||
 |NexusLabs.Needlr.Generators.Export.GraphDependency|100%||
@@ -299,7 +311,7 @@
 |NexusLabs.Needlr.Generators.ProviderAttributeAnalyzer|91.8%|73.2%|
 |NexusLabs.Needlr.Generators.ProviderDiscoveryHelper|91.5%|86.2%|
 |NexusLabs.Needlr.Generators.TypeDiscoveryHelper|86.2%|83.2%|
-|NexusLabs.Needlr.Generators.TypeRegistryGenerator|87.5%|77.7%|
+|NexusLabs.Needlr.Generators.TypeRegistryGenerator|87.5%|77.4%|
 |NexusLabs.Needlr.Generators.UnsupportedDataAnnotationAnalyzer|95.5%|81.8%|
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
