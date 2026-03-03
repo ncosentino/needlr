@@ -911,6 +911,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         {
             if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
+                // Skip assemblies that already have [GenerateTypeRegistry] — those assemblies
+                // register their own types at runtime via their own TypeRegistry and cascade
+                // loading. Scanning them here would trigger false NDLRGEN001 errors for their
+                // internal types.
+                if (TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
+                    continue;
+
                 // For referenced assemblies, they use their own generated namespace
                 var refSafeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblySymbol.Name);
                 var refGeneratedNamespace = $"{refSafeAssemblyName}.Generated";

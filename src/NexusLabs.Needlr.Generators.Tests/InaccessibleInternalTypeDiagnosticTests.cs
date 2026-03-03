@@ -191,6 +191,80 @@ namespace TestApp
     }
 
     [Fact]
+    public void Generator_DoesNotEmitDiagnostic_ForInternalTypeInReferencedAssemblyWithGenerateTypeRegistry()
+    {
+        // Referenced assembly has its own [GenerateTypeRegistry] and an internal type.
+        // The host scans that namespace. NDLRGEN001 should NOT fire because the referenced
+        // assembly manages its own types via cascade loading.
+        var referencedSource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""ReferencedLib"" })]
+
+namespace ReferencedLib
+{
+    public interface IService { }
+    internal class InternalService : IService { }
+}";
+
+        var attributeSource = GetAttributeSource();
+
+        var referencedCompilation = CSharpCompilation.Create(
+            "ReferencedLib",
+            [
+                CSharpSyntaxTree.ParseText(attributeSource),
+                CSharpSyntaxTree.ParseText(referencedSource)
+            ],
+            Basic.Reference.Assemblies.Net100.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var referencedErrors = referencedCompilation.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ToList();
+        Assert.Empty(referencedErrors);
+
+        var hostSource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""ReferencedLib"" })]
+
+namespace HostApp
+{
+    public class HostService { }
+}";
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Cast<MetadataReference>()
+            .Append(referencedCompilation.ToMetadataReference())
+            .ToArray();
+
+        var hostCompilation = CSharpCompilation.Create(
+            "HostApp",
+            [
+                CSharpSyntaxTree.ParseText(attributeSource),
+                CSharpSyntaxTree.ParseText(hostSource)
+            ],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new TypeRegistryGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            hostCompilation,
+            out _,
+            out var diagnostics);
+
+        // Referenced assembly has [GenerateTypeRegistry] — its internal types are handled
+        // by its own TypeRegistry via cascade loading. No NDLRGEN001 should fire.
+        var ndlrgen001Diagnostics = diagnostics
+            .Where(d => d.Id == "NDLRGEN001")
+            .ToList();
+
+        Assert.Empty(ndlrgen001Diagnostics);
+    }
+
+    [Fact]
     public void Generator_DoesNotEmitDiagnostic_WhenNamespaceDoesNotMatch()
     {
         // Create a "referenced" assembly with an internal type in a different namespace
