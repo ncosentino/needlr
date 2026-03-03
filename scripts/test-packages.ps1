@@ -342,48 +342,33 @@ Write-Host ""
 Write-Host "=== Example projects (source-mode simulation of NexusLabs.Needlr.Build) ===" -ForegroundColor Cyan
 Write-Host "  (Sync guarantee: if Directory.Build.targets drifts from the NuGet package, these fail)"
 
-$examplesDir = Join-Path $repoRoot 'src/Examples/MultiProjectApp'
-$integrationTestsDir = Join-Path $examplesDir 'MultiProjectApp.Integration.Tests'
-$workerTestsDir      = Join-Path $examplesDir 'MultiProjectApp.WorkerApp.Tests'
+$examplesRoot = Join-Path $repoRoot 'src/Examples'
+$allExampleProjects = Get-ChildItem -Path $examplesRoot -Recurse -Filter "*.csproj" | Sort-Object FullName
 
-Write-Host -NoNewline "  Building MultiProjectApp examples..."
-$buildOut = & dotnet build $integrationTestsDir -c Debug 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host " FAIL" -ForegroundColor Red
-    Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
-    $failed = $true
-} else {
-    Write-Host " OK" -ForegroundColor Green
+foreach ($proj in $allExampleProjects) {
+    Write-Host -NoNewline "  Building $($proj.Name)..."
+    $buildOut = & dotnet build $proj.FullName -c Debug 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host " FAIL" -ForegroundColor Red
+        Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
+        $failed = $true
+    } else {
+        Write-Host " OK" -ForegroundColor Green
+    }
 }
 
-Write-Host -NoNewline "  Building WorkerApp.Tests..."
-$buildOut = & dotnet build $workerTestsDir -c Debug 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host " FAIL" -ForegroundColor Red
-    Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
-    $failed = $true
-} else {
-    Write-Host " OK" -ForegroundColor Green
-}
+$testProjects = $allExampleProjects | Where-Object { $_.Name -like '*Tests.csproj' }
 
-Write-Host -NoNewline "  Running MultiProjectApp.Integration.Tests..."
-$testOut = & dotnet test $integrationTestsDir -c Debug --no-build 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host " FAIL" -ForegroundColor Red
-    Write-Host ($testOut | Select-Object -Last 20 | Out-String)
-    $failed = $true
-} else {
-    Write-Host " OK" -ForegroundColor Green
-}
-
-Write-Host -NoNewline "  Running MultiProjectApp.WorkerApp.Tests..."
-$testOut = & dotnet test $workerTestsDir -c Debug --no-build 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host " FAIL" -ForegroundColor Red
-    Write-Host ($testOut | Select-Object -Last 20 | Out-String)
-    $failed = $true
-} else {
-    Write-Host " OK" -ForegroundColor Green
+foreach ($proj in $testProjects) {
+    Write-Host -NoNewline "  Running $($proj.Name)..."
+    $testOut = & dotnet test $proj.FullName -c Debug --no-build 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host " FAIL" -ForegroundColor Red
+        Write-Host ($testOut | Select-Object -Last 20 | Out-String)
+        $failed = $true
+    } else {
+        Write-Host " OK" -ForegroundColor Green
+    }
 }
 
 Write-Host ""
