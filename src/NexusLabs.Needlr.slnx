@@ -48,6 +48,7 @@
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Reporting.Tests/MultiProjectApp.Features.Reporting.Tests.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Integration.Tests/MultiProjectApp.Integration.Tests.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.WorkerApp/MultiProjectApp.WorkerApp.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.WorkerApp.Tests/MultiProjectApp.WorkerApp.Tests.csproj" />
   </Folder>
   <Folder Name="/Examples/SignalR/">
     <Project Path="Examples/SignalR/ChatHubExample/ChatHubExample.csproj" />
