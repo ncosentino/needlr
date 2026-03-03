@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # allow manual trigger; select the tag ref in the UI or --ref with gh CLI
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -57,6 +57,25 @@ jobs:
 
     - name: Build (Release)
       run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore -p:PublicRelease=true
+
+    - name: Test
+      run: |
+        dotnet test src/NexusLabs.Needlr.slnx \
+          --configuration Release \
+          --no-build \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage" \
+          --results-directory coverage
+
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+    - name: Generate Coverage Reports
+      run: |
+        reportgenerator \
+          -reports:"coverage/**/coverage.cobertura.xml" \
+          -targetdir:"coverage/report" \
+          -reporttypes:"Html;JsonSummary;MarkdownSummaryGithub;Badges"
 
     # Pack only the subset: NexusLabs.Needlr*
     - name: Pack subset (NexusLabs.Needlr*)
@@ -145,11 +164,19 @@ jobs:
         VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
         ./scripts/generate-versioned-api-docs.sh "$VERSION"
 
+    - name: Generate Dev API Documentation
+      run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
+
     - name: Generate Articles Page
       run: python scripts/generate-articles.py docs/articles.md
 
     - name: Build Documentation
       run: python -m mkdocs build
+
+    - name: Add Coverage Report to Site
+      run: |
+        mkdir -p site/coverage
+        cp -r coverage/report/* site/coverage/
 
     - name: Deploy Documentation
       uses: peaceiris/actions-gh-pages@v4
@@ -157,6 +184,20 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./site
         keep_files: true
+
+    - name: Commit Stable API Docs to Main
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git stash
+        git fetch origin main
+        git checkout main
+        git pull --rebase origin main
+        git stash pop || true
+        git add docs/api/stable/
+        git diff --staged --quiet || git commit -m "docs: update stable API reference for v$VERSION [skip ci]"
+        git push origin main
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
