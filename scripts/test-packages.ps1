@@ -339,6 +339,54 @@ Test-AttributeFileTarget `
     -Failed $failedRef
 
 Write-Host ""
+Write-Host "=== Example projects (source-mode simulation of NexusLabs.Needlr.Build) ===" -ForegroundColor Cyan
+Write-Host "  (Sync guarantee: if Directory.Build.targets drifts from the NuGet package, these fail)"
+
+$examplesDir = Join-Path $repoRoot 'src/Examples/MultiProjectApp'
+$integrationTestsDir = Join-Path $examplesDir 'MultiProjectApp.Integration.Tests'
+$workerTestsDir      = Join-Path $examplesDir 'MultiProjectApp.WorkerApp.Tests'
+
+Write-Host -NoNewline "  Building MultiProjectApp examples..."
+$buildOut = & dotnet build $integrationTestsDir -c Debug 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host " FAIL" -ForegroundColor Red
+    Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
+    $failed = $true
+} else {
+    Write-Host " OK" -ForegroundColor Green
+}
+
+Write-Host -NoNewline "  Building WorkerApp.Tests..."
+$buildOut = & dotnet build $workerTestsDir -c Debug 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host " FAIL" -ForegroundColor Red
+    Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
+    $failed = $true
+} else {
+    Write-Host " OK" -ForegroundColor Green
+}
+
+Write-Host -NoNewline "  Running MultiProjectApp.Integration.Tests..."
+$testOut = & dotnet test $integrationTestsDir -c Debug --no-build 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host " FAIL" -ForegroundColor Red
+    Write-Host ($testOut | Select-Object -Last 20 | Out-String)
+    $failed = $true
+} else {
+    Write-Host " OK" -ForegroundColor Green
+}
+
+Write-Host -NoNewline "  Running MultiProjectApp.WorkerApp.Tests..."
+$testOut = & dotnet test $workerTestsDir -c Debug --no-build 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host " FAIL" -ForegroundColor Red
+    Write-Host ($testOut | Select-Object -Last 20 | Out-String)
+    $failed = $true
+} else {
+    Write-Host " OK" -ForegroundColor Green
+}
+
+Write-Host ""
 if ($failed) {
     Write-Host "Package validation FAILED." -ForegroundColor Red
     exit 1

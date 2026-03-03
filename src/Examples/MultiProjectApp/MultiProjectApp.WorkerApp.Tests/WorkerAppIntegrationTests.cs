@@ -7,7 +7,7 @@ using Xunit;
 namespace MultiProjectApp.WorkerApp.Tests;
 
 /// <summary>
-/// Integration tests demonstrating the AssemblyLoader pattern.
+/// Integration tests demonstrating the Needlr cascade loading pattern.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -17,10 +17,11 @@ namespace MultiProjectApp.WorkerApp.Tests;
 /// resolved service — the service is obtained purely through the DI container).
 /// </para>
 /// <para>
-/// Without <see cref="AssemblyLoader"/>, <c>WorkerApp.dll</c> would never be loaded,
-/// Needlr's source-gen registry would be empty, and <c>GetRequiredService</c> would throw.
-/// With it, <c>WorkerApp</c> and its transitive <c>Notifications</c> dependency are both
-/// loaded at startup, their module initializers fire, and all types are correctly registered.
+/// Because <c>NexusLabs.Needlr.Build</c> activates the source generator on this project,
+/// a <c>NeedlrSourceGenModuleInitializer</c> is generated that calls
+/// <c>ForceLoadReferencedAssemblies()</c>, loading <c>WorkerApp.dll</c> and its transitive
+/// <c>Notifications</c> dependency at startup. Their module initializers fire, all types
+/// are correctly registered, and no manual <c>AssemblyLoader</c> is needed.
 /// </para>
 /// </remarks>
 public sealed class WorkerAppIntegrationTests
@@ -29,15 +30,17 @@ public sealed class WorkerAppIntegrationTests
     public void NotificationService_IsRegistered_EvenThoughNoTestCodeReferencesItDirectly()
     {
         // Build the service provider using only source-gen discovery.
-        // AssemblyLoader.cs has already run (module initializer), ensuring WorkerApp and
-        // its Notifications dependency are loaded. No test code here references
-        // INotificationService or NotificationWorker directly — we only resolve via DI.
+        // The generated NeedlrSourceGenModuleInitializer.ForceLoadReferencedAssemblies() has
+        // already run (module initializer), ensuring WorkerApp and its Notifications dependency
+        // are loaded. No test code here references INotificationService or NotificationWorker
+        // directly — we only resolve via DI.
         var provider = new Syringe()
             .UsingSourceGen()
             .BuildServiceProvider();
 
-        // If AssemblyLoader.cs were removed, this would throw because the TypeRegistry
-        // for Notifications would never have been registered.
+        // If the generator were not running on this project (e.g., NexusLabs.Needlr.Build
+        // not applied), this would throw because the TypeRegistry for Notifications would
+        // never have been registered.
         var service = provider.GetRequiredService<INotificationService>();
         Assert.NotNull(service);
     }

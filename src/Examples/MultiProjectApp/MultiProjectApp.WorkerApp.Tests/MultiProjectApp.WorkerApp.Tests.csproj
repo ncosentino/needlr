@@ -4,8 +4,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- This project intentionally keeps NeedlrAutoGenerate=true (the default) so the test
-         assembly itself participates in source generation. -->
   </PropertyGroup>
 
   <ItemGroup>

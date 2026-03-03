@@ -4,4 +4,27 @@
        [assembly: GenerateTypeRegistry] file auto-generated; all others are unaffected. -->
   <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.targets"
           Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.targets')" />
+
+  <!--
+    These references simulate what NexusLabs.Needlr.Build does for NuGet consumers.
+    In the NuGet package, the nuspec has:
+      <dependency id="NexusLabs.Needlr.Generators" exclude="Runtime,Compile,Native" />
+    which causes NuGet to add NexusLabs.Needlr.Generators as an Analyzer item and
+    NexusLabs.Needlr.Generators.Attributes as a compile reference for every consuming project.
+    Customers never add these manually — the Build package handles it automatically.
+
+    In source/dev mode, project references cannot replicate the NuGet Analyzers asset mechanism.
+    These items here are the equivalent: they must stay in sync with the nuspec dependency above.
+    Sync is enforced by test-packages.ps1 which builds and runs the example tests — if this block
+    drifts from what the NuGet package provides, UsingSourceGen() breaks and tests fail in CI.
+
+    DeduplicateNeedlrGeneratorAnalyzers (in NexusLabs.Needlr.Build.targets) handles any dedup if a
+    project somehow already has the generator reference.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
 </Project>
