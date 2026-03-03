@@ -1,28 +1,32 @@
 {
   "summary": {
-    "generatedon": "2026-03-02T05:26:13Z",
+    "generatedon": "2026-03-03T04:19:58Z",
     "parser": "MultiReport (22x Cobertura)",
-    "assemblies": 23,
-    "classes": 259,
-    "files": 219,
-    "coveredlines": 11384,
-    "uncoveredlines": 1613,
-    "coverablelines": 12997,
-    "totallines": 32466,
-    "linecoverage": 87.5,
+    "assemblies": 24,
+    "classes": 262,
+    "files": 222,
+    "coveredlines": 11404,
+    "uncoveredlines": 1634,
+    "coverablelines": 13038,
+    "totallines": 32621,
+    "linecoverage": 87.4,
     "coveredbranches": 4925,
     "totalbranches": 6379,
     "branchcoverage": 77.2,
-    "coveredmethods": 1398,
-    "fullcoveredmethods": 1148,
-    "totalmethods": 1651,
-    "methodcoverage": 84.6,
-    "fullmethodcoverage": 69.5
+    "coveredmethods": 1404,
+    "fullcoveredmethods": 1154,
+    "totalmethods": 1666,
+    "methodcoverage": 84.2,
+    "fullmethodcoverage": 69.2
  },
   "coverage": {
     "assemblies": [
-      { "name": "MultiProjectApp.ConsoleApp", "classes": 4, "coverage": 0, "coveredlines": 0, "coverablelines": 48, "totallines": 173, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 16, "classesinassembly": [
-        { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "coverage": 0, "coveredlines": 0, "coverablelines": 10, "totallines": 45, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
+      { "name": "MultiProjectApp.Bootstrap", "classes": 3, "coverage": 50, "coveredlines": 20, "coverablelines": 40, "totallines": 154, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 40, "fullmethodcoverage": 40, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 15, "classesinassembly": [
+        { "name": "MultiProjectApp.Bootstrap.Generated.NeedlrSourceGenModuleInitializer", "coverage": 100, "coveredlines": 10, "coverablelines": 10, "totallines": 45, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
+        { "name": "MultiProjectApp.Bootstrap.Generated.ServiceCatalog", "coverage": 0, "coveredlines": 0, "coverablelines": 20, "totallines": 51, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 9 },
+        { "name": "MultiProjectApp.Bootstrap.Generated.TypeRegistry", "coverage": 100, "coveredlines": 10, "coverablelines": 10, "totallines": 58, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 4, "fullcoveredmethods": 4, "totalmethods": 4 } ] },
+      { "name": "MultiProjectApp.ConsoleApp", "classes": 4, "coverage": 0, "coveredlines": 0, "coverablelines": 49, "totallines": 174, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 16, "classesinassembly": [
+        { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "coverage": 0, "coveredlines": 0, "coverablelines": 11, "totallines": 46, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
         { "name": "MultiProjectApp.ConsoleApp.Generated.ServiceCatalog", "coverage": 0, "coveredlines": 0, "coverablelines": 20, "totallines": 51, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 9 },
         { "name": "MultiProjectApp.ConsoleApp.Generated.TypeRegistry", "coverage": 0, "coveredlines": 0, "coverablelines": 10, "totallines": 58, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 4 },
         { "name": "Program", "coverage": 0, "coveredlines": 0, "coverablelines": 8, "totallines": 19, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 1 } ] },

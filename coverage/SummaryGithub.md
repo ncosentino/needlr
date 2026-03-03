@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 03/02/2026 - 05:26:13 |
-| Coverage date: | 03/02/2026 - 05:24:55 - 03/02/2026 - 05:26:10 |
+| Generated on: | 03/03/2026 - 04:19:58 |
+| Coverage date: | 03/03/2026 - 04:18:42 - 03/03/2026 - 04:19:55 |
 | Parser: | MultiReport (22x Cobertura) |
-| Assemblies: | 23 |
-| Classes: | 259 |
-| Files: | 219 |
-| **Line coverage:** | 87.5% (11384 of 12997) |
-| Covered lines: | 11384 |
-| Uncovered lines: | 1613 |
-| Coverable lines: | 12997 |
-| Total lines: | 32466 |
+| Assemblies: | 24 |
+| Classes: | 262 |
+| Files: | 222 |
+| **Line coverage:** | 87.4% (11404 of 13038) |
+| Covered lines: | 11404 |
+| Uncovered lines: | 1634 |
+| Coverable lines: | 13038 |
+| Total lines: | 32621 |
 | **Branch coverage:** | 77.2% (4925 of 6379) |
 | Covered branches: | 4925 |
 | Total branches: | 6379 |
@@ -22,6 +22,16 @@
 </details>
 
 ## Coverage
+<details><summary>MultiProjectApp.Bootstrap - 50%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**MultiProjectApp.Bootstrap**|**50%**|****|
+|MultiProjectApp.Bootstrap.Generated.NeedlrSourceGenModuleInitializer|100%||
+|MultiProjectApp.Bootstrap.Generated.ServiceCatalog|0%||
+|MultiProjectApp.Bootstrap.Generated.TypeRegistry|100%||
+
+</details>
 <details><summary>MultiProjectApp.ConsoleApp - 0%</summary>
 
 |**Name**|**Line**|**Branch**|

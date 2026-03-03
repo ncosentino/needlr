@@ -288,9 +288,16 @@ for (i = 0, l = charts.length; i < l; i++) {
 
 var assemblies = [
   {
+    "name": "MultiProjectApp.Bootstrap",
+    "classes": [
+      { "name": "MultiProjectApp.Bootstrap.Generated.NeedlrSourceGenModuleInitializer", "rp": "MultiProjectApp.Bootstrap_NeedlrSourceGenModuleInitializer.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 45, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "MultiProjectApp.Bootstrap.Generated.ServiceCatalog", "rp": "MultiProjectApp.Bootstrap_ServiceCatalog.html", "cl": 0, "ucl": 20, "cal": 20, "tl": 51, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "MultiProjectApp.Bootstrap.Generated.TypeRegistry", "rp": "MultiProjectApp.Bootstrap_TypeRegistry.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 58, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+    ]},
+  {
     "name": "MultiProjectApp.ConsoleApp",
     "classes": [
-      { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "rp": "MultiProjectApp.ConsoleApp_NeedlrSourceGenModuleInitializer.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 45, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer", "rp": "MultiProjectApp.ConsoleApp_NeedlrSourceGenModuleInitializer.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 46, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "MultiProjectApp.ConsoleApp.Generated.ServiceCatalog", "rp": "MultiProjectApp.ConsoleApp_ServiceCatalog.html", "cl": 0, "ucl": 20, "cal": 20, "tl": 51, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "MultiProjectApp.ConsoleApp.Generated.TypeRegistry", "rp": "MultiProjectApp.ConsoleApp_TypeRegistry.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 58, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Program", "rp": "MultiProjectApp.ConsoleApp_Program.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
