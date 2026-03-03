@@ -23,10 +23,19 @@
     NeedlrAutoGenerateAttribute=false to suppress this target (avoids CS0579).
     NeedlrNamespacePrefix controls IncludeNamespacePrefixes; empty means include all types.
     Multiple prefixes are supported as a semicolon-delimited list (e.g. "Foo;Bar").
+
+    IsRoslynComponent=true and IsAspireHost=true are automatically excluded: Roslyn
+    analyzer/generator projects and Aspire AppHost projects are never runtime DI consumers,
+    so emitting the attribute there would produce compile errors or be meaningless.
+    These properties are set in the project file, so they are available here (in .targets)
+    but NOT in .props (evaluated before the project file).
   -->
   <Target Name="NeedlrWriteTypeRegistryAttributeFile"
           BeforeTargets="CoreCompile"
-          Condition="'$(NeedlrAutoGenerate)' == 'true' AND '$(NeedlrAutoGenerateAttribute)' != 'false'">
+          Condition="'$(NeedlrAutoGenerate)' == 'true'
+                 AND '$(NeedlrAutoGenerateAttribute)' != 'false'
+                 AND '$(IsRoslynComponent)' != 'true'
+                 AND '$(IsAspireHost)' != 'true'">
     <PropertyGroup>
       <!-- Only write the attribute when the Needlr source generator is actually present as an
            Analyzer. This prevents compile errors in projects that import these targets (e.g. via

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!--
+      This project intentionally has NO injectable types and references NO Needlr injection packages.
+      It demonstrates that a project with NeedlrAutoGenerate=true (inherited from Directory.Build.props)
+      and zero injectable types compiles cleanly without any explicit NeedlrAutoGenerate=false opt-out.
+      The generator detects that there is nothing to register and emits no output, avoiding compile
+      errors that would otherwise occur because the generated bootstrap code references IServiceCollection.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Generator added as Analyzer only — no injection packages. -->
+    <!-- Generators.Attributes provides GenerateTypeRegistry; would come transitively via NexusLabs.Needlr.Build in production. -->
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

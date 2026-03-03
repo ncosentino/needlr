@@ -322,6 +322,22 @@ Test-AttributeFileTarget `
     -ExpectedContains '[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]' `
     -Failed $failedRef
 
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "IsRoslynComponent=true suppresses file even when generator present" `
+    -Properties @{ IsRoslynComponent = 'true' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains $null `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "IsAspireHost=true suppresses file even when generator present" `
+    -Properties @{ IsAspireHost = 'true' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains $null `
+    -Failed $failedRef
+
 Write-Host ""
 if ($failed) {
     Write-Host "Package validation FAILED." -ForegroundColor Red

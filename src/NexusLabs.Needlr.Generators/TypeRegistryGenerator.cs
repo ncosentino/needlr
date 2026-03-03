@@ -48,6 +48,34 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 info.NamespacePrefixes,
                 info.IncludeSelf);
 
+            // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading.
+            // Done early so the empty-result check below can include this in its decision.
+            // Note: Order of force-loading doesn't matter; ordering is applied at service registration time
+            var referencedAssemblies = DiscoverReferencedAssembliesWithTypeRegistry(compilation)
+                .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // If nothing was discovered — no injectable types, factories, providers, options,
+            // interceptors, hosted services, plugins, no referenced assemblies to force-load,
+            // no inaccessible type errors, and no missing TypeRegistry warnings —
+            // emit nothing. This avoids compile errors in projects that don't reference Needlr
+            // injection packages (e.g. a documentation-only project): the generated bootstrap code
+            // references types from those packages and would fail to build without them.
+            if (discoveryResult.InjectableTypes.Count == 0 &&
+                discoveryResult.PluginTypes.Count == 0 &&
+                discoveryResult.Decorators.Count == 0 &&
+                discoveryResult.InterceptedServices.Count == 0 &&
+                discoveryResult.Factories.Count == 0 &&
+                discoveryResult.Options.Count == 0 &&
+                discoveryResult.HostedServices.Count == 0 &&
+                discoveryResult.Providers.Count == 0 &&
+                discoveryResult.InaccessibleTypes.Count == 0 &&
+                discoveryResult.MissingTypeRegistryPlugins.Count == 0 &&
+                referencedAssemblies.Count == 0)
+            {
+                return;
+            }
+
             // Report errors for inaccessible internal types in referenced assemblies
             foreach (var inaccessibleType in discoveryResult.InaccessibleTypes)
             {
@@ -86,12 +114,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
-
-            // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading
-            // Note: Order of force-loading doesn't matter; ordering is applied at service registration time
-            var referencedAssemblies = DiscoverReferencedAssembliesWithTypeRegistry(compilation)
-                .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
-                .ToList();
 
             var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0, discoveryResult.Providers.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));

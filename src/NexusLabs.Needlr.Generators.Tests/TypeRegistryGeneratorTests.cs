@@ -1139,4 +1139,33 @@ namespace NexusLabs.Needlr
 
         public System.Type[] ConstructorParameterTypes { get; }
     }
-}";}
+}";
+
+    [Fact]
+    public void Generator_WithNoInjectableTypes_EmitsNoOutput()
+    {
+        // A project that has [GenerateTypeRegistry] but zero injectable (auto-registerable) types.
+        // The generator should emit nothing — no TypeRegistry, no bootstrap initializer.
+        // This prevents compile errors in projects that don't reference Needlr injection packages
+        // (e.g. a documentation-only project or a Roslyn test harness).
+        // Use IncludeNamespacePrefixes to scope discovery to this assembly only.
+        // In real projects, NeedlrNamespacePrefix=$(MSBuildProjectName) is set in Directory.Build.props,
+        // which has the same effect of scoping discovery to only the project's own types.
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""DocumentationOnly"" })]
+
+namespace DocumentationOnly
+{
+    public static class Constants { public const string Version = ""1.0""; }
+    public static class Helpers { public static string Format(string s) => s; }
+}";
+
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+}
