@@ -5,6 +5,24 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.25] - 2026-03-04
+
+### Added
+
+- **`NeedlrSourceGenBootstrap.RegisterPlugins()`**: New public API for cross-generator plugin registration. When a second source generator in the same assembly emits plugin types, `TypeRegistryGenerator` cannot see those types — it receives the original compilation snapshot before any other generator runs. `RegisterPlugins()` lets a generator emit a `[ModuleInitializer]` to contribute those types to the Needlr registry at runtime, before any application code executes. See [Cross-Generator Plugins](https://ncosentino.github.io/needlr/cross-generator-plugins/) for the full pattern.
+
+- **Auto-suppress generation for Roslyn component and Aspire host projects**: `NeedlrAutoGenerate` is now automatically forced to `false` for projects where `IsRoslynComponent=true` or `IsAspireHost=true`. Previously, consumers had to add explicit opt-out conditions in `Directory.Build.props` for generator/analyzer projects and Aspire host projects. These conditions are now unnecessary — though leaving them in place is harmless.
+
+### Fixed
+
+- **NDLRGEN001 spuriously emitted for assemblies that have `[GenerateTypeRegistry]`**: The NDLRGEN001 diagnostic ("type registry attribute not found") was incorrectly reported for assemblies that are valid Needlr generation targets. It is now suppressed for all assemblies carrying `[assembly: GenerateTypeRegistry(…)]`.
+
+### Changed
+
+- **`MultiProjectApp` example: `AssemblyLoader` removed, generator delivered via `Directory.Build.targets`**: The `AssemblyLoader` helper class (which loaded plugin assemblies at runtime by file path) has been removed from the example. The Needlr generator is now delivered to all example projects automatically through a shared `Directory.Build.targets` file, eliminating the need for consumers to load assemblies manually.
+
+- **`test-packages.ps1` discovers example projects dynamically**: The packaging validation script no longer has a hard-coded list of example `.csproj` files. It now discovers all packable project files under `src/Examples/` at runtime, so new examples are validated automatically without requiring a script update.
+
 ## [0.0.2-alpha.24] - 2026-07-02
 
 ### Added
