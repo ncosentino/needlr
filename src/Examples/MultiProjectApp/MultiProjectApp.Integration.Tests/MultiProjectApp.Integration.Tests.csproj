@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
     <ProjectReference Include="..\MultiProjectApp.Bootstrap\MultiProjectApp.Bootstrap.csproj" />
+    <ProjectReference Include="..\MultiProjectApp.Features.CrossGenSimulation\MultiProjectApp.Features.CrossGenSimulation.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Disable TypeRegistryGenerator for this project. This simulates the Roslyn isolation
+         constraint: a second generator emits types into the same assembly, but TypeRegistryGenerator
+         runs against the ORIGINAL compilation and cannot see those emitted types. Setting
+         NeedlrAutoGenerate=false means no Register() call is emitted for this assembly —
+         the only way types here can reach the Needlr registry is via RegisterPlugins(). -->
+    <NeedlrAutoGenerate>false</NeedlrAutoGenerate>
+  </PropertyGroup>
+
+</Project>
