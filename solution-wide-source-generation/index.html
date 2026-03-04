@@ -16,7 +16,7 @@
         <link rel="prev" href="../plugin-development/">
       
       
-        <link rel="next" href="../benchmarks/">
+        <link rel="next" href="../cross-generator-plugins/">
       
       
         
@@ -1234,10 +1234,49 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#limitation-types-emitted-by-other-generators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitation: Types Emitted by Other Generators
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cross-generator-plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Generator Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3274,6 +3313,10 @@
 <li><code>Integration.Tests</code> keeps source gen enabled and registers test-only plugin types (<code>TestInfrastructurePlugin</code>) that are discovered automatically alongside the real feature plugins</li>
 </ul>
 <p>See the <a href="https://github.com/ncosentino/needlr/tree/main/src/Examples/MultiProjectApp">example README</a> for the full structure.</p>
+<h2 id="limitation-types-emitted-by-other-generators">Limitation: Types Emitted by Other Generators<a class="headerlink" href="#limitation-types-emitted-by-other-generators" title="Permanent link">&para;</a></h2>
+<p><code>TypeRegistryGenerator</code> can only see types in the <strong>original compilation</strong>. If a second source generator in the same assembly emits types at compile time, those types are invisible to <code>TypeRegistryGenerator</code> — even though they end up in the final assembly.</p>
+<p>The solution is <code>NeedlrSourceGenBootstrap.RegisterPlugins()</code>, which lets your second generator emit a <code>[ModuleInitializer]</code> to contribute those types at runtime.</p>
+<p>See <a href="../cross-generator-plugins/">Cross-Generator Plugins</a> for the full explanation and implementation guide.</p>
 
 
 

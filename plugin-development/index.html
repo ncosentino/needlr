@@ -1427,6 +1427,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cross-generator-plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Generator Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3524,6 +3552,12 @@ out into others so you can control what you incorporate.</p>
 <p>For built-in plugins, you do not need to annotate them with the special
 attributes that prevent auto-registration and injection prevention since
 this is done by the framework itself.</p>
+<blockquote>
+<p><strong>Second source generators:</strong> If a second source generator in your assembly emits plugin types,
+<code>TypeRegistryGenerator</code> cannot see them — it operates on the original compilation. Use
+<code>NeedlrSourceGenBootstrap.RegisterPlugins()</code> from a <code>[ModuleInitializer]</code> to register those types
+at runtime. See <a href="../cross-generator-plugins/">Cross-Generator Plugins</a>.</p>
+</blockquote>
 <h3 id="controlling-plugin-discovery">Controlling Plugin Discovery<a class="headerlink" href="#controlling-plugin-discovery" title="Permanent link">&para;</a></h3>
 <h4 id="assembly-filtering">Assembly Filtering<a class="headerlink" href="#assembly-filtering" title="Permanent link">&para;</a></h4>
 <p>Control which assemblies are scanned for plugins:</p>

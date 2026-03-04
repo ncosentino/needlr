@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 03/03/2026 - 21:11:37 |
-| Coverage date: | 03/03/2026 - 21:10:14 - 03/03/2026 - 21:11:33 |
+| Generated on: | 03/04/2026 - 00:55:34 |
+| Coverage date: | 03/04/2026 - 00:54:16 - 03/04/2026 - 00:55:31 |
 | Parser: | MultiReport (23x Cobertura) |
-| Assemblies: | 25 |
-| Classes: | 267 |
-| Files: | 227 |
-| **Line coverage:** | 87.2% (11450 of 13128) |
-| Covered lines: | 11450 |
+| Assemblies: | 26 |
+| Classes: | 270 |
+| Files: | 229 |
+| **Line coverage:** | 87.2% (11486 of 13164) |
+| Covered lines: | 11486 |
 | Uncovered lines: | 1678 |
-| Coverable lines: | 13128 |
-| Total lines: | 32865 |
-| **Branch coverage:** | 77% (4938 of 6405) |
-| Covered branches: | 4938 |
-| Total branches: | 6405 |
+| Coverable lines: | 13164 |
+| Total lines: | 33046 |
+| **Branch coverage:** | 77.1% (4942 of 6409) |
+| Covered branches: | 4942 |
+| Total branches: | 6409 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -43,15 +43,25 @@
 |Program|0%||
 
 </details>
-<details><summary>MultiProjectApp.Features.Notifications - 59.3%</summary>
+<details><summary>MultiProjectApp.Features.CrossGenSimulation - 100%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**MultiProjectApp.Features.Notifications**|**59.3%**|**100%**|
+|**MultiProjectApp.Features.CrossGenSimulation**|**100%**|****|
+|MultiProjectApp.Features.CrossGenSimulation.CrossGenSimulationRegistrations|100%||
+
+</details>
+<details><summary>MultiProjectApp.Features.Notifications - 64.6%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**MultiProjectApp.Features.Notifications**|**64.6%**|**100%**|
+|MultiProjectApp.Features.Notifications.AuditLogNotificationSink|0%||
 |MultiProjectApp.Features.Notifications.Generated.NeedlrSourceGenModuleIniti<br/>alizer|100%|100%|
 |MultiProjectApp.Features.Notifications.Generated.ServiceCatalog|0%||
-|MultiProjectApp.Features.Notifications.Generated.TypeRegistry|93.7%||
+|MultiProjectApp.Features.Notifications.Generated.TypeRegistry|92.3%||
 |MultiProjectApp.Features.Notifications.InMemoryNotificationService|0%||
+|MultiProjectApp.Features.Notifications.NotificationSinkRegistrations|100%|100%|
 |MultiProjectApp.Features.Notifications.NotificationsPlugin|100%||
 
 </details>
@@ -316,16 +326,16 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 68.8%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 71.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**68.8%**|**32.3%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**71.6%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|65.3%|40%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -381,15 +391,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
