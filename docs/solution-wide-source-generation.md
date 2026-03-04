@@ -93,3 +93,11 @@ The `src/Examples/MultiProjectApp/` example in this repository demonstrates this
 - `Integration.Tests` keeps source gen enabled and registers test-only plugin types (`TestInfrastructurePlugin`) that are discovered automatically alongside the real feature plugins
 
 See the [example README](https://github.com/ncosentino/needlr/tree/main/src/Examples/MultiProjectApp) for the full structure.
+
+## Limitation: Types Emitted by Other Generators
+
+`TypeRegistryGenerator` can only see types in the **original compilation**. If a second source generator in the same assembly emits types at compile time, those types are invisible to `TypeRegistryGenerator` — even though they end up in the final assembly.
+
+The solution is `NeedlrSourceGenBootstrap.RegisterPlugins()`, which lets your second generator emit a `[ModuleInitializer]` to contribute those types at runtime.
+
+See [Cross-Generator Plugins](cross-generator-plugins.md) for the full explanation and implementation guide.

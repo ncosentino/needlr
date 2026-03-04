@@ -164,6 +164,11 @@ For built-in plugins, you do not need to annotate them with the special
 attributes that prevent auto-registration and injection prevention since
 this is done by the framework itself.
 
+> **Second source generators:** If a second source generator in your assembly emits plugin types,
+> `TypeRegistryGenerator` cannot see them — it operates on the original compilation. Use
+> `NeedlrSourceGenBootstrap.RegisterPlugins()` from a `[ModuleInitializer]` to register those types
+> at runtime. See [Cross-Generator Plugins](cross-generator-plugins.md).
+
 ### Controlling Plugin Discovery
 
 #### Assembly Filtering
