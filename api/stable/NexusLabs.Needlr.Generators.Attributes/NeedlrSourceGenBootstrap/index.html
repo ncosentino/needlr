@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -1091,6 +1091,34 @@
     
   
     Solution-Wide Source Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../cross-generator-plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Generator Plugins
   
 
     
@@ -3138,12 +3166,45 @@ Parameters are (IServiceCollection, IConfiguration), typed as object to avoid de
 <h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
 <p>Use this method from extension package module initializers to register additional services.
 For example, FluentValidation can register its validators without modifying core Needlr.</p>
+<p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.RegisterPlugins(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.PluginTypeInfo__)'></a></p>
+<h2 id="needlrsourcegenbootstrapregisterpluginsfuncireadonlylistplugintypeinfo-method">NeedlrSourceGenBootstrap.RegisterPlugins(Func&lt;IReadOnlyList&lt;PluginTypeInfo&gt;&gt;) Method<a class="headerlink" href="#needlrsourcegenbootstrapregisterpluginsfuncireadonlylistplugintypeinfo-method" title="Permanent link">&para;</a></h2>
+<p>Registers plugin types that were emitted by another source generator and are therefore
+invisible to <code>TypeRegistryGenerator</code> at compile time.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">RegisterPlugins</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">PluginTypeInfo</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">pluginTypeProvider</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.RegisterPlugins(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.PluginTypeInfo__).pluginTypeProvider'></a></p>
+<p><code>pluginTypeProvider</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">System.Func&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="../PluginTypeInfo/" title="NexusLabs.Needlr.Generators.PluginTypeInfo">PluginTypeInfo</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">&gt;</a></p>
+<p>Provider for the generator-emitted plugin types.</p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Roslyn source generators run in isolation — each generator receives the original
+compilation and cannot see types emitted by other generators. This means
+<code>TypeRegistryGenerator</code> cannot discover types produced by a second generator
+(e.g., a <code>CacheProviderGenerator</code> emitting <code>*CacheConfiguration</code> records).</p>
+<p>The solution is a runtime registration: the second generator emits a
+<code>[ModuleInitializer]</code> that calls <code>RegisterPlugins()</code>. Module initializers run
+before any user code, so by the time the application calls
+<code>IPluginFactory.CreatePluginsFromAssemblies&lt;T&gt;()</code> all providers are combined.</p>
+<p>Example of what the second generator should emit:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="na">[ModuleInitializer]</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">internal</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Initialize</span><span class="p">()</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">{</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">NeedlrSourceGenBootstrap</span><span class="p">.</span><span class="n">RegisterPlugins</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="na">[</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="na">        new PluginTypeInfo(</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="na">            typeof(MyCacheConfiguration),</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="na">            [typeof(CacheConfiguration)]</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">            </span><span class="k">static</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MyCacheConfiguration</span><span class="p">(),</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">            </span><span class="na">[]</span><span class="p">)</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="p">]);</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="p">}</span>
+</span></code></pre></div>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetDecoratorApplier(System.Action_object_)'></a></p>
 <h2 id="needlrsourcegenbootstraptrygetdecoratorapplieractionobject-method">NeedlrSourceGenBootstrap.TryGetDecoratorApplier(Action&lt;object&gt;) Method<a class="headerlink" href="#needlrsourcegenbootstraptrygetdecoratorapplieractionobject-method" title="Permanent link">&para;</a></h2>
 <p>Gets the decorator applier (if any).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetDecoratorApplier</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">decoratorApplier</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetDecoratorApplier</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">decoratorApplier</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetDecoratorApplier(System.Action_object_).decoratorApplier'></a></p>
 <p><code>decoratorApplier</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
 <p>Action that applies decorators to the service collection.
@@ -3154,9 +3215,9 @@ True if a decorator applier is registered.</p>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetExtensionRegistrar(System.Action_object,object_)'></a></p>
 <h2 id="needlrsourcegenbootstraptrygetextensionregistraractionobjectobject-method">NeedlrSourceGenBootstrap.TryGetExtensionRegistrar(Action&lt;object,object&gt;) Method<a class="headerlink" href="#needlrsourcegenbootstraptrygetextensionregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Gets the combined extension registrar (if any extensions are registered).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetExtensionRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">extensionRegistrar</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetExtensionRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">extensionRegistrar</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetExtensionRegistrar(System.Action_object,object_).extensionRegistrar'></a></p>
 <p><code>extensionRegistrar</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">System.Action&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">&gt;</a></p>
 <p>Combined action that invokes all registered extensions.
@@ -3167,9 +3228,9 @@ True if any extension registrars are registered.</p>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetOptionsRegistrar(System.Action_object,object_)'></a></p>
 <h2 id="needlrsourcegenbootstraptrygetoptionsregistraractionobjectobject-method">NeedlrSourceGenBootstrap.TryGetOptionsRegistrar(Action&lt;object,object&gt;) Method<a class="headerlink" href="#needlrsourcegenbootstraptrygetoptionsregistraractionobjectobject-method" title="Permanent link">&para;</a></h2>
 <p>Gets the options registrar (if any).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetOptionsRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">optionsRegistrar</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetOptionsRegistrar</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="kt">object</span><span class="p">,</span><span class="kt">object</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">optionsRegistrar</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetOptionsRegistrar(System.Action_object,object_).optionsRegistrar'></a></p>
 <p><code>optionsRegistrar</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">System.Action&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">&gt;</a></p>
 <p>Action that registers options with the service collection and configuration.
@@ -3180,9 +3241,9 @@ True if an options registrar is registered.</p>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetProviders(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.InjectableTypeInfo__,System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.PluginTypeInfo__)'></a></p>
 <h2 id="needlrsourcegenbootstraptrygetprovidersfuncireadonlylistinjectabletypeinfo-funcireadonlylistplugintypeinfo-method">NeedlrSourceGenBootstrap.TryGetProviders(Func&lt;IReadOnlyList&lt;InjectableTypeInfo&gt;&gt;, Func&lt;IReadOnlyList&lt;PluginTypeInfo&gt;&gt;) Method<a class="headerlink" href="#needlrsourcegenbootstraptrygetprovidersfuncireadonlylistinjectabletypeinfo-funcireadonlylistplugintypeinfo-method" title="Permanent link">&para;</a></h2>
 <p>Gets the registered providers (if any).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetProviders</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">InjectableTypeInfo</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">injectableTypeProvider</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">PluginTypeInfo</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">pluginTypeProvider</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TryGetProviders</span><span class="p">(</span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">InjectableTypeInfo</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">injectableTypeProvider</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">PluginTypeInfo</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">pluginTypeProvider</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetProviders(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.InjectableTypeInfo__,System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.PluginTypeInfo__).injectableTypeProvider'></a></p>
 <p><code>injectableTypeProvider</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">System.Func&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="../InjectableTypeInfo/" title="NexusLabs.Needlr.Generators.InjectableTypeInfo">InjectableTypeInfo</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.TryGetProviders(System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.InjectableTypeInfo__,System.Func_System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.Generators.PluginTypeInfo__).pluginTypeProvider'></a></p>
