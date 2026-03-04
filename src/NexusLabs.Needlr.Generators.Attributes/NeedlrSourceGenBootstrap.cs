@@ -44,6 +44,48 @@ public static class NeedlrSourceGenBootstrap
     private static Registration? _cachedCombined;
 
     /// <summary>
+    /// Registers plugin types that were emitted by another source generator and are therefore
+    /// invisible to <c>TypeRegistryGenerator</c> at compile time.
+    /// </summary>
+    /// <param name="pluginTypeProvider">Provider for the generator-emitted plugin types.</param>
+    /// <remarks>
+    /// <para>
+    /// Roslyn source generators run in isolation — each generator receives the original
+    /// compilation and cannot see types emitted by other generators. This means
+    /// <c>TypeRegistryGenerator</c> cannot discover types produced by a second generator
+    /// (e.g., a <c>CacheProviderGenerator</c> emitting <c>*CacheConfiguration</c> records).
+    /// </para>
+    /// <para>
+    /// The solution is a runtime registration: the second generator emits a
+    /// <c>[ModuleInitializer]</c> that calls <c>RegisterPlugins()</c>. Module initializers run
+    /// before any user code, so by the time the application calls
+    /// <c>IPluginFactory.CreatePluginsFromAssemblies&lt;T&gt;()</c> all providers are combined.
+    /// </para>
+    /// <para>
+    /// Example of what the second generator should emit:
+    /// <code>
+    /// [ModuleInitializer]
+    /// internal static void Initialize()
+    /// {
+    ///     NeedlrSourceGenBootstrap.RegisterPlugins(() =>
+    ///     [
+    ///         new PluginTypeInfo(
+    ///             typeof(MyCacheConfiguration),
+    ///             [typeof(CacheConfiguration)],
+    ///             static () => new MyCacheConfiguration(),
+    ///             [])
+    ///     ]);
+    /// }
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static void RegisterPlugins(Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+    {
+        if (pluginTypeProvider is null) throw new ArgumentNullException(nameof(pluginTypeProvider));
+        Register(() => Array.Empty<InjectableTypeInfo>(), pluginTypeProvider);
+    }
+
+    /// <summary>
     /// Registers the generated type and plugin providers for this application.
     /// </summary>
     public static void Register(
@@ -254,6 +296,15 @@ public static class NeedlrSourceGenBootstrap
                 }
             };
             return true;
+        }
+    }
+
+    internal static void ClearRegistrationsForTesting()
+    {
+        lock (_gate)
+        {
+            _registrations.Clear();
+            _cachedCombined = null;
         }
     }
 

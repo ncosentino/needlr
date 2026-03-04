@@ -777,6 +777,10 @@ internal static class TypeDiscoveryHelper
         // NOTE: Records ARE allowed as plugins (they are classes with parameterless constructors).
         // Records are excluded from IsInjectableType (auto-registration) but not from plugin discovery.
         // Use case: CacheConfiguration records can be discovered via IPluginFactory.CreatePluginsFromAssemblies<T>()
+        // IMPORTANT: If the plugin type is emitted by a DIFFERENT source generator, TypeRegistryGenerator
+        // cannot see it (Roslyn generators receive the original compilation in isolation). In that case,
+        // the other generator should emit a [ModuleInitializer] that calls
+        // NeedlrSourceGenBootstrap.RegisterPlugins(() => [...]) to contribute those types at runtime.
 
         // Exclude hosted service types — they have their own dedicated registration path
         // (RegisterHostedServices) and must not be included in plugin types.
