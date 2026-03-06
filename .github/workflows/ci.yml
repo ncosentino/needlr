@@ -87,6 +87,26 @@ jobs:
     - name: Generate API Documentation
       run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
 
+    - name: Ensure Stable API Docs Are Available
+      run: |
+        STABLE_PKG_COUNT=$(find docs/api/stable -name "index.md" -mindepth 2 -maxdepth 2 2>/dev/null | wc -l || echo 0)
+        echo "Stable API package directories found: $STABLE_PKG_COUNT"
+        if [ "$STABLE_PKG_COUNT" -eq 0 ]; then
+          echo "WARNING: Stable API package docs not found in repository."
+          echo "This means the last release did not commit stable docs (known release.yml bug)."
+          echo "Replacing stable index with a valid placeholder so the docs build succeeds."
+          echo "The next release will commit the real stable docs to main."
+          cat > docs/api/stable/index.md << 'PLACEHOLDER_EOF'
+        # API Reference (Stable)
+
+        Stable API documentation will be available after the next release is published.
+
+        For the current development API reference, see [Development](../dev/index.md).
+        PLACEHOLDER_EOF
+        else
+          echo "Stable API docs present — proceeding with full build."
+        fi
+
     - name: Generate Articles Page
       run: python scripts/generate-articles.py docs/articles.md
 
@@ -117,10 +137,11 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add .github/badges/coverage.json
-        git stash
+        TEMP_BADGE=$(mktemp)
+        cp .github/badges/coverage.json "$TEMP_BADGE"
         git pull --rebase origin main
-        git stash pop || true
+        cp "$TEMP_BADGE" .github/badges/coverage.json
+        rm -f "$TEMP_BADGE"
         git add .github/badges/coverage.json
         git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
         git push

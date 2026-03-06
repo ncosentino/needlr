@@ -190,13 +190,30 @@ jobs:
         VERSION="${GITHUB_REF_NAME#v}"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git stash
+
+        # Save generated docs to a temp dir OUTSIDE the git repo.
+        # git stash only stashes tracked-file changes; newly-generated package
+        # subdirectories are untracked and would be silently dropped by stash.
+        # Using cp captures everything the filesystem has, regardless of git state.
+        TEMP_DIR=$(mktemp -d)
+        cp -r "docs/api/stable/." "$TEMP_DIR/stable"
+        cp -r "docs/api/v${VERSION}/." "$TEMP_DIR/versioned"
+
+        # Switch to main and pull latest
         git fetch origin main
         git checkout main
         git pull --rebase origin main
-        git stash pop || true
-        git add docs/api/stable/
-        git diff --staged --quiet || git commit -m "docs: update stable API reference for v$VERSION [skip ci]"
+
+        # Restore generated docs (rm first for a clean slate — avoids leftover
+        # files from a previous release if packages were renamed or removed)
+        rm -rf "docs/api/stable" "docs/api/v${VERSION}"
+        mkdir -p "docs/api/stable" "docs/api/v${VERSION}"
+        cp -r "$TEMP_DIR/stable/." "docs/api/stable/"
+        cp -r "$TEMP_DIR/versioned/." "docs/api/v${VERSION}/"
+        rm -rf "$TEMP_DIR"
+
+        git add "docs/api/stable/" "docs/api/v${VERSION}/"
+        git diff --staged --quiet || git commit -m "docs: update stable API reference for v${VERSION} [skip ci]"
         git push origin main
 
     - name: Create GitHub Release
