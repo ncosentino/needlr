@@ -342,4 +342,87 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "A circular dependency was detected in the provider dependency graph. Provider A references Provider B which references Provider A (directly or indirectly). This will cause a stack overflow at runtime. Break the cycle by removing one of the provider references or restructuring the dependencies.",
         helpLinkUri: HelpLinkBase + "NDLRGEN034.md");
+
+    // ============================================================================
+    // HttpClient Analyzers (NDLRHTTP001-006)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRHTTP001: [HttpClientOptions] target must implement INamedHttpClientOptions.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientMustImplementMarker = new(
+        id: "NDLRHTTP001",
+        title: "[HttpClientOptions] target must implement INamedHttpClientOptions",
+        messageFormat: "Type '{0}' has [HttpClientOptions] but does not implement INamedHttpClientOptions. Implement the marker interface (or a capability aggregate like IStandardHttpClientOptions) so the generator can wire this type.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The INamedHttpClientOptions marker is the contract that opts a type into HttpClient source generation. Types decorated with [HttpClientOptions] but lacking the marker cannot be emitted into the RegisterHttpClients method and must implement the interface (directly or transitively via IStandardHttpClientOptions).",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP001.md");
+
+    /// <summary>
+    /// NDLRHTTP002: Attribute Name argument conflicts with the ClientName property on the type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientNameSourceConflict = new(
+        id: "NDLRHTTP002",
+        title: "HttpClient name sources conflict",
+        messageFormat: "Type '{0}' has [HttpClientOptions(Name = \"{1}\")] but its ClientName property resolves to \"{2}\". Pick one source — either the attribute argument or the property — and remove the other.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The HttpClient name can come from the attribute argument, a ClientName property on the type, or type-name inference. When the attribute argument and the property disagree, the generator cannot pick silently. Remove the duplicate source so exactly one is authoritative.",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP002.md");
+
+    /// <summary>
+    /// NDLRHTTP003: ClientName property body is not a literal expression and no attribute Name override is supplied.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientNamePropertyNotLiteral = new(
+        id: "NDLRHTTP003",
+        title: "ClientName property body is not a literal expression",
+        messageFormat: "Type '{0}' has a ClientName property whose body is not a string literal. The generator resolves names at compile time, so either rewrite the body as 'ClientName => \"...\"' or set [HttpClientOptions(Name = \"...\")] on the type.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "HttpClient names must be known at compile time because the generator emits services.AddHttpClient(\"name\", ...) before the DI container is built. ClientName property bodies that compute or compose values cannot be statically evaluated. Use a literal expression body or the attribute Name argument.",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP003.md");
+
+    /// <summary>
+    /// NDLRHTTP004: Resolved HttpClient name is empty or whitespace.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientNameEmpty = new(
+        id: "NDLRHTTP004",
+        title: "Resolved HttpClient name is empty",
+        messageFormat: "Type '{0}' has [HttpClientOptions] but no name source resolves to a non-empty value",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "At least one of the three name sources must yield a non-empty string. This typically happens when the type is literally named HttpClientOptions (suffix stripping leaves nothing) and no attribute argument or property override is provided.",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP004.md");
+
+    /// <summary>
+    /// NDLRHTTP005: Two [HttpClientOptions] types in the compilation resolve to the same client name.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientNameCollision = new(
+        id: "NDLRHTTP005",
+        title: "Duplicate HttpClient name",
+        messageFormat: "Type '{0}' resolves to HttpClient name \"{1}\" which is already used by type '{2}'. HttpClient names must be unique within a compilation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "services.AddHttpClient(\"name\", ...) registrations are keyed by name. Two options types resolving to the same name would overwrite each other's configuration non-deterministically. Rename one of the types or set an explicit attribute Name argument on one of them.",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP005.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRHTTP006: ClientName property must be an instance property returning string.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HttpClientNamePropertyWrongShape = new(
+        id: "NDLRHTTP006",
+        title: "ClientName property has wrong shape",
+        messageFormat: "Type '{0}' has a ClientName property that is not a readable instance property of type 'string'. The generator only recognizes ClientName as 'public string ClientName { get; }' or 'public string ClientName => \"...\";'.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The ClientName property is one of the three name sources recognized by the generator. To avoid ambiguity, only instance properties of type string with a get accessor are considered. Static, write-only, or non-string ClientName members are rejected so they can't silently fall through to type-name inference.",
+        helpLinkUri: HelpLinkBase + "NDLRHTTP006.md");
 }
