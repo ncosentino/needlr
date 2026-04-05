@@ -67,6 +67,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 discoveryResult.InterceptedServices.Count == 0 &&
                 discoveryResult.Factories.Count == 0 &&
                 discoveryResult.Options.Count == 0 &&
+                discoveryResult.HttpClients.Count == 0 &&
                 discoveryResult.HostedServices.Count == 0 &&
                 discoveryResult.Providers.Count == 0 &&
                 discoveryResult.InaccessibleTypes.Count == 0 &&
@@ -115,7 +116,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0, discoveryResult.Providers.Count > 0);
+            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0 || discoveryResult.HttpClients.Count > 0, discoveryResult.Providers.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate interceptor proxy classes if any were discovered
@@ -892,6 +893,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var options = new List<DiscoveredOptions>();
         var hostedServices = new List<DiscoveredHostedService>();
         var providers = new List<DiscoveredProvider>();
+        var httpClients = new List<DiscoveredHttpClient>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
         
@@ -903,7 +905,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
         }
 
         // Collect types from all referenced assemblies
@@ -921,7 +923,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // For referenced assemblies, they use their own generated namespace
                 var refSafeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblySymbol.Name);
                 var refGeneratedNamespace = $"{refSafeAssemblyName}.Generated";
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
             }
         }
 
@@ -963,7 +965,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices, providers);
+        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices, providers, httpClients);
     }
 
     private static void CollectTypesFromAssembly(
@@ -978,6 +980,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredOptions> options,
         List<DiscoveredHostedService> hostedServices,
         List<DiscoveredProvider> providers,
+        List<DiscoveredHttpClient> httpClients,
         List<InaccessibleType> inaccessibleTypes,
         Compilation compilation,
         bool isCurrentAssembly,
@@ -1047,6 +1050,38 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         validatorTypeName,
                         positionalRecordInfo,
                         properties));
+                }
+            }
+
+            // Check for [HttpClientOptions] attribute
+            if (HttpClientOptionsAttributeHelper.HasHttpClientOptionsAttribute(typeSymbol))
+            {
+                var httpAttrInfo = HttpClientOptionsAttributeHelper.GetHttpClientOptionsAttribute(typeSymbol);
+                if (httpAttrInfo.HasValue)
+                {
+                    // Try to read a literal ClientName property body, if any.
+                    var clientNamePropResult = HttpClientOptionsAttributeHelper.TryGetClientNameProperty(typeSymbol, out var literalValue);
+                    var propertyNameFromType = clientNamePropResult == ClientNamePropertyResult.Literal ? literalValue : null;
+
+                    if (HttpClientOptionsAttributeHelper.TryResolveClientName(
+                        typeSymbol,
+                        httpAttrInfo.Value,
+                        propertyNameFromType,
+                        out var resolvedClientName))
+                    {
+                        var httpSectionName = HttpClientOptionsAttributeHelper.ResolveSectionName(httpAttrInfo.Value, resolvedClientName);
+                        var httpTypeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                        var httpSourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                        var capabilities = HttpClientOptionsAttributeHelper.DetectCapabilities(typeSymbol);
+
+                        httpClients.Add(new DiscoveredHttpClient(
+                            httpTypeName,
+                            resolvedClientName,
+                            httpSectionName,
+                            assembly.Name,
+                            capabilities,
+                            httpSourceFilePath));
+                    }
                 }
             }
 
@@ -1243,6 +1278,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var builder = new StringBuilder();
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
         var hasOptions = discoveryResult.Options.Count > 0;
+        var hasHttpClients = discoveryResult.HttpClients.Count > 0;
+        var hasConfigBoundRegistrations = hasOptions || hasHttpClients;
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry");
         builder.AppendLine("#nullable enable");
@@ -1250,10 +1287,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
         builder.AppendLine();
-        if (hasOptions)
+        if (hasConfigBoundRegistrations)
         {
             builder.AppendLine("using Microsoft.Extensions.Configuration;");
-            if (isAotProject)
+            if (isAotProject || hasHttpClients)
             {
                 builder.AppendLine("using Microsoft.Extensions.Options;");
             }
@@ -1290,10 +1327,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    /// <returns>A read-only list of plugin type information.</returns>");
         builder.AppendLine("    public static IReadOnlyList<PluginTypeInfo> GetPluginTypes() => _plugins;");
 
-        if (hasOptions)
+        if (hasConfigBoundRegistrations)
         {
             builder.AppendLine();
-            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, safeAssemblyName, breadcrumbs, projectDirectory, isAotProject);
+            GenerateRegisterOptionsMethod(builder, discoveryResult.Options, discoveryResult.HttpClients, safeAssemblyName, breadcrumbs, projectDirectory, isAotProject);
         }
 
         if (discoveryResult.Providers.Count > 0)
@@ -1593,28 +1630,40 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    ];");
     }
 
-    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory, bool isAotProject)
+    private static void GenerateRegisterOptionsMethod(StringBuilder builder, IReadOnlyList<DiscoveredOptions> options, IReadOnlyList<DiscoveredHttpClient> httpClients, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory, bool isAotProject)
     {
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Registers all discovered options types with the service collection.");
-        builder.AppendLine("    /// This binds configuration sections to strongly-typed options classes.");
+        builder.AppendLine("    /// This binds configuration sections to strongly-typed options classes,");
+        builder.AppendLine("    /// and wires up named HttpClient registrations for [HttpClientOptions] types.");
         builder.AppendLine("    /// </summary>");
         builder.AppendLine("    /// <param name=\"services\">The service collection to configure.</param>");
         builder.AppendLine("    /// <param name=\"configuration\">The configuration root to bind options from.</param>");
         builder.AppendLine("    public static void RegisterOptions(IServiceCollection services, IConfiguration configuration)");
         builder.AppendLine("    {");
 
-        if (options.Count == 0)
+        if (options.Count == 0 && httpClients.Count == 0)
         {
-            breadcrumbs.WriteInlineComment(builder, "        ", "No options types discovered");
-        }
-        else if (isAotProject)
-        {
-            GenerateAotOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs, projectDirectory);
+            breadcrumbs.WriteInlineComment(builder, "        ", "No options or HttpClient types discovered");
         }
         else
         {
-            GenerateReflectionOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs);
+            if (options.Count > 0)
+            {
+                if (isAotProject)
+                {
+                    GenerateAotOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs, projectDirectory);
+                }
+                else
+                {
+                    GenerateReflectionOptionsRegistration(builder, options, safeAssemblyName, breadcrumbs);
+                }
+            }
+
+            if (httpClients.Count > 0)
+            {
+                CodeGen.HttpClientCodeGenerator.EmitHttpClientRegistrations(builder, httpClients);
+            }
         }
 
         builder.AppendLine("    }");

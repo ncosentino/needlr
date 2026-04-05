@@ -708,6 +708,58 @@ internal enum ProviderPropertyKind
 }
 
 /// <summary>
+/// Information about a discovered named HttpClient options type (from [HttpClientOptions]).
+/// </summary>
+internal readonly struct DiscoveredHttpClient
+{
+    public DiscoveredHttpClient(
+        string typeName,
+        string clientName,
+        string sectionName,
+        string assemblyName,
+        HttpClientCapabilities capabilities,
+        string? sourceFilePath = null)
+    {
+        TypeName = typeName;
+        ClientName = clientName;
+        SectionName = sectionName;
+        AssemblyName = assemblyName;
+        Capabilities = capabilities;
+        SourceFilePath = sourceFilePath;
+    }
+
+    /// <summary>Fully qualified type name of the options class (e.g., "global::MyApp.WebFetchHttpClientOptions").</summary>
+    public string TypeName { get; }
+
+    /// <summary>The resolved HttpClient name used for <c>services.AddHttpClient("Name", ...)</c>.</summary>
+    public string ClientName { get; }
+
+    /// <summary>The resolved configuration section name (e.g., "HttpClients:WebFetch").</summary>
+    public string SectionName { get; }
+
+    public string AssemblyName { get; }
+
+    /// <summary>Which capability interfaces the type implements — drives conditional emission.</summary>
+    public HttpClientCapabilities Capabilities { get; }
+
+    public string? SourceFilePath { get; }
+}
+
+/// <summary>
+/// Bit flags describing which HttpClient capability interfaces a discovered options type
+/// implements. The generator emits wiring for each capability only when its bit is set.
+/// </summary>
+[System.Flags]
+internal enum HttpClientCapabilities
+{
+    None = 0,
+    Timeout = 1 << 0,
+    UserAgent = 1 << 1,
+    BaseAddress = 1 << 2,
+    Headers = 1 << 3,
+}
+
+/// <summary>
 /// Aggregated result of type discovery for an assembly.
 /// </summary>
 internal readonly struct DiscoveryResult
@@ -722,7 +774,8 @@ internal readonly struct DiscoveryResult
         IReadOnlyList<DiscoveredFactory> factories,
         IReadOnlyList<DiscoveredOptions> options,
         IReadOnlyList<DiscoveredHostedService> hostedServices,
-        IReadOnlyList<DiscoveredProvider> providers)
+        IReadOnlyList<DiscoveredProvider> providers,
+        IReadOnlyList<DiscoveredHttpClient> httpClients)
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
@@ -734,6 +787,7 @@ internal readonly struct DiscoveryResult
         Options = options;
         HostedServices = hostedServices;
         Providers = providers;
+        HttpClients = httpClients;
     }
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -746,6 +800,7 @@ internal readonly struct DiscoveryResult
     public IReadOnlyList<DiscoveredOptions> Options { get; }
     public IReadOnlyList<DiscoveredHostedService> HostedServices { get; }
     public IReadOnlyList<DiscoveredProvider> Providers { get; }
+    public IReadOnlyList<DiscoveredHttpClient> HttpClients { get; }
 }
 
 /// <summary>
