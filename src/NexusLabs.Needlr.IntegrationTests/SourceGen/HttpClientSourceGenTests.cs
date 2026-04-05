@@ -193,6 +193,29 @@ public sealed class HttpClientSourceGenTests
     }
 
     [Fact]
+    public void HttpClient_WithDeeplyNestedSectionPath_BindsCorrectly()
+    {
+        // 4 colons deep. Proves there's no depth limit on the section path — the generator
+        // passes the attribute arg verbatim to BindConfiguration, which delegates to
+        // IConfiguration.GetSection, which treats ':' as an unbounded path separator.
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["FeatureC:FeatureB:FeatureA:ExternalApi:Timeout"] = "00:00:45",
+                ["FeatureC:FeatureB:FeatureA:ExternalApi:UserAgent"] = "deeply-nested-ua",
+                ["FeatureC:FeatureB:FeatureA:ExternalApi:BaseAddress"] = "https://deeply.nested.example.com/",
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("DeeplyNested");
+
+        Assert.Equal(TimeSpan.FromSeconds(45), client.Timeout);
+        Assert.Contains("deeply-nested-ua", client.DefaultRequestHeaders.UserAgent.ToString());
+        Assert.Equal(new Uri("https://deeply.nested.example.com/"), client.BaseAddress);
+    }
+
+    [Fact]
     public void HttpClient_DefaultHeaders_AreAppliedToClient()
     {
         var configuration = new ConfigurationBuilder()
@@ -311,5 +334,20 @@ public sealed record DuckDuckGoHtmlHttpClientOptions : IStandardHttpClientOption
 [HttpClientOptions(Name = "HeaderBearing")]
 public sealed record HeaderBearingHttpClientOptions : INamedHttpClientOptions, IHttpClientDefaultHeaders
 {
+    public IReadOnlyDictionary<string, string>? DefaultHeaders { get; init; }
+}
+
+/// <summary>
+/// Verifies 4-level nested section path binding. Section string is passed verbatim to
+/// BindConfiguration, which delegates to IConfiguration.GetSection — colons are the
+/// standard unbounded path separator, so arbitrary feature-nesting depths work without
+/// any generator-side special-casing. Name inferred as "DeeplyNested" via suffix strip.
+/// </summary>
+[HttpClientOptions("FeatureC:FeatureB:FeatureA:ExternalApi")]
+public sealed record DeeplyNestedHttpClientOptions : IStandardHttpClientOptions
+{
+    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(5);
+    public string? UserAgent { get; init; }
+    public Uri? BaseAddress { get; init; }
     public IReadOnlyDictionary<string, string>? DefaultHeaders { get; init; }
 }
