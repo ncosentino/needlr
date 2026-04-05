@@ -6,6 +6,7 @@
     <Project Path="Examples/Bundle/BundleExamplePlugin/BundleExamplePlugin.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/">
+    <Project Path="Examples/SourceGen/HttpClientExample/HttpClientExample.csproj" />
     <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/AotConsole/">
