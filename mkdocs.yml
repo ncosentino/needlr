@@ -43,6 +43,7 @@ nav:
     - Hosted Services: hosted-services.md
     - Keyed Services: keyed-services.md
     - Options Binding: options.md
+    - HttpClient Options: http-clients.md
     - Factories: factories.md
     - Providers: providers.md
     - Interceptors: interceptors.md
@@ -110,6 +111,13 @@ nav:
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
+    - HttpClient Analyzers:
+      - NDLRHTTP001: analyzers/NDLRHTTP001.md
+      - NDLRHTTP002: analyzers/NDLRHTTP002.md
+      - NDLRHTTP003: analyzers/NDLRHTTP003.md
+      - NDLRHTTP004: analyzers/NDLRHTTP004.md
+      - NDLRHTTP005: analyzers/NDLRHTTP005.md
+      - NDLRHTTP006: analyzers/NDLRHTTP006.md
   - API Reference:
     - Overview: api/index.md
     - Development: api/dev/index.md

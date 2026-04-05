@@ -77,6 +77,19 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN033](NDLRGEN033.md) | Warning | [Provider] property uses concrete type |
 | [NDLRGEN034](NDLRGEN034.md) | Error | [Provider] circular dependency detected |
 
+## HttpClient Diagnostics (NexusLabs.Needlr.Generators)
+
+These diagnostics are emitted by the `HttpClientOptionsAnalyzer` to catch misuse of the `[HttpClientOptions]` attribute at compile time.
+
+| Rule ID | Severity | Description |
+|---------|----------|-------------|
+| [NDLRHTTP001](NDLRHTTP001.md) | Error | [HttpClientOptions] target must implement INamedHttpClientOptions |
+| [NDLRHTTP002](NDLRHTTP002.md) | Error | HttpClient name sources conflict (attribute Name vs ClientName property) |
+| [NDLRHTTP003](NDLRHTTP003.md) | Error | ClientName property body is not a literal expression |
+| [NDLRHTTP004](NDLRHTTP004.md) | Error | Resolved HttpClient name is empty |
+| [NDLRHTTP005](NDLRHTTP005.md) | Error | Duplicate HttpClient name across the compilation |
+| [NDLRHTTP006](NDLRHTTP006.md) | Error | ClientName property has the wrong shape (must be instance `string` with getter) |
+
 ## Diagnostic ID Naming Convention
 
 Needlr uses a component-based naming convention for diagnostic IDs:
@@ -87,6 +100,7 @@ Needlr uses a component-based naming convention for diagnostic IDs:
 | MAF Analyzers | `NDLRMAF` | `NDLRMAF001` |
 | SignalR Analyzers | `NDLRSIG` | `NDLRSIG001` |
 | Source Generators | `NDLRGEN` | `NDLRGEN001` |
+| HttpClient Analyzers | `NDLRHTTP` | `NDLRHTTP001` |
 
 ## Suppressing Warnings
 
