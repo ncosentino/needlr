@@ -213,6 +213,33 @@ public class FileService : IReader, IWriter, ILogger { }
 
 See [RegisterAs Documentation](register-as.md) for more details.
 
+### Configuration & Options Binding
+
+If you need to bind typed settings from `appsettings.json` (or any `IConfiguration` source), decorate the options type with `[Options("Section:Path")]` and Needlr's source generator emits the `AddOptions<T>().BindConfiguration(...)` call for you — no plugin registration code required. Tools and services inject `IOptions<T>` (or `IOptionsSnapshot<T>` / `IOptionsMonitor<T>`) as usual, and the record's property initializers supply defaults when the config section is absent.
+
+```csharp
+// Before: manual registration in a plugin
+options.Services.AddOptions<WebFetchToolOptions>()
+    .BindConfiguration("AgentTools:WebFetch");
+
+// After: attribute on the record, nothing else needed
+[Options("AgentTools:WebFetch")]
+public sealed record WebFetchToolOptions
+{
+    public int DefaultMaxLength { get; init; } = 20_000;
+    public int AbsoluteMaxLength { get; init; } = 100_000;
+    public TimeSpan CacheDuration { get; init; } = TimeSpan.FromMinutes(5);
+}
+
+// Inject IOptions<T> into your tool/service as normal
+public sealed class WebFetchTool(IOptions<WebFetchToolOptions> options)
+{
+    private readonly WebFetchToolOptions _options = options.Value;
+}
+```
+
+See [Options Binding](options.md) for the full story — named options, validation (`ValidateOnStart`, custom `Validate()` methods, external validators), `IOptionsMonitor<T>` hot-reload, and positional records.
+
 ## Configuration Options
 
 ### Source Generation Configuration
@@ -358,6 +385,7 @@ var webApplication = new Syringe()
 
 ## Next Steps
 
+- Bind typed settings from `appsettings.json` without manual registration via [Options Binding](options.md)
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding
 - Explore [Plugin Development](plugin-development.md) to extend functionality
 - Discover [Factory Delegates](factories.md) for types with runtime parameters
