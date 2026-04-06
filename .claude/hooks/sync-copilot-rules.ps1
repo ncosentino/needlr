@@ -10,10 +10,20 @@ $ErrorActionPreference = 'Stop'
 # 2. Alongside this hook (development layout)
 $compilerScript = $env:COPILOT_TO_CLAUDE_COMPILER
 if (-not $compilerScript -or -not (Test-Path $compilerScript)) {
+    # Scan the Claude plugin cache for the compiler skill
+    $cacheRoot = Join-Path $env:USERPROFILE '.claude' 'plugins' 'cache'
+    if (Test-Path $cacheRoot) {
+        $compilerScript = Get-ChildItem -Path $cacheRoot -Recurse -Filter 'sync-copilot-to-claude.ps1' -ErrorAction SilentlyContinue |
+            Select-Object -First 1 |
+            ForEach-Object { $_.FullName }
+    }
+}
+if (-not $compilerScript -or -not (Test-Path $compilerScript)) {
+    # Fallback: development layout (skill alongside this hook)
     $compilerScript = Join-Path $PSScriptRoot '..\..\skills\copilot-to-claude-compiler\sync-copilot-to-claude.ps1'
 }
 if (-not (Test-Path $compilerScript)) {
-    Write-Warning "Copilot-to-Claude compiler not found. Set COPILOT_TO_CLAUDE_COMPILER env var to the script path."
+    Write-Warning "Copilot-to-Claude compiler not found. Install the agentic-plugins plugin or set COPILOT_TO_CLAUDE_COMPILER env var."
     exit 0
 }
 
