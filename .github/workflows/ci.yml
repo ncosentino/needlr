@@ -134,12 +134,14 @@ jobs:
 
     - name: Commit Coverage Badge
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      continue-on-error: true
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         TEMP_BADGE=$(mktemp)
         cp .github/badges/coverage.json "$TEMP_BADGE"
-        git pull --rebase origin main
+        git fetch origin main
+        git reset --hard origin/main
         cp "$TEMP_BADGE" .github/badges/coverage.json
         rm -f "$TEMP_BADGE"
         git add .github/badges/coverage.json
