@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -248,6 +249,94 @@ internal static class InterceptorCodeGenerator
 
         builder.AppendLine("    }");
         builder.AppendLine();
+    }
+
+    /// <summary>
+    /// Generates the complete InterceptorProxies.g.cs source file containing
+    /// proxy classes and the InterceptorRegistrations helper.
+    /// </summary>
+    internal static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Interceptor Proxies");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine("using System.Reflection;");
+        builder.AppendLine("using System.Threading.Tasks;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine("using NexusLabs.Needlr;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate each proxy class
+        foreach (var service in interceptedServices)
+        {
+            GenerateInterceptorProxyClass(builder, service, breadcrumbs, projectDirectory);
+            builder.AppendLine();
+        }
+
+        // Generate the registration helper
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Helper class for registering intercepted services.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine("public static class InterceptorRegistrations");
+        builder.AppendLine("{");
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all intercepted services and their proxies.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    public static void RegisterInterceptedServices(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var service in interceptedServices)
+        {
+            var proxyTypeName = GeneratorHelpers.GetProxyTypeName(service.TypeName);
+            var lifetime = service.Lifetime switch
+            {
+                GeneratorLifetime.Singleton => "Singleton",
+                GeneratorLifetime.Scoped => "Scoped",
+                GeneratorLifetime.Transient => "Transient",
+                _ => "Scoped"
+            };
+
+            // Register all interceptor types
+            foreach (var interceptorType in service.AllInterceptorTypeNames)
+            {
+                breadcrumbs.WriteInlineComment(builder, "        ", $"Register interceptor: {interceptorType.Split('.').Last()}");
+                builder.AppendLine($"        if (!services.Any(d => d.ServiceType == typeof({interceptorType})))");
+                builder.AppendLine($"            services.Add{lifetime}<{interceptorType}>();");
+            }
+
+            // Register the actual implementation type
+            builder.AppendLine($"        // Register actual implementation");
+            builder.AppendLine($"        services.Add{lifetime}<{service.TypeName}>();");
+
+            // Register proxy for each interface
+            foreach (var iface in service.InterfaceNames)
+            {
+                builder.AppendLine($"        // Register proxy for {iface}");
+                builder.AppendLine($"        services.Add{lifetime}<{iface}>(sp => new {proxyTypeName}(");
+                builder.AppendLine($"            sp.GetRequiredService<{service.TypeName}>(),");
+                builder.AppendLine($"            sp));");
+            }
+        }
+
+        builder.AppendLine("    }");
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets the number of intercepted services discovered at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine($"    public static int Count => {interceptedServices.Count};");
+        builder.AppendLine("}");
+
+        return builder.ToString();
     }
 }
 

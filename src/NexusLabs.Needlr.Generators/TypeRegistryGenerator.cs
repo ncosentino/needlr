@@ -51,7 +51,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading.
             // Done early so the empty-result check below can include this in its decision.
             // Note: Order of force-loading doesn't matter; ordering is applied at service registration time
-            var referencedAssemblies = DiscoverReferencedAssembliesWithTypeRegistry(compilation)
+            var referencedAssemblies = AssemblyDiscoveryHelper.DiscoverReferencedAssembliesWithTypeRegistry(compilation)
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -111,25 +111,25 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             // NDLRGEN022: Detect disposable captive dependencies using inferred lifetimes
-            ReportDisposableCaptiveDependencies(spc, discoveryResult);
+            CaptiveDependencyAnalyzer.ReportDisposableCaptiveDependencies(spc, discoveryResult);
 
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
 
-            var bootstrapText = GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0 || discoveryResult.HttpClients.Count > 0, discoveryResult.Providers.Count > 0);
+            var bootstrapText = CodeGen.BootstrapCodeGenerator.GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0 || discoveryResult.HttpClients.Count > 0, discoveryResult.Providers.Count > 0);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
 
             // Generate interceptor proxy classes if any were discovered
             if (discoveryResult.InterceptedServices.Count > 0)
             {
-                var interceptorProxiesText = GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
+                var interceptorProxiesText = CodeGen.InterceptorCodeGenerator.GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("InterceptorProxies.g.cs", SourceText.From(interceptorProxiesText, Encoding.UTF8));
             }
 
             // Generate factory classes if any were discovered
             if (discoveryResult.Factories.Count > 0)
             {
-                var factoriesText = GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
+                var factoriesText = CodeGen.FactoryCodeGenerator.GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
             }
 
@@ -140,7 +140,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var interfaceProviders = discoveryResult.Providers.Where(p => p.IsInterface).ToList();
                 if (interfaceProviders.Count > 0)
                 {
-                    var providersText = GenerateProvidersSource(interfaceProviders, assemblyName, breadcrumbs, projectDirectory);
+                    var providersText = CodeGen.ProviderCodeGenerator.GenerateProvidersSource(interfaceProviders, assemblyName, breadcrumbs, projectDirectory);
                     spc.AddSource("Providers.g.cs", SourceText.From(providersText, Encoding.UTF8));
                 }
 
@@ -148,7 +148,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var classProviders = discoveryResult.Providers.Where(p => !p.IsInterface && p.IsPartial).ToList();
                 foreach (var provider in classProviders)
                 {
-                    var providerText = GenerateShorthandProviderSource(provider, assemblyName, breadcrumbs, projectDirectory);
+                    var providerText = CodeGen.ProviderCodeGenerator.GenerateShorthandProviderSource(provider, assemblyName, breadcrumbs, projectDirectory);
                     spc.AddSource($"Provider.{provider.SimpleTypeName}.g.cs", SourceText.From(providerText, Encoding.UTF8));
                 }
             }
@@ -185,7 +185,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var diagnosticOptions = GetDiagnosticOptions(configOptions);
             if (diagnosticOptions.Enabled)
             {
-                var referencedAssemblyTypes = DiscoverReferencedAssemblyTypesForDiagnostics(compilation);
+                var referencedAssemblyTypes = AssemblyDiscoveryHelper.DiscoverReferencedAssemblyTypesForDiagnostics(compilation);
                 var diagnosticsText = DiagnosticsGenerator.GenerateDiagnosticsSource(discoveryResult, assemblyName, projectDirectory, diagnosticOptions, referencedAssemblies, referencedAssemblyTypes);
                 spc.AddSource("NeedlrDiagnostics.g.cs", SourceText.From(diagnosticsText, Encoding.UTF8));
             }
@@ -194,7 +194,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (ShouldExportGraph(configOptions))
             {
                 // Discover types from referenced assemblies with [GenerateTypeRegistry] for graph inclusion
-                var referencedAssemblyTypesForGraph = DiscoverReferencedAssemblyTypesForGraph(compilation);
+                var referencedAssemblyTypesForGraph = AssemblyDiscoveryHelper.DiscoverReferencedAssemblyTypesForGraph(compilation);
 
                 var graphJson = Export.GraphExporter.GenerateGraphJson(
                     discoveryResult,
@@ -205,133 +205,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 
                 // Embed graph as a comment in a generated file so it's accessible
                 // The actual JSON is written to obj folder via the generated code
-                var graphSourceText = GenerateGraphExportSource(graphJson, assemblyName, breadcrumbs, projectDirectory);
+                var graphSourceText = Export.GraphExporter.GenerateGraphExportSource(graphJson, assemblyName, breadcrumbs, projectDirectory);
                 spc.AddSource("NeedlrGraph.g.cs", SourceText.From(graphSourceText, Encoding.UTF8));
             }
         });
     }
 
-    /// <summary>
-    /// Detects disposable captive dependencies using inferred lifetimes from DiscoveryResult.
-    /// Reports NDLRGEN022 when a longer-lived service depends on a shorter-lived disposable.
-    /// </summary>
-    private static void ReportDisposableCaptiveDependencies(SourceProductionContext spc, DiscoveryResult discoveryResult)
-    {
-        // Build lookup from type name to DiscoveredType for O(1) lifetime lookups
-        var typeLookup = new Dictionary<string, DiscoveredType>();
-        foreach (var type in discoveryResult.InjectableTypes)
-        {
-            typeLookup[type.TypeName] = type;
-            // Also map by interfaces so we can look up dependencies by interface
-            foreach (var iface in type.InterfaceNames)
-            {
-                // Only add if not already present (first registration wins for interface resolution)
-                if (!typeLookup.ContainsKey(iface))
-                {
-                    typeLookup[iface] = type;
-                }
-            }
-        }
-
-        // Check each injectable type for captive dependencies
-        foreach (var type in discoveryResult.InjectableTypes)
-        {
-            CheckForCaptiveDependencies(spc, type, typeLookup);
-        }
-    }
-
-    /// <summary>
-    /// Checks a single type for captive dependency issues.
-    /// </summary>
-    private static void CheckForCaptiveDependencies(
-        SourceProductionContext spc,
-        DiscoveredType type,
-        Dictionary<string, DiscoveredType> typeLookup)
-    {
-        // Skip types with transient lifetime - they can't capture shorter-lived dependencies
-        if (type.Lifetime == GeneratorLifetime.Transient)
-            return;
-
-        foreach (var param in type.ConstructorParameters)
-        {
-            // Skip factory patterns that create new instances on demand
-            if (IsFactoryPattern(param.TypeName))
-                continue;
-
-            // Try to find the dependency in our discovered types
-            if (!typeLookup.TryGetValue(param.TypeName, out var dependency))
-                continue;
-
-            // Check if the dependency is shorter-lived
-            if (!IsShorterLifetime(type.Lifetime, dependency.Lifetime))
-                continue;
-
-            // Check if the dependency is disposable
-            if (!dependency.IsDisposable)
-                continue;
-
-            // Report the captive dependency
-            spc.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticDescriptors.DisposableCaptiveDependency,
-                Location.None,
-                type.TypeName,
-                GetLifetimeName(type.Lifetime),
-                dependency.TypeName,
-                GetLifetimeName(dependency.Lifetime)));
-        }
-    }
-
-    /// <summary>
-    /// Checks if a type name represents a factory pattern that creates new instances on demand.
-    /// </summary>
-    private static bool IsFactoryPattern(string typeName)
-    {
-        // Func<T> - factory delegate
-        if (typeName.StartsWith("System.Func<", StringComparison.Ordinal))
-            return true;
-
-        // Lazy<T> - deferred creation
-        if (typeName.StartsWith("System.Lazy<", StringComparison.Ordinal))
-            return true;
-
-        // IServiceScopeFactory - creates new scopes
-        if (typeName == "Microsoft.Extensions.DependencyInjection.IServiceScopeFactory")
-            return true;
-
-        // IServiceProvider - resolves services dynamically
-        if (typeName == "System.IServiceProvider")
-            return true;
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if dependency lifetime is shorter than consumer lifetime.
-    /// </summary>
-    private static bool IsShorterLifetime(GeneratorLifetime consumer, GeneratorLifetime dependency)
-    {
-        // Singleton > Scoped > Transient (in terms of lifetime duration)
-        // A shorter lifetime means the dependency will be disposed sooner
-        return (consumer, dependency) switch
-        {
-            (GeneratorLifetime.Singleton, GeneratorLifetime.Scoped) => true,
-            (GeneratorLifetime.Singleton, GeneratorLifetime.Transient) => true,
-            (GeneratorLifetime.Scoped, GeneratorLifetime.Transient) => true,
-            _ => false
-        };
-    }
-
-    /// <summary>
-    /// Gets the human-readable name for a lifetime.
-    /// </summary>
-    private static string GetLifetimeName(GeneratorLifetime lifetime) => lifetime switch
-    {
-        GeneratorLifetime.Singleton => "Singleton",
-        GeneratorLifetime.Scoped => "Scoped",
-        GeneratorLifetime.Transient => "Transient",
-        _ => lifetime.ToString()
-    };
-    
     private static BreadcrumbLevel GetBreadcrumbLevel(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
     {
         if (configOptions.GlobalOptions.TryGetValue("build_property.NeedlrBreadcrumbLevel", out var levelStr) &&
@@ -383,52 +262,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         return false;
     }
 
-    /// <summary>
-    /// Generates source code that writes the graph JSON to a file at build time.
-    /// The graph is embedded in the source and written via a module initializer.
-    /// </summary>
-    private static string GenerateGraphExportSource(string graphJson, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        var sb = new StringBuilder();
-        
-        breadcrumbs.WriteFileHeader(sb, assemblyName, "Needlr IDE Graph Export");
-        
-        sb.AppendLine("using System;");
-        sb.AppendLine("using System.IO;");
-        sb.AppendLine();
-        sb.AppendLine($"namespace {assemblyName}.Generated");
-        sb.AppendLine("{");
-        sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// Provides the Needlr dependency graph for IDE tooling.");
-        sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    internal static class NeedlrGraphExport");
-        sb.AppendLine("    {");
-        sb.AppendLine("        /// <summary>");
-        sb.AppendLine("        /// Gets the dependency graph JSON.");
-        sb.AppendLine("        /// </summary>");
-        sb.AppendLine("        public static string GraphJson => GraphJsonContent;");
-        sb.AppendLine();
-        sb.AppendLine("        private const string GraphJsonContent = @\"");
-        
-        // Escape the JSON for C# verbatim string (double quotes only)
-        var escapedJson = graphJson.Replace("\"", "\"\"");
-        sb.Append(escapedJson);
-        
-        sb.AppendLine("\";");
-        sb.AppendLine();
-        sb.AppendLine("        /// <summary>");
-        sb.AppendLine("        /// Writes the graph to the specified path.");
-        sb.AppendLine("        /// </summary>");
-        sb.AppendLine("        public static void WriteGraphToFile(string path)");
-        sb.AppendLine("        {");
-        sb.AppendLine("            File.WriteAllText(path, GraphJson);");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-        sb.AppendLine("}");
-        
-        return sb.ToString();
-    }
-    
     /// <summary>
     /// Checks if the project is configured for AOT compilation.
     /// Returns true if either PublishAot or IsAotCompatible is set to true.
@@ -544,7 +377,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Expand open generic decorators into closed decorator registrations
         if (openDecorators.Count > 0)
         {
-            ExpandOpenDecorators(injectableTypes, openDecorators, decorators);
+            CodeGen.DecoratorsCodeGenerator.ExpandOpenDecorators(injectableTypes, openDecorators, decorators);
         }
 
         // Filter out nested options types (types used as properties in other options types)
@@ -950,121 +783,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (discoveryResult.Providers.Count > 0)
         {
             builder.AppendLine();
-            GenerateRegisterProvidersMethod(builder, discoveryResult.Providers, safeAssemblyName, breadcrumbs, projectDirectory);
+            CodeGen.DecoratorsCodeGenerator.GenerateRegisterProvidersMethod(builder, discoveryResult.Providers, safeAssemblyName, breadcrumbs, projectDirectory);
         }
 
         builder.AppendLine();
-        GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
+        CodeGen.DecoratorsCodeGenerator.GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
 
         if (discoveryResult.HostedServices.Count > 0)
         {
             builder.AppendLine();
-            GenerateRegisterHostedServicesMethod(builder, discoveryResult.HostedServices, breadcrumbs, projectDirectory);
-        }
-
-        builder.AppendLine("}");
-
-        return builder.ToString();
-    }
-
-    private static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions, bool hasProviders)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Source-Gen Bootstrap");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System.Runtime.CompilerServices;");
-        builder.AppendLine();
-        builder.AppendLine("using Microsoft.Extensions.Configuration;");
-        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-        builder.AppendLine("internal static class NeedlrSourceGenModuleInitializer");
-        builder.AppendLine("{");
-        builder.AppendLine("    [global::System.Runtime.CompilerServices.ModuleInitializer]");
-        builder.AppendLine("    internal static void Initialize()");
-        builder.AppendLine("    {");
-        
-        // Generate ForceLoadAssemblies call if there are referenced assemblies with [GenerateTypeRegistry]
-        if (referencedAssemblies.Count > 0)
-        {
-            builder.AppendLine("        // Force-load referenced assemblies to ensure their module initializers run");
-            builder.AppendLine("        ForceLoadReferencedAssemblies();");
-            builder.AppendLine();
-        }
-        
-        builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
-        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
-        builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes,");
-        
-        // Generate the decorator/factory/provider applier lambda
-        if (hasFactories || hasProviders)
-        {
-            builder.AppendLine("            services =>");
-            builder.AppendLine("            {");
-            builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services);");
-            if (hasFactories)
-            {
-                builder.AppendLine($"                global::{safeAssemblyName}.Generated.FactoryRegistrations.RegisterFactories((IServiceCollection)services);");
-            }
-            if (hasProviders)
-            {
-                builder.AppendLine($"                global::{safeAssemblyName}.Generated.TypeRegistry.RegisterProviders((IServiceCollection)services);");
-            }
-            builder.AppendLine("            },");
-        }
-        else
-        {
-            builder.AppendLine($"            services => global::{safeAssemblyName}.Generated.TypeRegistry.ApplyDecorators((IServiceCollection)services),");
-        }
-        
-        // Generate the options registrar lambda for NeedlrSourceGenBootstrap (for backward compat)
-        if (hasOptions)
-        {
-            builder.AppendLine($"            (services, config) => global::{safeAssemblyName}.Generated.TypeRegistry.RegisterOptions((IServiceCollection)services, (IConfiguration)config));");
-        }
-        else
-        {
-            builder.AppendLine("            null);");
-        }
-        
-        // Also register with SourceGenRegistry (for ConfiguredSyringe without Generators.Attributes dependency)
-        if (hasOptions)
-        {
-            builder.AppendLine();
-            builder.AppendLine("        // Register options with core SourceGenRegistry for ConfiguredSyringe");
-            builder.AppendLine($"        global::NexusLabs.Needlr.SourceGenRegistry.RegisterOptionsRegistrar(");
-            builder.AppendLine($"            (services, config) => global::{safeAssemblyName}.Generated.TypeRegistry.RegisterOptions((IServiceCollection)services, (IConfiguration)config));");
-        }
-        
-        builder.AppendLine("    }");
-
-        // Generate ForceLoadReferencedAssemblies method if needed
-        if (referencedAssemblies.Count > 0)
-        {
-            builder.AppendLine();
-            builder.AppendLine("    /// <summary>");
-            builder.AppendLine("    /// Forces referenced assemblies with [GenerateTypeRegistry] to load,");
-            builder.AppendLine("    /// ensuring their module initializers execute and register their types.");
-            builder.AppendLine("    /// </summary>");
-            builder.AppendLine("    /// <remarks>");
-            builder.AppendLine("    /// Without this, transitive dependencies that are never directly referenced");
-            builder.AppendLine("    /// in code would not be loaded by the CLR, and their plugins would not be discovered.");
-            builder.AppendLine("    /// </remarks>");
-            builder.AppendLine("    [MethodImpl(MethodImplOptions.NoInlining)]");
-            builder.AppendLine("    private static void ForceLoadReferencedAssemblies()");
-            builder.AppendLine("    {");
-            
-            foreach (var referencedAssembly in referencedAssemblies)
-            {
-                var safeRefAssemblyName = GeneratorHelpers.SanitizeIdentifier(referencedAssembly);
-                builder.AppendLine($"        _ = typeof(global::{safeRefAssemblyName}.Generated.TypeRegistry).Assembly;");
-            }
-            
-            builder.AppendLine("    }");
+            CodeGen.DecoratorsCodeGenerator.GenerateRegisterHostedServicesMethod(builder, discoveryResult.HostedServices, breadcrumbs, projectDirectory);
         }
 
         builder.AppendLine("}");
@@ -1111,697 +839,4 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         builder.AppendLine("    }");
     }
 
-    private static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, bool hasHostedServices, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Applies all discovered decorators, interceptors, and hosted services to the service collection.");
-        builder.AppendLine("    /// Decorators are applied in order, with lower Order values applied first (closer to the original service).");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"services\">The service collection to apply decorators to.</param>");
-        builder.AppendLine("    public static void ApplyDecorators(IServiceCollection services)");
-        builder.AppendLine("    {");
-        
-        // Register ServiceCatalog first
-        breadcrumbs.WriteInlineComment(builder, "        ", "Register service catalog for DI resolution");
-        builder.AppendLine($"        services.AddSingleton<global::NexusLabs.Needlr.Catalog.IServiceCatalog, global::{safeAssemblyName}.Generated.ServiceCatalog>();");
-        builder.AppendLine();
-
-        // Register hosted services first (before decorators apply)
-        if (hasHostedServices)
-        {
-            breadcrumbs.WriteInlineComment(builder, "        ", "Register hosted services");
-            builder.AppendLine("        RegisterHostedServices(services);");
-            if (decorators.Count > 0 || hasInterceptors)
-            {
-                builder.AppendLine();
-            }
-        }
-
-        if (decorators.Count == 0 && !hasInterceptors)
-        {
-            if (!hasHostedServices)
-            {
-                breadcrumbs.WriteInlineComment(builder, "        ", "No decorators, interceptors, or hosted services discovered");
-            }
-        }
-        else
-        {
-            if (decorators.Count > 0)
-            {
-                // Group decorators by service type and order by Order property
-                var decoratorsByService = decorators
-                    .GroupBy(d => d.ServiceTypeName)
-                    .OrderBy(g => g.Key);
-
-                foreach (var serviceGroup in decoratorsByService)
-                {
-                    // Write verbose breadcrumb for decorator chain
-                    if (breadcrumbs.Level == BreadcrumbLevel.Verbose)
-                    {
-                        var chainItems = serviceGroup.OrderBy(d => d.Order).ToList();
-                        var lines = new List<string>
-                        {
-                            "Resolution order (outer → inner → target):"
-                        };
-                        for (int i = 0; i < chainItems.Count; i++)
-                        {
-                            var dec = chainItems[i];
-                            var sourcePath = dec.SourceFilePath != null 
-                                ? BreadcrumbWriter.GetRelativeSourcePath(dec.SourceFilePath, projectDirectory)
-                                : $"[{dec.AssemblyName}]";
-                            lines.Add($"  {i + 1}. {dec.DecoratorTypeName.Split('.').Last()} (Order={dec.Order}) ← {sourcePath}");
-                        }
-                        lines.Add($"Triggered by: [DecoratorFor<{serviceGroup.Key.Split('.').Last()}>] attributes");
-                        
-                        breadcrumbs.WriteVerboseBox(builder, "        ",
-                            $"Decorator Chain: {serviceGroup.Key.Split('.').Last()}",
-                            lines.ToArray());
-                    }
-                    else
-                    {
-                        breadcrumbs.WriteInlineComment(builder, "        ", $"Decorators for {serviceGroup.Key}");
-                    }
-
-                    foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
-                    {
-                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}");
-                    }
-                }
-            }
-
-            if (hasInterceptors)
-            {
-                builder.AppendLine();
-                breadcrumbs.WriteInlineComment(builder, "        ", "Register intercepted services with their proxies");
-                builder.AppendLine($"        global::{safeAssemblyName}.Generated.InterceptorRegistrations.RegisterInterceptedServices(services);");
-            }
-        }
-
-        builder.AppendLine("    }");
-    }
-
-    private static void GenerateRegisterProvidersMethod(StringBuilder builder, IReadOnlyList<DiscoveredProvider> providers, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Registers all generated providers as Singletons.");
-        builder.AppendLine("    /// Providers are strongly-typed service locators that expose services via typed properties.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
-        builder.AppendLine("    public static void RegisterProviders(IServiceCollection services)");
-        builder.AppendLine("    {");
-
-        foreach (var provider in providers)
-        {
-            var shortName = provider.SimpleTypeName;
-            var sourcePath = provider.SourceFilePath != null
-                ? BreadcrumbWriter.GetRelativeSourcePath(provider.SourceFilePath, projectDirectory)
-                : $"[{provider.AssemblyName}]";
-
-            breadcrumbs.WriteInlineComment(builder, "        ", $"Provider: {shortName} ← {sourcePath}");
-
-            if (provider.IsInterface)
-            {
-                // Interface mode: register the generated implementation
-                var implName = provider.ImplementationTypeName;
-                builder.AppendLine($"        services.AddSingleton<{provider.TypeName}, global::{safeAssemblyName}.Generated.{implName}>();");
-            }
-            else if (provider.IsPartial)
-            {
-                // Shorthand class mode: register the partial class as its generated interface
-                var interfaceName = provider.InterfaceTypeName;
-                var providerNamespace = GetNamespaceFromTypeName(provider.TypeName);
-                builder.AppendLine($"        services.AddSingleton<global::{providerNamespace}.{interfaceName}, {provider.TypeName}>();");
-            }
-        }
-
-        builder.AppendLine("    }");
-    }
-
-    private static void GenerateRegisterHostedServicesMethod(StringBuilder builder, IReadOnlyList<DiscoveredHostedService> hostedServices, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Registers all discovered hosted services (BackgroundService and IHostedService implementations).");
-        builder.AppendLine("    /// Each service is registered as singleton and also as IHostedService for the host to discover.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
-        builder.AppendLine("    private static void RegisterHostedServices(IServiceCollection services)");
-        builder.AppendLine("    {");
-
-        foreach (var hostedService in hostedServices)
-        {
-            var typeName = hostedService.TypeName;
-            var shortName = typeName.Split('.').Last();
-            var sourcePath = hostedService.SourceFilePath != null
-                ? BreadcrumbWriter.GetRelativeSourcePath(hostedService.SourceFilePath, projectDirectory)
-                : $"[{hostedService.AssemblyName}]";
-
-            breadcrumbs.WriteInlineComment(builder, "        ", $"Hosted service: {shortName} ← {sourcePath}");
-
-            // Register the concrete type as singleton
-            builder.AppendLine($"        services.AddSingleton<{typeName}>();");
-
-            // Register as IHostedService that forwards to the concrete type
-            builder.AppendLine($"        services.AddSingleton<global::Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<{typeName}>());");
-        }
-
-        builder.AppendLine("    }");
-    }
-
-
-
-    private static string GenerateInterceptorProxiesSource(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Interceptor Proxies");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System;");
-        builder.AppendLine("using System.Reflection;");
-        builder.AppendLine("using System.Threading.Tasks;");
-        builder.AppendLine();
-        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        builder.AppendLine();
-        builder.AppendLine("using NexusLabs.Needlr;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-
-        // Generate each proxy class
-        foreach (var service in interceptedServices)
-        {
-            CodeGen.InterceptorCodeGenerator.GenerateInterceptorProxyClass(builder, service, breadcrumbs, projectDirectory);
-            builder.AppendLine();
-        }
-
-        // Generate the registration helper
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine("/// Helper class for registering intercepted services.");
-        builder.AppendLine("/// </summary>");
-        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
-        builder.AppendLine("public static class InterceptorRegistrations");
-        builder.AppendLine("{");
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Registers all intercepted services and their proxies.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
-        builder.AppendLine("    public static void RegisterInterceptedServices(IServiceCollection services)");
-        builder.AppendLine("    {");
-
-        foreach (var service in interceptedServices)
-        {
-            var proxyTypeName = GeneratorHelpers.GetProxyTypeName(service.TypeName);
-            var lifetime = service.Lifetime switch
-            {
-                GeneratorLifetime.Singleton => "Singleton",
-                GeneratorLifetime.Scoped => "Scoped",
-                GeneratorLifetime.Transient => "Transient",
-                _ => "Scoped"
-            };
-
-            // Register all interceptor types
-            foreach (var interceptorType in service.AllInterceptorTypeNames)
-            {
-                breadcrumbs.WriteInlineComment(builder, "        ", $"Register interceptor: {interceptorType.Split('.').Last()}");
-                builder.AppendLine($"        if (!services.Any(d => d.ServiceType == typeof({interceptorType})))");
-                builder.AppendLine($"            services.Add{lifetime}<{interceptorType}>();");
-            }
-
-            // Register the actual implementation type
-            builder.AppendLine($"        // Register actual implementation");
-            builder.AppendLine($"        services.Add{lifetime}<{service.TypeName}>();");
-
-            // Register proxy for each interface
-            foreach (var iface in service.InterfaceNames)
-            {
-                builder.AppendLine($"        // Register proxy for {iface}");
-                builder.AppendLine($"        services.Add{lifetime}<{iface}>(sp => new {proxyTypeName}(");
-                builder.AppendLine($"            sp.GetRequiredService<{service.TypeName}>(),");
-                builder.AppendLine($"            sp));");
-            }
-        }
-
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets the number of intercepted services discovered at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {interceptedServices.Count};");
-        builder.AppendLine("}");
-
-        return builder.ToString();
-    }
-
-    private static string GenerateFactoriesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Factories");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System;");
-        builder.AppendLine();
-        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-
-        // Generate factory interfaces and implementations for each type
-        foreach (var factory in factories)
-        {
-            if (factory.GenerateInterface)
-            {
-                CodeGen.FactoryCodeGenerator.GenerateFactoryInterface(builder, factory, breadcrumbs, projectDirectory);
-                builder.AppendLine();
-                CodeGen.FactoryCodeGenerator.GenerateFactoryImplementation(builder, factory, breadcrumbs, projectDirectory);
-                builder.AppendLine();
-            }
-        }
-
-        // Generate the registration helper
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine("/// Helper class for registering factory types.");
-        builder.AppendLine("/// </summary>");
-        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
-        builder.AppendLine("public static class FactoryRegistrations");
-        builder.AppendLine("{");
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Registers all generated factories.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
-        builder.AppendLine("    public static void RegisterFactories(IServiceCollection services)");
-        builder.AppendLine("    {");
-
-        foreach (var factory in factories)
-        {
-            breadcrumbs.WriteInlineComment(builder, "        ", $"Factory for {factory.SimpleTypeName}");
-
-            // Register Func<> for each constructor
-            if (factory.GenerateFunc)
-            {
-                foreach (var ctor in factory.Constructors)
-                {
-                    CodeGen.FactoryCodeGenerator.GenerateFuncRegistration(builder, factory, ctor, "        ");
-                }
-            }
-
-            // Register interface factory
-            if (factory.GenerateInterface)
-            {
-                var factoryInterfaceName = $"I{factory.SimpleTypeName}Factory";
-                var factoryImplName = $"{factory.SimpleTypeName}Factory";
-                builder.AppendLine($"        services.AddSingleton<global::{safeAssemblyName}.Generated.{factoryInterfaceName}, global::{safeAssemblyName}.Generated.{factoryImplName}>();");
-            }
-        }
-
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    /// <summary>");
-        builder.AppendLine("    /// Gets the number of factory types generated at compile time.");
-        builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {factories.Count};");
-        builder.AppendLine("}");
-
-        return builder.ToString();
-    }
-
-    private static string GenerateProvidersSource(IReadOnlyList<DiscoveredProvider> providers, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        var builder = new StringBuilder();
-        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Providers");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System;");
-        builder.AppendLine();
-        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
-
-        // Generate provider implementations (interface-based only)
-        foreach (var provider in providers)
-        {
-            CodeGen.ProviderCodeGenerator.GenerateProviderImplementation(builder, provider, $"{safeAssemblyName}.Generated", breadcrumbs, projectDirectory);
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
-    }
-
-    private static string GenerateShorthandProviderSource(DiscoveredProvider provider, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
-    {
-        var builder = new StringBuilder();
-        var providerNamespace = GetNamespaceFromTypeName(provider.TypeName);
-
-        breadcrumbs.WriteFileHeader(builder, assemblyName, $"Needlr Generated Provider: {provider.SimpleTypeName}");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {providerNamespace};");
-        builder.AppendLine();
-
-        CodeGen.ProviderCodeGenerator.GenerateProviderInterfaceAndPartialClass(builder, provider, providerNamespace, breadcrumbs, projectDirectory);
-
-        return builder.ToString();
-    }
-
-    private static string GetNamespaceFromTypeName(string fullyQualifiedName)
-    {
-        var name = fullyQualifiedName;
-        if (name.StartsWith("global::"))
-        {
-            name = name.Substring(8);
-        }
-
-        var lastDot = name.LastIndexOf('.');
-        return lastDot >= 0 ? name.Substring(0, lastDot) : string.Empty;
-    }
-
-
-
-
-
-    /// <summary>
-    /// Expands open generic decorators into concrete decorator registrations
-    /// for each discovered closed implementation of the open generic interface.
-    /// </summary>
-    private static void ExpandOpenDecorators(
-        IReadOnlyList<DiscoveredType> injectableTypes,
-        IReadOnlyList<DiscoveredOpenDecorator> openDecorators,
-        List<DiscoveredDecorator> decorators)
-    {
-        // Group injectable types by the open generic interfaces they implement
-        var interfaceImplementations = new Dictionary<INamedTypeSymbol, List<(INamedTypeSymbol closedInterface, DiscoveredType type)>>(SymbolEqualityComparer.Default);
-
-        foreach (var discoveredType in injectableTypes)
-        {
-            // We need to check each interface this type implements to see if it's a closed version of an open generic
-            foreach (var openDecorator in openDecorators)
-            {
-                // Check if this type implements the open generic interface
-                foreach (var interfaceName in discoveredType.InterfaceNames)
-                {
-                    // This is string-based matching - we need to match the interface name pattern
-                    // For example, if open generic is IHandler<> and the interface is IHandler<Order>, we should match
-                    var openGenericName = TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.OpenGenericInterface);
-                    
-                    // Extract the base name (before the <>)
-                    var openGenericBaseName = GeneratorHelpers.GetGenericBaseName(openGenericName);
-                    var interfaceBaseName = GeneratorHelpers.GetGenericBaseName(interfaceName);
-                    
-                    if (openGenericBaseName == interfaceBaseName)
-                    {
-                        // This interface is a closed version of the open generic
-                        // Create a closed decorator registration
-                        var closedDecoratorTypeName = GeneratorHelpers.CreateClosedGenericType(
-                            TypeDiscoveryHelper.GetFullyQualifiedName(openDecorator.DecoratorType),
-                            interfaceName,
-                            openGenericName);
-
-                        decorators.Add(new DiscoveredDecorator(
-                            closedDecoratorTypeName,
-                            interfaceName,
-                            openDecorator.Order,
-                            openDecorator.AssemblyName,
-                            openDecorator.SourceFilePath));
-                    }
-                }
-            }
-        }
-    }
-
-
-    /// <summary>
-    /// Discovers all referenced assemblies that have the [GenerateTypeRegistry] attribute.
-    /// These assemblies need to be force-loaded to ensure their module initializers run.
-    /// </summary>
-    private static IReadOnlyList<string> DiscoverReferencedAssembliesWithTypeRegistry(Compilation compilation)
-    {
-        var result = new List<string>();
-        
-        foreach (var reference in compilation.References)
-        {
-            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
-            {
-                // Skip the current assembly
-                if (SymbolEqualityComparer.Default.Equals(assemblySymbol, compilation.Assembly))
-                    continue;
-                    
-                if (TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
-                {
-                    result.Add(assemblySymbol.Name);
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /// <summary>
-    /// Discovers types from referenced assemblies with [GenerateTypeRegistry] for diagnostics purposes.
-    /// Unlike the main discovery, this includes internal types since we're just showing them in diagnostics.
-    /// </summary>
-    private static Dictionary<string, List<DiagnosticTypeInfo>> DiscoverReferencedAssemblyTypesForDiagnostics(Compilation compilation)
-    {
-        var result = new Dictionary<string, List<DiagnosticTypeInfo>>();
-        
-        foreach (var reference in compilation.References)
-        {
-            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
-            {
-                // Skip the current assembly
-                if (SymbolEqualityComparer.Default.Equals(assemblySymbol, compilation.Assembly))
-                    continue;
-                    
-                if (!TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
-                    continue;
-
-                var assemblyTypes = new List<DiagnosticTypeInfo>();
-                
-                // First pass: collect intercepted service names so we can identify their proxies
-                var interceptedServiceNames = new HashSet<string>();
-                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
-                {
-                    if (InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol))
-                    {
-                        interceptedServiceNames.Add(typeSymbol.Name);
-                    }
-                }
-                
-                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
-                {
-                    // Check if it's a registerable type (injectable, plugin, factory source, or interceptor)
-                    var hasFactoryAttr = FactoryDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
-                    var hasInterceptAttr = InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol);
-                    var isInterceptorProxy = typeSymbol.Name.EndsWith("_InterceptorProxy");
-                    
-                    if (!hasFactoryAttr && !hasInterceptAttr && !isInterceptorProxy &&
-                        !TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
-                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
-                        continue;
-
-                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                    var shortName = typeSymbol.Name;
-                    var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
-                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol)
-                        .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
-                        .ToArray();
-                    var dependencies = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol)?
-                        .ToArray() ?? Array.Empty<string>();
-                    var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) || 
-                                      OpenDecoratorDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol);
-                    var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
-                    var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
-                    var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
-                    
-                    // Check if this service has an interceptor proxy (its name + "_InterceptorProxy" exists)
-                    var hasInterceptorProxy = interceptedServiceNames.Contains(shortName);
-
-                    assemblyTypes.Add(new DiagnosticTypeInfo(
-                        typeName,
-                        shortName,
-                        lifetime,
-                        interfaces,
-                        dependencies,
-                        isDecorator,
-                        isPlugin,
-                        hasFactoryAttr,
-                        keyedValue,
-                        isInterceptor: hasInterceptAttr,
-                        hasInterceptorProxy: hasInterceptorProxy));
-                }
-
-                if (assemblyTypes.Count > 0)
-                {
-                    result[assemblySymbol.Name] = assemblyTypes;
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /// <summary>
-    /// Discovers types from referenced assemblies with [GenerateTypeRegistry] for graph export.
-    /// Unlike the main discovery, this includes internal types since they are registered by their own TypeRegistry.
-    /// Returns DiscoveredType objects that can be included in the graph export.
-    /// </summary>
-    private static Dictionary<string, IReadOnlyList<DiscoveredType>> DiscoverReferencedAssemblyTypesForGraph(Compilation compilation)
-    {
-        var result = new Dictionary<string, IReadOnlyList<DiscoveredType>>();
-        
-        foreach (var reference in compilation.References)
-        {
-            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
-            {
-                // Skip the current assembly
-                if (SymbolEqualityComparer.Default.Equals(assemblySymbol, compilation.Assembly))
-                    continue;
-                    
-                if (!TypeDiscoveryHelper.HasGenerateTypeRegistryAttribute(assemblySymbol))
-                    continue;
-
-                // Try to get interface locations from the assembly's ServiceCatalog
-                var interfaceLocationLookup = GetInterfaceLocationsFromServiceCatalog(assemblySymbol);
-
-                var assemblyTypes = new List<DiscoveredType>();
-                
-                foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assemblySymbol.GlobalNamespace))
-                {
-                    // Check if it's a registerable type
-                    var hasFactoryAttr = FactoryDiscoveryHelper.HasGenerateFactoryAttribute(typeSymbol);
-                    
-                    // Skip types that are only factories (handled separately)
-                    if (hasFactoryAttr)
-                        continue;
-
-                    if (!TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
-                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
-                        continue;
-
-                    // Skip decorators - they modify other services, not registered directly as services
-                    if (TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) || 
-                        OpenDecoratorDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol))
-                        continue;
-
-                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                    var interfaceSymbols = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
-                    var interfaces = interfaceSymbols
-                        .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
-                        .ToArray();
-                    
-                    // Get interface locations from ServiceCatalog lookup, falling back to symbol locations
-                    var interfaceInfos = interfaceSymbols.Select(i =>
-                    {
-                        var ifaceFullName = TypeDiscoveryHelper.GetFullyQualifiedName(i);
-                        
-                        // First try the ServiceCatalog lookup
-                        if (interfaceLocationLookup.TryGetValue(ifaceFullName, out var catalogInfo))
-                        {
-                            return catalogInfo;
-                        }
-                        
-                        // Fall back to symbol locations (works for source references)
-                        var ifaceLocation = i.Locations.FirstOrDefault();
-                        var ifaceFilePath = ifaceLocation?.SourceTree?.FilePath;
-                        var ifaceLine = ifaceLocation?.GetLineSpan().StartLinePosition.Line + 1 ?? 0;
-                        return new InterfaceInfo(ifaceFullName, ifaceFilePath, ifaceLine);
-                    }).ToArray();
-                    
-                    var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
-                    var constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() 
-                        ?? Array.Empty<TypeDiscoveryHelper.ConstructorParameterInfo>();
-                    var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
-                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
-                    var sourceLine = typeSymbol.Locations.FirstOrDefault() is { } location
-                        ? location.GetLineSpan().StartLinePosition.Line + 1
-                        : 0;
-
-                    var discoveredType = new DiscoveredType(
-                        typeName,
-                        interfaces,
-                        assemblySymbol.Name,
-                        lifetime,
-                        constructorParams,
-                        keyedValues,
-                        sourceFilePath,
-                        sourceLine,
-                        TypeDiscoveryHelper.IsDisposableType(typeSymbol),
-                        interfaceInfos);
-
-                    assemblyTypes.Add(discoveredType);
-                }
-
-                if (assemblyTypes.Count > 0)
-                {
-                    result[assemblySymbol.Name] = assemblyTypes;
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /// <summary>
-    /// Extracts interface location information from a referenced assembly's ServiceCatalog.
-    /// The ServiceCatalog is generated by Needlr and contains compile-time interface location data.
-    /// </summary>
-    private static Dictionary<string, InterfaceInfo> GetInterfaceLocationsFromServiceCatalog(IAssemblySymbol assemblySymbol)
-    {
-        var result = new Dictionary<string, InterfaceInfo>(StringComparer.Ordinal);
-        
-        // Look for the ServiceCatalog class in the Generated namespace
-        var serviceCatalogTypeName = $"{assemblySymbol.Name}.Generated.ServiceCatalog";
-        var serviceCatalogType = assemblySymbol.GetTypeByMetadataName(serviceCatalogTypeName);
-        
-        if (serviceCatalogType == null)
-            return result;
-        
-        // Find the Services property
-        var servicesProperty = serviceCatalogType.GetMembers("Services")
-            .OfType<IPropertySymbol>()
-            .FirstOrDefault();
-        
-        if (servicesProperty == null)
-            return result;
-        
-        // The Services property has an initializer with ServiceCatalogEntry array
-        // We need to parse the initializer to extract interface locations
-        // This requires looking at the declaring syntax reference
-        var syntaxRef = servicesProperty.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxRef == null)
-            return result;
-        
-        var syntax = syntaxRef.GetSyntax();
-        if (syntax == null)
-            return result;
-        
-        // Parse the array initializer to extract InterfaceEntry data
-        // The format is: new InterfaceEntry("fullName", "filePath", line)
-        var text = syntax.ToFullString();
-        
-        // Use regex to extract InterfaceEntry values
-        var interfaceEntryPattern = new System.Text.RegularExpressions.Regex(
-            @"new\s+global::NexusLabs\.Needlr\.Catalog\.InterfaceEntry\(\s*""([^""]+)""\s*,\s*(""([^""]+)""|null)\s*,\s*(\d+)\s*\)",
-            System.Text.RegularExpressions.RegexOptions.Compiled);
-        
-        foreach (System.Text.RegularExpressions.Match match in interfaceEntryPattern.Matches(text))
-        {
-            var fullName = match.Groups[1].Value;
-            var filePath = match.Groups[3].Success ? match.Groups[3].Value : null;
-            var line = int.Parse(match.Groups[4].Value);
-            
-            if (!result.ContainsKey(fullName))
-            {
-                result[fullName] = new InterfaceInfo(fullName, filePath, line);
-            }
-        }
-        
-        return result;
-    }
 }

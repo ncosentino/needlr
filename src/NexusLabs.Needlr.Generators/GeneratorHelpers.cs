@@ -316,4 +316,20 @@ internal static class GeneratorHelpers
         if (total == 0) return 0;
         return (int)Math.Round(100.0 * count / total);
     }
+
+    /// <summary>
+    /// Extracts the namespace portion from a fully-qualified type name.
+    /// Strips the leading <c>global::</c> prefix if present.
+    /// </summary>
+    public static string GetNamespaceFromTypeName(string fullyQualifiedName)
+    {
+        var name = fullyQualifiedName;
+        if (name.StartsWith("global::"))
+        {
+            name = name.Substring(8);
+        }
+
+        var lastDot = name.LastIndexOf('.');
+        return lastDot >= 0 ? name.Substring(0, lastDot) : string.Empty;
+    }
 }

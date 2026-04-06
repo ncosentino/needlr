@@ -168,5 +168,83 @@ internal static class FactoryCodeGenerator
         }
         builder.AppendLine($"{indent});");
     }
+
+    /// <summary>
+    /// Generates the complete Factories.g.cs source file containing factory
+    /// interfaces, implementations, and the FactoryRegistrations helper.
+    /// </summary>
+    internal static string GenerateFactoriesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Factories");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate factory interfaces and implementations for each type
+        foreach (var factory in factories)
+        {
+            if (factory.GenerateInterface)
+            {
+                GenerateFactoryInterface(builder, factory, breadcrumbs, projectDirectory);
+                builder.AppendLine();
+                GenerateFactoryImplementation(builder, factory, breadcrumbs, projectDirectory);
+                builder.AppendLine();
+            }
+        }
+
+        // Generate the registration helper
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Helper class for registering factory types.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.Generators\", \"1.0.0\")]");
+        builder.AppendLine("public static class FactoryRegistrations");
+        builder.AppendLine("{");
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Registers all generated factories.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine("    /// <param name=\"services\">The service collection to register to.</param>");
+        builder.AppendLine("    public static void RegisterFactories(IServiceCollection services)");
+        builder.AppendLine("    {");
+
+        foreach (var factory in factories)
+        {
+            breadcrumbs.WriteInlineComment(builder, "        ", $"Factory for {factory.SimpleTypeName}");
+
+            // Register Func<> for each constructor
+            if (factory.GenerateFunc)
+            {
+                foreach (var ctor in factory.Constructors)
+                {
+                    GenerateFuncRegistration(builder, factory, ctor, "        ");
+                }
+            }
+
+            // Register interface factory
+            if (factory.GenerateInterface)
+            {
+                var factoryInterfaceName = $"I{factory.SimpleTypeName}Factory";
+                var factoryImplName = $"{factory.SimpleTypeName}Factory";
+                builder.AppendLine($"        services.AddSingleton<global::{safeAssemblyName}.Generated.{factoryInterfaceName}, global::{safeAssemblyName}.Generated.{factoryImplName}>();");
+            }
+        }
+
+        builder.AppendLine("    }");
+        builder.AppendLine();
+        builder.AppendLine("    /// <summary>");
+        builder.AppendLine("    /// Gets the number of factory types generated at compile time.");
+        builder.AppendLine("    /// </summary>");
+        builder.AppendLine($"    public static int Count => {factories.Count};");
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
 }
 

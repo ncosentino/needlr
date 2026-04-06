@@ -1,6 +1,7 @@
 // Copyright (c) NexusLabs. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NexusLabs.Needlr.Generators.Models;
@@ -197,5 +198,54 @@ internal static class ProviderCodeGenerator
 
         var lastDot = fullyQualifiedName.LastIndexOf('.');
         return lastDot >= 0 ? fullyQualifiedName.Substring(0, lastDot) : string.Empty;
+    }
+
+    /// <summary>
+    /// Generates the complete Providers.g.cs source file for interface-based providers.
+    /// </summary>
+    internal static string GenerateProvidersSource(IReadOnlyList<DiscoveredProvider> providers, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Generated Providers");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
+        builder.AppendLine();
+
+        // Generate provider implementations (interface-based only)
+        foreach (var provider in providers)
+        {
+            GenerateProviderImplementation(builder, provider, $"{safeAssemblyName}.Generated", breadcrumbs, projectDirectory);
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Generates the Provider.{TypeName}.g.cs source file for a shorthand class provider.
+    /// </summary>
+    internal static string GenerateShorthandProviderSource(DiscoveredProvider provider, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        var providerNamespace = GeneratorHelpers.GetNamespaceFromTypeName(provider.TypeName);
+
+        breadcrumbs.WriteFileHeader(builder, assemblyName, $"Needlr Generated Provider: {provider.SimpleTypeName}");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("using System;");
+        builder.AppendLine();
+        builder.AppendLine($"namespace {providerNamespace};");
+        builder.AppendLine();
+
+        GenerateProviderInterfaceAndPartialClass(builder, provider, providerNamespace, breadcrumbs, projectDirectory);
+
+        return builder.ToString();
     }
 }

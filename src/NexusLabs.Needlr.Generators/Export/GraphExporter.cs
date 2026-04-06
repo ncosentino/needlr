@@ -557,6 +557,52 @@ internal static class GraphExporter
     {
         return value == null ? "null" : $"\"{Escape(value)}\"";
     }
+
+    /// <summary>
+    /// Generates the NeedlrGraph.g.cs source file that embeds the graph JSON
+    /// in a generated class for IDE tooling.
+    /// </summary>
+    internal static string GenerateGraphExportSource(string graphJson, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var sb = new StringBuilder();
+
+        breadcrumbs.WriteFileHeader(sb, assemblyName, "Needlr IDE Graph Export");
+
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.IO;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {assemblyName}.Generated");
+        sb.AppendLine("{");
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// Provides the Needlr dependency graph for IDE tooling.");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    internal static class NeedlrGraphExport");
+        sb.AppendLine("    {");
+        sb.AppendLine("        /// <summary>");
+        sb.AppendLine("        /// Gets the dependency graph JSON.");
+        sb.AppendLine("        /// </summary>");
+        sb.AppendLine("        public static string GraphJson => GraphJsonContent;");
+        sb.AppendLine();
+        sb.AppendLine("        private const string GraphJsonContent = @\"");
+
+        // Escape the JSON for C# verbatim string (double quotes only)
+        var escapedJson = graphJson.Replace("\"", "\"\"");
+        sb.Append(escapedJson);
+
+        sb.AppendLine("\";");
+        sb.AppendLine();
+        sb.AppendLine("        /// <summary>");
+        sb.AppendLine("        /// Writes the graph to the specified path.");
+        sb.AppendLine("        /// </summary>");
+        sb.AppendLine("        public static void WriteGraphToFile(string path)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            File.WriteAllText(path, GraphJson);");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
 }
 
 /// <summary>
