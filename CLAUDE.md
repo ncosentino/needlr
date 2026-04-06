@@ -1,12 +1,13 @@
-# Claude Code Configuration - SPARC Development Environment
+# Claude Code Configuration
 
-## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
+**See `AGENTS.md` for all project conventions, patterns, and coding standards.** This file contains only Claude Code-specific tooling configuration (SPARC, claude-flow, MCP tools).
 
-**ABSOLUTE RULES**:
+## CRITICAL RULES
+
 0. Do what has been asked; nothing more, nothing less.
-1. ALL operations MUST be concurrent/parallel in a single message
-2. **NEVER save working files, text/mds and tests to the root folder**
-3. ALWAYS organize files in appropriate subdirectories
+1. ALL operations MUST be concurrent/parallel in a single message.
+2. NEVER save working files, text/mds and tests to the root folder.
+3. ALWAYS organize files in appropriate subdirectories.
 4. NEVER create files unless they're absolutely necessary for achieving your goal.
 5. ALWAYS prefer editing an existing file to creating a new one.
 6. NEVER create documentation files unless explicitly requested by the User.
