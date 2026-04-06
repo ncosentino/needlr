@@ -17,6 +17,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Hosted Services](https://github.devleader.ca/needlr/hosted-services/) -- Automatically discover and register IHostedService and BackgroundService implementations in .NET using Needlr -- no attributes required for hosted service auto-discovery.
 - [Keyed Services](https://github.devleader.ca/needlr/keyed-services/) -- Register and resolve multiple implementations of the same interface in .NET 8+ using Needlr's Keyed attribute -- keyed service support with source generation and reflection.
 - [Options Binding](https://github.devleader.ca/needlr/options/) -- Opinionated fluent dependency injection for .NET with source generation
+- [HttpClient Options](https://github.devleader.ca/needlr/http-clients/) -- Source-generated named HttpClient registration in Needlr via the [HttpClientOptions] attribute. Reuses the [Options] configuration-binding story, uses marker interfaces for capability composition, and is extensible to resilience and handler chains without breaking existing consumers.
 - [Factories](https://github.devleader.ca/needlr/factories/) -- Generate factory interfaces and delegates for .NET classes that require runtime constructor parameters using Needlr's GenerateFactory attribute -- source generation only.
 - [Providers](https://github.devleader.ca/needlr/providers/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Interceptors](https://github.devleader.ca/needlr/interceptors/) -- Add cross-cutting concerns to .NET services using Needlr interceptors -- intercept method calls with a single implementation that works across any service without modifying business logic.
@@ -95,6 +96,15 @@ Author: Nick Cosentino (https://www.devleader.ca).
 
 - [NDLRSIG001](https://github.devleader.ca/needlr/analyzers/NDLRSIG001/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRSIG002](https://github.devleader.ca/needlr/analyzers/NDLRSIG002/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## HttpClient Analyzers
+
+- [NDLRHTTP001](https://github.devleader.ca/needlr/analyzers/NDLRHTTP001/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP002](https://github.devleader.ca/needlr/analyzers/NDLRHTTP002/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP003](https://github.devleader.ca/needlr/analyzers/NDLRHTTP003/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP004](https://github.devleader.ca/needlr/analyzers/NDLRHTTP004/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP005](https://github.devleader.ca/needlr/analyzers/NDLRHTTP005/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP006](https://github.devleader.ca/needlr/analyzers/NDLRHTTP006/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## API Reference
 

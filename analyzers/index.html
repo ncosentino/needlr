@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -782,6 +782,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../http-clients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../factories/" class="md-nav__link">
         
   
@@ -1339,6 +1367,17 @@
     <span class="md-ellipsis">
       
         Generator Diagnostics (NexusLabs.Needlr.Generators)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#httpclient-diagnostics-nexuslabsneedlrgenerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HttpClient Diagnostics (NexusLabs.Needlr.Generators)
       
     </span>
   </a>
@@ -3002,6 +3041,239 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Analyzers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HttpClient Analyzers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP001/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP002/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP003/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP004/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP004
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP005/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP005
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="NDLRHTTP006/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP006
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3544,6 +3816,49 @@
 </tr>
 </tbody>
 </table>
+<h2 id="httpclient-diagnostics-nexuslabsneedlrgenerators">HttpClient Diagnostics (NexusLabs.Needlr.Generators)<a class="headerlink" href="#httpclient-diagnostics-nexuslabsneedlrgenerators" title="Permanent link">&para;</a></h2>
+<p>These diagnostics are emitted by the <code>HttpClientOptionsAnalyzer</code> to catch misuse of the <code>[HttpClientOptions]</code> attribute at compile time.</p>
+<table>
+<thead>
+<tr>
+<th>Rule ID</th>
+<th>Severity</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="NDLRHTTP001/">NDLRHTTP001</a></td>
+<td>Error</td>
+<td>[HttpClientOptions] target must implement INamedHttpClientOptions</td>
+</tr>
+<tr>
+<td><a href="NDLRHTTP002/">NDLRHTTP002</a></td>
+<td>Error</td>
+<td>HttpClient name sources conflict (attribute Name vs ClientName property)</td>
+</tr>
+<tr>
+<td><a href="NDLRHTTP003/">NDLRHTTP003</a></td>
+<td>Error</td>
+<td>ClientName property body is not a literal expression</td>
+</tr>
+<tr>
+<td><a href="NDLRHTTP004/">NDLRHTTP004</a></td>
+<td>Error</td>
+<td>Resolved HttpClient name is empty</td>
+</tr>
+<tr>
+<td><a href="NDLRHTTP005/">NDLRHTTP005</a></td>
+<td>Error</td>
+<td>Duplicate HttpClient name across the compilation</td>
+</tr>
+<tr>
+<td><a href="NDLRHTTP006/">NDLRHTTP006</a></td>
+<td>Error</td>
+<td>ClientName property has the wrong shape (must be instance <code>string</code> with getter)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="diagnostic-id-naming-convention">Diagnostic ID Naming Convention<a class="headerlink" href="#diagnostic-id-naming-convention" title="Permanent link">&para;</a></h2>
 <p>Needlr uses a component-based naming convention for diagnostic IDs:</p>
 <table>
@@ -3574,6 +3889,11 @@
 <td>Source Generators</td>
 <td><code>NDLRGEN</code></td>
 <td><code>NDLRGEN001</code></td>
+</tr>
+<tr>
+<td>HttpClient Analyzers</td>
+<td><code>NDLRHTTP</code></td>
+<td><code>NDLRHTTP001</code></td>
 </tr>
 </tbody>
 </table>
