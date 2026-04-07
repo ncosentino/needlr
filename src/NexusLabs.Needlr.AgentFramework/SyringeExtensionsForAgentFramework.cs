@@ -76,7 +76,9 @@ public static class SyringeExtensionsForAgentFramework
             // extensions on AgentFrameworkSyringe work without separate DI calls.
             services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
             services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
-            services.TryAddSingleton<IAgentDiagnosticsAccessor, AgentDiagnosticsAccessor>();
+            services.TryAddSingleton<AgentDiagnosticsAccessor>();
+            services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
+            services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
             services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
 
@@ -148,7 +150,9 @@ public static class SyringeExtensionsForAgentFramework
         {
             services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
             services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
-            services.TryAddSingleton<IAgentDiagnosticsAccessor, AgentDiagnosticsAccessor>();
+            services.TryAddSingleton<AgentDiagnosticsAccessor>();
+            services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
+            services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
             services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
 

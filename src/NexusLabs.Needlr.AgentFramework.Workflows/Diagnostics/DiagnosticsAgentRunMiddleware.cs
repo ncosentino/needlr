@@ -17,16 +17,16 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 internal sealed class DiagnosticsAgentRunMiddleware
 {
     private readonly string _agentName;
-    private readonly AgentDiagnosticsAccessor _accessor;
+    private readonly IAgentDiagnosticsWriter _writer;
     private readonly IAgentMetrics _metrics;
 
     internal DiagnosticsAgentRunMiddleware(
         string agentName,
-        AgentDiagnosticsAccessor accessor,
+        IAgentDiagnosticsWriter writer,
         IAgentMetrics metrics)
     {
         _agentName = agentName;
-        _accessor = accessor;
+        _writer = writer;
         _metrics = metrics;
     }
 
@@ -65,7 +65,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
         finally
         {
             var diagnostics = builder.Build();
-            _accessor.Set(diagnostics);
+            _writer.Set(diagnostics);
             _metrics.RecordRunCompleted(diagnostics);
         }
     }

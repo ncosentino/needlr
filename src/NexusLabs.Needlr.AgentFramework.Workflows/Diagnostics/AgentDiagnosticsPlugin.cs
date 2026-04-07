@@ -27,11 +27,10 @@ internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 
         var builder = options.AgentBuilder;
 
-        var accessor = (AgentDiagnosticsAccessor)_serviceProvider
-            .GetRequiredService<IAgentDiagnosticsAccessor>();
+        var writer = _serviceProvider.GetRequiredService<IAgentDiagnosticsWriter>();
         var metrics = _serviceProvider.GetRequiredService<IAgentMetrics>();
 
-        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", accessor, metrics);
+        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", writer, metrics);
         builder.Use(
             runFunc: runMiddleware.HandleAsync,
             runStreamingFunc: (messages, session, runOptions, innerAgent, ct) =>

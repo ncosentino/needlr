@@ -6,7 +6,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// <see cref="AsyncLocal{T}"/> slot — because the reference flows downward, mutations made by
 /// child async flows (middleware) are visible to the parent scope.
 /// </summary>
-internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor
+internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor, IAgentDiagnosticsWriter
 {
     private static readonly AsyncLocal<Holder?> Current = new();
 
@@ -21,11 +21,16 @@ internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor
         return new Scope(previous);
     }
 
+    /// <inheritdoc />
+    void IAgentDiagnosticsWriter.Set(IAgentRunDiagnostics diagnostics) => SetCore(diagnostics);
+
     /// <summary>
     /// Stores completed diagnostics into the current holder. Called by the diagnostics
     /// middleware after an agent run completes.
     /// </summary>
-    internal void Set(IAgentRunDiagnostics diagnostics)
+    internal void Set(IAgentRunDiagnostics diagnostics) => SetCore(diagnostics);
+
+    private static void SetCore(IAgentRunDiagnostics diagnostics)
     {
         if (Current.Value is { } holder)
         {
