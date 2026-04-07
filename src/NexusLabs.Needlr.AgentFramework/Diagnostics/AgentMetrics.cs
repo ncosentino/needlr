@@ -1,12 +1,11 @@
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
-/// Default <see cref="IAgentMetrics"/> implementation using <see cref="Meter"/> and
-/// <see cref="ActivitySource"/> from <c>System.Diagnostics</c>. Compatible with
-/// OpenTelemetry — metrics are exported when a listener is registered.
+/// Default <see cref="IAgentMetrics"/> implementation using <see cref="Meter"/>
+/// from <c>System.Diagnostics.Metrics</c>. Compatible with OpenTelemetry —
+/// metrics are exported when a listener is registered.
 /// </summary>
 /// <remarks>
 /// Source names use <c>NexusLabs.Needlr.AgentFramework</c> — not hardcoded to any
@@ -15,9 +14,10 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 internal sealed class AgentMetrics : IAgentMetrics
 {
     internal const string MeterName = "NexusLabs.Needlr.AgentFramework";
-    internal const string ActivitySourceName = "NexusLabs.Needlr.AgentFramework";
-
-    internal static readonly ActivitySource Source = new(ActivitySourceName);
+    // NOTE: Distributed tracing via ActivitySource is deferred. Currently only
+    // metrics (counters/histograms) are emitted. ActivitySource spans will be
+    // added in a future release when the middleware layers are updated to call
+    // StartActivity() for run, chat completion, and tool invocation spans.
 
     private readonly Counter<long> _runsStarted;
     private readonly Counter<long> _runsCompleted;
