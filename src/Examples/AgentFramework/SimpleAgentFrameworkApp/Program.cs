@@ -10,6 +10,7 @@ using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows;
+using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
@@ -89,9 +90,15 @@ Console.WriteLine("  GeographyFunctions.GetCountriesLived() returns ToolResult<T
 Console.WriteLine("  GeographyFunctions.GetFavoriteCities() reads UserId from IAgentExecutionContextAccessor.");
 Console.WriteLine();
 
+// Create a per-orchestration workspace. The framework does NOT auto-register workspaces —
+// consumers construct them explicitly and attach wherever they choose. Here we put it in
+// the execution context's Properties bag, and NoteFunctions reads it from there.
+var workspace = new InMemoryWorkspace();
+
 var executionContext = new AgentExecutionContext(
     UserId: "demo-user-42",
-    OrchestrationId: $"demo-{Guid.NewGuid():N}");
+    OrchestrationId: $"demo-{Guid.NewGuid():N}",
+    Properties: new Dictionary<string, object> { ["workspace"] = workspace });
 
 var questions = new[]
 {
@@ -136,6 +143,22 @@ using (contextAccessor.BeginScope(executionContext))
 
         Console.WriteLine();
     }
+}
+
+// Print workspace contents — shows files the agent tools wrote during the run.
+var workspaceFiles = workspace.GetFilePaths().ToList();
+if (workspaceFiles.Count > 0)
+{
+    Console.WriteLine("=== Workspace Contents (InMemoryWorkspace) ===");
+    Console.WriteLine("  NoteFunctions.SaveNote() wrote these files via the IWorkspace from");
+    Console.WriteLine("  the execution context's Properties bag — fully opt-in, not forced.");
+    Console.WriteLine();
+    foreach (var file in workspaceFiles)
+    {
+        Console.WriteLine($"  [{file}]:");
+        Console.WriteLine($"    {workspace.ReadFile(file)}");
+    }
+    Console.WriteLine();
 }
 
 // --- Demo 2: Token budget enforcement ---
