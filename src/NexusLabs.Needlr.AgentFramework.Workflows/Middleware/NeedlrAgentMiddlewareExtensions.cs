@@ -125,6 +125,7 @@ public static class NeedlrAgentMiddlewareExtensions
                 ShouldHandle = new PredicateBuilder<AgentResponse>()
                     .Handle<HttpRequestException>()
                     .Handle<TimeoutRejectedException>()
+                    .Handle<OperationCanceledException>()
             })
             .AddTimeout(TimeSpan.FromSeconds(120))
             .Build();
