@@ -35,6 +35,8 @@ internal sealed class PipelineRunResult : IPipelineRunResult
 
             if (diagnostics.Count == 0) return null;
 
+            // AggregateTokenUsage is always non-null on IAgentRunDiagnostics produced by
+            // AgentRunDiagnosticsBuilder.Build() — the ! suppression is safe.
             return new TokenUsage(
                 InputTokens: diagnostics.Sum(d => d!.AggregateTokenUsage.InputTokens),
                 OutputTokens: diagnostics.Sum(d => d!.AggregateTokenUsage.OutputTokens),

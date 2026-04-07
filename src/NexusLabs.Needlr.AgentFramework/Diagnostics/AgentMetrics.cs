@@ -11,7 +11,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// Source names use <c>NexusLabs.Needlr.AgentFramework</c> — not hardcoded to any
 /// consumer's namespace. Wire OpenTelemetry in the host to export these metrics.
 /// </remarks>
-internal sealed class AgentMetrics : IAgentMetrics
+internal sealed class AgentMetrics : IAgentMetrics, IDisposable
 {
     internal const string MeterName = "NexusLabs.Needlr.AgentFramework";
     // NOTE: Distributed tracing via ActivitySource is deferred. Currently only
@@ -19,6 +19,7 @@ internal sealed class AgentMetrics : IAgentMetrics
     // added in a future release when the middleware layers are updated to call
     // StartActivity() for run, chat completion, and tool invocation spans.
 
+    private readonly Meter _meter;
     private readonly Counter<long> _runsStarted;
     private readonly Counter<long> _runsCompleted;
     private readonly Histogram<double> _runDuration;
@@ -29,35 +30,35 @@ internal sealed class AgentMetrics : IAgentMetrics
 
     public AgentMetrics()
     {
-        var meter = new Meter(MeterName);
+        _meter = new Meter(MeterName);
 
-        _runsStarted = meter.CreateCounter<long>(
+        _runsStarted = _meter.CreateCounter<long>(
             "agent.run.started",
             description: "Agent runs started");
 
-        _runsCompleted = meter.CreateCounter<long>(
+        _runsCompleted = _meter.CreateCounter<long>(
             "agent.run.completed",
             description: "Agent runs completed");
 
-        _runDuration = meter.CreateHistogram<double>(
+        _runDuration = _meter.CreateHistogram<double>(
             "agent.run.duration",
             unit: "s",
             description: "Agent run execution duration");
 
-        _tokensUsed = meter.CreateCounter<long>(
+        _tokensUsed = _meter.CreateCounter<long>(
             "agent.tokens.used",
             description: "Tokens consumed by agent runs");
 
-        _toolCallsCompleted = meter.CreateCounter<long>(
+        _toolCallsCompleted = _meter.CreateCounter<long>(
             "agent.tool.completed",
             description: "Agent tool calls completed");
 
-        _toolCallDuration = meter.CreateHistogram<double>(
+        _toolCallDuration = _meter.CreateHistogram<double>(
             "agent.tool.duration",
             unit: "s",
             description: "Agent tool call execution duration");
 
-        _chatCompletionDuration = meter.CreateHistogram<double>(
+        _chatCompletionDuration = _meter.CreateHistogram<double>(
             "agent.chat.duration",
             unit: "s",
             description: "Agent chat completion duration");
@@ -112,4 +113,7 @@ internal sealed class AgentMetrics : IAgentMetrics
             new KeyValuePair<string, object?>("model", model),
             new KeyValuePair<string, object?>("status", status));
     }
+
+    /// <summary>Disposes the underlying <see cref="Meter"/>.</summary>
+    public void Dispose() => _meter.Dispose();
 }

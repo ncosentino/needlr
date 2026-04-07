@@ -62,6 +62,11 @@ public sealed class AgentScenarioRunner
     /// </summary>
     /// <param name="scenario">The scenario to run.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <remarks>
+    /// <see cref="ScenarioRunResult.Diagnostics"/> will be <see langword="null"/> unless the
+    /// <see cref="IAgentFactory"/> was configured with <c>UsingDiagnostics()</c> on the syringe.
+    /// Without diagnostics middleware, <see cref="IAgentScenario.Verify"/> receives null diagnostics.
+    /// </remarks>
     /// <returns>The result of the scenario run, including diagnostics and verification outcome.</returns>
     public async Task<ScenarioRunResult> RunAsync(
         IAgentScenario scenario,
