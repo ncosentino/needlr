@@ -37,8 +37,13 @@ internal sealed class DiagnosticsAgentRunMiddleware
         AIAgent innerAgent,
         CancellationToken cancellationToken)
     {
-        _metrics.RecordRunStarted(_agentName);
-        var builder = AgentRunDiagnosticsBuilder.StartNew(_agentName);
+        // Resolve the agent name at runtime from the inner agent. The plugin creates
+        // this middleware before the agent is fully built, so the name passed at
+        // construction time is a fallback.
+        var resolvedName = !string.IsNullOrEmpty(innerAgent.Name) ? innerAgent.Name : _agentName;
+
+        _metrics.RecordRunStarted(resolvedName);
+        var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
 
         try
         {
