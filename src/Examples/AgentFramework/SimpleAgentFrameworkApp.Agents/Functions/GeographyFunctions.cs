@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Tools;
 
 namespace SimpleAgentFrameworkApp.Agents;
@@ -17,7 +18,8 @@ namespace SimpleAgentFrameworkApp.Agents;
 /// context. The <c>ToolResultFunctionMiddleware</c> handles serialisation automatically.
 /// </para>
 /// <para>
-/// <see cref="GetFavoriteCities"/> demonstrates reading from <see cref="IAgentExecutionContextAccessor"/>:
+/// <see cref="GetFavoriteCities"/> demonstrates reading from <see cref="IAgentExecutionContextAccessor"/>
+/// and attaching custom metrics via <see cref="IToolMetricsAccessor.AttachMetric"/>:
 /// the trusted caller (Program.cs) sets the user identity via <c>BeginScope()</c>, and the
 /// tool reads it via <c>GetRequired()</c> — never from LLM-provided parameters.
 /// </para>
@@ -25,7 +27,8 @@ namespace SimpleAgentFrameworkApp.Agents;
 [AgentFunctionGroup("geography")]
 internal sealed class GeographyFunctions(
     PersonalDataProvider dataProvider,
-    IAgentExecutionContextAccessor contextAccessor)
+    IAgentExecutionContextAccessor contextAccessor,
+    IToolMetricsAccessor toolMetrics)
 {
     [AgentFunction]
     [Description("Returns a list of Nick's favorite cities and identifies who is asking.")]
@@ -33,6 +36,11 @@ internal sealed class GeographyFunctions(
     {
         var ctx = contextAccessor.GetRequired();
         var cities = dataProvider.GetCities();
+
+        // Attach custom metrics — visible in diagnostics ToolCallDiagnostics.CustomMetrics
+        toolMetrics.AttachMetric("source", "in-memory");
+        toolMetrics.AttachMetric("city_count", cities.Count);
+
         return $"[Requested by {ctx.UserId} (orch: {ctx.OrchestrationId})]: {string.Join(", ", cities)}";
     }
 

@@ -138,7 +138,10 @@ using (contextAccessor.BeginScope(executionContext))
                 Console.WriteLine($"  Tool calls: {diag.ToolCalls.Count}");
                 foreach (var tc in diag.ToolCalls)
                 {
-                    Console.WriteLine($"    [{tc.ToolName}] {tc.Duration.TotalMilliseconds:F0}ms — {(tc.Succeeded ? "OK" : $"FAIL: {tc.ErrorMessage}")}");
+                    var metricsInfo = tc.CustomMetrics is { Count: > 0 }
+                        ? $" metrics: {string.Join(", ", tc.CustomMetrics.Select(m => $"{m.Key}={m.Value}"))}"
+                        : "";
+                    Console.WriteLine($"    [{tc.ToolName}] {tc.Duration.TotalMilliseconds:F0}ms — {(tc.Succeeded ? "OK" : $"FAIL: {tc.ErrorMessage}")}{metricsInfo}");
                 }
                 Console.WriteLine($"  Succeeded: {diag.Succeeded}");
             }
