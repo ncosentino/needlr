@@ -141,7 +141,7 @@ public class AgentDiagnosticsAccessorTests
     [Fact]
     public void Builder_Build_ProducesCorrectDiagnostics()
     {
-        var builder = AgentRunDiagnosticsBuilder.StartNew("TestAgent");
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("TestAgent");
 
         builder.RecordInputMessageCount(3);
         builder.AddChatCompletion(new ChatCompletionDiagnostics(
@@ -184,7 +184,7 @@ public class AgentDiagnosticsAccessorTests
     [Fact]
     public void Builder_RecordFailure_SetsFailedState()
     {
-        var builder = AgentRunDiagnosticsBuilder.StartNew("FailAgent");
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("FailAgent");
 
         builder.RecordFailure("Something went wrong");
 
@@ -197,7 +197,7 @@ public class AgentDiagnosticsAccessorTests
     [Fact]
     public void Builder_MultipleCompletions_AreOrderedBySequence()
     {
-        var builder = AgentRunDiagnosticsBuilder.StartNew("OrderAgent");
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("OrderAgent");
 
         // Add in reverse order
         builder.AddChatCompletion(CreateCompletion(sequence: 2));

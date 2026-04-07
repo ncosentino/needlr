@@ -43,7 +43,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
         var resolvedName = !string.IsNullOrEmpty(innerAgent.Name) ? innerAgent.Name : _agentName;
 
         _metrics.RecordRunStarted(resolvedName);
-        var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
+        using var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
 
         try
         {
@@ -67,7 +67,6 @@ internal sealed class DiagnosticsAgentRunMiddleware
             var diagnostics = builder.Build();
             _accessor.Set(diagnostics);
             _metrics.RecordRunCompleted(diagnostics);
-            AgentRunDiagnosticsBuilder.ClearCurrent();
         }
     }
 }

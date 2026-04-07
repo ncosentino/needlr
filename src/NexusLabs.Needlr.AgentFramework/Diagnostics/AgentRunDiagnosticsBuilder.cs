@@ -16,7 +16,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// ensuring parallel tool calls are ordered by invocation time, not completion time.
 /// </para>
 /// </remarks>
-internal sealed class AgentRunDiagnosticsBuilder
+internal sealed class AgentRunDiagnosticsBuilder : IDisposable
 {
     private static readonly AsyncLocal<AgentRunDiagnosticsBuilder?> CurrentBuilder = new();
 
@@ -119,4 +119,10 @@ internal sealed class AgentRunDiagnosticsBuilder
 
     /// <summary>Clears the builder from the current async flow.</summary>
     internal static void ClearCurrent() => CurrentBuilder.Value = null;
+
+    /// <summary>
+    /// Clears this builder from the current async flow. Equivalent to calling
+    /// <see cref="ClearCurrent"/> but usable in a <c>using</c> statement.
+    /// </summary>
+    public void Dispose() => ClearCurrent();
 }

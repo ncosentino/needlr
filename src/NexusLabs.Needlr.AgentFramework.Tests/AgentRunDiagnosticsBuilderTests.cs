@@ -7,178 +7,130 @@ public class AgentRunDiagnosticsBuilderTests
     [Fact]
     public void StartNew_SetsAgentName()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("TestAgent");
-            var result = builder.Build();
-            Assert.Equal("TestAgent", result.AgentName);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("TestAgent");
+        var result = builder.Build();
+        Assert.Equal("TestAgent", result.AgentName);
     }
 
     [Fact]
     public void StartNew_MakesBuilderAccessibleViaCurrent()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            Assert.Same(builder, AgentRunDiagnosticsBuilder.GetCurrent());
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        Assert.Same(builder, AgentRunDiagnosticsBuilder.GetCurrent());
     }
 
     [Fact]
-    public void ClearCurrent_RemovesBuilder()
+    public void Dispose_ClearsCurrentBuilder()
     {
-        AgentRunDiagnosticsBuilder.StartNew("Agent");
-        AgentRunDiagnosticsBuilder.ClearCurrent();
+        var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.Dispose();
         Assert.Null(AgentRunDiagnosticsBuilder.GetCurrent());
     }
 
     [Fact]
     public void Build_Succeeded_DefaultsToTrue()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            var result = builder.Build();
-            Assert.True(result.Succeeded);
-            Assert.Null(result.ErrorMessage);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        var result = builder.Build();
+        Assert.True(result.Succeeded);
+        Assert.Null(result.ErrorMessage);
     }
 
     [Fact]
     public void RecordFailure_SetsSucceededFalse()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            builder.RecordFailure("boom");
-            var result = builder.Build();
-            Assert.False(result.Succeeded);
-            Assert.Equal("boom", result.ErrorMessage);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.RecordFailure("boom");
+        var result = builder.Build();
+        Assert.False(result.Succeeded);
+        Assert.Equal("boom", result.ErrorMessage);
     }
 
     [Fact]
     public void RecordInputOutputMessageCounts()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            builder.RecordInputMessageCount(5);
-            builder.RecordOutputMessageCount(3);
-            var result = builder.Build();
-            Assert.Equal(5, result.TotalInputMessages);
-            Assert.Equal(3, result.TotalOutputMessages);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.RecordInputMessageCount(5);
+        builder.RecordOutputMessageCount(3);
+        var result = builder.Build();
+        Assert.Equal(5, result.TotalInputMessages);
+        Assert.Equal(3, result.TotalOutputMessages);
     }
 
     [Fact]
     public void AddChatCompletion_AccumulatesTokens()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            builder.AddChatCompletion(MakeCompletion(sequence: 0, input: 10, output: 20, total: 30));
-            builder.AddChatCompletion(MakeCompletion(sequence: 1, input: 5, output: 15, total: 20));
-            var result = builder.Build();
-            Assert.Equal(2, result.ChatCompletions.Count);
-            Assert.Equal(15, result.AggregateTokenUsage.InputTokens);
-            Assert.Equal(35, result.AggregateTokenUsage.OutputTokens);
-            Assert.Equal(50, result.AggregateTokenUsage.TotalTokens);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.AddChatCompletion(MakeCompletion(sequence: 0, input: 10, output: 20, total: 30));
+        builder.AddChatCompletion(MakeCompletion(sequence: 1, input: 5, output: 15, total: 20));
+        var result = builder.Build();
+        Assert.Equal(2, result.ChatCompletions.Count);
+        Assert.Equal(15, result.AggregateTokenUsage.InputTokens);
+        Assert.Equal(35, result.AggregateTokenUsage.OutputTokens);
+        Assert.Equal(50, result.AggregateTokenUsage.TotalTokens);
     }
 
     [Fact]
     public void ChatCompletions_OrderedBySequence_NotInsertionOrder()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            builder.AddChatCompletion(MakeCompletion(sequence: 2));
-            builder.AddChatCompletion(MakeCompletion(sequence: 0));
-            builder.AddChatCompletion(MakeCompletion(sequence: 1));
-            var result = builder.Build();
-            Assert.Equal(0, result.ChatCompletions[0].Sequence);
-            Assert.Equal(1, result.ChatCompletions[1].Sequence);
-            Assert.Equal(2, result.ChatCompletions[2].Sequence);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.AddChatCompletion(MakeCompletion(sequence: 2));
+        builder.AddChatCompletion(MakeCompletion(sequence: 0));
+        builder.AddChatCompletion(MakeCompletion(sequence: 1));
+        var result = builder.Build();
+        Assert.Equal(0, result.ChatCompletions[0].Sequence);
+        Assert.Equal(1, result.ChatCompletions[1].Sequence);
+        Assert.Equal(2, result.ChatCompletions[2].Sequence);
     }
 
     [Fact]
     public void AddToolCall_AccumulatesAndOrders()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            builder.AddToolCall(MakeToolCall(sequence: 1, name: "B"));
-            builder.AddToolCall(MakeToolCall(sequence: 0, name: "A"));
-            var result = builder.Build();
-            Assert.Equal(2, result.ToolCalls.Count);
-            Assert.Equal("A", result.ToolCalls[0].ToolName);
-            Assert.Equal("B", result.ToolCalls[1].ToolName);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.AddToolCall(MakeToolCall(sequence: 1, name: "B"));
+        builder.AddToolCall(MakeToolCall(sequence: 0, name: "A"));
+        var result = builder.Build();
+        Assert.Equal(2, result.ToolCalls.Count);
+        Assert.Equal("A", result.ToolCalls[0].ToolName);
+        Assert.Equal("B", result.ToolCalls[1].ToolName);
     }
 
     [Fact]
     public void NextChatCompletionSequence_IsMonotonicallyIncreasing()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            Assert.Equal(0, builder.NextChatCompletionSequence());
-            Assert.Equal(1, builder.NextChatCompletionSequence());
-            Assert.Equal(2, builder.NextChatCompletionSequence());
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        Assert.Equal(0, builder.NextChatCompletionSequence());
+        Assert.Equal(1, builder.NextChatCompletionSequence());
+        Assert.Equal(2, builder.NextChatCompletionSequence());
     }
 
     [Fact]
     public void NextToolCallSequence_IsMonotonicallyIncreasing()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            Assert.Equal(0, builder.NextToolCallSequence());
-            Assert.Equal(1, builder.NextToolCallSequence());
-            Assert.Equal(2, builder.NextToolCallSequence());
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        Assert.Equal(0, builder.NextToolCallSequence());
+        Assert.Equal(1, builder.NextToolCallSequence());
+        Assert.Equal(2, builder.NextToolCallSequence());
     }
 
     [Fact]
     public void Build_Duration_IsNonZero()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            Thread.Sleep(5);
-            var result = builder.Build();
-            Assert.True(result.TotalDuration > TimeSpan.Zero);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        Thread.Sleep(5);
+        var result = builder.Build();
+        Assert.True(result.TotalDuration > TimeSpan.Zero);
     }
 
     [Fact]
     public void Build_EmptyBuilder_HasZeroTokens()
     {
-        try
-        {
-            var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
-            var result = builder.Build();
-            Assert.Equal(0, result.AggregateTokenUsage.InputTokens);
-            Assert.Equal(0, result.AggregateTokenUsage.TotalTokens);
-            Assert.Empty(result.ChatCompletions);
-            Assert.Empty(result.ToolCalls);
-        }
-        finally { AgentRunDiagnosticsBuilder.ClearCurrent(); }
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        var result = builder.Build();
+        Assert.Equal(0, result.AggregateTokenUsage.InputTokens);
+        Assert.Equal(0, result.AggregateTokenUsage.TotalTokens);
+        Assert.Empty(result.ChatCompletions);
+        Assert.Empty(result.ToolCalls);
     }
 
     // -------------------------------------------------------------------------
