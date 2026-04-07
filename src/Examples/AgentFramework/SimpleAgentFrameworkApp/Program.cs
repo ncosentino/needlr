@@ -9,6 +9,7 @@ using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Providers;
 using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
@@ -17,6 +18,8 @@ using NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.Injection.SourceGen;
+
+using SimpleAgentFrameworkApp.Agents;
 
 // Generated extension methods emitted by the source generator in SimpleAgentFrameworkApp.Agents.
 // Includes: IWorkflowFactory extensions, IAgentFactory extensions, named constants,
@@ -160,6 +163,27 @@ if (workspaceFiles.Count > 0)
     }
     Console.WriteLine();
 }
+
+// --- Demo: Tiered Provider Fallback ---
+// TieredProviderSelector tries providers in priority order, falling through on
+// ProviderUnavailableException. Here PremiumGeoAPI (priority 1) always throws,
+// so LocalData (priority 100) handles the request.
+Console.WriteLine("=== Tiered Provider Fallback ===");
+Console.WriteLine("  PremiumGeoAPI (priority 1) throws ProviderUnavailableException.");
+Console.WriteLine("  LocalData (priority 100) succeeds as fallback.");
+Console.WriteLine();
+
+var providers = new ITieredProvider<string, IReadOnlyList<string>>[]
+{
+    new PremiumGeographyProvider(),
+    new LocalGeographyProvider(),
+};
+var selector = new TieredProviderSelector<string, IReadOnlyList<string>>(
+    providers, new AlwaysGrantQuotaGate());
+
+var countries = await selector.ExecuteAsync("countries", CancellationToken.None);
+Console.WriteLine($"  Result: {string.Join(", ", countries)}");
+Console.WriteLine();
 
 // --- Demo 2: Token budget enforcement ---
 Console.WriteLine("=== Demo 2: Token Budget Enforcement ===");
