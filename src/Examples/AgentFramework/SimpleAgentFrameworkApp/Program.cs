@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Budget;
+using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 using NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
@@ -61,14 +62,19 @@ var serviceProvider = new Syringe()
 var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
 var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var tokenBudgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
+var contextAccessor = serviceProvider.GetRequiredService<IAgentExecutionContextAccessor>();
 
 // Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
 // No magic strings; renaming the class regenerates these methods automatically.
 var triageAgent = agentFactory.CreateTriageAgent();
 Console.WriteLine($"Created: {AgentNames.TriageAgent} (ID: {triageAgent.Id})");
 
-// --- Demo 1: Handoff workflow ---
+// --- Demo 1: Handoff workflow with execution context ---
 // CreateTriageHandoffWorkflow() is generated because TriageAgent is decorated with [AgentHandoffsTo].
+//
+// The execution context is established by the trusted caller (this program) before invoking the
+// workflow. Tools read identity from the context — never from LLM-provided parameters.
+// GeographyFunctions.GetFavoriteCities() demonstrates this by calling contextAccessor.GetRequired().
 var handoffWorkflow = workflowFactory.CreateTriageHandoffWorkflow();
 
 Console.WriteLine("=== Demo 1: Triage → Handoff Multi-Agent Workflow ===");
@@ -76,7 +82,12 @@ Console.WriteLine("  Topology declared via [AgentHandoffsTo] on TriageAgent.");
 Console.WriteLine("  Middleware: UsingResilience() (global), UsingToolResultMiddleware(), UsingTokenBudget().");
 Console.WriteLine("  GeographyAgent has [AgentResilience(maxRetries: 3, timeoutSeconds: 90)].");
 Console.WriteLine("  GeographyFunctions.GetCountriesLived() returns ToolResult<T, ToolError>.");
+Console.WriteLine("  GeographyFunctions.GetFavoriteCities() reads UserId from IAgentExecutionContextAccessor.");
 Console.WriteLine();
+
+var executionContext = new AgentExecutionContext(
+    UserId: "demo-user-42",
+    OrchestrationId: $"demo-{Guid.NewGuid():N}");
 
 var questions = new[]
 {
@@ -84,18 +95,22 @@ var questions = new[]
     "What are Nick's top hobbies?",
 };
 
-foreach (var question in questions)
+// Wrap agent execution in a context scope — tools see the UserId and OrchestrationId.
+using (contextAccessor.BeginScope(executionContext))
 {
-    Console.WriteLine($"Q: {question}");
-
-    var responses = await handoffWorkflow.RunAsync(question);
-
-    foreach (var (executorId, text) in responses)
+    foreach (var question in questions)
     {
-        Console.WriteLine($"  [{executorId}]: {text.Trim()}");
-    }
+        Console.WriteLine($"Q: {question}");
 
-    Console.WriteLine();
+        var responses = await handoffWorkflow.RunAsync(question);
+
+        foreach (var (executorId, text) in responses)
+        {
+            Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+        }
+
+        Console.WriteLine();
+    }
 }
 
 // --- Demo 2: Token budget enforcement ---

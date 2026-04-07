@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using NexusLabs.Needlr.AgentFramework.Budget;
+using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AgentFramework;
@@ -70,9 +71,10 @@ public static class SyringeExtensionsForAgentFramework
 
         return syringe.UsingPostPluginRegistrationCallback(services =>
         {
-            // Always register the token budget tracker so UsingTokenBudget() on
-            // AgentFrameworkSyringe works without a separate DI registration call.
+            // Always register infrastructure singletons so middleware
+            // extensions on AgentFrameworkSyringe work without separate DI calls.
             services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
+            services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
@@ -135,6 +137,7 @@ public static class SyringeExtensionsForAgentFramework
         return syringe.UsingPostPluginRegistrationCallback(services =>
         {
             services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
+            services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
