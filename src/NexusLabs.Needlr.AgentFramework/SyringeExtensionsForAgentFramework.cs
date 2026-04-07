@@ -127,6 +127,12 @@ public static class SyringeExtensionsForAgentFramework
     /// A factory that creates a fully-configured <see cref="AgentFrameworkSyringe"/>
     /// used to build the agent factory. Useful when configuration does
     /// not need the service provider.
+    /// <para>
+    /// <strong>Note:</strong> Unlike the <c>Func&lt;AgentFrameworkSyringe, AgentFrameworkSyringe&gt;</c>
+    /// overload, this does NOT auto-populate from the source generator's
+    /// <c>[ModuleInitializer]</c> bootstrap. Functions, groups, and agents must be
+    /// configured explicitly on the returned syringe.
+    /// </para>
     /// </param>
     /// <returns>
     /// A new <see cref="ConfiguredSyringe"/> instance containing the registration.
