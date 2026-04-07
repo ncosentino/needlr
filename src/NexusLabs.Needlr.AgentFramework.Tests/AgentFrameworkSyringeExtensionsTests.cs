@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Moq;
 
+using NexusLabs.Needlr.AgentFramework.Budget;
+using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -125,6 +128,69 @@ public sealed class AgentFrameworkSyringeExtensionsTests
         var agent = factory.CreateAgent(opts => opts.FunctionTypes = []);
 
         Assert.True(Guid.TryParse(agent.Id, out _));
+    }
+
+    // -------------------------------------------------------------------------
+    // C1: All overloads register the same infrastructure singletons
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void UsingAgentFramework_CallbackOverload_RegistersAllInfrastructureSingletons()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object))
+            .BuildServiceProvider(config);
+
+        Assert.NotNull(sp.GetService<ITokenBudgetTracker>());
+        Assert.NotNull(sp.GetService<IAgentExecutionContextAccessor>());
+        Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
+        Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
+        Assert.NotNull(sp.GetService<IAgentMetrics>());
+    }
+
+    [Fact]
+    public void UsingAgentFramework_FactoryOverload_RegistersAllInfrastructureSingletons()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(() => new AgentFrameworkSyringe
+            {
+                ServiceProvider = new Syringe()
+                    .UsingReflection()
+                    .BuildServiceProvider(config),
+            })
+            .BuildServiceProvider(config);
+
+        Assert.NotNull(sp.GetService<ITokenBudgetTracker>());
+        Assert.NotNull(sp.GetService<IAgentExecutionContextAccessor>());
+        Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
+        Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
+        Assert.NotNull(sp.GetService<IAgentMetrics>());
+    }
+
+    [Fact]
+    public void UsingAgentFramework_NoArgOverload_RegistersAllInfrastructureSingletons()
+    {
+        var config = new ConfigurationBuilder().Build();
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework()
+            .BuildServiceProvider(config);
+
+        Assert.NotNull(sp.GetService<ITokenBudgetTracker>());
+        Assert.NotNull(sp.GetService<IAgentExecutionContextAccessor>());
+        Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
+        Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
+        Assert.NotNull(sp.GetService<IAgentMetrics>());
     }
 }
 
