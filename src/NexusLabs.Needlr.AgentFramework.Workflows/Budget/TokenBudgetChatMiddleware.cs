@@ -22,6 +22,12 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 /// Wired automatically when <c>UsingTokenBudget()</c> is called on
 /// <see cref="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe"/>.
 /// </para>
+/// <para>
+/// <strong>Limitation:</strong> Only <c>GetResponseAsync</c> is budget-tracked.
+/// Streaming via <c>GetStreamingResponseAsync</c> passes through to the inner client
+/// without token tracking or budget enforcement. If your agents use streaming completions,
+/// token budgets will not be enforced for those calls.
+/// </para>
 /// </remarks>
 public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
 {
