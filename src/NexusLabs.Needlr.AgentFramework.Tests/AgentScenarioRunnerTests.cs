@@ -140,6 +140,55 @@ public class AgentScenarioRunnerTests
     }
 
     // -------------------------------------------------------------------------
+    // C2: RunAsync integration — full lifecycle
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_WithMockScenario_SeedsWorkspaceAndExecutes()
+    {
+        var (runner, _) = CreateRunnerWithMockChat(
+            responseText: "The answer is 42.");
+
+        var scenario = new Mock<IAgentScenario>();
+        scenario.Setup(s => s.Name).Returns("test-scenario");
+        scenario.Setup(s => s.Description).Returns("A test");
+        scenario.Setup(s => s.SystemPrompt).Returns("You are a test agent.");
+        scenario.Setup(s => s.UserPrompt).Returns("What is the answer?");
+        scenario.Setup(s => s.SeedWorkspace(It.IsAny<IWorkspace>()))
+            .Callback<IWorkspace>(ws => ws.WriteFile("seed.txt", "seeded"));
+        scenario.Setup(s => s.Verify(It.IsAny<IWorkspace>(), It.IsAny<IAgentRunDiagnostics?>()));
+
+        var result = await runner.RunAsync(scenario.Object, TestContext.Current.CancellationToken);
+
+        // Workspace was seeded
+        Assert.True(result.Workspace.FileExists("seed.txt"));
+        // SeedWorkspace was called
+        scenario.Verify(s => s.SeedWorkspace(It.IsAny<IWorkspace>()), Times.Once);
+        // Verify was called
+        scenario.Verify(s => s.Verify(It.IsAny<IWorkspace>(), It.IsAny<IAgentRunDiagnostics?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenVerifyThrows_ResultContainsVerificationError()
+    {
+        var (runner, _) = CreateRunnerWithMockChat(responseText: "ok");
+
+        var scenario = new Mock<IAgentScenario>();
+        scenario.Setup(s => s.Name).Returns("fail-verify");
+        scenario.Setup(s => s.SystemPrompt).Returns("agent");
+        scenario.Setup(s => s.UserPrompt).Returns("test");
+        scenario.Setup(s => s.SeedWorkspace(It.IsAny<IWorkspace>()));
+        scenario.Setup(s => s.Verify(It.IsAny<IWorkspace>(), It.IsAny<IAgentRunDiagnostics?>()))
+            .Throws(new ScenarioVerificationException("fail-verify", "expected file missing"));
+
+        var result = await runner.RunAsync(scenario.Object, TestContext.Current.CancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.NotNull(result.VerificationError);
+        Assert.IsType<ScenarioVerificationException>(result.VerificationError);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -171,5 +220,33 @@ public class AgentScenarioRunnerTests
             sp.GetRequiredService<IAgentFactory>(),
             sp.GetRequiredService<IAgentExecutionContextAccessor>(),
             sp.GetRequiredService<IAgentDiagnosticsAccessor>());
+    }
+
+    private static (AgentScenarioRunner Runner, Mock<IChatClient> MockChat) CreateRunnerWithMockChat(
+        string responseText = "mock response")
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChat = new Mock<IChatClient>();
+
+        // Set up mock to return a canned response
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, responseText)]));
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChat.Object))
+            .BuildServiceProvider(config);
+
+        var runner = new AgentScenarioRunner(
+            sp.GetRequiredService<IAgentFactory>(),
+            sp.GetRequiredService<IAgentExecutionContextAccessor>(),
+            sp.GetRequiredService<IAgentDiagnosticsAccessor>());
+
+        return (runner, mockChat);
     }
 }
