@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
+using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
@@ -56,13 +58,15 @@ var serviceProvider = new Syringe()
         .UsingChatClient(chatClient)
         .UsingToolResultMiddleware()
         .UsingResilience()
-        .UsingTokenBudget())
+        .UsingTokenBudget()
+        .UsingDiagnostics())
     .BuildServiceProvider(configuration);
 
 var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
 var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var tokenBudgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
 var contextAccessor = serviceProvider.GetRequiredService<IAgentExecutionContextAccessor>();
+var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 
 // Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
 // No magic strings; renaming the class regenerates these methods automatically.
@@ -96,17 +100,38 @@ var questions = new[]
 };
 
 // Wrap agent execution in a context scope — tools see the UserId and OrchestrationId.
+// Also wrap in a diagnostics capture scope to collect per-run telemetry.
 using (contextAccessor.BeginScope(executionContext))
 {
     foreach (var question in questions)
     {
         Console.WriteLine($"Q: {question}");
 
-        var responses = await handoffWorkflow.RunAsync(question);
-
-        foreach (var (executorId, text) in responses)
+        using (diagnosticsAccessor.BeginCapture())
         {
-            Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+            var responses = await handoffWorkflow.RunAsync(question);
+
+            foreach (var (executorId, text) in responses)
+            {
+                Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+            }
+
+            // Print diagnostics captured by the middleware
+            var diag = diagnosticsAccessor.LastRunDiagnostics;
+            if (diag is not null)
+            {
+                Console.WriteLine($"  --- Diagnostics ---");
+                Console.WriteLine($"  Agent: {diag.AgentName}");
+                Console.WriteLine($"  Duration: {diag.TotalDuration.TotalMilliseconds:F0}ms");
+                Console.WriteLine($"  Tokens: {diag.AggregateTokenUsage.TotalTokens} total ({diag.AggregateTokenUsage.InputTokens} in, {diag.AggregateTokenUsage.OutputTokens} out)");
+                Console.WriteLine($"  Chat completions: {diag.ChatCompletions.Count}");
+                Console.WriteLine($"  Tool calls: {diag.ToolCalls.Count}");
+                foreach (var tc in diag.ToolCalls)
+                {
+                    Console.WriteLine($"    [{tc.ToolName}] {tc.Duration.TotalMilliseconds:F0}ms — {(tc.Succeeded ? "OK" : $"FAIL: {tc.ErrorMessage}")}");
+                }
+                Console.WriteLine($"  Succeeded: {diag.Succeeded}");
+            }
         }
 
         Console.WriteLine();

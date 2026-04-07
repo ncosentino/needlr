@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AgentFramework;
@@ -75,6 +76,8 @@ public static class SyringeExtensionsForAgentFramework
             // extensions on AgentFrameworkSyringe work without separate DI calls.
             services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
             services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
+            services.TryAddSingleton<IAgentDiagnosticsAccessor, AgentDiagnosticsAccessor>();
+            services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
 
             services.AddSingleton<IAgentFactory>(provider =>
             {

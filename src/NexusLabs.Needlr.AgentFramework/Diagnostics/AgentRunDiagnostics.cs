@@ -1,0 +1,18 @@
+namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
+
+/// <summary>
+/// Default implementation of <see cref="IAgentRunDiagnostics"/>.
+/// </summary>
+[DoNotAutoRegister]
+internal sealed record AgentRunDiagnostics(
+    string AgentName,
+    TimeSpan TotalDuration,
+    TokenUsage AggregateTokenUsage,
+    IReadOnlyList<ChatCompletionDiagnostics> ChatCompletions,
+    IReadOnlyList<ToolCallDiagnostics> ToolCalls,
+    int TotalInputMessages,
+    int TotalOutputMessages,
+    bool Succeeded,
+    string? ErrorMessage,
+    DateTimeOffset StartedAt,
+    DateTimeOffset CompletedAt) : IAgentRunDiagnostics;
