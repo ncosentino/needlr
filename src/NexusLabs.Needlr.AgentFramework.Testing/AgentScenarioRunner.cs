@@ -19,6 +19,23 @@ namespace NexusLabs.Needlr.AgentFramework.Testing;
 ///   <item>Invokes the agent with the scenario's system and user prompts.</item>
 ///   <item>Calls <see cref="IAgentScenario.Verify"/> with the post-execution workspace and diagnostics.</item>
 /// </list>
+/// <para>
+/// <strong>Deterministic testing (no real LLM):</strong> The runner uses the <see cref="IAgentFactory"/>
+/// from DI, which respects the <c>ChatClientFactory</c> configured on the syringe. To run scenarios
+/// without real LLM calls, wire a mock <c>IChatClient</c> via the syringe:
+/// </para>
+/// <code>
+/// var sp = new Syringe()
+///     .UsingReflection()
+///     .UsingAgentFramework(af => af
+///         .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object))
+///     .BuildServiceProvider(config);
+///
+/// var runner = new AgentScenarioRunner(
+///     sp.GetRequiredService&lt;IAgentFactory&gt;(),
+///     sp.GetRequiredService&lt;IAgentExecutionContextAccessor&gt;(),
+///     sp.GetRequiredService&lt;IAgentDiagnosticsAccessor&gt;());
+/// </code>
 /// </remarks>
 public sealed class AgentScenarioRunner
 {
