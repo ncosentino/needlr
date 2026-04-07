@@ -1,5 +1,8 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+using NexusLabs.Needlr.AgentFramework.Collectors;
 using NexusLabs.Needlr.AgentFramework.FunctionScanners;
 
 using System.Diagnostics.CodeAnalysis;
