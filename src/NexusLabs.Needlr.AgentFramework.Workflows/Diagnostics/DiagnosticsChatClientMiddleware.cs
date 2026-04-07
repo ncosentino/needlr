@@ -10,10 +10,18 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// Middle middleware layer: wraps each <c>IChatClient.GetResponseAsync()</c> call to capture
 /// per-completion timing and token usage. Sequence is reserved BEFORE the async call so
 /// parallel completions are ordered by invocation time, not completion time.
+/// Emits <see cref="IAgentMetrics"/> for each chat completion.
 /// </summary>
-internal static class DiagnosticsChatClientMiddleware
+internal sealed class DiagnosticsChatClientMiddleware
 {
-    internal static async Task<ChatResponse> HandleAsync(
+    private readonly IAgentMetrics _metrics;
+
+    internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics)
+    {
+        _metrics = metrics;
+    }
+
+    internal async Task<ChatResponse> HandleAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options,
         IChatClient innerChatClient,
@@ -31,6 +39,9 @@ internal static class DiagnosticsChatClientMiddleware
 
             stopwatch.Stop();
 
+            var model = response.ModelId ?? "unknown";
+            _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true);
+
             var usage = response.Usage;
             var tokens = new TokenUsage(
                 InputTokens: usage?.InputTokenCount ?? 0,
@@ -43,7 +54,7 @@ internal static class DiagnosticsChatClientMiddleware
 
             builder?.AddChatCompletion(new ChatCompletionDiagnostics(
                 Sequence: sequence,
-                Model: response.ModelId ?? "unknown",
+                Model: model,
                 Tokens: tokens,
                 InputMessageCount: messageList.Count,
                 Duration: stopwatch.Elapsed,
@@ -57,6 +68,7 @@ internal static class DiagnosticsChatClientMiddleware
         catch (Exception ex)
         {
             stopwatch.Stop();
+            _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false);
 
             builder?.AddChatCompletion(new ChatCompletionDiagnostics(
                 Sequence: sequence,

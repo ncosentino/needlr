@@ -8,13 +8,8 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
 /// <see cref="IAIAgentBuilderPlugin"/> that wires the diagnostics middleware layers
-/// into every agent created by the factory:
-/// <list type="number">
-///   <item>Agent-run middleware (outermost) — captures total duration, message counts, success/failure.</item>
-///   <item>Function-calling middleware — captures per-tool timing and custom metrics.</item>
-/// </list>
-/// The chat-completion middleware is wired separately on the <see cref="Microsoft.Extensions.AI.IChatClient"/>
-/// via <see cref="DiagnosticsExtensions.UsingDiagnostics"/>.
+/// into every agent created by the factory. Emits <see cref="IAgentMetrics"/>
+/// counters and histograms for runs, tool calls, and chat completions.
 /// </summary>
 internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 {
@@ -32,17 +27,16 @@ internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 
         var builder = options.AgentBuilder;
 
-        // Resolve the concrete accessor from DI to access the internal Set() method.
         var accessor = (AgentDiagnosticsAccessor)_serviceProvider
             .GetRequiredService<IAgentDiagnosticsAccessor>();
+        var metrics = _serviceProvider.GetRequiredService<IAgentMetrics>();
 
-        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", accessor);
+        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", accessor, metrics);
         builder.Use(
             runFunc: runMiddleware.HandleAsync,
-            // Streaming passes through without diagnostics capture.
-            runStreamingFunc: (messages, session, options, innerAgent, ct) =>
-                innerAgent.RunStreamingAsync(messages, session, options, ct));
+            runStreamingFunc: (messages, session, runOptions, innerAgent, ct) =>
+                innerAgent.RunStreamingAsync(messages, session, runOptions, ct));
 
-        DiagnosticsFunctionCallingMiddleware.Wire(builder);
+        DiagnosticsFunctionCallingMiddleware.Wire(builder, metrics);
     }
 }

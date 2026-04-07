@@ -7,7 +7,8 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
 /// Outermost middleware layer: wraps <c>agent.RunAsync()</c> to capture per-run diagnostics
-/// including total duration, message counts, and success/failure state.
+/// including total duration, message counts, and success/failure state. Emits
+/// <see cref="IAgentMetrics"/> counters on start and completion.
 /// </summary>
 /// <remarks>
 /// Streaming <c>RunStreamingAsync()</c> passes through without diagnostics capture —
@@ -17,11 +18,16 @@ internal sealed class DiagnosticsAgentRunMiddleware
 {
     private readonly string _agentName;
     private readonly AgentDiagnosticsAccessor _accessor;
+    private readonly IAgentMetrics _metrics;
 
-    internal DiagnosticsAgentRunMiddleware(string agentName, AgentDiagnosticsAccessor accessor)
+    internal DiagnosticsAgentRunMiddleware(
+        string agentName,
+        AgentDiagnosticsAccessor accessor,
+        IAgentMetrics metrics)
     {
         _agentName = agentName;
         _accessor = accessor;
+        _metrics = metrics;
     }
 
     internal async Task<AgentResponse> HandleAsync(
@@ -31,6 +37,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
         AIAgent innerAgent,
         CancellationToken cancellationToken)
     {
+        _metrics.RecordRunStarted(_agentName);
         var builder = AgentRunDiagnosticsBuilder.StartNew(_agentName);
 
         try
@@ -54,6 +61,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
         {
             var diagnostics = builder.Build();
             _accessor.Set(diagnostics);
+            _metrics.RecordRunCompleted(diagnostics);
             AgentRunDiagnosticsBuilder.ClearCurrent();
         }
     }

@@ -78,6 +78,7 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
             services.TryAddSingleton<IAgentDiagnosticsAccessor, AgentDiagnosticsAccessor>();
             services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
+            services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
 
             services.AddSingleton<IAgentFactory>(provider =>
             {

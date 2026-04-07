@@ -9,15 +9,14 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// <summary>
 /// Innermost middleware layer: wraps each tool/function invocation to capture per-call
 /// timing and custom metrics attached by the tool via <see cref="IToolMetricsAccessor"/>.
+/// Emits <see cref="IAgentMetrics"/> for each tool call.
 /// </summary>
 internal static class DiagnosticsFunctionCallingMiddleware
 {
     /// <summary>
     /// Wires the function-calling diagnostics middleware onto the given builder.
-    /// Uses <see cref="FunctionInvocationDelegatingAgentBuilderExtensions.Use"/> with a lambda
-    /// so the <c>FunctionInvocationContext</c> type is inferred (it's in Microsoft.Extensions.AI).
     /// </summary>
-    internal static void Wire(AIAgentBuilder builder)
+    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics)
     {
         FunctionInvocationDelegatingAgentBuilderExtensions.Use(
             builder,
@@ -30,7 +29,6 @@ internal static class DiagnosticsFunctionCallingMiddleware
 
                 var toolName = context.Function?.Name ?? "unknown";
 
-                // Establish a per-tool-call metrics dictionary in the AsyncLocal slot.
                 var customMetrics = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 ToolMetricsAccessor.CurrentToolMetrics.Value = customMetrics;
 
@@ -38,6 +36,8 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 {
                     var result = await next(context, cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
+
+                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: true);
 
                     diagnosticsBuilder?.AddToolCall(new ToolCallDiagnostics(
                         Sequence: sequence,
@@ -54,6 +54,8 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 catch (Exception ex)
                 {
                     stopwatch.Stop();
+
+                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: false);
 
                     diagnosticsBuilder?.AddToolCall(new ToolCallDiagnostics(
                         Sequence: sequence,
