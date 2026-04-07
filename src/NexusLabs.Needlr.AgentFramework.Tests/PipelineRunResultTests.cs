@@ -90,6 +90,28 @@ public class PipelineRunResultTests
     }
 
     // -------------------------------------------------------------------------
+    // Duplicate agent names
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Responses_DuplicateAgentNames_LastStageWins()
+    {
+        var stages = new IAgentStageResult[]
+        {
+            new AgentStageResult("Writer", "draft-v1", null),
+            new AgentStageResult("Writer", "draft-v2", null),
+        };
+
+        var result = CreateResult(stages);
+
+        // Stages preserves all entries
+        Assert.Equal(2, result.Stages.Count);
+        // Responses deduplicates — last wins
+        Assert.Single(result.Responses);
+        Assert.Equal("draft-v2", result.Responses["Writer"]);
+    }
+
+    // -------------------------------------------------------------------------
     // Success / failure
     // -------------------------------------------------------------------------
 

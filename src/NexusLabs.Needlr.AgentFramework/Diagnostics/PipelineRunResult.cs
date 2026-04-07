@@ -20,8 +20,11 @@ internal sealed class PipelineRunResult : IPipelineRunResult
         Succeeded = succeeded;
         ErrorMessage = errorMessage;
 
+        // GroupBy handles duplicate agent names (last stage wins).
         _lazyResponses = new Lazy<IReadOnlyDictionary<string, string>>(() =>
-            stages.ToDictionary(s => s.AgentName, s => s.ResponseText));
+            stages
+                .GroupBy(s => s.AgentName)
+                .ToDictionary(g => g.Key, g => g.Last().ResponseText));
 
         _lazyAggregateTokenUsage = new Lazy<TokenUsage?>(() =>
         {
