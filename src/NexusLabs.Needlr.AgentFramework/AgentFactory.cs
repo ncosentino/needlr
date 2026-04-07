@@ -16,6 +16,8 @@ internal sealed class AgentFactory : IAgentFactory
     private readonly Lazy<AgentFrameworkConfigureOptions> _lazyConfiguredOptions;
     private readonly Lazy<IReadOnlyDictionary<Type, IReadOnlyList<AIFunction>>> _lazyFunctionsCache;
     private readonly IAIFunctionProvider? _generatedProvider;
+    private readonly IReadOnlyList<IAIAgentBuilderPlugin> _plugins;
+    private readonly Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? _perAgentResilienceFactory;
 
     private readonly IReadOnlyDictionary<string, Type> _agentTypeMap;
 
@@ -25,7 +27,9 @@ internal sealed class AgentFactory : IAgentFactory
         IReadOnlyList<Type> functionTypes,
         IReadOnlyDictionary<string, IReadOnlyList<Type>>? functionGroupMap = null,
         IReadOnlyDictionary<string, Type>? agentTypeMap = null,
-        IAIFunctionProvider? generatedProvider = null)
+        IAIFunctionProvider? generatedProvider = null,
+        IReadOnlyList<IAIAgentBuilderPlugin>? plugins = null,
+        Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? perAgentResilienceFactory = null)
     {
         _serviceProvider = serviceProvider;
         _configureCallbacks = configureCallbacks;
@@ -33,6 +37,8 @@ internal sealed class AgentFactory : IAgentFactory
         _functionGroupMap = functionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>();
         _agentTypeMap = agentTypeMap ?? new Dictionary<string, Type>();
         _generatedProvider = generatedProvider;
+        _plugins = plugins ?? [];
+        _perAgentResilienceFactory = perAgentResilienceFactory;
 
         _lazyConfiguredOptions = new(() => BuildConfiguredOptions());
         _lazyFunctionsCache = new(() => BuildFunctionsCache());
@@ -61,17 +67,30 @@ internal sealed class AgentFactory : IAgentFactory
                 $"'{agentType.Name}' is not decorated with [NeedlrAiAgent]. " +
                 $"Apply [NeedlrAiAgent] to the class or use CreateAgent(configure) to set options manually.");
 
-        return CreateAgent(opts =>
-        {
-            opts.Name = agentType.Name;
-            opts.Description = attr.Description;
-            opts.Instructions = attr.Instructions;
-            opts.FunctionTypes = attr.FunctionTypes;
-            opts.FunctionGroups = attr.FunctionGroups;
-        });
+        // Build a per-agent resilience plugin if [AgentResilience] is present on this type.
+        var resAttr = agentType.GetCustomAttribute<AgentResilienceAttribute>();
+        IAIAgentBuilderPlugin? perAgentPlugin = resAttr != null && _perAgentResilienceFactory != null
+            ? _perAgentResilienceFactory(resAttr)
+            : null;
+
+        return CreateAgentCore(
+            additionalPlugins: perAgentPlugin != null ? [perAgentPlugin] : null,
+            configure: opts =>
+            {
+                opts.Name = agentType.Name;
+                opts.Description = attr.Description;
+                opts.Instructions = attr.Instructions;
+                opts.FunctionTypes = attr.FunctionTypes;
+                opts.FunctionGroups = attr.FunctionGroups;
+            });
     }
 
     public AIAgent CreateAgent(Action<AgentFactoryOptions>? configure = null)
+        => CreateAgentCore(additionalPlugins: null, configure: configure);
+
+    private AIAgent CreateAgentCore(
+        IReadOnlyList<IAIAgentBuilderPlugin>? additionalPlugins,
+        Action<AgentFactoryOptions>? configure)
     {
         var agentOptions = new AgentFactoryOptions();
         configure?.Invoke(agentOptions);
@@ -95,12 +114,35 @@ internal sealed class AgentFactory : IAgentFactory
 
         var instructions = agentOptions.Instructions ?? configuredOpts.DefaultInstructions;
 
-        return chatClient.AsAIAgent(
+        var rawAgent = chatClient.AsAIAgent(
             name: agentOptions.Name,
             description: agentOptions.Description,
             instructions: instructions,
             tools: tools,
             services: _serviceProvider);
+
+        return ApplyPlugins(rawAgent, additionalPlugins);
+    }
+
+    private AIAgent ApplyPlugins(AIAgent rawAgent, IReadOnlyList<IAIAgentBuilderPlugin>? additionalPlugins)
+    {
+        // Merge global plugins with any per-agent additional plugins.
+        // Per-agent plugins (e.g., [AgentResilience] overrides) are applied after global ones
+        // so they take the outermost position in the middleware stack.
+        var allPlugins = additionalPlugins is { Count: > 0 }
+            ? [.. _plugins, .. additionalPlugins]
+            : _plugins;
+
+        if (allPlugins.Count == 0)
+            return rawAgent;
+
+        var builder = new AIAgentBuilder(rawAgent);
+        foreach (var plugin in allPlugins)
+        {
+            plugin.Configure(new AIAgentBuilderPluginOptions { AgentBuilder = builder });
+        }
+
+        return builder.Build(_serviceProvider);
     }
 
     private IEnumerable<Type> GetApplicableTypes(AgentFactoryOptions agentOptions)

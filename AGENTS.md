@@ -30,6 +30,11 @@ Required on all `public` types and members. Use `<summary>`, `<param>`, `<return
 
 All NuGet package versions are declared in `src/Directory.Packages.props` (`ManagePackageVersionsCentrally=true`). Individual `.csproj` files reference packages by name only — never specify a version inline.
 
+## Design Principles
+
+- **Composition over inheritance.** Base classes should be extremely rare and only exist as pure convenience for implementors. Always prefer interfaces + composition. If a pattern has common boilerplate, solve it with source generation or composable helper types, not inheritance hierarchies.
+- **Interfaces over static classes.** Static classes are acceptable only for trivial value calculations or extension method containers. Anything with behavior, state, or dependencies must be an interface registered via DI.
+
 ## Architecture
 
 The codebase follows a consistent per-feature pattern:

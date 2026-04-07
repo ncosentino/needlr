@@ -45,6 +45,21 @@ public sealed record AgentFrameworkSyringe
 
     internal List<Type>? AgentTypes { get; init; } = [];
 
+    /// <summary>
+    /// Agent-builder plugins applied to every agent created by the factory.
+    /// Populated by middleware extension methods such as <c>UsingToolResultMiddleware()</c>
+    /// and <c>UsingResilience()</c>.
+    /// </summary>
+    internal IReadOnlyList<IAIAgentBuilderPlugin>? Plugins { get; init; }
+
+    /// <summary>
+    /// Factory that creates an <see cref="IAIAgentBuilderPlugin"/> from a
+    /// <see cref="AgentResilienceAttribute"/> found on an agent type.
+    /// Set by <c>UsingResilience()</c> to enable per-agent resilience overrides via
+    /// <c>[AgentResilience]</c>.
+    /// </summary>
+    internal Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? PerAgentResilienceFactory { get; init; }
+
     public IAgentFactory BuildAgentFactory()
     {
         var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
@@ -66,6 +81,8 @@ public sealed record AgentFrameworkSyringe
             functionTypes: allFunctionTypes,
             functionGroupMap: FunctionGroupMap,
             agentTypeMap: agentTypeMap,
-            generatedProvider: generatedProvider);
+            generatedProvider: generatedProvider,
+            plugins: Plugins ?? [],
+            perAgentResilienceFactory: PerAgentResilienceFactory);
     }
 }

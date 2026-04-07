@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AgentFramework;
@@ -68,6 +70,10 @@ public static class SyringeExtensionsForAgentFramework
 
         return syringe.UsingPostPluginRegistrationCallback(services =>
         {
+            // Always register the token budget tracker so UsingTokenBudget() on
+            // AgentFrameworkSyringe works without a separate DI registration call.
+            services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
+
             services.AddSingleton<IAgentFactory>(provider =>
             {
                 AgentFrameworkSyringe afSyringe = new()
@@ -128,6 +134,8 @@ public static class SyringeExtensionsForAgentFramework
 
         return syringe.UsingPostPluginRegistrationCallback(services =>
         {
+            services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
+
             services.AddSingleton<IAgentFactory>(provider =>
             {
                 var afSyringe = configure.Invoke();

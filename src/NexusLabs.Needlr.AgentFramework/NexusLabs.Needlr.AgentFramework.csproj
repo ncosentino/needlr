@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NexusLabs.Needlr.AgentFramework.Tests" />
+    <InternalsVisibleTo Include="NexusLabs.Needlr.AgentFramework.Workflows" />
   </ItemGroup>
 
   <ItemGroup>
