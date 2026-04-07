@@ -205,31 +205,42 @@ catch (TokenBudgetExceededException ex)
 
 Console.WriteLine();
 
-// --- Demo 3: Sequential pipeline workflow ---
+// --- Demo 3: Sequential pipeline workflow with per-stage diagnostics ---
 // CreateContentPipelineSequentialWorkflow() is generated because WriterSeqAgent, EditorSeqAgent,
 // and PublisherSeqAgent are decorated with [AgentSequenceMember("content-pipeline", 1/2/3)].
-// The topology is fully declared on agent classes — Program.cs never references them directly.
+// RunWithDiagnosticsAsync() captures per-stage diagnostics at each turn boundary,
+// returning an IPipelineRunResult with aggregate token usage.
 var sequentialWorkflow = workflowFactory.CreateContentPipelineSequentialWorkflow();
 
-Console.WriteLine("=== Demo 3: Content Pipeline Sequential Workflow ===");
+Console.WriteLine("=== Demo 3: Content Pipeline Sequential Workflow + Per-Stage Diagnostics ===");
 Console.WriteLine("  Pipeline declared via [AgentSequenceMember] on Writer → Editor → Publisher.");
+Console.WriteLine("  RunWithDiagnosticsAsync() captures IAgentRunDiagnostics per agent turn.");
 Console.WriteLine();
 
 var topics = new[]
 {
     "Why C# source generators improve developer experience",
-    "The benefits of multi-agent AI workflows",
 };
 
 foreach (var topic in topics)
 {
     Console.WriteLine($"Topic: {topic}");
 
-    var responses = await sequentialWorkflow.RunAsync(topic);
+    var pipelineResult = await sequentialWorkflow.RunWithDiagnosticsAsync(
+        topic, diagnosticsAccessor);
 
-    foreach (var (executorId, text) in responses)
+    foreach (var stage in pipelineResult.Stages)
     {
-        Console.WriteLine($"  [{executorId}]: {text.Trim()}");
+        Console.WriteLine($"  [{stage.AgentName}]: {stage.ResponseText.Trim()[..Math.Min(120, stage.ResponseText.Trim().Length)]}...");
+        if (stage.Diagnostics is { } diag)
+        {
+            Console.WriteLine($"    Tokens: {diag.AggregateTokenUsage.TotalTokens} | Duration: {diag.TotalDuration.TotalMilliseconds:F0}ms | Tools: {diag.ToolCalls.Count}");
+        }
+    }
+
+    if (pipelineResult.AggregateTokenUsage is { } aggTokens)
+    {
+        Console.WriteLine($"  --- Pipeline totals: {aggTokens.TotalTokens} tokens, {pipelineResult.TotalDuration.TotalMilliseconds:F0}ms ---");
     }
 
     Console.WriteLine();
