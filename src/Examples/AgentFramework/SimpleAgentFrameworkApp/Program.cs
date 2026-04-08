@@ -197,6 +197,7 @@ Console.WriteLine();
 
 // First: run with a generous budget — should succeed.
 Console.WriteLine("  [Generous budget: 100,000 tokens]");
+using (contextAccessor.BeginScope(executionContext))
 using (tokenBudgetTracker.BeginScope(maxTokens: 100_000))
 {
     var workflow = workflowFactory.CreateTriageHandoffWorkflow();
@@ -216,6 +217,7 @@ Console.WriteLine();
 Console.WriteLine("  [Tiny budget: 1 token — expect TokenBudgetExceededException]");
 try
 {
+    using (contextAccessor.BeginScope(executionContext))
     using (tokenBudgetTracker.BeginScope(maxTokens: 1))
     {
         var workflow = workflowFactory.CreateTriageHandoffWorkflow();
