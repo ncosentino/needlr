@@ -10,23 +10,21 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The pre-call gate checks the current token total <em>before</em> forwarding the request.
-/// If the budget is already exhausted, <see cref="TokenBudgetExceededException"/> is thrown
-/// immediately without hitting the LLM.
-/// </para>
-/// <para>
-/// After a successful LLM call, <c>ChatResponse.Usage.TotalTokenCount</c> is added to
-/// the tracker. If no usage data is available the count is not updated.
-/// </para>
-/// <para>
-/// Wired automatically when <c>UsingTokenBudget()</c> is called on
-/// <see cref="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe"/>.
+/// Budget enforcement uses two mechanisms:
+/// <list type="number">
+///   <item>
+///     <see cref="OperationCanceledException"/> wrapping <see cref="TokenBudgetExceededException"/>
+///     thrown from the middleware (works for direct agent runs).
+///   </item>
+///   <item>
+///     <see cref="ITokenBudgetTracker.BudgetCancellationToken"/> cancelled when tokens are recorded
+///     past the limit (works for MAF workflow runs — pass this token to the workflow).
+///   </item>
+/// </list>
 /// </para>
 /// <para>
 /// <strong>Limitation:</strong> Only <c>GetResponseAsync</c> is budget-tracked.
-/// Streaming via <c>GetStreamingResponseAsync</c> passes through to the inner client
-/// without token tracking or budget enforcement. If your agents use streaming completions,
-/// token budgets will not be enforced for those calls.
+/// Streaming via <c>GetStreamingResponseAsync</c> passes through without enforcement.
 /// </para>
 /// </remarks>
 public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
@@ -57,12 +55,12 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
         var response = await base.GetResponseAsync(messages, options, cancellationToken)
             .ConfigureAwait(false);
 
-        // Accumulate tokens from this call.
+        // Accumulate tokens — this also cancels the BudgetCancellationToken if exceeded.
         if (response.Usage?.TotalTokenCount is long tokens)
         {
             _tracker.Record(tokens);
 
-            // Post-call check: throw if this call pushed us over the limit.
+            // Post-call check: throw for direct agent runs.
             if (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value)
             {
                 ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens.Value);
@@ -72,15 +70,14 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
         return response;
     }
 
-    /// <summary>
-    /// Throws <see cref="OperationCanceledException"/> wrapping <see cref="TokenBudgetExceededException"/>.
-    /// <see cref="OperationCanceledException"/> is respected by MAF's workflow orchestration (which
-    /// swallows <see cref="TokenBudgetExceededException"/> but stops on cancellation).
-    /// Callers can inspect <see cref="Exception.InnerException"/> for budget details.
-    /// </summary>
-    private static void ThrowBudgetExceeded(long currentTokens, long maxTokens)
+    private void ThrowBudgetExceeded(long currentTokens, long maxTokens)
     {
         var budgetException = new TokenBudgetExceededException(currentTokens, maxTokens);
-        throw new OperationCanceledException(budgetException.Message, budgetException);
+        // Use the budget's CancellationToken so MAF recognizes this as a real cancellation
+        // (not just an exception from an agent run that can be swallowed).
+        throw new OperationCanceledException(
+            budgetException.Message,
+            budgetException,
+            _tracker.BudgetCancellationToken);
     }
 }

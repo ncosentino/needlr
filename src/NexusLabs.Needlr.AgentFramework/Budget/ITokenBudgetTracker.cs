@@ -28,6 +28,16 @@ public interface ITokenBudgetTracker
     /// <returns>A disposable handle that ends the scope when disposed.</returns>
     IDisposable BeginScope(long maxTokens);
 
+    /// <summary>
+    /// Gets the <see cref="CancellationToken"/> for the active scope that is cancelled
+    /// when the budget is exceeded. Pass this token to workflow execution so MAF stops
+    /// the workflow when the budget runs out.
+    /// </summary>
+    /// <value>
+    /// <see cref="CancellationToken.None"/> if no scope is active.
+    /// </value>
+    CancellationToken BudgetCancellationToken { get; }
+
     /// <summary>Gets the number of tokens accumulated so far in the active scope.</summary>
     /// <value>0 if no scope is active.</value>
     long CurrentTokens { get; }

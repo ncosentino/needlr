@@ -30,6 +30,10 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
     public long? MaxTokens => _current.Value?.MaxTokens;
 
     /// <inheritdoc />
+    public CancellationToken BudgetCancellationToken =>
+        _current.Value?.CancellationToken ?? CancellationToken.None;
+
+    /// <inheritdoc />
     public void Record(long tokenCount)
     {
         _current.Value?.Add(tokenCount);
@@ -38,6 +42,7 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
     private sealed class ScopeState : IDisposable
     {
         private long _currentTokens;
+        private readonly CancellationTokenSource _cts = new();
 
         public ScopeState(long maxTokens) => MaxTokens = maxTokens;
 
@@ -45,12 +50,23 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
 
         public long CurrentTokens => Volatile.Read(ref _currentTokens);
 
+        public CancellationToken CancellationToken => _cts.Token;
+
         public void Add(long tokens)
-            => Interlocked.Add(ref _currentTokens, tokens);
+        {
+            var newTotal = Interlocked.Add(ref _currentTokens, tokens);
+
+            // Cancel the token when budget exceeded — this stops MAF workflows
+            if (newTotal >= MaxTokens && !_cts.IsCancellationRequested)
+            {
+                _cts.Cancel();
+            }
+        }
 
         public void Dispose()
         {
             _current.Value = null;
+            _cts.Dispose();
         }
     }
 }

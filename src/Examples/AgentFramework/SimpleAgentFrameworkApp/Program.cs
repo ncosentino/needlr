@@ -223,16 +223,20 @@ try
     using (contextAccessor.BeginScope(executionContext))
     using (tokenBudgetTracker.BeginScope(maxTokens: 1))
     {
+        // Pass the budget's CancellationToken to the workflow so MAF stops
+        // when the budget is exceeded. The token is cancelled automatically
+        // by TokenBudgetTracker.Record() when tokens exceed the limit.
+        var budgetToken = tokenBudgetTracker.BudgetCancellationToken;
         var workflow = workflowFactory.CreateTriageHandoffWorkflow();
-        await workflow.RunAsync("What cities does Nick like?");
+        await workflow.RunAsync("What cities does Nick like?", cancellationToken: budgetToken);
     }
 
-    Console.WriteLine("    ERROR: Expected OperationCanceledException but did not get one.");
+    Console.WriteLine("    ERROR: Expected cancellation but did not get one.");
 }
-catch (OperationCanceledException ex) when (ex.InnerException is TokenBudgetExceededException budgetEx)
+catch (OperationCanceledException)
 {
-    Console.WriteLine($"    Caught: {budgetEx.Message}");
-    Console.WriteLine($"    CurrentTokens={budgetEx.CurrentTokens}, MaxTokens={budgetEx.MaxTokens}");
+    Console.WriteLine($"    Caught: OperationCanceledException (budget cancellation)");
+    Console.WriteLine($"    Tokens at cancellation: {tokenBudgetTracker.CurrentTokens}");
 }
 
 Console.WriteLine();
