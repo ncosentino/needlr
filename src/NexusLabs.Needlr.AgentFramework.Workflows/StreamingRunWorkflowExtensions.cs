@@ -78,7 +78,20 @@ public static class StreamingRunWorkflowExtensions
         ArgumentNullException.ThrowIfNull(message);
         await using var run = await InProcessExecution.RunStreamingAsync(workflow, message, cancellationToken: cancellationToken);
         await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-        return await run.CollectAgentResponsesAsync(cancellationToken);
+
+        // Register CancelRunAsync on the cancellation token so the workflow
+        // actually stops (e.g., when a token budget is exceeded).
+        await using var registration = cancellationToken.CanBeCanceled
+            ? cancellationToken.Register(() => _ = run.CancelRunAsync())
+            : default(CancellationTokenRegistration?);
+
+        var result = await run.CollectAgentResponsesAsync(cancellationToken);
+
+        // If the cancellation token fired during execution (e.g., budget exceeded),
+        // throw now. MAF may have swallowed the cancellation internally.
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return result;
     }
 
     /// <summary>
@@ -108,13 +121,23 @@ public static class StreamingRunWorkflowExtensions
         await using var run = await InProcessExecution.RunStreamingAsync(workflow, message, cancellationToken: cancellationToken);
         await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-        if (terminationConditions is null || terminationConditions.Count == 0)
-            return await run.CollectAgentResponsesAsync(cancellationToken);
+        await using var registration = cancellationToken.CanBeCanceled
+            ? cancellationToken.Register(() => _ = run.CancelRunAsync())
+            : default(CancellationTokenRegistration?);
 
-        return await CollectWithTerminationAsync(
+        if (terminationConditions is null || terminationConditions.Count == 0)
+        {
+            var result = await run.CollectAgentResponsesAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            return result;
+        }
+
+        var terminationResult = await CollectWithTerminationAsync(
             run.WatchStreamAsync(cancellationToken),
             terminationConditions,
             cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return terminationResult;
     }
 
     /// <summary>

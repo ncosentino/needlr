@@ -50,6 +50,19 @@ public static class PipelineRunExtensions
 
                 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
+                // If a budget cancellation token is active, register a callback
+                // that calls CancelRunAsync when the budget is exceeded.
+                CancellationTokenRegistration? budgetRegistration = null;
+                if (cancellationToken.CanBeCanceled)
+                {
+                    budgetRegistration = cancellationToken.Register(() =>
+                    {
+                        _ = run.CancelRunAsync();
+                    });
+                }
+
+                try
+                {
                 await foreach (var evt in run.WatchStreamAsync(cancellationToken))
                 {
                     if (evt is not AgentResponseUpdateEvent update
@@ -105,6 +118,11 @@ public static class PipelineRunExtensions
                         diagnosticsAccessor,
                         turnStopwatch.Elapsed,
                         turnStartedAt));
+                }
+                }
+                finally
+                {
+                    budgetRegistration?.Dispose();
                 }
             }
         }
