@@ -15,18 +15,24 @@ public static class PipelineRunExtensions
 {
     /// <summary>
     /// Executes the workflow and returns an <see cref="IPipelineRunResult"/> with per-stage
-    /// diagnostics captured at each turn boundary.
+    /// timing captured at each turn boundary from the event stream.
     /// </summary>
-    /// <param name="workflow">The workflow to execute.</param>
-    /// <param name="message">The user message to send.</param>
-    /// <param name="diagnosticsAccessor">
-    /// The diagnostics accessor used to read per-agent diagnostics after each turn completes.
-    /// </param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>
-    /// A <see cref="IPipelineRunResult"/> containing per-stage responses, diagnostics, and
-    /// aggregate token usage.
-    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// Per-stage diagnostics come from two sources:
+    /// <list type="number">
+    ///   <item>
+    ///     <see cref="IAgentDiagnosticsAccessor.LastRunDiagnostics"/> — set by middleware
+    ///     if AsyncLocal propagation works through the workflow execution context.
+    ///   </item>
+    ///   <item>
+    ///     Event-stream timing — wall-clock duration measured from when each agent's first
+    ///     event arrives to when the next agent's first event arrives (or stream ends).
+    ///     This always works regardless of AsyncLocal propagation.
+    ///   </item>
+    /// </list>
+    /// </para>
+    /// </remarks>
     public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
         this Workflow workflow,
         string message,
@@ -41,6 +47,8 @@ public static class PipelineRunExtensions
         var stages = new List<IAgentStageResult>();
         var responses = new Dictionary<string, StringBuilder>();
         string? currentExecutorId = null;
+        var turnStopwatch = new Stopwatch();
+        var turnStartedAt = DateTimeOffset.UtcNow;
         bool succeeded = true;
         string? errorMessage = null;
 
@@ -68,15 +76,30 @@ public static class PipelineRunExtensions
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    // Turn boundary: capture diagnostics for the completing agent
+                    // Turn boundary: capture stage for the completing agent
                     if (currentExecutorId is not null
                         && currentExecutorId != update.ExecutorId
                         && responses.TryGetValue(currentExecutorId, out var completedSb))
                     {
+                        turnStopwatch.Stop();
+                        var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
+
                         stages.Add(new AgentStageResult(
                             AgentName: currentExecutorId,
                             ResponseText: completedSb.ToString(),
-                            Diagnostics: diagnosticsAccessor.LastRunDiagnostics));
+                            Diagnostics: middlewareDiag ?? BuildFallbackDiagnostics(
+                                currentExecutorId, turnStopwatch.Elapsed, turnStartedAt)));
+
+                        // Reset for next turn
+                        turnStopwatch.Restart();
+                        turnStartedAt = DateTimeOffset.UtcNow;
+                    }
+
+                    // First event for a new agent — start timing
+                    if (currentExecutorId != update.ExecutorId)
+                    {
+                        turnStopwatch.Restart();
+                        turnStartedAt = DateTimeOffset.UtcNow;
                     }
 
                     currentExecutorId = update.ExecutorId;
@@ -87,14 +110,18 @@ public static class PipelineRunExtensions
                     sb.Append(text);
                 }
 
-                // Capture the last agent's diagnostics
+                // Capture the last agent's stage
                 if (currentExecutorId is not null
                     && responses.TryGetValue(currentExecutorId, out var lastSb))
                 {
+                    turnStopwatch.Stop();
+                    var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
+
                     stages.Add(new AgentStageResult(
                         AgentName: currentExecutorId,
                         ResponseText: lastSb.ToString(),
-                        Diagnostics: diagnosticsAccessor.LastRunDiagnostics));
+                        Diagnostics: middlewareDiag ?? BuildFallbackDiagnostics(
+                            currentExecutorId, turnStopwatch.Elapsed, turnStartedAt)));
                 }
             }
         }
@@ -112,4 +139,23 @@ public static class PipelineRunExtensions
             succeeded: succeeded,
             errorMessage: errorMessage);
     }
+
+    /// <summary>
+    /// Builds a minimal diagnostics record from event-stream timing when the middleware's
+    /// AsyncLocal diagnostics didn't propagate through the workflow execution context.
+    /// </summary>
+    private static IAgentRunDiagnostics BuildFallbackDiagnostics(
+        string agentName, TimeSpan duration, DateTimeOffset startedAt) =>
+        new AgentRunDiagnostics(
+            AgentName: agentName,
+            TotalDuration: duration,
+            AggregateTokenUsage: new TokenUsage(0, 0, 0, 0, 0),
+            ChatCompletions: [],
+            ToolCalls: [],
+            TotalInputMessages: 0,
+            TotalOutputMessages: 0,
+            Succeeded: true,
+            ErrorMessage: null,
+            StartedAt: startedAt,
+            CompletedAt: DateTimeOffset.UtcNow);
 }
