@@ -109,6 +109,147 @@ public class TokenBudgetTrackerTests
     // AsyncLocal isolation
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // Granular budgets: input, output, total
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void BeginScope_WithInputBudget_SetsMaxInputTokens()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        using var scope = tracker.BeginScope(maxInputTokens: 500);
+
+        Assert.Equal(500, tracker.MaxInputTokens);
+        Assert.Null(tracker.MaxOutputTokens);
+        Assert.Null(tracker.MaxTokens);
+    }
+
+    [Fact]
+    public void BeginScope_WithOutputBudget_SetsMaxOutputTokens()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        using var scope = tracker.BeginScope(maxOutputTokens: 1000);
+
+        Assert.Null(tracker.MaxInputTokens);
+        Assert.Equal(1000, tracker.MaxOutputTokens);
+        Assert.Null(tracker.MaxTokens);
+    }
+
+    [Fact]
+    public void BeginScope_WithAllBudgets_SetsAll()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        using var scope = tracker.BeginScope(
+            maxInputTokens: 200, maxOutputTokens: 800, maxTotalTokens: 900);
+
+        Assert.Equal(200, tracker.MaxInputTokens);
+        Assert.Equal(800, tracker.MaxOutputTokens);
+        Assert.Equal(900, tracker.MaxTokens);
+    }
+
+    [Fact]
+    public void BeginScope_WithNoBudgets_ThrowsArgumentException()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        Assert.Throws<ArgumentException>(() =>
+            tracker.BeginScope(maxInputTokens: null, maxOutputTokens: null, maxTotalTokens: null));
+    }
+
+    [Fact]
+    public void RecordDetailed_TracksInputAndOutputSeparately()
+    {
+        var tracker = new TokenBudgetTracker();
+        using var scope = tracker.BeginScope(maxTotalTokens: 10000);
+
+        tracker.Record(inputTokens: 100, outputTokens: 200);
+        tracker.Record(inputTokens: 50, outputTokens: 150);
+
+        Assert.Equal(150, tracker.CurrentInputTokens);
+        Assert.Equal(350, tracker.CurrentOutputTokens);
+        Assert.Equal(500, tracker.CurrentTokens);
+    }
+
+    [Fact]
+    public void RecordDetailed_InputBudgetExceeded_CancelsToken()
+    {
+        var tracker = new TokenBudgetTracker();
+        using var scope = tracker.BeginScope(maxInputTokens: 100);
+
+        tracker.Record(inputTokens: 150, outputTokens: 50);
+
+        Assert.True(tracker.BudgetCancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public void RecordDetailed_OutputBudgetExceeded_CancelsToken()
+    {
+        var tracker = new TokenBudgetTracker();
+        using var scope = tracker.BeginScope(maxOutputTokens: 100);
+
+        tracker.Record(inputTokens: 50, outputTokens: 150);
+
+        Assert.True(tracker.BudgetCancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public void RecordDetailed_TotalBudgetExceeded_CancelsToken()
+    {
+        var tracker = new TokenBudgetTracker();
+        using var scope = tracker.BeginScope(maxTotalTokens: 100);
+
+        tracker.Record(inputTokens: 60, outputTokens: 60);
+
+        Assert.True(tracker.BudgetCancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public void RecordDetailed_UnderAllBudgets_DoesNotCancel()
+    {
+        var tracker = new TokenBudgetTracker();
+        using var scope = tracker.BeginScope(
+            maxInputTokens: 200, maxOutputTokens: 200, maxTotalTokens: 300);
+
+        tracker.Record(inputTokens: 50, outputTokens: 50);
+
+        Assert.False(tracker.BudgetCancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public void CurrentInputTokens_WithoutScope_ReturnsZero()
+    {
+        var tracker = new TokenBudgetTracker();
+        Assert.Equal(0, tracker.CurrentInputTokens);
+    }
+
+    [Fact]
+    public void CurrentOutputTokens_WithoutScope_ReturnsZero()
+    {
+        var tracker = new TokenBudgetTracker();
+        Assert.Equal(0, tracker.CurrentOutputTokens);
+    }
+
+    [Fact]
+    public void MaxInputTokens_WithoutScope_ReturnsNull()
+    {
+        var tracker = new TokenBudgetTracker();
+        Assert.Null(tracker.MaxInputTokens);
+    }
+
+    [Fact]
+    public void MaxOutputTokens_WithoutScope_ReturnsNull()
+    {
+        var tracker = new TokenBudgetTracker();
+        Assert.Null(tracker.MaxOutputTokens);
+    }
+
+    // -------------------------------------------------------------------------
+    // AsyncLocal isolation
+    // -------------------------------------------------------------------------
+
     [Fact]
     public async Task ConcurrentScopes_AreIsolated()
     {

@@ -1,13 +1,15 @@
 namespace NexusLabs.Needlr.AgentFramework.Budget;
 
 /// <summary>
-/// Tracks token usage within a scoped budget, enabling pipeline-level token limits.
+/// Tracks token usage within a scoped budget, enabling pipeline-level token limits
+/// for total, input, and/or output tokens independently.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Each call to <see cref="BeginScope"/> opens a budget window in the current async context.
-/// Concurrent pipeline runs each maintain their own independent token count via
-/// <see cref="System.Threading.AsyncLocal{T}"/>.
+/// Each call to <see cref="BeginScope(long)"/> or
+/// <see cref="BeginScope(long?, long?, long?)"/> opens a budget window in the current
+/// async context. Concurrent pipeline runs each maintain their own independent token
+/// counts via <see cref="System.Threading.AsyncLocal{T}"/>.
 /// </para>
 /// <para>
 /// <see cref="ITokenBudgetTracker"/> is automatically registered in DI by
@@ -18,39 +20,65 @@ namespace NexusLabs.Needlr.AgentFramework.Budget;
 public interface ITokenBudgetTracker
 {
     /// <summary>
-    /// Opens a token-budget scope for the current async context.
-    /// Disposing the returned handle ends the scope.
+    /// Opens a token-budget scope with a total token limit.
     /// </summary>
-    /// <param name="maxTokens">
-    /// Maximum tokens allowed within this scope. Once the budget is reached or exceeded
-    /// the next LLM call throws <see cref="TokenBudgetExceededException"/>.
-    /// </param>
+    /// <param name="maxTokens">Maximum total tokens allowed.</param>
     /// <returns>A disposable handle that ends the scope when disposed.</returns>
     IDisposable BeginScope(long maxTokens);
 
     /// <summary>
-    /// Gets the <see cref="CancellationToken"/> for the active scope that is cancelled
-    /// when the budget is exceeded. Pass this token to workflow execution so MAF stops
-    /// the workflow when the budget runs out.
+    /// Opens a token-budget scope with granular limits for input, output,
+    /// and/or total tokens. At least one limit must be specified.
     /// </summary>
-    /// <value>
-    /// <see cref="CancellationToken.None"/> if no scope is active.
-    /// </value>
+    /// <param name="maxInputTokens">Maximum input tokens, or <see langword="null"/> for no limit.</param>
+    /// <param name="maxOutputTokens">Maximum output tokens, or <see langword="null"/> for no limit.</param>
+    /// <param name="maxTotalTokens">Maximum total tokens, or <see langword="null"/> for no limit.</param>
+    /// <returns>A disposable handle that ends the scope when disposed.</returns>
+    /// <exception cref="ArgumentException">All three parameters are <see langword="null"/>.</exception>
+    IDisposable BeginScope(long? maxInputTokens = null, long? maxOutputTokens = null, long? maxTotalTokens = null);
+
+    /// <summary>
+    /// Gets the <see cref="CancellationToken"/> for the active scope that is cancelled
+    /// when any budget limit is exceeded.
+    /// </summary>
+    /// <value><see cref="CancellationToken.None"/> if no scope is active.</value>
     CancellationToken BudgetCancellationToken { get; }
 
-    /// <summary>Gets the number of tokens accumulated so far in the active scope.</summary>
+    /// <summary>Gets the total tokens accumulated so far in the active scope.</summary>
     /// <value>0 if no scope is active.</value>
     long CurrentTokens { get; }
 
-    /// <summary>Gets the token budget limit of the active scope.</summary>
-    /// <value><see langword="null"/> if no scope is active.</value>
+    /// <summary>Gets the input tokens accumulated so far in the active scope.</summary>
+    /// <value>0 if no scope is active.</value>
+    long CurrentInputTokens { get; }
+
+    /// <summary>Gets the output tokens accumulated so far in the active scope.</summary>
+    /// <value>0 if no scope is active.</value>
+    long CurrentOutputTokens { get; }
+
+    /// <summary>Gets the total token budget limit of the active scope.</summary>
+    /// <value><see langword="null"/> if no scope is active or no total limit set.</value>
     long? MaxTokens { get; }
 
+    /// <summary>Gets the input token budget limit of the active scope.</summary>
+    /// <value><see langword="null"/> if no scope is active or no input limit set.</value>
+    long? MaxInputTokens { get; }
+
+    /// <summary>Gets the output token budget limit of the active scope.</summary>
+    /// <value><see langword="null"/> if no scope is active or no output limit set.</value>
+    long? MaxOutputTokens { get; }
+
     /// <summary>
-    /// Records <paramref name="tokenCount"/> against the active scope's budget.
+    /// Records <paramref name="tokenCount"/> as total tokens against the active scope's budget.
     /// Called automatically by <c>TokenBudgetChatMiddleware</c> after each LLM response.
     /// </summary>
     void Record(long tokenCount);
+
+    /// <summary>
+    /// Records input and output tokens separately against the active scope's budget.
+    /// Called automatically by <c>TokenBudgetChatMiddleware</c> after each LLM response.
+    /// </summary>
+    void Record(long inputTokens, long outputTokens);
 }
 
 /// <summary>

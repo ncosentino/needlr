@@ -46,29 +46,46 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
         ChatOptions? options,
         CancellationToken cancellationToken)
     {
-        // Pre-call gate: abort if budget already exhausted.
-        if (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value)
+        // Pre-call gate: abort if any budget already exhausted.
+        if (IsBudgetExceeded())
         {
-            ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens.Value);
+            ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens ?? 0);
         }
 
         var response = await base.GetResponseAsync(messages, options, cancellationToken)
             .ConfigureAwait(false);
 
         // Accumulate tokens — this also cancels the BudgetCancellationToken if exceeded.
-        if (response.Usage?.TotalTokenCount is long tokens)
+        var usage = response.Usage;
+        if (usage is not null)
         {
-            _tracker.Record(tokens);
+            var inputCount = usage.InputTokenCount ?? 0;
+            var outputCount = usage.OutputTokenCount ?? 0;
+
+            if (inputCount > 0 || outputCount > 0)
+            {
+                _tracker.Record(inputCount, outputCount);
+            }
+            else if (usage.TotalTokenCount is long totalOnly)
+            {
+                // Fallback: only total available (no input/output breakdown)
+                _tracker.Record(totalOnly);
+            }
 
             // Post-call check: throw for direct agent runs.
-            if (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value)
+            if (IsBudgetExceeded())
             {
-                ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens.Value);
+                ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens ?? 0);
             }
         }
 
         return response;
     }
+
+    private bool IsBudgetExceeded() =>
+        (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value) ||
+        (_tracker.MaxInputTokens.HasValue && _tracker.CurrentInputTokens >= _tracker.MaxInputTokens.Value) ||
+        (_tracker.MaxOutputTokens.HasValue && _tracker.CurrentOutputTokens >= _tracker.MaxOutputTokens.Value);
 
     private void ThrowBudgetExceeded(long currentTokens, long maxTokens)
     {
