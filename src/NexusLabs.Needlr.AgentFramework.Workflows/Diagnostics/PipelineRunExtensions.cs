@@ -46,15 +46,15 @@ public static class PipelineRunExtensions
 
         try
         {
-            await using var run = await InProcessExecution.RunStreamingAsync(
-                workflow,
-                new ChatMessage(ChatRole.User, message),
-                cancellationToken: cancellationToken);
-
-            await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
             using (diagnosticsAccessor.BeginCapture())
             {
+                await using var run = await InProcessExecution.RunStreamingAsync(
+                    workflow,
+                    new ChatMessage(ChatRole.User, message),
+                    cancellationToken: cancellationToken);
+
+                await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
                 await foreach (var evt in run.WatchStreamAsync(cancellationToken))
                 {
                     if (evt is not AgentResponseUpdateEvent update
