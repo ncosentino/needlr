@@ -51,9 +51,7 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
         // Pre-call gate: abort if budget already exhausted.
         if (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value)
         {
-            throw new TokenBudgetExceededException(
-                _tracker.CurrentTokens,
-                _tracker.MaxTokens.Value);
+            ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens.Value);
         }
 
         var response = await base.GetResponseAsync(messages, options, cancellationToken)
@@ -67,12 +65,22 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
             // Post-call check: throw if this call pushed us over the limit.
             if (_tracker.MaxTokens.HasValue && _tracker.CurrentTokens >= _tracker.MaxTokens.Value)
             {
-                throw new TokenBudgetExceededException(
-                    _tracker.CurrentTokens,
-                    _tracker.MaxTokens.Value);
+                ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens.Value);
             }
         }
 
         return response;
+    }
+
+    /// <summary>
+    /// Throws <see cref="OperationCanceledException"/> wrapping <see cref="TokenBudgetExceededException"/>.
+    /// <see cref="OperationCanceledException"/> is respected by MAF's workflow orchestration (which
+    /// swallows <see cref="TokenBudgetExceededException"/> but stops on cancellation).
+    /// Callers can inspect <see cref="Exception.InnerException"/> for budget details.
+    /// </summary>
+    private static void ThrowBudgetExceeded(long currentTokens, long maxTokens)
+    {
+        var budgetException = new TokenBudgetExceededException(currentTokens, maxTokens);
+        throw new OperationCanceledException(budgetException.Message, budgetException);
     }
 }

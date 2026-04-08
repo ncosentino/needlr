@@ -217,7 +217,7 @@ using (tokenBudgetTracker.BeginScope(maxTokens: 100_000))
 Console.WriteLine();
 
 // Second: run with a tiny budget — should throw.
-Console.WriteLine("  [Tiny budget: 1 token — expect TokenBudgetExceededException]");
+Console.WriteLine("  [Tiny budget: 1 token — expect budget cancellation]");
 try
 {
     using (contextAccessor.BeginScope(executionContext))
@@ -227,12 +227,12 @@ try
         await workflow.RunAsync("What cities does Nick like?");
     }
 
-    Console.WriteLine("    ERROR: Expected TokenBudgetExceededException but did not get one.");
+    Console.WriteLine("    ERROR: Expected OperationCanceledException but did not get one.");
 }
-catch (TokenBudgetExceededException ex)
+catch (OperationCanceledException ex) when (ex.InnerException is TokenBudgetExceededException budgetEx)
 {
-    Console.WriteLine($"    Caught: {ex.Message}");
-    Console.WriteLine($"    CurrentTokens={ex.CurrentTokens}, MaxTokens={ex.MaxTokens}");
+    Console.WriteLine($"    Caught: {budgetEx.Message}");
+    Console.WriteLine($"    CurrentTokens={budgetEx.CurrentTokens}, MaxTokens={budgetEx.MaxTokens}");
 }
 
 Console.WriteLine();

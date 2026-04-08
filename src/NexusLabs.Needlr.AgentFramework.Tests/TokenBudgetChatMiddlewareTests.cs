@@ -29,11 +29,18 @@ public class TokenBudgetChatMiddlewareTests
         using var scope = tracker.BeginScope(100);
         tracker.Record(100); // exhaust budget
 
-        await Assert.ThrowsAsync<TokenBudgetExceededException>(() =>
+        // Throws OperationCanceledException wrapping TokenBudgetExceededException
+        // so MAF's workflow orchestration respects the cancellation.
+        var ex = await Assert.ThrowsAsync<OperationCanceledException>(() =>
             middleware.GetResponseAsync(
                 [new ChatMessage(ChatRole.User, "hello")],
                 options: null,
                 CancellationToken.None));
+
+        Assert.IsType<TokenBudgetExceededException>(ex.InnerException);
+        var budgetEx = (TokenBudgetExceededException)ex.InnerException;
+        Assert.Equal(100, budgetEx.CurrentTokens);
+        Assert.Equal(100, budgetEx.MaxTokens);
 
         // Inner should never have been called
         inner.Verify(
@@ -98,11 +105,13 @@ public class TokenBudgetChatMiddlewareTests
 
         using var scope = tracker.BeginScope(100);
 
-        await Assert.ThrowsAsync<TokenBudgetExceededException>(() =>
+        var ex = await Assert.ThrowsAsync<OperationCanceledException>(() =>
             middleware.GetResponseAsync(
                 [new ChatMessage(ChatRole.User, "hello")],
                 options: null,
                 CancellationToken.None));
+
+        Assert.IsType<TokenBudgetExceededException>(ex.InnerException);
     }
 
     // -------------------------------------------------------------------------
