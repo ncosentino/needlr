@@ -110,41 +110,44 @@ var questions = new[]
 };
 
 // Wrap agent execution in a context scope — tools see the UserId and OrchestrationId.
-// Also wrap in a diagnostics capture scope to collect per-run telemetry.
+// Use RunWithDiagnosticsAsync to capture per-stage diagnostics from the event stream.
+// This works for ALL workflow types (handoff, sequential, group chat) because it collects
+// diagnostics at turn boundaries, not via AsyncLocal propagation through MAF internals.
 using (contextAccessor.BeginScope(executionContext))
 {
     foreach (var question in questions)
     {
         Console.WriteLine($"Q: {question}");
 
-        using (diagnosticsAccessor.BeginCapture())
+        var result = await handoffWorkflow.RunWithDiagnosticsAsync(
+            question, diagnosticsAccessor);
+
+        foreach (var stage in result.Stages)
         {
-            var responses = await handoffWorkflow.RunAsync(question);
+            Console.WriteLine($"  [{stage.AgentName}]: {stage.ResponseText.Trim()}");
 
-            foreach (var (executorId, text) in responses)
+            if (stage.Diagnostics is { } diag)
             {
-                Console.WriteLine($"  [{executorId}]: {text.Trim()}");
-            }
+                Console.WriteLine($"    Duration: {diag.TotalDuration.TotalMilliseconds:F0}ms | Tokens: {diag.AggregateTokenUsage.TotalTokens}");
 
-            // Print diagnostics captured by the middleware
-            var diag = diagnosticsAccessor.LastRunDiagnostics;
-            if (diag is not null)
-            {
-                Console.WriteLine($"  --- Diagnostics ---");
-                Console.WriteLine($"  Agent: {diag.AgentName}");
-                Console.WriteLine($"  Duration: {diag.TotalDuration.TotalMilliseconds:F0}ms");
-                Console.WriteLine($"  Tokens: {diag.AggregateTokenUsage.TotalTokens} total ({diag.AggregateTokenUsage.InputTokens} in, {diag.AggregateTokenUsage.OutputTokens} out)");
-                Console.WriteLine($"  Chat completions: {diag.ChatCompletions.Count}");
-                Console.WriteLine($"  Tool calls: {diag.ToolCalls.Count}");
+                foreach (var cc in diag.ChatCompletions)
+                {
+                    Console.WriteLine($"    LLM call #{cc.Sequence}: {cc.Duration.TotalMilliseconds:F0}ms model={cc.Model} {(cc.Succeeded ? "OK" : $"FAIL: {cc.ErrorMessage}")}");
+                }
+
                 foreach (var tc in diag.ToolCalls)
                 {
                     var metricsInfo = tc.CustomMetrics is { Count: > 0 }
                         ? $" metrics: {string.Join(", ", tc.CustomMetrics.Select(m => $"{m.Key}={m.Value}"))}"
                         : "";
-                    Console.WriteLine($"    [{tc.ToolName}] {tc.Duration.TotalMilliseconds:F0}ms — {(tc.Succeeded ? "OK" : $"FAIL: {tc.ErrorMessage}")}{metricsInfo}");
+                    Console.WriteLine($"    Tool [{tc.ToolName}]: {tc.Duration.TotalMilliseconds:F0}ms {(tc.Succeeded ? "OK" : $"FAIL: {tc.ErrorMessage}")}{metricsInfo}");
                 }
-                Console.WriteLine($"  Succeeded: {diag.Succeeded}");
             }
+        }
+
+        if (result.AggregateTokenUsage is { } aggTokens)
+        {
+            Console.WriteLine($"  --- Total: {aggTokens.TotalTokens} tokens, {result.TotalDuration.TotalMilliseconds:F0}ms ---");
         }
 
         Console.WriteLine();
