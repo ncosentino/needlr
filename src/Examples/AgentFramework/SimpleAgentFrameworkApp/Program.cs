@@ -199,19 +199,32 @@ Console.WriteLine("  Exceeding the budget throws TokenBudgetExceededException.")
 Console.WriteLine();
 
 // First: run with a generous budget — should succeed.
+// Uses RunWithDiagnosticsAsync so per-LLM-call timing is correlated with budget usage.
 Console.WriteLine("  [Generous budget: 100,000 tokens]");
 using (contextAccessor.BeginScope(executionContext))
 using (tokenBudgetTracker.BeginScope(maxTokens: 100_000))
 {
     var workflow = workflowFactory.CreateTriageHandoffWorkflow();
-    var responses = await workflow.RunAsync("What cities does Nick like?");
+    var budgetResult = await workflow.RunWithDiagnosticsAsync(
+        "What cities does Nick like?", diagnosticsAccessor);
 
-    foreach (var (executorId, text) in responses)
+    foreach (var stage in budgetResult.Stages)
     {
-        Console.WriteLine($"    [{executorId}]: {text.Trim()}");
+        Console.WriteLine($"    [{stage.AgentName}]: {stage.ResponseText.Trim()}");
+        if (stage.Diagnostics is { } diag)
+        {
+            foreach (var cc in diag.ChatCompletions)
+            {
+                Console.WriteLine($"      LLM call #{cc.Sequence}: {cc.Duration.TotalMilliseconds:F0}ms tokens={cc.Tokens.TotalTokens}");
+            }
+        }
     }
 
-    Console.WriteLine($"    Tokens used: {tokenBudgetTracker.CurrentTokens} / {tokenBudgetTracker.MaxTokens}");
+    Console.WriteLine($"    Budget: {tokenBudgetTracker.CurrentTokens} / {tokenBudgetTracker.MaxTokens} tokens used");
+    if (budgetResult.AggregateTokenUsage is { } budgetTokens)
+    {
+        Console.WriteLine($"    Diagnostics: {budgetTokens.TotalTokens} tokens ({budgetTokens.InputTokens} in, {budgetTokens.OutputTokens} out)");
+    }
 }
 
 Console.WriteLine();
@@ -235,8 +248,12 @@ try
 }
 catch (OperationCanceledException)
 {
-    Console.WriteLine($"    Caught: OperationCanceledException (budget cancellation)");
-    Console.WriteLine($"    Tokens at cancellation: {tokenBudgetTracker.CurrentTokens}");
+    // Note: tokenBudgetTracker.CurrentTokens may be 0 here because the scope
+    // was disposed by the using block before this catch runs. The budget WAS
+    // exceeded — the cancellation proves it. The pre-call gate (0 >= 1 = false)
+    // let the first call through, Record() tracked the tokens, the token was
+    // cancelled, and ThrowIfCancellationRequested fired after collection.
+    Console.WriteLine($"    Caught: Budget exceeded — workflow cancelled before completion.");
 }
 
 Console.WriteLine();
