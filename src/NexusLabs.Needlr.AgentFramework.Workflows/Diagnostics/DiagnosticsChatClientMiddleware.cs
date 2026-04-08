@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 using Microsoft.Extensions.AI;
@@ -8,17 +9,32 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
 /// Middle middleware layer: wraps each <c>IChatClient.GetResponseAsync()</c> call to capture
-/// per-completion timing and token usage. Sequence is reserved BEFORE the async call so
-/// parallel completions are ordered by invocation time, not completion time.
-/// Emits <see cref="IAgentMetrics"/> for each chat completion.
+/// per-completion timing and token usage. Records to both the AsyncLocal builder (for direct
+/// agent runs) AND a thread-safe collection (for workflow runs where AsyncLocal doesn't propagate).
 /// </summary>
 internal sealed class DiagnosticsChatClientMiddleware
 {
     private readonly IAgentMetrics _metrics;
+    private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
+    private int _sequenceCounter;
 
     internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics)
     {
         _metrics = metrics;
+    }
+
+    /// <summary>
+    /// Drains all captured completions since the last drain. Thread-safe.
+    /// Called by <see cref="PipelineRunExtensions"/> at turn boundaries.
+    /// </summary>
+    internal IReadOnlyList<ChatCompletionDiagnostics> DrainCompletions()
+    {
+        var results = new List<ChatCompletionDiagnostics>();
+        while (_allCompletions.TryDequeue(out var completion))
+        {
+            results.Add(completion);
+        }
+        return results;
     }
 
     internal async Task<ChatResponse> HandleAsync(
@@ -28,7 +44,8 @@ internal sealed class DiagnosticsChatClientMiddleware
         CancellationToken cancellationToken)
     {
         var builder = AgentRunDiagnosticsBuilder.GetCurrent();
-        var sequence = builder?.NextChatCompletionSequence() ?? -1;
+        var sequence = builder?.NextChatCompletionSequence()
+            ?? Interlocked.Increment(ref _sequenceCounter) - 1;
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
@@ -52,7 +69,7 @@ internal sealed class DiagnosticsChatClientMiddleware
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
-            builder?.AddChatCompletion(new ChatCompletionDiagnostics(
+            var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: model,
                 Tokens: tokens,
@@ -61,7 +78,10 @@ internal sealed class DiagnosticsChatClientMiddleware
                 Succeeded: true,
                 ErrorMessage: null,
                 StartedAt: startedAt,
-                CompletedAt: DateTimeOffset.UtcNow));
+                CompletedAt: DateTimeOffset.UtcNow);
+
+            builder?.AddChatCompletion(diagnostics);
+            _allCompletions.Enqueue(diagnostics);
 
             return response;
         }
@@ -70,7 +90,7 @@ internal sealed class DiagnosticsChatClientMiddleware
             stopwatch.Stop();
             _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false);
 
-            builder?.AddChatCompletion(new ChatCompletionDiagnostics(
+            var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: "unknown",
                 Tokens: new TokenUsage(0, 0, 0, 0, 0),
@@ -79,7 +99,10 @@ internal sealed class DiagnosticsChatClientMiddleware
                 Succeeded: false,
                 ErrorMessage: ex.Message,
                 StartedAt: startedAt,
-                CompletedAt: DateTimeOffset.UtcNow));
+                CompletedAt: DateTimeOffset.UtcNow);
+
+            builder?.AddChatCompletion(diagnostics);
+            _allCompletions.Enqueue(diagnostics);
 
             throw;
         }

@@ -15,24 +15,8 @@ public static class PipelineRunExtensions
 {
     /// <summary>
     /// Executes the workflow and returns an <see cref="IPipelineRunResult"/> with per-stage
-    /// timing captured at each turn boundary from the event stream.
+    /// diagnostics including per-LLM-call timing from the chat client middleware.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Per-stage diagnostics come from two sources:
-    /// <list type="number">
-    ///   <item>
-    ///     <see cref="IAgentDiagnosticsAccessor.LastRunDiagnostics"/> — set by middleware
-    ///     if AsyncLocal propagation works through the workflow execution context.
-    ///   </item>
-    ///   <item>
-    ///     Event-stream timing — wall-clock duration measured from when each agent's first
-    ///     event arrives to when the next agent's first event arrives (or stream ends).
-    ///     This always works regardless of AsyncLocal propagation.
-    ///   </item>
-    /// </list>
-    /// </para>
-    /// </remarks>
     public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
         this Workflow workflow,
         string message,
@@ -51,6 +35,9 @@ public static class PipelineRunExtensions
         var turnStartedAt = DateTimeOffset.UtcNow;
         bool succeeded = true;
         string? errorMessage = null;
+
+        // Drain any stale completions from previous runs
+        ChatMiddlewareHolder.Instance?.DrainCompletions();
 
         try
         {
@@ -82,20 +69,17 @@ public static class PipelineRunExtensions
                         && responses.TryGetValue(currentExecutorId, out var completedSb))
                     {
                         turnStopwatch.Stop();
-                        var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
+                        stages.Add(BuildStageResult(
+                            currentExecutorId,
+                            completedSb.ToString(),
+                            diagnosticsAccessor,
+                            turnStopwatch.Elapsed,
+                            turnStartedAt));
 
-                        stages.Add(new AgentStageResult(
-                            AgentName: currentExecutorId,
-                            ResponseText: completedSb.ToString(),
-                            Diagnostics: middlewareDiag ?? BuildFallbackDiagnostics(
-                                currentExecutorId, turnStopwatch.Elapsed, turnStartedAt)));
-
-                        // Reset for next turn
                         turnStopwatch.Restart();
                         turnStartedAt = DateTimeOffset.UtcNow;
                     }
 
-                    // First event for a new agent — start timing
                     if (currentExecutorId != update.ExecutorId)
                     {
                         turnStopwatch.Restart();
@@ -115,13 +99,12 @@ public static class PipelineRunExtensions
                     && responses.TryGetValue(currentExecutorId, out var lastSb))
                 {
                     turnStopwatch.Stop();
-                    var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
-
-                    stages.Add(new AgentStageResult(
-                        AgentName: currentExecutorId,
-                        ResponseText: lastSb.ToString(),
-                        Diagnostics: middlewareDiag ?? BuildFallbackDiagnostics(
-                            currentExecutorId, turnStopwatch.Elapsed, turnStartedAt)));
+                    stages.Add(BuildStageResult(
+                        currentExecutorId,
+                        lastSb.ToString(),
+                        diagnosticsAccessor,
+                        turnStopwatch.Elapsed,
+                        turnStartedAt));
                 }
             }
         }
@@ -140,22 +123,46 @@ public static class PipelineRunExtensions
             errorMessage: errorMessage);
     }
 
-    /// <summary>
-    /// Builds a minimal diagnostics record from event-stream timing when the middleware's
-    /// AsyncLocal diagnostics didn't propagate through the workflow execution context.
-    /// </summary>
-    private static IAgentRunDiagnostics BuildFallbackDiagnostics(
-        string agentName, TimeSpan duration, DateTimeOffset startedAt) =>
-        new AgentRunDiagnostics(
-            AgentName: agentName,
-            TotalDuration: duration,
-            AggregateTokenUsage: new TokenUsage(0, 0, 0, 0, 0),
-            ChatCompletions: [],
-            ToolCalls: [],
-            TotalInputMessages: 0,
-            TotalOutputMessages: 0,
-            Succeeded: true,
-            ErrorMessage: null,
-            StartedAt: startedAt,
-            CompletedAt: DateTimeOffset.UtcNow);
+    private static IAgentStageResult BuildStageResult(
+        string agentName,
+        string responseText,
+        IAgentDiagnosticsAccessor diagnosticsAccessor,
+        TimeSpan turnDuration,
+        DateTimeOffset turnStartedAt)
+    {
+        // Try middleware AsyncLocal diagnostics first (works for direct agent runs)
+        var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
+        if (middlewareDiag is not null)
+        {
+            return new AgentStageResult(agentName, responseText, middlewareDiag);
+        }
+
+        // Fallback: drain per-LLM-call completions from the chat client middleware.
+        // This works regardless of AsyncLocal propagation because the chat middleware
+        // captures ALL calls on its ConcurrentQueue.
+        var completions = ChatMiddlewareHolder.Instance?.DrainCompletions() ?? [];
+
+        var totalTokens = new TokenUsage(
+            InputTokens: completions.Sum(c => c.Tokens.InputTokens),
+            OutputTokens: completions.Sum(c => c.Tokens.OutputTokens),
+            TotalTokens: completions.Sum(c => c.Tokens.TotalTokens),
+            CachedInputTokens: completions.Sum(c => c.Tokens.CachedInputTokens),
+            ReasoningTokens: completions.Sum(c => c.Tokens.ReasoningTokens));
+
+        return new AgentStageResult(
+            agentName,
+            responseText,
+            new AgentRunDiagnostics(
+                AgentName: agentName,
+                TotalDuration: turnDuration,
+                AggregateTokenUsage: totalTokens,
+                ChatCompletions: completions,
+                ToolCalls: [],
+                TotalInputMessages: 0,
+                TotalOutputMessages: 0,
+                Succeeded: true,
+                ErrorMessage: null,
+                StartedAt: turnStartedAt,
+                CompletedAt: DateTimeOffset.UtcNow));
+    }
 }
