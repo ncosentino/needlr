@@ -102,7 +102,7 @@ using (contextAccessor.BeginScope(executionContext))
                 {
                     while (!tickCts.Token.IsCancellationRequested)
                     {
-                        await Task.Delay(500, tickCts.Token).ConfigureAwait(false);
+                        await Task.Delay(100, tickCts.Token).ConfigureAwait(false);
                         dashboard.Tick();
                     }
                 }, tickCts.Token);
