@@ -31,4 +31,7 @@ public interface IProgressReporter
 
     /// <summary>Gets the nesting depth.</summary>
     int Depth { get; }
+
+    /// <summary>Allocates the next globally-ordered sequence number.</summary>
+    long NextSequence();
 }

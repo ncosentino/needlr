@@ -20,6 +20,9 @@ internal sealed class NullProgressReporter : IProgressReporter
     public int Depth => 0;
 
     /// <inheritdoc />
+    public long NextSequence() => 0;
+
+    /// <inheritdoc />
     public void Report(IProgressEvent progressEvent) { }
 
     /// <inheritdoc />

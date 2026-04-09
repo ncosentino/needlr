@@ -20,7 +20,7 @@ public class ProgressReporterTests
         sink2.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
             .Returns(ValueTask.CompletedTask);
 
-        var reporter = new ProgressReporter("wf-1", [sink1.Object, sink2.Object]);
+        var reporter = new ProgressReporter("wf-1", [sink1.Object, sink2.Object], new ProgressSequenceProvider());
         var evt = MakeEvent(reporter);
 
         reporter.Report(evt);
@@ -32,7 +32,7 @@ public class ProgressReporterTests
     [Fact]
     public void Report_NoSinks_DoesNotThrow()
     {
-        var reporter = new ProgressReporter("wf-1", []);
+        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider());
 
         reporter.Report(MakeEvent(reporter));
     }
@@ -44,7 +44,7 @@ public class ProgressReporterTests
     [Fact]
     public void CreateChild_SetsAgentId()
     {
-        var reporter = new ProgressReporter("wf-1", []);
+        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider());
 
         var child = reporter.CreateChild("agent-A");
 
@@ -54,7 +54,7 @@ public class ProgressReporterTests
     [Fact]
     public void CreateChild_SetsParentAgentId()
     {
-        var reporter = new ProgressReporter("wf-1", [], agentId: "parent-agent");
+        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider(), agentId: "parent-agent");
 
         var child = reporter.CreateChild("child-agent");
 
@@ -66,7 +66,7 @@ public class ProgressReporterTests
     [Fact]
     public void CreateChild_IncrementsDepth()
     {
-        var reporter = new ProgressReporter("wf-1", [], depth: 0);
+        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider(), depth: 0);
 
         var child = reporter.CreateChild("agent-A");
         var grandchild = child.CreateChild("sub-agent-B");
@@ -83,7 +83,7 @@ public class ProgressReporterTests
         sink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
             .Returns(ValueTask.CompletedTask);
 
-        var reporter = new ProgressReporter("wf-1", [sink.Object]);
+        var reporter = new ProgressReporter("wf-1", [sink.Object], new ProgressSequenceProvider());
         var child = reporter.CreateChild("agent-A");
 
         child.Report(MakeEvent(child));
@@ -94,7 +94,7 @@ public class ProgressReporterTests
     [Fact]
     public void CreateChild_PreservesWorkflowId()
     {
-        var reporter = new ProgressReporter("wf-123", []);
+        var reporter = new ProgressReporter("wf-123", [], new ProgressSequenceProvider());
 
         var child = reporter.CreateChild("agent-X");
 
@@ -108,9 +108,10 @@ public class ProgressReporterTests
     [Fact]
     public void NextSequence_IsMonotonicallyIncreasing()
     {
-        var seq1 = ProgressSequence.Next();
-        var seq2 = ProgressSequence.Next();
-        var seq3 = ProgressSequence.Next();
+        var seqProvider = new ProgressSequenceProvider();
+        var seq1 = seqProvider.Next();
+        var seq2 = seqProvider.Next();
+        var seq3 = seqProvider.Next();
 
         Assert.True(seq2 > seq1);
         Assert.True(seq3 > seq2);
@@ -146,7 +147,7 @@ public class ProgressReporterTests
     public void Factory_Create_WithDefaultSinks_ReturnsReporter()
     {
         var sink = new Mock<IProgressSink>();
-        var factory = new ProgressReporterFactory([sink.Object]);
+        var factory = new ProgressReporterFactory([sink.Object], new ProgressSequenceProvider());
 
         var reporter = factory.Create("wf-1");
 
@@ -156,7 +157,7 @@ public class ProgressReporterTests
     [Fact]
     public void Factory_Create_NoSinks_ReturnsNullReporter()
     {
-        var factory = new ProgressReporterFactory([]);
+        var factory = new ProgressReporterFactory([], new ProgressSequenceProvider());
 
         var reporter = factory.Create("wf-1");
 
@@ -166,7 +167,7 @@ public class ProgressReporterTests
     [Fact]
     public void Factory_Create_WithExplicitSinks_ReturnsReporter()
     {
-        var factory = new ProgressReporterFactory([]);
+        var factory = new ProgressReporterFactory([], new ProgressSequenceProvider());
         var sink = new Mock<IProgressSink>();
 
         var reporter = factory.Create("wf-1", [sink.Object]);
@@ -177,7 +178,7 @@ public class ProgressReporterTests
     [Fact]
     public void Factory_Create_WithEmptyExplicitSinks_ReturnsNullReporter()
     {
-        var factory = new ProgressReporterFactory([]);
+        var factory = new ProgressReporterFactory([], new ProgressSequenceProvider());
 
         var reporter = factory.Create("wf-1", []);
 
@@ -259,5 +260,5 @@ public class ProgressReporterTests
             AgentId: reporter.AgentId,
             ParentAgentId: null,
             Depth: reporter.Depth,
-            SequenceNumber: ProgressSequence.Next());
+            SequenceNumber: new ProgressSequenceProvider().Next());
 }

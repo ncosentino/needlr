@@ -109,7 +109,7 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
             AgentId: reporter.AgentId,
             ParentAgentId: null,
             Depth: reporter.Depth,
-            SequenceNumber: ProgressSequence.Next(),
+            SequenceNumber: _progressAccessor.Current.NextSequence(),
             CurrentInputTokens: _tracker.CurrentInputTokens,
             CurrentOutputTokens: _tracker.CurrentOutputTokens,
             CurrentTotalTokens: _tracker.CurrentTokens,
@@ -134,7 +134,7 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
             AgentId: reporter.AgentId,
             ParentAgentId: null,
             Depth: reporter.Depth,
-            SequenceNumber: ProgressSequence.Next(),
+            SequenceNumber: _progressAccessor.Current.NextSequence(),
             LimitType: limitType,
             CurrentValue: current,
             MaxValue: max));

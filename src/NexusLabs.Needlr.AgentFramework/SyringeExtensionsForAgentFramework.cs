@@ -84,8 +84,9 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
             services.TryAddSingleton<ChatCompletionCollectorHolder>();
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
+            services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
             services.TryAddSingleton<IProgressReporterFactory>(sp =>
-                new ProgressReporterFactory(sp.GetServices<IProgressSink>()));
+                new ProgressReporterFactory(sp.GetServices<IProgressSink>(), sp.GetRequiredService<IProgressSequence>()));
             services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
 
             services.AddSingleton<IAgentFactory>(provider =>
@@ -163,8 +164,9 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
             services.TryAddSingleton<ChatCompletionCollectorHolder>();
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
+            services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
             services.TryAddSingleton<IProgressReporterFactory>(sp =>
-                new ProgressReporterFactory(sp.GetServices<IProgressSink>()));
+                new ProgressReporterFactory(sp.GetServices<IProgressSink>(), sp.GetRequiredService<IProgressSequence>()));
             services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
 
             services.AddSingleton<IAgentFactory>(provider =>

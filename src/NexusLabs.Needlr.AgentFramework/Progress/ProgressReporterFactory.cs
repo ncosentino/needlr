@@ -8,10 +8,12 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 internal sealed class ProgressReporterFactory : IProgressReporterFactory
 {
     private readonly IReadOnlyList<IProgressSink> _defaultSinks;
+    private readonly IProgressSequence _sequence;
 
-    internal ProgressReporterFactory(IEnumerable<IProgressSink> defaultSinks)
+    internal ProgressReporterFactory(IEnumerable<IProgressSink> defaultSinks, IProgressSequence sequence)
     {
         _defaultSinks = defaultSinks.ToArray();
+        _sequence = sequence;
     }
 
     /// <inheritdoc />
@@ -20,7 +22,7 @@ internal sealed class ProgressReporterFactory : IProgressReporterFactory
         if (_defaultSinks.Count == 0)
             return NullProgressReporter.Instance;
 
-        return new ProgressReporter(workflowId, _defaultSinks);
+        return new ProgressReporter(workflowId, _defaultSinks, _sequence);
     }
 
     /// <inheritdoc />
@@ -30,6 +32,6 @@ internal sealed class ProgressReporterFactory : IProgressReporterFactory
         if (sinkList.Count == 0)
             return NullProgressReporter.Instance;
 
-        return new ProgressReporter(workflowId, sinkList);
+        return new ProgressReporter(workflowId, sinkList, _sequence);
     }
 }

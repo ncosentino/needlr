@@ -59,7 +59,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             AgentId: _progressAccessor.Current.AgentId,
             ParentAgentId: null,
             Depth: _progressAccessor.Current.Depth,
-            SequenceNumber: ProgressSequence.Next(),
+            SequenceNumber: _progressAccessor.Current.NextSequence(),
             CallSequence: sequence));
 
         try
@@ -102,7 +102,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 AgentId: _progressAccessor.Current.AgentId,
                 ParentAgentId: null,
                 Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: ProgressSequence.Next(),
+                SequenceNumber: _progressAccessor.Current.NextSequence(),
                 CallSequence: sequence,
                 Model: model,
                 Duration: stopwatch.Elapsed,
@@ -137,7 +137,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 AgentId: _progressAccessor.Current.AgentId,
                 ParentAgentId: null,
                 Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: ProgressSequence.Next(),
+                SequenceNumber: _progressAccessor.Current.NextSequence(),
                 CallSequence: sequence,
                 ErrorMessage: ex.Message,
                 Duration: stopwatch.Elapsed));

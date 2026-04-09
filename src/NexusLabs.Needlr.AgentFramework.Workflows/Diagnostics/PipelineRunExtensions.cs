@@ -91,7 +91,7 @@ public static class PipelineRunExtensions
             AgentId: null,
             ParentAgentId: null,
             Depth: 0,
-            SequenceNumber: ProgressEvents.ProgressSequence.Next()));
+            SequenceNumber: reporter.NextSequence()));
 
         try
         {
@@ -125,7 +125,7 @@ public static class PipelineRunExtensions
                             AgentId: invoked.ExecutorId,
                             ParentAgentId: null,
                             Depth: 1,
-                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            SequenceNumber: reporter.NextSequence(),
                             AgentName: invoked.ExecutorId ?? "unknown"));
                         continue;
                     }
@@ -161,7 +161,7 @@ public static class PipelineRunExtensions
                             AgentId: currentExecutorId,
                             ParentAgentId: null,
                             Depth: 1,
-                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            SequenceNumber: reporter.NextSequence(),
                             AgentName: currentExecutorId,
                             Duration: turnStopwatch.Elapsed,
                             TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
@@ -172,7 +172,7 @@ public static class PipelineRunExtensions
                             AgentId: null,
                             ParentAgentId: null,
                             Depth: 0,
-                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            SequenceNumber: reporter.NextSequence(),
                             FromAgentId: currentExecutorId,
                             ToAgentId: update.ExecutorId));
 
@@ -213,7 +213,7 @@ public static class PipelineRunExtensions
                         AgentId: currentExecutorId,
                         ParentAgentId: null,
                         Depth: 1,
-                        SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                        SequenceNumber: reporter.NextSequence(),
                         AgentName: currentExecutorId,
                         Duration: turnStopwatch.Elapsed,
                         TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
@@ -239,7 +239,7 @@ public static class PipelineRunExtensions
             AgentId: null,
             ParentAgentId: null,
             Depth: 0,
-            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+            SequenceNumber: reporter.NextSequence(),
             Succeeded: succeeded,
             ErrorMessage: errorMessage,
             TotalDuration: pipelineStart.Elapsed));

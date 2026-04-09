@@ -33,7 +33,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     AgentId: progressAccessor.Current.AgentId,
                     ParentAgentId: null,
                     Depth: progressAccessor.Current.Depth,
-                    SequenceNumber: ProgressSequence.Next(),
+                    SequenceNumber: progressAccessor.Current.NextSequence(),
                     ToolName: toolName));
 
                 var customMetrics = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -62,7 +62,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         AgentId: progressAccessor.Current.AgentId,
                         ParentAgentId: null,
                         Depth: progressAccessor.Current.Depth,
-                        SequenceNumber: ProgressSequence.Next(),
+                        SequenceNumber: progressAccessor.Current.NextSequence(),
                         ToolName: toolName,
                         Duration: stopwatch.Elapsed,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
@@ -91,7 +91,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         AgentId: progressAccessor.Current.AgentId,
                         ParentAgentId: null,
                         Depth: progressAccessor.Current.Depth,
-                        SequenceNumber: ProgressSequence.Next(),
+                        SequenceNumber: progressAccessor.Current.NextSequence(),
                         ToolName: toolName,
                         ErrorMessage: ex.Message,
                         Duration: stopwatch.Elapsed));
