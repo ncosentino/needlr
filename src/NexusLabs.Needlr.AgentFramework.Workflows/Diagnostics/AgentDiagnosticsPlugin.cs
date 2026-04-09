@@ -15,12 +15,10 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IProgressReporter _progressReporter;
 
-    internal AgentDiagnosticsPlugin(IServiceProvider serviceProvider, IProgressReporter? progressReporter = null)
+    internal AgentDiagnosticsPlugin(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _progressReporter = progressReporter ?? NullProgressReporter.Instance;
     }
 
     /// <inheritdoc />
@@ -39,6 +37,7 @@ internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
             runStreamingFunc: (messages, session, runOptions, innerAgent, ct) =>
                 innerAgent.RunStreamingAsync(messages, session, runOptions, ct));
 
-        DiagnosticsFunctionCallingMiddleware.Wire(builder, metrics, _progressReporter);
+        var progressAccessor = _serviceProvider.GetRequiredService<IProgressReporterAccessor>();
+        DiagnosticsFunctionCallingMiddleware.Wire(builder, metrics, progressAccessor);
     }
 }

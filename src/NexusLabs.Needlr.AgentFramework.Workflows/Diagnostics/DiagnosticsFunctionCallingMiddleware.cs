@@ -14,7 +14,7 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// </summary>
 internal static class DiagnosticsFunctionCallingMiddleware
 {
-    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics, IProgressReporter progressReporter)
+    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics, IProgressReporterAccessor progressAccessor)
     {
         FunctionInvocationDelegatingAgentBuilderExtensions.Use(
             builder,
@@ -27,12 +27,12 @@ internal static class DiagnosticsFunctionCallingMiddleware
 
                 var toolName = context.Function?.Name ?? "unknown";
 
-                progressReporter.Report(new ToolCallStartedEvent(
+                progressAccessor.Current.Report(new ToolCallStartedEvent(
                     Timestamp: startedAt,
-                    WorkflowId: progressReporter.WorkflowId,
-                    AgentId: progressReporter.AgentId,
+                    WorkflowId: progressAccessor.Current.WorkflowId,
+                    AgentId: progressAccessor.Current.AgentId,
                     ParentAgentId: null,
-                    Depth: progressReporter.Depth,
+                    Depth: progressAccessor.Current.Depth,
                     SequenceNumber: ProgressSequence.Next(),
                     ToolName: toolName));
 
@@ -56,12 +56,12 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
 
-                    progressReporter.Report(new ToolCallCompletedEvent(
+                    progressAccessor.Current.Report(new ToolCallCompletedEvent(
                         Timestamp: DateTimeOffset.UtcNow,
-                        WorkflowId: progressReporter.WorkflowId,
-                        AgentId: progressReporter.AgentId,
+                        WorkflowId: progressAccessor.Current.WorkflowId,
+                        AgentId: progressAccessor.Current.AgentId,
                         ParentAgentId: null,
-                        Depth: progressReporter.Depth,
+                        Depth: progressAccessor.Current.Depth,
                         SequenceNumber: ProgressSequence.Next(),
                         ToolName: toolName,
                         Duration: stopwatch.Elapsed,
@@ -85,12 +85,12 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
 
-                    progressReporter.Report(new ToolCallFailedEvent(
+                    progressAccessor.Current.Report(new ToolCallFailedEvent(
                         Timestamp: DateTimeOffset.UtcNow,
-                        WorkflowId: progressReporter.WorkflowId,
-                        AgentId: progressReporter.AgentId,
+                        WorkflowId: progressAccessor.Current.WorkflowId,
+                        AgentId: progressAccessor.Current.AgentId,
                         ParentAgentId: null,
-                        Depth: progressReporter.Depth,
+                        Depth: progressAccessor.Current.Depth,
                         SequenceNumber: ProgressSequence.Next(),
                         ToolName: toolName,
                         ErrorMessage: ex.Message,
