@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
@@ -24,7 +25,8 @@ public static class DiagnosticsExtensions
         var result = syringe.Configure(opts =>
         {
             var metrics = opts.ServiceProvider.GetRequiredService<IAgentMetrics>();
-            var chatMiddleware = new DiagnosticsChatClientMiddleware(metrics);
+            var progressAccessor = opts.ServiceProvider.GetRequiredService<IProgressReporterAccessor>();
+            var chatMiddleware = new DiagnosticsChatClientMiddleware(metrics, progressAccessor);
 
             // Register the real collector via the DI-managed holder — NOT a static field.
             var holder = opts.ServiceProvider.GetRequiredService<ChatCompletionCollectorHolder>();

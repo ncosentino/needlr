@@ -74,6 +74,7 @@ var contextAccessor = serviceProvider.GetRequiredService<IAgentExecutionContextA
 var completionCollector = serviceProvider.GetRequiredService<IChatCompletionCollector>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
+var progressAccessor = serviceProvider.GetRequiredService<IProgressReporterAccessor>();
 
 // Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
 // No magic strings; renaming the class regenerates these methods automatically.
@@ -129,7 +130,7 @@ using (contextAccessor.BeginScope(executionContext))
             [new ConsoleProgressSink()]);
 
         var result = await handoffWorkflow.RunWithDiagnosticsAsync(
-            question, diagnosticsAccessor, progressReporter, completionCollector);
+            question, diagnosticsAccessor, progressReporter, completionCollector, progressAccessor);
 
         foreach (var stage in result.Stages)
         {

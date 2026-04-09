@@ -18,14 +18,14 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
     private readonly IAgentMetrics _metrics;
+    private readonly IProgressReporterAccessor _progressAccessor;
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
     private int _sequenceCounter;
 
-    internal IProgressReporter ProgressReporter { get; set; } = NullProgressReporter.Instance;
-
-    internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics)
+    internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics, IProgressReporterAccessor progressAccessor)
     {
         _metrics = metrics;
+        _progressAccessor = progressAccessor;
     }
 
     /// <summary>
@@ -53,12 +53,12 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        ProgressReporter.Report(new LlmCallStartedEvent(
+        _progressAccessor.Current.Report(new LlmCallStartedEvent(
             Timestamp: startedAt,
-            WorkflowId: ProgressReporter.WorkflowId,
-            AgentId: ProgressReporter.AgentId,
+            WorkflowId: _progressAccessor.Current.WorkflowId,
+            AgentId: _progressAccessor.Current.AgentId,
             ParentAgentId: null,
-            Depth: ProgressReporter.Depth,
+            Depth: _progressAccessor.Current.Depth,
             SequenceNumber: ProgressSequence.Next(),
             CallSequence: sequence));
 
@@ -96,12 +96,12 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            ProgressReporter.Report(new LlmCallCompletedEvent(
+            _progressAccessor.Current.Report(new LlmCallCompletedEvent(
                 Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: ProgressReporter.WorkflowId,
-                AgentId: ProgressReporter.AgentId,
+                WorkflowId: _progressAccessor.Current.WorkflowId,
+                AgentId: _progressAccessor.Current.AgentId,
                 ParentAgentId: null,
-                Depth: ProgressReporter.Depth,
+                Depth: _progressAccessor.Current.Depth,
                 SequenceNumber: ProgressSequence.Next(),
                 CallSequence: sequence,
                 Model: model,
@@ -131,12 +131,12 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            ProgressReporter.Report(new LlmCallFailedEvent(
+            _progressAccessor.Current.Report(new LlmCallFailedEvent(
                 Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: ProgressReporter.WorkflowId,
-                AgentId: ProgressReporter.AgentId,
+                WorkflowId: _progressAccessor.Current.WorkflowId,
+                AgentId: _progressAccessor.Current.AgentId,
                 ParentAgentId: null,
-                Depth: ProgressReporter.Depth,
+                Depth: _progressAccessor.Current.Depth,
                 SequenceNumber: ProgressSequence.Next(),
                 CallSequence: sequence,
                 ErrorMessage: ex.Message,

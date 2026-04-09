@@ -24,7 +24,7 @@ public static class PipelineRunExtensions
         string message,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         CancellationToken cancellationToken = default) =>
-        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, null, null, cancellationToken);
+        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, null, null, null, cancellationToken);
 
     /// <summary>
     /// Executes the workflow with per-stage diagnostics and real-time progress reporting.
@@ -35,7 +35,7 @@ public static class PipelineRunExtensions
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         ProgressEvents.IProgressReporter? progressReporter,
         CancellationToken cancellationToken = default) =>
-        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, progressReporter, null, cancellationToken);
+        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, progressReporter, null, null, cancellationToken);
 
     /// <summary>
     /// Executes the workflow with per-stage diagnostics, real-time progress reporting,
@@ -50,6 +50,10 @@ public static class PipelineRunExtensions
     /// <see cref="IChatCompletionCollector"/>. If <see langword="null"/>, per-call
     /// LLM timing is not available in stage diagnostics.
     /// </param>
+    /// <param name="progressReporterAccessor">
+    /// Optional accessor for threading the progress reporter through the AsyncLocal
+    /// so chat/tool middleware can emit LLM call events.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
         this Workflow workflow,
@@ -57,6 +61,7 @@ public static class PipelineRunExtensions
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         ProgressEvents.IProgressReporter? progressReporter,
         IChatCompletionCollector? completionCollector,
+        ProgressEvents.IProgressReporterAccessor? progressReporterAccessor = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(workflow);
@@ -75,6 +80,10 @@ public static class PipelineRunExtensions
         string? errorMessage = null;
 
         collector.DrainCompletions(); // drain stale
+
+        // Set the progress reporter on the AsyncLocal accessor so chat/tool middleware
+        // can emit LLM call and tool call events in real-time.
+        var progressScope = progressReporterAccessor?.BeginScope(reporter);
 
         reporter.Report(new ProgressEvents.WorkflowStartedEvent(
             Timestamp: DateTimeOffset.UtcNow,
@@ -234,6 +243,8 @@ public static class PipelineRunExtensions
             Succeeded: succeeded,
             ErrorMessage: errorMessage,
             TotalDuration: pipelineStart.Elapsed));
+
+        progressScope?.Dispose();
 
         return new PipelineRunResult(
             stages: stages,
