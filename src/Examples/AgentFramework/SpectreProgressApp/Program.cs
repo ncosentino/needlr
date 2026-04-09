@@ -19,6 +19,7 @@ using NexusLabs.Needlr.Injection.SourceGen;
 using SimpleAgentFrameworkApp.Agents.Generated;
 
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 // ── Configuration ──────────────────────────────────────────────
 var configuration = new ConfigurationBuilder()
@@ -58,7 +59,7 @@ var progressAccessor = serviceProvider.GetRequiredService<IProgressReporterAcces
 
 // ── Header ─────────────────────────────────────────────────────
 AnsiConsole.Write(new FigletText("Needlr MAF").Color(Color.Cyan1));
-AnsiConsole.MarkupLine("[grey]Real-time agent orchestration with Spectre.Console[/]");
+AnsiConsole.MarkupLine("[grey]Real-time agent orchestration dashboard[/]");
 AnsiConsole.WriteLine();
 
 // ── Questions ──────────────────────────────────────────────────
@@ -78,129 +79,230 @@ using (contextAccessor.BeginScope(executionContext))
 
     foreach (var question in questions)
     {
-        AnsiConsole.MarkupLine($"[bold yellow]Q: {Markup.Escape(question)}[/]");
-        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"\n[bold yellow]Q: {Markup.Escape(question)}[/]\n");
 
-        var table = new Table()
-            .Border(TableBorder.Rounded)
-            .AddColumn(new TableColumn("[bold]Elapsed[/]").Width(10))
-            .AddColumn(new TableColumn("[bold]Event[/]").Width(18))
-            .AddColumn(new TableColumn("[bold]Details[/]"));
-
-        var sink = new SpectreLiveSink(table);
-
+        var dashboard = new DashboardSink();
         var reporter = progressFactory.Create(
             $"q-{Guid.NewGuid():N}",
-            [sink]);
+            [dashboard]);
 
-        // Live rendering — the table updates in real-time as events arrive
-        await AnsiConsole.Live(table)
+        IPipelineRunResult? result = null;
+
+        await AnsiConsole.Live(dashboard.Render())
             .AutoClear(false)
             .Overflow(VerticalOverflow.Ellipsis)
             .StartAsync(async ctx =>
             {
-                sink.SetLiveContext(ctx);
+                dashboard.SetContext(ctx);
 
-                await handoffWorkflow.RunWithDiagnosticsAsync(
+                result = await handoffWorkflow.RunWithDiagnosticsAsync(
                     question, diagnosticsAccessor, reporter, completionCollector, progressAccessor);
             });
 
-        AnsiConsole.WriteLine();
+        // Print final responses below the dashboard
+        if (result is not null)
+        {
+            foreach (var stage in result.Stages)
+            {
+                AnsiConsole.MarkupLine($"  [green]{Markup.Escape(ShortName(stage.AgentName))}[/]: {Markup.Escape(stage.ResponseText.Trim())}");
+            }
 
-        // Print final agent responses
-        // (Re-run without progress to get the result — or we could capture it above)
-        // Actually, let's just show the table was the point. The responses are visible
-        // via the progress events themselves.
+            if (result.AggregateTokenUsage is { } t)
+            {
+                AnsiConsole.MarkupLine($"  [dim]{t.TotalTokens} tokens, {result.TotalDuration.TotalSeconds:F1}s[/]");
+            }
+        }
     }
 }
 
+AnsiConsole.WriteLine();
 AnsiConsole.MarkupLine("[bold green]✓ All orchestrations complete.[/]");
 
-// ── Spectre Live Sink ──────────────────────────────────────────
-class SpectreLiveSink : IProgressSink
+static string ShortName(string id)
 {
-    private readonly Table _table;
-    private readonly DateTime _start = DateTime.Now;
+    var idx = id.IndexOf('_');
+    return idx > 0 ? id[..idx] : id;
+}
+
+// ════════════════════════════════════════════════════════════════
+// Dashboard — fixed-size display that updates in-place
+// ════════════════════════════════════════════════════════════════
+class DashboardSink : IProgressSink
+{
     private LiveDisplayContext? _ctx;
+    private readonly DateTime _start = DateTime.Now;
 
-    public SpectreLiveSink(Table table) => _table = table;
+    // State
+    private string _workflowStatus = "[dim]Initializing...[/]";
+    private readonly List<AgentState> _agents = [];
+    private int _totalTokens;
+    private int _llmCallCount;
+    private double _totalLlmMs;
 
-    public void SetLiveContext(LiveDisplayContext ctx) => _ctx = ctx;
+    public void SetContext(LiveDisplayContext ctx) => _ctx = ctx;
+
+    public IRenderable Render()
+    {
+        var elapsed = (DateTime.Now - _start).TotalSeconds;
+
+        var panel = new Table()
+            .Border(TableBorder.Heavy)
+            .Title("[bold cyan]Orchestration Dashboard[/]")
+            .AddColumn(new TableColumn("").Width(80));
+
+        // Status line
+        panel.AddRow(new Markup($"  Status: {_workflowStatus}  |  Elapsed: [bold]{elapsed:F1}s[/]  |  LLM calls: [bold]{_llmCallCount}[/]  |  Tokens: [bold]{_totalTokens}[/]"));
+        panel.AddEmptyRow();
+
+        // Agent rows
+        if (_agents.Count == 0)
+        {
+            panel.AddRow(new Markup("  [dim]Waiting for agents...[/]"));
+        }
+        else
+        {
+            foreach (var agent in _agents)
+            {
+                panel.AddRow(new Markup(agent.Render()));
+            }
+        }
+
+        panel.AddEmptyRow();
+
+        // LLM throughput
+        var avgMs = _llmCallCount > 0 ? _totalLlmMs / _llmCallCount : 0;
+        panel.AddRow(new Markup($"  [dim]Avg LLM latency: {avgMs:F0}ms  |  Throughput: {(_llmCallCount > 0 ? elapsed / _llmCallCount : 0):F1}s/call[/]"));
+
+        return panel;
+    }
 
     public ValueTask OnEventAsync(IProgressEvent evt, CancellationToken ct)
     {
-        var elapsed = $"[dim]+{(DateTime.Now - _start).TotalSeconds:F1}s[/]";
-
         switch (evt)
         {
             case WorkflowStartedEvent:
-                AddRow(elapsed, "[bold cyan]⚡ Workflow[/]", "[cyan]Starting orchestration...[/]");
+                _workflowStatus = "[yellow]Running[/] [yellow]●[/]";
                 break;
 
             case WorkflowCompletedEvent wc:
-                AddRow(elapsed, "[bold cyan]✓ Workflow[/]",
-                    wc.Succeeded
-                        ? $"[green]Complete in {wc.TotalDuration.TotalSeconds:F1}s[/]"
-                        : $"[red]Failed: {Markup.Escape(wc.ErrorMessage ?? "?")}[/]");
+                _workflowStatus = wc.Succeeded
+                    ? $"[green]Complete ✓[/] ({wc.TotalDuration.TotalSeconds:F1}s)"
+                    : $"[red]Failed ✗[/]: {Markup.Escape(wc.ErrorMessage ?? "?")}";
                 break;
 
             case AgentInvokedEvent ai:
                 if (ai.AgentName.Contains("Handoff")) break;
-                var icon = ai.AgentName.Contains("Triage") ? "🔀" : "🤖";
-                var color = ai.AgentName.Contains("Triage") ? "yellow" : "green";
-                AddRow(elapsed, $"[{color}]{icon} Agent[/]",
-                    $"[{color}]{Markup.Escape(ShortName(ai.AgentName))}[/] invoked");
+                var existing = _agents.FirstOrDefault(a => a.Name == ShortName(ai.AgentName));
+                if (existing is null)
+                {
+                    var agent = new AgentState(ShortName(ai.AgentName));
+                    agent.Status = "[yellow]⟳ Working...[/]";
+                    _agents.Add(agent);
+                }
+                else
+                {
+                    existing.Status = "[yellow]⟳ Working...[/]";
+                }
                 break;
 
             case AgentCompletedEvent ac:
-                AddRow(elapsed, "[green]✅ Agent[/]",
-                    $"[green]{Markup.Escape(ShortName(ac.AgentName))}[/] done — {ac.TotalTokens} tokens, {ac.Duration.TotalMilliseconds:F0}ms");
+                var completed = _agents.FirstOrDefault(a => a.Name == ShortName(ac.AgentName));
+                if (completed is not null)
+                {
+                    completed.Status = $"[green]✓ Done[/] ({ac.TotalTokens} tok, {ac.Duration.TotalMilliseconds:F0}ms)";
+                    _totalTokens += (int)ac.TotalTokens;
+                }
                 break;
 
             case AgentHandoffEvent ah:
-                AddRow(elapsed, "[yellow]↗ Handoff[/]",
-                    $"{Markup.Escape(ShortName(ah.FromAgentId))} → [bold]{Markup.Escape(ShortName(ah.ToAgentId))}[/]");
+                var from = _agents.FirstOrDefault(a => a.Name == ShortName(ah.FromAgentId));
+                if (from is not null)
+                    from.Status = $"[dim]→ handed off to {ShortName(ah.ToAgentId)}[/]";
                 break;
 
             case LlmCallStartedEvent lcs:
-                AddRow(elapsed, "[blue]  ⏳ LLM[/]",
-                    $"[blue]Call #{lcs.CallSequence} sending request...[/]");
+                var callingAgent = _agents.LastOrDefault();
+                if (callingAgent is not null)
+                {
+                    callingAgent.CurrentLlmCall = lcs.CallSequence;
+                    callingAgent.LlmStatus = "[blue]⏳ Calling LLM...[/]";
+                }
                 break;
 
             case LlmCallCompletedEvent lcc:
-                AddRow(elapsed, "[blue]  ✓ LLM[/]",
-                    $"[blue]#{lcc.CallSequence}[/] {Markup.Escape(lcc.Model)} — [dim]{lcc.Duration.TotalMilliseconds:F0}ms, {lcc.TotalTokens} tokens[/]");
+                _llmCallCount++;
+                _totalLlmMs += lcc.Duration.TotalMilliseconds;
+                var respondingAgent = _agents.LastOrDefault();
+                if (respondingAgent is not null)
+                {
+                    respondingAgent.LlmCalls++;
+                    respondingAgent.LlmTokens += (int)lcc.TotalTokens;
+                    respondingAgent.LlmStatus = $"[blue]✓ #{lcc.CallSequence}[/] {lcc.Duration.TotalMilliseconds:F0}ms";
+                }
                 break;
 
             case LlmCallFailedEvent lcf:
-                AddRow(elapsed, "[red]  ✗ LLM[/]",
-                    $"[red]#{lcf.CallSequence} FAILED[/]: {Markup.Escape(lcf.ErrorMessage)}");
+                _llmCallCount++;
+                _totalLlmMs += lcf.Duration.TotalMilliseconds;
+                var failedAgent = _agents.LastOrDefault();
+                if (failedAgent is not null)
+                    failedAgent.LlmStatus = $"[red]✗ #{lcf.CallSequence} FAILED[/]";
                 break;
 
             case ToolCallStartedEvent tcs:
-                AddRow(elapsed, "[magenta]  🔧 Tool[/]",
-                    $"[magenta]{Markup.Escape(tcs.ToolName)}[/] running...");
+                var toolAgent = _agents.LastOrDefault();
+                if (toolAgent is not null)
+                    toolAgent.ToolStatus = $"[magenta]🔧 {Markup.Escape(tcs.ToolName)}...[/]";
                 break;
 
             case ToolCallCompletedEvent tcc:
-                AddRow(elapsed, "[magenta]  ✓ Tool[/]",
-                    $"[magenta]{Markup.Escape(tcc.ToolName)}[/] — {tcc.Duration.TotalMilliseconds:F0}ms");
+                var toolDone = _agents.LastOrDefault();
+                if (toolDone is not null)
+                {
+                    toolDone.ToolCalls++;
+                    toolDone.ToolStatus = $"[magenta]✓ {Markup.Escape(tcc.ToolName)}[/] {tcc.Duration.TotalMilliseconds:F0}ms";
+                }
                 break;
         }
 
+        Refresh();
         return ValueTask.CompletedTask;
     }
 
-    private void AddRow(string elapsed, string eventType, string details)
+    private void Refresh()
     {
-        _table.AddRow(elapsed, eventType, details);
-        _ctx?.Refresh();
+        if (_ctx is null) return;
+        _ctx.UpdateTarget(Render());
+        _ctx.Refresh();
     }
 
-    private static string ShortName(string executorId)
+    private static string ShortName(string id)
     {
-        // "GeographyAgent_abc123..." → "GeographyAgent"
-        var idx = executorId.IndexOf('_');
-        return idx > 0 ? executorId[..idx] : executorId;
+        var idx = id.IndexOf('_');
+        return idx > 0 ? id[..idx] : id;
+    }
+
+    class AgentState
+    {
+        public string Name { get; }
+        public string Status { get; set; } = "[dim]Pending[/]";
+        public string LlmStatus { get; set; } = "";
+        public string ToolStatus { get; set; } = "";
+        public int CurrentLlmCall { get; set; }
+        public int LlmCalls { get; set; }
+        public int LlmTokens { get; set; }
+        public int ToolCalls { get; set; }
+
+        public AgentState(string name) => Name = name;
+
+        public string Render()
+        {
+            var line = $"  [bold]{Markup.Escape(Name)}[/]  {Status}";
+            if (LlmCalls > 0 || LlmStatus.Length > 0)
+                line += $"  |  LLM: {LlmStatus} ({LlmCalls} calls, {LlmTokens} tok)";
+            if (ToolCalls > 0 || ToolStatus.Length > 0)
+                line += $"  |  Tools: {ToolStatus} ({ToolCalls})";
+            return line;
+        }
     }
 }
