@@ -78,6 +78,7 @@ public static class PipelineRunExtensions
         var turnStartedAt = DateTimeOffset.UtcNow;
         bool succeeded = true;
         string? errorMessage = null;
+        int superStepCount = 0;
 
         collector.DrainCompletions(); // drain stale
 
@@ -132,19 +133,28 @@ public static class PipelineRunExtensions
 
                     if (evt is SuperStepStartedEvent)
                     {
-                        reporter.Report(new ProgressEvents.WorkflowStartedEvent(
+                        superStepCount++;
+                        reporter.Report(new ProgressEvents.SuperStepStartedProgressEvent(
                             Timestamp: DateTimeOffset.UtcNow,
                             WorkflowId: reporter.WorkflowId,
                             AgentId: null,
                             ParentAgentId: null,
                             Depth: 0,
-                            SequenceNumber: reporter.NextSequence()));
+                            SequenceNumber: reporter.NextSequence(),
+                            StepNumber: superStepCount));
                         continue;
                     }
 
                     if (evt is SuperStepCompletedEvent)
                     {
-                        // SuperStep completed — workflow control-flow step finished
+                        reporter.Report(new ProgressEvents.SuperStepCompletedProgressEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: null,
+                            ParentAgentId: null,
+                            Depth: 0,
+                            SequenceNumber: reporter.NextSequence(),
+                            StepNumber: superStepCount));
                         continue;
                     }
 

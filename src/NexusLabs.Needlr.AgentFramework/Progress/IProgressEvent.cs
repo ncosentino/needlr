@@ -207,3 +207,28 @@ public sealed record BudgetExceededEvent(
     string LimitType,
     long CurrentValue,
     long MaxValue) : IProgressEvent;
+
+// ---------------------------------------------------------------------------
+// Workflow control-flow events (MAF SuperSteps)
+// ---------------------------------------------------------------------------
+
+/// <summary>A workflow control-flow step (SuperStep) has started. Represents one
+/// cycle of the orchestration loop: send work to agents → collect results → decide next.</summary>
+public sealed record SuperStepStartedProgressEvent(
+    DateTimeOffset Timestamp,
+    string WorkflowId,
+    string? AgentId,
+    string? ParentAgentId,
+    int Depth,
+    long SequenceNumber,
+    int StepNumber) : IProgressEvent;
+
+/// <summary>A workflow control-flow step (SuperStep) has completed.</summary>
+public sealed record SuperStepCompletedProgressEvent(
+    DateTimeOffset Timestamp,
+    string WorkflowId,
+    string? AgentId,
+    string? ParentAgentId,
+    int Depth,
+    long SequenceNumber,
+    int StepNumber) : IProgressEvent;
