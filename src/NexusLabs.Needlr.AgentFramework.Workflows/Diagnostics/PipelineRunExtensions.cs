@@ -130,6 +130,24 @@ public static class PipelineRunExtensions
                         continue;
                     }
 
+                    if (evt is SuperStepStartedEvent)
+                    {
+                        reporter.Report(new ProgressEvents.WorkflowStartedEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: null,
+                            ParentAgentId: null,
+                            Depth: 0,
+                            SequenceNumber: reporter.NextSequence()));
+                        continue;
+                    }
+
+                    if (evt is SuperStepCompletedEvent)
+                    {
+                        // SuperStep completed — workflow control-flow step finished
+                        continue;
+                    }
+
                     if (evt is not AgentResponseUpdateEvent update
                         || update.ExecutorId is null
                         || update.Data is null)

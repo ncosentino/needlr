@@ -6,8 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Moq;
 
+using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Progress;
+using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
 using NexusLabs.Needlr.Injection;
@@ -99,11 +101,40 @@ public class ProgressIntegrationTests
     }
 
     // -------------------------------------------------------------------------
+    // #14: Budget events propagate
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task DirectAgentRun_WithBudget_EmitsBudgetUpdatedEvent()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true, useTokenBudget: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+        var budgetTracker = sp.GetRequiredService<ITokenBudgetTracker>();
+
+        var reporter = progressFactory.Create("test-wf", [sink]);
+        var agent = factory.CreateAgent(opts => opts.Name = "BudgetAgent");
+
+        using (progressAccessor.BeginScope(reporter))
+        using (budgetTracker.BeginScope(100_000))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        Assert.Contains(events, e => e is BudgetUpdatedEvent);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
     private static (IServiceProvider sp, Mock<IChatClient> mockChat) BuildServiceProvider(
-        bool useDiagnostics = false)
+        bool useDiagnostics = false,
+        bool useTokenBudget = false)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChat = new Mock<IChatClient>();
@@ -115,6 +146,7 @@ public class ProgressIntegrationTests
             .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, "Hi")])
             {
                 ModelId = "mock-model",
+                Usage = new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
             });
 
         var sp = new Syringe()
@@ -123,6 +155,7 @@ public class ProgressIntegrationTests
             {
                 af = af.Configure(opts => opts.ChatClientFactory = _ => mockChat.Object);
                 if (useDiagnostics) af = af.UsingDiagnostics();
+                if (useTokenBudget) af = af.UsingTokenBudget();
                 return af;
             })
             .BuildServiceProvider(config);
