@@ -3,6 +3,7 @@ using Microsoft.Extensions.AI;
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Budget;
+using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
@@ -13,7 +14,8 @@ public class TokenBudgetChatMiddlewareTests
     {
         var tracker = new TokenBudgetTracker();
         var inner = new Mock<IChatClient>();
-        var middleware = new TokenBudgetChatMiddleware(inner.Object, tracker);
+        var progressAccessor = new ProgressReporterAccessor();
+        var middleware = new TokenBudgetChatMiddleware(inner.Object, tracker, progressAccessor);
         return (middleware, tracker, inner);
     }
 
@@ -185,6 +187,6 @@ public class TokenBudgetChatMiddlewareTests
         var inner = new Mock<IChatClient>();
 
         Assert.Throws<ArgumentNullException>(() =>
-            new TokenBudgetChatMiddleware(inner.Object, null!));
+            new TokenBudgetChatMiddleware(inner.Object, null!, new ProgressReporterAccessor()));
     }
 }
