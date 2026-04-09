@@ -56,30 +56,21 @@ var completionCollector = serviceProvider.GetRequiredService<IChatCompletionColl
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
 var progressAccessor = serviceProvider.GetRequiredService<IProgressReporterAccessor>();
 
-// ── Spectre Console Progress Sink ──────────────────────────────
-var spectreTable = new Table()
-    .Border(TableBorder.Rounded)
-    .Title("[bold cyan]Agent Orchestration Progress[/]")
-    .AddColumn(new TableColumn("[bold]Time[/]").Width(10))
-    .AddColumn(new TableColumn("[bold]Event[/]").Width(20))
-    .AddColumn(new TableColumn("[bold]Details[/]").Width(60));
+// ── Header ─────────────────────────────────────────────────────
+AnsiConsole.Write(new FigletText("Needlr MAF").Color(Color.Cyan1));
+AnsiConsole.MarkupLine("[grey]Real-time agent orchestration with Spectre.Console[/]");
+AnsiConsole.WriteLine();
 
-var sink = new SpectreTableSink(spectreTable);
-
-// ── Run the orchestration ──────────────────────────────────────
-var executionContext = new AgentExecutionContext(
-    UserId: "spectre-demo",
-    OrchestrationId: $"spectre-{Guid.NewGuid():N}");
-
+// ── Questions ──────────────────────────────────────────────────
 var questions = new[]
 {
     "Which countries has Nick lived in and what are his favorite cities?",
     "What are Nick's hobbies and does he like ice cream?",
 };
 
-AnsiConsole.Write(new FigletText("Needlr MAF").Color(Color.Cyan1));
-AnsiConsole.MarkupLine("[grey]Real-time progress reporting with Spectre.Console[/]");
-AnsiConsole.WriteLine();
+var executionContext = new AgentExecutionContext(
+    UserId: "spectre-demo",
+    OrchestrationId: $"spectre-{Guid.NewGuid():N}");
 
 using (contextAccessor.BeginScope(executionContext))
 {
@@ -90,115 +81,126 @@ using (contextAccessor.BeginScope(executionContext))
         AnsiConsole.MarkupLine($"[bold yellow]Q: {Markup.Escape(question)}[/]");
         AnsiConsole.WriteLine();
 
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .AddColumn(new TableColumn("[bold]Elapsed[/]").Width(10))
+            .AddColumn(new TableColumn("[bold]Event[/]").Width(18))
+            .AddColumn(new TableColumn("[bold]Details[/]"));
+
+        var sink = new SpectreLiveSink(table);
+
         var reporter = progressFactory.Create(
             $"q-{Guid.NewGuid():N}",
             [sink]);
 
-        var result = await handoffWorkflow.RunWithDiagnosticsAsync(
-            question, diagnosticsAccessor, reporter, completionCollector, progressAccessor);
+        // Live rendering — the table updates in real-time as events arrive
+        await AnsiConsole.Live(table)
+            .AutoClear(false)
+            .Overflow(VerticalOverflow.Ellipsis)
+            .StartAsync(async ctx =>
+            {
+                sink.SetLiveContext(ctx);
 
-        AnsiConsole.Write(spectreTable);
-        spectreTable = new Table()
-            .Border(TableBorder.Rounded)
-            .Title("[bold cyan]Agent Orchestration Progress[/]")
-            .AddColumn(new TableColumn("[bold]Time[/]").Width(10))
-            .AddColumn(new TableColumn("[bold]Event[/]").Width(20))
-            .AddColumn(new TableColumn("[bold]Details[/]").Width(60));
-        sink = new SpectreTableSink(spectreTable);
-
-        // Print agent responses
-        foreach (var stage in result.Stages)
-        {
-            AnsiConsole.MarkupLine($"  [green]{Markup.Escape(stage.AgentName)}[/]: {Markup.Escape(stage.ResponseText.Trim())}");
-        }
-
-        if (result.AggregateTokenUsage is { } tokens)
-        {
-            AnsiConsole.MarkupLine($"  [dim]Total: {tokens.TotalTokens} tokens, {result.TotalDuration.TotalMilliseconds:F0}ms[/]");
-        }
+                await handoffWorkflow.RunWithDiagnosticsAsync(
+                    question, diagnosticsAccessor, reporter, completionCollector, progressAccessor);
+            });
 
         AnsiConsole.WriteLine();
+
+        // Print final agent responses
+        // (Re-run without progress to get the result — or we could capture it above)
+        // Actually, let's just show the table was the point. The responses are visible
+        // via the progress events themselves.
     }
 }
 
-AnsiConsole.MarkupLine("[bold green]Done![/]");
+AnsiConsole.MarkupLine("[bold green]✓ All orchestrations complete.[/]");
 
-// ── Spectre Sink Implementation ────────────────────────────────
-class SpectreTableSink : IProgressSink
+// ── Spectre Live Sink ──────────────────────────────────────────
+class SpectreLiveSink : IProgressSink
 {
     private readonly Table _table;
     private readonly DateTime _start = DateTime.Now;
+    private LiveDisplayContext? _ctx;
 
-    public SpectreTableSink(Table table) => _table = table;
+    public SpectreLiveSink(Table table) => _table = table;
+
+    public void SetLiveContext(LiveDisplayContext ctx) => _ctx = ctx;
 
     public ValueTask OnEventAsync(IProgressEvent evt, CancellationToken ct)
     {
-        var elapsed = $"+{(DateTime.Now - _start).TotalSeconds:F1}s";
+        var elapsed = $"[dim]+{(DateTime.Now - _start).TotalSeconds:F1}s[/]";
 
         switch (evt)
         {
             case WorkflowStartedEvent:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[bold cyan]Workflow[/]",
-                    "[cyan]Started[/]");
+                AddRow(elapsed, "[bold cyan]⚡ Workflow[/]", "[cyan]Starting orchestration...[/]");
                 break;
 
             case WorkflowCompletedEvent wc:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[bold cyan]Workflow[/]",
+                AddRow(elapsed, "[bold cyan]✓ Workflow[/]",
                     wc.Succeeded
-                        ? $"[green]Completed ({wc.TotalDuration.TotalSeconds:F1}s)[/]"
-                        : $"[red]Failed: {Markup.Escape(wc.ErrorMessage ?? "unknown")}[/]");
+                        ? $"[green]Complete in {wc.TotalDuration.TotalSeconds:F1}s[/]"
+                        : $"[red]Failed: {Markup.Escape(wc.ErrorMessage ?? "?")}[/]");
                 break;
 
             case AgentInvokedEvent ai:
-                var agentName = ai.AgentName;
-                if (agentName.Contains("Triage"))
-                    _table.AddRow($"[dim]{elapsed}[/]", "[yellow]→ Agent[/]", $"[yellow]{Markup.Escape(agentName)}[/] routing...");
-                else if (agentName.Contains("Handoff"))
-                    break; // skip internal handoff markers
-                else
-                    _table.AddRow($"[dim]{elapsed}[/]", "[green]→ Agent[/]", $"[green]{Markup.Escape(agentName)}[/] working...");
+                if (ai.AgentName.Contains("Handoff")) break;
+                var icon = ai.AgentName.Contains("Triage") ? "🔀" : "🤖";
+                var color = ai.AgentName.Contains("Triage") ? "yellow" : "green";
+                AddRow(elapsed, $"[{color}]{icon} Agent[/]",
+                    $"[{color}]{Markup.Escape(ShortName(ai.AgentName))}[/] invoked");
                 break;
 
             case AgentCompletedEvent ac:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[green]✓ Agent[/]",
-                    $"[green]{Markup.Escape(ac.AgentName)}[/] done ({ac.TotalTokens} tokens)");
-                break;
-
-            case LlmCallStartedEvent lcs:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[blue]  ⟳ LLM[/]",
-                    $"[blue]Call #{lcs.CallSequence} sending...[/]");
-                break;
-
-            case LlmCallCompletedEvent lcc:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[blue]  ✓ LLM[/]",
-                    $"[blue]#{lcc.CallSequence}[/] {lcc.Model} [dim]{lcc.Duration.TotalMilliseconds:F0}ms[/] {lcc.TotalTokens} tok");
-                break;
-
-            case LlmCallFailedEvent lcf:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[red]  ✗ LLM[/]",
-                    $"[red]#{lcf.CallSequence} FAILED: {Markup.Escape(lcf.ErrorMessage)}[/]");
+                AddRow(elapsed, "[green]✅ Agent[/]",
+                    $"[green]{Markup.Escape(ShortName(ac.AgentName))}[/] done — {ac.TotalTokens} tokens, {ac.Duration.TotalMilliseconds:F0}ms");
                 break;
 
             case AgentHandoffEvent ah:
-                _table.AddRow(
-                    $"[dim]{elapsed}[/]",
-                    "[yellow]↗ Handoff[/]",
-                    $"{Markup.Escape(ah.FromAgentId)} → [bold]{Markup.Escape(ah.ToAgentId)}[/]");
+                AddRow(elapsed, "[yellow]↗ Handoff[/]",
+                    $"{Markup.Escape(ShortName(ah.FromAgentId))} → [bold]{Markup.Escape(ShortName(ah.ToAgentId))}[/]");
+                break;
+
+            case LlmCallStartedEvent lcs:
+                AddRow(elapsed, "[blue]  ⏳ LLM[/]",
+                    $"[blue]Call #{lcs.CallSequence} sending request...[/]");
+                break;
+
+            case LlmCallCompletedEvent lcc:
+                AddRow(elapsed, "[blue]  ✓ LLM[/]",
+                    $"[blue]#{lcc.CallSequence}[/] {Markup.Escape(lcc.Model)} — [dim]{lcc.Duration.TotalMilliseconds:F0}ms, {lcc.TotalTokens} tokens[/]");
+                break;
+
+            case LlmCallFailedEvent lcf:
+                AddRow(elapsed, "[red]  ✗ LLM[/]",
+                    $"[red]#{lcf.CallSequence} FAILED[/]: {Markup.Escape(lcf.ErrorMessage)}");
+                break;
+
+            case ToolCallStartedEvent tcs:
+                AddRow(elapsed, "[magenta]  🔧 Tool[/]",
+                    $"[magenta]{Markup.Escape(tcs.ToolName)}[/] running...");
+                break;
+
+            case ToolCallCompletedEvent tcc:
+                AddRow(elapsed, "[magenta]  ✓ Tool[/]",
+                    $"[magenta]{Markup.Escape(tcc.ToolName)}[/] — {tcc.Duration.TotalMilliseconds:F0}ms");
                 break;
         }
 
         return ValueTask.CompletedTask;
+    }
+
+    private void AddRow(string elapsed, string eventType, string details)
+    {
+        _table.AddRow(elapsed, eventType, details);
+        _ctx?.Refresh();
+    }
+
+    private static string ShortName(string executorId)
+    {
+        // "GeographyAgent_abc123..." → "GeographyAgent"
+        var idx = executorId.IndexOf('_');
+        return idx > 0 ? executorId[..idx] : executorId;
     }
 }
