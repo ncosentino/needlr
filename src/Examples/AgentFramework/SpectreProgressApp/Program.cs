@@ -95,8 +95,23 @@ using (contextAccessor.BeginScope(executionContext))
             {
                 dashboard.SetContext(ctx);
 
+                // Background tick — refreshes the dashboard every 500ms so elapsed
+                // time updates and spinner frames animate even between LLM calls.
+                using var tickCts = new CancellationTokenSource();
+                var ticker = Task.Run(async () =>
+                {
+                    while (!tickCts.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(500, tickCts.Token).ConfigureAwait(false);
+                        dashboard.Tick();
+                    }
+                }, tickCts.Token);
+
                 result = await handoffWorkflow.RunWithDiagnosticsAsync(
                     question, diagnosticsAccessor, reporter, completionCollector, progressAccessor);
+
+                tickCts.Cancel();
+                try { await ticker; } catch (OperationCanceledException) { }
             });
 
         // Print final responses below the dashboard
@@ -132,14 +147,26 @@ class DashboardSink : IProgressSink
     private LiveDisplayContext? _ctx;
     private readonly DateTime _start = DateTime.Now;
 
+    // Spinner frames
+    private static readonly string[] _spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    private int _spinnerIndex;
+
     // State
     private string _workflowStatus = "[dim]Initializing...[/]";
+    private bool _isRunning;
     private readonly List<AgentState> _agents = [];
     private int _totalTokens;
     private int _llmCallCount;
     private double _totalLlmMs;
 
     public void SetContext(LiveDisplayContext ctx) => _ctx = ctx;
+
+    /// <summary>Called every 500ms by the background ticker to animate spinners and update elapsed time.</summary>
+    public void Tick()
+    {
+        _spinnerIndex = (_spinnerIndex + 1) % _spinnerFrames.Length;
+        Refresh();
+    }
 
     public IRenderable Render()
     {
@@ -150,8 +177,9 @@ class DashboardSink : IProgressSink
             .Title("[bold cyan]Orchestration Dashboard[/]")
             .AddColumn(new TableColumn("").Width(80));
 
-        // Status line
-        panel.AddRow(new Markup($"  Status: {_workflowStatus}  |  Elapsed: [bold]{elapsed:F1}s[/]  |  LLM calls: [bold]{_llmCallCount}[/]  |  Tokens: [bold]{_totalTokens}[/]"));
+        // Status line with animated spinner when running
+        var spinner = _isRunning ? $"[yellow]{_spinnerFrames[_spinnerIndex]}[/] " : "";
+        panel.AddRow(new Markup($"  {spinner}{_workflowStatus}  |  Elapsed: [bold]{elapsed:F1}s[/]  |  LLM calls: [bold]{_llmCallCount}[/]  |  Tokens: [bold]{_totalTokens}[/]"));
         panel.AddEmptyRow();
 
         // Agent rows
@@ -161,9 +189,10 @@ class DashboardSink : IProgressSink
         }
         else
         {
+            var frame = _spinnerFrames[_spinnerIndex];
             foreach (var agent in _agents)
             {
-                panel.AddRow(new Markup(agent.Render()));
+                panel.AddRow(new Markup(agent.Render(frame)));
             }
         }
 
@@ -181,10 +210,12 @@ class DashboardSink : IProgressSink
         switch (evt)
         {
             case WorkflowStartedEvent:
-                _workflowStatus = "[yellow]Running[/] [yellow]●[/]";
+                _workflowStatus = "[yellow]Running[/]";
+                _isRunning = true;
                 break;
 
             case WorkflowCompletedEvent wc:
+                _isRunning = false;
                 _workflowStatus = wc.Succeeded
                     ? $"[green]Complete ✓[/] ({wc.TotalDuration.TotalSeconds:F1}s)"
                     : $"[red]Failed ✗[/]: {Markup.Escape(wc.ErrorMessage ?? "?")}";
@@ -196,12 +227,14 @@ class DashboardSink : IProgressSink
                 if (existing is null)
                 {
                     var agent = new AgentState(ShortName(ai.AgentName));
-                    agent.Status = "[yellow]⟳ Working...[/]";
+                    agent.Status = "[yellow]Working...[/]";
+                    agent.IsWorking = true;
                     _agents.Add(agent);
                 }
                 else
                 {
-                    existing.Status = "[yellow]⟳ Working...[/]";
+                    existing.Status = "[yellow]Working...[/]";
+                    existing.IsWorking = true;
                 }
                 break;
 
@@ -210,6 +243,7 @@ class DashboardSink : IProgressSink
                 if (completed is not null)
                 {
                     completed.Status = $"[green]✓ Done[/] ({ac.TotalTokens} tok, {ac.Duration.TotalMilliseconds:F0}ms)";
+                    completed.IsWorking = false;
                     _totalTokens += (int)ac.TotalTokens;
                 }
                 break;
@@ -286,6 +320,7 @@ class DashboardSink : IProgressSink
     {
         public string Name { get; }
         public string Status { get; set; } = "[dim]Pending[/]";
+        public bool IsWorking { get; set; }
         public string LlmStatus { get; set; } = "";
         public string ToolStatus { get; set; } = "";
         public int CurrentLlmCall { get; set; }
@@ -295,9 +330,10 @@ class DashboardSink : IProgressSink
 
         public AgentState(string name) => Name = name;
 
-        public string Render()
+        public string Render(string spinnerFrame)
         {
-            var line = $"  [bold]{Markup.Escape(Name)}[/]  {Status}";
+            var icon = IsWorking ? $"[yellow]{spinnerFrame}[/] " : "  ";
+            var line = $"  {icon}[bold]{Markup.Escape(Name)}[/]  {Status}";
             if (LlmCalls > 0 || LlmStatus.Length > 0)
                 line += $"  |  LLM: {LlmStatus} ({LlmCalls} calls, {LlmTokens} tok)";
             if (ToolCalls > 0 || ToolStatus.Length > 0)
