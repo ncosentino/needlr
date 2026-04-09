@@ -9,6 +9,7 @@ using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.AgentFramework.Providers;
 using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.AgentFramework.Workspace;
@@ -72,6 +73,7 @@ var tokenBudgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>
 var contextAccessor = serviceProvider.GetRequiredService<IAgentExecutionContextAccessor>();
 var completionCollector = serviceProvider.GetRequiredService<IChatCompletionCollector>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
 
 // Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
 // No magic strings; renaming the class regenerates these methods automatically.
@@ -120,8 +122,14 @@ using (contextAccessor.BeginScope(executionContext))
     {
         Console.WriteLine($"Q: {question}");
 
+        // Create a per-question progress reporter with a console sink.
+        // The factory creates scoped reporters; each gets its own correlation context.
+        var progressReporter = progressFactory.Create(
+            $"demo1-{Guid.NewGuid():N}",
+            [new ConsoleProgressSink()]);
+
         var result = await handoffWorkflow.RunWithDiagnosticsAsync(
-            question, diagnosticsAccessor, null, completionCollector);
+            question, diagnosticsAccessor, progressReporter, completionCollector);
 
         foreach (var stage in result.Stages)
         {

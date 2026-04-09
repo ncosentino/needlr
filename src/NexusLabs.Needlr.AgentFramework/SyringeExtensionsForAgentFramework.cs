@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AgentFramework;
@@ -83,6 +84,8 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
             services.TryAddSingleton<ChatCompletionCollectorHolder>();
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
+            services.TryAddSingleton<IProgressReporterFactory>(sp =>
+                new ProgressReporterFactory(sp.GetServices<IProgressSink>()));
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
@@ -159,6 +162,8 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
             services.TryAddSingleton<ChatCompletionCollectorHolder>();
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
+            services.TryAddSingleton<IProgressReporterFactory>(sp =>
+                new ProgressReporterFactory(sp.GetServices<IProgressSink>()));
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
