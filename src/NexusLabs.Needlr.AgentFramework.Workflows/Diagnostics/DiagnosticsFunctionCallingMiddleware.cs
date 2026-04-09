@@ -3,20 +3,18 @@ using System.Diagnostics;
 using Microsoft.Agents.AI;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
 /// Innermost middleware layer: wraps each tool/function invocation to capture per-call
-/// timing and custom metrics attached by the tool via <see cref="IToolMetricsAccessor"/>.
-/// Emits <see cref="IAgentMetrics"/> for each tool call.
+/// timing and custom metrics. Emits <see cref="ToolCallStartedEvent"/> and
+/// <see cref="ToolCallCompletedEvent"/> to the progress reporter in real-time.
 /// </summary>
 internal static class DiagnosticsFunctionCallingMiddleware
 {
-    /// <summary>
-    /// Wires the function-calling diagnostics middleware onto the given builder.
-    /// </summary>
-    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics)
+    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics, IProgressReporter progressReporter)
     {
         FunctionInvocationDelegatingAgentBuilderExtensions.Use(
             builder,
@@ -28,6 +26,15 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 var stopwatch = Stopwatch.StartNew();
 
                 var toolName = context.Function?.Name ?? "unknown";
+
+                progressReporter.Report(new ToolCallStartedEvent(
+                    Timestamp: startedAt,
+                    WorkflowId: progressReporter.WorkflowId,
+                    AgentId: progressReporter.AgentId,
+                    ParentAgentId: null,
+                    Depth: progressReporter.Depth,
+                    SequenceNumber: ProgressSequence.Next(),
+                    ToolName: toolName));
 
                 var customMetrics = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 ToolMetricsAccessor.CurrentToolMetrics.Value = customMetrics;
@@ -49,6 +56,17 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
 
+                    progressReporter.Report(new ToolCallCompletedEvent(
+                        Timestamp: DateTimeOffset.UtcNow,
+                        WorkflowId: progressReporter.WorkflowId,
+                        AgentId: progressReporter.AgentId,
+                        ParentAgentId: null,
+                        Depth: progressReporter.Depth,
+                        SequenceNumber: ProgressSequence.Next(),
+                        ToolName: toolName,
+                        Duration: stopwatch.Elapsed,
+                        CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
+
                     return result;
                 }
                 catch (Exception ex)
@@ -66,6 +84,17 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         StartedAt: startedAt,
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
+
+                    progressReporter.Report(new ToolCallFailedEvent(
+                        Timestamp: DateTimeOffset.UtcNow,
+                        WorkflowId: progressReporter.WorkflowId,
+                        AgentId: progressReporter.AgentId,
+                        ParentAgentId: null,
+                        Depth: progressReporter.Depth,
+                        SequenceNumber: ProgressSequence.Next(),
+                        ToolName: toolName,
+                        ErrorMessage: ex.Message,
+                        Duration: stopwatch.Elapsed));
 
                     throw;
                 }

@@ -6,27 +6,65 @@ using Microsoft.Extensions.AI;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
+using ProgressEvents = NexusLabs.Needlr.AgentFramework.Progress;
+
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
-/// Extension methods for running workflows with per-stage diagnostics aggregation.
+/// Extension methods for running workflows with per-stage diagnostics and real-time
+/// progress reporting.
 /// </summary>
 public static class PipelineRunExtensions
 {
     /// <summary>
-    /// Executes the workflow and returns an <see cref="IPipelineRunResult"/> with per-stage
-    /// diagnostics including per-LLM-call timing from the chat client middleware.
+    /// Executes the workflow with per-stage diagnostics (no progress reporting).
     /// </summary>
+    public static Task<IPipelineRunResult> RunWithDiagnosticsAsync(
+        this Workflow workflow,
+        string message,
+        IAgentDiagnosticsAccessor diagnosticsAccessor,
+        CancellationToken cancellationToken = default) =>
+        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, null, null, cancellationToken);
+
+    /// <summary>
+    /// Executes the workflow with per-stage diagnostics and real-time progress reporting.
+    /// </summary>
+    public static Task<IPipelineRunResult> RunWithDiagnosticsAsync(
+        this Workflow workflow,
+        string message,
+        IAgentDiagnosticsAccessor diagnosticsAccessor,
+        ProgressEvents.IProgressReporter? progressReporter,
+        CancellationToken cancellationToken = default) =>
+        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, progressReporter, null, cancellationToken);
+
+    /// <summary>
+    /// Executes the workflow with per-stage diagnostics, real-time progress reporting,
+    /// and per-LLM-call completion draining via the provided collector.
+    /// </summary>
+    /// <param name="workflow">The workflow to execute.</param>
+    /// <param name="message">The user message to send.</param>
+    /// <param name="diagnosticsAccessor">Diagnostics accessor for per-agent captures.</param>
+    /// <param name="progressReporter">Optional progress reporter for real-time events.</param>
+    /// <param name="completionCollector">
+    /// Optional collector for per-LLM-call completions. Resolve from DI via
+    /// <see cref="IChatCompletionCollector"/>. If <see langword="null"/>, per-call
+    /// LLM timing is not available in stage diagnostics.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
         this Workflow workflow,
         string message,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
+        ProgressEvents.IProgressReporter? progressReporter,
+        IChatCompletionCollector? completionCollector,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(workflow);
         ArgumentException.ThrowIfNullOrEmpty(message);
         ArgumentNullException.ThrowIfNull(diagnosticsAccessor);
 
+        var reporter = progressReporter ?? ProgressEvents.NullProgressReporter.Instance;
+        var collector = completionCollector ?? NullChatCompletionCollector.Instance;
         var pipelineStart = Stopwatch.StartNew();
         var stages = new List<IAgentStageResult>();
         var responses = new Dictionary<string, StringBuilder>();
@@ -36,8 +74,15 @@ public static class PipelineRunExtensions
         bool succeeded = true;
         string? errorMessage = null;
 
-        // Drain any stale completions from previous runs
-        ChatMiddlewareHolder.Instance?.DrainCompletions();
+        collector.DrainCompletions(); // drain stale
+
+        reporter.Report(new ProgressEvents.WorkflowStartedEvent(
+            Timestamp: DateTimeOffset.UtcNow,
+            WorkflowId: reporter.WorkflowId,
+            AgentId: null,
+            ParentAgentId: null,
+            Depth: 0,
+            SequenceNumber: ProgressEvents.ProgressSequence.Next()));
 
         try
         {
@@ -50,8 +95,6 @@ public static class PipelineRunExtensions
 
                 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-                // If a budget cancellation token is active, register a callback
-                // that calls CancelRunAsync when the budget is exceeded.
                 CancellationTokenRegistration? budgetRegistration = null;
                 if (cancellationToken.CanBeCanceled)
                 {
@@ -65,6 +108,19 @@ public static class PipelineRunExtensions
                 {
                 await foreach (var evt in run.WatchStreamAsync(cancellationToken))
                 {
+                    if (evt is ExecutorInvokedEvent invoked)
+                    {
+                        reporter.Report(new ProgressEvents.AgentInvokedEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: invoked.ExecutorId,
+                            ParentAgentId: null,
+                            Depth: 1,
+                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            AgentName: invoked.ExecutorId ?? "unknown"));
+                        continue;
+                    }
+
                     if (evt is not AgentResponseUpdateEvent update
                         || update.ExecutorId is null
                         || update.Data is null)
@@ -76,7 +132,7 @@ public static class PipelineRunExtensions
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    // Turn boundary: capture stage for the completing agent
+                    // Turn boundary
                     if (currentExecutorId is not null
                         && currentExecutorId != update.ExecutorId
                         && responses.TryGetValue(currentExecutorId, out var completedSb))
@@ -86,8 +142,30 @@ public static class PipelineRunExtensions
                             currentExecutorId,
                             completedSb.ToString(),
                             diagnosticsAccessor,
+                            collector,
                             turnStopwatch.Elapsed,
                             turnStartedAt));
+
+                        reporter.Report(new ProgressEvents.AgentCompletedEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: currentExecutorId,
+                            ParentAgentId: null,
+                            Depth: 1,
+                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            AgentName: currentExecutorId,
+                            Duration: turnStopwatch.Elapsed,
+                            TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
+
+                        reporter.Report(new ProgressEvents.AgentHandoffEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: null,
+                            ParentAgentId: null,
+                            Depth: 0,
+                            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                            FromAgentId: currentExecutorId,
+                            ToAgentId: update.ExecutorId));
 
                         turnStopwatch.Restart();
                         turnStartedAt = DateTimeOffset.UtcNow;
@@ -116,8 +194,20 @@ public static class PipelineRunExtensions
                         currentExecutorId,
                         lastSb.ToString(),
                         diagnosticsAccessor,
+                        collector,
                         turnStopwatch.Elapsed,
                         turnStartedAt));
+
+                    reporter.Report(new ProgressEvents.AgentCompletedEvent(
+                        Timestamp: DateTimeOffset.UtcNow,
+                        WorkflowId: reporter.WorkflowId,
+                        AgentId: currentExecutorId,
+                        ParentAgentId: null,
+                        Depth: 1,
+                        SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+                        AgentName: currentExecutorId,
+                        Duration: turnStopwatch.Elapsed,
+                        TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
                 }
                 }
                 finally
@@ -134,6 +224,17 @@ public static class PipelineRunExtensions
 
         pipelineStart.Stop();
 
+        reporter.Report(new ProgressEvents.WorkflowCompletedEvent(
+            Timestamp: DateTimeOffset.UtcNow,
+            WorkflowId: reporter.WorkflowId,
+            AgentId: null,
+            ParentAgentId: null,
+            Depth: 0,
+            SequenceNumber: ProgressEvents.ProgressSequence.Next(),
+            Succeeded: succeeded,
+            ErrorMessage: errorMessage,
+            TotalDuration: pipelineStart.Elapsed));
+
         return new PipelineRunResult(
             stages: stages,
             totalDuration: pipelineStart.Elapsed,
@@ -145,20 +246,17 @@ public static class PipelineRunExtensions
         string agentName,
         string responseText,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
+        IChatCompletionCollector completionCollector,
         TimeSpan turnDuration,
         DateTimeOffset turnStartedAt)
     {
-        // Try middleware AsyncLocal diagnostics first (works for direct agent runs)
         var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
         if (middlewareDiag is not null)
         {
             return new AgentStageResult(agentName, responseText, middlewareDiag);
         }
 
-        // Fallback: drain per-LLM-call completions from the chat client middleware.
-        // This works regardless of AsyncLocal propagation because the chat middleware
-        // captures ALL calls on its ConcurrentQueue.
-        var completions = ChatMiddlewareHolder.Instance?.DrainCompletions() ?? [];
+        var completions = completionCollector.DrainCompletions();
 
         var totalTokens = new TokenUsage(
             InputTokens: completions.Sum(c => c.Tokens.InputTokens),

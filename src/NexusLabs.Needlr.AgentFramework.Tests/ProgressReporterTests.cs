@@ -108,9 +108,9 @@ public class ProgressReporterTests
     [Fact]
     public void NextSequence_IsMonotonicallyIncreasing()
     {
-        var seq1 = ProgressReporter.NextSequence();
-        var seq2 = ProgressReporter.NextSequence();
-        var seq3 = ProgressReporter.NextSequence();
+        var seq1 = ProgressSequence.Next();
+        var seq2 = ProgressSequence.Next();
+        var seq3 = ProgressSequence.Next();
 
         Assert.True(seq2 > seq1);
         Assert.True(seq3 > seq2);
@@ -259,5 +259,5 @@ public class ProgressReporterTests
             AgentId: reporter.AgentId,
             ParentAgentId: null,
             Depth: reporter.Depth,
-            SequenceNumber: ProgressReporter.NextSequence());
+            SequenceNumber: ProgressSequence.Next());
 }

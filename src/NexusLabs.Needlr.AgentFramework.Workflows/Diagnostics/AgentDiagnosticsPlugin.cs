@@ -3,21 +3,24 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 /// <summary>
 /// <see cref="IAIAgentBuilderPlugin"/> that wires the diagnostics middleware layers
 /// into every agent created by the factory. Emits <see cref="IAgentMetrics"/>
-/// counters and histograms for runs, tool calls, and chat completions.
+/// counters/histograms and <see cref="IProgressEvent"/> events in real-time.
 /// </summary>
 internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IProgressReporter _progressReporter;
 
-    internal AgentDiagnosticsPlugin(IServiceProvider serviceProvider)
+    internal AgentDiagnosticsPlugin(IServiceProvider serviceProvider, IProgressReporter? progressReporter = null)
     {
         _serviceProvider = serviceProvider;
+        _progressReporter = progressReporter ?? NullProgressReporter.Instance;
     }
 
     /// <inheritdoc />
@@ -36,6 +39,6 @@ internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
             runStreamingFunc: (messages, session, runOptions, innerAgent, ct) =>
                 innerAgent.RunStreamingAsync(messages, session, runOptions, ct));
 
-        DiagnosticsFunctionCallingMiddleware.Wire(builder, metrics);
+        DiagnosticsFunctionCallingMiddleware.Wire(builder, metrics, _progressReporter);
     }
 }

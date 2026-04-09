@@ -81,6 +81,8 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
             services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
+            services.TryAddSingleton<ChatCompletionCollectorHolder>();
+            services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
@@ -155,6 +157,8 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
             services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
             services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
+            services.TryAddSingleton<ChatCompletionCollectorHolder>();
+            services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
 
             services.AddSingleton<IAgentFactory>(provider =>
             {

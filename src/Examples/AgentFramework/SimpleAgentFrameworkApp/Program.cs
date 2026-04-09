@@ -70,6 +70,7 @@ var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
 var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var tokenBudgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
 var contextAccessor = serviceProvider.GetRequiredService<IAgentExecutionContextAccessor>();
+var completionCollector = serviceProvider.GetRequiredService<IChatCompletionCollector>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 
 // Strongly-typed agent creation — generated from [NeedlrAiAgent] declarations.
@@ -120,7 +121,7 @@ using (contextAccessor.BeginScope(executionContext))
         Console.WriteLine($"Q: {question}");
 
         var result = await handoffWorkflow.RunWithDiagnosticsAsync(
-            question, diagnosticsAccessor);
+            question, diagnosticsAccessor, null, completionCollector);
 
         foreach (var stage in result.Stages)
         {
@@ -206,7 +207,7 @@ using (tokenBudgetTracker.BeginScope(maxTokens: 100_000))
 {
     var workflow = workflowFactory.CreateTriageHandoffWorkflow();
     var budgetResult = await workflow.RunWithDiagnosticsAsync(
-        "What cities does Nick like?", diagnosticsAccessor);
+        "What cities does Nick like?", diagnosticsAccessor, null, completionCollector);
 
     foreach (var stage in budgetResult.Stages)
     {
@@ -280,7 +281,7 @@ foreach (var topic in topics)
     Console.WriteLine($"Topic: {topic}");
 
     var pipelineResult = await sequentialWorkflow.RunWithDiagnosticsAsync(
-        topic, diagnosticsAccessor);
+        topic, diagnosticsAccessor, null, completionCollector);
 
     foreach (var stage in pipelineResult.Stages)
     {

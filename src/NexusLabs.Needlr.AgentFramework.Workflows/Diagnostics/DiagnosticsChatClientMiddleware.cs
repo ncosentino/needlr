@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.AI;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
@@ -11,12 +12,16 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// Middle middleware layer: wraps each <c>IChatClient.GetResponseAsync()</c> call to capture
 /// per-completion timing and token usage. Records to both the AsyncLocal builder (for direct
 /// agent runs) AND a thread-safe collection (for workflow runs where AsyncLocal doesn't propagate).
+/// Emits <see cref="LlmCallStartedEvent"/> and <see cref="LlmCallCompletedEvent"/> to the
+/// progress reporter in real-time.
 /// </summary>
-internal sealed class DiagnosticsChatClientMiddleware
+internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
     private readonly IAgentMetrics _metrics;
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
     private int _sequenceCounter;
+
+    internal IProgressReporter ProgressReporter { get; set; } = NullProgressReporter.Instance;
 
     internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics)
     {
@@ -25,9 +30,8 @@ internal sealed class DiagnosticsChatClientMiddleware
 
     /// <summary>
     /// Drains all captured completions since the last drain. Thread-safe.
-    /// Called by <see cref="PipelineRunExtensions"/> at turn boundaries.
     /// </summary>
-    internal IReadOnlyList<ChatCompletionDiagnostics> DrainCompletions()
+    public IReadOnlyList<ChatCompletionDiagnostics> DrainCompletions()
     {
         var results = new List<ChatCompletionDiagnostics>();
         while (_allCompletions.TryDequeue(out var completion))
@@ -48,6 +52,15 @@ internal sealed class DiagnosticsChatClientMiddleware
             ?? Interlocked.Increment(ref _sequenceCounter) - 1;
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
+
+        ProgressReporter.Report(new LlmCallStartedEvent(
+            Timestamp: startedAt,
+            WorkflowId: ProgressReporter.WorkflowId,
+            AgentId: ProgressReporter.AgentId,
+            ParentAgentId: null,
+            Depth: ProgressReporter.Depth,
+            SequenceNumber: ProgressSequence.Next(),
+            CallSequence: sequence));
 
         try
         {
@@ -83,6 +96,20 @@ internal sealed class DiagnosticsChatClientMiddleware
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
+            ProgressReporter.Report(new LlmCallCompletedEvent(
+                Timestamp: DateTimeOffset.UtcNow,
+                WorkflowId: ProgressReporter.WorkflowId,
+                AgentId: ProgressReporter.AgentId,
+                ParentAgentId: null,
+                Depth: ProgressReporter.Depth,
+                SequenceNumber: ProgressSequence.Next(),
+                CallSequence: sequence,
+                Model: model,
+                Duration: stopwatch.Elapsed,
+                InputTokens: tokens.InputTokens,
+                OutputTokens: tokens.OutputTokens,
+                TotalTokens: tokens.TotalTokens));
+
             return response;
         }
         catch (Exception ex)
@@ -103,6 +130,17 @@ internal sealed class DiagnosticsChatClientMiddleware
 
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
+
+            ProgressReporter.Report(new LlmCallFailedEvent(
+                Timestamp: DateTimeOffset.UtcNow,
+                WorkflowId: ProgressReporter.WorkflowId,
+                AgentId: ProgressReporter.AgentId,
+                ParentAgentId: null,
+                Depth: ProgressReporter.Depth,
+                SequenceNumber: ProgressSequence.Next(),
+                CallSequence: sequence,
+                ErrorMessage: ex.Message,
+                Duration: stopwatch.Elapsed));
 
             throw;
         }

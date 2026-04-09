@@ -7,8 +7,6 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 [DoNotAutoRegister]
 internal sealed class ProgressReporter : IProgressReporter
 {
-    private static long _globalSequence;
-
     private readonly IReadOnlyList<IProgressSink> _sinks;
     private readonly string? _parentAgentId;
 
@@ -63,9 +61,4 @@ internal sealed class ProgressReporter : IProgressReporter
             parentAgentId: AgentId,
             depth: Depth + 1);
 
-    /// <summary>
-    /// Allocates the next globally-ordered sequence number.
-    /// </summary>
-    internal static long NextSequence() =>
-        Interlocked.Increment(ref _globalSequence);
 }

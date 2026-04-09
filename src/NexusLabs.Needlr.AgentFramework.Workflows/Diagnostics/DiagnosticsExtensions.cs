@@ -1,6 +1,5 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
@@ -27,9 +26,9 @@ public static class DiagnosticsExtensions
             var metrics = opts.ServiceProvider.GetRequiredService<IAgentMetrics>();
             var chatMiddleware = new DiagnosticsChatClientMiddleware(metrics);
 
-            // Store the middleware instance so PipelineRunExtensions can drain
-            // per-LLM-call completions at turn boundaries.
-            ChatMiddlewareHolder.Instance = chatMiddleware;
+            // Register the real collector via the DI-managed holder — NOT a static field.
+            var holder = opts.ServiceProvider.GetRequiredService<ChatCompletionCollectorHolder>();
+            holder.SetCollector(chatMiddleware);
 
             var existingFactory = opts.ChatClientFactory;
             opts.ChatClientFactory = sp =>
@@ -52,13 +51,4 @@ public static class DiagnosticsExtensions
                 .ToList()
         };
     }
-}
-
-/// <summary>
-/// Holds the <see cref="DiagnosticsChatClientMiddleware"/> instance so
-/// <see cref="PipelineRunExtensions"/> can drain completions at turn boundaries.
-/// </summary>
-internal static class ChatMiddlewareHolder
-{
-    internal static DiagnosticsChatClientMiddleware? Instance { get; set; }
 }
