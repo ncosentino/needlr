@@ -39,6 +39,7 @@
     <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp/GroupChatAgentFrameworkApp.csproj" />
     <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp.Agents/GroupChatAgentFrameworkApp.Agents.csproj" />
     <Project Path="Examples/AgentFramework/AotAgentFrameworkApp/AotAgentFrameworkApp.csproj" />
+    <Project Path="Examples/AgentFramework/SpectreProgressApp/SpectreProgressApp.csproj" />
   </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
