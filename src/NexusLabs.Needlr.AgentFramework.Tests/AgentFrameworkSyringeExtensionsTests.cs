@@ -8,6 +8,7 @@ using Moq;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -151,6 +152,10 @@ public sealed class AgentFrameworkSyringeExtensionsTests
         Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
         Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
         Assert.NotNull(sp.GetService<IAgentMetrics>());
+        Assert.NotNull(sp.GetService<IChatCompletionCollector>());
+        Assert.NotNull(sp.GetService<IProgressSequence>());
+        Assert.NotNull(sp.GetService<IProgressReporterFactory>());
+        Assert.NotNull(sp.GetService<IProgressReporterAccessor>());
     }
 
     [Fact]
@@ -174,6 +179,10 @@ public sealed class AgentFrameworkSyringeExtensionsTests
         Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
         Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
         Assert.NotNull(sp.GetService<IAgentMetrics>());
+        Assert.NotNull(sp.GetService<IChatCompletionCollector>());
+        Assert.NotNull(sp.GetService<IProgressSequence>());
+        Assert.NotNull(sp.GetService<IProgressReporterFactory>());
+        Assert.NotNull(sp.GetService<IProgressReporterAccessor>());
     }
 
     [Fact]
@@ -191,6 +200,10 @@ public sealed class AgentFrameworkSyringeExtensionsTests
         Assert.NotNull(sp.GetService<IAgentDiagnosticsAccessor>());
         Assert.NotNull(sp.GetService<IToolMetricsAccessor>());
         Assert.NotNull(sp.GetService<IAgentMetrics>());
+        Assert.NotNull(sp.GetService<IChatCompletionCollector>());
+        Assert.NotNull(sp.GetService<IProgressSequence>());
+        Assert.NotNull(sp.GetService<IProgressReporterFactory>());
+        Assert.NotNull(sp.GetService<IProgressReporterAccessor>());
     }
 }
 
