@@ -120,6 +120,13 @@ internal sealed class MafGeneratorTestRunner
                 public WorkflowRunTerminationConditionAttribute(System.Type conditionType, params object[] ctorArgs) { }
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class ProgressSinksAttribute : System.Attribute
+            {
+                public ProgressSinksAttribute(params System.Type[] sinkTypes) { SinkTypes = sinkTypes; }
+                public System.Type[] SinkTypes { get; }
+            }
+
             public interface IWorkflowTerminationCondition { }
 
             public static class AgentFrameworkGeneratedBootstrap

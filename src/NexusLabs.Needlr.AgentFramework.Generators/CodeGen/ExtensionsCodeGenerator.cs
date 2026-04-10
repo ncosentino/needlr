@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
@@ -237,6 +238,7 @@ internal static class ExtensionsCodeGenerator
 
     public static string GenerateAgentFactoryExtensionsSource(
         List<NeedlrAiAgentTypeInfo> agents,
+        Dictionary<string, ImmutableArray<string>> progressSinksByAgent,
         string safeAssemblyName)
     {
         var sb = new StringBuilder();
@@ -266,6 +268,26 @@ internal static class ExtensionsCodeGenerator
             sb.AppendLine($"    public static AIAgent Create{agent.ClassName}(this IAgentFactory factory)");
             sb.AppendLine($"        => factory.CreateAgent<{agent.TypeName}>();");
             sb.AppendLine();
+
+            // If this agent has [ProgressSinks], emit a companion method
+            if (progressSinksByAgent.TryGetValue(agent.ClassName, out var sinkFQNs) && sinkFQNs.Length > 0)
+            {
+                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine($"    /// Returns the progress sink types declared via <c>[ProgressSinks]</c> on <see cref=\"{agent.TypeName.Replace("global::", "")}\"/>.");
+                sb.AppendLine($"    /// Orchestrators use this to create reporters with the correct sinks for this agent.");
+                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine($"    public static global::System.Type[] Get{agent.ClassName}ProgressSinkTypes()");
+                sb.AppendLine("    {");
+                sb.AppendLine("        return new global::System.Type[]");
+                sb.AppendLine("        {");
+                foreach (var sinkFQN in sinkFQNs)
+                {
+                    sb.AppendLine($"            typeof({sinkFQN}),");
+                }
+                sb.AppendLine("        };");
+                sb.AppendLine("    }");
+                sb.AppendLine();
+            }
         }
 
         sb.AppendLine("}");

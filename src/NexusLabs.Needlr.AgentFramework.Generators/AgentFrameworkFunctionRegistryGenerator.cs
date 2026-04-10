@@ -30,6 +30,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string AgentGroupChatMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute";
     private const string AgentSequenceMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute";
     private const string WorkflowRunTerminationConditionAttributeName = "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute";
+    private const string ProgressSinksAttributeName = "NexusLabs.Needlr.AgentFramework.ProgressSinksAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -87,7 +88,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => AgentDiscoveryHelper.GetTerminationConditionEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Unified output: all seven pipelines combined with compilation metadata and build config.
+        // [ProgressSinks] → per-agent progress sink declarations
+        var progressSinksEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                ProgressSinksAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => AgentDiscoveryHelper.GetProgressSinksEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all eight pipelines combined with compilation metadata and build config.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
@@ -96,14 +105,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .Combine(groupChatEntries.Collect())
             .Combine(sequenceEntries.Collect())
             .Combine(terminationConditionEntries.Collect())
+            .Combine(progressSinksEntries.Collect())
             .Combine(context.CompilationProvider)
             .Combine(context.AnalyzerConfigOptionsProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var ((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), compilation), configOptions) = data;
-                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, compilation, configOptions, spc);
+                var (((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), progressSinksData), compilation), configOptions) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, progressSinksData, compilation, configOptions, spc);
             });
     }
 
@@ -115,6 +125,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<ImmutableArray<GroupChatEntry>> groupChatData,
         ImmutableArray<ImmutableArray<SequenceEntry>> sequenceData,
         ImmutableArray<ImmutableArray<TerminationConditionEntry>> terminationData,
+        ImmutableArray<ImmutableArray<ProgressSinksEntry>> progressSinksData,
         Compilation compilation,
         Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions,
         SourceProductionContext spc)
@@ -161,6 +172,10 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .GroupBy(e => e.AgentTypeName)
             .ToDictionary(g => g.Key, g => g.ToList());
 
+        var progressSinksByAgent = progressSinksData
+            .SelectMany(a => a)
+            .ToDictionary(e => e.AgentClassName, e => e.SinkTypeFQNs);
+
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
             SourceText.From(RegistryCodeGenerator.GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
@@ -189,7 +204,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 conditionsByAgentTypeName, safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("AgentFactoryExtensions.g.cs",
-            SourceText.From(ExtensionsCodeGenerator.GenerateAgentFactoryExtensionsSource(validAgentTypes, safeAssemblyName), Encoding.UTF8));
+            SourceText.From(ExtensionsCodeGenerator.GenerateAgentFactoryExtensionsSource(validAgentTypes, progressSinksByAgent, safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("AgentTopologyConstants.g.cs",
             SourceText.From(ExtensionsCodeGenerator.GenerateAgentTopologyConstantsSource(validAgentTypes, allGroupEntries, sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));

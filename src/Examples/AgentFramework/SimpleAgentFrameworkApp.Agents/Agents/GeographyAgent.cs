@@ -19,4 +19,5 @@ namespace SimpleAgentFrameworkApp.Agents;
         """,
     FunctionGroups = new[] { "geography" })]
 [AgentResilience(maxRetries: 3, timeoutSeconds: 90)]
+[ProgressSinks(typeof(ConsoleProgressSink))]
 public partial class GeographyAgent { }

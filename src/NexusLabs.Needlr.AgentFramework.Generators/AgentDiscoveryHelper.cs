@@ -365,6 +365,45 @@ internal static class AgentDiscoveryHelper
         };
     }
 
+    public static ImmutableArray<ProgressSinksEntry> GetProgressSinksEntries(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken)
+    {
+        var typeSymbol = context.TargetSymbol as INamedTypeSymbol;
+        if (typeSymbol is null || !IsAccessibleFromGeneratedCode(typeSymbol))
+            return ImmutableArray<ProgressSinksEntry>.Empty;
+
+        var agentTypeName = GetFullyQualifiedName(typeSymbol);
+
+        foreach (var attr in context.Attributes)
+        {
+            // params Type[] is a single constructor arg of TypedConstantKind.Array
+            if (attr.ConstructorArguments.Length < 1)
+                continue;
+
+            var firstArg = attr.ConstructorArguments[0];
+            if (firstArg.Kind != TypedConstantKind.Array)
+                continue;
+
+            var sinkFQNs = ImmutableArray.CreateBuilder<string>();
+            foreach (var element in firstArg.Values)
+            {
+                if (element.Kind == TypedConstantKind.Type && element.Value is INamedTypeSymbol sinkType)
+                {
+                    sinkFQNs.Add(GetFullyQualifiedName(sinkType));
+                }
+            }
+
+            if (sinkFQNs.Count > 0)
+            {
+                return ImmutableArray.Create(
+                    new ProgressSinksEntry(agentTypeName, typeSymbol.Name, sinkFQNs.ToImmutable()));
+            }
+        }
+
+        return ImmutableArray<ProgressSinksEntry>.Empty;
+    }
+
     public static string? GetDescriptionFromAttributes(ImmutableArray<AttributeData> attributes)
     {
         foreach (var attr in attributes)

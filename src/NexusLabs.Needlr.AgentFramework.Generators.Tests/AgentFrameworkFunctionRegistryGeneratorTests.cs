@@ -1326,4 +1326,65 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("new global::", output);
         Assert.Contains("GeneratedAIFunctionProvider()", output);
     }
+
+    // -------------------------------------------------------------------------
+    // [ProgressSinks] → generated GetXxxAgentProgressSinkTypes()
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ProgressSinks_GeneratesCompanionMethod()
+    {
+        var source = """
+            namespace TestApp
+            {
+                public class MySink : NexusLabs.Needlr.AgentFramework.Progress.IProgressSink
+                {
+                    public System.Threading.Tasks.ValueTask OnEventAsync(
+                        NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent evt,
+                        System.Threading.CancellationToken ct) => default;
+                }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(Instructions = "test")]
+                [NexusLabs.Needlr.AgentFramework.ProgressSinks(typeof(MySink))]
+                public partial class TestAgent { }
+            }
+            """;
+
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ProgressSinkStubs)
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions");
+
+        Assert.Contains("GetTestAgentProgressSinkTypes", output);
+        Assert.Contains("typeof(global::TestApp.MySink)", output);
+    }
+
+    [Fact]
+    public void ProgressSinks_NotPresent_NoCompanionMethod()
+    {
+        var source = """
+            namespace TestApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(Instructions = "test")]
+                public partial class PlainAgent { }
+            }
+            """;
+
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions");
+
+        Assert.DoesNotContain("ProgressSinkTypes", output);
+    }
+
+    private const string ProgressSinkStubs = """
+        namespace NexusLabs.Needlr.AgentFramework.Progress
+        {
+            public interface IProgressEvent { }
+            public interface IProgressSink
+            {
+                System.Threading.Tasks.ValueTask OnEventAsync(IProgressEvent evt, System.Threading.CancellationToken ct);
+            }
+        }
+        """;
 }
