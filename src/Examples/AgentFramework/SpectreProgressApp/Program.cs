@@ -158,6 +158,9 @@ class DashboardSink : IProgressSink
     private int _totalTokens;
     private int _llmCallCount;
     private double _totalLlmMs;
+    private long _budgetCurrent;
+    private long _budgetMax;
+    private string? _budgetStatus;
 
     public void SetContext(LiveDisplayContext ctx) => _ctx = ctx;
 
@@ -197,6 +200,14 @@ class DashboardSink : IProgressSink
         }
 
         panel.AddEmptyRow();
+
+        // Budget
+        if (_budgetMax > 0 || _budgetStatus is not null)
+        {
+            var budgetText = _budgetStatus ?? $"[dim]{_budgetCurrent}/{_budgetMax} tokens[/]";
+            panel.AddRow(new Markup($"  Budget: {budgetText}"));
+            panel.AddEmptyRow();
+        }
 
         // LLM throughput
         var avgMs = _llmCallCount > 0 ? _totalLlmMs / _llmCallCount : 0;
@@ -296,6 +307,15 @@ class DashboardSink : IProgressSink
                     toolDone.ToolCalls++;
                     toolDone.ToolStatus = $"[magenta]✓ {Markup.Escape(tcc.ToolName)}[/] {tcc.Duration.TotalMilliseconds:F0}ms";
                 }
+                break;
+
+            case BudgetUpdatedEvent bu:
+                _budgetCurrent = bu.CurrentTotalTokens;
+                _budgetMax = bu.MaxTotalTokens ?? 0;
+                break;
+
+            case BudgetExceededEvent be:
+                _budgetStatus = $"[red]EXCEEDED: {be.LimitType} {be.CurrentValue}/{be.MaxValue}[/]";
                 break;
         }
 
