@@ -212,6 +212,12 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         spc.AddSource("AgentFrameworkSyringeExtensions.g.cs",
             SourceText.From(ExtensionsCodeGenerator.GenerateSyringeExtensionsSource(allGroupEntries, safeAssemblyName), Encoding.UTF8));
 
+        if (progressSinksByAgent.Count > 0)
+        {
+            spc.AddSource("GeneratedProgressSinkRegistrations.g.cs",
+                SourceText.From(ExtensionsCodeGenerator.GenerateProgressSinkRegistrationSource(progressSinksByAgent, safeAssemblyName), Encoding.UTF8));
+        }
+
         spc.AddSource("GeneratedAIFunctionProvider.g.cs",
             SourceText.From(AIFunctionProviderCodeGenerator.GenerateAIFunctionProviderSource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
 

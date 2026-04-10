@@ -149,6 +149,83 @@ public class ProgressIntegrationTests
     }
 
     // -------------------------------------------------------------------------
+    // #9: End-to-end correlation context
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task DirectAgentRun_AllEvents_HaveCorrectWorkflowId()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+
+        var reporter = progressFactory.Create("e2e-test-wf", [sink]);
+        var agent = factory.CreateAgent(opts => opts.Name = "E2EAgent");
+
+        using (progressAccessor.BeginScope(reporter))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        Assert.NotEmpty(events);
+        Assert.All(events, e => Assert.Equal("e2e-test-wf", e.WorkflowId));
+    }
+
+    [Fact]
+    public async Task DirectAgentRun_AllEvents_HaveNonZeroSequence()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+
+        var reporter = progressFactory.Create("seq-test-wf", [sink]);
+        var agent = factory.CreateAgent(opts => opts.Name = "SeqAgent");
+
+        using (progressAccessor.BeginScope(reporter))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        Assert.NotEmpty(events);
+        Assert.All(events, e => Assert.True(e.SequenceNumber > 0, $"Event {e.GetType().Name} has sequence 0"));
+    }
+
+    [Fact]
+    public async Task DirectAgentRun_Events_AreStrictlyOrderedBySequence()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+
+        var reporter = progressFactory.Create("order-test-wf", [sink]);
+        var agent = factory.CreateAgent(opts => opts.Name = "OrderAgent");
+
+        using (progressAccessor.BeginScope(reporter))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        for (int i = 1; i < events.Count; i++)
+        {
+            Assert.True(events[i].SequenceNumber > events[i - 1].SequenceNumber,
+                $"Event {i} ({events[i].GetType().Name} seq={events[i].SequenceNumber}) " +
+                $"should be > event {i - 1} ({events[i - 1].GetType().Name} seq={events[i - 1].SequenceNumber})");
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
