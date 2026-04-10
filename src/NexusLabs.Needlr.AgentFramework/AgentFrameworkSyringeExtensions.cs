@@ -256,6 +256,27 @@ public static class AgentFrameworkSyringeExtensions
         };
     }
 
+    /// <summary>
+    /// Registers a progress sink type. Sinks registered this way are used as defaults
+    /// by <see cref="Progress.IProgressReporterFactory.Create(string)"/>.
+    /// </summary>
+    /// <typeparam name="TSink">The sink type to register.</typeparam>
+    /// <remarks>
+    /// The sink type is stored on the syringe and resolved from DI via
+    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>
+    /// when the <see cref="Progress.IProgressReporterFactory"/> is created.
+    /// </remarks>
+    public static AgentFrameworkSyringe AddProgressSink<TSink>(
+        this AgentFrameworkSyringe syringe)
+        where TSink : class, Progress.IProgressSink
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        return syringe with
+        {
+            ProgressSinkTypes = (syringe.ProgressSinkTypes ?? []).Concat([typeof(TSink)]).Distinct().ToList()
+        };
+    }
+
     private static AgentFrameworkSyringe MergeFunctionGroups(        this AgentFrameworkSyringe syringe,
         IReadOnlyDictionary<string, IReadOnlyList<Type>> newGroups)
     {

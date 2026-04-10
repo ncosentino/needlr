@@ -85,9 +85,24 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<ChatCompletionCollectorHolder>();
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
             services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
-            services.TryAddSingleton<IProgressReporterFactory>(sp =>
-                new ProgressReporterFactory(sp.GetServices<IProgressSink>(), sp.GetRequiredService<IProgressSequence>()));
             services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
+
+            // IProgressReporterFactory is registered lazily with the syringe's sink types.
+            // It captures the syringeSinkTypes from the IAgentFactory factory lambda below.
+            List<Type>? syringeSinkTypes = null;
+            services.TryAddSingleton<IProgressReporterFactory>(sp =>
+            {
+                var diSinks = sp.GetServices<IProgressSink>().ToList();
+                if (syringeSinkTypes is { Count: > 0 })
+                {
+                    foreach (var sinkType in syringeSinkTypes)
+                    {
+                        if (ActivatorUtilities.CreateInstance(sp, sinkType) is IProgressSink instance)
+                            diSinks.Add(instance);
+                    }
+                }
+                return new ProgressReporterFactory(diSinks, sp.GetRequiredService<IProgressSequence>());
+            });
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
@@ -96,6 +111,7 @@ public static class SyringeExtensionsForAgentFramework
                     ServiceProvider = provider,
                 };
                 afSyringe = configure.Invoke(afSyringe);
+                syringeSinkTypes = afSyringe.ProgressSinkTypes;
 
                 // Auto-populate from [ModuleInitializer] bootstrap if nothing was explicitly configured.
                 // Explicit calls (Add*FromGenerated, AddAgentFunctions*, etc.) take precedence.

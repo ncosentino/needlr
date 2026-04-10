@@ -60,6 +60,12 @@ public sealed record AgentFrameworkSyringe
     /// </summary>
     internal Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? PerAgentResilienceFactory { get; init; }
 
+    /// <summary>
+    /// Progress sink types to register in DI. Populated by
+    /// <c>AddProgressSink&lt;T&gt;()</c> on the syringe.
+    /// </summary>
+    internal List<Type>? ProgressSinkTypes { get; init; } = [];
+
     public IAgentFactory BuildAgentFactory()
     {
         var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
