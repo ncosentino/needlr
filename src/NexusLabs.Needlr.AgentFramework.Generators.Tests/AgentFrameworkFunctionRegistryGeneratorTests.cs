@@ -1389,8 +1389,9 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("BeginDisposableSinkAgentProgressScope", output);
         Assert.Contains("global::NexusLabs.Needlr.AgentFramework.Progress.CompositeDisposable", output);
         Assert.Contains("global::TestApp.MySink", output);
-        // The sink must be cast to IDisposable (via 'as') and passed to the composite.
-        Assert.Contains("as global::System.IDisposable", output);
+        // The sink must be passed to the composite cast via an object box + 'as IDisposable'
+        // so the cast compiles whether or not the concrete sink type implements IDisposable.
+        Assert.Contains(") as global::System.IDisposable", output);
     }
 
     [Fact]

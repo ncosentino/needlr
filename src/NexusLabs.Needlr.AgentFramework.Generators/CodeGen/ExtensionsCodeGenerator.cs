@@ -322,9 +322,13 @@ internal static class ExtensionsCodeGenerator
                 sb.AppendLine("            new global::System.IDisposable?[]");
                 sb.AppendLine("            {");
                 sb.AppendLine("                scopeHandle,");
+                // Box through object so the 'as IDisposable' cast compiles regardless
+                // of whether the sealed sink type statically implements IDisposable.
+                // Sinks that don't implement IDisposable become null and are skipped
+                // by CompositeDisposable's null-tolerant disposal loop.
                 for (int i = 0; i < sinkFQNs.Length; i++)
                 {
-                    sb.AppendLine($"                sink{i} as global::System.IDisposable,");
+                    sb.AppendLine($"                ((object)sink{i}) as global::System.IDisposable,");
                 }
                 sb.AppendLine("            });");
                 sb.AppendLine("    }");

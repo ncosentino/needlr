@@ -161,6 +161,7 @@ class DashboardSink : IProgressSink
     private long _budgetCurrent;
     private long _budgetMax;
     private string? _budgetStatus;
+    private int _superStepNumber;
 
     public void SetContext(LiveDisplayContext ctx) => _ctx = ctx;
 
@@ -182,7 +183,8 @@ class DashboardSink : IProgressSink
 
         // Status line with animated spinner when running
         var spinner = _isRunning ? $"[yellow]{_spinnerFrames[_spinnerIndex]}[/] " : "";
-        panel.AddRow(new Markup($"  {spinner}{_workflowStatus}  |  Elapsed: [bold]{elapsed:F1}s[/]  |  LLM calls: [bold]{_llmCallCount}[/]  |  Tokens: [bold]{_totalTokens}[/]"));
+        var stepText = _superStepNumber > 0 ? $"  |  Step: [bold]{_superStepNumber}[/]" : "";
+        panel.AddRow(new Markup($"  {spinner}{_workflowStatus}  |  Elapsed: [bold]{elapsed:F1}s[/]  |  LLM calls: [bold]{_llmCallCount}[/]  |  Tokens: [bold]{_totalTokens}[/]{stepText}"));
         panel.AddEmptyRow();
 
         // Agent rows
@@ -316,6 +318,32 @@ class DashboardSink : IProgressSink
 
             case BudgetExceededEvent be:
                 _budgetStatus = $"[red]EXCEEDED: {be.LimitType} {be.CurrentValue}/{be.MaxValue}[/]";
+                break;
+
+            case SuperStepStartedProgressEvent sss:
+                _superStepNumber = sss.StepNumber;
+                break;
+
+            case SuperStepCompletedProgressEvent:
+                // Step number already reflects the completed step; nothing extra to show.
+                break;
+
+            case AgentFailedEvent af:
+                var failed = _agents.FirstOrDefault(a => a.Name == ShortName(af.AgentName));
+                if (failed is null)
+                {
+                    var newFailed = new AgentState(ShortName(af.AgentName))
+                    {
+                        Status = $"[red]✗ FAILED[/] {Markup.Escape(af.ErrorMessage)}",
+                        IsWorking = false,
+                    };
+                    _agents.Add(newFailed);
+                }
+                else
+                {
+                    failed.Status = $"[red]✗ FAILED[/] {Markup.Escape(af.ErrorMessage)}";
+                    failed.IsWorking = false;
+                }
                 break;
         }
 
