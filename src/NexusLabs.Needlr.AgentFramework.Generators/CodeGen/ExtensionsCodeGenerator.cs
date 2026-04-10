@@ -287,6 +287,29 @@ internal static class ExtensionsCodeGenerator
                 sb.AppendLine("        };");
                 sb.AppendLine("    }");
                 sb.AppendLine();
+
+                // Auto-wiring method: resolves sinks from DI, creates reporter, sets scope
+                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine($"    /// Opens a progress reporting scope for <see cref=\"{agent.TypeName.Replace("global::", "")}\"/> using");
+                sb.AppendLine($"    /// the sinks declared via <c>[ProgressSinks]</c>. Dispose the returned handle to end the scope.");
+                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine($"    public static global::System.IDisposable Begin{agent.ClassName}ProgressScope(");
+                sb.AppendLine($"        this global::System.IServiceProvider sp,");
+                sb.AppendLine($"        string? workflowId = null)");
+                sb.AppendLine("    {");
+                sb.AppendLine($"        var sinks = new global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink[]");
+                sb.AppendLine("        {");
+                foreach (var sinkFQN in sinkFQNs)
+                {
+                    sb.AppendLine($"            global::Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance<{sinkFQN}>(sp),");
+                }
+                sb.AppendLine("        };");
+                sb.AppendLine($"        var factory = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory>(sp);");
+                sb.AppendLine($"        var accessor = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterAccessor>(sp);");
+                sb.AppendLine("        var reporter = factory.Create(workflowId ?? \"" + agent.ClassName + "-\" + global::System.Guid.NewGuid().ToString(\"N\"), sinks);");
+                sb.AppendLine("        return accessor.BeginScope(reporter);");
+                sb.AppendLine("    }");
+                sb.AppendLine();
             }
         }
 
