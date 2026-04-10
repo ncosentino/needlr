@@ -42,9 +42,89 @@ public class ProgressIntegrationTests
             await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
         }
 
-        // Chat middleware should have emitted LlmCallStarted + LlmCallCompleted
-        Assert.Contains(events, e => e is LlmCallStartedEvent);
-        Assert.Contains(events, e => e is LlmCallCompletedEvent);
+        // Chat middleware must have emitted exactly one started/completed pair,
+        // both carrying the reporter's WorkflowId. Direct-agent runs don't push
+        // a child scope per agent, so AgentId is inherited from the reporter
+        // (null in this setup). The CallSequence and SequenceNumber contracts
+        // still apply though.
+        var started = Assert.Single(events.OfType<LlmCallStartedEvent>());
+        var completed = Assert.Single(events.OfType<LlmCallCompletedEvent>());
+
+        Assert.Equal("test-wf", started.WorkflowId);
+        Assert.Equal("test-wf", completed.WorkflowId);
+        Assert.Equal(started.CallSequence, completed.CallSequence);
+        Assert.True(completed.SequenceNumber > started.SequenceNumber,
+            "LlmCallCompletedEvent sequence must be strictly greater than LlmCallStartedEvent sequence.");
+    }
+
+    [Fact]
+    public async Task ChildReporter_LlmCallEvents_CarryChildAgentIdAndWorkflowId()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+
+        var rootReporter = progressFactory.Create("carrier-wf", [sink]);
+        var childReporter = rootReporter.CreateChild("CarrierAgent");
+        var agent = factory.CreateAgent(opts => opts.Name = "CarrierAgent");
+
+        using (progressAccessor.BeginScope(childReporter))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        var llmEvents = events.OfType<LlmCallStartedEvent>().Cast<IProgressEvent>()
+            .Concat(events.OfType<LlmCallCompletedEvent>())
+            .ToList();
+        Assert.NotEmpty(llmEvents);
+
+        // With an explicit child scope, every LLM event carries the child's agent ID
+        // and preserves the workflow ID from the parent reporter.
+        Assert.All(llmEvents, e =>
+        {
+            Assert.Equal("carrier-wf", e.WorkflowId);
+            Assert.Equal("CarrierAgent", e.AgentId);
+        });
+    }
+
+    [Fact]
+    public async Task DirectAgentRun_Events_HavePerAgentMonotonicSequence()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var (sp, _) = BuildServiceProvider(useDiagnostics: true);
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+
+        var reporter = progressFactory.Create("per-agent-wf", [sink]);
+        var agent = factory.CreateAgent(opts => opts.Name = "MonoAgent");
+
+        using (progressAccessor.BeginScope(reporter))
+        {
+            await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+        }
+
+        // Group events by agent (null group = workflow-level events) and assert
+        // each group's sequence numbers are strictly monotonically increasing.
+        var groups = events.GroupBy(e => e.AgentId ?? "<workflow>").ToList();
+        Assert.NotEmpty(groups);
+
+        foreach (var group in groups)
+        {
+            var sequences = group.Select(e => e.SequenceNumber).ToList();
+            for (int i = 1; i < sequences.Count; i++)
+            {
+                Assert.True(sequences[i] > sequences[i - 1],
+                    $"Agent '{group.Key}' emitted out-of-order sequences: " +
+                    $"[{string.Join(", ", sequences)}]");
+            }
+        }
     }
 
     [Fact]
@@ -66,10 +146,12 @@ public class ProgressIntegrationTests
             await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
         }
 
-        var completed = events.OfType<LlmCallCompletedEvent>().FirstOrDefault();
-        Assert.NotNull(completed);
-        Assert.True(completed!.Duration > TimeSpan.Zero);
-        Assert.NotEqual("unknown", completed.Model);
+        var completed = Assert.Single(events.OfType<LlmCallCompletedEvent>());
+        Assert.True(completed.Duration > TimeSpan.Zero);
+        Assert.Equal("mock-model", completed.Model);
+        Assert.Equal(10, completed.InputTokens);
+        Assert.Equal(20, completed.OutputTokens);
+        Assert.Equal(30, completed.TotalTokens);
     }
 
     [Fact]
@@ -136,7 +218,7 @@ public class ProgressIntegrationTests
         var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
         var budgetTracker = sp.GetRequiredService<ITokenBudgetTracker>();
 
-        var reporter = progressFactory.Create("test-wf", [sink]);
+        var reporter = progressFactory.Create("budget-wf", [sink]);
         var agent = factory.CreateAgent(opts => opts.Name = "BudgetAgent");
 
         using (progressAccessor.BeginScope(reporter))
@@ -145,7 +227,16 @@ public class ProgressIntegrationTests
             await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
         }
 
-        Assert.Contains(events, e => e is BudgetUpdatedEvent);
+        // Mock chat returns 30 tokens per call; the budget tracker must emit
+        // an update carrying that exact usage against the 100,000 cap.
+        var budgetEvents = events.OfType<BudgetUpdatedEvent>().ToList();
+        Assert.NotEmpty(budgetEvents);
+
+        var last = budgetEvents[^1];
+        Assert.Equal("budget-wf", last.WorkflowId);
+        Assert.Equal(100_000, last.MaxTotalTokens);
+        Assert.True(last.CurrentTotalTokens > 0, "BudgetUpdatedEvent should report non-zero consumed tokens.");
+        Assert.True(last.CurrentTotalTokens <= 100_000, "Consumed tokens must not exceed the configured max.");
     }
 
     // -------------------------------------------------------------------------
