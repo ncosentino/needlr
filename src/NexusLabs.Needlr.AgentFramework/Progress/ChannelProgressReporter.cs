@@ -12,8 +12,11 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 /// <para>
 /// <see cref="Report"/> writes to the channel and returns immediately.
 /// A background consumer drains events to all sinks. Events are delivered
-/// in order but asynchronously — there may be a small delay between
-/// emission and sink receipt.
+/// in order but asynchronously.
+/// </para>
+/// <para>
+/// <see cref="CreateChild"/> returns a lightweight wrapper that shares
+/// the parent's channel — no additional background tasks are created.
 /// </para>
 /// <para>
 /// Call <see cref="DisposeAsync"/> to drain remaining events and stop
@@ -24,11 +27,8 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposable
 {
     private readonly Channel<IProgressEvent> _channel;
-    private readonly IReadOnlyList<IProgressSink> _sinks;
     private readonly IProgressSequence _sequence;
     private readonly Task _consumer;
-    private readonly CancellationTokenSource _cts = new();
-    private readonly string? _parentAgentId;
 
     /// <summary>
     /// Creates a channel-based reporter with the given sinks.
@@ -44,10 +44,8 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
         int capacity = 1000)
     {
         WorkflowId = workflowId;
-        _sinks = sinks;
         _sequence = sequence;
         AgentId = agentId;
-        _parentAgentId = parentAgentId;
         Depth = depth;
 
         _channel = Channel.CreateBounded<IProgressEvent>(new BoundedChannelOptions(capacity)
@@ -57,7 +55,7 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
             SingleWriter = false,
         });
 
-        _consumer = Task.Run(ConsumeAsync);
+        _consumer = Task.Run(() => ConsumeAsync(sinks));
     }
 
     /// <inheritdoc />
@@ -80,13 +78,7 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
 
     /// <inheritdoc />
     public IProgressReporter CreateChild(string agentId) =>
-        new ChannelProgressReporter(
-            WorkflowId,
-            _sinks,
-            _sequence,
-            agentId: agentId,
-            parentAgentId: AgentId,
-            depth: Depth + 1);
+        new ChannelChildReporter(this, agentId);
 
     /// <summary>
     /// Completes the channel and waits for the background consumer to drain
@@ -94,24 +86,21 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        // Complete the channel writer so the consumer drains remaining items
-        // then finishes naturally when ReadAllAsync ends.
         _channel.Writer.TryComplete();
         await _consumer;
-        _cts.Dispose();
     }
 
-    private async Task ConsumeAsync()
+    private async Task ConsumeAsync(IReadOnlyList<IProgressSink> sinks)
     {
         try
         {
-            await foreach (var evt in _channel.Reader.ReadAllAsync(_cts.Token))
+            await foreach (var evt in _channel.Reader.ReadAllAsync())
             {
-                for (int i = 0; i < _sinks.Count; i++)
+                for (int i = 0; i < sinks.Count; i++)
                 {
                     try
                     {
-                        await _sinks[i].OnEventAsync(evt, _cts.Token);
+                        await sinks[i].OnEventAsync(evt, CancellationToken.None);
                     }
                     catch
                     {
@@ -124,5 +113,34 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
         {
             // Shutdown
         }
+    }
+
+    /// <summary>
+    /// Lightweight child reporter that shares the parent's channel.
+    /// No background task — writes go directly to the parent's channel.
+    /// </summary>
+    private sealed class ChannelChildReporter : IProgressReporter
+    {
+        private readonly ChannelProgressReporter _root;
+
+        internal ChannelChildReporter(ChannelProgressReporter root, string agentId)
+        {
+            _root = root;
+            WorkflowId = root.WorkflowId;
+            AgentId = agentId;
+            Depth = root.Depth + 1;
+        }
+
+        public string WorkflowId { get; }
+        public string? AgentId { get; }
+        public int Depth { get; }
+
+        public long NextSequence() => _root.NextSequence();
+
+        public void Report(IProgressEvent progressEvent) =>
+            _root.Report(progressEvent);
+
+        public IProgressReporter CreateChild(string agentId) =>
+            new ChannelChildReporter(_root, agentId);
     }
 }

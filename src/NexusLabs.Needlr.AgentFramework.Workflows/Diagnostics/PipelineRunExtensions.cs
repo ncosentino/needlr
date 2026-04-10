@@ -24,7 +24,11 @@ public static class PipelineRunExtensions
         string message,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         CancellationToken cancellationToken = default) =>
-        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, null, null, null, cancellationToken);
+        RunWithDiagnosticsAsync(workflow, message, new WorkflowRunOptions
+        {
+            DiagnosticsAccessor = diagnosticsAccessor,
+            CancellationToken = cancellationToken,
+        });
 
     /// <summary>
     /// Executes the workflow with per-stage diagnostics and real-time progress reporting.
@@ -35,41 +39,55 @@ public static class PipelineRunExtensions
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         ProgressEvents.IProgressReporter? progressReporter,
         CancellationToken cancellationToken = default) =>
-        RunWithDiagnosticsAsync(workflow, message, diagnosticsAccessor, progressReporter, null, null, cancellationToken);
+        RunWithDiagnosticsAsync(workflow, message, new WorkflowRunOptions
+        {
+            DiagnosticsAccessor = diagnosticsAccessor,
+            ProgressReporter = progressReporter,
+            CancellationToken = cancellationToken,
+        });
 
     /// <summary>
     /// Executes the workflow with per-stage diagnostics, real-time progress reporting,
     /// and per-LLM-call completion draining via the provided collector.
     /// </summary>
-    /// <param name="workflow">The workflow to execute.</param>
-    /// <param name="message">The user message to send.</param>
-    /// <param name="diagnosticsAccessor">Diagnostics accessor for per-agent captures.</param>
-    /// <param name="progressReporter">Optional progress reporter for real-time events.</param>
-    /// <param name="completionCollector">
-    /// Optional collector for per-LLM-call completions. Resolve from DI via
-    /// <see cref="IChatCompletionCollector"/>. If <see langword="null"/>, per-call
-    /// LLM timing is not available in stage diagnostics.
-    /// </param>
-    /// <param name="progressReporterAccessor">
-    /// Optional accessor for threading the progress reporter through the AsyncLocal
-    /// so chat/tool middleware can emit LLM call events.
-    /// </param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
+    public static Task<IPipelineRunResult> RunWithDiagnosticsAsync(
         this Workflow workflow,
         string message,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         ProgressEvents.IProgressReporter? progressReporter,
         IChatCompletionCollector? completionCollector,
         ProgressEvents.IProgressReporterAccessor? progressReporterAccessor = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        RunWithDiagnosticsAsync(workflow, message, new WorkflowRunOptions
+        {
+            DiagnosticsAccessor = diagnosticsAccessor,
+            ProgressReporter = progressReporter,
+            CompletionCollector = completionCollector,
+            ProgressReporterAccessor = progressReporterAccessor,
+            CancellationToken = cancellationToken,
+        });
+
+    /// <summary>
+    /// Executes the workflow with per-stage diagnostics and progress reporting
+    /// configured via <see cref="WorkflowRunOptions"/>.
+    /// </summary>
+    /// <param name="workflow">The workflow to execute.</param>
+    /// <param name="message">The user message to send.</param>
+    /// <param name="options">Configuration for diagnostics, progress, and completion collection.</param>
+    public static async Task<IPipelineRunResult> RunWithDiagnosticsAsync(
+        this Workflow workflow,
+        string message,
+        WorkflowRunOptions options)
     {
         ArgumentNullException.ThrowIfNull(workflow);
         ArgumentException.ThrowIfNullOrEmpty(message);
-        ArgumentNullException.ThrowIfNull(diagnosticsAccessor);
+        ArgumentNullException.ThrowIfNull(options);
 
-        var reporter = progressReporter ?? ProgressEvents.NullProgressReporter.Instance;
-        var collector = completionCollector ?? NullChatCompletionCollector.Instance;
+        var diagnosticsAccessor = options.DiagnosticsAccessor;
+        var reporter = options.ProgressReporter ?? ProgressEvents.NullProgressReporter.Instance;
+        var collector = options.CompletionCollector ?? NullChatCompletionCollector.Instance;
+        var progressReporterAccessor = options.ProgressReporterAccessor;
+        var cancellationToken = options.CancellationToken;
         var pipelineStart = Stopwatch.StartNew();
         var stages = new List<IAgentStageResult>();
         var responses = new Dictionary<string, StringBuilder>();

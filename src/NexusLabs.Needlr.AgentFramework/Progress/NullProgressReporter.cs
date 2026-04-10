@@ -7,6 +7,8 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 [DoNotAutoRegister]
 internal sealed class NullProgressReporter : IProgressReporter
 {
+    private static long _globalSequence;
+
     /// <summary>Singleton instance.</summary>
     internal static readonly NullProgressReporter Instance = new();
 
@@ -20,7 +22,12 @@ internal sealed class NullProgressReporter : IProgressReporter
     public int Depth => 0;
 
     /// <inheritdoc />
-    public long NextSequence() => 0;
+    /// <remarks>
+    /// Returns real monotonically increasing values even from the null reporter
+    /// so sequence ordering logic isn't silently broken. <see cref="Report"/> is
+    /// still a no-op — sequences are generated but events are discarded.
+    /// </remarks>
+    public long NextSequence() => Interlocked.Increment(ref _globalSequence);
 
     /// <inheritdoc />
     public void Report(IProgressEvent progressEvent) { }
