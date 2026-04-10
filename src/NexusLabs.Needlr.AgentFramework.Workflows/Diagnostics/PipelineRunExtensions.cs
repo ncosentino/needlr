@@ -149,6 +149,29 @@ public static class PipelineRunExtensions
                         continue;
                     }
 
+                    if (evt is ExecutorFailedEvent executorFailed)
+                    {
+                        succeeded = false;
+                        errorMessage = executorFailed.Data?.Message;
+                        reporter.Report(new ProgressEvents.AgentFailedEvent(
+                            Timestamp: DateTimeOffset.UtcNow,
+                            WorkflowId: reporter.WorkflowId,
+                            AgentId: executorFailed.ExecutorId,
+                            ParentAgentId: null,
+                            Depth: 1,
+                            SequenceNumber: reporter.NextSequence(),
+                            AgentName: executorFailed.ExecutorId ?? "unknown",
+                            ErrorMessage: executorFailed.Data?.Message ?? "unknown error"));
+                        continue;
+                    }
+
+                    if (evt is WorkflowErrorEvent workflowError)
+                    {
+                        succeeded = false;
+                        errorMessage = workflowError.Exception?.Message;
+                        continue;
+                    }
+
                     if (evt is SuperStepStartedEvent)
                     {
                         superStepCount++;
@@ -275,6 +298,22 @@ public static class PipelineRunExtensions
         {
             succeeded = false;
             errorMessage = ex.Message;
+
+            // If we know which agent was running when the exception propagated
+            // out of the stream, emit an AgentFailedEvent for it so sinks see
+            // the per-agent failure before the trailing WorkflowCompletedEvent.
+            if (currentExecutorId is not null)
+            {
+                reporter.Report(new ProgressEvents.AgentFailedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: reporter.WorkflowId,
+                    AgentId: currentExecutorId,
+                    ParentAgentId: null,
+                    Depth: 1,
+                    SequenceNumber: reporter.NextSequence(),
+                    AgentName: currentExecutorId,
+                    ErrorMessage: ex.Message));
+            }
         }
 
         pipelineStart.Stop();

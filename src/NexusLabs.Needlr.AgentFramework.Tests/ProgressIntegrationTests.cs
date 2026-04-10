@@ -226,6 +226,79 @@ public class ProgressIntegrationTests
     }
 
     // -------------------------------------------------------------------------
+    // #3: AgentFailedEvent emission from PipelineRunExtensions
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task PipelineRun_WhenAgentThrows_EmitsAgentFailedEvent()
+    {
+        var events = new List<IProgressEvent>();
+        var sink = new CollectorSink(events);
+
+        var config = new ConfigurationBuilder().Build();
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("boom"));
+        mockChat
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new InvalidOperationException("boom"));
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChat.Object)
+                .AddAgent<FailingSeqAgentA>()
+                .AddAgent<FailingSeqAgentB>()
+                .UsingDiagnostics())
+            .BuildServiceProvider(config);
+
+        var workflowFactory = sp.GetRequiredService<IWorkflowFactory>();
+        var progressFactory = sp.GetRequiredService<IProgressReporterFactory>();
+        var progressAccessor = sp.GetRequiredService<IProgressReporterAccessor>();
+        var diagnosticsAccessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+        var workflow = workflowFactory.CreateSequentialWorkflow("wf-failing-pipeline");
+        var reporter = progressFactory.Create("failing-wf", [sink]);
+
+        var result = await workflow.RunWithDiagnosticsAsync(
+            "Hello",
+            new WorkflowRunOptions
+            {
+                DiagnosticsAccessor = diagnosticsAccessor,
+                ProgressReporter = reporter,
+                ProgressReporterAccessor = progressAccessor,
+                CancellationToken = TestContext.Current.CancellationToken,
+            });
+
+        Assert.False(result.Succeeded);
+
+        var failed = Assert.Single(events.OfType<AgentFailedEvent>());
+        Assert.NotNull(failed.AgentId);
+        Assert.Contains("boom", failed.ErrorMessage);
+
+        var completedIdx = events.FindIndex(e => e is WorkflowCompletedEvent);
+        var failedIdx = events.FindIndex(e => ReferenceEquals(e, failed));
+        Assert.True(failedIdx >= 0);
+        Assert.True(completedIdx >= 0);
+        Assert.True(failedIdx < completedIdx, "AgentFailedEvent should be emitted before WorkflowCompletedEvent");
+    }
+
+    [NeedlrAiAgent(Instructions = "First failing agent.")]
+    [AgentSequenceMember("wf-failing-pipeline", 1)]
+    public sealed class FailingSeqAgentA { }
+
+    [NeedlrAiAgent(Instructions = "Second failing agent.")]
+    [AgentSequenceMember("wf-failing-pipeline", 2)]
+    public sealed class FailingSeqAgentB { }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
