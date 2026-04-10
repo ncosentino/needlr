@@ -76,22 +76,45 @@ public class ChannelProgressReporterTests
     }
 
     [Fact]
-    public async Task CreateChild_InheritsChannelBehavior()
+    public async Task CreateChild_SetsPropertiesAndSharesParentChannel()
     {
         var received = new List<IProgressEvent>();
+        var receivedLock = new object();
         var sink = new Mock<IProgressSink>();
         sink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
-            .Callback<IProgressEvent, CancellationToken>((evt, _) => received.Add(evt))
+            .Callback<IProgressEvent, CancellationToken>((evt, _) =>
+            {
+                lock (receivedLock) received.Add(evt);
+            })
             .Returns(ValueTask.CompletedTask);
 
-        await using var reporter = new ChannelProgressReporter(
+        var reporter = new ChannelProgressReporter(
             "wf-1", [sink.Object], new ProgressSequenceProvider());
 
         var child = reporter.CreateChild("agent-A");
 
+        // Properties carry correct scope.
         Assert.Equal("agent-A", child.AgentId);
         Assert.Equal(1, child.Depth);
         Assert.Equal("wf-1", child.WorkflowId);
+
+        // Behavior: events reported via the CHILD must reach the parent's sink
+        // (shared channel). This is the load-bearing assertion — the previous
+        // test only checked properties and would pass even if the child spawned
+        // its own dropped channel.
+        var evtViaChild = new WorkflowStartedEvent(
+            DateTimeOffset.UtcNow, "wf-1", "agent-A", null, 1, 100);
+        var evtViaParent = new WorkflowStartedEvent(
+            DateTimeOffset.UtcNow, "wf-1", null, null, 0, 101);
+
+        child.Report(evtViaChild);
+        reporter.Report(evtViaParent);
+
+        await reporter.DisposeAsync();
+
+        Assert.Equal(2, received.Count);
+        Assert.Contains(received, e => ReferenceEquals(e, evtViaChild));
+        Assert.Contains(received, e => ReferenceEquals(e, evtViaParent));
     }
 
     [Fact]
