@@ -1360,6 +1360,40 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
     }
 
     [Fact]
+    public void ProgressSinks_BeginProgressScope_DisposesSinksViaCompositeDisposable()
+    {
+        var source = """
+            namespace TestApp
+            {
+                public class MySink : NexusLabs.Needlr.AgentFramework.Progress.IProgressSink, System.IDisposable
+                {
+                    public System.Threading.Tasks.ValueTask OnEventAsync(
+                        NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent evt,
+                        System.Threading.CancellationToken ct) => default;
+                    public void Dispose() { }
+                }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(Instructions = "test")]
+                [NexusLabs.Needlr.AgentFramework.ProgressSinks(typeof(MySink))]
+                public partial class DisposableSinkAgent { }
+            }
+            """;
+
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ProgressSinkStubs)
+            .WithSource(source)
+            .GetFile("AgentFactoryExtensions");
+
+        // Generated scope method must return a CompositeDisposable that
+        // also disposes the instantiated sinks, not just the accessor scope.
+        Assert.Contains("BeginDisposableSinkAgentProgressScope", output);
+        Assert.Contains("global::NexusLabs.Needlr.AgentFramework.Progress.CompositeDisposable", output);
+        Assert.Contains("global::TestApp.MySink", output);
+        // The sink must be cast to IDisposable (via 'as') and passed to the composite.
+        Assert.Contains("as global::System.IDisposable", output);
+    }
+
+    [Fact]
     public void ProgressSinks_NotPresent_NoCompanionMethod()
     {
         var source = """

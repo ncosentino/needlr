@@ -306,6 +306,87 @@ public class ProgressReporterTests
     // Helpers
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // CompositeDisposable
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void CompositeDisposable_DisposesAllChildren_InReverseOrder()
+    {
+        var order = new List<int>();
+        var d1 = new TrackingDisposable(1, order);
+        var d2 = new TrackingDisposable(2, order);
+        var d3 = new TrackingDisposable(3, order);
+
+        var composite = new CompositeDisposable(d1, d2, d3);
+        composite.Dispose();
+
+        Assert.Equal(new[] { 3, 2, 1 }, order);
+    }
+
+    [Fact]
+    public void CompositeDisposable_SkipsNullEntries()
+    {
+        var d1 = new TrackingDisposable(1, new List<int>());
+
+        var composite = new CompositeDisposable(d1, null, null);
+        composite.Dispose(); // must not NRE
+
+        Assert.True(d1.Disposed);
+    }
+
+    [Fact]
+    public void CompositeDisposable_DisposesAllEvenIfOneThrows_RethrowsAggregate()
+    {
+        var order = new List<int>();
+        var d1 = new TrackingDisposable(1, order);
+        var boom = new InvalidOperationException("second one throws");
+        var d2 = new ThrowingDisposable(boom);
+        var d3 = new TrackingDisposable(3, order);
+
+        var composite = new CompositeDisposable(d1, d2, d3);
+
+        var ex = Assert.Throws<AggregateException>(() => composite.Dispose());
+        Assert.Single(ex.InnerExceptions);
+        Assert.Same(boom, ex.InnerExceptions[0]);
+
+        // Reverse order: d3 first, then d2 throws, then d1.
+        Assert.Equal(new[] { 3, 1 }, order);
+    }
+
+    [Fact]
+    public void CompositeDisposable_IsIdempotent()
+    {
+        var order = new List<int>();
+        var d1 = new TrackingDisposable(1, order);
+
+        var composite = new CompositeDisposable(d1);
+        composite.Dispose();
+        composite.Dispose(); // second call is a no-op
+
+        Assert.Single(order);
+    }
+
+    private sealed class TrackingDisposable(int id, List<int> order) : IDisposable
+    {
+        public bool Disposed { get; private set; }
+
+        public void Dispose()
+        {
+            Disposed = true;
+            order.Add(id);
+        }
+    }
+
+    private sealed class ThrowingDisposable(Exception exception) : IDisposable
+    {
+        public void Dispose() => throw exception;
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     private static IProgressEvent MakeEvent(IProgressReporter reporter) =>
         new WorkflowStartedEvent(
             Timestamp: DateTimeOffset.UtcNow,
