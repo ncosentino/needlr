@@ -86,6 +86,7 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
             services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
             services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
+            services.TryAddSingleton<IProgressReporterErrorHandler, NullProgressReporterErrorHandler>();
 
             // IProgressReporterFactory is registered lazily with the syringe's sink types.
             // It captures the syringeSinkTypes from the IAgentFactory factory lambda below.
@@ -184,6 +185,7 @@ public static class SyringeExtensionsForAgentFramework
             services.TryAddSingleton<IProgressReporterFactory>(sp =>
                 new ProgressReporterFactory(sp.GetServices<IProgressSink>(), sp.GetRequiredService<IProgressSequence>()));
             services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
+            services.TryAddSingleton<IProgressReporterErrorHandler, NullProgressReporterErrorHandler>();
 
             services.AddSingleton<IAgentFactory>(provider =>
             {
