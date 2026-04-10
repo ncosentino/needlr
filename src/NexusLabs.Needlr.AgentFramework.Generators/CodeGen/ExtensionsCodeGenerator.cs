@@ -377,9 +377,14 @@ internal static class ExtensionsCodeGenerator
         }
         else
         {
+            // Register each concrete sink as a singleton once, then expose it via
+            // AddSingleton<IProgressSink>(factory) so multiple sinks stack in
+            // GetServices<IProgressSink>(). TryAddSingleton<IProgressSink, T>()
+            // would silently drop every sink after the first.
             foreach (var sinkFQN in allSinkFQNs)
             {
-                sb.AppendLine($"        services.TryAddSingleton<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink, {sinkFQN}>();");
+                sb.AppendLine($"        services.TryAddSingleton<{sinkFQN}>();");
+                sb.AppendLine($"        services.AddSingleton<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink>(sp => sp.GetRequiredService<{sinkFQN}>());");
             }
         }
 

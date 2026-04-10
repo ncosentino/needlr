@@ -1394,6 +1394,56 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
     }
 
     [Fact]
+    public void ProgressSinks_MultipleSinks_GenerateStackingRegistrations()
+    {
+        var source = """
+            namespace TestApp
+            {
+                public class SinkAlpha : NexusLabs.Needlr.AgentFramework.Progress.IProgressSink
+                {
+                    public System.Threading.Tasks.ValueTask OnEventAsync(
+                        NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent evt,
+                        System.Threading.CancellationToken ct) => default;
+                }
+
+                public class SinkBeta : NexusLabs.Needlr.AgentFramework.Progress.IProgressSink
+                {
+                    public System.Threading.Tasks.ValueTask OnEventAsync(
+                        NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent evt,
+                        System.Threading.CancellationToken ct) => default;
+                }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(Instructions = "alpha")]
+                [NexusLabs.Needlr.AgentFramework.ProgressSinks(typeof(SinkAlpha))]
+                public partial class AlphaAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent(Instructions = "beta")]
+                [NexusLabs.Needlr.AgentFramework.ProgressSinks(typeof(SinkBeta))]
+                public partial class BetaAgent { }
+            }
+            """;
+
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ProgressSinkStubs)
+            .WithSource(source)
+            .GetFile("GeneratedProgressSinkRegistrations");
+
+        // Each concrete sink must be registered once (TryAddSingleton on concrete type)
+        Assert.Contains("services.TryAddSingleton<global::TestApp.SinkAlpha>()", output);
+        Assert.Contains("services.TryAddSingleton<global::TestApp.SinkBeta>()", output);
+
+        // Each sink must also be exposed as IProgressSink via AddSingleton with a
+        // factory delegate so multiple sinks stack correctly in GetServices<IProgressSink>.
+        // AddSingleton (not TryAddSingleton) is required because TryAddSingleton on the
+        // interface would silently drop the second sink.
+        Assert.Contains("services.AddSingleton<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink>(sp => sp.GetRequiredService<global::TestApp.SinkAlpha>())", output);
+        Assert.Contains("services.AddSingleton<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink>(sp => sp.GetRequiredService<global::TestApp.SinkBeta>())", output);
+
+        // And the old first-wins TryAddSingleton<IProgressSink, T> pattern must be gone.
+        Assert.DoesNotContain("TryAddSingleton<global::NexusLabs.Needlr.AgentFramework.Progress.IProgressSink,", output);
+    }
+
+    [Fact]
     public void ProgressSinks_NotPresent_NoCompanionMethod()
     {
         var source = """
