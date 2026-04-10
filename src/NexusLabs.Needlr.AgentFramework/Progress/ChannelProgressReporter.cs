@@ -28,6 +28,7 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
 {
     private readonly Channel<IProgressEvent> _channel;
     private readonly IProgressSequence _sequence;
+    private readonly IProgressReporterErrorHandler _errorHandler;
     private readonly Task _consumer;
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
         string workflowId,
         IReadOnlyList<IProgressSink> sinks,
         IProgressSequence sequence,
+        IProgressReporterErrorHandler? errorHandler = null,
         string? agentId = null,
         string? parentAgentId = null,
         int depth = 0,
@@ -45,6 +47,7 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
     {
         WorkflowId = workflowId;
         _sequence = sequence;
+        _errorHandler = errorHandler ?? new NullProgressReporterErrorHandler();
         AgentId = agentId;
         Depth = depth;
 
@@ -102,9 +105,9 @@ public sealed class ChannelProgressReporter : IProgressReporter, IAsyncDisposabl
                     {
                         await sinks[i].OnEventAsync(evt, CancellationToken.None);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Swallow sink exceptions
+                        _errorHandler.OnSinkException(sinks[i], evt, ex);
                     }
                 }
             }

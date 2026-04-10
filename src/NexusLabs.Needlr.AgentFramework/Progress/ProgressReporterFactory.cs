@@ -9,11 +9,16 @@ internal sealed class ProgressReporterFactory : IProgressReporterFactory
 {
     private readonly IReadOnlyList<IProgressSink> _defaultSinks;
     private readonly IProgressSequence _sequence;
+    private readonly IProgressReporterErrorHandler _errorHandler;
 
-    internal ProgressReporterFactory(IEnumerable<IProgressSink> defaultSinks, IProgressSequence sequence)
+    internal ProgressReporterFactory(
+        IEnumerable<IProgressSink> defaultSinks,
+        IProgressSequence sequence,
+        IProgressReporterErrorHandler? errorHandler = null)
     {
         _defaultSinks = defaultSinks.ToArray();
         _sequence = sequence;
+        _errorHandler = errorHandler ?? new NullProgressReporterErrorHandler();
     }
 
     /// <inheritdoc />
@@ -22,7 +27,7 @@ internal sealed class ProgressReporterFactory : IProgressReporterFactory
         if (_defaultSinks.Count == 0)
             return NullProgressReporter.Instance;
 
-        return new ProgressReporter(workflowId, _defaultSinks, _sequence);
+        return new ProgressReporter(workflowId, _defaultSinks, _sequence, _errorHandler);
     }
 
     /// <inheritdoc />
@@ -32,6 +37,6 @@ internal sealed class ProgressReporterFactory : IProgressReporterFactory
         if (sinkList.Count == 0)
             return NullProgressReporter.Instance;
 
-        return new ProgressReporter(workflowId, sinkList, _sequence);
+        return new ProgressReporter(workflowId, sinkList, _sequence, _errorHandler);
     }
 }

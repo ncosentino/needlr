@@ -32,9 +32,62 @@ public class ProgressReporterTests
     [Fact]
     public void Report_NoSinks_DoesNotThrow()
     {
-        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider());
+        var reporter = new ProgressReporter("wf-1", [], new ProgressSequenceProvider(), new NullProgressReporterErrorHandler());
 
         reporter.Report(MakeEvent(reporter));
+    }
+
+    [Fact]
+    public async Task Report_SinkThrows_InvokesErrorHandler_AndContinuesToOtherSinks()
+    {
+        var boom = new InvalidOperationException("kaboom");
+        var throwingSink = new Mock<IProgressSink>();
+        throwingSink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
+            .Returns(ValueTask.FromException(boom));
+
+        IProgressEvent? receivedByGood = null;
+        var goodSink = new Mock<IProgressSink>();
+        goodSink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
+            .Callback<IProgressEvent, CancellationToken>((evt, _) => receivedByGood = evt)
+            .Returns(ValueTask.CompletedTask);
+
+        var handler = new RecordingErrorHandler();
+
+        var reporter = new ProgressReporter(
+            "wf-1",
+            [throwingSink.Object, goodSink.Object],
+            new ProgressSequenceProvider(),
+            handler);
+        var evt = MakeEvent(reporter);
+
+        reporter.Report(evt);
+
+        // Exception surfaces via the ContinueWith on an already-faulted ValueTask;
+        // spin briefly to observe the async continuation.
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+        while (handler.Records.Count == 0 && DateTime.UtcNow < deadline)
+            await Task.Delay(5, TestContext.Current.CancellationToken);
+
+        Assert.Single(handler.Records);
+        Assert.Same(throwingSink.Object, handler.Records[0].Sink);
+        Assert.Same(evt, handler.Records[0].Event);
+        Assert.Same(boom, handler.Records[0].Exception);
+        Assert.Same(evt, receivedByGood);
+    }
+
+    private sealed class RecordingErrorHandler : IProgressReporterErrorHandler
+    {
+        private readonly List<(IProgressSink Sink, IProgressEvent Event, Exception Exception)> _records = new();
+
+        public IReadOnlyList<(IProgressSink Sink, IProgressEvent Event, Exception Exception)> Records => _records;
+
+        public void OnSinkException(IProgressSink sink, IProgressEvent progressEvent, Exception exception)
+        {
+            lock (_records)
+            {
+                _records.Add((sink, progressEvent, exception));
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

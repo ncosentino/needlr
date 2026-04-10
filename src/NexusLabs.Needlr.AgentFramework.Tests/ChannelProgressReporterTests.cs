@@ -105,4 +105,67 @@ public class ChannelProgressReporterTests
 
         Assert.True(s2 > s1);
     }
+
+    [Fact]
+    public async Task Consumer_SinkThrows_InvokesErrorHandler_AndContinues()
+    {
+        var boom = new InvalidOperationException("kaboom");
+        var throwCountByEvent = new Dictionary<int, bool> { [0] = true, [1] = false, [2] = false };
+
+        var throwingSink = new Mock<IProgressSink>();
+        throwingSink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
+            .Returns<IProgressEvent, CancellationToken>((evt, _) =>
+            {
+                var seq = (int)evt.SequenceNumber;
+                if (throwCountByEvent.TryGetValue(seq, out var shouldThrow) && shouldThrow)
+                    throw boom;
+                return ValueTask.CompletedTask;
+            });
+
+        var goodSinkReceived = new List<IProgressEvent>();
+        var goodSink = new Mock<IProgressSink>();
+        goodSink.Setup(s => s.OnEventAsync(It.IsAny<IProgressEvent>(), It.IsAny<CancellationToken>()))
+            .Callback<IProgressEvent, CancellationToken>((evt, _) =>
+            {
+                lock (goodSinkReceived) goodSinkReceived.Add(evt);
+            })
+            .Returns(ValueTask.CompletedTask);
+
+        var handler = new RecordingChannelErrorHandler();
+
+        var reporter = new ChannelProgressReporter(
+            "wf-1",
+            [throwingSink.Object, goodSink.Object],
+            new ProgressSequenceProvider(),
+            handler);
+
+        reporter.Report(new WorkflowStartedEvent(DateTimeOffset.UtcNow, "wf-1", null, null, 0, 0));
+        reporter.Report(new WorkflowStartedEvent(DateTimeOffset.UtcNow, "wf-1", null, null, 0, 1));
+        reporter.Report(new WorkflowStartedEvent(DateTimeOffset.UtcNow, "wf-1", null, null, 0, 2));
+
+        await reporter.DisposeAsync();
+
+        Assert.Single(handler.Records);
+        Assert.Same(throwingSink.Object, handler.Records[0].Sink);
+        Assert.Equal(0L, handler.Records[0].Event.SequenceNumber);
+        Assert.Same(boom, handler.Records[0].Exception);
+
+        Assert.Equal(3, goodSinkReceived.Count);
+        Assert.Equal(new long[] { 0, 1, 2 }, goodSinkReceived.Select(e => e.SequenceNumber));
+    }
+
+    private sealed class RecordingChannelErrorHandler : IProgressReporterErrorHandler
+    {
+        private readonly List<(IProgressSink Sink, IProgressEvent Event, Exception Exception)> _records = new();
+
+        public IReadOnlyList<(IProgressSink Sink, IProgressEvent Event, Exception Exception)> Records => _records;
+
+        public void OnSinkException(IProgressSink sink, IProgressEvent progressEvent, Exception exception)
+        {
+            lock (_records)
+            {
+                _records.Add((sink, progressEvent, exception));
+            }
+        }
+    }
 }
