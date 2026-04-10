@@ -114,13 +114,12 @@ public static class SyringeExtensionsForAgentFramework
             {
                 var built = sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value;
                 var diSinks = sp.GetServices<IProgressSink>().ToList();
-                var syringeSinkTypes = built.ProgressSinkTypes;
-                if (syringeSinkTypes is { Count: > 0 })
+                var syringeSinkFactories = built.ProgressSinkFactories;
+                if (syringeSinkFactories is { Count: > 0 })
                 {
-                    foreach (var sinkType in syringeSinkTypes)
+                    foreach (var factory in syringeSinkFactories)
                     {
-                        if (ActivatorUtilities.CreateInstance(sp, sinkType) is IProgressSink instance)
-                            diSinks.Add(instance);
+                        diSinks.Add(factory.Invoke(sp));
                     }
                 }
                 return new ProgressReporterFactory(

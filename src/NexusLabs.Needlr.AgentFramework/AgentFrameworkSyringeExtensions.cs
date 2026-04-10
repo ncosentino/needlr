@@ -262,18 +262,24 @@ public static class AgentFrameworkSyringeExtensions
     /// </summary>
     /// <typeparam name="TSink">The sink type to register.</typeparam>
     /// <remarks>
-    /// The sink type is stored on the syringe and resolved from DI via
-    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>
-    /// when the <see cref="Progress.IProgressReporterFactory"/> is created.
+    /// A factory capturing the closed generic <typeparamref name="TSink"/> is stored
+    /// on the syringe, then invoked at <see cref="Progress.IProgressReporterFactory"/>
+    /// construction time to materialize the sink via
+    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance{T}(IServiceProvider, object[])"/>.
+    /// Capturing the generic at the call site lets the AOT trim analyzer see the
+    /// constructor requirements without needing to annotate a <c>List&lt;Type&gt;</c>.
     /// </remarks>
-    public static AgentFrameworkSyringe AddProgressSink<TSink>(
+    public static AgentFrameworkSyringe AddProgressSink<
+        [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)] TSink>(
         this AgentFrameworkSyringe syringe)
         where TSink : class, Progress.IProgressSink
     {
         ArgumentNullException.ThrowIfNull(syringe);
+        Func<IServiceProvider, Progress.IProgressSink> factory =
+            sp => ActivatorUtilities.CreateInstance<TSink>(sp);
         return syringe with
         {
-            ProgressSinkTypes = (syringe.ProgressSinkTypes ?? []).Concat([typeof(TSink)]).Distinct().ToList()
+            ProgressSinkFactories = (syringe.ProgressSinkFactories ?? []).Concat([factory]).ToList()
         };
     }
 

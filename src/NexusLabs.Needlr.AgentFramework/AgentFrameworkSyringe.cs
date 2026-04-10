@@ -61,10 +61,13 @@ public sealed record AgentFrameworkSyringe
     internal Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? PerAgentResilienceFactory { get; init; }
 
     /// <summary>
-    /// Progress sink types to register in DI. Populated by
-    /// <c>AddProgressSink&lt;T&gt;()</c> on the syringe.
+    /// Factories for progress sinks to register in DI. Populated by
+    /// <c>AddProgressSink&lt;T&gt;()</c> on the syringe. Each factory captures its
+    /// closed generic type at the call site so the constructor requirements flow
+    /// through the AOT trim analyzer without needing to annotate a shared
+    /// <c>List&lt;Type&gt;</c> enumerator.
     /// </summary>
-    internal List<Type>? ProgressSinkTypes { get; init; } = [];
+    internal List<Func<IServiceProvider, Progress.IProgressSink>>? ProgressSinkFactories { get; init; } = [];
 
     public IAgentFactory BuildAgentFactory()
     {
