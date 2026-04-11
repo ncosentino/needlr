@@ -32,6 +32,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Plugin Development](https://github.devleader.ca/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
 - [Solution-Wide Source Generation](https://github.devleader.ca/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Cross-Generator Plugins](https://github.devleader.ca/needlr/cross-generator-plugins/) -- Register plugin types emitted by a second source generator with Needlr using RegisterPlugins() and a module initializer, bypassing the Roslyn generator isolation boundary.
+- [Releasing Needlr](https://github.devleader.ca/needlr/releasing/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Benchmarks](https://github.devleader.ca/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Analyzers
