@@ -5,6 +5,466 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.26] - 2026-04-10
+
+This release ships the Agent Framework progress reporting framework, the
+`[HttpClientOptions]` source generator, 27 new analyzer diagnostics, and
+a critical fix for the ASP.NET Core web application path where
+source-generated `[Options]` classes were silently not binding. It also
+hardens the release process itself with a new pre-flight guardrail and
+a full maintainer guide so analyzer shipping is no longer tribal
+knowledge.
+
+### Added
+
+#### Agent Framework — progress reporting framework
+
+- **Progress reporting core types**: `IProgressReporter`,
+  `IProgressReporterFactory`, `IProgressReporterAccessor`,
+  `IProgressSink`, `IProgressEvent`, and the concrete event hierarchy
+  (`WorkflowStartedEvent`, `WorkflowCompletedEvent`, `AgentInvokedEvent`,
+  `AgentCompletedEvent`, `AgentFailedEvent`, `AgentHandoffEvent`,
+  `LlmCallStartedEvent`, `LlmCallCompletedEvent`, `LlmCallFailedEvent`,
+  `ToolCallStartedEvent`, `ToolCallCompletedEvent`, `ToolCallFailedEvent`,
+  `BudgetUpdatedEvent`, `BudgetExceededEvent`,
+  `SuperStepStartedProgressEvent`, `SuperStepCompletedProgressEvent`).
+  Events carry full correlation context (`WorkflowId`, `AgentId`,
+  `ParentAgentId`, `Depth`, `SequenceNumber`) for downstream SSE
+  streams, dashboards, and trace diagrams.
+
+- **`ChannelProgressReporter`**: Non-blocking reporter backed by a
+  bounded `Channel<IProgressEvent>` with a single background consumer
+  so slow sinks (database, network) don't block the agent pipeline.
+  Child reporters share the parent's channel instead of spawning new
+  background tasks.
+
+- **`IProgressReporterErrorHandler`**: Optional DI-registrable handler
+  that receives sink exceptions. Without it, sink errors were silently
+  swallowed; with it, failures surface through a pluggable callback
+  (default: `NullProgressReporterErrorHandler` no-op).
+
+- **`[ProgressSinks]` source generator**: Apply `[ProgressSinks(typeof(...))]`
+  to an agent class and the generator emits
+  `GetXxxAgentProgressSinkTypes()` (metadata) and
+  `BeginXxxAgentProgressScope()` (auto-wiring — returns a composite
+  `IDisposable` that tears down both the reporter scope and any sink
+  instances implementing `IDisposable`, preventing leaks). Also emits
+  `AddGeneratedProgressSinks()` for DI registration of all discovered
+  sink types across the assembly.
+
+- **Syringe-level `AddProgressSink<T>()`**: Fluent sink registration
+  on `AgentFrameworkSyringe` that honors AOT trim analysis by capturing
+  each closed generic at the call site. Sinks flow through DI to every
+  reporter created by `IProgressReporterFactory`.
+
+- **`SpectreProgressApp` example**: Real-time Spectre Console dashboard
+  with animated spinner, live-updating agent rows, LLM call tracking,
+  tool call status, budget display, SuperStep step counter, and
+  `AgentFailedEvent` handling. Demonstrates the full progress pipeline
+  against `SimpleAgentFrameworkApp.Agents`.
+
+- **`WorkflowRunOptions` record**: Consolidates the seven-parameter
+  `RunWithDiagnosticsAsync` overload into a single options object with
+  `DiagnosticsAccessor`, `ProgressReporter`, `CompletionCollector`,
+  `ProgressReporterAccessor`, and `CancellationToken` properties.
+  Backward-compatible overloads remain.
+
+#### Agent Framework — diagnostics & telemetry
+
+- **`IAgentMetrics` with OpenTelemetry Meter**: Emits `needlr.agents.tokens.used`,
+  `needlr.agents.llm.duration`, and `needlr.agents.tool.calls` counters
+  via `System.Diagnostics.Metrics.Meter` for OpenTelemetry export.
+
+- **Agent run diagnostics**: `AgentRunDiagnosticsBuilder`,
+  `IAgentDiagnosticsAccessor`, `IAgentDiagnosticsWriter`,
+  `AgentRunDiagnostics`, `AgentStageResult`, and `IPipelineRunResult`
+  for per-call telemetry aggregation. Captures per-LLM-call timing,
+  token usage, tool call metadata, and stage breakdown across sequential
+  and handoff workflows.
+
+- **`IAgentExecutionContextAccessor`**: Ambient identity accessor for
+  threading user/orchestration identity through agent execution via
+  `AsyncLocal`, scoped via `BeginScope`.
+
+- **`IPipelineRunResult`**: Aggregated stage-level diagnostics result
+  with per-stage `ResponseText`, `Duration`, `Diagnostics`, and
+  `AggregateTokenUsage`. Supports handoff, sequential, and group-chat
+  topologies.
+
+- **`IAgentOutputCollector<T>`**: Structured typed output capture for
+  agent runs. `AddAgentOutputCollector<T>()` DI registration extension
+  wires it into the factory pipeline.
+
+- **`IWorkspace` opt-in abstraction**: `InMemoryWorkspace` default
+  implementation provides a simple key/value scratchpad for agents to
+  share state across turns without leaking into the DI container.
+
+- **`TieredProviderSelector`**: Generic quota-gated fallback selector
+  for primary/secondary/tertiary provider hierarchies. Used by the
+  example app to demonstrate automatic failover.
+
+- **`NexusLabs.Needlr.AgentFramework.Testing` package**: Test-only
+  helpers for dogfooding `IAgentScenario`, mock chat clients, and
+  scenario runner fakes.
+
+- **`[AsyncLocalScoped]` source generator**: Emits a generated
+  `IDisposable` scope class for any type marked with the attribute,
+  replacing hand-rolled `AsyncLocal<T>` + `BeginScope` boilerplate.
+
+#### Agent Framework — middleware
+
+- **`UsingToolResultMiddleware()`**: Tool result wrapping middleware
+  that surfaces tool failures as structured `ToolResult<T>` records
+  instead of raw exceptions bubbling through the agent response.
+
+- **`UsingResilience()`**: Polly-backed retry policy for agent runs
+  with `[AgentResilience]` attribute for per-agent override. Resilience
+  plugin is AOT-compatible.
+
+- **`UsingTokenBudget()`**: Input/output/total token budget enforcement
+  with granular `ITokenBudgetTracker.BeginScope(maxTokens)` and
+  `BudgetExceededEvent` emission. Cancels in-flight runs via
+  `CancelRunAsync` when exceeded.
+
+- **`UsingDiagnostics()`**: Chat and function call middleware that
+  emits per-call diagnostics into the `IAgentDiagnosticsAccessor` for
+  downstream `IPipelineRunResult` aggregation.
+
+#### HttpClient options source generator
+
+- **`[HttpClientOptions]` attribute**: Decorate a class implementing
+  `INamedHttpClientOptions` and the generator emits the full
+  `services.AddHttpClient(name).ConfigureHttpClient(...)` wiring plus
+  `services.AddOptions<T>().BindConfiguration(...)` for the matching
+  configuration section. Supports v1 capability interfaces
+  (`IHttpClientTimeout`, `IHttpClientUserAgent`, `IHttpClientBaseAddress`)
+  with capability-conditional emission.
+
+- **Analyzer diagnostics NDLRHTTP001-006**: Compile-time validation for
+  `[HttpClientOptions]` misuse — missing `INamedHttpClientOptions`
+  implementation, conflicting name sources, non-literal `ClientName`
+  property body, empty resolved name, duplicate names, invalid
+  `ClientName` property shape.
+
+- **`HttpClientExample` console project**: End-to-end example
+  demonstrating typed HTTP client registration + configuration binding.
+
+- **`docs/http-clients.md`**: Full feature page with `Quick Start`,
+  capability matrix, `Attribute Reference`, and `Analyzers` table.
+
+#### Analyzers — 27 new diagnostics shipped
+
+See the [Shipped analyzers](#shipped-analyzers-02-alpha26) section
+at the bottom of this entry for the full list.
+
+- **NDLRCOR012**: Disposable captive dependency — longer-lived service
+  holds `IDisposable` with shorter lifetime.
+- **NDLRCOR016**: `[DoNotAutoRegister]` applied directly to a plugin
+  class is redundant (and was the silent-plugin-suppression bug fixed
+  in alpha.20).
+- **NDLRGEN022**: Disposable captive dependency detected by source gen.
+- **NDLRGEN031-034**: Provider attribute analyzer diagnostics —
+  `[Provider]` on class requires partial modifier, interface has
+  invalid member, property uses concrete type, circular provider
+  dependency.
+- **NDLRHTTP001-006**: `[HttpClientOptions]` diagnostics (see above).
+- **NDLRMAF001-014**: Full Microsoft Agent Framework analyzer suite —
+  topology validation, cyclic handoff detection, function group
+  reference checking, sequence order validation, termination condition
+  diagnostics, `[AgentFunction]` description checks. **First-ever ship
+  for `NexusLabs.Needlr.AgentFramework.Analyzers`.**
+
+#### Release process hardening
+
+- **`RELEASING.md` at the repo root**: Short fast-lookup maintainer
+  checklist. GitHub auto-links it at the top of the repo page.
+
+- **`docs/releasing.md`**: Full in-depth maintainer guide covering
+  prerequisites, version numbering, every pre-release gate with
+  rationale, the mechanical procedure for moving analyzer rules
+  between `AnalyzerReleases.Unshipped.md` and `Shipped.md` (including
+  the non-obvious RS2007 "base version only" rule), CHANGELOG
+  conventions, post-release verification, rollback procedure, and
+  a historical gotchas section pointing at past fix commits for the
+  most common mistakes.
+
+- **Analyzer release tracking pre-flight gate in `scripts/release.ps1`**:
+  Scans every `AnalyzerReleases.Unshipped.md` under `src/` and blocks
+  the release if any file contains unshipped rule rows. Prints every
+  pending rule ID, the file it lives in, the exact Shipped.md header
+  to use, and the canonical `chore: ship analyzers for <version>`
+  commit message. This closes a repeatable gap where past alpha
+  releases required retroactive "fix analyzer release format" commits
+  (see `83ef38ab`, `6b7e1166`, `22bd5b64`).
+
+#### Examples
+
+- **`SpectreProgressApp` example** (see progress reporting section above).
+- **`MinimalWebApiSourceGen` + `[Options]` demonstration**: Added
+  `WeatherOptions` decorated with `[Options(ValidateOnStart = true)]`
+  and `WeatherProvider` consuming `IOptions<WeatherOptions>` to prove
+  the web path `[Options]` fix end-to-end against a real
+  `WebApplicationBuilder`.
+- **`HttpClientExample`** (see HttpClient section above).
+- **Spectre budget events**: Dashboard shows current/max token budget
+  with live updates on `BudgetUpdatedEvent`.
+- **SuperStep and AgentFailed rendering**: Dashboard handles
+  `SuperStepStartedProgressEvent`, `SuperStepCompletedProgressEvent`,
+  and `AgentFailedEvent`.
+- **`TieredProviderSelector` fallback** demonstrated in the example app.
+- **`IToolMetricsAccessor.AttachMetric`** demonstrated in a tool.
+
+### Fixed
+
+- **[Critical] ASP.NET Core web path silently skipped source-generated
+  `[Options]` binding**:
+  `WebApplicationSyringe.BuildWebApplication()` invoked
+  `BaseSyringe.GetPostPluginRegistrationCallbacks()` which only returned
+  user-registered callbacks, **never** invoking
+  `SourceGenRegistry.TryGetOptionsRegistrar` the way the console path
+  (`ConfiguredSyringe.BuildServiceProvider(IConfiguration)`) does. As a
+  result, every `[Options]`-decorated class in a web application
+  received a default-constructed `IOptions<T>.Value` with empty/default
+  properties. `ValidateOnStart` never fired because the validator was
+  also registered via the same dropped callback.
+
+  The fix routes `TryGetOptionsRegistrar` and `TryGetExtensionRegistrar`
+  through the web path's post-plugin callback list, resolving
+  `IConfiguration` from `WebApplicationBuilder.Services` at callback
+  invocation time (the host registers it as an `ImplementationInstance`
+  before our callbacks run, with a fallback to a minimal temporary
+  provider for exotic factory registrations).
+
+  15 integration tests in
+  `OptionsWebApplicationSourceGenTests` lock this behavior in, covering
+  `IOptions<T>`, `IOptionsSnapshot<T>`, `IOptionsMonitor<T>`, named
+  options, `[Required]` validation pass/fail via `ValidateOnStart`,
+  external validators, nested configuration, array and dictionary
+  binding, immutable records, and explicit console-vs-web parity
+  verification against the same configuration.
+
+  **Consumer action**: projects on alpha.25 or earlier that use
+  `[Options]` on the ASP.NET Core web path and rely on manual
+  `AddOptions<T>().BindConfiguration(...)` workarounds can now remove
+  those workarounds after upgrading. Projects that did not have a
+  workaround and silently shipped with empty `IOptions<T>.Value` should
+  audit their options consumers.
+
+- **AOT trim analysis IL2072 in `AddProgressSink<T>()`**: The
+  `AgentFrameworkSyringe.ProgressSinkTypes` field stored raw `List<Type>`
+  entries, and the `IProgressReporterFactory` factory lambda iterated
+  them calling the non-generic
+  `ActivatorUtilities.CreateInstance(sp, Type)` overload. The AOT trim
+  analyzer rejected this because `List<Type>.Current` has no
+  `[DynamicallyAccessedMembers(PublicConstructors)]` annotation. Fix:
+  replace `ProgressSinkTypes` with
+  `List<Func<IServiceProvider, IProgressSink>>`, where each factory is
+  constructed at the `AddProgressSink<TSink>()` call site via the
+  generic `ActivatorUtilities.CreateInstance<TSink>(sp)` overload with
+  `[DynamicallyAccessedMembers(PublicConstructors)]` annotated on
+  `TSink`. The constructor requirements now flow through the generic
+  type parameter without needing to annotate a shared collection.
+
+- **Source generator closure race in `SyringeExtensionsForAgentFramework.cs`**:
+  `syringeSinkTypes` was a closure-captured `List<Type>?` mutated by
+  the `IAgentFactory` factory lambda and read by the
+  `IProgressReporterFactory` factory lambda. If DI resolved the
+  progress reporter factory before the agent factory, the list was
+  still `null` and syringe-added sinks vanished silently. Fix:
+  introduce `BuiltAgentFrameworkSyringe` DI singleton — both factories
+  resolve the same singleton, so the configure delegate runs exactly
+  once and both consumers see identical state regardless of resolution
+  order.
+
+- **`AgentFailedEvent` was declared but never emitted**: the type
+  existed in the `IProgressEvent` hierarchy but no code path fired it.
+  Fix: `PipelineRunExtensions` now handles MAF `ExecutorFailedEvent`
+  and `WorkflowErrorEvent` from the stream, emits `AgentFailedEvent`
+  with the failing executor ID, and also emits it in the outer catch
+  block if an exception escapes the stream with a known
+  `currentExecutorId`.
+
+- **`ProgressReporter` and `ChannelProgressReporter` silently swallowed
+  sink exceptions**: the error paths in both reporters had bare
+  `catch { }` blocks. Fix: both now invoke a registered
+  `IProgressReporterErrorHandler` instead. Default behavior
+  (`NullProgressReporterErrorHandler`) is a no-op so existing consumers
+  see no change; projects that need visibility can register their own
+  handler that forwards to `ILogger<T>` or an in-process diagnostic bus.
+
+- **Generated `BeginXxxAgentProgressScope` leaked `IDisposable` sinks**:
+  the generator emitted a scope method that returned only the reporter
+  accessor scope handle, so any sink instances created via
+  `ActivatorUtilities.CreateInstance` that implemented `IDisposable`
+  were orphaned when the scope ended. Fix: generator now emits a
+  `CompositeDisposable` that ties both the reporter scope and the
+  sinks' disposal to the returned handle.
+
+- **First-wins `TryAddSingleton<IProgressSink, TSink>()` in generator**:
+  when multiple agents each declared a different `[ProgressSinks]` type,
+  the generated `AddGeneratedProgressSinks()` used `TryAddSingleton`
+  against the `IProgressSink` interface, causing only the first sink
+  to register. Fix: generator now emits `TryAddSingleton<TSink>()`
+  (on the concrete type) plus
+  `AddSingleton<IProgressSink>(sp => sp.GetRequiredService<TSink>())`
+  so each sink stacks correctly in `GetServices<IProgressSink>()`.
+
+- **`SuperStepStartedProgressEvent` / `SuperStepCompletedProgressEvent`
+  were emitted but duplicate `WorkflowStartedEvent` were firing
+  alongside**: the workflow event loop incorrectly treated super-step
+  boundaries as workflow starts. Fix: dedicated SuperStep event paths
+  with proper `StepNumber` tracking.
+
+- **Tool call progress events not propagating through
+  `IProgressReporterAccessor`**: the tool-call middleware was writing
+  to the wrong reporter instance. Fix: resolve `Current` from the
+  accessor on each call and forward events there.
+
+- **Per-LLM-call timing was occasionally missing when `AsyncLocal`
+  diagnostics didn't propagate across runtime context boundaries**:
+  added a `ConcurrentQueue`-based bypass and a fallback event-stream
+  timing path so per-call duration is always captured.
+
+- **`BeginCapture` was called after `RunStreamingAsync` in pipeline
+  runner**: diagnostics scope was opened too late to capture the first
+  stage. Fix: move `BeginCapture` before `RunStreamingAsync` so every
+  stage is captured.
+
+- **Token budget cancellation was inconsistent**: budget exceeded
+  sometimes threw `OperationCanceledException` from a retry handler
+  instead of propagating out to the caller. Fix: dedicated
+  `BudgetCancellationToken` + explicit `CancelRunAsync` +
+  `ThrowIfCancellationRequested` call pattern. Retry's `ShouldHandle`
+  now excludes `OperationCanceledException` so budget cancels don't
+  retry.
+
+- **Missing DI registrations in `Func<AgentFrameworkSyringe>` overload
+  of `UsingAgentFramework()`**: the parameterless factory overload
+  didn't register the same infrastructure services as the
+  `Func<AgentFrameworkSyringe, AgentFrameworkSyringe>` overload. Fix:
+  route the second overload through the first so both paths share the
+  same `RegisterAgentFrameworkInfrastructure` helper.
+
+- **Duplicate agent names in `PipelineRunResult.Responses`**: when the
+  same agent appeared in multiple stages, responses were overwritten
+  in a dictionary keyed by agent name. Fix: key by stage index instead.
+
+- **Agent name hardcoded to `"Agent"` in some paths**: now resolved
+  at runtime from the agent factory.
+
+- **`AIAgentBuilder.UseResilience()` did not handle
+  `OperationCanceledException`**: caused budget cancellations to leak
+  through as uncaught exceptions. Fix: add to `ShouldHandle` list.
+
+- **`ActivitySource` field was declared but never used** in
+  `IAgentMetrics`: removed the dead field and added a TODO documenting
+  that distributed tracing is deferred to a future release.
+
+- **Meter disposal missing in test cleanup**: `AgentMetrics` was not
+  disposing its `Meter` in test tear-down, causing test pollution.
+  Fix: implement `IDisposable` and dispose in test fixtures.
+
+- **Missing `IProgressEvent.ParentAgentId` propagation via
+  `CreateChild()`**: child reporters inherited the parent's `AgentId`
+  instead of setting it as `ParentAgentId`. Fix: `CreateChild()` now
+  correctly sets `ParentAgentId = parent.AgentId` and increments
+  `Depth`.
+
+- **`NullProgressReporter.NextSequence()` always returned 0**: masked
+  bugs because all events got sequence 0 if the null reporter was
+  accidentally in use. Fix: `Interlocked.Increment` on a static counter
+  so sequences are always real values.
+
+### Changed
+
+- **Static `ChatMiddlewareHolder` replaced with DI-managed accessors**:
+  removed a static singleton that held middleware state; middleware now
+  resolves from DI per-invocation. Closes a test isolation issue where
+  state leaked across tests.
+
+- **Static `ProgressSequence` replaced with DI-managed
+  `IProgressSequence`**: removed another static holder in favor of a
+  singleton service.
+
+- **`TypeRegistryGenerator` refactored**: extracted `Options` discovery
+  into `OptionsDiscoveryHelper`, extracted `Options` emission into
+  `OptionsCodeGenerator`, extracted injectable types + plugins emission
+  into `CodeGen/`, split `DiscoveryModels.cs` into one-type-per-file,
+  and split the final `TypeRegistryGenerator.cs` down to 842 lines.
+  No user-visible behavior change; future generator work becomes
+  easier to reason about.
+
+- **`AgentFrameworkFunctionRegistryGenerator` split into 16 files**:
+  same motivation as the `TypeRegistryGenerator` refactor above.
+
+- **`IAgentDiagnosticsWriter` extracted from `AgentDiagnosticsAccessor`**:
+  eliminates a concrete-type cast in the middleware registration path.
+
+- **`AgentRunDiagnosticsBuilder` is now `IDisposable`**: ensures the
+  diagnostics capture scope is torn down deterministically.
+
+- **`docs/options.md` has a new "ASP.NET Core Web Application Path"
+  section** documenting that `[Options]` classes bind on both console
+  and web paths via `RegisterOptions` without manual `AddOptions`
+  calls, with a runnable example matching `MinimalWebApiSourceGen`.
+
+- **`ConfigurationChangeTokenSource` in `AgentFrameworkSyringe` is now
+  registered under the correct name**: was previously `null!` for the
+  options name.
+
+### Removed
+
+- **Dead `ProgressReportingExtensions.cs`**: file was orphaned after a
+  refactor.
+
+- **`GenerateTypeRegistry` skill** migrated to
+  `ncosentino/agentic-plugins` — no runtime behavior change; this was
+  developer tooling only.
+
+### Shipped analyzers (0.0.2-alpha.26)
+
+The following diagnostic rules have been moved from
+`AnalyzerReleases.Unshipped.md` to `AnalyzerReleases.Shipped.md` under
+the `## Release 0.0.2` section in each analyzer project. All are now
+officially released — consumers on alpha.26+ can rely on their
+stability.
+
+**`NexusLabs.Needlr.Analyzers`** (2 rules):
+
+- `NDLRCOR012` — Error — Disposable captive dependency
+- `NDLRCOR016` — Warning — `[DoNotAutoRegister]` on plugin class is redundant
+
+**`NexusLabs.Needlr.AgentFramework.Analyzers`** (14 rules, first-ever ship):
+
+- `NDLRMAF001` — Error — `AgentHandoffsTo` target type is not decorated with `[NeedlrAiAgent]`
+- `NDLRMAF002` — Error — `AgentGroupChatMember` group has fewer than two members
+- `NDLRMAF003` — Warning — Class with `[AgentHandoffsTo]` is not itself decorated with `[NeedlrAiAgent]`
+- `NDLRMAF004` — Warning — Cyclic handoff chain detected
+- `NDLRMAF005` — Warning — `FunctionGroups` references a group name with no matching `[AgentFunctionGroup]` class
+- `NDLRMAF006` — Error — Duplicate `Order` value in `[AgentSequenceMember]` pipeline
+- `NDLRMAF007` — Warning — Gap in `[AgentSequenceMember]` `Order` sequence
+- `NDLRMAF008` — Info — Agent participates in no topology declaration
+- `NDLRMAF009` — Warning — `[WorkflowRunTerminationCondition]` declared on a non-agent class
+- `NDLRMAF010` — Error — Termination condition type does not implement `IWorkflowTerminationCondition`
+- `NDLRMAF011` — Info — Prefer `[AgentTerminationCondition]` over `[WorkflowRunTerminationCondition]` for group chat members
+- `NDLRMAF012` — Warning — `[AgentFunction]` method is missing a `[Description]` attribute
+- `NDLRMAF013` — Warning — `[AgentFunction]` method parameter is missing a `[Description]` attribute
+- `NDLRMAF014` — Warning — `FunctionTypes` entry has no `[AgentFunction]` methods
+
+**`NexusLabs.Needlr.Generators`** (11 rules):
+
+- `NDLRGEN022` — Error — Disposable captive dependency detected
+- `NDLRGEN031` — Error — `ProviderAttributeAnalyzer`: `[Provider]` on class requires partial modifier
+- `NDLRGEN032` — Error — `ProviderAttributeAnalyzer`: `[Provider]` interface has invalid member
+- `NDLRGEN033` — Warning — `ProviderAttributeAnalyzer`: Provider property uses concrete type
+- `NDLRGEN034` — Error — `ProviderAttributeAnalyzer`: Circular provider dependency detected
+- `NDLRHTTP001` — Error — `HttpClientOptionsAnalyzer`: `[HttpClientOptions]` target must implement `INamedHttpClientOptions`
+- `NDLRHTTP002` — Error — `HttpClientOptionsAnalyzer`: HttpClient name sources conflict
+- `NDLRHTTP003` — Error — `HttpClientOptionsAnalyzer`: `ClientName` property body is not a literal expression
+- `NDLRHTTP004` — Error — `HttpClientOptionsAnalyzer`: Resolved HttpClient name is empty
+- `NDLRHTTP005` — Error — `HttpClientOptionsAnalyzer`: Duplicate HttpClient name
+- `NDLRHTTP006` — Error — `HttpClientOptionsAnalyzer`: `ClientName` property has wrong shape
+
 ## [0.0.2-alpha.25] - 2026-03-04
 
 ### Added
