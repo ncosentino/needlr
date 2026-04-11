@@ -3472,9 +3472,12 @@ by <a href="../IProgressReporterFactory/#NexusLabs.Needlr.AgentFramework.Progres
 <h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
 <p><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
 <h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
-<p>The sink type is stored on the syringe and resolved from DI via
-<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilities" title="Microsoft.Extensions.DependencyInjection.ActivatorUtilities">Microsoft.Extensions.DependencyInjection.ActivatorUtilities</a>
-when the <a href="../IProgressReporterFactory/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory">IProgressReporterFactory</a> is created.</p>
+<p>A factory capturing the closed generic <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.AddProgressSink_TSink_(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe).TSink" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.AddProgressSink\&lt;TSink&gt;(this NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe).TSink">TSink</a> is stored
+on the syringe, then invoked at <a href="../IProgressReporterFactory/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory">IProgressReporterFactory</a>
+construction time to materialize the sink via
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilities.createinstance--1#microsoft-extensions-dependencyinjection-activatorutilities-createinstance--1(system-iserviceprovider-system-object[])" title="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance``1(System.IServiceProvider,System.Object[])">Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance&lt;&gt;.IServiceProvider,System.Object[])</a>.
+Capturing the generic at the call site lets the AOT trim analyzer see the
+constructor requirements without needing to annotate a <code>List&lt;Type&gt;</code>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,Microsoft.Extensions.AI.IChatClient)'></a></p>
 <h2 id="agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-ichatclient-method">AgentFrameworkSyringeExtensions.UsingChatClient(this AgentFrameworkSyringe, IChatClient) Method<a class="headerlink" href="#agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-ichatclient-method" title="Permanent link">&para;</a></h2>
 <p>Sets the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a> used by all agents created from the factory.

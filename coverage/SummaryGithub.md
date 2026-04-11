@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/10/2026 - 23:35:33 |
-| Coverage date: | 04/10/2026 - 23:34:16 - 04/10/2026 - 23:35:29 |
+| Generated on: | 04/11/2026 - 00:10:52 |
+| Coverage date: | 04/11/2026 - 00:09:33 - 04/11/2026 - 00:10:48 |
 | Parser: | MultiReport (23x Cobertura) |
 | Assemblies: | 27 |
 | Classes: | 372 |
 | Files: | 332 |
-| **Line coverage:** | 84.4% (13012 of 15407) |
-| Covered lines: | 13012 |
-| Uncovered lines: | 2395 |
-| Coverable lines: | 15407 |
-| Total lines: | 38577 |
-| **Branch coverage:** | 75.2% (5279 of 7017) |
-| Covered branches: | 5279 |
+| **Line coverage:** | 84.4% (13014 of 15408) |
+| Covered lines: | 13014 |
+| Uncovered lines: | 2394 |
+| Coverable lines: | 15408 |
+| Total lines: | 38585 |
+| **Branch coverage:** | 75.2% (5280 of 7017) |
+| Covered branches: | 5280 |
 | Total branches: | 7017 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -140,7 +140,7 @@
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap|81.3%|54.5%|
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe|100%|60%|
-|NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions|84%|78.1%|
+|NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions|84.4%|79.4%|
 |NexusLabs.Needlr.AgentFramework.AgentFunctionGroupAttribute|100%||
 |NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute|100%||
 |NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute|100%||
@@ -500,15 +500,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
