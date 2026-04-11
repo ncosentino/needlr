@@ -101,6 +101,34 @@
         container.appendChild(label);
         container.appendChild(select);
 
+        // Back-link to the current version's catalog index. mkdocs.yml's
+        // nav only references api/stable/, api/dev/, and api/index.md, so
+        // pages under api/v0.0.2-alpha.*/ have no left-nav link that points
+        // back to their own catalog — clicking "Stable" in the sidebar
+        // while on a v0.0.2-alpha.27 page silently jumps you out of that
+        // version. This renders a clearly visible back-link right next to
+        // the version dropdown, fixing the "no way back to the familiar
+        // entry point" problem without having to inject nav entries into
+        // ~3000 frozen HTML pages.
+        //
+        // Hidden when the user is already on the version's catalog index
+        // (tail === ''), since the link would be a no-op there.
+        if (tail !== '') {
+            let friendlyName = currentSeg;
+            for (let i = 0; i < data.entries.length; i++) {
+                if (!data.entries[i].separator && data.entries[i].path === currentSeg) {
+                    friendlyName = data.entries[i].label;
+                    break;
+                }
+            }
+
+            const backLink = document.createElement('a');
+            backLink.href = apiRoot + currentSeg + '/';
+            backLink.textContent = '\u2190 All packages in ' + friendlyName;
+            backLink.style.cssText = 'padding: 0.25em 0.6em; font-size: 0.85em; font-weight: 600; color: var(--md-default-fg-color); background: var(--md-default-bg-color); border: 1px solid var(--md-default-fg-color--lightest); border-radius: 3px; text-decoration: none; white-space: nowrap;';
+            container.appendChild(backLink);
+        }
+
         // Inject as the first child of the article body, above the heading.
         article.insertBefore(container, article.firstChild);
     }
