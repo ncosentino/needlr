@@ -199,6 +199,23 @@ jobs:
         cp -r "docs/api/stable/." "$TEMP_DIR/stable"
         cp -r "docs/api/v${VERSION}/." "$TEMP_DIR/versioned"
 
+        # Everything we care about is in $TEMP_DIR now. Wipe the working tree
+        # completely — reset tracked-file modifications, remove every untracked
+        # file and directory — so the branch switch and rebase below start from
+        # a pristine state. This handles BOTH failure modes the earlier patches
+        # each caught only one of:
+        #   1. Modified tracked files left behind by the doc-gen steps that ran
+        #      before this one (e.g. docs/api/dev/index.md,
+        #      docs/api/stable/index.md). Without reset, `git pull --rebase`
+        #      refuses with "cannot pull with rebase: You have unstaged changes".
+        #      This is what broke v0.0.2-alpha.26.
+        #   2. Untracked generated directories that git-stash would silently
+        #      drop. This is what commit 68be9747 was trying to fix; we keep
+        #      its cp-to-temp approach above and add reset-hard on top so both
+        #      shapes of leftover state are handled.
+        git reset --hard HEAD
+        git clean -fdx
+
         # Switch to main and pull latest
         git fetch origin main
         git checkout main
