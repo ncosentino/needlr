@@ -178,6 +178,23 @@ jobs:
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
 
+    - name: Restrict deploy to release.yml-owned paths
+      run: |
+        # release.yml owns: /api/stable/*, /api/v<this-version>/*, home,
+        # feature pages, assets, /api/index.html.
+        # ci.yml owns: /api/dev/*, /coverage/*.
+        #
+        # Delete the ci.yml-owned paths from our build output so the
+        # peaceiris deploy below (with keep_files: true) preserves whatever
+        # the last ci.yml run wrote to those paths on gh-pages. This ensures
+        # /api/dev/ always reflects the latest main commit, not whatever
+        # the release tag's commit happened to have.
+        #
+        # See also: ci.yml has the symmetric "rm -rf ./site/api/stable
+        # ./site/api/v*" so each workflow only writes to its own slices.
+        rm -rf ./site/api/dev
+        echo "Restricted ./site/ to release.yml-owned paths."
+
     - name: Deploy Documentation
       uses: peaceiris/actions-gh-pages@v4
       with:
@@ -185,53 +202,19 @@ jobs:
         publish_dir: ./site
         keep_files: true
 
-    - name: Commit Stable API Docs to Main
-      run: |
-        VERSION="${GITHUB_REF_NAME#v}"
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-
-        # Save generated docs to a temp dir OUTSIDE the git repo.
-        # git stash only stashes tracked-file changes; newly-generated package
-        # subdirectories are untracked and would be silently dropped by stash.
-        # Using cp captures everything the filesystem has, regardless of git state.
-        TEMP_DIR=$(mktemp -d)
-        cp -r "docs/api/stable/." "$TEMP_DIR/stable"
-        cp -r "docs/api/v${VERSION}/." "$TEMP_DIR/versioned"
-
-        # Everything we care about is in $TEMP_DIR now. Wipe the working tree
-        # completely — reset tracked-file modifications, remove every untracked
-        # file and directory — so the branch switch and rebase below start from
-        # a pristine state. This handles BOTH failure modes the earlier patches
-        # each caught only one of:
-        #   1. Modified tracked files left behind by the doc-gen steps that ran
-        #      before this one (e.g. docs/api/dev/index.md,
-        #      docs/api/stable/index.md). Without reset, `git pull --rebase`
-        #      refuses with "cannot pull with rebase: You have unstaged changes".
-        #      This is what broke v0.0.2-alpha.26.
-        #   2. Untracked generated directories that git-stash would silently
-        #      drop. This is what commit 68be9747 was trying to fix; we keep
-        #      its cp-to-temp approach above and add reset-hard on top so both
-        #      shapes of leftover state are handled.
-        git reset --hard HEAD
-        git clean -fdx
-
-        # Switch to main and pull latest
-        git fetch origin main
-        git checkout main
-        git pull --rebase origin main
-
-        # Restore generated docs (rm first for a clean slate — avoids leftover
-        # files from a previous release if packages were renamed or removed)
-        rm -rf "docs/api/stable" "docs/api/v${VERSION}"
-        mkdir -p "docs/api/stable" "docs/api/v${VERSION}"
-        cp -r "$TEMP_DIR/stable/." "docs/api/stable/"
-        cp -r "$TEMP_DIR/versioned/." "docs/api/v${VERSION}/"
-        rm -rf "$TEMP_DIR"
-
-        git add "docs/api/stable/" "docs/api/v${VERSION}/"
-        git diff --staged --quiet || git commit -m "docs: update stable API reference for v${VERSION} [skip ci]"
-        git push origin main
+    # NOTE: the "Commit Stable API Docs to Main" step that used to live
+    # after Deploy Documentation has been deleted. It tried to commit
+    # generated API docs back to main, but .gitignore blocks
+    # `docs/api/v*/` and `docs/api/stable/NexusLabs.Needlr*/`, so the step
+    # fought the repo's own rules on every release and required three
+    # separate "root-cause fix" commits (523cd5f9, 68be9747, e775d648)
+    # each of which introduced a new failure mode.
+    #
+    # Generated docs now live exclusively on the gh-pages branch. Historical
+    # per-version /api/v<N>/ directories are preserved forever because
+    # nothing in either workflow ever deletes or overwrites them on
+    # gh-pages — peaceiris's keep_files: true handles that guarantee as
+    # long as neither workflow writes to those paths in its ./site/ output.
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
