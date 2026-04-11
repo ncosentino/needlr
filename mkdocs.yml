@@ -56,6 +56,7 @@ nav:
     - Plugin Development: plugin-development.md
     - Solution-Wide Source Generation: solution-wide-source-generation.md
     - Cross-Generator Plugins: cross-generator-plugins.md
+    - Releasing Needlr: releasing.md
   - Benchmarks: benchmarks.md
   - Analyzers:
     - Overview: analyzers/README.md
