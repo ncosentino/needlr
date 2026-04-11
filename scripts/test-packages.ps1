@@ -21,6 +21,32 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $repoRoot  = Join-Path $scriptDir '..'
 $failed    = $false
 
+# GitHub Actions file-command env vars ($GITHUB_ENV / $GITHUB_OUTPUT /
+# $GITHUB_STEP_SUMMARY) point at runner-owned files that the runner reads
+# after this step completes. The .NET test-host / Microsoft.Testing.Platform
+# integration (or some other dotnet subprocess we spawn) inherits these and
+# writes to $GITHUB_ENV during `dotnet test`, producing a stray line the
+# runner then rejects with "Invalid format '2'". Clearing them in this
+# session removes the path from child-process inheritance so nothing can
+# corrupt the runner-managed file. The runner still reads its file at the
+# path it originally set after the step ends — our clearing only affects
+# this script's subprocesses, not the runner's post-step processing.
+#
+# Dump pre-existing content once for diagnostics, then clear.
+$githubEnvPath = $env:GITHUB_ENV
+if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
+    $pre = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
+    if ($pre) {
+        Write-Host "[diagnostics] GITHUB_ENV pre-script content:"
+        Write-Host $pre
+    } else {
+        Write-Host "[diagnostics] GITHUB_ENV file exists and is empty at script start"
+    }
+}
+Remove-Item env:GITHUB_ENV -ErrorAction SilentlyContinue
+Remove-Item env:GITHUB_OUTPUT -ErrorAction SilentlyContinue
+Remove-Item env:GITHUB_STEP_SUMMARY -ErrorAction SilentlyContinue
+
 function Assert-NuspecDependency {
     param(
         [string]$NupkgPath,
@@ -372,6 +398,21 @@ foreach ($proj in $testProjects) {
 }
 
 Write-Host ""
+
+# Diagnostics: show what (if anything) landed in the file the runner will
+# read at post-step time. With the env vars cleared at script start this
+# should be empty or untouched; if not, something in the pwsh process itself
+# (not a child) is writing to the path.
+if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
+    $post = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
+    if ($post) {
+        Write-Host "[diagnostics] GITHUB_ENV post-script content:"
+        Write-Host $post
+    } else {
+        Write-Host "[diagnostics] GITHUB_ENV file is empty at script end"
+    }
+}
+
 if ($failed) {
     Write-Host "Package validation FAILED." -ForegroundColor Red
     exit 1
