@@ -37,6 +37,11 @@
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (data) {
                 if (!data || !Array.isArray(data.entries) || data.entries.length === 0) return;
+                // Ignore stale responses if the user navigated away since
+                // init() started (mkdocs-material instant nav can fire
+                // init for a new page while this fetch is still in flight).
+                if (!window.location.pathname.startsWith(apiRoot)) return;
+                if (document.getElementById(ALREADY_RENDERED_ID)) return;
                 renderSwitcher(data, apiRoot, path);
             })
             .catch(function () { /* silent no-op on fetch failure */ });
@@ -100,15 +105,22 @@
         article.insertBefore(container, article.firstChild);
     }
 
-    // mkdocs-material swaps content on client-side navigation via instant
-    // loading; listen for both initial load and subsequent navigation.
-    if (document.readyState === 'loading') {
+    // Prefer mkdocs-material's instant-navigation hook when available:
+    // document$.subscribe(fn) invokes fn() immediately for the current page
+    // AND re-invokes it on every subsequent client-side navigation. Using
+    // it alone is correct for initial load + nav.
+    //
+    // Using BOTH DOMContentLoaded AND document$.subscribe was a bug —
+    // init() fired twice on first load, both calls started their own
+    // async fetch, and both reached renderSwitcher because the
+    // DOM-element guard in renderSwitcher was checked BEFORE either
+    // fetch had resolved. Result: two dropdowns on the /api/ page.
+    // Picking exactly one path fixes it.
+    if (typeof document$ !== 'undefined' && document$ && typeof document$.subscribe === 'function') {
+        document$.subscribe(init);
+    } else if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
-    }
-    // Re-run on mkdocs-material's instant-nav hook if available
-    if (typeof document$ !== 'undefined' && document$ && typeof document$.subscribe === 'function') {
-        document$.subscribe(init);
     }
 })();
