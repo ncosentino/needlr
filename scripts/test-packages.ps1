@@ -35,24 +35,9 @@ $failed    = $false
 # it set the env var for this step, so it reads its own untouched file at
 # post-step time — our redirect only affects this pwsh session and its
 # child processes, not the runner's post-step processing.
-$githubEnvPath = $env:GITHUB_ENV
-if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
-    $pre = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
-    if ($pre) {
-        Write-Host "[diagnostics] GITHUB_ENV pre-script content:"
-        Write-Host $pre
-    } else {
-        Write-Host "[diagnostics] GITHUB_ENV file exists and is empty at script start"
-    }
-}
-
-$discardEnv     = [System.IO.Path]::GetTempFileName()
-$discardOutput  = [System.IO.Path]::GetTempFileName()
-$discardSummary = [System.IO.Path]::GetTempFileName()
-$env:GITHUB_ENV            = $discardEnv
-$env:GITHUB_OUTPUT         = $discardOutput
-$env:GITHUB_STEP_SUMMARY   = $discardSummary
-Write-Host "[diagnostics] Redirected GITHUB_ENV -> $discardEnv"
+$env:GITHUB_ENV          = [System.IO.Path]::GetTempFileName()
+$env:GITHUB_OUTPUT       = [System.IO.Path]::GetTempFileName()
+$env:GITHUB_STEP_SUMMARY = [System.IO.Path]::GetTempFileName()
 
 function Assert-NuspecDependency {
     param(
@@ -405,28 +390,6 @@ foreach ($proj in $testProjects) {
 }
 
 Write-Host ""
-
-# Diagnostics: dump both the real runner-owned file (should be untouched —
-# empty) AND the throwaway file NBGV actually wrote to (should contain the
-# malformed content that used to corrupt the real one).
-if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
-    $post = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
-    if ($post) {
-        Write-Host "[diagnostics] WARN: real GITHUB_ENV file was written to despite redirect:"
-        Write-Host $post
-    } else {
-        Write-Host "[diagnostics] real GITHUB_ENV file is empty (as expected)"
-    }
-}
-if (Test-Path $discardEnv) {
-    $discardContent = Get-Content -Raw -Path $discardEnv -ErrorAction SilentlyContinue
-    if ($discardContent) {
-        Write-Host "[diagnostics] discard GITHUB_ENV content (this is what NBGV wrote):"
-        Write-Host $discardContent
-    } else {
-        Write-Host "[diagnostics] discard GITHUB_ENV file is empty"
-    }
-}
 
 if ($failed) {
     Write-Host "Package validation FAILED." -ForegroundColor Red

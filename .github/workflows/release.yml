@@ -78,8 +78,25 @@ jobs:
           -reporttypes:"Html;JsonSummary;MarkdownSummaryGithub;Badges"
 
     # Pack only the subset: NexusLabs.Needlr*
+    #
+    # The step-level env block redirects GitHub Actions file-command env vars
+    # to throwaway temp files. Nerdbank.GitVersioning's SetCloudBuildVariables
+    # MSBuild task detects GITHUB_ACTIONS=true and appends version metadata to
+    # $GITHUB_ENV during every project build. When a step invokes `dotnet`
+    # in a loop over many csproj files (as this step does), concurrent
+    # MSBuild workers race on the shared env file and can produce a torn
+    # line that the runner rejects at post-step time with "Invalid format
+    # '<value>'". Redirecting to step-local tempfiles means NBGV writes
+    # harmlessly; the runner's real env file (at the path it cached when
+    # creating the step) stays untouched and post-step processing sees
+    # empty state. This pattern is applied wherever we invoke dotnet in a
+    # per-project loop (see also scripts/test-packages.ps1).
     - name: Pack subset (NexusLabs.Needlr*)
       shell: bash
+      env:
+        GITHUB_ENV: /tmp/discard-pack-env
+        GITHUB_OUTPUT: /tmp/discard-pack-output
+        GITHUB_STEP_SUMMARY: /tmp/discard-pack-summary
       run: |
         mkdir -p artifacts/packages
         mapfile -t PACK_PROJECTS < <(find src -name 'NexusLabs.Needlr*.csproj' \
