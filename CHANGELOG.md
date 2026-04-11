@@ -5,6 +5,57 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.27] - 2026-04-11
+
+Documentation pipeline infrastructure release. No library code changes. This
+release exists to validate the new ci.yml/release.yml disjoint-ownership
+model for the versioned API docs site end-to-end.
+
+### Fixed
+
+- **Docs pipeline: ci.yml no longer clobbers stable API docs.** Previously
+  every push to `main` ran an "Ensure Stable API Docs Are Available" step
+  that wrote a placeholder to `docs/api/stable/index.md`, which mkdocs then
+  built into `./site/api/stable/` and `peaceiris/actions-gh-pages@v4`
+  deployed to `gh-pages` — silently overwriting the real stable API
+  reference that `release.yml` had published at release time. That step is
+  deleted. `ci.yml` now has a symmetric `rm -rf ./site/api/stable
+  ./site/api/v*` pre-deploy step so `keep_files: true` preserves whatever
+  `release.yml` last wrote to those paths.
+
+- **Docs pipeline: release.yml no longer fights `.gitignore` to commit
+  generated docs back to main.** The "Commit Stable API Docs to Main" step
+  tried to `git add docs/api/v<version>/` and `docs/api/stable/` but those
+  paths are in `.gitignore`, so every release required three separate
+  "root-cause fix" commits to work around the repo's own rules. That step
+  is deleted. Generated docs now live exclusively on `gh-pages`;
+  per-version `/api/v<N>/` directories are preserved forever because
+  neither workflow ever writes to paths outside its owned slice.
+
+- **Docs pipeline: `/api/` version catalog now enumerates from git tags
+  instead of walking the working tree.** `scripts/generate-versioned-api-docs.sh`
+  previously listed "All Versions" by scanning `docs/api/v*/` on disk,
+  which silently lost history on every release because `.gitignore` blocks
+  per-version directories from ever being committed to main — the live
+  catalog therefore only ever listed the current version plus nothing
+  else. Catalog now uses `git tag --list 'v*' --sort=-version:refname`
+  and emits trailing-slash links that resolve at runtime against the
+  preserved `gh-pages` content.
+
+### Changed
+
+- **`docs/api/stable/index.md` is now a tracked static placeholder.** The
+  file exists solely so `mkdocs build --strict` has a valid source for
+  `/api/stable/`. Its only job is to point readers at the live site; it is
+  never overwritten by generated content on `gh-pages`. File header
+  explains this so future maintainers don't assume it's stale.
+
+- **Docs pipeline ownership documented in the Copilot instruction file.**
+  `.github/instructions/docs.instructions.md` now contains an ownership
+  table showing which workflow owns which `/api/*` slice, the invariant
+  that neither workflow writes generated docs back to main, and the
+  git-tag-driven catalog rule.
+
 ## [0.0.2-alpha.26] - 2026-04-10
 
 This release ships the Agent Framework progress reporting framework, the
