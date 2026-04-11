@@ -72,11 +72,37 @@ Select a version:
 
 EOF
 
-for vdir in "$ROOT_DIR/docs/api"/v*/; do
-    if [ -d "$vdir" ]; then
-        vname=$(basename "$vdir")
-        echo "- [$vname]($vname/index.md)" >> "$ROOT_DIR/docs/api/index.md"
-    fi
-done
+# Enumerate all released versions from git tags.
+#
+# Git tags are the single source of truth for "what versions have been released".
+# This replaces an earlier approach that walked `docs/api/v*/` in the working
+# tree, which silently lost history because .gitignore blocks per-version dirs
+# from ever being committed to main. Every past release's "All Versions"
+# catalog therefore only listed itself — see live site before this change for
+# proof.
+#
+# The per-version HTML for each tag is preserved on gh-pages via peaceiris's
+# keep_files: true behavior, so the trailing-slash links below resolve at
+# runtime even when the source dir is not present in this checkout. Mkdocs
+# strict mode tolerates these as "unrecognized relative links, left as is"
+# (verified). Use trailing slash, not `/index.md`, to avoid mkdocs trying to
+# resolve them against the local source tree.
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    # --sort=-version:refname gives descending version order so the newest
+    # release appears first in the catalog. Git's version sort handles
+    # pre-release suffixes (0.0.2-alpha.26 > 0.0.2-alpha.9).
+    for tag in $(git -C "$ROOT_DIR" tag --list 'v*' --sort=-version:refname); do
+        version="${tag#v}"
+        echo "- [$tag](v${version}/)" >> "$ROOT_DIR/docs/api/index.md"
+    done
+else
+    echo "Warning: not a git repo, falling back to working-tree scan" >&2
+    for vdir in "$ROOT_DIR/docs/api"/v*/; do
+        if [ -d "$vdir" ]; then
+            vname=$(basename "$vdir")
+            echo "- [$vname]($vname/)" >> "$ROOT_DIR/docs/api/index.md"
+        fi
+    done
+fi
 
 echo "Versioned API documentation generated successfully"
