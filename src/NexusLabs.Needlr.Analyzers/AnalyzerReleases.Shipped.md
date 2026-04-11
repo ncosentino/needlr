@@ -18,4 +18,6 @@ NDLRCOR008 | NexusLabs.Needlr | Warning | InterceptAttributeAnalyzer, [Intercept
 NDLRCOR009 | NexusLabs.Needlr | Info | LazyResolutionAnalyzer, Lazy<T> references undiscovered type
 NDLRCOR010 | NexusLabs.Needlr | Info | CollectionResolutionAnalyzer, IEnumerable<T> has no discovered implementations
 NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, [FromKeyedServices] references unknown key
+NDLRCOR012 | NexusLabs.Needlr | Error | Disposable captive dependency - longer-lived service holds IDisposable with shorter lifetime
 NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument must be implemented by class
+NDLRCOR016 | NexusLabs.Needlr | Warning | [DoNotAutoRegister] applied directly to a plugin class is redundant

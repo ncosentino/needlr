@@ -23,4 +23,15 @@ NDLRGEN018 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, V
 NDLRGEN019 | NexusLabs.Needlr.Generators | Warning | OptionsAttributeAnalyzer, Validation method won't run
 NDLRGEN020 | NexusLabs.Needlr.Generators | Error | TypeRegistryGenerator, [Options] is not compatible with AOT
 NDLRGEN021 | NexusLabs.Needlr.Generators | Warning | TypeRegistryGenerator, Positional record must be partial for [Options]
+NDLRGEN022 | NexusLabs.Needlr.Generators | Error | Disposable captive dependency detected
 NDLRGEN030 | NexusLabs.Needlr.Generators | Warning | UnsupportedDataAnnotationAnalyzer, DataAnnotation cannot be source-generated
+NDLRGEN031 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, [Provider] on class requires partial modifier
+NDLRGEN032 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, [Provider] interface has invalid member
+NDLRGEN033 | NexusLabs.Needlr.Generators | Warning | ProviderAttributeAnalyzer, Provider property uses concrete type
+NDLRGEN034 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, Circular provider dependency detected
+NDLRHTTP001 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, [HttpClientOptions] target must implement INamedHttpClientOptions
+NDLRHTTP002 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, HttpClient name sources conflict
+NDLRHTTP003 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, ClientName property body is not a literal expression
+NDLRHTTP004 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, Resolved HttpClient name is empty
+NDLRHTTP005 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, Duplicate HttpClient name
+NDLRHTTP006 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, ClientName property has wrong shape
