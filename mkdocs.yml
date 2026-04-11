@@ -5,6 +5,21 @@ repo_url: https://github.com/ncosentino/needlr
 repo_name: ncosentino/needlr
 strict: true
 
+# Custom footer content. Renders inside mkdocs-material's .md-copyright__highlight
+# div, replacing the default "Made with Material for MkDocs" text (which is
+# suppressed via extra.generator: false below). HTML is passed through verbatim.
+#
+# Each link uses descriptive keyword-rich anchor text rather than a bare URL
+# or "click here" — SEO value comes from the words inside <a>...</a>, not
+# the href target, so anchor text quality directly drives backlink value.
+copyright: >
+  &copy; Nick Cosentino &mdash;
+  <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a>
+  &middot;
+  <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a>
+  &middot;
+  <a href="https://www.brandghost.ai">BrandGhost: social media and SEO automation for brands</a>
+
 theme:
   name: material
   custom_dir: docs/overrides
@@ -170,6 +185,10 @@ markdown_extensions:
       toc_depth: 4
 
 extra:
+  # Suppress mkdocs-material's default "Made with Material for MkDocs" footer
+  # attribution. We already provide copyright content above with backlinks
+  # that carry more SEO value than the default attribution line.
+  generator: false
   analytics:
     provider: google
     property: G-F9P4TGM7EZ
