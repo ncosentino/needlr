@@ -155,11 +155,21 @@ Write-Host "Checking analyzer release tracking..." -ForegroundColor Cyan
 $srcDir = Join-Path $PSScriptRoot "..\src"
 $unshippedAnalyzers = Test-UnshippedAnalyzerRules -SrcDir $srcDir
 if ($unshippedAnalyzers.Count -gt 0) {
+  # RS2007 rejects pre-release labels in the release header, so the canonical
+  # header uses only the base version (e.g. "0.0.2") and all prereleases of
+  # that base share a single section. See docs/releasing.md for rationale.
+  $baseVersion = ($Version -split '[-+]')[0]
+
   Write-Host "BLOCKED: analyzer projects have unshipped rules." -ForegroundColor Red
   Write-Host ""
   Write-Host "Before releasing, move each rule below from its AnalyzerReleases.Unshipped.md" -ForegroundColor Yellow
-  Write-Host "file into the matching AnalyzerReleases.Shipped.md under a new header:" -ForegroundColor Yellow
-  Write-Host "  ## Release $Version" -ForegroundColor Yellow
+  Write-Host "file into the matching AnalyzerReleases.Shipped.md under the existing header:" -ForegroundColor Yellow
+  Write-Host "  ## Release $baseVersion" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "(Microsoft.CodeAnalysis.Analyzers rule RS2007 rejects pre-release labels" -ForegroundColor Yellow
+  Write-Host "in the header, so '## Release $Version' will not build. Use the base" -ForegroundColor Yellow
+  Write-Host "version only and append new rules to the existing release section, keeping" -ForegroundColor Yellow
+  Write-Host "rule IDs in alphanumeric order.)" -ForegroundColor Yellow
   Write-Host ""
   Write-Host "Then delete the rule rows from Unshipped.md (keep the comment header," -ForegroundColor Yellow
   Write-Host "### New Rules heading, table header row, and separator row)." -ForegroundColor Yellow

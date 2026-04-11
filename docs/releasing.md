@@ -234,16 +234,50 @@ Get-ChildItem src -Recurse -Filter AnalyzerReleases.Unshipped.md |
   }
 ```
 
+### Version header format — the non-obvious rule
+
+**`Microsoft.CodeAnalysis.Analyzers` rule RS2007 rejects pre-release
+labels in the release header.** A header like `## Release 0.0.2-alpha.26`
+will fail the analyzer build with:
+
+```
+error RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a
+missing or invalid release header '## Release 0.0.2-alpha.26'
+```
+
+The authoritative format is the **base version only**, no pre-release
+label, no `v` prefix, no date:
+
+```
+## Release 0.0.2
+```
+
+**All alpha/beta/rc releases of `0.0.2` share the same
+`## Release 0.0.2` section.** You don't add a new section per alpha
+bump — you append the newly-shipped rules to the existing section.
+
+This is the single rule that has bounced every past release attempt
+(see fix commits `83ef38ab`, `6b7e1166`, `22bd5b64`). The commit
+`22bd5b64` (`fix: use semver-only release header for analyzer tracking`)
+was a retroactive fix that merged `## Release 0.0.2-alpha.17` back into
+`## Release 0.0.2` after the analyzer build rejected it.
+
+When `0.0.3` is the next base version, that's when a new section gets
+created.
+
 ### The mechanical move
 
 For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
 
 1. Open the paired `AnalyzerReleases.Shipped.md`.
-2. Prepend a new section **at the top** (after the comment header,
-   before any existing `## Release` section):
+2. Find the existing `## Release <base-version>` section that
+   corresponds to the current base version (e.g. `## Release 0.0.2`
+   if you're shipping `v0.0.2-alpha.26`). If one does not exist —
+   for example, this is the first time the analyzer project has
+   ever shipped anything — create it with the base version only:
 
    ```markdown
-   ## Release 0.0.2-alpha.26
+   ## Release 0.0.2
 
    ### New Rules
 
@@ -252,9 +286,14 @@ For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
    <paste every unshipped row here, unchanged>
    ```
 
-3. Open `AnalyzerReleases.Unshipped.md` and **delete only the rule
+3. If the section already exists, append the new rule rows to its
+   table in **alphanumeric order** by Rule ID (so `NDLRCOR012` goes
+   between `NDLRCOR011` and `NDLRCOR015`, not at the end of the
+   section). Consistent ordering makes diffs easier to review.
+
+4. Open `AnalyzerReleases.Unshipped.md` and **delete only the rule
    data rows**. Keep:
-   - The `; Shipped analyzer releases` comment at the top
+   - The `; Unshipped analyzer releases` comment at the top
    - The help link comment
    - The `### New Rules` heading
    - The table header row (`Rule ID | Category | Severity | Notes`)
@@ -272,51 +311,48 @@ For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
    --------|----------|----------|-------
    ```
 
-4. Repeat for each analyzer project with unshipped rules.
+5. Repeat for each analyzer project with unshipped rules.
 
-5. Build the solution locally once to verify the analyzers themselves
-   accept the updated files:
+6. Build each analyzer project locally to verify the updated files
+   are accepted by `Microsoft.CodeAnalysis.Analyzers`:
 
    ```powershell
-   dotnet build src/NexusLabs.Needlr.slnx -c Release --nologo
+   dotnet build src/NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj -c Release
+   dotnet build src/NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj -c Release
+   dotnet build src/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj -c Release
    ```
 
-   If `Microsoft.CodeAnalysis.Analyzers` rejects your edit it will
-   emit an RS2001 or RS2002 error. Fix before proceeding.
+   If the build fails with `RS2001`, `RS2002`, or `RS2007`, re-read
+   the [Version header format](#version-header-format--the-non-obvious-rule)
+   section above and fix the header before proceeding.
 
-6. Commit with the conventional message:
+7. Commit with the conventional message:
 
    ```
    chore: ship analyzers for 0.0.2-alpha.26
    ```
 
-### Version header format
+### Example diff
 
-Past attempts to match the version header format have bounced a few
-times (see fix commits `83ef38ab`, `6b7e1166`, `22bd5b64`). The
-authoritative format is:
+From the fix for `v0.0.2-alpha.26` (commits `f66653c2` + follow-up),
+the shipping change for `NexusLabs.Needlr.Analyzers` looked like:
 
+```diff
+  ## Release 0.0.2
+
+  ### New Rules
+
+  Rule ID | Category | Severity | Notes
+  --------|----------|----------|-------
+  ...
+  NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, ...
++ NDLRCOR012 | NexusLabs.Needlr | Error | Disposable captive dependency - ...
+  NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument ...
++ NDLRCOR016 | NexusLabs.Needlr | Warning | [DoNotAutoRegister] applied ...
 ```
-## Release <version>
-```
 
-Where `<version>` matches the version being released — for an alpha
-that's `0.0.2-alpha.26`. Do not include the `v` prefix, do not include
-a date, do not use a dash between `alpha` and the counter.
-
-Example from commit `6e0b08bb` (`chore: ship analyzers for
-0.0.2-alpha.17`):
-
-```markdown
-## Release 0.0.2-alpha.17
-
-### New Rules
-
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
-NDLRCOR003 | NexusLabs.Needlr | Error | DeferToContainerInGeneratedCodeAnalyzer, ...
-NDLRCOR004 | NexusLabs.Needlr | Warning | GlobalNamespaceTypeAnalyzer, ...
-```
+Note how `NDLRCOR012` is inserted **in order** between `NDLRCOR011`
+and `NDLRCOR015`, not appended at the end.
 
 ### If you add a new analyzer diagnostic between releases
 

@@ -15,8 +15,14 @@ git pull
 
 # 2. Ship analyzers. Move every rule out of
 #    src/**/AnalyzerReleases.Unshipped.md into the matching
-#    AnalyzerReleases.Shipped.md under a NEW header:
-#        ## Release 0.0.2-alpha.N
+#    AnalyzerReleases.Shipped.md under the EXISTING base-version
+#    release section (e.g. "## Release 0.0.2"). Keep rule IDs in
+#    alphanumeric order within the section.
+#
+#    The header uses the base version ONLY — RS2007 rejects
+#    pre-release labels, so "## Release 0.0.2-alpha.26" will not
+#    build. All alpha/beta/rc releases of 0.0.2 share one section.
+#
 #    Commit as: chore: ship analyzers for 0.0.2-alpha.N
 #    (scripts/release.ps1 refuses to proceed without this.)
 
