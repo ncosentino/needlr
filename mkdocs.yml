@@ -131,6 +131,13 @@ plugins:
   - search
   - meta
 
+# Scoped to /api/ pages only at runtime (the JS checks window.location.pathname
+# before rendering). mkdocs-material's built-in version provider would
+# inject a dropdown on every page of the site, which we don't want —
+# versioning is only meaningful for the API reference.
+extra_javascript:
+  - javascripts/api-version-switcher.js
+
 hooks:
   - docs/hooks/schema.py
   - docs/hooks/llms_txt.py

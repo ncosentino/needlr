@@ -141,6 +141,7 @@ build_gh_pages_v_dirs_list() {
 }
 
 existing_v_dirs=""
+filtered_tags=()
 if git rev-parse --git-dir > /dev/null 2>&1; then
     existing_v_dirs="$(build_gh_pages_v_dirs_list || true)"
 
@@ -161,12 +162,17 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
             # Include if the directory already exists on gh-pages OR if it's
             # the version this release is about to create.
             if echo "$existing_v_dirs" | grep -qx "$dir_name" || [ "$version" = "$VERSION" ]; then
-                echo "- [$tag](${dir_name}/)" >> "$ROOT_DIR/docs/api/index.md"
+                filtered_tags+=("$tag")
             fi
         else
             # Fallback: list every tag (old behavior).
-            echo "- [$tag](${dir_name}/)" >> "$ROOT_DIR/docs/api/index.md"
+            filtered_tags+=("$tag")
         fi
+    done
+
+    for tag in "${filtered_tags[@]}"; do
+        version="${tag#v}"
+        echo "- [$tag](v${version}/)" >> "$ROOT_DIR/docs/api/index.md"
     done
 else
     echo "Warning: not a git repo, falling back to working-tree scan" >&2
@@ -174,8 +180,52 @@ else
         if [ -d "$vdir" ]; then
             vname=$(basename "$vdir")
             echo "- [$vname]($vname/)" >> "$ROOT_DIR/docs/api/index.md"
+            filtered_tags+=("$vname")
         fi
     done
 fi
+
+# Emit versions.json alongside the markdown catalog. This is the data
+# source for the runtime API version switcher (see
+# docs/javascripts/api-version-switcher.js). mkdocs copies non-markdown
+# files under docs/ into the site root, so this lands at /api/versions.json
+# on the deployed site and survives across ci.yml runs via peaceiris
+# keep_files:true (release.yml owns /api/versions.json the same way it
+# owns /api/stable/ and /api/v*/).
+#
+# Emitted by hand rather than via jq (not available everywhere). The
+# format is deliberately simple: a flat list of entries in nav order,
+# with an optional separator. Adding an entry is one line; the JS
+# renders whatever is there without schema validation.
+#
+# We emit commas BEFORE each entry (not after) so the trailing comma
+# before `]` is never a problem even when filtered_tags is empty.
+{
+    printf '{\n'
+    printf '  "current_stable": "%s",\n' "$VERSION"
+    printf '  "entries": [\n'
+
+    need_comma=0
+    emit_entry() {
+        if [ "$need_comma" -eq 1 ]; then printf ',\n'; fi
+        printf '    %s' "$1"
+        need_comma=1
+    }
+
+    emit_entry "$(printf '{ "label": "Stable (%s)", "path": "stable" }' "$VERSION")"
+    emit_entry '{ "label": "Development (main)", "path": "dev" }'
+    if [ "${#filtered_tags[@]}" -gt 0 ]; then
+        emit_entry '{ "separator": true }'
+        for tag in "${filtered_tags[@]}"; do
+            version="${tag#v}"
+            emit_entry "$(printf '{ "label": "%s", "path": "v%s" }' "$tag" "$version")"
+        done
+    fi
+
+    printf '\n  ]\n'
+    printf '}\n'
+} > "$ROOT_DIR/docs/api/versions.json"
+
+echo "Wrote versions.json with ${#filtered_tags[@]} version entries"
 
 echo "Versioned API documentation generated successfully"
