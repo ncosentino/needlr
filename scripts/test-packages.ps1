@@ -23,16 +23,18 @@ $failed    = $false
 
 # GitHub Actions file-command env vars ($GITHUB_ENV / $GITHUB_OUTPUT /
 # $GITHUB_STEP_SUMMARY) point at runner-owned files that the runner reads
-# after this step completes. The .NET test-host / Microsoft.Testing.Platform
-# integration (or some other dotnet subprocess we spawn) inherits these and
-# writes to $GITHUB_ENV during `dotnet test`, producing a stray line the
-# runner then rejects with "Invalid format '2'". Clearing them in this
-# session removes the path from child-process inheritance so nothing can
-# corrupt the runner-managed file. The runner still reads its file at the
-# path it originally set after the step ends — our clearing only affects
-# this script's subprocesses, not the runner's post-step processing.
+# after this step completes. Nerdbank.GitVersioning's SetCloudBuildVariables
+# MSBuild task detects GITHUB_ACTIONS=true and writes to $GITHUB_ENV during
+# every project build — and in our per-csproj package-validation invocations
+# it produces a malformed line the runner rejects with "Invalid format '2'"
+# at post-step time. Confirmed by the NBGV stack trace in run 24288153060.
 #
-# Dump pre-existing content once for diagnostics, then clear.
+# Redirecting (not clearing) the env vars to throwaway temp files lets NBGV
+# write harmlessly. Nulling the env vars makes NBGV throw MSB4018 because it
+# can't open a null path. The runner already cached the ORIGINAL path when
+# it set the env var for this step, so it reads its own untouched file at
+# post-step time — our redirect only affects this pwsh session and its
+# child processes, not the runner's post-step processing.
 $githubEnvPath = $env:GITHUB_ENV
 if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
     $pre = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
@@ -43,9 +45,14 @@ if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
         Write-Host "[diagnostics] GITHUB_ENV file exists and is empty at script start"
     }
 }
-Remove-Item env:GITHUB_ENV -ErrorAction SilentlyContinue
-Remove-Item env:GITHUB_OUTPUT -ErrorAction SilentlyContinue
-Remove-Item env:GITHUB_STEP_SUMMARY -ErrorAction SilentlyContinue
+
+$discardEnv     = [System.IO.Path]::GetTempFileName()
+$discardOutput  = [System.IO.Path]::GetTempFileName()
+$discardSummary = [System.IO.Path]::GetTempFileName()
+$env:GITHUB_ENV            = $discardEnv
+$env:GITHUB_OUTPUT         = $discardOutput
+$env:GITHUB_STEP_SUMMARY   = $discardSummary
+Write-Host "[diagnostics] Redirected GITHUB_ENV -> $discardEnv"
 
 function Assert-NuspecDependency {
     param(
@@ -399,17 +406,25 @@ foreach ($proj in $testProjects) {
 
 Write-Host ""
 
-# Diagnostics: show what (if anything) landed in the file the runner will
-# read at post-step time. With the env vars cleared at script start this
-# should be empty or untouched; if not, something in the pwsh process itself
-# (not a child) is writing to the path.
+# Diagnostics: dump both the real runner-owned file (should be untouched —
+# empty) AND the throwaway file NBGV actually wrote to (should contain the
+# malformed content that used to corrupt the real one).
 if ($githubEnvPath -and (Test-Path $githubEnvPath)) {
     $post = Get-Content -Raw -Path $githubEnvPath -ErrorAction SilentlyContinue
     if ($post) {
-        Write-Host "[diagnostics] GITHUB_ENV post-script content:"
+        Write-Host "[diagnostics] WARN: real GITHUB_ENV file was written to despite redirect:"
         Write-Host $post
     } else {
-        Write-Host "[diagnostics] GITHUB_ENV file is empty at script end"
+        Write-Host "[diagnostics] real GITHUB_ENV file is empty (as expected)"
+    }
+}
+if (Test-Path $discardEnv) {
+    $discardContent = Get-Content -Raw -Path $discardEnv -ErrorAction SilentlyContinue
+    if ($discardContent) {
+        Write-Host "[diagnostics] discard GITHUB_ENV content (this is what NBGV wrote):"
+        Write-Host $discardContent
+    } else {
+        Write-Host "[diagnostics] discard GITHUB_ENV file is empty"
     }
 }
 
