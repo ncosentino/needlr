@@ -87,25 +87,20 @@ jobs:
     - name: Generate API Documentation
       run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
 
-    - name: Ensure Stable API Docs Are Available
-      run: |
-        STABLE_PKG_COUNT=$(find docs/api/stable -name "index.md" -mindepth 2 -maxdepth 2 2>/dev/null | wc -l || echo 0)
-        echo "Stable API package directories found: $STABLE_PKG_COUNT"
-        if [ "$STABLE_PKG_COUNT" -eq 0 ]; then
-          echo "WARNING: Stable API package docs not found in repository."
-          echo "This means the last release did not commit stable docs (known release.yml bug)."
-          echo "Replacing stable index with a valid placeholder so the docs build succeeds."
-          echo "The next release will commit the real stable docs to main."
-          cat > docs/api/stable/index.md << 'PLACEHOLDER_EOF'
-        # API Reference (Stable)
-
-        Stable API documentation will be available after the next release is published.
-
-        For the current development API reference, see [Development](../dev/index.md).
-        PLACEHOLDER_EOF
-        else
-          echo "Stable API docs present — proceeding with full build."
-        fi
+    # NOTE: there used to be an "Ensure Stable API Docs Are Available" step
+    # here that wrote a placeholder to docs/api/stable/index.md when the
+    # working tree lacked package subdirs (which it always did, because
+    # .gitignore blocks them from being tracked on main). That step's output
+    # was then built by mkdocs and deployed, clobbering the real stable docs
+    # on gh-pages every time a push to main happened. See the architecture
+    # docs/rfc for the full history.
+    #
+    # The fix: ci.yml no longer writes to or deploys /api/stable/* at all.
+    # The tracked docs/api/stable/index.md on main is a minimal placeholder
+    # that mkdocs can build against without erroring; the "Restrict deploy
+    # to ci.yml-owned paths" step below deletes the built artifact from
+    # ./site/ before peaceiris pushes, so keep_files: true preserves the
+    # real stable content on gh-pages written by release.yml.
 
     - name: Generate Articles Page
       run: python scripts/generate-articles.py docs/articles.md
@@ -147,6 +142,23 @@ jobs:
         git add .github/badges/coverage.json
         git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
         git push
+
+    - name: Restrict deploy to ci.yml-owned paths
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # ci.yml owns: /api/dev/*, /coverage/*, home, feature pages, assets.
+        # release.yml owns: /api/stable/*, /api/v<version>/*.
+        #
+        # Delete the release.yml-owned paths from our build output so the
+        # peaceiris deploy (with keep_files: true) preserves whatever the
+        # last release.yml run wrote to those paths on gh-pages. If we
+        # don't do this, our placeholder/stale build of stable overwrites
+        # the real released content on gh-pages every CI push.
+        #
+        # See also: release.yml has the symmetric "rm -rf ./site/api/dev"
+        # so each workflow only writes to its own slices.
+        rm -rf ./site/api/stable ./site/api/v*
+        echo "Restricted ./site/ to ci.yml-owned paths."
 
     - name: Deploy Documentation and Coverage
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
