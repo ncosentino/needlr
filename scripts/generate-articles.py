@@ -123,7 +123,7 @@ class _NeedlrArticleParser(HTMLParser):
                 self._cur['date'] = dt.strftime('%B %d, %Y')
             except ValueError:
                 self._cur['date'] = data
-        elif self._state == 'tag_a' and data != 'Needlr':
+        elif self._state == 'tag_a':
             self._cur['categories'].append(data)
 
 
@@ -190,13 +190,31 @@ def main():
         sys.exit(1)
 
     output_file = sys.argv[1]
-    url = 'https://www.devleader.ca/tags/Needlr'
+    # Use the site's full-text search rather than the tag page.
+    #
+    # The /tags/Needlr page was redesigned and no longer wraps posts in
+    # <article> elements, so the parser below silently finds zero articles
+    # against that URL. /search/needlr still emits <article> blocks with
+    # the expected structure AND returns a superset of posts (anything
+    # mentioning Needlr, not just posts tagged with it).
+    #
+    # To avoid polluting the output with posts that merely mention Needlr
+    # in passing, we filter the parsed results to articles whose category
+    # list actually contains 'Needlr'. The 'Needlr' entry is then stripped
+    # from the displayed category badges so it isn't shown redundantly on
+    # every card (the page title already says "about Needlr").
+    url = 'https://www.devleader.ca/search/needlr'
 
     print(f'Fetching Needlr articles from {url}...')
 
     try:
         articles = fetch_articles(url)
-        print(f'Found {len(articles)} articles')
+        print(f'Parsed {len(articles)} articles from search results')
+
+        articles = [a for a in articles if 'Needlr' in a['categories']]
+        for a in articles:
+            a['categories'] = [c for c in a['categories'] if c != 'Needlr']
+        print(f'Kept {len(articles)} articles with Needlr category')
 
         markdown = generate_markdown(articles)
 
