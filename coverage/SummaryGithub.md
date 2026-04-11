@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/11/2026 - 00:10:52 |
-| Coverage date: | 04/11/2026 - 00:09:33 - 04/11/2026 - 00:10:48 |
+| Generated on: | 04/11/2026 - 03:04:44 |
+| Coverage date: | 04/11/2026 - 03:03:23 - 04/11/2026 - 03:04:41 |
 | Parser: | MultiReport (23x Cobertura) |
 | Assemblies: | 27 |
 | Classes: | 372 |
 | Files: | 332 |
-| **Line coverage:** | 84.4% (13014 of 15408) |
-| Covered lines: | 13014 |
-| Uncovered lines: | 2394 |
+| **Line coverage:** | 84.4% (13015 of 15408) |
+| Covered lines: | 13015 |
+| Uncovered lines: | 2393 |
 | Coverable lines: | 15408 |
 | Total lines: | 38585 |
-| **Branch coverage:** | 75.2% (5280 of 7017) |
-| Covered branches: | 5280 |
+| **Branch coverage:** | 75.2% (5281 of 7017) |
+| Covered branches: | 5281 |
 | Total branches: | 7017 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -130,11 +130,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 78.5%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 78.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**78.5%**|**78.8%**|
+|**NexusLabs.Needlr.AgentFramework**|**78.6%**|**78.8%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|100%|91.1%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -221,7 +221,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|72%|62%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|72.7%|62%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|100%|
 
@@ -434,17 +434,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.1%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.1%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**38.5%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|50%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -500,15 +500,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
