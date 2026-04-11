@@ -190,6 +190,20 @@ jobs:
     - name: Build Documentation
       run: python -m mkdocs build
 
+    - name: Build sitemap index
+      # Same reason as ci.yml: replace mkdocs's flat default with a sitemap
+      # index + per-slice sub-sitemaps. release.yml owns /sitemap-main.xml
+      # (matching ci.yml's copy), /api/stable/sitemap.xml, and
+      # /api/v<this-version>/sitemap.xml. The --current-release flag ensures
+      # the version we're about to deploy is referenced in the index even
+      # though its dir doesn't yet exist on gh-pages (gh-pages query would
+      # otherwise miss it).
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"
+        python scripts/build-sitemap-index.py ./site --current-release "$VERSION"
+
     - name: Add Coverage Report to Site
       run: |
         mkdir -p site/coverage

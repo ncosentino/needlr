@@ -108,6 +108,19 @@ jobs:
     - name: Build Documentation
       run: python -m mkdocs build
 
+    - name: Build sitemap index
+      # mkdocs's default /sitemap.xml is a single flat file containing only
+      # pages mkdocs knows about at this build time — which excludes the
+      # /api/stable/ and /api/v*/ slices owned by release.yml. Replace it
+      # with a sitemap index referencing per-slice sub-sitemaps, including
+      # those currently on gh-pages (fetched via the GitHub API). The
+      # sub-sitemaps ci.yml owns (/sitemap-main.xml, /api/dev/sitemap.xml)
+      # are regenerated from this build's ./site/; release.yml-owned
+      # sub-sitemaps on gh-pages are preserved via peaceiris keep_files.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: python scripts/build-sitemap-index.py ./site
+
     - name: Add Coverage Report to Site
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
