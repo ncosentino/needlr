@@ -241,6 +241,94 @@ public static void RegisterOptions(IServiceCollection services, IConfiguration c
 }
 ```
 
+This `RegisterOptions` method is wired into the DI container automatically
+on both execution paths:
+
+- **Console / non-web path** — `ConfiguredSyringe.BuildServiceProvider(IConfiguration)` calls
+  it via `SourceGenRegistry.TryGetOptionsRegistrar` as a post-plugin registration
+  callback, passing the `IConfiguration` instance supplied to `BuildServiceProvider`.
+- **ASP.NET Core web path** — `WebApplicationSyringe.BuildWebApplication()` calls it
+  through the same mechanism, resolving `IConfiguration` from `WebApplicationBuilder.Services`
+  at callback invocation time so `IOptions<T>` binds against `builder.Configuration`.
+
+You do **not** need to call `services.AddOptions<T>().BindConfiguration(...)` from
+a plugin or `Program.cs` in either path — the `[Options]` attribute is the only
+registration you need.
+
+## Using `[Options]` on the ASP.NET Core Web Application Path
+
+When building via `BuildWebApplication()`, the generator-emitted
+`RegisterOptions` call runs automatically during the same post-plugin
+registration phase used for user-registered callbacks. A minimal example:
+
+```csharp
+// WeatherOptions.cs
+using System.ComponentModel.DataAnnotations;
+using NexusLabs.Needlr.Generators;
+
+[Options(ValidateOnStart = true)]
+public sealed class WeatherOptions
+{
+    [Required]
+    public string Summary { get; set; } = string.Empty;
+
+    [Range(-100, 100)]
+    public double TemperatureCelsius { get; set; }
+}
+```
+
+```csharp
+// WeatherProvider.cs
+using Microsoft.Extensions.Options;
+
+internal sealed class WeatherProvider(IOptions<WeatherOptions> _options)
+{
+    public object GetWeather() => new
+    {
+        _options.Value.Summary,
+        _options.Value.TemperatureCelsius,
+    };
+}
+```
+
+```csharp
+// Program.cs
+using NexusLabs.Needlr.AspNet;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.SourceGen;
+
+var webApplication = new Syringe()
+    .UsingSourceGen()
+    .BuildWebApplication();
+
+await webApplication.RunAsync();
+```
+
+```json
+// appsettings.Development.json
+{
+  "Weather": {
+    "Summary": "Warm",
+    "TemperatureCelsius": 20
+  }
+}
+```
+
+At runtime, `GET /weather` handlers that take `WeatherProvider` via DI
+observe `Summary = "Warm"` and `TemperatureCelsius = 20.0`. The bound
+values come from the generator-emitted
+`AddOptions<WeatherOptions>().BindConfiguration("Weather")` call, not from
+any manual wiring in your plugin or composition root.
+
+`ValidateOnStart = true` fails the host immediately if `Summary` is missing
+or out of range — the host refuses to start with
+`OptionsValidationException`. This is the behavior you want in production.
+
+A full runnable version of this scenario lives at
+`src/Examples/SourceGen/MinimalWebApiSourceGen`, and the end-to-end
+integration tests that lock this behavior in are at
+`src/NexusLabs.Needlr.IntegrationTests/SourceGen/OptionsWebApplicationSourceGenTests.cs`.
+
 ## Consuming Options
 
 Inject options using standard Microsoft.Extensions.Options patterns:
