@@ -28,10 +28,26 @@ Every new diagnostic needs ALL THREE:
 
 ## CI docs build
 
-CI runs `python -m mkdocs build` after applying a placeholder for `api/stable/index.md`. To verify locally:
+CI runs `python -m mkdocs build` directly — no placeholder step. `docs/api/stable/index.md` is a **tracked static placeholder** on main (see file header) that exists only to give mkdocs a valid source for `/api/stable/`. The real stable API reference lives exclusively on the `gh-pages` branch and is preserved forever by `peaceiris/actions-gh-pages@v4`'s `keep_files: true`.
+
+To verify locally:
 
 ```bash
 python -m mkdocs build --strict
 ```
 
-Pre-existing `api/stable/*` warnings are expected locally (CI handles them with a placeholder step).
+## Docs pipeline ownership (ci.yml vs release.yml)
+
+Both workflows deploy to `gh-pages` with `keep_files: true`, and each owns a disjoint slice. Before deploying, each strips the **other** workflow's slice from its `./site/` build output so the remote content is preserved.
+
+| Path                 | Owner        |
+|----------------------|--------------|
+| `/api/dev/*`         | `ci.yml`     |
+| `/coverage/*`        | `ci.yml`     |
+| `/api/stable/*`      | `release.yml`|
+| `/api/v<version>/*`  | `release.yml`|
+| home, features, nav  | both (identical output) |
+
+**Invariant**: neither workflow writes generated API docs back to `main`. Per-version `/api/v<version>/` directories are immutable once published and are preserved on `gh-pages` indefinitely.
+
+**Catalog source of truth**: `scripts/generate-versioned-api-docs.sh` enumerates `/api/` versions from `git tag --list 'v*'` — NOT from walking `docs/api/v*/` in the working tree (which is blocked by `.gitignore` and always empty on main).
