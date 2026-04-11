@@ -118,11 +118,74 @@ if (-not $SkipCiCheck -and -not $DryRun) {
   }
 }
 
+# Analyzer release tracking gate: block if any analyzer project has unshipped
+# rules that have not been moved into AnalyzerReleases.Shipped.md under a new
+# "## Release <version>" header. Microsoft.CodeAnalysis.Analyzers enforces
+# RS2000/RS2001/RS2002 against these files, so forgetting this step ships a
+# broken package to consumers. This runs before pack so the release script
+# refuses to proceed — no maintainer (or LLM assistant) can forget.
+function Test-UnshippedAnalyzerRules {
+  param(
+    [Parameter(Mandatory = $true)][string]$SrcDir
+  )
+
+  $unshippedFiles = Get-ChildItem -Path $SrcDir -Filter "AnalyzerReleases.Unshipped.md" -Recurse -File
+  $filesWithRules = @()
+
+  foreach ($file in $unshippedFiles) {
+    $content = Get-Content -Path $file.FullName
+    # A "rule row" is any line starting with "NDLR" — that's the Needlr
+    # analyzer prefix used across all diagnostic IDs (NDLRCOR, NDLRGEN,
+    # NDLRMAF, NDLRSIG, NDLRHTTP, etc.). Comment lines begin with ";" and
+    # header lines begin with "#" or "-".
+    $ruleLines = $content | Where-Object { $_ -match '^NDLR' }
+    if ($ruleLines.Count -gt 0) {
+      $relativePath = $file.FullName.Replace((Resolve-Path "$SrcDir\..").Path, '').TrimStart('\', '/')
+      $filesWithRules += [PSCustomObject]@{
+        Path  = $relativePath
+        Rules = $ruleLines
+      }
+    }
+  }
+
+  return , $filesWithRules
+}
+
+Write-Host "Checking analyzer release tracking..." -ForegroundColor Cyan
+$srcDir = Join-Path $PSScriptRoot "..\src"
+$unshippedAnalyzers = Test-UnshippedAnalyzerRules -SrcDir $srcDir
+if ($unshippedAnalyzers.Count -gt 0) {
+  Write-Host "BLOCKED: analyzer projects have unshipped rules." -ForegroundColor Red
+  Write-Host ""
+  Write-Host "Before releasing, move each rule below from its AnalyzerReleases.Unshipped.md" -ForegroundColor Yellow
+  Write-Host "file into the matching AnalyzerReleases.Shipped.md under a new header:" -ForegroundColor Yellow
+  Write-Host "  ## Release $Version" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Then delete the rule rows from Unshipped.md (keep the comment header," -ForegroundColor Yellow
+  Write-Host "### New Rules heading, table header row, and separator row)." -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Commit message convention:" -ForegroundColor Yellow
+  Write-Host "  chore: ship analyzers for $Version" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Pending unshipped rules:" -ForegroundColor Red
+  foreach ($entry in $unshippedAnalyzers) {
+    Write-Host ""
+    Write-Host "  $($entry.Path):" -ForegroundColor Cyan
+    foreach ($rule in $entry.Rules) {
+      $id = ($rule -split '\s*\|\s*')[0]
+      Write-Host "    - $id" -ForegroundColor Yellow
+    }
+  }
+  Write-Host ""
+  throw "Fix unshipped analyzer rules before releasing. See docs/releasing.md for details."
+}
+Write-Host "Analyzer release tracking gate passed." -ForegroundColor Green
+
 # Build and pack validation - MUST pass before any release actions
 Write-Host "Validating build and pack..." -ForegroundColor Cyan
 
 # Find all packable projects (those with IsPackable not explicitly false)
-$srcDir = Join-Path $PSScriptRoot "..\src"
+# $srcDir already set by the analyzer release tracking gate above.
 $projects = Get-ChildItem -Path $srcDir -Filter "*.csproj" -Recurse | Where-Object {
   $relativePath = $_.FullName.Replace($srcDir, '')
   $content = Get-Content $_.FullName -Raw
