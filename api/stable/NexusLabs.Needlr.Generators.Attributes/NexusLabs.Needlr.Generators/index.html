@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -770,6 +770,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../http-clients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../factories/" class="md-nav__link">
         
   
@@ -1119,6 +1147,34 @@
     
   
     Cross-Generator Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Needlr
   
 
     
@@ -2840,6 +2896,236 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Analyzers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HttpClient Analyzers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP001/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP002/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP003/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP004/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP004
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP005/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP005
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP006/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP006
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3117,6 +3403,10 @@
 <td style="text-align: left;">Marks an assembly for compile-time type registry generation. The source generator will scan all referenced assemblies and generate a TypeRegistry class containing all injectable types.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../HttpClientOptionsAttribute/" title="NexusLabs.Needlr.Generators.HttpClientOptionsAttribute">HttpClientOptionsAttribute</a></td>
+<td style="text-align: left;">Marks a class as a named <code>HttpClient</code> configuration type. The source generator will emit both an <code>AddOptions&lt;T&gt;().BindConfiguration(...)</code> call and a matching <code>services.AddHttpClient(name, (sp, client) =&gt; { ... })</code> registration, so consumers never have to hand-write either one.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../NeedlrSourceGenBootstrap/" title="NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap">NeedlrSourceGenBootstrap</a></td>
 <td style="text-align: left;">Runtime bootstrap registry for source-generated Needlr components.</td>
 </tr>
@@ -3169,8 +3459,32 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../IHttpClientBaseAddress/" title="NexusLabs.Needlr.Generators.IHttpClientBaseAddress">IHttpClientBaseAddress</a></td>
+<td style="text-align: left;">Capability interface declaring that a named <code>HttpClient</code> options type configures <a href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.baseaddress" title="System.Net.Http.HttpClient.BaseAddress">System.Net.Http.HttpClient.BaseAddress</a>. When implemented, the source generator emits <code>client.BaseAddress = options.BaseAddress;</code> into the generated <code>AddHttpClient</code> callback, guarded by a null check so a <code>null</code> value leaves the client unchanged.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IHttpClientDefaultHeaders/" title="NexusLabs.Needlr.Generators.IHttpClientDefaultHeaders">IHttpClientDefaultHeaders</a></td>
+<td style="text-align: left;">Capability interface declaring that a named <code>HttpClient</code> options type configures arbitrary default request headers. When implemented, the source generator emits a foreach loop into the generated <code>AddHttpClient</code> callback that calls <code>client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value)</code> for each entry, guarded by a null check on the dictionary.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IHttpClientTimeout/" title="NexusLabs.Needlr.Generators.IHttpClientTimeout">IHttpClientTimeout</a></td>
+<td style="text-align: left;">Capability interface declaring that a named <code>HttpClient</code> options type configures <a href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout" title="System.Net.Http.HttpClient.Timeout">System.Net.Http.HttpClient.Timeout</a>. When implemented, the source generator emits <code>client.Timeout = options.Timeout;</code> into the generated <code>AddHttpClient</code> callback.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IHttpClientUserAgent/" title="NexusLabs.Needlr.Generators.IHttpClientUserAgent">IHttpClientUserAgent</a></td>
+<td style="text-align: left;">Capability interface declaring that a named <code>HttpClient</code> options type configures the <code>User-Agent</code> default request header. When implemented, the source generator emits a <code>client.DefaultRequestHeaders.UserAgent.ParseAdd(options.UserAgent)</code> call into the generated <code>AddHttpClient</code> callback, guarded by a null/empty check.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../INamedHttpClientOptions/" title="NexusLabs.Needlr.Generators.INamedHttpClientOptions">INamedHttpClientOptions</a></td>
+<td style="text-align: left;">Marker interface for types decorated with <a href="../HttpClientOptionsAttribute/" title="NexusLabs.Needlr.Generators.HttpClientOptionsAttribute">HttpClientOptionsAttribute</a>. Every <code>[HttpClientOptions]</code> target must implement this interface; the <code>NDLRHTTP001</code> analyzer diagnostic enforces it at compile time.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../IOptionsValidator_T_/" title="NexusLabs.Needlr.Generators.IOptionsValidator\&lt;T&gt;">IOptionsValidator&lt;T&gt;</a></td>
 <td style="text-align: left;">Interface for validating options types.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IStandardHttpClientOptions/" title="NexusLabs.Needlr.Generators.IStandardHttpClientOptions">IStandardHttpClientOptions</a></td>
+<td style="text-align: left;">Convenience aggregate interface that composes all v1 capability interfaces for a named <code>HttpClient</code>: the <a href="../INamedHttpClientOptions/" title="NexusLabs.Needlr.Generators.INamedHttpClientOptions">INamedHttpClientOptions</a> marker plus <a href="../IHttpClientTimeout/" title="NexusLabs.Needlr.Generators.IHttpClientTimeout">IHttpClientTimeout</a>, <a href="../IHttpClientUserAgent/" title="NexusLabs.Needlr.Generators.IHttpClientUserAgent">IHttpClientUserAgent</a>, <a href="../IHttpClientBaseAddress/" title="NexusLabs.Needlr.Generators.IHttpClientBaseAddress">IHttpClientBaseAddress</a>, and <a href="../IHttpClientDefaultHeaders/" title="NexusLabs.Needlr.Generators.IHttpClientDefaultHeaders">IHttpClientDefaultHeaders</a>.</td>
 </tr>
 </tbody>
 </table>

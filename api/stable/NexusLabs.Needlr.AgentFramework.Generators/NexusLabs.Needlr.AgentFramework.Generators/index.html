@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -770,6 +770,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../http-clients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../factories/" class="md-nav__link">
         
   
@@ -1119,6 +1147,34 @@
     
   
     Cross-Generator Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Needlr
   
 
     
@@ -2840,6 +2896,236 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Analyzers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HttpClient Analyzers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP001/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP002/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP003/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP004/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP004
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP005/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP005
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRHTTP006/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRHTTP006
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3107,6 +3393,10 @@
 <tr>
 <td style="text-align: left;"><a href="../AgentFrameworkFunctionRegistryGenerator/" title="NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator">AgentFrameworkFunctionRegistryGenerator</a></td>
 <td style="text-align: left;">Source generator for Microsoft Agent Framework functions. Discovers classes with [AgentFunction] methods and generates a compile-time type registry. Also discovers classes with [AgentFunctionGroup] attributes and generates a group registry. Also discovers classes with [NeedlrAiAgent] attributes and generates an agent registry. Always emits a [ModuleInitializer] that auto-registers all discovered types with AgentFrameworkGeneratedBootstrap on assembly load.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../AsyncLocalScopedGenerator/" title="NexusLabs.Needlr.AgentFramework.Generators.AsyncLocalScopedGenerator">AsyncLocalScopedGenerator</a></td>
+<td style="text-align: left;">Source generator for [AsyncLocalScoped]-decorated interfaces. Emits an internal sealed class implementing the interface with proper AsyncLocal scoping and dispose semantics.</td>
 </tr>
 </tbody>
 </table>
