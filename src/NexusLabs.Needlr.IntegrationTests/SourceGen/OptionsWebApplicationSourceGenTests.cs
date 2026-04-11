@@ -190,6 +190,97 @@ public sealed class OptionsWebApplicationSourceGenTests
     }
 
     [Fact]
+    public void WebPath_OptionsMonitor_ReturnsBoundCurrentValue()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["TestDatabase:ConnectionString"] = "Server=monitor;Database=MonitorDb",
+            ["TestDatabase:CommandTimeout"] = "75"
+        });
+
+        var monitor = services.GetRequiredService<IOptionsMonitor<TestDatabaseOptions>>();
+
+        Assert.Equal("Server=monitor;Database=MonitorDb", monitor.CurrentValue.ConnectionString);
+        Assert.Equal(75, monitor.CurrentValue.CommandTimeout);
+    }
+
+    [Fact]
+    public void WebPath_OptionsSnapshot_ResolvesInScopedProvider()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["TestDatabase:ConnectionString"] = "Server=snap;Database=SnapDb"
+        });
+
+        using var scope = services.CreateScope();
+        var snapshot = scope.ServiceProvider
+            .GetRequiredService<IOptionsSnapshot<TestDatabaseOptions>>();
+
+        Assert.Equal("Server=snap;Database=SnapDb", snapshot.Value.ConnectionString);
+    }
+
+    [Fact]
+    public void WebPath_ExternalValidator_CatchesInvalidValue()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["ExternallyValidated:Email"] = "not-an-email"
+        });
+
+        var options = services.GetRequiredService<IOptions<ExternallyValidatedOptions>>();
+
+        var exception = Assert.Throws<OptionsValidationException>(() => _ = options.Value);
+        Assert.Contains("Email", exception.Message);
+    }
+
+    [Fact]
+    public void WebPath_ArrayOptions_BindsAllElements()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["ArrayTest:Tags:0"] = "alpha",
+            ["ArrayTest:Tags:1"] = "beta",
+            ["ArrayTest:Tags:2"] = "gamma"
+        });
+
+        var options = services.GetRequiredService<IOptions<ArrayTestOptions>>();
+
+        Assert.Equal(3, options.Value.Tags.Length);
+        Assert.Equal(new[] { "alpha", "beta", "gamma" }, options.Value.Tags);
+    }
+
+    [Fact]
+    public void WebPath_DictionaryOptions_BindsAllEntries()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["DictTest:Settings:Primary"] = "one",
+            ["DictTest:Settings:Secondary"] = "two"
+        });
+
+        var options = services.GetRequiredService<IOptions<DictionaryTestOptions>>();
+
+        Assert.Equal(2, options.Value.Settings.Count);
+        Assert.Equal("one", options.Value.Settings["Primary"]);
+        Assert.Equal("two", options.Value.Settings["Secondary"]);
+    }
+
+    [Fact]
+    public void WebPath_ImmutableRecordOptions_BindsInitOnlyProperties()
+    {
+        var services = BuildWebAppServices(new Dictionary<string, string?>
+        {
+            ["ImmutableRecord:Endpoint"] = "https://web.immutable.example.com",
+            ["ImmutableRecord:Timeout"] = "55"
+        });
+
+        var options = services.GetRequiredService<IOptions<ImmutableRecordOptions>>();
+
+        Assert.Equal("https://web.immutable.example.com", options.Value.Endpoint);
+        Assert.Equal(55, options.Value.Timeout);
+    }
+
+    [Fact]
     public void WebPath_ParityWithConsolePath_SameOptionsValuesForSameConfiguration()
     {
         var config = new Dictionary<string, string?>
