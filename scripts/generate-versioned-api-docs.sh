@@ -87,13 +87,86 @@ EOF
 # strict mode tolerates these as "unrecognized relative links, left as is"
 # (verified). Use trailing slash, not `/index.md`, to avoid mkdocs trying to
 # resolve them against the local source tree.
+# Intersect git tags (source of truth for "what was released") with the
+# actual v*/ directories that exist on gh-pages right now (source of truth
+# for "what has live docs"). Tags for pre-gh-pages historical versions
+# (<alpha.19) and tags like alpha.20 that never had a corresponding release
+# deploy are silently filtered out instead of emitting broken links.
+#
+# The CURRENT release's version ($VERSION) is always included even though
+# its directory doesn't exist on gh-pages yet — this same release will
+# create it a few steps later when peaceiris deploys ./site/. Skipping it
+# here would make the new release paradoxically self-excluding.
+#
+# Fetch uses the GitHub REST API with $GITHUB_TOKEN if available (CI path;
+# release.yml has contents:write which covers the contents endpoint) and
+# falls back to unauthenticated (local path; 60 req/hr rate limit is more
+# than enough for one call). If the fetch fails outright we warn and fall
+# back to listing ALL tags — strictly worse UX but never broken worse than
+# the previous behavior.
+build_gh_pages_v_dirs_list() {
+    local repo_slug=""
+    if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+        repo_slug="$GITHUB_REPOSITORY"
+    elif git -C "$ROOT_DIR" remote get-url origin > /dev/null 2>&1; then
+        local url
+        url="$(git -C "$ROOT_DIR" remote get-url origin)"
+        # Match https://github.com/OWNER/REPO(.git) or git@github.com:OWNER/REPO(.git)
+        repo_slug="$(echo "$url" | sed -E 's#.*github\.com[:/]([^/]+/[^/.]+)(\.git)?$#\1#')"
+    fi
+    if [ -z "$repo_slug" ]; then
+        return 1
+    fi
+
+    local auth_header=""
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+        auth_header="Authorization: token $GITHUB_TOKEN"
+    fi
+
+    local api_url="https://api.github.com/repos/${repo_slug}/contents/api?ref=gh-pages"
+    local response
+    if [ -n "$auth_header" ]; then
+        response="$(curl -sS -H "$auth_header" -H "Accept: application/vnd.github+json" "$api_url")"
+    else
+        response="$(curl -sS -H "Accept: application/vnd.github+json" "$api_url")"
+    fi
+    if [ $? -ne 0 ] || [ -z "$response" ]; then
+        return 1
+    fi
+
+    # Parse without jq (jq may not be installed locally) — grep out dir names
+    # that start with "v". This is tolerant of the JSON being on one line or
+    # pretty-printed.
+    echo "$response" | grep -oE '"name":[[:space:]]*"v[^"]*"' | sed -E 's/.*"(v[^"]*)"$/\1/'
+}
+
+existing_v_dirs=""
 if git rev-parse --git-dir > /dev/null 2>&1; then
+    existing_v_dirs="$(build_gh_pages_v_dirs_list || true)"
+
+    if [ -n "$existing_v_dirs" ]; then
+        echo "Filtering catalog against $(echo "$existing_v_dirs" | wc -l | tr -d ' ') existing gh-pages directories"
+    else
+        echo "Warning: could not fetch gh-pages directory list; catalog will list all git tags (may include broken links for pre-gh-pages tags)" >&2
+    fi
+
     # --sort=-version:refname gives descending version order so the newest
     # release appears first in the catalog. Git's version sort handles
     # pre-release suffixes (0.0.2-alpha.26 > 0.0.2-alpha.9).
     for tag in $(git -C "$ROOT_DIR" tag --list 'v*' --sort=-version:refname); do
         version="${tag#v}"
-        echo "- [$tag](v${version}/)" >> "$ROOT_DIR/docs/api/index.md"
+        dir_name="v${version}"
+
+        if [ -n "$existing_v_dirs" ]; then
+            # Include if the directory already exists on gh-pages OR if it's
+            # the version this release is about to create.
+            if echo "$existing_v_dirs" | grep -qx "$dir_name" || [ "$version" = "$VERSION" ]; then
+                echo "- [$tag](${dir_name}/)" >> "$ROOT_DIR/docs/api/index.md"
+            fi
+        else
+            # Fallback: list every tag (old behavior).
+            echo "- [$tag](${dir_name}/)" >> "$ROOT_DIR/docs/api/index.md"
+        fi
     done
 else
     echo "Warning: not a git repo, falling back to working-tree scan" >&2
