@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 using NexusLabs.Needlr.Injection;
 
 namespace NexusLabs.Needlr.AspNet;
@@ -92,7 +94,26 @@ public sealed record WebApplicationSyringe
         var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
         var assemblyProvider = BaseSyringe.GetOrCreateAssemblyProvider();
         var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
-        var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
+        var userCallbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
+
+        // Build the full list of post-plugin callbacks. User-registered callbacks
+        // run first, then the source-generated options/extension registrars — the
+        // same ordering <see cref="ConfiguredSyringe.BuildServiceProvider(IConfiguration)"/>
+        // uses on the console path. Without these, <c>[Options]</c>-decorated
+        // classes bound via the generator would never have their
+        // <c>IConfigureOptions&lt;T&gt;</c> registered and every
+        // <c>IOptions&lt;T&gt;.Value</c> would return a default-constructed instance.
+        var callbacksWithExtras = new List<Action<IServiceCollection>>(userCallbacks);
+
+        if (SourceGenRegistry.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar is not null)
+        {
+            callbacksWithExtras.Add(services => InvokeWithConfiguration(services, optionsRegistrar));
+        }
+
+        if (SourceGenRegistry.TryGetExtensionRegistrar(out var extensionRegistrar) && extensionRegistrar is not null)
+        {
+            callbacksWithExtras.Add(services => InvokeWithConfiguration(services, extensionRegistrar));
+        }
 
         var serviceProviderBuilder = BaseSyringe.GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
@@ -101,14 +122,73 @@ public sealed record WebApplicationSyringe
 
         var webApplicationFactory = GetOrCreateWebApplicationFactory(serviceProviderBuilder, serviceCollectionPopulator, pluginFactory);
         var options = GetOrCreateOptions();
-        if (callbacks.Count > 0)
+        if (callbacksWithExtras.Count > 0)
         {
-            options = options.UsingPostPluginRegistrationCallbacks(callbacks);
+            options = options.UsingPostPluginRegistrationCallbacks(callbacksWithExtras);
         }
 
         return webApplicationFactory.Create(
             options,
             ConfigureCallback);
+    }
+
+    /// <summary>
+    /// Invokes a source-generated registrar that expects both an
+    /// <see cref="IServiceCollection"/> and an <see cref="IConfiguration"/>.
+    /// </summary>
+    /// <remarks>
+    /// Post-plugin registration callbacks in the web path receive only the
+    /// <see cref="IServiceCollection"/>. The
+    /// <see cref="Microsoft.AspNetCore.Builder.WebApplicationBuilder"/> registers
+    /// its <see cref="IConfiguration"/> into that collection as an
+    /// <see cref="ServiceDescriptor.ImplementationInstance"/> before the callbacks
+    /// fire, so the configuration can be located by scanning descriptors without
+    /// materializing a temporary <see cref="IServiceProvider"/>.
+    /// </remarks>
+    private static void InvokeWithConfiguration(
+        IServiceCollection services,
+        Action<object, object> registrar)
+    {
+        var configuration = FindRegisteredConfiguration(services)
+            ?? throw new InvalidOperationException(
+                "WebApplicationSyringe could not locate an IConfiguration in the service " +
+                "collection when invoking a source-generated registrar. This usually means " +
+                "the WebApplicationBuilder has not registered IConfiguration yet, which " +
+                "indicates a serious misconfiguration of the host pipeline.");
+
+        registrar(services, configuration);
+    }
+
+    /// <summary>
+    /// Searches <paramref name="services"/> for a previously-registered
+    /// <see cref="IConfiguration"/> instance. Prefers
+    /// <see cref="ServiceDescriptor.ImplementationInstance"/> (the pattern used by
+    /// <see cref="Microsoft.AspNetCore.Builder.WebApplicationBuilder"/>) and falls
+    /// back to building a minimal service provider if only a factory registration
+    /// is present.
+    /// </summary>
+    private static IConfiguration? FindRegisteredConfiguration(IServiceCollection services)
+    {
+        // Walk the descriptors in reverse so the most-recently-registered
+        // IConfiguration wins — mirrors DI's "last registration wins" semantics.
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            var descriptor = services[i];
+            if (descriptor.ServiceType != typeof(IConfiguration))
+            {
+                continue;
+            }
+
+            if (descriptor.ImplementationInstance is IConfiguration instance)
+            {
+                return instance;
+            }
+        }
+
+        // Fallback: build a minimal provider just to resolve IConfiguration.
+        // This handles exotic registrations via ImplementationFactory.
+        using var tempProvider = services.BuildServiceProvider();
+        return tempProvider.GetService<IConfiguration>();
     }
 
     /// <summary>
