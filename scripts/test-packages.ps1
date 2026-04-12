@@ -356,6 +356,30 @@ Test-AttributeFileTarget `
     -ExpectedContains $null `
     -Failed $failedRef
 
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "ExcludeNamespacePrefix emits ExcludeNamespacePrefixes in attribute" `
+    -Properties @{ RootNamespace = 'MyProject'; NeedlrExcludeNamespacePrefix = 'Avalonia' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains 'ExcludeNamespacePrefixes = new[] { "Avalonia" }' `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "Both include and exclude prefixes emitted together" `
+    -Properties @{ RootNamespace = 'MyProject'; NeedlrExcludeNamespacePrefix = 'Avalonia;Microsoft.Maui' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains '"Avalonia", "Microsoft.Maui"' `
+    -Failed $failedRef
+
+Test-AttributeFileTarget `
+    -RepoRoot $repoRoot `
+    -Description "Exclude-only (no include prefix, no RootNamespace) emits exclude arg" `
+    -Properties @{ NeedlrExcludeNamespacePrefix = 'Avalonia' } `
+    -IncludeGeneratorAnalyzer `
+    -ExpectedContains 'ExcludeNamespacePrefixes = new[] { "Avalonia" }' `
+    -Failed $failedRef
+
 Write-Host ""
 Write-Host "=== Example projects (source-mode simulation of NexusLabs.Needlr.Build) ===" -ForegroundColor Cyan
 Write-Host "  (Sync guarantee: if Directory.Build.targets drifts from the NuGet package, these fail)"

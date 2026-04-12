@@ -46,6 +46,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             var discoveryResult = DiscoverTypes(
                 compilation,
                 info.NamespacePrefixes,
+                info.ExcludeNamespacePrefixes,
                 info.IncludeSelf);
 
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading.
@@ -295,6 +296,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 continue;
 
             string[]? namespacePrefixes = null;
+            string[]? excludeNamespacePrefixes = null;
             var includeSelf = true;
 
             foreach (var namedArg in attribute.NamedArguments)
@@ -311,6 +313,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                         }
                         break;
 
+                    case "ExcludeNamespacePrefixes":
+                        if (!namedArg.Value.IsNull && namedArg.Value.Values.Length > 0)
+                        {
+                            excludeNamespacePrefixes = namedArg.Value.Values
+                                .Where(v => v.Value is string)
+                                .Select(v => (string)v.Value!)
+                                .ToArray();
+                        }
+                        break;
+
                     case "IncludeSelf":
                         if (namedArg.Value.Value is bool selfValue)
                         {
@@ -320,7 +332,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
-            return new AttributeInfo(namespacePrefixes, includeSelf);
+            return new AttributeInfo(namespacePrefixes, excludeNamespacePrefixes, includeSelf);
         }
 
         return null;
@@ -329,6 +341,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static DiscoveryResult DiscoverTypes(
         Compilation compilation,
         string[]? namespacePrefixes,
+        string[]? excludeNamespacePrefixes,
         bool includeSelf)
     {
         var injectableTypes = new List<DiscoveredType>();
@@ -343,6 +356,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var httpClients = new List<DiscoveredHttpClient>();
         var inaccessibleTypes = new List<InaccessibleType>();
         var prefixList = namespacePrefixes?.ToList();
+        var excludePrefixList = excludeNamespacePrefixes?.ToList();
         
         // Compute the generated namespace for the current assembly
         var currentAssemblyName = compilation.Assembly.Name;
@@ -352,7 +366,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
         }
 
         // Collect types from all referenced assemblies
@@ -370,7 +384,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // For referenced assemblies, they use their own generated namespace
                 var refSafeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblySymbol.Name);
                 var refGeneratedNamespace = $"{refSafeAssemblyName}.Generated";
-                CollectTypesFromAssembly(assemblySymbol, prefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
             }
         }
 
@@ -418,6 +432,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
     private static void CollectTypesFromAssembly(
         IAssemblySymbol assembly,
         IReadOnlyList<string>? namespacePrefixes,
+        IReadOnlyList<string>? excludeNamespacePrefixes,
         List<DiscoveredType> injectableTypes,
         List<DiscoveredPlugin> pluginTypes,
         List<DiscoveredDecorator> decorators,
@@ -436,6 +451,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         foreach (var typeSymbol in TypeDiscoveryHelper.GetAllTypes(assembly.GlobalNamespace))
         {
             if (!TypeDiscoveryHelper.MatchesNamespacePrefix(typeSymbol, namespacePrefixes))
+                continue;
+
+            if (TypeDiscoveryHelper.MatchesExclusionFilter(typeSymbol, excludeNamespacePrefixes))
                 continue;
 
             // For referenced assemblies, check if the type would be registerable but is inaccessible

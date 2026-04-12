@@ -30,6 +30,22 @@ Agent framework usability release plus hosting/bootstrapping conveniences.
   `null` when no text content is present. Standard replacement for the
   text-extraction helper every consumer ends up writing.
 
+#### Source Generation
+
+- **`ExcludeNamespacePrefixes` on `[GenerateTypeRegistry]`.** Blacklist
+  namespace prefixes to prevent the source generator from scanning
+  framework types (Avalonia, MAUI, etc.) that Needlr would otherwise
+  try to register. Applied after inclusion — if a type matches both an
+  include and exclude prefix, it is excluded. Configure via attribute:
+  ```csharp
+  [assembly: GenerateTypeRegistry(
+      ExcludeNamespacePrefixes = new[] { "Avalonia" })]
+  ```
+  Or via MSBuild property in `Directory.Build.props`:
+  ```xml
+  <NeedlrExcludeNamespacePrefix>Avalonia;Microsoft.Maui</NeedlrExcludeNamespacePrefix>
+  ```
+
 #### Hosting & Bootstrapping
 
 - **`NeedlrBootstrapper` lifecycle wrapper** in

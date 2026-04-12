@@ -236,6 +236,33 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
+    /// Checks if a type matches any of the given exclusion namespace prefixes.
+    /// Returns <c>true</c> if the type should be EXCLUDED (its namespace starts with
+    /// any of the exclusion prefixes).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="excludeNamespacePrefixes">The namespace prefixes to exclude. If null or empty, nothing is excluded.</param>
+    /// <returns>True if the type should be excluded from the registry.</returns>
+    public static bool MatchesExclusionFilter(INamedTypeSymbol typeSymbol, IReadOnlyList<string>? excludeNamespacePrefixes)
+    {
+        if (excludeNamespacePrefixes == null || excludeNamespacePrefixes.Count == 0)
+            return false;
+
+        var typeNamespace = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+
+        foreach (var prefix in excludeNamespacePrefixes)
+        {
+            if (string.IsNullOrEmpty(prefix))
+                continue;
+
+            if (typeNamespace.StartsWith(prefix, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Recursively iterates all named type symbols in a namespace.
     /// </summary>
     /// <param name="namespaceSymbol">The namespace to iterate.</param>

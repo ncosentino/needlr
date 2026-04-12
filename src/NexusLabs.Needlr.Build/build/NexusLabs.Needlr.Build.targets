@@ -50,10 +50,21 @@
     <ItemGroup Condition="'$(_NeedlrHasGenerator)' == 'true' AND '$(_NeedlrEffectivePrefix)' != ''">
       <_NeedlrNamespacePrefix Include="$(_NeedlrEffectivePrefix)" />
     </ItemGroup>
+    <ItemGroup Condition="'$(_NeedlrHasGenerator)' == 'true' AND '$(NeedlrExcludeNamespacePrefix)' != ''">
+      <_NeedlrExcludePrefix Include="$(NeedlrExcludeNamespacePrefix)" />
+    </ItemGroup>
     <PropertyGroup Condition="'$(_NeedlrHasGenerator)' == 'true'">
       <_NeedlrPrefixList Condition="'$(_NeedlrEffectivePrefix)' != ''">@(_NeedlrNamespacePrefix -> '&quot;%(Identity)&quot;', ', ')</_NeedlrPrefixList>
-      <_NeedlrAttributeContent Condition="'$(_NeedlrEffectivePrefix)' != ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { $(_NeedlrPrefixList) })]</_NeedlrAttributeContent>
-      <_NeedlrAttributeContent Condition="'$(_NeedlrEffectivePrefix)' == ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]</_NeedlrAttributeContent>
+      <_NeedlrExcludePrefixList Condition="'$(NeedlrExcludeNamespacePrefix)' != ''">@(_NeedlrExcludePrefix -> '&quot;%(Identity)&quot;', ', ')</_NeedlrExcludePrefixList>
+      <!-- Build the attribute content with include and optionally exclude prefixes -->
+      <_NeedlrIncludeArg Condition="'$(_NeedlrEffectivePrefix)' != ''">IncludeNamespacePrefixes = new[] { $(_NeedlrPrefixList) }</_NeedlrIncludeArg>
+      <_NeedlrExcludeArg Condition="'$(NeedlrExcludeNamespacePrefix)' != ''">ExcludeNamespacePrefixes = new[] { $(_NeedlrExcludePrefixList) }</_NeedlrExcludeArg>
+      <!-- Combine arguments -->
+      <_NeedlrAttrArgs Condition="'$(_NeedlrIncludeArg)' != '' AND '$(_NeedlrExcludeArg)' != ''">$(_NeedlrIncludeArg), $(_NeedlrExcludeArg)</_NeedlrAttrArgs>
+      <_NeedlrAttrArgs Condition="'$(_NeedlrIncludeArg)' != '' AND '$(_NeedlrExcludeArg)' == ''">$(_NeedlrIncludeArg)</_NeedlrAttrArgs>
+      <_NeedlrAttrArgs Condition="'$(_NeedlrIncludeArg)' == '' AND '$(_NeedlrExcludeArg)' != ''">$(_NeedlrExcludeArg)</_NeedlrAttrArgs>
+      <_NeedlrAttributeContent Condition="'$(_NeedlrAttrArgs)' != ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry($(_NeedlrAttrArgs))]</_NeedlrAttributeContent>
+      <_NeedlrAttributeContent Condition="'$(_NeedlrAttrArgs)' == ''">[assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry()]</_NeedlrAttributeContent>
     </PropertyGroup>
     <MakeDir Directories="$(IntermediateOutputPath)" Condition="'$(_NeedlrHasGenerator)' == 'true'" />
     <WriteLinesToFile

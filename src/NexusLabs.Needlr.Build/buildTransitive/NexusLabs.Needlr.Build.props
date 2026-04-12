@@ -10,6 +10,15 @@
   <PropertyGroup Condition="'$(NeedlrNamespacePrefix)' == ''">
     <NeedlrNamespacePrefix></NeedlrNamespacePrefix>
   </PropertyGroup>
+  <!-- NeedlrExcludeNamespacePrefix: semicolon-delimited namespace prefixes to EXCLUDE from
+       GenerateTypeRegistry. Types whose namespace starts with any of these prefixes are skipped
+       even if they match IncludeNamespacePrefixes. Use this when a referenced framework (e.g.,
+       Avalonia, MAUI) exposes many public types that Needlr would otherwise try to register.
+       Example: <NeedlrExcludeNamespacePrefix>Avalonia;Microsoft.Maui</NeedlrExcludeNamespacePrefix>
+       Default: empty (no exclusions). -->
+  <PropertyGroup Condition="'$(NeedlrExcludeNamespacePrefix)' == ''">
+    <NeedlrExcludeNamespacePrefix></NeedlrExcludeNamespacePrefix>
+  </PropertyGroup>
   <!-- NeedlrAutoGenerateAttribute: controls whether NexusLabs.Needlr.Build automatically writes
        the [assembly: GenerateTypeRegistry] attribute file when NeedlrAutoGenerate=true.
        Set to 'false' if you declare the attribute yourself (avoids CS0579 duplicate attribute error).
