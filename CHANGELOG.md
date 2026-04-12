@@ -5,6 +5,97 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.29] - 2026-04-12
+
+Consumer extensibility release driven by BrandGhost migration feedback.
+Addresses five gaps (G1–G5) that blocked full adoption of the agent
+framework's diagnostics, workspace, and provider-selector systems.
+
+### Added
+
+- **Configurable meter and ActivitySource names
+  (`AgentFrameworkMetricsOptions`).** Consumers with existing
+  Prometheus/Grafana dashboards keyed to a specific meter name can set
+  `MeterName` (and optionally `ActivitySourceName`) via the syringe:
+  ```csharp
+  .UsingAgentFramework(af => af
+      .ConfigureMetrics(o => o.MeterName = "BrandGhost.Agents"))
+  ```
+  Defaults to `"NexusLabs.Needlr.AgentFramework"`. `AgentMetrics` now
+  creates its `Meter` and `ActivitySource` from these options instead
+  of hardcoded constants.
+
+- **`IWorkspace.ReadFileAsMemory(string path)`** — returns
+  `ReadOnlyMemory<char>` for zero-copy line enumeration via
+  `MemoryExtensions.EnumerateLines()`. `InMemoryWorkspace` returns
+  `string.AsMemory()` over its internal storage.
+
+- **`IWorkspace.ListDirectory(string directory, int maxDepth = 2)`** —
+  produces a tree-formatted directory listing with Unicode tree
+  characters. `InMemoryWorkspace` builds the tree from its
+  `ConcurrentDictionary` keys with depth-limited recursion.
+
+- **`AgentExecutionContext.Workspace` parameter.** The default
+  `AgentExecutionContext` record now accepts an optional `IWorkspace?`
+  constructor parameter. When provided, the workspace is automatically
+  injected into the `Properties` bag under the `IWorkspace` type key.
+
+- **`GetWorkspace()` / `GetRequiredWorkspace()` extensions on
+  `IAgentExecutionContext`.** Typed convenience methods for resolving
+  the workspace from context without manual casting. `GetRequired`
+  throws `InvalidOperationException` if no workspace is available.
+
+- **Per-partition quota on `IQuotaGate`.** `TryReserveAsync` and
+  `ReleaseAsync` now accept an optional `string? quotaPartition`
+  parameter. When provided, the quota gate can scope tracking to that
+  partition (user, tenant, API key — the string is opaque to the
+  framework). When `null`, quota is global (backward-compatible).
+
+- **`QuotaPartitionSelector` delegate.** `TieredProviderSelector` now
+  reads the partition from ambient `IAgentExecutionContextAccessor`
+  via a configurable delegate. Default: `context?.UserId`. Consumers
+  that need a different partitioning strategy (e.g., tenant ID) provide
+  a custom delegate at construction time.
+
+### Changed
+
+- **Activity span tags aligned to OpenTelemetry GenAI semantic
+  conventions.** Renamed tags across all three diagnostics middleware
+  classes:
+  - `agent.name` → `gen_ai.agent.name`
+  - `llm.tokens.input` → `gen_ai.usage.input_tokens`
+  - `llm.tokens.output` → `gen_ai.usage.output_tokens`
+  - `llm.model` → `gen_ai.response.model`
+  - `tool.name` → `agent.tool.name`
+
+  Added `agent.tool.sequence`, `agent.chat.sequence` tags for call
+  ordering. Added `tool.custom.{key}` tag emission for custom tool
+  metrics on Activity spans.
+
+  Activity operation names now include the subject for trace
+  readability: `"agent.run {agentName}"`, `"agent.tool {toolName}"`,
+  `"agent.chat {model}"`.
+
+- **`TieredProviderSelector` constructor** now requires
+  `IAgentExecutionContextAccessor` (previously only took providers +
+  quota gate). This is a **breaking change** for consumers constructing
+  the selector directly. The accessor is registered automatically by
+  `UsingAgentFramework()`.
+
+### Breaking Changes
+
+- **`IQuotaGate` interface** — `TryReserveAsync` and `ReleaseAsync`
+  signatures gained a `string? quotaPartition` parameter. All
+  implementations must update. `AlwaysGrantQuotaGate` is already
+  updated.
+
+- **`IWorkspace` interface** — gained `ReadFileAsMemory` and
+  `ListDirectory` (no default interface implementations). All
+  implementations must add these methods.
+
+- **`TieredProviderSelector` constructor** — added required
+  `IAgentExecutionContextAccessor` parameter.
+
 ## [0.0.2-alpha.28] - 2026-04-12
 
 Diagnostics extensibility release. Makes the agent-framework diagnostics
