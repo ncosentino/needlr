@@ -1374,3 +1374,104 @@ Needlr includes Roslyn analyzers that detect issues at compile time:
 - **[NDLRCOR006](analyzers/NDLRCOR006.md)**: Circular dependency errors
 
 These analyzers work with Needlr's registration attributes (`[Singleton]`, `[Scoped]`, `[Transient]`, `[RegisterAs]`).
+
+## Application Bootstrap Lifecycle
+
+### NeedlrBootstrapper
+
+`NeedlrBootstrapper` wraps your application's entry point with three responsibilities:
+
+1. **Pre-DI bootstrap logger** — a console logger is available before any DI container is built.
+2. **Top-level exception handling** — unhandled exceptions are logged at `Critical` level and do not rethrow.
+3. **Guaranteed cleanup** — an optional async cleanup delegate runs in `finally` (useful for flushing log sinks).
+
+The callback receives a `NeedlrBootstrapContext` that currently exposes the bootstrap `ILogger`. This context is an extensibility point — future versions may add pre-DI `IConfiguration` and other bootstrapped resources without breaking existing callbacks.
+
+```csharp
+using NexusLabs.Needlr.Hosting;
+
+await new NeedlrBootstrapper()
+    .RunAsync(async (context, ct) =>
+    {
+        var host = new Syringe()
+            .UsingSourceGen()
+            .ForHost()
+            .UsingOptions(() => CreateHostOptions.Default
+                .UsingCurrentProcessArgs()
+                .UsingLogger(context.Logger))
+            .BuildHost();
+
+        await host.RunAsync(ct);
+    });
+```
+
+!!! note
+    The `CancellationToken` parameter follows standard .NET async conventions — it comes last and is separate from
+    `NeedlrBootstrapContext`. Pass your own `CancellationToken` when you need cooperative cancellation; omit it to
+    use the default.
+
+### Custom Logger Factory
+
+Override the default console logger by supplying your own `ILoggerFactory`:
+
+```csharp
+using Microsoft.Extensions.Logging;
+using NexusLabs.Needlr.Hosting;
+
+using var factory = LoggerFactory.Create(builder =>
+    builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
+
+await new NeedlrBootstrapper()
+    .UsingLoggerFactory(factory)
+    .RunAsync(async (context, ct) =>
+    {
+        // context.Logger was created from your factory
+        context.Logger.LogInformation("Application starting...");
+        // ... build and run your host/web application
+    });
+```
+
+When you supply a factory via `UsingLoggerFactory`, the bootstrapper does **not** dispose it — you own its lifetime.
+
+### Cleanup / Log Flushing
+
+Use `WithCleanup` to register an async delegate that runs in `finally`, even if the callback throws:
+
+```csharp
+await new NeedlrBootstrapper()
+    .WithCleanup(async () =>
+    {
+        // flush metrics, close connections, etc.
+        await myTelemetryClient.FlushAsync();
+    })
+    .RunAsync(async (context, ct) =>
+    {
+        // ...
+    });
+```
+
+`WithCleanup` is designed to be composed by higher-level bootstrappers (like `NeedlrSerilogBootstrapper`) so
+their cleanup integrates cleanly into the same lifecycle without duplicating try/catch/finally logic.
+
+### Using with ASP.NET Core
+
+`NeedlrBootstrapper` is available through `NexusLabs.Needlr.Hosting`, which `NexusLabs.Needlr.AspNet` already
+references. ASP.NET Core users get it automatically:
+
+```csharp
+using NexusLabs.Needlr.Hosting;
+
+await new NeedlrBootstrapper()
+    .RunAsync(async (context, ct) =>
+    {
+        var webApp = new Syringe()
+            .UsingSourceGen()
+            .ForWebApplication()
+            .UsingOptions(() => CreateWebApplicationOptions.Default
+                .UsingCurrentProcessCliArgs()
+                .UsingLogger(context.Logger))
+            .BuildWebApplication();
+
+        await webApp.RunAsync(ct);
+    });
+```

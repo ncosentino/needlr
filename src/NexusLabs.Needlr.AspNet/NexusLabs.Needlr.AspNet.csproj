@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Hosting\NexusLabs.Needlr.Hosting.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
   </ItemGroup>
