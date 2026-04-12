@@ -3,93 +3,25 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/12/2026 - 00:22:01 |
-| Coverage date: | 04/12/2026 - 00:20:35 - 04/12/2026 - 00:21:58 |
+| Generated on: | 04/12/2026 - 00:37:40 |
+| Coverage date: | 04/12/2026 - 00:36:19 - 04/12/2026 - 00:37:36 |
 | Parser: | MultiReport (23x Cobertura) |
-| Assemblies: | 27 |
-| Classes: | 372 |
-| Files: | 332 |
-| **Line coverage:** | 84.4% (13013 of 15408) |
-| Covered lines: | 13013 |
-| Uncovered lines: | 2395 |
-| Coverable lines: | 15408 |
-| Total lines: | 38585 |
-| **Branch coverage:** | 75.2% (5279 of 7017) |
-| Covered branches: | 5279 |
-| Total branches: | 7017 |
+| Assemblies: | 21 |
+| Classes: | 346 |
+| Files: | 310 |
+| **Line coverage:** | 85.2% (12862 of 15094) |
+| Covered lines: | 12862 |
+| Uncovered lines: | 2232 |
+| Coverable lines: | 15094 |
+| Total lines: | 37526 |
+| **Branch coverage:** | 75.2% (5274 of 7009) |
+| Covered branches: | 5274 |
+| Total branches: | 7009 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>MultiProjectApp.Bootstrap - 50%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.Bootstrap**|**50%**|****|
-|MultiProjectApp.Bootstrap.Generated.NeedlrSourceGenModuleInitializer|100%||
-|MultiProjectApp.Bootstrap.Generated.ServiceCatalog|0%||
-|MultiProjectApp.Bootstrap.Generated.TypeRegistry|100%||
-
-</details>
-<details><summary>MultiProjectApp.ConsoleApp - 0%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.ConsoleApp**|**0%**|****|
-|MultiProjectApp.ConsoleApp.Generated.NeedlrSourceGenModuleInitializer|0%||
-|MultiProjectApp.ConsoleApp.Generated.ServiceCatalog|0%||
-|MultiProjectApp.ConsoleApp.Generated.TypeRegistry|0%||
-|Program|0%||
-
-</details>
-<details><summary>MultiProjectApp.Features.CrossGenSimulation - 100%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.Features.CrossGenSimulation**|**100%**|****|
-|MultiProjectApp.Features.CrossGenSimulation.CrossGenSimulationRegistrations|100%||
-
-</details>
-<details><summary>MultiProjectApp.Features.Notifications - 64.6%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.Features.Notifications**|**64.6%**|**100%**|
-|MultiProjectApp.Features.Notifications.AuditLogNotificationSink|0%||
-|MultiProjectApp.Features.Notifications.Generated.NeedlrSourceGenModuleIniti<br/>alizer|100%|100%|
-|MultiProjectApp.Features.Notifications.Generated.ServiceCatalog|0%||
-|MultiProjectApp.Features.Notifications.Generated.TypeRegistry|92.3%||
-|MultiProjectApp.Features.Notifications.InMemoryNotificationService|0%||
-|MultiProjectApp.Features.Notifications.NotificationSinkRegistrations|100%|100%|
-|MultiProjectApp.Features.Notifications.NotificationsPlugin|100%||
-
-</details>
-<details><summary>MultiProjectApp.Features.Reporting - 57.5%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.Features.Reporting**|**57.5%**|**100%**|
-|MultiProjectApp.Features.Reporting.ConsoleReportService|0%||
-|MultiProjectApp.Features.Reporting.Generated.NeedlrSourceGenModuleInitializ<br/>er|100%|100%|
-|MultiProjectApp.Features.Reporting.Generated.ServiceCatalog|0%||
-|MultiProjectApp.Features.Reporting.Generated.TypeRegistry|93.7%||
-|MultiProjectApp.Features.Reporting.ReportingInternals|0%||
-|MultiProjectApp.Features.Reporting.ReportingPlugin|100%||
-
-</details>
-<details><summary>MultiProjectApp.WorkerApp - 46.2%</summary>
-
-|**Name**|**Line**|**Branch**|
-|:---|---:|---:|
-|**MultiProjectApp.WorkerApp**|**46.2%**|**0%**|
-|MultiProjectApp.WorkerApp.Generated.NeedlrSourceGenModuleInitializer|100%||
-|MultiProjectApp.WorkerApp.Generated.ServiceCatalog|0%||
-|MultiProjectApp.WorkerApp.Generated.TypeRegistry|95.2%||
-|MultiProjectApp.WorkerApp.NotificationWorker|0%|0%|
-|Program|0%||
-
-</details>
 <details><summary>NexusLabs.Needlr - 83.6%</summary>
 
 |**Name**|**Line**|**Branch**|
@@ -500,15 +432,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
