@@ -11,7 +11,7 @@ using NexusLabs.Needlr.Injection.SourceGen;
 // ASP.NET Core WebApplication path, with a focus on the [Options]
 // source-gen pattern binding through BuildWebApplication().
 //
-// Two things this example is deliberately proving end-to-end:
+// Things this example is deliberately proving end-to-end:
 //
 //   1. Source-generated type discovery replaces reflection for injectable
 //      services (WeatherPlugin, WeatherProvider).
@@ -23,10 +23,17 @@ using NexusLabs.Needlr.Injection.SourceGen;
 //      without any manual services.AddOptions<T>().BindConfiguration(...)
 //      call in user code. Prior to the fix, this path silently returned a
 //      default-constructed WeatherOptions.
+//
+//   3. UsingCurrentProcessCliArgs() forwards the current process's command
+//      line arguments to the web application builder, enabling --urls,
+//      --environment, and other CLI switches without manual plumbing.
 // ─────────────────────────────────────────────────────────────────────────────
 
 var webApplication = new Syringe()
     .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingCurrentProcessCliArgs())
     .BuildWebApplication();
 var webAppTask = webApplication.RunAsync();
 

@@ -41,6 +41,32 @@ public static class CreateWebApplicationOptionsExtensions
     }
 
     /// <summary>
+    /// Configures the options to use the current process's command line arguments,
+    /// automatically stripping the executable path that appears at index 0 of
+    /// <see cref="Environment.GetCommandLineArgs"/>.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the current process's command line arguments.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <example>
+    /// <code>
+    /// var webApp = new Syringe()
+    ///     .ForWebApplication()
+    ///     .UsingOptions(() => CreateWebApplicationOptions.Default
+    ///         .UsingCurrentProcessCliArgs())
+    ///     .BuildWebApplication();
+    /// </code>
+    /// </example>
+    public static CreateWebApplicationOptions UsingCurrentProcessCliArgs(
+        this CreateWebApplicationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        return options.UsingCliArgs(args);
+    }
+
+    /// <summary>
     /// Configures the options to use the specified command line arguments.
     /// </summary>
     /// <param name="options">The options to configure.</param>

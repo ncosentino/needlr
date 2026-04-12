@@ -373,6 +373,61 @@ public sealed class CreateWebApplicationOptionsExtensionsTests
 
     #endregion
 
+    #region UsingCurrentProcessCliArgs Tests
+
+    [Fact]
+    public void UsingCurrentProcessCliArgs_SetsArgsFromCurrentProcess()
+    {
+        var options = CreateWebApplicationOptions.Default
+            .UsingCurrentProcessCliArgs();
+
+        // Environment.GetCommandLineArgs()[0] is the exe path — it must be stripped.
+        // The resulting Args should match everything after index 0.
+        var expected = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        Assert.Equal(expected, options.Options.Args);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessCliArgs_DoesNotIncludeExePath()
+    {
+        var options = CreateWebApplicationOptions.Default
+            .UsingCurrentProcessCliArgs();
+
+        var exePath = Environment.GetCommandLineArgs()[0];
+        Assert.DoesNotContain(exePath, options.Options.Args ?? []);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessCliArgs_PreservesApplicationName()
+    {
+        var options = CreateWebApplicationOptions.Default
+            .UsingApplicationName("MyApp")
+            .UsingCurrentProcessCliArgs();
+
+        Assert.Equal("MyApp", options.Options.ApplicationName);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessCliArgs_ReturnsNewInstance()
+    {
+        var options = CreateWebApplicationOptions.Default;
+
+        var newOptions = options.UsingCurrentProcessCliArgs();
+
+        Assert.NotSame(options, newOptions);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessCliArgs_WithNullOptions_ThrowsArgumentNullException()
+    {
+        CreateWebApplicationOptions options = null!;
+
+        Assert.Throws<ArgumentNullException>(() =>
+            options.UsingCurrentProcessCliArgs());
+    }
+
+    #endregion
+
     #region UsingApplicationName Tests
 
     [Fact]

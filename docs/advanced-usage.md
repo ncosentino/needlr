@@ -473,6 +473,48 @@ var serviceProvider = new Syringe()
 
 ## Advanced Web Application Configuration
 
+### Passing Command Line Arguments
+
+By default, `CreateWebApplicationOptions.Default` leaves `Args` unset, which means command line configuration
+(e.g. `--urls`, `--environment`) is not available to the web application. Use `UsingCurrentProcessCliArgs()` to
+automatically forward the current process's arguments:
+
+```csharp
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingCurrentProcessCliArgs())
+    .BuildWebApplication();
+```
+
+!!! note
+    `UsingCurrentProcessCliArgs()` reads from `Environment.GetCommandLineArgs()` and strips the executable path at
+    index 0, so the result matches what `Main(string[] args)` receives.
+
+If you already have a `string[]` from `Main`, pass it explicitly with `UsingCliArgs(args)` instead:
+
+```csharp
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingCliArgs(args))
+    .BuildWebApplication();
+```
+
+The equivalent for the generic host path is `UsingCurrentProcessArgs()` / `UsingArgs(args)` on
+`CreateHostOptions`:
+
+```csharp
+var host = new Syringe()
+    .UsingSourceGen()
+    .ForHost()
+    .UsingOptions(() => CreateHostOptions.Default
+        .UsingCurrentProcessArgs())
+    .BuildHost();
+```
+
 ### Using Configuration Callback
 
 The `UsingConfigurationCallback` method provides fine-grained control over the WebApplicationBuilder configuration:

@@ -222,6 +222,59 @@ public sealed class CreateHostOptionsExtensionsTests
         Assert.True(callback2Called);
     }
 
+    #region UsingCurrentProcessArgs Tests
+
+    [Fact]
+    public void UsingCurrentProcessArgs_SetsArgsFromCurrentProcess()
+    {
+        var options = CreateHostOptions.Default
+            .UsingCurrentProcessArgs();
+
+        var expected = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        Assert.Equal(expected, options.Settings.Args);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessArgs_DoesNotIncludeExePath()
+    {
+        var options = CreateHostOptions.Default
+            .UsingCurrentProcessArgs();
+
+        var exePath = Environment.GetCommandLineArgs()[0];
+        Assert.DoesNotContain(exePath, options.Settings.Args ?? []);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessArgs_PreservesApplicationName()
+    {
+        var options = CreateHostOptions.Default
+            .UsingApplicationName("MyApp")
+            .UsingCurrentProcessArgs();
+
+        Assert.Equal("MyApp", options.Settings.ApplicationName);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessArgs_ReturnsNewInstance()
+    {
+        var options = CreateHostOptions.Default;
+
+        var newOptions = options.UsingCurrentProcessArgs();
+
+        Assert.NotSame(options, newOptions);
+    }
+
+    [Fact]
+    public void UsingCurrentProcessArgs_WithNullOptions_ThrowsArgumentNullException()
+    {
+        CreateHostOptions options = null!;
+
+        Assert.Throws<ArgumentNullException>(() =>
+            options.UsingCurrentProcessArgs());
+    }
+
+    #endregion
+
     private interface ITestService1 { }
     private class TestService1 : ITestService1 { }
 

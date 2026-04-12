@@ -41,6 +41,32 @@ public static class CreateHostOptionsExtensions
     }
 
     /// <summary>
+    /// Configures the options to use the current process's command line arguments,
+    /// automatically stripping the executable path that appears at index 0 of
+    /// <see cref="Environment.GetCommandLineArgs"/>.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <returns>A new instance of <see cref="CreateHostOptions"/> with the current process's command line arguments.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <example>
+    /// <code>
+    /// var host = new Syringe()
+    ///     .ForHost()
+    ///     .UsingOptions(() => CreateHostOptions.Default
+    ///         .UsingCurrentProcessArgs())
+    ///     .BuildHost();
+    /// </code>
+    /// </example>
+    public static CreateHostOptions UsingCurrentProcessArgs(
+        this CreateHostOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        return options.UsingArgs(args);
+    }
+
+    /// <summary>
     /// Configures the options to use the specified command line arguments.
     /// </summary>
     /// <param name="options">The options to configure.</param>
