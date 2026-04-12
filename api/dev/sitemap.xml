@@ -725,6 +725,10 @@
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFrameworkMetricsOptions/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IProgressReporterFactory/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
@@ -818,6 +822,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/ToolResult_TValue,TError_/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/QuotaPartitionSelector(IAgentExecutionContext)/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>

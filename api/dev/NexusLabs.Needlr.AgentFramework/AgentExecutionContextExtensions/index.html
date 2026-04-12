@@ -3449,6 +3449,33 @@ directly — there is no valid "anonymous" execution.</p>
 Thrown when no execution context scope is active. This indicates a programming error:
 the orchestration layer must call <a href="../IAgentExecutionContextAccessor/#NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor.BeginScope(NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor.BeginScope(NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)">BeginScope(IAgentExecutionContext)</a>
 before invoking tools.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetRequiredWorkspace(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)'></a></p>
+<h2 id="agentexecutioncontextextensionsgetrequiredworkspacethis-iagentexecutioncontext-method">AgentExecutionContextExtensions.GetRequiredWorkspace(this IAgentExecutionContext) Method<a class="headerlink" href="#agentexecutioncontextextensionsgetrequiredworkspacethis-iagentexecutioncontext-method" title="Permanent link">&para;</a></h2>
+<p>Gets the workspace from the context, throwing if none is set. Convenience for
+tool implementations that require a workspace to operate.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">IWorkspace</span><span class="w"> </span><span class="n">GetRequiredWorkspace</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetRequiredWorkspace(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).context'></a></p>
+<p><code>context</code> <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a></p>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p><a href="../IWorkspace/" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace">IWorkspace</a></p>
+<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
+No workspace is available in the current context.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetWorkspace(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)'></a></p>
+<h2 id="agentexecutioncontextextensionsgetworkspacethis-iagentexecutioncontext-method">AgentExecutionContextExtensions.GetWorkspace(this IAgentExecutionContext) Method<a class="headerlink" href="#agentexecutioncontextextensionsgetworkspacethis-iagentexecutioncontext-method" title="Permanent link">&para;</a></h2>
+<p>Gets the workspace from the context, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if none is set.
+Works with both <a href="../AgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContext">AgentExecutionContext</a> (which stores the workspace
+in Properties automatically) and custom implementations that put an
+<a href="../IWorkspace/" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace">IWorkspace</a> in the property bag under the type key.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">IWorkspace</span><span class="o">?</span><span class="w"> </span><span class="n">GetWorkspace</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetWorkspace(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).context'></a></p>
+<p><code>context</code> <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a></p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<p><a href="../IWorkspace/" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace">IWorkspace</a></p>
 
 
 
