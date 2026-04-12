@@ -4,19 +4,23 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
 /// Thread-safe accumulator for diagnostics captured during a single agent run.
-/// Used internally by the diagnostics middleware layers.
+/// Both Needlr's built-in diagnostics middleware and consumer-provided middleware
+/// use this class to record tool calls, chat completions, and message counts as
+/// an agent executes.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Stored in an <see cref="AsyncLocal{T}"/> so the agent-run, chat-completion, and
 /// function-calling middleware all access the same builder instance within an async flow.
+/// Call <see cref="StartNew"/> at the beginning of an agent run and dispose the returned
+/// builder when the run completes.
 /// </para>
 /// <para>
 /// Sequence numbers are reserved BEFORE async work begins (via <see cref="Interlocked.Increment(ref int)"/>),
 /// ensuring parallel tool calls are ordered by invocation time, not completion time.
 /// </para>
 /// </remarks>
-internal sealed class AgentRunDiagnosticsBuilder : IDisposable
+public sealed class AgentRunDiagnosticsBuilder : IDisposable
 {
     private static readonly AsyncLocal<AgentRunDiagnosticsBuilder?> CurrentBuilder = new();
 
@@ -50,7 +54,7 @@ internal sealed class AgentRunDiagnosticsBuilder : IDisposable
     /// <summary>
     /// Creates a new builder and stores it in the current async flow so middleware can access it.
     /// </summary>
-    internal static AgentRunDiagnosticsBuilder StartNew(string agentName)
+    public static AgentRunDiagnosticsBuilder StartNew(string agentName)
     {
         var builder = new AgentRunDiagnosticsBuilder(agentName);
         CurrentBuilder.Value = builder;
@@ -58,17 +62,17 @@ internal sealed class AgentRunDiagnosticsBuilder : IDisposable
     }
 
     /// <summary>Gets the builder for the current async flow, or <see langword="null"/> if outside a run.</summary>
-    internal static AgentRunDiagnosticsBuilder? GetCurrent() => CurrentBuilder.Value;
+    public static AgentRunDiagnosticsBuilder? GetCurrent() => CurrentBuilder.Value;
 
     /// <summary>Reserves a sequence number for a tool call (thread-safe).</summary>
-    internal int NextToolCallSequence() =>
+    public int NextToolCallSequence() =>
         Interlocked.Increment(ref _nextToolCallSequence) - 1;
 
     /// <summary>Reserves a sequence number for a chat completion (thread-safe).</summary>
-    internal int NextChatCompletionSequence() =>
+    public int NextChatCompletionSequence() =>
         Interlocked.Increment(ref _nextChatCompletionSequence) - 1;
 
-    internal void AddChatCompletion(ChatCompletionDiagnostics diagnostics)
+    public void AddChatCompletion(ChatCompletionDiagnostics diagnostics)
     {
         _chatCompletions.Enqueue(diagnostics);
 
@@ -79,22 +83,22 @@ internal sealed class AgentRunDiagnosticsBuilder : IDisposable
         Interlocked.Add(ref _reasoningTokens, diagnostics.Tokens.ReasoningTokens);
     }
 
-    internal void AddToolCall(ToolCallDiagnostics diagnostics) =>
+    public void AddToolCall(ToolCallDiagnostics diagnostics) =>
         _toolCalls.Enqueue(diagnostics);
 
-    internal void RecordInputMessageCount(int count) =>
+    public void RecordInputMessageCount(int count) =>
         Interlocked.Add(ref _totalInputMessages, count);
 
-    internal void RecordOutputMessageCount(int count) =>
+    public void RecordOutputMessageCount(int count) =>
         Interlocked.Add(ref _totalOutputMessages, count);
 
-    internal void RecordFailure(string? errorMessage)
+    public void RecordFailure(string? errorMessage)
     {
         _succeeded = false;
         _errorMessage = errorMessage;
     }
 
-    internal IAgentRunDiagnostics Build()
+    public IAgentRunDiagnostics Build()
     {
         var completedAt = DateTimeOffset.UtcNow;
 
@@ -118,7 +122,7 @@ internal sealed class AgentRunDiagnosticsBuilder : IDisposable
     }
 
     /// <summary>Clears the builder from the current async flow.</summary>
-    internal static void ClearCurrent() => CurrentBuilder.Value = null;
+    public static void ClearCurrent() => CurrentBuilder.Value = null;
 
     /// <summary>
     /// Clears this builder from the current async flow. Equivalent to calling
