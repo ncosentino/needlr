@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Serilog\NexusLabs.Needlr.Serilog.csproj" />
+  </ItemGroup>
+
+</Project>

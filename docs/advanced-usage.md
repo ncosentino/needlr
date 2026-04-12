@@ -1475,3 +1475,35 @@ await new NeedlrBootstrapper()
         await webApp.RunAsync(ct);
     });
 ```
+
+### Serilog Bootstrap
+
+For Serilog users, `NexusLabs.Needlr.Serilog` provides `NeedlrSerilogBootstrapper` — a thin wrapper that composes
+`NeedlrBootstrapper` with Serilog two-stage initialization and automatic `Log.CloseAndFlushAsync` on shutdown.
+
+```csharp
+using NexusLabs.Needlr.Serilog;
+
+await new NeedlrSerilogBootstrapper()
+    .Configure(cfg => cfg
+        .MinimumLevel.Information()
+        .WriteTo.Console())
+    .RunAsync(async (context, ct) =>
+    {
+        var webApp = new Syringe()
+            .UsingSourceGen()
+            .ForWebApplication()
+            .UsingOptions(() => CreateWebApplicationOptions.Default
+                .UsingCurrentProcessCliArgs()
+                .UsingLogger(context.Logger))
+            .BuildWebApplication();
+
+        await webApp.RunAsync(ct);
+    });
+```
+
+`ctx.Logger` is backed by the configured Serilog pipeline. Omit `.Configure(...)` to use the default console sink.
+All lifecycle guarantees from `NeedlrBootstrapper` apply: exceptions are caught and logged at `Critical`,
+and `Log.CloseAndFlushAsync` is always called in `finally`.
+
+See the [Serilog](serilog.md) page for full documentation.

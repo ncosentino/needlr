@@ -87,6 +87,10 @@
     <Project Path="NexusLabs.Needlr.Hosting.Tests/NexusLabs.Needlr.Hosting.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting.csproj" />
   </Folder>
+  <Folder Name="/Integrations/Serilog/">
+    <Project Path="NexusLabs.Needlr.Serilog/NexusLabs.Needlr.Serilog.csproj" />
+    <Project Path="NexusLabs.Needlr.Serilog.Tests/NexusLabs.Needlr.Serilog.Tests.csproj" />
+  </Folder>
   <Folder Name="/Integrations/Scrutor/">
     <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests/NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor.csproj" />

@@ -31,6 +31,10 @@
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.7.0-beta.2" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.72.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.72.0" />
+    <!-- Serilog packages -->
+    <PackageVersion Include="Serilog" Version="4.3.1" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Scrutor" Version="6.1.0" />
     <PackageVersion Include="Carter" Version="9.0.0" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
