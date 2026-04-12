@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/12/2026 - 18:59:42 |
-| Coverage date: | 04/12/2026 - 18:58:23 - 04/12/2026 - 18:59:38 |
-| Parser: | MultiReport (23x Cobertura) |
-| Assemblies: | 21 |
-| Classes: | 347 |
-| Files: | 311 |
-| **Line coverage:** | 85.2% (12981 of 15227) |
-| Covered lines: | 12981 |
-| Uncovered lines: | 2246 |
-| Coverable lines: | 15227 |
-| Total lines: | 37951 |
-| **Branch coverage:** | 75.2% (5338 of 7093) |
-| Covered branches: | 5338 |
-| Total branches: | 7093 |
+| Generated on: | 04/12/2026 - 20:51:29 |
+| Coverage date: | 04/12/2026 - 20:50:13 - 04/12/2026 - 20:51:25 |
+| Parser: | MultiReport (24x Cobertura) |
+| Assemblies: | 22 |
+| Classes: | 352 |
+| Files: | 316 |
+| **Line coverage:** | 85.2% (13022 of 15270) |
+| Covered lines: | 13022 |
+| Uncovered lines: | 2248 |
+| Coverable lines: | 15270 |
+| Total lines: | 38245 |
+| **Branch coverage:** | 75.2% (5342 of 7101) |
+| Covered branches: | 5342 |
+| Total branches: | 7101 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -371,13 +371,13 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.1%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.1%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -386,11 +386,11 @@
 |NexusLabs.Needlr.Generators.ValidatorProviderAttribute|0%|0%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Hosting - 93.3%</summary>
+<details><summary>NexusLabs.Needlr.Hosting - 93.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Hosting**|**93.3%**|**79.4%**|
+|**NexusLabs.Needlr.Hosting**|**93.5%**|**77.5%**|
 |NexusLabs.Needlr.Hosting.CreateHostOptions|88.5%|83.3%|
 |NexusLabs.Needlr.Hosting.CreateHostOptionsExtensions|100%||
 |NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions|94%|75%|
@@ -400,6 +400,9 @@
 |NexusLabs.Needlr.Hosting.HostSyringe|93.3%|80%|
 |NexusLabs.Needlr.Hosting.HostSyringeExtensions|91.6%||
 |NexusLabs.Needlr.Hosting.IHostFactoryExtensions|60%|100%|
+|NexusLabs.Needlr.Hosting.NeedlrBootstrapContext|100%||
+|NexusLabs.Needlr.Hosting.NeedlrBootstrapper|94.7%|66.6%|
+|NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions|100%||
 |NexusLabs.Needlr.Hosting.SyringeHostingExtensions|75%||
 
 </details>
@@ -433,15 +436,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
@@ -491,6 +494,15 @@
 |NexusLabs.Needlr.SemanticKernel.SemanticKernelSyringe|100%|75%|
 |NexusLabs.Needlr.SemanticKernel.SemanticKernelSyringeExtensions|82.7%|85.7%|
 |NexusLabs.Needlr.SemanticKernel.SyringeExtensionsForSemanticKernel|60.7%|50%|
+
+</details>
+<details><summary>NexusLabs.Needlr.Serilog - 100%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**NexusLabs.Needlr.Serilog**|**100%**|**100%**|
+|NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapper|100%|100%|
+|NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapperExtensions|100%||
 
 </details>
 <details><summary>NexusLabs.Needlr.SignalR - 62.5%</summary>

@@ -105,6 +105,22 @@
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Serilog/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Serilog/NeedlrSerilogBootstrapper/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Serilog/NeedlrSerilogBootstrapperExtensions/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Serilog/NexusLabs.Needlr.Serilog/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.Loaders/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
@@ -1489,6 +1505,10 @@
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/NeedlrBootstrapperExtensions/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/HostFactory/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
@@ -1498,6 +1518,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/NeedlrBootstrapContext/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
@@ -1514,6 +1538,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/SyringeHostingExtensions/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/NeedlrBootstrapper/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
