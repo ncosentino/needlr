@@ -214,7 +214,7 @@ internal static class TypeDiscoveryHelper
             return true;
 
         var typeNamespace = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty;
-        
+
         // Check if type is in the global namespace
         var isGlobalNamespace = typeSymbol.ContainingNamespace?.IsGlobalNamespace == true;
 
@@ -227,8 +227,8 @@ internal static class TypeDiscoveryHelper
                     return true;
                 continue;
             }
-            
-            if (typeNamespace.StartsWith(prefix, StringComparison.Ordinal))
+
+            if (IsNamespacePrefixMatch(typeNamespace, prefix))
                 return true;
         }
 
@@ -255,11 +255,36 @@ internal static class TypeDiscoveryHelper
             if (string.IsNullOrEmpty(prefix))
                 continue;
 
-            if (typeNamespace.StartsWith(prefix, StringComparison.Ordinal))
+            if (IsNamespacePrefixMatch(typeNamespace, prefix))
                 return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Dot-boundary-aware prefix match. <c>"Avalonia"</c> matches <c>"Avalonia"</c>
+    /// and <c>"Avalonia.Controls"</c> but NOT <c>"AvaloniaDemoApp"</c>.
+    /// A prefix ending with <c>"."</c> requires an exact sub-namespace match
+    /// (e.g., <c>"Avalonia."</c> matches only <c>"Avalonia.Controls"</c>, not <c>"Avalonia"</c> itself).
+    /// </summary>
+    private static bool IsNamespacePrefixMatch(string typeNamespace, string prefix)
+    {
+        if (!typeNamespace.StartsWith(prefix, StringComparison.Ordinal))
+            return false;
+
+        // Exact match (namespace equals prefix)
+        if (typeNamespace.Length == prefix.Length)
+            return true;
+
+        // Prefix already ends with dot — the StartsWith check is sufficient
+        // (e.g., prefix "Avalonia." matches "Avalonia.Controls")
+        if (prefix[prefix.Length - 1] == '.')
+            return true;
+
+        // Sub-namespace: next char after prefix must be a dot
+        // "Avalonia" matches "Avalonia.Controls" but not "AvaloniaDemoApp"
+        return typeNamespace[prefix.Length] == '.';
     }
 
     /// <summary>
@@ -836,13 +861,26 @@ internal static class TypeDiscoveryHelper
     {
         var result = new List<INamedTypeSymbol>();
 
-        // Add non-system interfaces
+        // Add non-system interfaces that are accessible from generated code.
+        // Internal interfaces from framework assemblies (e.g., Avalonia's
+        // IContentPresenterHost) must be skipped — emitting typeof() for them
+        // produces CS0122 in the generated code.
         foreach (var iface in typeSymbol.AllInterfaces)
         {
             if (iface.IsUnboundGenericType)
                 continue;
 
             if (IsSystemInterface(iface))
+                continue;
+
+            if (IsInternalOrLessAccessible(iface))
+                continue;
+
+            // Skip obsolete interfaces — emitting typeof() for them triggers CS0618/CS0619
+            // in projects with TreatWarningsAsErrors (e.g., Avalonia's IStyleable).
+            if (iface.GetAttributes().Any(a =>
+                a.AttributeClass?.Name == "ObsoleteAttribute" &&
+                a.AttributeClass.ContainingNamespace?.ToDisplayString() == "System"))
                 continue;
 
             result.Add(iface);
@@ -856,8 +894,13 @@ internal static class TypeDiscoveryHelper
             if (IsSystemType(baseType))
                 break;
 
-            // Skip abstract types that can't be instantiated directly
-            // but include them as they represent the plugin contract
+            // Skip inaccessible base types (internal to other assemblies)
+            if (IsInternalOrLessAccessible(baseType))
+            {
+                baseType = baseType.BaseType;
+                continue;
+            }
+
             result.Add(baseType);
             baseType = baseType.BaseType;
         }

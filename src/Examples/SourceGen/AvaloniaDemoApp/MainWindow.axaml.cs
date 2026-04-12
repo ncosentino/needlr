@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
+using NexusLabs.Needlr;
 
 namespace AvaloniaDemoApp;
 
@@ -9,6 +10,8 @@ namespace AvaloniaDemoApp;
 /// Demonstrates that Needlr source-gen correctly auto-registered
 /// <see cref="GreetingService"/> while excluding all Avalonia types.
 /// </summary>
+[DoNotAutoRegister] // UI class — not a DI service. Without this, Needlr tries to register
+                    // MainWindow as all of Window's interfaces, some of which are Avalonia-internal.
 public sealed partial class MainWindow : Window
 {
     private readonly GreetingService _greetingService;
