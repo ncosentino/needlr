@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/12/2026 - 16:01:20 |
-| Coverage date: | 04/12/2026 - 16:00:03 - 04/12/2026 - 16:01:16 |
+| Generated on: | 04/12/2026 - 18:59:42 |
+| Coverage date: | 04/12/2026 - 18:58:23 - 04/12/2026 - 18:59:38 |
 | Parser: | MultiReport (23x Cobertura) |
 | Assemblies: | 21 |
 | Classes: | 347 |
 | Files: | 311 |
-| **Line coverage:** | 85.2% (12973 of 15218) |
-| Covered lines: | 12973 |
-| Uncovered lines: | 2245 |
-| Coverable lines: | 15218 |
-| Total lines: | 37867 |
+| **Line coverage:** | 85.2% (12981 of 15227) |
+| Covered lines: | 12981 |
+| Uncovered lines: | 2246 |
+| Coverable lines: | 15227 |
+| Total lines: | 37951 |
 | **Branch coverage:** | 75.2% (5338 of 7093) |
 | Covered branches: | 5338 |
 | Total branches: | 7093 |
@@ -367,17 +367,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.1%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -386,11 +386,11 @@
 |NexusLabs.Needlr.Generators.ValidatorProviderAttribute|0%|0%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Hosting - 93.1%</summary>
+<details><summary>NexusLabs.Needlr.Hosting - 93.3%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Hosting**|**93.1%**|**79.4%**|
+|**NexusLabs.Needlr.Hosting**|**93.3%**|**79.4%**|
 |NexusLabs.Needlr.Hosting.CreateHostOptions|88.5%|83.3%|
 |NexusLabs.Needlr.Hosting.CreateHostOptionsExtensions|100%||
 |NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions|94%|75%|
@@ -398,7 +398,7 @@
 |NexusLabs.Needlr.Hosting.HostFactory|96%|75%|
 |NexusLabs.Needlr.Hosting.HostPluginOptions|50%||
 |NexusLabs.Needlr.Hosting.HostSyringe|93.3%|80%|
-|NexusLabs.Needlr.Hosting.HostSyringeExtensions|88.8%||
+|NexusLabs.Needlr.Hosting.HostSyringeExtensions|91.6%||
 |NexusLabs.Needlr.Hosting.IHostFactoryExtensions|60%|100%|
 |NexusLabs.Needlr.Hosting.SyringeHostingExtensions|75%||
 
