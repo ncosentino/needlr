@@ -22,7 +22,12 @@ copyright: >
 
 theme:
   name: material
-  custom_dir: docs/overrides
+  # Relocated out of docs_dir because mkdocs copies everything under
+  # docs_dir into site/ as static assets, which was causing the Jinja
+  # override template to be served publicly at /overrides/main.html.
+  # Convention in mkdocs-material's own docs is to put custom_dir at
+  # repo root, outside docs_dir.
+  custom_dir: overrides
   logo: assets/needlr.webp
   favicon: assets/needlr.webp
   features:

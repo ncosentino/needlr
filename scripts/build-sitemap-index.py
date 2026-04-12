@@ -54,6 +54,26 @@ GH_PAGES_API = 'https://api.github.com/repos/ncosentino/needlr/contents/api?ref=
 # Files in ./site/ that should NOT appear in any sitemap
 EXCLUDE_HTML_NAMES = frozenset({'404.html'})
 
+# URL path prefixes (relative to SITE_URL) that should NOT appear in any
+# sitemap. Everything matching one of these is dropped before slice
+# categorization.
+#
+# - coverage/*       — internal code coverage reports (hundreds of .html
+#                      files per deploy), noise for crawlers
+# - overrides/*      — mkdocs template files accidentally copied to site
+#                      output because docs/overrides/ is inside docs_dir;
+#                      contains Jinja source that shouldn't be public
+# - dev/*            — legacy mike deploy content from an abandoned
+#                      versioning experiment, persisted on gh-pages but
+#                      not referenced by the current site. NOTE: this is
+#                      the /dev/ at the site root, NOT /api/dev/ which is
+#                      our legitimate development API reference slice.
+EXCLUDE_URL_PREFIXES = (
+    'coverage/',
+    'overrides/',
+    'dev/',
+)
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -104,6 +124,10 @@ def categorize(urls: list[tuple[str, str]]) -> tuple[dict, dict]:
     versions = {}
     for url, lastmod in urls:
         path = url[len(SITE_URL):].lstrip('/')
+        # Drop anything matching an excluded prefix — coverage, legacy
+        # mike /dev/*, mkdocs override template leakage.
+        if any(path.startswith(p) for p in EXCLUDE_URL_PREFIXES):
+            continue
         if path.startswith('api/dev/') or path == 'api/dev/':
             static['dev'].append((url, lastmod))
         elif path.startswith('api/stable/') or path == 'api/stable/':
