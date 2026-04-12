@@ -240,13 +240,35 @@ if ($DryRun) {
   Write-Host "  nbgv set-version $Version"
   Write-Host "  git commit -am 'chore: bump version to $Version'"
   Write-Host "  nbgv tag"
-  Write-Host "  git push origin HEAD --tags"
+  Write-Host "  git push origin --tags"
+  Write-Host "  git pull --rebase && git push origin HEAD"
   exit 0
 }
 
 & nbgv set-version $Version | Out-Null
 git commit -am "chore: bump version to $Version" | Out-Null
 & nbgv tag | Out-Null
-git push origin HEAD --tags
+
+# Push tags first so release.yml fires immediately on the new v* tag.
+# Then rebase+push HEAD separately to handle the coverage-badge bot race:
+# CI's "chore: update coverage badge [skip ci]" auto-commit often lands
+# between the CI gate check and this push, causing a non-fast-forward
+# rejection on HEAD. The tag push always succeeds (new ref). Splitting
+# them means the release is never blocked by the race — worst case the
+# version-bump commit needs one rebase attempt.
+git push origin --tags
+if ($LASTEXITCODE -ne 0) {
+  throw "Tag push failed. This is unexpected — check remote state."
+}
+Write-Host "Tag v$Version pushed — release.yml is firing." -ForegroundColor Green
+
+git pull --rebase 2>&1 | Out-Null
+git push origin HEAD
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "WARNING: Version bump commit push failed (likely coverage-badge race)." -ForegroundColor Yellow
+  Write-Host "The tag and release are fine. Run 'git pull --rebase && git push' manually to land the bump." -ForegroundColor Yellow
+} else {
+  Write-Host "Version bump committed to main." -ForegroundColor Green
+}
 
 Write-Host "Tagged and pushed v$Version"
