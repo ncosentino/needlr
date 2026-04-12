@@ -98,8 +98,7 @@
   </script>
   
 
-          <script src="../../../../javascripts/api-version-switcher.js"></script>
-    </head>
+  </head>
   
   
     
@@ -3385,22 +3384,65 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkcontext"><a href="../NexusLabs.Needlr.AgentFramework.Context/" title="NexusLabs.Needlr.AgentFramework.Context">NexusLabs.Needlr.AgentFramework.Context</a><a class="headerlink" href="#nexuslabsneedlragentframeworkcontext" title="Permanent link">&para;</a></h3>
 <h2 id="agentexecutioncontextextensions-class">AgentExecutionContextExtensions Class<a class="headerlink" href="#agentexecutioncontextextensions-class" title="Permanent link">&para;</a></h2>
-<p>Extension methods for <a href="../IAgentExecutionContextAccessor/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor">IAgentExecutionContextAccessor</a>.</p>
+<p>Extension methods for <a href="../IAgentExecutionContextAccessor/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor">IAgentExecutionContextAccessor</a> and
+<a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a>.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentExecutionContextExtensions</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; AgentExecutionContextExtensions</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)'></a></p>
+<h2 id="agentexecutioncontextextensionsgetpropertytthis-iagentexecutioncontext-method">AgentExecutionContextExtensions.GetProperty&lt;T&gt;(this IAgentExecutionContext) Method<a class="headerlink" href="#agentexecutioncontextextensionsgetpropertytthis-iagentexecutioncontext-method" title="Permanent link">&para;</a></h2>
+<p>Gets a typed property from the context's property bag, keyed by the type's
+full name. Returns <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if not found or if the stored value
+is not assignable to <a href="./#NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).T" title="NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty\&lt;T&gt;(this NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).T">T</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">T</span><span class="o">?</span><span class="w"> </span><span class="n">GetProperty</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="type-parameters">Type parameters<a class="headerlink" href="#type-parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).T'></a></p>
+<p><code>T</code></p>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).context'></a></p>
+<p><code>context</code> <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a></p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="./#NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).T" title="NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty\&lt;T&gt;(this NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext).T">T</a></p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>The default key (<code>typeof(T).FullName</code>) works well when each property type
+is unique within a context — the common case for domain records like
+<code>ArticleAssignment</code>, <code>SeoReport</code>, etc.</p>
+<p><a href="../IAgentExecutionContext/#NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext.Properties" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext.Properties">Properties</a> is read-only by design.
+            Consumers that need to store typed state should populate the property bag at
+            context construction time via their own <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a>
+            implementation.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string)'></a></p>
+<h2 id="agentexecutioncontextextensionsgetpropertytthis-iagentexecutioncontext-string-method">AgentExecutionContextExtensions.GetProperty&lt;T&gt;(this IAgentExecutionContext, string) Method<a class="headerlink" href="#agentexecutioncontextextensionsgetpropertytthis-iagentexecutioncontext-string-method" title="Permanent link">&para;</a></h2>
+<p>Gets a typed property from the context's property bag with an explicit key.
+Returns <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if not found or if the stored value is not
+assignable to <a href="./#NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string).T" title="NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty\&lt;T&gt;(this NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext, string).T">T</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">T</span><span class="o">?</span><span class="w"> </span><span class="n">GetProperty</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">key</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="type-parameters_1">Type parameters<a class="headerlink" href="#type-parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string).T'></a></p>
+<p><code>T</code></p>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string).context'></a></p>
+<p><code>context</code> <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string).key'></a></p>
+<p><code>key</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<p><a href="./#NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty_T_(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext,string).T" title="NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetProperty\&lt;T&gt;(this NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext, string).T">T</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetRequired(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor)'></a></p>
 <h2 id="agentexecutioncontextextensionsgetrequiredthis-iagentexecutioncontextaccessor-method">AgentExecutionContextExtensions.GetRequired(this IAgentExecutionContextAccessor) Method<a class="headerlink" href="#agentexecutioncontextextensionsgetrequiredthis-iagentexecutioncontextaccessor-method" title="Permanent link">&para;</a></h2>
 <p>Returns the current <a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a> or throws if none is established.
 Tools should call this rather than checking <a href="../IAgentExecutionContextAccessor/#NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor.Current" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor.Current">Current</a>
 directly — there is no valid "anonymous" execution.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">GetRequired</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">accessor</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContext</span><span class="w"> </span><span class="n">GetRequired</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">accessor</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Context.AgentExecutionContextExtensions.GetRequired(thisNexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor).accessor'></a></p>
 <p><code>accessor</code> <a href="../IAgentExecutionContextAccessor/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContextAccessor">IAgentExecutionContextAccessor</a></p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="../IAgentExecutionContext/" title="NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext">IAgentExecutionContext</a></p>
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
@@ -3443,11 +3485,11 @@ before invoking tools.</p>
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      &copy; Nick Cosentino <br> <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a> <br> <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a> <br> <a href="https://www.brandghost.ai">BrandGhost: social media and SEO automation for brands</a>
+
+    </div>
   
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
   
 </div>
       
@@ -3484,6 +3526,8 @@ before invoking tools.</p>
     
     
       <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../javascripts/api-version-switcher.js"></script>
       
     
   </body>
