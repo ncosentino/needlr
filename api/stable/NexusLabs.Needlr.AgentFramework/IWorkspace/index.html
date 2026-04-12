@@ -3434,25 +3434,62 @@ wrote in between, the CAS fails and the caller can re-read and retry.</p>
 </span></code></pre></div>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">System.Collections.Generic.IEnumerable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int)'></a></p>
+<h2 id="iworkspacelistdirectorystring-int-method">IWorkspace.ListDirectory(string, int) Method<a class="headerlink" href="#iworkspacelistdirectorystring-int-method" title="Permanent link">&para;</a></h2>
+<p>Produces a tree-formatted directory listing starting at <a href="./#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int).directory" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string, int).directory">directory</a>,
+descending up to <a href="./#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int).maxDepth" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string, int).maxDepth">maxDepth</a> levels. The output format is
+implementation-defined but should be human-readable (tree characters, indentation,
+file/directory markers).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">string</span><span class="w"> </span><span class="nf">ListDirectory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">directory</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maxDepth</span><span class="o">=</span><span class="m">2</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int).directory'></a></p>
+<p><code>directory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The root directory to list. Use <code>""</code> or <code>"."</code> for the workspace root.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int).maxDepth'></a></p>
+<p><code>maxDepth</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+<p>Maximum directory depth to descend. Defaults to 2.</p>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><br />
+A formatted string representing the directory tree.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)'></a></p>
 <h2 id="iworkspacereadfilestring-method">IWorkspace.ReadFile(string) Method<a class="headerlink" href="#iworkspacereadfilestring-method" title="Permanent link">&para;</a></h2>
 <p>Reads the entire content of a file.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">string</span><span class="w"> </span><span class="nf">ReadFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">string</span><span class="w"> </span><span class="nf">ReadFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.io.filenotfoundexception" title="System.IO.FileNotFoundException">System.IO.FileNotFoundException</a><br />
 The file does not exist.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFileAsMemory(string)'></a></p>
+<h2 id="iworkspacereadfileasmemorystring-method">IWorkspace.ReadFileAsMemory(string) Method<a class="headerlink" href="#iworkspacereadfileasmemorystring-method" title="Permanent link">&para;</a></h2>
+<p>Reads the content of a file as a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">System.ReadOnlyMemory&lt;&gt;</a> of <a href="https://learn.microsoft.com/en-us/dotnet/api/system.char" title="System.Char">System.Char</a>.
+Implementations that store content as strings can return a zero-copy slice over
+the internal string via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions" title="System.MemoryExtensions">System.MemoryExtensions</a>, avoiding per-read allocation.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">System</span><span class="p">.</span><span class="n">ReadOnlyMemory</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ReadFileAsMemory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFileAsMemory(string).path'></a></p>
+<p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">System.ReadOnlyMemory&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.char" title="System.Char">System.Char</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">&gt;</a></p>
+<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.io.filenotfoundexception" title="System.IO.FileNotFoundException">System.IO.FileNotFoundException</a><br />
+The file does not exist.</p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Callers that enumerate lines (e.g., <code>MemoryExtensions.EnumerateLines()</code>) benefit
+from the zero-copy path. Callers that need a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a> should use
+<a href="./#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)">ReadFile(string)</a> instead.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.WriteFile(string,string)'></a></p>
 <h2 id="iworkspacewritefilestring-string-method">IWorkspace.WriteFile(string, string) Method<a class="headerlink" href="#iworkspacewritefilestring-string-method" title="Permanent link">&para;</a></h2>
 <p>Writes content to a file, creating or overwriting it.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">WriteFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">WriteFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.WriteFile(string,string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.WriteFile(string,string).content'></a></p>

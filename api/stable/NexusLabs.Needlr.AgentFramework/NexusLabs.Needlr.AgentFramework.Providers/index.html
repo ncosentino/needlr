@@ -3415,7 +3415,7 @@
 <tbody>
 <tr>
 <td style="text-align: left;"><a href="../IQuotaGate/" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate">IQuotaGate</a></td>
-<td style="text-align: left;">Gates provider access based on quota. Before each provider attempt, the selector calls <a href="../IQuotaGate/#NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.TryReserveAsync(string,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.TryReserveAsync(string, System.Threading.CancellationToken)">TryReserveAsync(string, CancellationToken)</a>. If denied, the provider is skipped. After the attempt, <a href="../IQuotaGate/#NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.ReleaseAsync(string,bool,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.ReleaseAsync(string, bool, System.Threading.CancellationToken)">ReleaseAsync(string, bool, CancellationToken)</a> reports success or failure.</td>
+<td style="text-align: left;">Gates provider access based on quota. Before each provider attempt, the selector calls <a href="../IQuotaGate/#NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.TryReserveAsync(string,string,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.TryReserveAsync(string, string, System.Threading.CancellationToken)">TryReserveAsync(string, string, CancellationToken)</a>. If denied, the provider is skipped. After the attempt, <a href="../IQuotaGate/#NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.ReleaseAsync(string,string,bool,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate.ReleaseAsync(string, string, bool, System.Threading.CancellationToken)">ReleaseAsync(string, string, bool, CancellationToken)</a> reports success or failure.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ITieredProvider_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider\&lt;TQuery,TResult&gt;">ITieredProvider&lt;TQuery,TResult&gt;</a></td>
@@ -3424,6 +3424,20 @@
 <tr>
 <td style="text-align: left;"><a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a></td>
 <td style="text-align: left;">Executes a query against a priority-ordered chain of <a href="../ITieredProvider_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider\&lt;TQuery,TResult&gt;">ITieredProvider&lt;TQuery,TResult&gt;</a> instances, falling through to the next provider on failure or quota exhaustion.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Delegates</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../QuotaPartitionSelector%28IAgentExecutionContext%29/" title="NexusLabs.Needlr.AgentFramework.Providers.QuotaPartitionSelector(NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext)">QuotaPartitionSelector(IAgentExecutionContext)</a></td>
+<td style="text-align: left;">Extracts the quota partition key from the current execution context. Used by <a href="../TieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector\&lt;TQuery,TResult&gt;">TieredProviderSelector&lt;TQuery,TResult&gt;</a> to scope quota to the ambient user/tenant without explicit passing at every call site.</td>
 </tr>
 </tbody>
 </table>
