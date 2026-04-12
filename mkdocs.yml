@@ -13,11 +13,12 @@ strict: true
 # or "click here" — SEO value comes from the words inside <a>...</a>, not
 # the href target, so anchor text quality directly drives backlink value.
 copyright: >
-  &copy; Nick Cosentino &mdash;
+  &copy; Nick Cosentino
+  <br>
   <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a>
-  &middot;
+  <br>
   <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a>
-  &middot;
+  <br>
   <a href="https://www.brandghost.ai">BrandGhost: social media and SEO automation for brands</a>
 
 theme:
