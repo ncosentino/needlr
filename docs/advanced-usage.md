@@ -515,6 +515,48 @@ var host = new Syringe()
     .BuildHost();
 ```
 
+### Startup Logger
+
+Needlr can emit diagnostic messages during dependency resolution before the application's full logging stack is
+configured. There are two ways to supply a logger for this phase.
+
+**Automatic console logger** — call `UsingStartupConsoleLogger()` and Needlr creates a temporary console logger
+internally:
+
+```csharp
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingStartupConsoleLogger())
+    .BuildWebApplication();
+```
+
+**Bring your own logger** — call `UsingLogger(logger)` when you already have an `ILogger` instance (e.g. a
+bootstrap logger created by Serilog or another framework):
+
+```csharp
+ILogger bootstrapLogger = /* your pre-configured logger */;
+
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(() => CreateWebApplicationOptions.Default
+        .UsingLogger(bootstrapLogger))
+    .BuildWebApplication();
+```
+
+The same methods are available on `CreateHostOptions` for the generic host path:
+
+```csharp
+var host = new Syringe()
+    .UsingSourceGen()
+    .ForHost()
+    .UsingOptions(() => CreateHostOptions.Default
+        .UsingLogger(bootstrapLogger))
+    .BuildHost();
+```
+
 ### Using Configuration Callback
 
 The `UsingConfigurationCallback` method provides fine-grained control over the WebApplicationBuilder configuration:

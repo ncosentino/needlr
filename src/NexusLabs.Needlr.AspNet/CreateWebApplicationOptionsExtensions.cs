@@ -41,6 +41,34 @@ public static class CreateWebApplicationOptionsExtensions
     }
 
     /// <summary>
+    /// Configures the options to use the specified logger for startup diagnostics.
+    /// Use this when you already have an <see cref="ILogger"/> instance and want to
+    /// pass it directly instead of having Needlr create a console logger internally.
+    /// </summary>
+    /// <param name="options">The options to configure.</param>
+    /// <param name="logger">The logger to use during startup.</param>
+    /// <returns>A new instance of <see cref="CreateWebApplicationOptions"/> with the logger configured.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="logger"/> is null.</exception>
+    /// <example>
+    /// <code>
+    /// var webApp = new Syringe()
+    ///     .ForWebApplication()
+    ///     .UsingOptions(() => CreateWebApplicationOptions.Default
+    ///         .UsingLogger(myLogger))
+    ///     .BuildWebApplication();
+    /// </code>
+    /// </example>
+    public static CreateWebApplicationOptions UsingLogger(
+        this CreateWebApplicationOptions options,
+        ILogger logger)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        return options with { Logger = logger };
+    }
+
+    /// <summary>
     /// Configures the options to use the current process's command line arguments,
     /// automatically stripping the executable path that appears at index 0 of
     /// <see cref="Environment.GetCommandLineArgs"/>.

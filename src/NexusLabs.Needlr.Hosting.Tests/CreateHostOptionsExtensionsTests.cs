@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Xunit;
 
@@ -271,6 +272,61 @@ public sealed class CreateHostOptionsExtensionsTests
 
         Assert.Throws<ArgumentNullException>(() =>
             options.UsingCurrentProcessArgs());
+    }
+
+    #endregion
+
+    #region UsingLogger Tests
+
+    [Fact]
+    public void UsingLogger_SetsLogger()
+    {
+        var logger = new LoggerFactory().CreateLogger("Test");
+        var options = CreateHostOptions.Default
+            .UsingLogger(logger);
+
+        Assert.Same(logger, options.Logger);
+    }
+
+    [Fact]
+    public void UsingLogger_PreservesApplicationName()
+    {
+        var logger = new LoggerFactory().CreateLogger("Test");
+        var options = CreateHostOptions.Default
+            .UsingApplicationName("MyApp")
+            .UsingLogger(logger);
+
+        Assert.Equal("MyApp", options.Settings.ApplicationName);
+    }
+
+    [Fact]
+    public void UsingLogger_ReturnsNewInstance()
+    {
+        var logger = new LoggerFactory().CreateLogger("Test");
+        var options = CreateHostOptions.Default;
+
+        var newOptions = options.UsingLogger(logger);
+
+        Assert.NotSame(options, newOptions);
+    }
+
+    [Fact]
+    public void UsingLogger_WithNullOptions_ThrowsArgumentNullException()
+    {
+        var logger = new LoggerFactory().CreateLogger("Test");
+        CreateHostOptions options = null!;
+
+        Assert.Throws<ArgumentNullException>(() =>
+            options.UsingLogger(logger));
+    }
+
+    [Fact]
+    public void UsingLogger_WithNullLogger_ThrowsArgumentNullException()
+    {
+        var options = CreateHostOptions.Default;
+
+        Assert.Throws<ArgumentNullException>(() =>
+            options.UsingLogger(null!));
     }
 
     #endregion
