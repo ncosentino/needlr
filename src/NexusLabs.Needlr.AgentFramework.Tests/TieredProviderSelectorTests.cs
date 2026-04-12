@@ -1,3 +1,4 @@
+using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Providers;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
@@ -17,7 +18,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -38,7 +39,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -60,7 +61,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -77,7 +78,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -98,7 +99,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -119,7 +120,7 @@ public class TieredProviderSelectorTests
         };
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, new AlwaysGrantQuotaGate());
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             selector.ExecuteAsync("query", CancellationToken.None));
@@ -137,7 +138,7 @@ public class TieredProviderSelectorTests
     public async Task ExecuteAsync_NoProviders_Throws()
     {
         var selector = new TieredProviderSelector<string, string>(
-            [], new AlwaysGrantQuotaGate());
+            [], new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             selector.ExecuteAsync("query", CancellationToken.None));
@@ -159,7 +160,7 @@ public class TieredProviderSelectorTests
         var gate = new DenySpecificGate("QuotaDenied");
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, gate);
+            providers, gate, new AgentExecutionContextAccessor());
 
         var result = await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -181,7 +182,7 @@ public class TieredProviderSelectorTests
         var gate = new TrackingQuotaGate();
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, gate);
+            providers, gate, new AgentExecutionContextAccessor());
 
         await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -202,7 +203,7 @@ public class TieredProviderSelectorTests
         var gate = new TrackingQuotaGate();
 
         var selector = new TieredProviderSelector<string, string>(
-            providers, gate);
+            providers, gate, new AgentExecutionContextAccessor());
 
         await selector.ExecuteAsync("query", CancellationToken.None);
 
@@ -218,18 +219,100 @@ public class TieredProviderSelectorTests
     // Constructor validation
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // Partition flows from context to quota gate
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task ExecuteAsync_WithContextScope_PassesUserIdAsPartition()
+    {
+        var providers = new ITieredProvider<string, string>[]
+        {
+            new StubProvider("A", priority: 1, result: "ok"),
+        };
+
+        var gate = new TrackingQuotaGate();
+        var accessor = new AgentExecutionContextAccessor();
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, gate, accessor);
+
+        using (accessor.BeginScope(new AgentExecutionContext("user-42", "orch-1")))
+        {
+            await selector.ExecuteAsync("query", CancellationToken.None);
+        }
+
+        Assert.Single(gate.Releases);
+        Assert.Equal("user-42", gate.Releases[0].Partition);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoContext_PartitionIsNull()
+    {
+        var providers = new ITieredProvider<string, string>[]
+        {
+            new StubProvider("A", priority: 1, result: "ok"),
+        };
+
+        var gate = new TrackingQuotaGate();
+        var accessor = new AgentExecutionContextAccessor();
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, gate, accessor);
+
+        await selector.ExecuteAsync("query", CancellationToken.None);
+
+        Assert.Single(gate.Releases);
+        Assert.Null(gate.Releases[0].Partition);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CustomPartitionSelector_UsesIt()
+    {
+        var providers = new ITieredProvider<string, string>[]
+        {
+            new StubProvider("A", priority: 1, result: "ok"),
+        };
+
+        var gate = new TrackingQuotaGate();
+        var accessor = new AgentExecutionContextAccessor();
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, gate, accessor,
+            partitionSelector: ctx => ctx?.OrchestrationId);
+
+        using (accessor.BeginScope(new AgentExecutionContext("user-42", "orch-99")))
+        {
+            await selector.ExecuteAsync("query", CancellationToken.None);
+        }
+
+        Assert.Single(gate.Releases);
+        Assert.Equal("orch-99", gate.Releases[0].Partition);
+    }
+
+    // -------------------------------------------------------------------------
+    // Null guards
+    // -------------------------------------------------------------------------
+
     [Fact]
     public void Constructor_NullProviders_ThrowsArgumentNull()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new TieredProviderSelector<string, string>(null!, new AlwaysGrantQuotaGate()));
+            new TieredProviderSelector<string, string>(null!, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor()));
     }
 
     [Fact]
     public void Constructor_NullQuotaGate_ThrowsArgumentNull()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new TieredProviderSelector<string, string>([], null!));
+            new TieredProviderSelector<string, string>([], null!, new AgentExecutionContextAccessor()));
+    }
+
+    [Fact]
+    public void Constructor_NullContextAccessor_ThrowsArgumentNull()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            new TieredProviderSelector<string, string>([], new AlwaysGrantQuotaGate(), null!));
     }
 
     // -------------------------------------------------------------------------
@@ -259,23 +342,23 @@ public class TieredProviderSelectorTests
 
     private sealed class DenySpecificGate(string denyName) : IQuotaGate
     {
-        public Task<bool> TryReserveAsync(string providerName, CancellationToken ct) =>
+        public Task<bool> TryReserveAsync(string providerName, string? quotaPartition, CancellationToken ct) =>
             Task.FromResult(!string.Equals(providerName, denyName, StringComparison.OrdinalIgnoreCase));
 
-        public Task ReleaseAsync(string providerName, bool succeeded, CancellationToken ct) =>
+        public Task ReleaseAsync(string providerName, string? quotaPartition, bool succeeded, CancellationToken ct) =>
             Task.CompletedTask;
     }
 
     private sealed class TrackingQuotaGate : IQuotaGate
     {
-        public List<(string ProviderName, bool Succeeded)> Releases { get; } = [];
+        public List<(string ProviderName, string? Partition, bool Succeeded)> Releases { get; } = [];
 
-        public Task<bool> TryReserveAsync(string providerName, CancellationToken ct) =>
+        public Task<bool> TryReserveAsync(string providerName, string? quotaPartition, CancellationToken ct) =>
             Task.FromResult(true);
 
-        public Task ReleaseAsync(string providerName, bool succeeded, CancellationToken ct)
+        public Task ReleaseAsync(string providerName, string? quotaPartition, bool succeeded, CancellationToken ct)
         {
-            Releases.Add((providerName, succeeded));
+            Releases.Add((providerName, quotaPartition, succeeded));
             return Task.CompletedTask;
         }
     }

@@ -7,10 +7,10 @@ namespace NexusLabs.Needlr.AgentFramework.Providers;
 public sealed class AlwaysGrantQuotaGate : IQuotaGate
 {
     /// <inheritdoc />
-    public Task<bool> TryReserveAsync(string providerName, CancellationToken cancellationToken) =>
+    public Task<bool> TryReserveAsync(string providerName, string? quotaPartition, CancellationToken cancellationToken) =>
         Task.FromResult(true);
 
     /// <inheritdoc />
-    public Task ReleaseAsync(string providerName, bool succeeded, CancellationToken cancellationToken) =>
+    public Task ReleaseAsync(string providerName, string? quotaPartition, bool succeeded, CancellationToken cancellationToken) =>
         Task.CompletedTask;
 }
