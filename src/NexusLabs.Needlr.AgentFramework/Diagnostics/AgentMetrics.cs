@@ -1,23 +1,24 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
 /// Default <see cref="IAgentMetrics"/> implementation using <see cref="Meter"/>
-/// from <c>System.Diagnostics.Metrics</c>. Compatible with OpenTelemetry —
-/// metrics are exported when a listener is registered.
+/// for counters/histograms and <see cref="ActivitySource"/> for distributed tracing spans.
+/// Compatible with OpenTelemetry — both metrics and traces are exported when listeners
+/// are registered.
 /// </summary>
 /// <remarks>
 /// Source names use <c>NexusLabs.Needlr.AgentFramework</c> — not hardcoded to any
-/// consumer's namespace. Wire OpenTelemetry in the host to export these metrics.
+/// consumer's namespace. Wire OpenTelemetry in the host to export these.
 /// </remarks>
 internal sealed class AgentMetrics : IAgentMetrics, IDisposable
 {
     internal const string MeterName = "NexusLabs.Needlr.AgentFramework";
-    // NOTE: Distributed tracing via ActivitySource is deferred. Currently only
-    // metrics (counters/histograms) are emitted. ActivitySource spans will be
-    // added in a future release when the middleware layers are updated to call
-    // StartActivity() for run, chat completion, and tool invocation spans.
+    internal const string ActivitySourceName = MeterName;
+
+    private static readonly ActivitySource _activitySource = new(ActivitySourceName);
 
     private readonly Meter _meter;
     private readonly Counter<long> _runsStarted;
@@ -63,6 +64,9 @@ internal sealed class AgentMetrics : IAgentMetrics, IDisposable
             unit: "s",
             description: "Agent chat completion duration");
     }
+
+    /// <inheritdoc />
+    public ActivitySource ActivitySource => _activitySource;
 
     /// <inheritdoc />
     public void RecordRunStarted(string agentName) =>

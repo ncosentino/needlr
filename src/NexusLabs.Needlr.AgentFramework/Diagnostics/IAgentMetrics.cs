@@ -37,4 +37,12 @@ public interface IAgentMetrics
     /// <param name="duration">How long the completion took.</param>
     /// <param name="succeeded">Whether the completion succeeded.</param>
     void RecordChatCompletion(string model, TimeSpan duration, bool succeeded);
+
+    /// <summary>
+    /// Gets the <see cref="System.Diagnostics.ActivitySource"/> for creating distributed
+    /// tracing spans. Middleware uses this to create <see cref="System.Diagnostics.Activity"/>
+    /// instances for agent runs, tool calls, and chat completions that are exported via
+    /// OpenTelemetry when a listener is registered.
+    /// </summary>
+    System.Diagnostics.ActivitySource ActivitySource { get; }
 }

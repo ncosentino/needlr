@@ -53,6 +53,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
+        using var activity = _metrics.ActivitySource.StartActivity("agent.chat.completion", ActivityKind.Client);
+
         _progressAccessor.Current.Report(new LlmCallStartedEvent(
             Timestamp: startedAt,
             WorkflowId: _progressAccessor.Current.WorkflowId,
@@ -70,6 +72,11 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             stopwatch.Stop();
 
             var model = response.ModelId ?? "unknown";
+
+            activity?.SetTag("llm.model", model);
+            activity?.SetTag("llm.status", "success");
+            activity?.SetTag("llm.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+
             _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true);
 
             var usage = response.Usage;
@@ -79,6 +86,10 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 TotalTokens: usage?.TotalTokenCount ?? 0,
                 CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
                 ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
+
+            activity?.SetTag("llm.tokens.input", tokens.InputTokens);
+            activity?.SetTag("llm.tokens.output", tokens.OutputTokens);
+            activity?.SetTag("llm.tokens.total", tokens.TotalTokens);
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
@@ -115,6 +126,11 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         catch (Exception ex)
         {
             stopwatch.Stop();
+
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("llm.status", "failed");
+            activity?.SetTag("llm.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+
             _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false);
 
             var diagnostics = new ChatCompletionDiagnostics(

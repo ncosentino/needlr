@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
@@ -43,6 +45,9 @@ internal sealed class DiagnosticsAgentRunMiddleware
         var resolvedName = !string.IsNullOrEmpty(innerAgent.Name) ? innerAgent.Name : _agentName;
 
         _metrics.RecordRunStarted(resolvedName);
+        using var activity = _metrics.ActivitySource.StartActivity("agent.run", ActivityKind.Internal);
+        activity?.SetTag("agent.name", resolvedName);
+
         using var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
 
         try
@@ -60,6 +65,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
         catch (Exception ex)
         {
             builder.RecordFailure(ex.Message);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             throw;
         }
         finally
@@ -67,6 +73,10 @@ internal sealed class DiagnosticsAgentRunMiddleware
             var diagnostics = builder.Build();
             _writer.Set(diagnostics);
             _metrics.RecordRunCompleted(diagnostics);
+
+            activity?.SetTag("agent.status", diagnostics.Succeeded ? "success" : "failed");
+            activity?.SetTag("agent.tokens.total", diagnostics.AggregateTokenUsage.TotalTokens);
+            activity?.SetTag("agent.duration_ms", diagnostics.TotalDuration.TotalMilliseconds);
         }
     }
 }

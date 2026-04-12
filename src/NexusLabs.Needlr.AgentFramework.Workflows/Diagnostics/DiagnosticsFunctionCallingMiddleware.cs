@@ -27,6 +27,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
 
                 var toolName = context.Function?.Name ?? "unknown";
 
+                using var activity = metrics.ActivitySource.StartActivity("agent.tool.call", ActivityKind.Internal);
+                activity?.SetTag("tool.name", toolName);
+
                 progressAccessor.Current.Report(new ToolCallStartedEvent(
                     Timestamp: startedAt,
                     WorkflowId: progressAccessor.Current.WorkflowId,
@@ -43,6 +46,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 {
                     var result = await next(context, cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
+
+                    activity?.SetTag("tool.status", "success");
+                    activity?.SetTag("tool.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
 
                     metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: true);
 
@@ -72,6 +78,10 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 catch (Exception ex)
                 {
                     stopwatch.Stop();
+
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.SetTag("tool.status", "failed");
+                    activity?.SetTag("tool.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
 
                     metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: false);
 
