@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NativeAOT -->
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+
+    <!-- Trimming + AOT analyzers -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+
+    <!-- Emit generated files for debugging -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+
+    <!--
+      CRITICAL: Exclude Avalonia's namespace from Needlr source generation.
+      Without this, Needlr would try to register hundreds of Avalonia framework
+      types (controls, renderers, layout managers, etc.) into the DI container.
+      This demonstrates ExcludeNamespacePrefixes solving the Avalonia compatibility
+      problem that previously required excluding the entry point entirely.
+    -->
+    <NeedlrExcludeNamespacePrefix>Avalonia</NeedlrExcludeNamespacePrefix>
+
+    <!-- Avalonia desktop -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+
+    <!-- Suppress transitive vulnerability warning from Avalonia's Tmds.DBus.Protocol dependency.
+         We can't control Avalonia's transitive deps; this is a known issue in their Linux DBus support. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
+  </ItemGroup>
+</Project>

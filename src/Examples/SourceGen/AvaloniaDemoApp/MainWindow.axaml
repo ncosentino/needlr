@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AvaloniaDemoApp.MainWindow"
+        Title="Needlr + Avalonia AOT Demo"
+        Width="500" Height="350">
+    <StackPanel Margin="20" Spacing="16" VerticalAlignment="Center">
+        <TextBlock Text="Needlr + Avalonia + AOT"
+                   FontSize="24" FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock x:Name="ServiceMessage"
+                   Text="(loading...)"
+                   FontSize="16"
+                   HorizontalAlignment="Center"
+                   Foreground="Gray" />
+
+        <Button Content="Get Greeting"
+                HorizontalAlignment="Center"
+                Click="OnGreetClicked" />
+
+        <TextBlock x:Name="CounterText"
+                   Text="Clicks: 0"
+                   FontSize="14"
+                   HorizontalAlignment="Center" />
+    </StackPanel>
+</Window>
