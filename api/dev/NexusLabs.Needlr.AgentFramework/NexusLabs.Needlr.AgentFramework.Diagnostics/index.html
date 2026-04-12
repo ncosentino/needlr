@@ -3392,6 +3392,10 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../AgentRunDiagnosticsBuilder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></td>
+<td style="text-align: left;">Thread-safe accumulator for diagnostics captured during a single agent run. Both Needlr's built-in diagnostics middleware and consumer-provided middleware use this class to record tool calls, chat completions, and message counts as an agent executes.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ChatCompletionCollectorHolder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionCollectorHolder">ChatCompletionCollectorHolder</a></td>
 <td style="text-align: left;">DI-registered singleton that holds the <a href="../IChatCompletionCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IChatCompletionCollector">IChatCompletionCollector</a> instance. The diagnostics middleware sets the real collector during factory construction; consumers resolve this to access it. Unlike a static holder, each DI container has its own instance, making it testable and thread-safe across containers.</td>
 </tr>
@@ -3424,6 +3428,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IAgentDiagnosticsAccessor/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor">IAgentDiagnosticsAccessor</a></td>
 <td style="text-align: left;">Provides access to the diagnostics captured during the most recent agent run in the current async flow. Uses the mutable-holder <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1" title="System.Threading.AsyncLocal`1">System.Threading.AsyncLocal&lt;&gt;</a> pattern so that writes from child async flows (inside middleware) are visible to the parent scope.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IAgentDiagnosticsWriter/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsWriter">IAgentDiagnosticsWriter</a></td>
+<td style="text-align: left;">Write-side interface for storing diagnostics captured by middleware. Separated from <a href="../IAgentDiagnosticsAccessor/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor">IAgentDiagnosticsAccessor</a> (the read-side) so that middleware can resolve this from DI without casting to a concrete type.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IAgentMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics">IAgentMetrics</a></td>

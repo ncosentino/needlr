@@ -661,6 +661,10 @@
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentRunDiagnosticsBuilder/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IWorkflowTerminationCondition/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
@@ -930,6 +934,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/WorkflowCompletedEvent/</loc>
+    <lastmod>2026-04-12</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAgentDiagnosticsWriter/</loc>
     <lastmod>2026-04-12</lastmod>
   </url>
   <url>
