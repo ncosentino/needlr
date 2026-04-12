@@ -78,8 +78,8 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install MkDocs and mike
-      run: pip install "mkdocs>=1.5,<2.0" mkdocs-material mike
+    - name: Install MkDocs
+      run: pip install "mkdocs>=1.5,<2.0" mkdocs-material
 
     - name: Restore dotnet tools
       run: dotnet tool restore

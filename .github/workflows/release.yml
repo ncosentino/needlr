@@ -171,7 +171,7 @@ jobs:
     - name: Setup Python for MkDocs
       run: |
         python3 -m pip install --upgrade pip
-        pip install "mkdocs>=1.5,<2.0" mkdocs-material mike
+        pip install "mkdocs>=1.5,<2.0" mkdocs-material
 
     - name: Restore dotnet tools
       run: dotnet tool restore
