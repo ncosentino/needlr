@@ -532,8 +532,8 @@ var webApp = new Syringe()
     .BuildWebApplication();
 ```
 
-**Bring your own logger** — call `UsingLogger(logger)` when you already have an `ILogger` instance (e.g. a
-bootstrap logger created by Serilog or another framework):
+**Bring your own logger** — call `UsingLogger(logger)` on the options when you already have an `ILogger` instance
+(e.g. a bootstrap logger created by Serilog or another framework):
 
 ```csharp
 ILogger bootstrapLogger = /* your pre-configured logger */;
@@ -546,14 +546,24 @@ var webApp = new Syringe()
     .BuildWebApplication();
 ```
 
+If you only need to set a logger and nothing else, skip the factory lambda entirely — pass the logger directly to
+`UsingOptions`:
+
+```csharp
+var webApp = new Syringe()
+    .UsingSourceGen()
+    .ForWebApplication()
+    .UsingOptions(bootstrapLogger)
+    .BuildWebApplication();
+```
+
 The same methods are available on `CreateHostOptions` for the generic host path:
 
 ```csharp
 var host = new Syringe()
     .UsingSourceGen()
     .ForHost()
-    .UsingOptions(() => CreateHostOptions.Default
-        .UsingLogger(bootstrapLogger))
+    .UsingOptions(bootstrapLogger)
     .BuildHost();
 ```
 

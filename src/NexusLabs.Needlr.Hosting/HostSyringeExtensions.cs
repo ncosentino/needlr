@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Injection;
 
@@ -67,6 +68,35 @@ public static class HostSyringeExtensions
         ArgumentNullException.ThrowIfNull(optionsFactory);
 
         return syringe with { OptionsFactory = optionsFactory };
+    }
+
+    /// <summary>
+    /// Configures the <see cref="HostSyringe"/> to use <see cref="CreateHostOptions.Default"/>
+    /// with the specified logger for startup diagnostics.
+    /// Use this when you already have an <see cref="ILogger"/> instance and want to avoid
+    /// the boilerplate of calling <c>UsingOptions(() => CreateHostOptions.Default.UsingLogger(logger))</c>.
+    /// </summary>
+    /// <param name="syringe">The <see cref="HostSyringe"/> to configure.</param>
+    /// <param name="logger">The logger to use during startup.</param>
+    /// <returns>A new configured <see cref="HostSyringe"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="syringe"/> or <paramref name="logger"/> is null.</exception>
+    /// <example>
+    /// <code>
+    /// var host = new Syringe()
+    ///     .UsingSourceGen()
+    ///     .ForHost()
+    ///     .UsingOptions(bootstrapLogger)
+    ///     .BuildHost();
+    /// </code>
+    /// </example>
+    public static HostSyringe UsingOptions(
+        this HostSyringe syringe,
+        ILogger logger)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        return syringe with { OptionsFactory = () => CreateHostOptions.Default.UsingLogger(logger) };
     }
 
     /// <summary>

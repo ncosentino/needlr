@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Injection;
 
@@ -68,6 +69,35 @@ public static class WebApplicationSyringeExtensions
         ArgumentNullException.ThrowIfNull(optionsFactory);
 
         return syringe with { OptionsFactory = optionsFactory };
+    }
+
+    /// <summary>
+    /// Configures the <see cref="WebApplicationSyringe"/> to use <see cref="CreateWebApplicationOptions.Default"/>
+    /// with the specified logger for startup diagnostics.
+    /// Use this when you already have an <see cref="ILogger"/> instance and want to avoid
+    /// the boilerplate of calling <c>UsingOptions(() => CreateWebApplicationOptions.Default.UsingLogger(logger))</c>.
+    /// </summary>
+    /// <param name="syringe">The <see cref="WebApplicationSyringe"/> to configure.</param>
+    /// <param name="logger">The logger to use during startup.</param>
+    /// <returns>A new configured <see cref="WebApplicationSyringe"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="syringe"/> or <paramref name="logger"/> is null.</exception>
+    /// <example>
+    /// <code>
+    /// var webApp = new Syringe()
+    ///     .UsingSourceGen()
+    ///     .ForWebApplication()
+    ///     .UsingOptions(bootstrapLogger)
+    ///     .BuildWebApplication();
+    /// </code>
+    /// </example>
+    public static WebApplicationSyringe UsingOptions(
+        this WebApplicationSyringe syringe,
+        ILogger logger)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        return syringe with { OptionsFactory = () => CreateWebApplicationOptions.Default.UsingLogger(logger) };
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
@@ -69,7 +70,7 @@ public sealed class HostSyringeTests
     public void UsingOptions_WithNullFactory_ThrowsArgumentNullException()
     {
         var syringe = new HostSyringe(new Syringe().UsingReflection());
-        Assert.Throws<ArgumentNullException>(() => syringe.UsingOptions(null!));
+        Assert.Throws<ArgumentNullException>(() => syringe.UsingOptions((Func<CreateHostOptions>)null!));
     }
 
     [Fact]
@@ -85,4 +86,52 @@ public sealed class HostSyringeTests
         var syringe = new HostSyringe(new Syringe().UsingReflection());
         Assert.Throws<ArgumentNullException>(() => syringe.UsingHostFactory(null!));
     }
+
+    #region UsingOptions(ILogger) Tests
+
+    [Fact]
+    public void UsingOptions_WithLogger_WithNullSyringe_ThrowsArgumentNullException()
+    {
+        HostSyringe syringe = null!;
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        Assert.Throws<ArgumentNullException>(() =>
+            syringe.UsingOptions(logger));
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_WithNullLogger_ThrowsArgumentNullException()
+    {
+        var syringe = new HostSyringe(new Syringe().UsingReflection());
+
+        Assert.Throws<ArgumentNullException>(() =>
+            syringe.UsingOptions((ILogger)null!));
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_ReturnsNewInstance()
+    {
+        var syringe = new HostSyringe(new Syringe().UsingReflection());
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        var result = syringe.UsingOptions(logger);
+
+        Assert.NotNull(result);
+        Assert.NotSame(syringe, result);
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_CanChainWithOtherMethods()
+    {
+        var syringe = new HostSyringe(new Syringe().UsingReflection());
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        var result = syringe
+            .UsingOptions(logger)
+            .UsingConfigurationCallback((builder, options) => { });
+
+        Assert.NotNull(result);
+    }
+
+    #endregion
 }

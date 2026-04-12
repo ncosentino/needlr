@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -70,7 +72,7 @@ public sealed class WebApplicationSyringeExtensionsTests
         var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
 
         Assert.Throws<ArgumentNullException>(() =>
-            syringe.UsingOptions(null!));
+            syringe.UsingOptions((Func<CreateWebApplicationOptions>)null!));
     }
 
     [Fact]
@@ -138,4 +140,52 @@ public sealed class WebApplicationSyringeExtensionsTests
         // Note: callback is not invoked until BuildWebApplication is called
         Assert.False(callbackInvoked);
     }
+
+    #region UsingOptions(ILogger) Tests
+
+    [Fact]
+    public void UsingOptions_WithLogger_WithNullSyringe_ThrowsArgumentNullException()
+    {
+        WebApplicationSyringe syringe = null!;
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        Assert.Throws<ArgumentNullException>(() =>
+            syringe.UsingOptions(logger));
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_WithNullLogger_ThrowsArgumentNullException()
+    {
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
+
+        Assert.Throws<ArgumentNullException>(() =>
+            syringe.UsingOptions((ILogger)null!));
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_ReturnsNewInstance()
+    {
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        var result = syringe.UsingOptions(logger);
+
+        Assert.NotNull(result);
+        Assert.NotSame(syringe, result);
+    }
+
+    [Fact]
+    public void UsingOptions_WithLogger_CanChainWithOtherMethods()
+    {
+        var syringe = new WebApplicationSyringe(new Syringe().UsingReflection());
+        var logger = LoggerFactory.Create(_ => { }).CreateLogger("Test");
+
+        var result = syringe
+            .UsingOptions(logger)
+            .UsingConfigurationCallback((builder, options) => { });
+
+        Assert.NotNull(result);
+    }
+
+    #endregion
 }
