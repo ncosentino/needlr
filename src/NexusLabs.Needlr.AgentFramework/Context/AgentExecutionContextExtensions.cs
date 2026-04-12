@@ -7,6 +7,31 @@ namespace NexusLabs.Needlr.AgentFramework.Context;
 public static class AgentExecutionContextExtensions
 {
     /// <summary>
+    /// Gets the workspace from the context, or <see langword="null"/> if none is set.
+    /// Works with both <see cref="AgentExecutionContext"/> (which stores the workspace
+    /// in Properties automatically) and custom implementations that put an
+    /// <see cref="Workspace.IWorkspace"/> in the property bag under the type key.
+    /// </summary>
+    public static Workspace.IWorkspace? GetWorkspace(this IAgentExecutionContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.GetProperty<Workspace.IWorkspace>();
+    }
+
+    /// <summary>
+    /// Gets the workspace from the context, throwing if none is set. Convenience for
+    /// tool implementations that require a workspace to operate.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">No workspace is available in the current context.</exception>
+    public static Workspace.IWorkspace GetRequiredWorkspace(this IAgentExecutionContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.GetWorkspace() ?? throw new InvalidOperationException(
+            "No workspace is available in the current execution context. " +
+            "The orchestration layer must provide an IWorkspace when constructing the execution context.");
+    }
+
+    /// <summary>
     /// Gets a typed property from the context's property bag, keyed by the type's
     /// full name. Returns <see langword="null"/> if not found or if the stored value
     /// is not assignable to <typeparamref name="T"/>.

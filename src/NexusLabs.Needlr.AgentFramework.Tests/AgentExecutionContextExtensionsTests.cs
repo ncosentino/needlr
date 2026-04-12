@@ -1,9 +1,61 @@
 using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Workspace;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 public class AgentExecutionContextExtensionsTests
 {
+    // -------------------------------------------------------------------------
+    // GetWorkspace / GetRequiredWorkspace
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GetWorkspace_WithWorkspaceOnContext_ReturnsIt()
+    {
+        var workspace = new InMemoryWorkspace();
+        var ctx = new AgentExecutionContext("u", "o", Workspace: workspace);
+
+        Assert.Same(workspace, ctx.GetWorkspace());
+    }
+
+    [Fact]
+    public void GetWorkspace_NoWorkspace_ReturnsNull()
+    {
+        var ctx = new AgentExecutionContext("u", "o");
+
+        Assert.Null(ctx.GetWorkspace());
+    }
+
+    [Fact]
+    public void GetWorkspace_WorkspaceInPropertiesBag_ReturnsIt()
+    {
+        var workspace = new InMemoryWorkspace();
+        var props = new Dictionary<string, object>
+        {
+            [typeof(IWorkspace).FullName!] = workspace
+        };
+        var ctx = new AgentExecutionContext("u", "o", Properties: props);
+
+        Assert.Same(workspace, ctx.GetWorkspace());
+    }
+
+    [Fact]
+    public void GetRequiredWorkspace_WithWorkspace_ReturnsIt()
+    {
+        var workspace = new InMemoryWorkspace();
+        var ctx = new AgentExecutionContext("u", "o", Workspace: workspace);
+
+        Assert.Same(workspace, ctx.GetRequiredWorkspace());
+    }
+
+    [Fact]
+    public void GetRequiredWorkspace_NoWorkspace_Throws()
+    {
+        var ctx = new AgentExecutionContext("u", "o");
+
+        Assert.Throws<InvalidOperationException>(() => ctx.GetRequiredWorkspace());
+    }
+
     // -------------------------------------------------------------------------
     // GetProperty<T>() — keyed by type name
     // -------------------------------------------------------------------------
