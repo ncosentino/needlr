@@ -37,6 +37,16 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
     /// <inheritdoc/>
     public Workflow CreateGroupChatWorkflow(string groupName, int maxIterations = 10)
+        => CreateGroupChatWorkflowCore(groupName, maxIterations, configureAgent: null);
+
+    /// <inheritdoc/>
+    public Workflow CreateGroupChatWorkflow(string groupName, int maxIterations, Action<Type, AgentFactoryOptions> configureAgent)
+    {
+        ArgumentNullException.ThrowIfNull(configureAgent);
+        return CreateGroupChatWorkflowCore(groupName, maxIterations, configureAgent);
+    }
+
+    private Workflow CreateGroupChatWorkflowCore(string groupName, int maxIterations, Action<Type, AgentFactoryOptions>? configureAgent)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
 
@@ -51,7 +61,12 @@ internal sealed class WorkflowFactory : IWorkflowFactory
                 $"assemblies are scanned.");
         }
 
-        var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.Name)).ToList();
+        var agents = memberTypes.Select(t =>
+        {
+            if (configureAgent is not null)
+                return _agentFactory.CreateAgent(t.Name, opts => configureAgent(t, opts));
+            return _agentFactory.CreateAgent(t.Name);
+        }).ToList();
 
         var conditions = BuildTerminationConditions(memberTypes);
 

@@ -17,7 +17,7 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// extension methods are emitted directly into the agents assembly — for example,
 /// <c>CreateTriageHandoffWorkflow()</c>, <c>CreateCodeReviewGroupChatWorkflow()</c>, and
 /// <c>CreateContentPipelineSequentialWorkflow()</c>. These generated methods call the core
-/// <see cref="CreateHandoffWorkflow{TInitialAgent}"/>, <see cref="CreateGroupChatWorkflow"/>, and
+/// <see cref="CreateHandoffWorkflow{TInitialAgent}"/>, <see cref="CreateGroupChatWorkflow(string, int)"/>, and
 /// <see cref="CreateSequentialWorkflow(string)"/> methods internally, encapsulating type references
 /// and pipeline name strings so the composition root requires neither.
 /// </para>
@@ -62,6 +62,21 @@ public interface IWorkflowFactory
     /// Thrown when <paramref name="groupName"/> has fewer than two registered members.
     /// </exception>
     Workflow CreateGroupChatWorkflow(string groupName, int maxIterations = 10);
+
+    /// <summary>
+    /// Creates a round-robin group chat <see cref="Workflow"/> with per-agent configuration
+    /// overrides. The <paramref name="configureAgent"/> callback is invoked for each agent
+    /// type in the group with <see cref="AgentFactoryOptions"/> pre-populated from the
+    /// <see cref="NeedlrAiAgentAttribute"/>. The callback can override any field — most
+    /// commonly <see cref="AgentFactoryOptions.Instructions"/> for per-run dynamic instructions.
+    /// </summary>
+    /// <param name="groupName">The group name (case-sensitive).</param>
+    /// <param name="maxIterations">Maximum round-robin turns before termination.</param>
+    /// <param name="configureAgent">
+    /// Callback receiving (agentType, options) for each member. The options are pre-populated
+    /// from the agent's <see cref="NeedlrAiAgentAttribute"/>; the callback overrides what it needs.
+    /// </param>
+    Workflow CreateGroupChatWorkflow(string groupName, int maxIterations, Action<Type, AgentFactoryOptions> configureAgent);
 
     /// <summary>
     /// Creates a sequential pipeline <see cref="Workflow"/> where the output of each agent flows

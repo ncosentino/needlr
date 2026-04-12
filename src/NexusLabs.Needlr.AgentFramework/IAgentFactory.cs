@@ -32,6 +32,23 @@ public interface IAgentFactory
     AIAgent CreateAgent<TAgent>() where TAgent : class;
 
     /// <summary>
+    /// Creates a new <see cref="AIAgent"/> by reading configuration from the
+    /// <see cref="NeedlrAiAgentAttribute"/> on <typeparamref name="TAgent"/>, then applying
+    /// the <paramref name="configure"/> callback to override per-run values (e.g., instructions).
+    /// </summary>
+    /// <typeparam name="TAgent">
+    /// A class decorated with <see cref="NeedlrAiAgentAttribute"/>.
+    /// </typeparam>
+    /// <param name="configure">
+    /// Callback to override attribute-populated defaults. The <see cref="AgentFactoryOptions"/>
+    /// is pre-populated from the attribute; the callback can override any field.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <typeparamref name="TAgent"/> is not decorated with <see cref="NeedlrAiAgentAttribute"/>.
+    /// </exception>
+    AIAgent CreateAgent<TAgent>(Action<AgentFactoryOptions> configure) where TAgent : class;
+
+    /// <summary>
     /// Creates a new <see cref="AIAgent"/> by looking up the registered type for
     /// <paramref name="agentClassName"/> and reading its <see cref="NeedlrAiAgentAttribute"/>.
     /// </summary>
@@ -43,4 +60,17 @@ public interface IAgentFactory
     /// Thrown when no agent with the given name is registered.
     /// </exception>
     AIAgent CreateAgent(string agentClassName);
+
+    /// <summary>
+    /// Creates a new <see cref="AIAgent"/> by looking up the registered type for
+    /// <paramref name="agentClassName"/>, reading its <see cref="NeedlrAiAgentAttribute"/>,
+    /// then applying the <paramref name="configure"/> callback to override per-run values.
+    /// </summary>
+    /// <param name="agentClassName">
+    /// The simple class name of an agent type.
+    /// </param>
+    /// <param name="configure">
+    /// Callback to override attribute-populated defaults.
+    /// </param>
+    AIAgent CreateAgent(string agentClassName, Action<AgentFactoryOptions> configure);
 }

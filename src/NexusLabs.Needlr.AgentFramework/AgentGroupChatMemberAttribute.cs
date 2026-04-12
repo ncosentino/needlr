@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <summary>
 /// Declares that a <see cref="NeedlrAiAgentAttribute"/>-annotated agent participates in a named
 /// group chat workflow. Apply this attribute to include the agent in a round-robin group chat
-/// created via <see cref="IWorkflowFactory.CreateGroupChatWorkflow"/>.
+/// created via <see cref="IWorkflowFactory.CreateGroupChatWorkflow(string, int)"/>.
 /// </summary>
 /// <remarks>
 /// When the <c>NexusLabs.Needlr.AgentFramework.Generators</c> package is referenced, the source
@@ -20,7 +20,7 @@ public sealed class AgentGroupChatMemberAttribute : Attribute
     /// </summary>
     /// <param name="groupName">
     /// The name of the group chat this agent participates in. Must match exactly (case-sensitive)
-    /// when calling <see cref="IWorkflowFactory.CreateGroupChatWorkflow"/>. Use the generated
+    /// when calling <see cref="IWorkflowFactory.CreateGroupChatWorkflow(string, int)"/>. Use the generated
     /// extension method to avoid referencing the string directly.
     /// </param>
     public AgentGroupChatMemberAttribute(string groupName)

@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <summary>
 /// Marks a class as a declared agent type for Needlr's Agent Framework integration.
 /// Apply this attribute to a class to enable compile-time registration via the source generator
-/// and <see cref="IAgentFactory.CreateAgent{TAgent}"/> lookup.
+/// and <see cref="IAgentFactory.CreateAgent{TAgent}()"/> lookup.
 /// </summary>
 /// <remarks>
 /// When the <c>NexusLabs.Needlr.AgentFramework.Generators</c> package is referenced,

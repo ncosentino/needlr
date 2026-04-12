@@ -284,6 +284,77 @@ public class AgentFactoryTests
         foreach (var method in methods)
             Assert.Null(method.GetCustomAttribute<RequiresDynamicCodeAttribute>());
     }
+
+    // -------------------------------------------------------------------------
+    // CreateAgent<T>(configure) — attribute defaults + consumer override
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void CreateAgent_GenericWithConfigure_OverridesInstructions()
+    {
+        var factory = CreateFactory();
+        var agent = factory.CreateAgent<FactoryTestAgent>(opts =>
+        {
+            opts.Instructions = "Overridden instructions for this run.";
+        });
+
+        Assert.NotNull(agent);
+        Assert.Equal("FactoryTestAgent", agent.Name);
+    }
+
+    [Fact]
+    public void CreateAgent_GenericWithConfigure_PreservesAttributeDefaults()
+    {
+        var factory = CreateFactory();
+        var agent = factory.CreateAgent<FactoryTestAgent>(opts =>
+        {
+            // Don't override anything — attribute defaults should flow through
+        });
+
+        Assert.NotNull(agent);
+        Assert.Equal("FactoryTestAgent", agent.Name);
+    }
+
+    [Fact]
+    public void CreateAgent_GenericWithConfigure_NullConfigure_Throws()
+    {
+        var factory = CreateFactory();
+        Assert.Throws<ArgumentNullException>(() =>
+            factory.CreateAgent<FactoryTestAgent>(null!));
+    }
+
+    // -------------------------------------------------------------------------
+    // CreateAgent(string, configure) — by-name + consumer override
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void CreateAgent_ByNameWithConfigure_OverridesInstructions()
+    {
+        var factory = CreateFactory((af, asm) => af.AddAgent<FactoryTestAgent>());
+        var agent = factory.CreateAgent("FactoryTestAgent", opts =>
+        {
+            opts.Instructions = "Per-run custom instructions.";
+        });
+
+        Assert.NotNull(agent);
+        Assert.Equal("FactoryTestAgent", agent.Name);
+    }
+
+    [Fact]
+    public void CreateAgent_ByNameWithConfigure_UnknownName_Throws()
+    {
+        var factory = CreateFactory((af, asm) => af.AddAgent<FactoryTestAgent>());
+        Assert.Throws<InvalidOperationException>(() =>
+            factory.CreateAgent("NonExistentAgent", _ => { }));
+    }
+
+    [Fact]
+    public void CreateAgent_ByNameWithConfigure_NullConfigure_Throws()
+    {
+        var factory = CreateFactory();
+        Assert.Throws<ArgumentNullException>(() =>
+            factory.CreateAgent("FactoryTestAgent", (Action<AgentFactoryOptions>)null!));
+    }
 }
 
 // ---------------------------------------------------------------------------

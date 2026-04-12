@@ -47,6 +47,12 @@ internal sealed class AgentFactory : IAgentFactory
     public AIAgent CreateAgent<TAgent>() where TAgent : class
         => CreateAgentFromType(typeof(TAgent));
 
+    public AIAgent CreateAgent<TAgent>(Action<AgentFactoryOptions> configure) where TAgent : class
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        return CreateAgentFromType(typeof(TAgent), configure);
+    }
+
     public AIAgent CreateAgent(string agentClassName)
     {
         ArgumentNullException.ThrowIfNull(agentClassName);
@@ -60,7 +66,21 @@ internal sealed class AgentFactory : IAgentFactory
         return CreateAgentFromType(type);
     }
 
-    private AIAgent CreateAgentFromType(Type agentType)
+    public AIAgent CreateAgent(string agentClassName, Action<AgentFactoryOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(agentClassName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        if (!_agentTypeMap.TryGetValue(agentClassName, out var type))
+            throw new InvalidOperationException(
+                $"No agent named '{agentClassName}' is registered. " +
+                $"Ensure the class is decorated with [NeedlrAiAgent] and registered via " +
+                $"AddAgent<T>(), AddAgentsFromGenerated(), or the source generator [ModuleInitializer].");
+
+        return CreateAgentFromType(type, configure);
+    }
+
+    private AIAgent CreateAgentFromType(Type agentType, Action<AgentFactoryOptions>? additionalConfigure = null)
     {
         var attr = agentType.GetCustomAttribute<NeedlrAiAgentAttribute>()
             ?? throw new InvalidOperationException(
@@ -77,11 +97,15 @@ internal sealed class AgentFactory : IAgentFactory
             additionalPlugins: perAgentPlugin != null ? [perAgentPlugin] : null,
             configure: opts =>
             {
+                // Populate from [NeedlrAiAgent] attribute as defaults
                 opts.Name = agentType.Name;
                 opts.Description = attr.Description;
                 opts.Instructions = attr.Instructions;
                 opts.FunctionTypes = attr.FunctionTypes;
                 opts.FunctionGroups = attr.FunctionGroups;
+
+                // Let the caller override any of the above
+                additionalConfigure?.Invoke(opts);
             });
     }
 

@@ -14,7 +14,7 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 /// <summary>
 /// Tests for <see cref="NeedlrAiAgentAttribute"/>-based agent declaration and resolution,
-/// including parity tests between <see cref="IAgentFactory.CreateAgent{TAgent}"/> and
+/// including parity tests between <see cref="IAgentFactory.CreateAgent{TAgent}()"/> and
 /// <see cref="IAgentFactory.CreateAgent(string)"/>.
 /// </summary>
 public class NeedlrAiAgentDeclarationTests
