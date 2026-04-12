@@ -192,28 +192,15 @@ if ($unshippedAnalyzers.Count -gt 0) {
 Write-Host "Analyzer release tracking gate passed." -ForegroundColor Green
 
 # Build and pack validation - MUST pass before any release actions
-Write-Host "Validating build and pack..." -ForegroundColor Cyan
-
-# Find all packable projects (those with IsPackable not explicitly false)
-# $srcDir already set by the analyzer release tracking gate above.
-$projects = Get-ChildItem -Path $srcDir -Filter "*.csproj" -Recurse | Where-Object {
-  $relativePath = $_.FullName.Replace($srcDir, '')
-  $content = Get-Content $_.FullName -Raw
-  # Exclude test projects, projects with IsPackable=false, and bin/obj artifacts
-  -not ($_.Name -match "\.Tests\.") -and
-  -not ($content -match "<IsPackable>false</IsPackable>") -and
-  -not ($relativePath -match "[\\/](bin|obj)[\\/]")
-}
-
-foreach ($proj in $projects) {
-  Write-Host "  Packing $($proj.Name)..." -NoNewline
-  $packResult = & dotnet pack $proj.FullName -c Release -v q --no-restore 2>&1
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host " FAILED" -ForegroundColor Red
-    Write-Host $packResult
-    throw "Pack validation failed for $($proj.Name). Fix errors before releasing."
-  }
-  Write-Host " OK" -ForegroundColor Green
+# Uses solution-level pack which lets MSBuild parallelize across projects
+# instead of the previous per-project sequential loop (~50 projects × ~10s each = ~8 min → ~1 min).
+Write-Host "Validating build and pack (solution-level, parallel)..." -ForegroundColor Cyan
+$slnx = Join-Path $PSScriptRoot "..\src\NexusLabs.Needlr.slnx"
+$packResult = & dotnet pack $slnx -c Release -v q 2>&1
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "  Pack FAILED" -ForegroundColor Red
+  Write-Host ($packResult | Select-Object -Last 30 | Out-String)
+  throw "Solution-level pack failed. Fix errors before releasing."
 }
 Write-Host "Build and pack validation passed." -ForegroundColor Green
 
