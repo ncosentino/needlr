@@ -195,7 +195,7 @@ var providers = new ITieredProvider<string, IReadOnlyList<string>>[]
     new LocalGeographyProvider(),
 };
 var selector = new TieredProviderSelector<string, IReadOnlyList<string>>(
-    providers, new AlwaysGrantQuotaGate());
+    providers, new AlwaysGrantQuotaGate(), contextAccessor);
 
 var countries = await selector.ExecuteAsync("countries", CancellationToken.None);
 Console.WriteLine($"  Result: {string.Join(", ", countries)}");
