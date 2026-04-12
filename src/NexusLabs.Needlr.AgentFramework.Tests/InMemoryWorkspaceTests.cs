@@ -186,4 +186,113 @@ public class InMemoryWorkspaceTests
 
         Assert.Equal(100, ws.GetFilePaths().Count());
     }
+
+    // -------------------------------------------------------------------------
+    // ReadFileAsMemory
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ReadFileAsMemory_ExistingFile_ReturnsContent()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.WriteFile("test.md", "# Hello\n\nWorld");
+
+        var memory = ws.ReadFileAsMemory("test.md");
+
+        Assert.Equal("# Hello\n\nWorld", memory.ToString());
+    }
+
+    [Fact]
+    public void ReadFileAsMemory_MissingFile_Throws()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<FileNotFoundException>(() => ws.ReadFileAsMemory("nope.txt"));
+    }
+
+    [Fact]
+    public void ReadFileAsMemory_CanEnumerateLines()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.WriteFile("lines.txt", "line1\nline2\nline3");
+
+        var memory = ws.ReadFileAsMemory("lines.txt");
+        var lineCount = 0;
+        foreach (var _ in memory.Span.EnumerateLines())
+            lineCount++;
+
+        Assert.Equal(3, lineCount);
+    }
+
+    // -------------------------------------------------------------------------
+    // ListDirectory
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ListDirectory_EmptyWorkspace_ReturnsRoot()
+    {
+        var ws = new InMemoryWorkspace();
+
+        var result = ws.ListDirectory("");
+
+        Assert.Equal("./", result);
+    }
+
+    [Fact]
+    public void ListDirectory_FlatFiles_ListsAll()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("a.txt", "");
+        ws.SeedFile("b.txt", "");
+
+        var result = ws.ListDirectory("");
+
+        Assert.Contains("a.txt", result);
+        Assert.Contains("b.txt", result);
+    }
+
+    [Fact]
+    public void ListDirectory_NestedFiles_ShowsTree()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("src/main.cs", "");
+        ws.SeedFile("src/util/helper.cs", "");
+        ws.SeedFile("readme.md", "");
+
+        var result = ws.ListDirectory("");
+
+        Assert.Contains("src/", result);
+        Assert.Contains("readme.md", result);
+        Assert.Contains("main.cs", result);
+    }
+
+    [Fact]
+    public void ListDirectory_MaxDepth_LimitsTraversal()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("a/b/c/deep.txt", "");
+        ws.SeedFile("a/top.txt", "");
+
+        var result = ws.ListDirectory("", maxDepth: 1);
+
+        Assert.Contains("a/", result);
+        // At depth 1, we see the 'a' directory but not its children
+        Assert.DoesNotContain("deep.txt", result);
+        Assert.DoesNotContain("top.txt", result);
+    }
+
+    [Fact]
+    public void ListDirectory_Subdirectory_ScopedToPrefix()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("src/main.cs", "");
+        ws.SeedFile("src/util/helper.cs", "");
+        ws.SeedFile("docs/readme.md", "");
+
+        var result = ws.ListDirectory("src");
+
+        Assert.Contains("main.cs", result);
+        Assert.Contains("util/", result);
+        Assert.DoesNotContain("readme.md", result);
+    }
 }

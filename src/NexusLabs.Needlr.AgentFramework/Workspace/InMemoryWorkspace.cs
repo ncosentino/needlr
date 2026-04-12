@@ -47,6 +47,99 @@ public sealed class InMemoryWorkspace : IWorkspace
         _files.Keys;
 
     /// <inheritdoc />
+    public ReadOnlyMemory<char> ReadFileAsMemory(string path)
+    {
+        var normalized = NormalizePath(path);
+        return _files.TryGetValue(normalized, out var content)
+            ? content.AsMemory()
+            : throw new FileNotFoundException($"File not found: {normalized}", normalized);
+    }
+
+    /// <inheritdoc />
+    public string ListDirectory(string directory, int maxDepth = 2)
+    {
+        var root = NormalizePath(directory).TrimEnd('/');
+        var prefix = root.Length > 0 ? root + "/" : "";
+
+        var entries = _files.Keys
+            .Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) || prefix.Length == 0)
+            .Select(k => prefix.Length > 0 ? k[prefix.Length..] : k)
+            .OrderBy(k => k, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (entries.Count == 0)
+            return root.Length > 0 ? root + "/" : "./";
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine(root.Length > 0 ? root + "/" : "./");
+
+        var tree = BuildTree(entries);
+        RenderTree(sb, tree, indent: "", maxDepth: maxDepth, currentDepth: 0);
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private static SortedDictionary<string, object?> BuildTree(List<string> paths)
+    {
+        var root = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in paths)
+        {
+            var parts = path.Split('/');
+            var current = root;
+            for (var i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                if (i == parts.Length - 1)
+                {
+                    // File leaf
+                    current.TryAdd(part, null);
+                }
+                else
+                {
+                    // Directory node
+                    if (!current.TryGetValue(part, out var child) || child is not SortedDictionary<string, object?> dict)
+                    {
+                        dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                        current[part] = dict;
+                    }
+                    current = dict;
+                }
+            }
+        }
+        return root;
+    }
+
+    private static void RenderTree(
+        System.Text.StringBuilder sb,
+        SortedDictionary<string, object?> node,
+        string indent,
+        int maxDepth,
+        int currentDepth)
+    {
+        if (currentDepth >= maxDepth)
+            return;
+
+        var entries = node.ToList();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var isLast = i == entries.Count - 1;
+            var connector = isLast ? "└── " : "├── ";
+            var childIndent = indent + (isLast ? "    " : "│   ");
+
+            var (name, child) = entries[i];
+            if (child is SortedDictionary<string, object?> dict)
+            {
+                sb.AppendLine($"{indent}{connector}{name}/");
+                RenderTree(sb, dict, childIndent, maxDepth, currentDepth + 1);
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{connector}{name}");
+            }
+        }
+    }
+
+    /// <inheritdoc />
     public bool CompareExchange(string path, string expectedContent, string newContent)
     {
         var normalized = NormalizePath(path);
