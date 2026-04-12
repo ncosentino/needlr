@@ -5,6 +5,65 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.30] - 2026-04-12
+
+Agent framework usability release plus hosting/bootstrapping conveniences.
+
+### Added
+
+#### Agent Framework
+
+- **Per-agent instruction overrides on `CreateAgent` and
+  `CreateGroupChatWorkflow`.** New overloads on `IAgentFactory` and
+  `IWorkflowFactory` that accept an `Action<AgentFactoryOptions>`
+  (or `Action<Type, AgentFactoryOptions>` for workflows) callback.
+  The options are pre-populated from the `[NeedlrAiAgent]` attribute;
+  the callback overrides what it needs — most commonly `Instructions`
+  for per-run dynamic prompts. Enables patterns like BrandGhost's
+  article production workflow where the writer agent needs per-article
+  funnel-stage rules injected at runtime while base writing rules
+  stay static on the attribute.
+
+- **`AgentResponse.GetText()` extension method.** Concatenates
+  non-empty `ChatMessage.Text` properties from `AgentResponse.Messages`
+  with newline separators. Skips whitespace-only messages. Returns
+  `null` when no text content is present. Standard replacement for the
+  text-extraction helper every consumer ends up writing.
+
+#### Hosting & Bootstrapping
+
+- **`NeedlrBootstrapper` lifecycle wrapper** in
+  `NexusLabs.Needlr.Hosting`. Wraps the `IHost` build-and-run
+  lifecycle with structured error handling, logging, and graceful
+  shutdown.
+
+- **`NexusLabs.Needlr.Serilog` package.** Provides
+  `NeedlrSerilogBootstrapper` for Serilog-based applications with
+  integrated bootstrap logging.
+
+- **`UsingLogger` extension** on `CreateWebApplicationOptions` and
+  `CreateHostOptions` for injecting a logger into the build pipeline.
+
+- **`UsingOptions(ILogger)` convenience overload** on
+  `WebApplicationSyringe` and `HostSyringe`.
+
+- **`UsingCurrentProcessCliArgs` and `UsingCurrentProcessArgs`**
+  convenience methods for passing command-line arguments without
+  explicit `string[] args` plumbing.
+
+### Fixed
+
+- **Release script push race.** `release.ps1` now pushes tags first
+  (fires `release.yml` immediately) then rebases + pushes `HEAD`
+  separately, handling the coverage-badge bot race gracefully instead
+  of failing.
+
+### Changed
+
+- **Getting Started and README recommend `NexusLabs.Needlr.Build`** as
+  the paved path for source generation instead of manual
+  `NexusLabs.Needlr.Generators` + `Generators.Attributes` references.
+
 ## [0.0.2-alpha.29] - 2026-04-12
 
 Consumer extensibility release driven by BrandGhost migration feedback.
