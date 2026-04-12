@@ -86,7 +86,7 @@ public class AgentMetricsTests
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == AgentMetrics.MeterName && instrument.Name == "agent.run.started")
+            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.run.started")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 
@@ -114,7 +114,7 @@ public class AgentMetricsTests
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == AgentMetrics.MeterName && instrument.Name == "agent.tool.completed")
+            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.tool.completed")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 
@@ -139,7 +139,7 @@ public class AgentMetricsTests
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == AgentMetrics.MeterName && instrument.Name == "agent.tokens.used")
+            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.tokens.used")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 

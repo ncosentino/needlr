@@ -27,8 +27,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
 
                 var toolName = context.Function?.Name ?? "unknown";
 
-                using var activity = metrics.ActivitySource.StartActivity("agent.tool.call", ActivityKind.Internal);
-                activity?.SetTag("tool.name", toolName);
+                using var activity = metrics.ActivitySource.StartActivity($"agent.tool {toolName}", ActivityKind.Internal);
+                activity?.SetTag("agent.tool.name", toolName);
+                activity?.SetTag("agent.tool.sequence", sequence);
 
                 progressAccessor.Current.Report(new ToolCallStartedEvent(
                     Timestamp: startedAt,
@@ -47,8 +48,13 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     var result = await next(context, cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
 
-                    activity?.SetTag("tool.status", "success");
-                    activity?.SetTag("tool.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+                    activity?.SetTag("status", "success");
+
+                    if (activity is not null && customMetrics.Count > 0)
+                    {
+                        foreach (var (key, value) in customMetrics)
+                            activity.SetTag($"tool.custom.{key}", value);
+                    }
 
                     metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: true);
 
@@ -80,8 +86,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     stopwatch.Stop();
 
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                    activity?.SetTag("tool.status", "failed");
-                    activity?.SetTag("tool.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+                    activity?.SetTag("status", "failed");
 
                     metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: false);
 

@@ -283,6 +283,30 @@ public static class AgentFrameworkSyringeExtensions
         };
     }
 
+    /// <summary>
+    /// Configures the meter and ActivitySource names used by <see cref="Diagnostics.IAgentMetrics"/>.
+    /// Without this call, both default to <c>"NexusLabs.Needlr.AgentFramework"</c>.
+    /// </summary>
+    /// <remarks>
+    /// Consumers with existing dashboards keyed to a specific meter name can set it here
+    /// to avoid a dashboard migration when adopting Needlr's metrics:
+    /// <code>
+    /// .UsingAgentFramework(af => af
+    ///     .ConfigureMetrics(o => o.MeterName = "BrandGhost.Agents"))
+    /// </code>
+    /// </remarks>
+    public static AgentFrameworkSyringe ConfigureMetrics(
+        this AgentFrameworkSyringe syringe,
+        Action<Diagnostics.AgentFrameworkMetricsOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var options = syringe.MetricsOptions ?? new Diagnostics.AgentFrameworkMetricsOptions();
+        configure(options);
+        return syringe with { MetricsOptions = options };
+    }
+
     private static AgentFrameworkSyringe MergeFunctionGroups(        this AgentFrameworkSyringe syringe,
         IReadOnlyDictionary<string, IReadOnlyList<Type>> newGroups)
     {

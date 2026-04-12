@@ -61,6 +61,12 @@ public sealed record AgentFrameworkSyringe
     internal Func<AgentResilienceAttribute, IAIAgentBuilderPlugin>? PerAgentResilienceFactory { get; init; }
 
     /// <summary>
+    /// Metrics configuration (meter name, ActivitySource name). Populated by
+    /// <c>ConfigureMetrics()</c>.
+    /// </summary>
+    internal Diagnostics.AgentFrameworkMetricsOptions? MetricsOptions { get; init; }
+
+    /// <summary>
     /// Factories for progress sinks to register in DI. Populated by
     /// <c>AddProgressSink&lt;T&gt;()</c> on the syringe. Each factory captures its
     /// closed generic type at the call site so the constructor requirements flow

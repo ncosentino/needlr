@@ -53,7 +53,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = _metrics.ActivitySource.StartActivity("agent.chat.completion", ActivityKind.Client);
+        using var activity = _metrics.ActivitySource.StartActivity("agent.chat", ActivityKind.Client);
 
         _progressAccessor.Current.Report(new LlmCallStartedEvent(
             Timestamp: startedAt,
@@ -73,9 +73,9 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             var model = response.ModelId ?? "unknown";
 
-            activity?.SetTag("llm.model", model);
-            activity?.SetTag("llm.status", "success");
-            activity?.SetTag("llm.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+            activity?.SetTag("gen_ai.response.model", model);
+            activity?.SetTag("agent.chat.sequence", sequence);
+            activity?.SetTag("status", "success");
 
             _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true);
 
@@ -87,9 +87,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
                 ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
 
-            activity?.SetTag("llm.tokens.input", tokens.InputTokens);
-            activity?.SetTag("llm.tokens.output", tokens.OutputTokens);
-            activity?.SetTag("llm.tokens.total", tokens.TotalTokens);
+            activity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
+            activity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
@@ -128,8 +127,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             stopwatch.Stop();
 
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.SetTag("llm.status", "failed");
-            activity?.SetTag("llm.duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+            activity?.SetTag("status", "failed");
 
             _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false);
 

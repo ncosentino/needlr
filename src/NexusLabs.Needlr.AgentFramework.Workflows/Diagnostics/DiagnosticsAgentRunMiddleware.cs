@@ -45,8 +45,8 @@ internal sealed class DiagnosticsAgentRunMiddleware
         var resolvedName = !string.IsNullOrEmpty(innerAgent.Name) ? innerAgent.Name : _agentName;
 
         _metrics.RecordRunStarted(resolvedName);
-        using var activity = _metrics.ActivitySource.StartActivity("agent.run", ActivityKind.Internal);
-        activity?.SetTag("agent.name", resolvedName);
+        using var activity = _metrics.ActivitySource.StartActivity($"agent.run {resolvedName}", ActivityKind.Internal);
+        activity?.SetTag("gen_ai.agent.name", resolvedName);
 
         using var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
 
@@ -74,9 +74,10 @@ internal sealed class DiagnosticsAgentRunMiddleware
             _writer.Set(diagnostics);
             _metrics.RecordRunCompleted(diagnostics);
 
-            activity?.SetTag("agent.status", diagnostics.Succeeded ? "success" : "failed");
-            activity?.SetTag("agent.tokens.total", diagnostics.AggregateTokenUsage.TotalTokens);
-            activity?.SetTag("agent.duration_ms", diagnostics.TotalDuration.TotalMilliseconds);
+            activity?.SetTag("status", diagnostics.Succeeded ? "success" : "failed");
+            activity?.SetTag("gen_ai.usage.input_tokens", diagnostics.AggregateTokenUsage.InputTokens);
+            activity?.SetTag("gen_ai.usage.output_tokens", diagnostics.AggregateTokenUsage.OutputTokens);
+            activity?.SetTag("gen_ai.usage.total_tokens", diagnostics.AggregateTokenUsage.TotalTokens);
         }
     }
 }

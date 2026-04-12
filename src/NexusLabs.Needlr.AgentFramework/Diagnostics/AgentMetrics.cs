@@ -5,22 +5,20 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
 /// Default <see cref="IAgentMetrics"/> implementation using <see cref="Meter"/>
-/// for counters/histograms and <see cref="ActivitySource"/> for distributed tracing spans.
-/// Compatible with OpenTelemetry — both metrics and traces are exported when listeners
-/// are registered.
+/// for counters/histograms and <see cref="System.Diagnostics.ActivitySource"/> for
+/// distributed tracing spans. Compatible with OpenTelemetry — both metrics and traces
+/// are exported when listeners are registered.
 /// </summary>
 /// <remarks>
-/// Source names use <c>NexusLabs.Needlr.AgentFramework</c> — not hardcoded to any
-/// consumer's namespace. Wire OpenTelemetry in the host to export these.
+/// Source names default to <c>"NexusLabs.Needlr.AgentFramework"</c> but can be
+/// overridden via <see cref="AgentFrameworkMetricsOptions.MeterName"/> and
+/// <see cref="AgentFrameworkMetricsOptions.ActivitySourceName"/> to match consumers'
+/// existing dashboard queries.
 /// </remarks>
 internal sealed class AgentMetrics : IAgentMetrics, IDisposable
 {
-    internal const string MeterName = "NexusLabs.Needlr.AgentFramework";
-    internal const string ActivitySourceName = MeterName;
-
-    private static readonly ActivitySource _activitySource = new(ActivitySourceName);
-
     private readonly Meter _meter;
+    private readonly ActivitySource _activitySource;
     private readonly Counter<long> _runsStarted;
     private readonly Counter<long> _runsCompleted;
     private readonly Histogram<double> _runDuration;
@@ -29,9 +27,14 @@ internal sealed class AgentMetrics : IAgentMetrics, IDisposable
     private readonly Histogram<double> _toolCallDuration;
     private readonly Histogram<double> _chatCompletionDuration;
 
-    public AgentMetrics()
+    public AgentMetrics() : this(new AgentFrameworkMetricsOptions()) { }
+
+    public AgentMetrics(AgentFrameworkMetricsOptions options)
     {
-        _meter = new Meter(MeterName);
+        ArgumentNullException.ThrowIfNull(options);
+
+        _meter = new Meter(options.MeterName);
+        _activitySource = new ActivitySource(options.ResolvedActivitySourceName);
 
         _runsStarted = _meter.CreateCounter<long>(
             "agent.run.started",
@@ -118,6 +121,10 @@ internal sealed class AgentMetrics : IAgentMetrics, IDisposable
             new KeyValuePair<string, object?>("status", status));
     }
 
-    /// <summary>Disposes the underlying <see cref="Meter"/>.</summary>
-    public void Dispose() => _meter.Dispose();
+    /// <summary>Disposes the underlying <see cref="Meter"/> and <see cref="System.Diagnostics.ActivitySource"/>.</summary>
+    public void Dispose()
+    {
+        _meter.Dispose();
+        _activitySource.Dispose();
+    }
 }

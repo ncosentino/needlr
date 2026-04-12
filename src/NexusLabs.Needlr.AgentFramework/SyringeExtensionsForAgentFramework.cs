@@ -172,7 +172,12 @@ public static class SyringeExtensionsForAgentFramework
         services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
-        services.TryAddSingleton<IAgentMetrics, AgentMetrics>();
+        services.TryAddSingleton<IAgentMetrics>(sp =>
+        {
+            var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
+            var options = syringe?.Value.MetricsOptions ?? new AgentFrameworkMetricsOptions();
+            return new AgentMetrics(options);
+        });
         services.TryAddSingleton<ChatCompletionCollectorHolder>();
         services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
         services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
