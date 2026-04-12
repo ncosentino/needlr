@@ -21,13 +21,15 @@ Best for AOT-compiled applications, trimmed deployments, and optimal startup per
 <PackageReference Include="NexusLabs.Needlr.Injection" />
 <PackageReference Include="NexusLabs.Needlr.Injection.SourceGen" />
 
-<!-- Source generator (runs at compile time) -->
-<PackageReference Include="NexusLabs.Needlr.Generators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-<PackageReference Include="NexusLabs.Needlr.Generators.Attributes" />
+<!-- Source generator + auto-attribute generation (handles everything) -->
+<PackageReference Include="NexusLabs.Needlr.Build" PrivateAssets="all" />
 
 <!-- For ASP.NET Core web applications -->
 <PackageReference Include="NexusLabs.Needlr.AspNet" />
 ```
+
+!!! tip "Multi-project solutions"
+    For solutions with multiple projects, add `NexusLabs.Needlr.Build` to a shared `Directory.Build.props` with `<NeedlrAutoGenerate>true</NeedlrAutoGenerate>` so every project gets source generation automatically. See [Solution-Wide Source Generation](solution-wide-source-generation.md) for the full setup.
 
 ### Option 2: Reflection (Dynamic Scenarios)
 
@@ -385,6 +387,7 @@ var webApplication = new Syringe()
 
 ## Next Steps
 
+- Set up [Solution-Wide Source Generation](solution-wide-source-generation.md) for multi-project solutions using `NexusLabs.Needlr.Build`
 - Bind typed settings from `appsettings.json` without manual registration via [Options Binding](options.md)
 - Source-generate named `HttpClient` registrations from typed options records via [HttpClient Options](http-clients.md)
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding

@@ -31,6 +31,7 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 **[Getting Started Guide →](docs/getting-started.md)** - New to Needlr? Start here for a step-by-step introduction.
 
 Additional documentation:
+- [Solution-Wide Source Generation](docs/solution-wide-source-generation.md) - Set up `NexusLabs.Needlr.Build` for multi-project solutions
 - [Core Concepts](docs/core-concepts.md) - Understand the architecture and design
 - [Hosted Services](docs/hosted-services.md) - Auto-discovery of BackgroundService and IHostedService
 - [Keyed Services](docs/keyed-services.md) - Multiple implementations with different keys
@@ -101,8 +102,7 @@ Add the core package and choose your discovery strategy:
 
 <!-- CHOOSE ONE: Source Generation (recommended for AOT) -->
 <PackageReference Include="NexusLabs.Needlr.Injection.SourceGen" />
-<PackageReference Include="NexusLabs.Needlr.Generators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-<PackageReference Include="NexusLabs.Needlr.Generators.Attributes" />
+<PackageReference Include="NexusLabs.Needlr.Build" PrivateAssets="all" />
 
 <!-- CHOOSE ONE: Reflection (for dynamic scenarios) -->
 <PackageReference Include="NexusLabs.Needlr.Injection.Reflection" />
