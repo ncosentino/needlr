@@ -21,10 +21,36 @@
   -->
   <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props" 
           Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.props')" />
-  <!-- 
+  <!--
     Import NexusLabs.Needlr.Build props so examples dog-food the same auto-attribute-generation
     feature that NuGet consumers get. NeedlrAutoGenerate defaults to true; projects that should
     not generate a TypeRegistry set NeedlrAutoGenerate=false explicitly. -->
   <Import Project="$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.props"
           Condition="Exists('$(MSBuildThisFileDirectory)..\NexusLabs.Needlr.Build\build\NexusLabs.Needlr.Build.props')" />
+
+  <!--
+    Exclude every assembly under src/Examples/ from coverlet code coverage
+    instrumentation. Example apps are demonstration material, not library
+    code — shipping their coverage numbers in the public report dilutes
+    the signal for the real library (NexusLabs.Needlr.*) and makes it
+    look like the project has far more uncovered code than it actually
+    does.
+
+    Uses the .NET SDK's built-in AssemblyAttribute item: MSBuild emits a
+    synthesized .cs file into each project's intermediate output
+    containing `[assembly: ExcludeFromCodeCoverage]`. Coverlet reads the
+    attribute during instrumentation and skips the entire assembly.
+    Because this rule lives in Directory.Build.props at the src/Examples/
+    root, it applies to every current AND future example project via
+    MSBuild's ancestor-lookup — no per-project edits required.
+
+    Coverage of the real library is unaffected: when
+    MultiProjectApp.ConsoleApp.Tests executes a test that calls into
+    NexusLabs.Needlr.Injection.Syringe, the Syringe assembly is NOT
+    under src/Examples/ and is NOT excluded, so library coverage is
+    still captured through the example tests exactly as before.
+  -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
 </Project>
