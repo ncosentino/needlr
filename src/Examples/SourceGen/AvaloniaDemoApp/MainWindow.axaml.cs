@@ -1,32 +1,28 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Microsoft.Extensions.DependencyInjection;
-using NexusLabs.Needlr;
 
 namespace AvaloniaDemoApp;
 
 /// <summary>
-/// Main window that resolves services from Needlr's DI container.
-/// Demonstrates that Needlr source-gen correctly auto-registered
-/// <see cref="GreetingService"/> while excluding all Avalonia types.
+/// Main window with constructor-injected <see cref="GreetingService"/>.
+///
+/// Needlr's source generator discovers this class and registers it in DI.
+/// When <see cref="App.OnFrameworkInitializationCompleted"/> resolves
+/// <c>MainWindow</c> from the container, Needlr sees that the constructor
+/// requires <see cref="GreetingService"/> and injects it automatically.
+///
+/// No service locator, no <c>GetRequiredService</c> in view code —
+/// pure constructor injection, same pattern as ASP.NET Core controllers.
 /// </summary>
-[DoNotAutoRegister] // UI class — not a DI service. Without this, Needlr tries to register
-                    // MainWindow as all of Window's interfaces, some of which are Avalonia-internal.
 public sealed partial class MainWindow : Window
 {
     private readonly GreetingService _greetingService;
     private int _clickCount;
 
-    public MainWindow()
+    public MainWindow(GreetingService greetingService)
     {
+        _greetingService = greetingService;
         InitializeComponent();
-
-        // Resolve the Needlr auto-registered service from the DI container.
-        // This service was discovered at compile time by the source generator
-        // because its namespace (AvaloniaDemoApp) matches the include filter,
-        // while Avalonia.* types were excluded via NeedlrExcludeNamespacePrefix.
-        _greetingService = Program.Services!.GetRequiredService<GreetingService>();
-
         ServiceMessage.Text = _greetingService.GetWelcomeMessage();
     }
 

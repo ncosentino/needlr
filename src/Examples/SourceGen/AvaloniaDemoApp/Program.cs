@@ -6,30 +6,36 @@ using NexusLabs.Needlr.Injection.SourceGen;
 namespace AvaloniaDemoApp;
 
 /// <summary>
-/// Entry point demonstrating Needlr source generation with Avalonia.
+/// Entry point demonstrating constructor-injected Avalonia views with Needlr.
 ///
-/// Key points:
-/// - NeedlrExcludeNamespacePrefix=Avalonia in the .csproj prevents Needlr from scanning
-///   Avalonia's hundreds of framework types while still auto-registering app types.
-/// - Full AOT + trimming compatible via NexusLabs.Needlr.Build source generation.
-/// - Services are resolved from the Needlr-built DI container and passed to Avalonia views.
+/// The service provider is built ONCE, passed to the App instance via Avalonia's
+/// AfterSetup callback, and the App resolves MainWindow from DI — which auto-injects
+/// GreetingService into MainWindow's constructor. No static service locator, no
+/// manual GetRequiredService calls in view code.
 /// </summary>
 internal static class Program
 {
-    // The DI container is built once and shared with the Avalonia app.
-    internal static IServiceProvider? Services { get; private set; }
-
     [STAThread]
     public static void Main(string[] args)
     {
-        // Build the Needlr DI container with source generation.
-        // Avalonia types are excluded via NeedlrExcludeNamespacePrefix in the .csproj —
-        // only AvaloniaDemoApp.* types are scanned and registered.
-        Services = new Syringe()
+        // Build the Needlr DI container. Source generation discovers GreetingService
+        // and MainWindow automatically; Avalonia types are excluded via
+        // NeedlrExcludeNamespacePrefix in the .csproj.
+        var services = new Syringe()
             .UsingSourceGen()
             .BuildServiceProvider();
 
         BuildAvaloniaApp()
+            .AfterSetup(builder =>
+            {
+                // Pass the service provider to the App instance AFTER Avalonia creates
+                // it but BEFORE the lifetime starts. This is the single bridge point
+                // between Needlr's DI and Avalonia's bootstrap — no static required.
+                if (builder.Instance is App app)
+                {
+                    app.Services = services;
+                }
+            })
             .StartWithClassicDesktopLifetime(args);
     }
 

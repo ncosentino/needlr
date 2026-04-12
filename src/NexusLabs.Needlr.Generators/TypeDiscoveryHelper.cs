@@ -76,6 +76,12 @@ internal static class TypeDiscoveryHelper
             if (IsSystemInterface(iface))
                 continue;
 
+            // Skip interfaces that are inaccessible from generated code (e.g., internal
+            // Avalonia interfaces inherited via Window base class). Without this check,
+            // emitting typeof(IContentPresenterHost) produces CS0122.
+            if (IsInternalOrLessAccessible(iface))
+                continue;
+
             if (HasDoNotAutoRegisterAttributeDirect(iface))
                 continue;
 
@@ -874,13 +880,6 @@ internal static class TypeDiscoveryHelper
                 continue;
 
             if (IsInternalOrLessAccessible(iface))
-                continue;
-
-            // Skip obsolete interfaces — emitting typeof() for them triggers CS0618/CS0619
-            // in projects with TreatWarningsAsErrors (e.g., Avalonia's IStyleable).
-            if (iface.GetAttributes().Any(a =>
-                a.AttributeClass?.Name == "ObsoleteAttribute" &&
-                a.AttributeClass.ContainingNamespace?.ToDisplayString() == "System"))
                 continue;
 
             result.Add(iface);

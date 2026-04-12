@@ -7,9 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.2-alpha.30] - 2026-04-12
 
-Agent framework usability release plus hosting/bootstrapping conveniences.
+Agent framework usability, source generator hardening for UI frameworks
+(Avalonia, MAUI), and hosting/bootstrapping conveniences.
 
 ### Added
+
+#### Source Generation
+
+- **`ExcludeNamespacePrefixes` on `[GenerateTypeRegistry]`.** Blacklist
+  namespace prefixes to prevent the source generator from scanning
+  framework types (Avalonia, MAUI, etc.) that Needlr would otherwise
+  try to register. Applied after inclusion — if a type matches both an
+  include and exclude prefix, it is excluded. Configure via attribute:
+  ```csharp
+  [assembly: GenerateTypeRegistry(
+      ExcludeNamespacePrefixes = new[] { "Avalonia" })]
+  ```
+  Or via MSBuild property in `Directory.Build.props`:
+  ```xml
+  <NeedlrExcludeNamespacePrefix>Avalonia;Microsoft.Maui</NeedlrExcludeNamespacePrefix>
+  ```
+
+- **Avalonia example app** (`src/Examples/SourceGen/AvaloniaDemoApp`).
+  Minimal Avalonia 11.x desktop app demonstrating Needlr source
+  generation with `ExcludeNamespacePrefixes`, constructor-injected
+  views (no service locator), and AOT/trimming readiness. `MainWindow`
+  takes `GreetingService` in its constructor, resolved from DI.
 
 #### Agent Framework
 
@@ -69,6 +92,25 @@ Agent framework usability release plus hosting/bootstrapping conveniences.
 
 ### Fixed
 
+- **Dot-boundary namespace prefix matching.** `"Avalonia"` now matches
+  `"Avalonia"` and `"Avalonia.Controls"` but NOT `"AvaloniaDemoApp"`.
+  Previously, `StartsWith` without a boundary check caused false
+  matches across namespace boundaries. Both `IncludeNamespacePrefixes`
+  and `ExcludeNamespacePrefixes` use the new boundary-aware matcher.
+
+- **Inaccessible interfaces skipped in generated code.** When a type
+  extends a framework base class (e.g., `MainWindow : Window`), the
+  generator no longer emits `typeof()` for `internal` interfaces
+  inherited from that base class. Previously this produced CS0122
+  errors. Accessible interfaces are still registered normally.
+
+- **Obsolete types no longer silently dropped from DI.** The generator
+  now emits `#pragma warning disable CS0618, CS0619` in all generated
+  files instead of skipping `[Obsolete]` types/interfaces. This
+  ensures obsolete-but-still-needed services remain in the container
+  while suppressing the warning only in generated code — consumers
+  still see `[Obsolete]` warnings in their own code.
+
 - **Release script push race.** `release.ps1` now pushes tags first
   (fires `release.yml` immediately) then rebases + pushes `HEAD`
   separately, handling the coverage-badge bot race gracefully instead
@@ -79,6 +121,11 @@ Agent framework usability release plus hosting/bootstrapping conveniences.
 - **Getting Started and README recommend `NexusLabs.Needlr.Build`** as
   the paved path for source generation instead of manual
   `NexusLabs.Needlr.Generators` + `Generators.Attributes` references.
+
+- **Release script pack step parallelized.** Replaced per-project
+  sequential `dotnet pack` loop (~50 projects × ~10s) with
+  solution-level `dotnet pack` that lets MSBuild parallelize
+  internally. Reduces local release time by ~6-8 minutes.
 
 ## [0.0.2-alpha.29] - 2026-04-12
 
