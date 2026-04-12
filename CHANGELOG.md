@@ -5,6 +5,131 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.28] - 2026-04-12
+
+Diagnostics extensibility release. Makes the agent-framework diagnostics
+write-side public so consumers can build their own middleware, adds
+distributed tracing spans via `ActivitySource`, and introduces typed
+context property extensions. Also includes docs-pipeline improvements
+(sitemap index, version switcher, articles fix, footer) and CI
+hardening.
+
+### Added
+
+#### Diagnostics extensibility
+
+- **`IAgentDiagnosticsWriter` is now public.** Consumers can resolve it
+  from DI and call `Set(diagnostics)` from their own middleware after
+  capturing an agent run. Previously internal — blocked consumers from
+  writing custom diagnostics middleware that integrated with Needlr's
+  accessor.
+
+- **`AgentRunDiagnosticsBuilder` is now public.** All methods (`StartNew`,
+  `GetCurrent`, `AddToolCall`, `AddChatCompletion`, `RecordInputMessageCount`,
+  `RecordOutputMessageCount`, `RecordFailure`, `Build`, `ClearCurrent`)
+  are public. Consumers use the builder in their own middleware to
+  accumulate per-run diagnostics the same way Needlr's built-in
+  middleware does. Thread-safe via `ConcurrentQueue` and
+  `Interlocked.Increment` for sequence numbers.
+
+- **`ActivitySource` distributed tracing spans on all three diagnostics
+  middleware layers.** Needlr's diagnostics middleware now creates
+  `System.Diagnostics.Activity` spans for:
+  - `agent.run` (ActivityKind.Internal) — tags: `agent.name`,
+    `agent.status`, `agent.tokens.total`, `agent.duration_ms`
+  - `agent.tool.call` (ActivityKind.Internal) — tags: `tool.name`,
+    `tool.status`, `tool.duration_ms`
+  - `agent.chat.completion` (ActivityKind.Client) — tags: `llm.model`,
+    `llm.status`, `llm.duration_ms`, `llm.tokens.input`,
+    `llm.tokens.output`, `llm.tokens.total`
+
+  Spans are exported automatically when an OpenTelemetry listener is
+  registered (e.g., Jaeger, Zipkin, OTLP). Zero overhead when no
+  listener is active (`StartActivity()` returns null, all tag calls
+  are null-conditional no-ops).
+
+- **`IAgentMetrics.ActivitySource` property.** Exposes the framework's
+  `ActivitySource` (named `NexusLabs.Needlr.AgentFramework`) so
+  consumers and middleware can create spans from the same source. The
+  `Meter` for counters/histograms remains alongside it.
+
+- **`AgentExecutionContextExtensions.GetProperty<T>()`** — typed
+  read-only extensions on `IAgentExecutionContext` for retrieving
+  properties from the `Properties` bag without manual casting. Keyed
+  by `typeof(T).FullName` by default, or by explicit string key.
+  No `SetProperty` — the `Properties` bag is `IReadOnlyDictionary`
+  by design; consumers that need mutable state implement their own
+  `IAgentExecutionContext` with typed properties and populate the
+  bag at construction time.
+
+#### Documentation site
+
+- **API version switcher.** Runtime-rendered `<select>` dropdown on
+  every `/api/` page (and only those pages) for jumping between stable,
+  dev, and preserved `v0.0.x-alpha.N` snapshots. Data source:
+  `/api/versions.json` generated at release time by
+  `scripts/generate-versioned-api-docs.sh`. Includes a back-link
+  ("← All packages in {version}") for navigating back to the version's
+  catalog from deep pages.
+
+- **Sitemap index with per-slice sub-sitemaps.** Replaces mkdocs's
+  default flat `sitemap.xml` (which only contained ~488 URLs from the
+  current build) with a sitemaps.org-compliant index referencing 11
+  sub-sitemaps: `sitemap-main.xml`, `api/dev/sitemap.xml`,
+  `api/stable/sitemap.xml`, and one per preserved version. Total
+  indexed URLs went from ~488 to ~3,586 — full coverage of all API
+  reference versions for search engine crawlers.
+
+- **Articles page populated.** Fixed the articles generator
+  (`scripts/generate-articles.py`) which was silently producing an
+  empty page because devleader.ca's `/tags/Needlr` page was redesigned
+  and no longer uses `<article>` elements. Switched to `/search/needlr`
+  with a post-parse filter requiring `Needlr` in the article's category
+  list. 12 articles now appear.
+
+- **SEO footer.** Replaced the default "Made with Material for MkDocs"
+  attribution with three keyword-rich backlinks to Dev Leader (blog),
+  Dev Leader links (channels hub), and BrandGhost (business). Each
+  link uses descriptive anchor text for SEO value. Stacked on separate
+  lines for readability.
+
+### Fixed
+
+- **Coverage report no longer includes example apps.** Added
+  `[assembly: ExcludeFromCodeCoverage]` to all projects under
+  `src/Examples/` via `Directory.Build.props` `AssemblyAttribute`
+  item. Coverlet skips these assemblies during instrumentation.
+  Library coverage (`NexusLabs.Needlr.*`) is unaffected — example
+  tests still run and exercise library code paths as before.
+
+- **mkdocs template override no longer leaks publicly.** Relocated
+  `docs/overrides/` to `overrides/` at repo root (outside `docs_dir`)
+  so mkdocs no longer copies the Jinja template to `site/overrides/`.
+
+- **NBGV `$GITHUB_ENV` race condition handled.** Nerdbank.GitVersioning's
+  `SetCloudBuildVariables` MSBuild task writes version metadata to
+  `$GITHUB_ENV` during every project build. In per-project loops
+  (`test-packages.ps1`, release.yml pack step), concurrent writes
+  produce torn lines the runner rejects. Fixed by redirecting
+  `GITHUB_ENV`/`GITHUB_OUTPUT`/`GITHUB_STEP_SUMMARY` to throwaway
+  temp files in every per-project loop step.
+
+- **`/api/` version catalog filtered to live content only.** The catalog
+  now intersects git tags with actual directories on gh-pages (fetched
+  via GitHub API), so historical tags without deployed content don't
+  produce broken links.
+
+### Changed
+
+- **Removed unused `mike` from CI/CD toolchain.** Both `ci.yml` and
+  `release.yml` installed `mike` via pip but never invoked it. Removed.
+
+### Removed
+
+- **Legacy `/dev/` site on gh-pages.** Deleted ~60 HTML files left
+  behind by an abandoned `mike deploy dev` experiment. Not referenced
+  by the current site.
+
 ## [0.0.2-alpha.27] - 2026-04-11
 
 Documentation pipeline infrastructure release. No library code changes. This
