@@ -25,6 +25,10 @@
     <lastmod>2026-04-13</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia.Attributes/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/</loc>
     <lastmod>2026-04-13</lastmod>
   </url>
@@ -106,6 +110,18 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Serilog/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia/AvaloniaDesignTimeConstructorGenerator/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia/NexusLabs.Needlr.Avalonia/</loc>
     <lastmod>2026-04-13</lastmod>
   </url>
   <url>
@@ -1574,6 +1590,14 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Hosting/IHostFactoryExtensions/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia.Attributes/GenerateAvaloniaDesignTimeConstructorAttribute/</loc>
+    <lastmod>2026-04-13</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia.Attributes/NexusLabs.Needlr.Avalonia/</loc>
     <lastmod>2026-04-13</lastmod>
   </url>
   <url>
