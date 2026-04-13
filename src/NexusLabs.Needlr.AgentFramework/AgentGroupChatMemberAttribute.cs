@@ -31,4 +31,28 @@ public sealed class AgentGroupChatMemberAttribute : Attribute
 
     /// <summary>Gets the name of the group chat this agent participates in.</summary>
     public string GroupName { get; }
+
+    /// <summary>
+    /// Gets or sets the position of this agent in the round-robin turn order.
+    /// Lower values run first. Agents with the same order are sorted alphabetically
+    /// by type name for deterministic ordering.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// In a writer/reviewer group chat, the writer should have a lower order than
+    /// the reviewer so it produces content before the reviewer evaluates it:
+    /// </para>
+    /// <code>
+    /// [AgentGroupChatMember("article-writing", Order = 1)]
+    /// public sealed class ArticleWriterAgent;
+    ///
+    /// [AgentGroupChatMember("article-writing", Order = 2)]
+    /// public sealed class ArticleReviewerAgent;
+    /// </code>
+    /// <para>
+    /// Defaults to <c>0</c>. When all agents have the default order, the round-robin
+    /// position is determined alphabetically by type name.
+    /// </para>
+    /// </remarks>
+    public int Order { get; set; }
 }

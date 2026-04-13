@@ -51,7 +51,13 @@ internal sealed class WorkflowFactory : IWorkflowFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
 
-        var memberTypes = ResolveGroupChatMembers(groupName);
+        var memberTypes = ResolveGroupChatMembers(groupName)
+            .OrderBy(t => t.GetCustomAttributes<AgentGroupChatMemberAttribute>()
+                .Where(a => string.Equals(a.GroupName, groupName, StringComparison.Ordinal))
+                .Select(a => a.Order)
+                .FirstOrDefault())
+            .ThenBy(t => t.Name, StringComparer.Ordinal)
+            .ToList();
 
         if (memberTypes.Count < 2)
         {

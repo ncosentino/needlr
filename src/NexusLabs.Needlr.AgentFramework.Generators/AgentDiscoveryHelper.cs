@@ -291,7 +291,17 @@ internal static class AgentDiscoveryHelper
             if (string.IsNullOrWhiteSpace(groupName))
                 continue;
 
-            entries.Add(new GroupChatEntry(agentTypeName, groupName!));
+            var order = 0;
+            foreach (var named in attr.NamedArguments)
+            {
+                if (named.Key == "Order" && named.Value.Value is int orderValue)
+                {
+                    order = orderValue;
+                    break;
+                }
+            }
+
+            entries.Add(new GroupChatEntry(agentTypeName, groupName!, order));
         }
 
         return entries.ToImmutable();

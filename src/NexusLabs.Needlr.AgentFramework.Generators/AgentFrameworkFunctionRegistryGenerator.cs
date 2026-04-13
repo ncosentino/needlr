@@ -158,7 +158,13 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         var allGroupChatEntries = groupChatData.SelectMany(a => a).ToList();
         var groupChatByGroupName = allGroupChatEntries
             .GroupBy(e => e.GroupName)
-            .ToDictionary(g => g.Key, g => g.Select(e => e.AgentTypeName).Distinct().ToList());
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(e => e.Order)
+                    .ThenBy(e => e.AgentTypeName, StringComparer.Ordinal)
+                    .Select(e => e.AgentTypeName)
+                    .Distinct()
+                    .ToList());
 
         var allSequenceEntries = sequenceData.SelectMany(a => a).ToList();
         var sequenceByPipelineName = allSequenceEntries

@@ -267,11 +267,11 @@ public class GroupChatDiagnosticsIntegrationTests
     // -------------------------------------------------------------------------
 
     [NeedlrAiAgent(Description = "Test writer for diagnostics tests")]
-    [AgentGroupChatMember("diag-group-chat")]
+    [AgentGroupChatMember("diag-group-chat", Order = 1)]
     public sealed class DiagWriterAgent;
 
     [NeedlrAiAgent(Description = "Test reviewer for diagnostics tests")]
-    [AgentGroupChatMember("diag-group-chat")]
+    [AgentGroupChatMember("diag-group-chat", Order = 2)]
     [AgentTerminationCondition(typeof(KeywordTerminationCondition), "APPROVED", "DiagReviewer")]
     public sealed class DiagReviewerAgent;
 
