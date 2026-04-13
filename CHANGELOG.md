@@ -5,6 +5,43 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.34] - 2026-04-13
+
+Group chat ordering and structured tool-call termination.
+
+### Added
+
+#### Agent Framework
+
+- **`AgentGroupChatMemberAttribute.Order`** — controls the round-robin
+  turn position in group chat workflows. Lower values run first;
+  same-order agents sort alphabetically by type name. Without explicit
+  ordering, agent turn position was non-deterministic (depended on
+  assembly scanning order), causing scenarios where a reviewer agent
+  ran before the writer produced any content.
+  ```csharp
+  [AgentGroupChatMember("article-writing", Order = 1)]
+  public sealed class ArticleWriterAgent;
+
+  [AgentGroupChatMember("article-writing", Order = 2)]
+  public sealed class ArticleReviewerAgent;
+  ```
+
+- **`ToolCallTerminationCondition`** — terminates a group chat when an
+  agent calls a specific tool instead of matching keywords in response
+  text. Eliminates false positives where the LLM includes the
+  termination keyword in rejection text. Inspects
+  `TerminationContext.ToolCallNames` which is populated from
+  `FunctionCallContent` entries in the agent's response.
+  ```csharp
+  [AgentTerminationCondition(typeof(ToolCallTerminationCondition),
+      "ApproveArticle", "ReviewerAgent")]
+  public sealed class ReviewerAgent;
+  ```
+
+- **`TerminationContext.ToolCallNames`** — new property exposing the
+  names of tools/functions called by the agent during the current turn.
+
 ## [0.0.2-alpha.33] - 2026-04-13
 
 Source-gen registration fixes, Serilog plugin, Avalonia primary
