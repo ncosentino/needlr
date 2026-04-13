@@ -1472,4 +1472,103 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
             }
         }
         """;
+
+    // -------------------------------------------------------------------------
+    // Array-of-objects JSON schema generation
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void AIFunctionProvider_ArrayOfObjects_EmitsFullItemSchema()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ArrayOfObjectsSource)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // The schema must include items with type:object and the properties of NoteEntry
+        Assert.Contains("\"items\":{\"type\":\"object\"", output);
+        Assert.Contains("\"title\":{\"type\":\"string\"", output);
+        Assert.Contains("\"body\":{\"type\":\"string\"", output);
+        Assert.Contains("\"required\":[\"title\",\"body\"]", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_ArrayOfObjects_UsesManualPropertyExtraction()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ArrayOfObjectsSource)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // Must use AOT-safe manual extraction (TryGetProperty), NOT JsonSerializer.Deserialize
+        Assert.Contains("TryGetProperty(\"title\"", output);
+        Assert.Contains("TryGetProperty(\"body\"", output);
+        Assert.Contains("GetString()", output);
+        Assert.DoesNotContain("JsonSerializer.Deserialize", output);
+        // Must null-coalesce to empty array for non-nullable params
+        Assert.Contains("Array.Empty<", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_ArrayOfObjects_IncludesPropertyDescriptions()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ArrayOfObjectsSource)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("The note title", output);
+        Assert.Contains("The note body", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_ArrayOfPrimitives_StillWorks()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .WithSource(ArrayOfPrimitivesSource)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // Primitive arrays should have items with type:string, not type:object
+        Assert.Contains("\"items\":{\"type\":\"string\"}", output);
+    }
+
+    private const string ArrayOfObjectsSource = """
+        using System.ComponentModel;
+
+        namespace TestNamespace
+        {
+            [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+            public sealed class NoteTool
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                [Description("Saves notes")]
+                public string Save(
+                    [Description("Array of notes")] NoteEntry[] notes)
+                    => $"Saved {notes.Length}";
+            }
+
+            public sealed class NoteEntry
+            {
+                [Description("The note title")]
+                public string Title { get; set; } = "";
+
+                [Description("The note body")]
+                public string Body { get; set; } = "";
+            }
+        }
+        """;
+
+    private const string ArrayOfPrimitivesSource = """
+        using System.ComponentModel;
+
+        namespace TestNamespace
+        {
+            [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+            public sealed class TagTool
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                [Description("Sets tags")]
+                public string SetTags(
+                    [Description("Tag names")] string[] tags)
+                    => $"Set {tags.Length} tags";
+            }
+        }
+        """;
 }

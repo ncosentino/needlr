@@ -122,8 +122,27 @@ internal static class AgentDiscoveryHelper
                 string jsonSchemaType = GetJsonSchemaType(param.Type, out string? itemJsonSchemaType);
                 string typeFullName = GetFullyQualifiedName(param.Type);
 
+                // Build object schema for complex array items (e.g., FaqEntry[] → properties of FaqEntry)
+                string? itemObjectSchemaJson = null;
+                IReadOnlyList<ObjectPropertyInfo>? itemObjectProperties = null;
+                if (jsonSchemaType == "array" && itemJsonSchemaType == "object")
+                {
+                    ITypeSymbol? elementType = null;
+                    if (param.Type is IArrayTypeSymbol arrSym)
+                        elementType = arrSym.ElementType;
+                    else if (param.Type is INamedTypeSymbol namedSym && namedSym.IsGenericType && namedSym.TypeArguments.Length == 1)
+                        elementType = namedSym.TypeArguments[0];
+
+                    if (elementType != null)
+                    {
+                        itemObjectSchemaJson = BuildObjectSchemaJson(elementType);
+                        itemObjectProperties = BuildObjectPropertyInfos(elementType);
+                    }
+                }
+
                 parameters.Add(new AgentFunctionParameterInfo(
                     param.Name, typeFullName, jsonSchemaType, itemJsonSchemaType,
+                    itemObjectSchemaJson, itemObjectProperties,
                     isCancellationToken, isNullable, hasDefault, paramDesc));
             }
 
@@ -443,6 +462,8 @@ internal static class AgentDiscoveryHelper
         if (type is IArrayTypeSymbol arrayType)
         {
             itemType = GetJsonSchemaType(arrayType.ElementType, out _);
+            if (string.IsNullOrEmpty(itemType))
+                itemType = "object";
             return "array";
         }
 
@@ -456,11 +477,131 @@ internal static class AgentDiscoveryHelper
                 baseName == "System.Collections.Generic.IList<T>")
             {
                 itemType = GetJsonSchemaType(named.TypeArguments[0], out _);
+                if (string.IsNullOrEmpty(itemType))
+                    itemType = "object";
                 return "array";
             }
         }
 
+        // Enum types map to string (LLMs pass enum values as strings)
+        if (type.TypeKind == TypeKind.Enum)
+            return "string";
+
+        // Complex types (classes, records, structs) → "object"
+        if (type.TypeKind == TypeKind.Class || type.TypeKind == TypeKind.Struct)
+            return "object";
+
         return "";
+    }
+
+    /// <summary>
+    /// Builds a JSON schema string for a complex object type's properties.
+    /// Returns <see langword="null"/> if the type has no public properties or is not a complex type.
+    /// </summary>
+    public static string? BuildObjectSchemaJson(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol nullable && nullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            type = nullable.TypeArguments[0];
+
+        // Get public instance properties (including inherited)
+        var properties = type.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(p => p.DeclaredAccessibility == Accessibility.Public &&
+                        !p.IsStatic && !p.IsIndexer &&
+                        p.GetMethod != null)
+            .ToList();
+
+        if (properties.Count == 0)
+            return null;
+
+        var sb = new StringBuilder();
+        sb.Append("{\"type\":\"object\",\"properties\":{");
+
+        var required = new List<string>();
+        var first = true;
+        foreach (var prop in properties)
+        {
+            if (!first) sb.Append(",");
+            first = false;
+
+            // Use camelCase for JSON property names (standard convention)
+            var propName = char.ToLowerInvariant(prop.Name[0]) + prop.Name.Substring(1);
+            var propSchemaType = GetJsonSchemaType(prop.Type, out _);
+            if (string.IsNullOrEmpty(propSchemaType))
+                propSchemaType = "string"; // fallback
+
+            // Check for [Description] attribute on the property
+            string? propDesc = null;
+            foreach (var attr in prop.GetAttributes())
+            {
+                if (attr.AttributeClass?.Name == "DescriptionAttribute")
+                {
+                    propDesc = attr.ConstructorArguments.FirstOrDefault().Value?.ToString();
+                    break;
+                }
+            }
+
+            sb.Append($"\"{propName}\":{{\"type\":\"{propSchemaType}\"");
+            if (!string.IsNullOrEmpty(propDesc))
+            {
+                var escapedDesc = propDesc!.Replace("\\", "\\\\").Replace("\"", "\\\"");
+                sb.Append($",\"description\":\"{escapedDesc}\"");
+            }
+            sb.Append("}");
+
+            // Non-nullable value types and non-nullable reference types are required
+            if (!prop.Type.IsValueType && prop.NullableAnnotation != NullableAnnotation.Annotated)
+                required.Add(propName);
+            else if (prop.Type.IsValueType && prop.NullableAnnotation != NullableAnnotation.Annotated
+                     && prop.Type is INamedTypeSymbol nt && nt.ConstructedFrom.SpecialType != SpecialType.System_Nullable_T)
+                required.Add(propName);
+        }
+
+        sb.Append("}");
+        if (required.Count > 0)
+        {
+            sb.Append(",\"required\":[");
+            sb.Append(string.Join(",", required.Select(r => "\"" + r + "\"")));
+            sb.Append("]");
+        }
+        sb.Append("}");
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Builds a list of <see cref="ObjectPropertyInfo"/> for manual property extraction
+    /// from JsonElement. Used in generated code for AOT-safe deserialization of
+    /// complex array element types.
+    /// </summary>
+    public static IReadOnlyList<ObjectPropertyInfo>? BuildObjectPropertyInfos(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol nullable && nullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            type = nullable.TypeArguments[0];
+
+        var properties = type.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(p => p.DeclaredAccessibility == Accessibility.Public &&
+                        !p.IsStatic && !p.IsIndexer &&
+                        p.GetMethod != null && p.SetMethod != null)
+            .ToList();
+
+        if (properties.Count == 0)
+            return null;
+
+        var result = new List<ObjectPropertyInfo>();
+        foreach (var prop in properties)
+        {
+            var jsonName = char.ToLowerInvariant(prop.Name[0]) + prop.Name.Substring(1);
+            var schemaType = GetJsonSchemaType(prop.Type, out _);
+            if (string.IsNullOrEmpty(schemaType))
+                schemaType = "string";
+            var isNullable = prop.NullableAnnotation == NullableAnnotation.Annotated ||
+                (prop.Type is INamedTypeSymbol pnt && pnt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T);
+            result.Add(new ObjectPropertyInfo(prop.Name, jsonName, schemaType, isNullable));
+        }
+
+        return result;
     }
 
     public static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol typeSymbol)

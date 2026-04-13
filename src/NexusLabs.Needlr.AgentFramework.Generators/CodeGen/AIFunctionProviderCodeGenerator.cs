@@ -211,9 +211,26 @@ internal static class AIFunctionProviderCodeGenerator
             var desc = string.IsNullOrEmpty(param.Description)
                 ? ""
                 : $",\"description\":\"{param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+
+            if (param.ItemJsonSchemaType == "object" && !string.IsNullOrEmpty(param.ItemObjectSchemaJson))
+            {
+                // Complex object array items — emit the full object schema
+                return $"{{\"type\":\"array\",\"items\":{param.ItemObjectSchemaJson}{desc}}}";
+            }
+
             if (!string.IsNullOrEmpty(param.ItemJsonSchemaType))
                 return $"{{\"type\":\"array\",\"items\":{{\"type\":\"{param.ItemJsonSchemaType}\"}}{desc}}}";
+
             return $"{{\"type\":\"array\"{desc}}}";
+        }
+
+        if (param.JsonSchemaType == "object")
+        {
+            // Direct complex object parameter (not in an array)
+            var desc = string.IsNullOrEmpty(param.Description)
+                ? ""
+                : $",\"description\":\"{param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+            return $"{{\"type\":\"object\"{desc}}}";
         }
 
         if (!string.IsNullOrEmpty(param.Description))
@@ -248,6 +265,71 @@ internal static class AIFunctionProviderCodeGenerator
             case "number":
                 AppendNumberExtraction(sb, param, rawVar, jVar);
                 break;
+            case "array":
+            {
+                // AOT-safe array extraction: manually enumerate JsonElement items
+                // instead of using JsonSerializer.Deserialize<T[]> (which triggers
+                // IL2026/IL3050 in NativeAOT builds).
+                var elementType = GetArrayElementType(param.TypeFullName);
+                sb.AppendLine($"            {param.TypeFullName} {param.Name};");
+                sb.AppendLine($"            if ({rawVar} is global::System.Text.Json.JsonElement {jVar} && {jVar}.ValueKind == global::System.Text.Json.JsonValueKind.Array)");
+                sb.AppendLine("            {");
+                sb.AppendLine($"                var _list_{param.Name} = new global::System.Collections.Generic.List<{elementType}>();");
+                sb.AppendLine($"                foreach (var _elem in {jVar}.EnumerateArray())");
+                sb.AppendLine("                {");
+
+                if (param.ItemJsonSchemaType == "object" && param.ItemObjectProperties is { Count: > 0 })
+                {
+                    // Complex object: manual property extraction (AOT-safe)
+                    sb.AppendLine($"                    var _obj = new {elementType}();");
+                    foreach (var prop in param.ItemObjectProperties)
+                    {
+                        sb.AppendLine($"                    if (_elem.TryGetProperty(\"{prop.JsonName}\", out var _p_{prop.JsonName}))");
+                        switch (prop.SchemaType)
+                        {
+                            case "string":
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetString(){(prop.IsNullable ? "" : " ?? \"\"")};");
+                                break;
+                            case "integer":
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetInt32();");
+                                break;
+                            case "number":
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetDouble();");
+                                break;
+                            case "boolean":
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetBoolean();");
+                                break;
+                            default:
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetString(){(prop.IsNullable ? "" : " ?? \"\"")};");
+                                break;
+                        }
+                    }
+                    sb.AppendLine($"                    _list_{param.Name}.Add(_obj);");
+                }
+                else if (param.ItemJsonSchemaType == "string")
+                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetString() ?? \"\");");
+                else if (param.ItemJsonSchemaType == "integer")
+                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetInt32());");
+                else if (param.ItemJsonSchemaType == "number")
+                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetDouble());");
+                else if (param.ItemJsonSchemaType == "boolean")
+                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetBoolean());");
+                else
+                    sb.AppendLine($"                    _list_{param.Name}.Add(default!);");
+
+                sb.AppendLine("                }");
+                sb.AppendLine($"                {param.Name} = _list_{param.Name}.ToArray();");
+                sb.AppendLine("            }");
+                sb.AppendLine($"            else {{ {param.Name} = {rawVar} as {param.TypeFullName} ?? global::System.Array.Empty<{elementType}>(); }}");
+                break;
+            }
+            case "object":
+            {
+                var cVar = $"_c_{param.Name}";
+                var nullSuppress = param.IsNullable ? "" : "!";
+                sb.AppendLine($"            var {param.Name} = {rawVar} is {param.TypeFullName} {cVar} ? {cVar} : default({param.TypeFullName}){nullSuppress};");
+                break;
+            }
             default:
             {
                 var cVar = $"_c_{param.Name}";
@@ -298,5 +380,19 @@ internal static class AIFunctionProviderCodeGenerator
         { getMethod = "GetDouble()"; castType = "double"; convertMethod = "ToDouble"; }
 
         sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.{getMethod} : {rawVar} is {castType} {nVar} ? {nVar} : global::System.Convert.{convertMethod}({rawVar});");
+    }
+
+    /// <summary>
+    /// Extracts the element type from an array type's fully-qualified name.
+    /// E.g., <c>"global::MyNamespace.FeedbackEntry[]"</c> → <c>"global::MyNamespace.FeedbackEntry"</c>.
+    /// </summary>
+    private static string GetArrayElementType(string arrayTypeFullName)
+    {
+        // Handle T[] syntax
+        if (arrayTypeFullName.EndsWith("[]"))
+            return arrayTypeFullName.Substring(0, arrayTypeFullName.Length - 2);
+
+        // Fallback: return as-is (shouldn't happen for valid array types)
+        return arrayTypeFullName;
     }
 }
