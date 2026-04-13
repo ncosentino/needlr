@@ -3434,12 +3434,15 @@ together. Streaming <code>RunStreamingAsync()</code> passes through without retr
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Middleware.AgentResiliencePlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)'></a></p>
 <h2 id="agentresiliencepluginconfigureaiagentbuilderpluginoptions-method">AgentResiliencePlugin.Configure(AIAgentBuilderPluginOptions) Method<a class="headerlink" href="#agentresiliencepluginconfigureaiagentbuilderpluginoptions-method" title="Permanent link">&para;</a></h2>
-<p>Called during agent factory initialisation to configure the agent builder.</p>
+<p>Called once per agent creation to configure the builder's middleware pipeline.
+Use <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions.AgentBuilder</a> to add
+<code>Use(...)</code> middleware layers.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Configure</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AIAgentBuilderPluginOptions</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Middleware.AgentResiliencePlugin.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions).options'></a></p>
 <p><code>options</code> <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions</a></p>
+<p>Provides access to the <code>AIAgentBuilder</code> for the agent being constructed.</p>
 <p>Implements <a href="../../NexusLabs.Needlr.AgentFramework/">Configure(AIAgentBuilderPluginOptions)</a></p>
 
 

@@ -3515,11 +3515,11 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IAgentFrameworkFunctionScanner/" title="NexusLabs.Needlr.AgentFramework.IAgentFrameworkFunctionScanner">IAgentFrameworkFunctionScanner</a></td>
-<td style="text-align: left;">Defines a scanner that discovers types containing <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>-decorated methods.</td>
+<td style="text-align: left;">Discovers types containing methods decorated with <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>. The source generator emits <code>GeneratedAgentFunctionScanner</code> at compile time; in reflection mode, a runtime scanner is used instead.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IAIAgentBuilderPlugin/" title="NexusLabs.Needlr.AgentFramework.IAIAgentBuilderPlugin">IAIAgentBuilderPlugin</a></td>
-<td style="text-align: left;">Marker interface for classes that participate in configuring the agent builder pipeline (e.g., adding middleware layers).</td>
+<td style="text-align: left;">Extension point for adding middleware layers to every agent created by <a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a>. Implementations are registered via <a href="../">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe.Plugins</a> and applied in order during <a href="../IAgentFactory/#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_()" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;()">CreateAgent&lt;TAgent&gt;()</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IAIFunctionProvider/" title="NexusLabs.Needlr.AgentFramework.IAIFunctionProvider">IAIFunctionProvider</a></td>

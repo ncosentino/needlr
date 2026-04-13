@@ -3412,18 +3412,31 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframework_1"><a href="../NexusLabs.Needlr.AgentFramework/" title="NexusLabs.Needlr.AgentFramework">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework_1" title="Permanent link">&para;</a></h3>
 <h2 id="iagentframeworkfunctionscanner-interface">IAgentFrameworkFunctionScanner Interface<a class="headerlink" href="#iagentframeworkfunctionscanner-interface" title="Permanent link">&para;</a></h2>
-<p>Defines a scanner that discovers types containing
-<a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>-decorated methods.</p>
+<p>Discovers types containing methods decorated with <a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>.
+The source generator emits <code>GeneratedAgentFunctionScanner</code> at compile time;
+in reflection mode, a runtime scanner is used instead.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IAgentFrameworkFunctionScanner</span>
 </span></code></pre></div>
 <p>Derived<br />
 &#8627; <a href="../GeneratedAgentFunctionScanner/" title="NexusLabs.Needlr.AgentFramework.FunctionScanners.GeneratedAgentFunctionScanner">GeneratedAgentFunctionScanner</a></p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Typically resolved from DI — not called directly by application code.</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kt">var</span><span class="w"> </span><span class="n">scanner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serviceProvider</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">IAgentFrameworkFunctionScanner</span><span class="o">&gt;</span><span class="p">();</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">functionTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scanner</span><span class="p">.</span><span class="n">ScanForFunctionTypes</span><span class="p">();</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Found {functionTypes.Count} types with [AgentFunction] methods&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>The discovered types are passed to <a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a> so that agent
+creation can resolve tool functions from them. Each type may contain multiple
+<code>[AgentFunction]</code> methods, and each method becomes an <code>AIFunction</code>
+available to agents that reference the type's function group.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.IAgentFrameworkFunctionScanner.ScanForFunctionTypes()'></a></p>
 <h2 id="iagentframeworkfunctionscannerscanforfunctiontypes-method">IAgentFrameworkFunctionScanner.ScanForFunctionTypes() Method<a class="headerlink" href="#iagentframeworkfunctionscannerscanforfunctiontypes-method" title="Permanent link">&para;</a></h2>
-<p>Scans for types that contain at least one method decorated with
-<a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ScanForFunctionTypes</span><span class="p">();</span>
+<p>Returns all types that contain at least one method decorated with
+<a href="../AgentFunctionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentFunctionAttribute">AgentFunctionAttribute</a>. The returned list is used by the
+agent factory to build the tool set for each agent.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ScanForFunctionTypes</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" title="System.Type">System.Type</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
