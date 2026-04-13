@@ -1042,6 +1042,11 @@ internal static class TypeDiscoveryHelper
     /// </returns>
     public static IReadOnlyList<string>? GetBestConstructorParameters(INamedTypeSymbol typeSymbol)
     {
+        // Collect ALL satisfiable constructors, then pick the richest (most parameters).
+        // This matches the standard .NET DI behavior (ActivatorUtilities) where the
+        // constructor with the most resolvable parameters wins.
+        string[]? best = null;
+
         foreach (var ctor in typeSymbol.InstanceConstructors)
         {
             if (ctor.IsStatic)
@@ -1052,28 +1057,35 @@ internal static class TypeDiscoveryHelper
 
             var parameters = ctor.Parameters;
 
-            // Parameterless constructor - no parameters needed
-            if (parameters.Length == 0)
-                return Array.Empty<string>();
-
             // Single parameter of same type (copy constructor) - skip
             if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
                 continue;
+
+            // Parameterless constructor is a valid candidate
+            if (parameters.Length == 0)
+            {
+                if (best == null)
+                    best = Array.Empty<string>();
+                continue;
+            }
 
             // Check if all parameters are injectable
             if (!AllParametersAreInjectable(parameters))
                 continue;
 
-            // This constructor is good - collect parameter type names
-            var parameterTypes = new string[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
+            // This constructor is satisfiable — prefer it if it's richer
+            if (best == null || parameters.Length > best.Length)
             {
-                parameterTypes[i] = GetFullyQualifiedNameForType(parameters[i].Type);
+                var parameterTypes = new string[parameters.Length];
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    parameterTypes[i] = GetFullyQualifiedNameForType(parameters[i].Type);
+                }
+                best = parameterTypes;
             }
-            return parameterTypes;
         }
 
-        return null;
+        return best;
     }
 
     /// <summary>
@@ -1128,7 +1140,8 @@ internal static class TypeDiscoveryHelper
 
     /// <summary>
     /// Gets the parameters of the best injectable constructor for a type, including keyed service info.
-    /// Returns the first constructor where all parameters are injectable types.
+    /// Picks the constructor with the most satisfiable parameters (richest constructor wins),
+    /// matching the standard .NET DI behavior (ActivatorUtilities).
     /// </summary>
     /// <param name="typeSymbol">The type symbol to analyze.</param>
     /// <returns>
@@ -1137,6 +1150,8 @@ internal static class TypeDiscoveryHelper
     public static IReadOnlyList<ConstructorParameterInfo>? GetBestConstructorParametersWithKeys(INamedTypeSymbol typeSymbol)
     {
         const string FromKeyedServicesAttributeName = "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
+
+        ConstructorParameterInfo[]? best = null;
 
         foreach (var ctor in typeSymbol.InstanceConstructors)
         {
@@ -1148,55 +1163,61 @@ internal static class TypeDiscoveryHelper
 
             var parameters = ctor.Parameters;
 
-            // Parameterless constructor - no parameters needed
-            if (parameters.Length == 0)
-                return Array.Empty<ConstructorParameterInfo>();
-
             // Single parameter of same type (copy constructor) - skip
             if (parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(parameters[0].Type, typeSymbol))
                 continue;
+
+            // Parameterless constructor is a valid candidate
+            if (parameters.Length == 0)
+            {
+                if (best == null)
+                    best = Array.Empty<ConstructorParameterInfo>();
+                continue;
+            }
 
             // Check if all parameters are injectable
             if (!AllParametersAreInjectable(parameters))
                 continue;
 
-            // This constructor is good - collect parameter info with keyed service keys
-            var parameterInfos = new ConstructorParameterInfo[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
+            // This constructor is satisfiable — prefer it if it's richer
+            if (best == null || parameters.Length > best.Length)
             {
-                var param = parameters[i];
-                var typeName = GetFullyQualifiedNameForType(param.Type);
-                string? serviceKey = null;
-
-                // Check for [FromKeyedServices("key")] attribute
-                foreach (var attr in param.GetAttributes())
+                var parameterInfos = new ConstructorParameterInfo[parameters.Length];
+                for (int i = 0; i < parameters.Length; i++)
                 {
-                    var attrClass = attr.AttributeClass;
-                    if (attrClass is null)
-                        continue;
+                    var param = parameters[i];
+                    var typeName = GetFullyQualifiedNameForType(param.Type);
+                    string? serviceKey = null;
 
-                    var attrFullName = attrClass.ToDisplayString();
-                    if (attrFullName == FromKeyedServicesAttributeName)
+                    // Check for [FromKeyedServices("key")] attribute
+                    foreach (var attr in param.GetAttributes())
                     {
-                        // Extract the key from the constructor argument
-                        if (attr.ConstructorArguments.Length > 0)
-                        {
-                            var keyArg = attr.ConstructorArguments[0];
-                            if (keyArg.Value is string keyValue)
-                            {
-                                serviceKey = keyValue;
-                            }
-                        }
-                        break;
-                    }
-                }
+                        var attrClass = attr.AttributeClass;
+                        if (attrClass is null)
+                            continue;
 
-                parameterInfos[i] = new ConstructorParameterInfo(typeName, serviceKey);
+                        var attrFullName = attrClass.ToDisplayString();
+                        if (attrFullName == FromKeyedServicesAttributeName)
+                        {
+                            if (attr.ConstructorArguments.Length > 0)
+                            {
+                                var keyArg = attr.ConstructorArguments[0];
+                                if (keyArg.Value is string keyValue)
+                                {
+                                    serviceKey = keyValue;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    parameterInfos[i] = new ConstructorParameterInfo(typeName, serviceKey);
+                }
+                best = parameterInfos;
             }
-            return parameterInfos;
         }
 
-        return null;
+        return best;
     }
 
     /// <summary>

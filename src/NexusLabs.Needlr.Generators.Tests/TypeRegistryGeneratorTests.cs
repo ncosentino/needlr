@@ -1168,4 +1168,144 @@ namespace DocumentationOnly
 
         Assert.Equal(string.Empty, generatedCode);
     }
+
+    // -------------------------------------------------------------------------
+    // Constructor selection in generated code — richest satisfiable wins
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Generator_ParameterlessAndRicherCtor_EmitsRicherInTypeRegistry()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class ViewModel { }
+    public class MainWindow
+    {
+        public MainWindow() { }
+        public MainWindow(ViewModel vm) { }
+    }
+}";
+
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+
+        // The generated factory lambda must use the ViewModel constructor
+        Assert.Contains("sp.GetRequiredService<global::TestApp.ViewModel>()", generatedCode);
+        // Must NOT use the parameterless constructor for the injectable registration
+        Assert.DoesNotContain("sp => new global::TestApp.MainWindow()", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_ParameterlessAndTwoParamCtor_EmitsTwoParamInTypeRegistry()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class DepA { }
+    public class DepB { }
+    public class ServiceWithMultiple
+    {
+        public ServiceWithMultiple() { }
+        public ServiceWithMultiple(DepA a) { }
+        public ServiceWithMultiple(DepA a, DepB b) { }
+    }
+}";
+
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+
+        // Must pick the richest: (DepA, DepB) — both GetRequiredService calls present
+        Assert.Contains("sp.GetRequiredService<global::TestApp.DepA>()", generatedCode);
+        Assert.Contains("sp.GetRequiredService<global::TestApp.DepB>()", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_OnlyDiCtor_NoProblem()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class Dependency { }
+    public class ServiceWithOnlyCtor
+    {
+        public ServiceWithOnlyCtor(Dependency dep) { }
+    }
+}";
+
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+
+        Assert.Contains("sp.GetRequiredService<global::TestApp.Dependency>()", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_RicherCtorWithValueType_FallsToParameterless()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public class Fallback
+    {
+        public Fallback() { }
+        public Fallback(int count) { }
+    }
+}";
+
+        var generatedCode = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+
+        // int is not injectable → must fall back to parameterless
+        Assert.Contains("sp => new global::TestApp.Fallback()", generatedCode);
+    }
+
+    [Fact]
+    public void Generator_ParameterlessAndRicher_CompilesCleanly()
+    {
+        var source = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""TestApp"" })]
+
+namespace TestApp
+{
+    public class ViewModel { }
+    public class MainWindow
+    {
+        public MainWindow() { }
+        public MainWindow(ViewModel vm) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForTypeRegistry().WithSource(source);
+        var files = runner.RunTypeRegistryGeneratorFiles();
+
+        // Must produce generated files (not silently skip)
+        Assert.NotEmpty(files);
+
+        // The generated code must compile without errors
+        var diagnostics = runner.RunTypeRegistryGeneratorDiagnostics();
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        Assert.Empty(errors);
+    }
 }

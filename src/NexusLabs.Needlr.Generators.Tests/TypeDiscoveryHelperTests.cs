@@ -1009,4 +1009,111 @@ namespace TestNamespace
 
         Assert.True(result);
     }
+
+    // -------------------------------------------------------------------------
+    // GetBestConstructorParameters — richest satisfiable constructor wins
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GetBestConstructorParameters_ParameterlessOnly_ReturnsEmpty()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class SimpleService { }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.SimpleService");
+
+        var result = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void GetBestConstructorParameters_SingleInjectableCtor_ReturnsParameters()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public interface IDep { }
+    public class Dep : IDep { }
+    public class ServiceWithDep
+    {
+        public ServiceWithDep(IDep dep) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithDep");
+
+        var result = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void GetBestConstructorParameters_ParameterlessAndRicher_PrefersRicher()
+    {
+        // THIS IS THE AVALONIA BUG: parameterless ctor exists alongside a richer one.
+        // The richest satisfiable constructor must win, not the first one found.
+        var source = @"
+namespace TestNamespace
+{
+    public class ViewModel { }
+    public class MainWindow
+    {
+        public MainWindow() { }
+        public MainWindow(ViewModel vm) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.MainWindow");
+
+        var result = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Single(result); // Must pick the ViewModel constructor, NOT parameterless
+    }
+
+    [Fact]
+    public void GetBestConstructorParameters_MultipleRichCtors_PicksRichest()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class DepA { }
+    public class DepB { }
+    public class ServiceWithMultiple
+    {
+        public ServiceWithMultiple() { }
+        public ServiceWithMultiple(DepA a) { }
+        public ServiceWithMultiple(DepA a, DepB b) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithMultiple");
+
+        var result = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count); // Must pick the (DepA, DepB) constructor
+    }
+
+    [Fact]
+    public void GetBestConstructorParameters_RicherCtorHasNonInjectableParam_FallsToParameterless()
+    {
+        var source = @"
+namespace TestNamespace
+{
+    public class ServiceWithValueType
+    {
+        public ServiceWithValueType() { }
+        public ServiceWithValueType(int count) { }
+    }
+}";
+        var typeSymbol = GetTypeSymbol(source, "TestNamespace.ServiceWithValueType");
+
+        var result = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol);
+
+        Assert.NotNull(result);
+        Assert.Empty(result); // int is not injectable → falls back to parameterless
+    }
 }

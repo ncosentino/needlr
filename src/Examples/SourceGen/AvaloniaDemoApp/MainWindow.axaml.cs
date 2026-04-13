@@ -19,6 +19,17 @@ public sealed partial class MainWindow : Window
     private readonly GreetingService _greetingService;
     private int _clickCount;
 
+    /// <summary>
+    /// Parameterless constructor for Avalonia's XAML loader and design-time previewer.
+    /// At runtime, the DI container uses the richer constructor below.
+    /// </summary>
+    public MainWindow() : this(new GreetingService()) { }
+
+    /// <summary>
+    /// DI constructor — Needlr picks this over the parameterless constructor because
+    /// it has more satisfiable parameters (richest constructor wins, matching
+    /// ActivatorUtilities behavior).
+    /// </summary>
     public MainWindow(GreetingService greetingService)
     {
         _greetingService = greetingService;
