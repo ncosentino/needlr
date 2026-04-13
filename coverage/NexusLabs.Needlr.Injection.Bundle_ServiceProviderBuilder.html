@@ -66,12 +66,12 @@
 <div class="card">
 <div class="card-header">Branch coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar27">73%</div>
+<div class="large cardpercentagebar cardpercentagebar31">69%</div>
 <div class="table">
 <table>
 <tr>
 <th>Covered branches:</th>
-<td class="limit-width right" title="19">19</td>
+<td class="limit-width right" title="18">18</td>
 </tr>
 <tr>
 <th>Total branches:</th>
@@ -79,7 +79,7 @@
 </tr>
 <tr>
 <th>Branch coverage:</th>
-<td class="limit-width right" title="19 of 26">73%</td>
+<td class="limit-width right" title="18 of 26">69.2%</td>
 </tr>
 </table>
 </div>
@@ -114,7 +114,7 @@
 <tr><td title="Build(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)"><a href="#file0_line87" class="navigatetohash">Build(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="Build(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.Collections.Generic.IReadOnlyList`1&lt;System.Action`1&lt;Microsoft.Extensions.DependencyInjection.IServiceCollection&gt;&gt;)"><a href="#file0_line97" class="navigatetohash">Build(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="Build(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.Collections.Generic.IReadOnlyList`1&lt;System.Action`1&lt;Microsoft.Extensions.DependencyInjection.IServiceCollection&gt;&gt;,System.Collections.Generic.IReadOnlyList`1&lt;System.Action`1&lt;Microsoft.Extensions.DependencyInjection.IServiceCollection&gt;&gt;)"><a href="#file0_line106" class="navigatetohash">Build(...)</a></td><td>75%</td><td>4</td><td>4</td><td>93.75%</td></tr>
-<tr><td title="ConfigurePostBuildServiceCollectionPlugins(System.IServiceProvider,Microsoft.Extensions.Configuration.IConfiguration)"><a href="#file0_line142" class="navigatetohash">ConfigurePostBuildServiceCollectionPlugins(...)</a></td><td>66.66%</td><td>6</td><td>6</td><td>82.35%</td></tr>
+<tr><td title="ConfigurePostBuildServiceCollectionPlugins(System.IServiceProvider,Microsoft.Extensions.Configuration.IConfiguration)"><a href="#file0_line142" class="navigatetohash">ConfigurePostBuildServiceCollectionPlugins(...)</a></td><td>50%</td><td>6</td><td>6</td><td>82.35%</td></tr>
 </tbody>
 </table>
 </div>
@@ -270,7 +270,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line144"></a><code>144</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line145"></a><code>145</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;candidateAssemblies&nbsp;=&nbsp;GetCandidateAssemblies();</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line146"></a><code>146</code></td><td></td><td class="lightgray"><code></code></td></tr>
-<tr class="coverableline" title="Covered (5 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line147"></a><code>147</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IPluginFactory&nbsp;pluginFactory&nbsp;=&nbsp;NeedlrSourceGenBootstrap.TryGetProviders(out&nbsp;_,&nbsp;out&nbsp;var&nbsp;pluginTypeProvider)</code></td></tr>
+<tr class="coverableline" title="Partially covered (5 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line147"></a><code>147</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IPluginFactory&nbsp;pluginFactory&nbsp;=&nbsp;NeedlrSourceGenBootstrap.TryGetProviders(out&nbsp;_,&nbsp;out&nbsp;var&nbsp;pluginTypeProvider)</code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line148"></a><code>148</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;?&nbsp;new&nbsp;GeneratedPluginFactory(pluginTypeProvider,&nbsp;allowAllWhenAssembliesEmpty:&nbsp;true)</code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line149"></a><code>149</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;new&nbsp;ReflectionPluginFactory();</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line150"></a><code>150</code></td><td></td><td class="lightgray"><code></code></td></tr>
@@ -297,7 +297,7 @@
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.4.0<br />04/13/2026 - 06:57:57<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.4.0<br />04/13/2026 - 06:57:59<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>

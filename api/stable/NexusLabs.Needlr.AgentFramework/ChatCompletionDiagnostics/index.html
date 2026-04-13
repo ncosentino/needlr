@@ -3442,6 +3442,17 @@
 <p><code>StartedAt</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset" title="System.DateTimeOffset">System.DateTimeOffset</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.ChatCompletionDiagnostics(int,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,int,System.TimeSpan,bool,string,System.DateTimeOffset,System.DateTimeOffset).CompletedAt'></a></p>
 <p><code>CompletedAt</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset" title="System.DateTimeOffset">System.DateTimeOffset</a></p>
+<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.AgentName'></a></p>
+<h2 id="chatcompletiondiagnosticsagentname-property">ChatCompletionDiagnostics.AgentName Property<a class="headerlink" href="#chatcompletiondiagnosticsagentname-property" title="Permanent link">&para;</a></h2>
+<p>The name of the agent that triggered this completion, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>
+if the agent name was not available. Used to attribute completions to the
+correct stage in group chat workflows where multiple agents share a single
+chat client.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">AgentName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 
 
