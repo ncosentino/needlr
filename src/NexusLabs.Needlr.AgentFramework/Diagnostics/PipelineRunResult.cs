@@ -13,12 +13,14 @@ internal sealed class PipelineRunResult : IPipelineRunResult
         IReadOnlyList<IAgentStageResult> stages,
         TimeSpan totalDuration,
         bool succeeded,
-        string? errorMessage)
+        string? errorMessage,
+        Exception? exception = null)
     {
         Stages = stages;
         TotalDuration = totalDuration;
         Succeeded = succeeded;
         ErrorMessage = errorMessage;
+        Exception = exception;
 
         // GroupBy handles duplicate agent names (last stage wins).
         _lazyResponses = new Lazy<IReadOnlyDictionary<string, string>>(() =>
@@ -57,4 +59,6 @@ internal sealed class PipelineRunResult : IPipelineRunResult
     public bool Succeeded { get; }
 
     public string? ErrorMessage { get; }
+
+    public Exception? Exception { get; }
 }

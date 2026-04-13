@@ -47,4 +47,11 @@ public interface IPipelineRunResult
 
     /// <summary>Gets the error message if any stage failed.</summary>
     string? ErrorMessage { get; }
+
+    /// <summary>
+    /// Gets the exception that caused the pipeline to fail, or <see langword="null"/>
+    /// on success. Preserves the full exception including inner exceptions and stack
+    /// trace for diagnostic purposes.
+    /// </summary>
+    Exception? Exception => null;
 }

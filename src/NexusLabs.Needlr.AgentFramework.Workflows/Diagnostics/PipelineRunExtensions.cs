@@ -97,6 +97,7 @@ public static class PipelineRunExtensions
         string? currentExecutorId = null;
         bool succeeded = true;
         string? errorMessage = null;
+        Exception? caughtException = null;
         int superStepCount = 0;
 
         collector.DrainCompletions(); // drain stale
@@ -304,7 +305,8 @@ public static class PipelineRunExtensions
         catch (Exception ex)
         {
             succeeded = false;
-            errorMessage = ex.Message;
+            errorMessage = ex.ToString();
+            caughtException = ex;
 
             // If we know which agent was running when the exception propagated
             // out of the stream, emit an AgentFailedEvent for it so sinks see
