@@ -203,10 +203,20 @@ When `UsingSourceGen()` is called, it reads from `NeedlrSourceGenBootstrap` whic
 contains the merged set of types and plugins from every registered assembly. No
 reflection, no assembly scanning, fully AOT-compatible.
 
-**Key requirement**: the package that ships the plugin must reference the Needlr
-generator so the `[ModuleInitializer]` is emitted. In the `.csproj`:
+**Key requirement**: the package that ships the plugin needs two things:
+
+1. **Reference the generator** so Roslyn runs it during compilation
+2. **Add `[assembly: GenerateTypeRegistry]`** so the generator knows to emit a
+   `TypeRegistry` and `[ModuleInitializer]` for this assembly
+
+The generator reference alone is not enough — without the assembly attribute,
+the generator has no trigger to emit anything.
+
+For project references (developing within the Needlr solution), add both to
+the `.csproj` and create a `GeneratorAssemblyInfo.cs`:
 
 ```xml
+<!-- .csproj -->
 <ItemGroup>
   <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
                     OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
@@ -214,14 +224,23 @@ generator so the `[ModuleInitializer]` is emitted. In the `.csproj`:
 </ItemGroup>
 ```
 
-Or when consuming via NuGet:
+```csharp
+// GeneratorAssemblyInfo.cs
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "MyCompany.MyPlugin" })]
+```
+
+For NuGet consumers, the `NexusLabs.Needlr.Build` package handles both
+automatically — the `.targets` file emits the assembly attribute:
 
 ```xml
 <PackageReference Include="NexusLabs.Needlr.Build" PrivateAssets="all" />
 ```
 
-Without this, the assembly has no `[ModuleInitializer]` and its plugins are
-invisible to `UsingSourceGen()`.
+Without both pieces, the assembly has no `[ModuleInitializer]` and its plugins
+are invisible to `UsingSourceGen()`. See `NexusLabs.Needlr.Carter` and
+`NexusLabs.Needlr.Serilog` for working examples of this pattern.
 
 #### Reflection Mode (`UsingReflection`)
 
@@ -245,11 +264,16 @@ new Syringe()
 
 If you're building a Needlr integration package that ships plugins:
 
-1. Reference the Needlr generator in your `.csproj` (see above)
-2. Make plugin classes `public` (the generator emits NDLRGEN002 if an internal
+1. Reference the Needlr generator in your `.csproj`
+2. Add a `GeneratorAssemblyInfo.cs` with `[assembly: GenerateTypeRegistry(...)]`
+   scoped to your package's namespace
+3. Make plugin classes `public` (the generator emits NDLRGEN002 if an internal
    plugin is in an assembly without `[GenerateTypeRegistry]`)
-3. Don't require consumers to manually register your plugins — the
+4. Don't require consumers to manually register your plugins — the
    `[ModuleInitializer]` bootstrap handles it automatically in both modes
+
+Missing step 2 is the most common mistake — the generator runs but produces
+no output because it has no `[GenerateTypeRegistry]` trigger.
 
 ### Controlling Plugin Discovery
 
