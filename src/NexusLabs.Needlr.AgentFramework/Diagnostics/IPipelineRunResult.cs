@@ -4,6 +4,27 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// Aggregated result of a multi-agent pipeline run, providing per-stage diagnostics
 /// alongside the response text from each agent.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Returned by <c>RunWithDiagnosticsAsync</c> extension methods on
+/// <see cref="Microsoft.Agents.AI.Workflows.Workflow"/>. Contains the full execution
+/// timeline: each agent's response text, token usage, duration, and success/failure
+/// state.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var result = await workflow.RunWithDiagnosticsAsync(
+///     "Write an article about roses.",
+///     diagnosticsAccessor,
+///     cancellationToken: ct);
+///
+/// Console.WriteLine($"Pipeline {(result.Succeeded ? "succeeded" : "failed")} " +
+///     $"in {result.TotalDuration.TotalSeconds:F1}s");
+/// Console.WriteLine($"Total tokens: {result.AggregateTokenUsage?.TotalTokens ?? 0}");
+/// Console.WriteLine($"Stages: {result.Stages.Count}");
+/// </code>
+/// </example>
 public interface IPipelineRunResult
 {
     /// <summary>Gets the per-stage results in execution order.</summary>

@@ -4,6 +4,29 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// Immutable view of diagnostics captured during a single agent run, including token usage,
 /// per-call timing, tool call details, and success/failure state.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Captured automatically when <c>UsingDiagnostics()</c> is called on the
+/// <see cref="AgentFrameworkSyringe"/>. Access via
+/// <see cref="IAgentDiagnosticsAccessor.LastRunDiagnostics"/> after an agent run,
+/// or via <see cref="IAgentStageResult.Diagnostics"/> for pipeline/group-chat stages.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// using (diagnosticsAccessor.BeginCapture())
+/// {
+///     await agent.RunAsync("Summarize this document.", cancellationToken: ct);
+///     var diag = diagnosticsAccessor.LastRunDiagnostics!;
+///
+///     Console.WriteLine($"Agent: {diag.AgentName}");
+///     Console.WriteLine($"Duration: {diag.TotalDuration.TotalMilliseconds}ms");
+///     Console.WriteLine($"Tokens: {diag.AggregateTokenUsage.TotalTokens}");
+///     Console.WriteLine($"LLM calls: {diag.ChatCompletions.Count}");
+///     Console.WriteLine($"Tool calls: {diag.ToolCalls.Count}");
+/// }
+/// </code>
+/// </example>
 public interface IAgentRunDiagnostics
 {
     /// <summary>Gets the name of the agent that ran.</summary>
