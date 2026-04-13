@@ -15,13 +15,6 @@ using Xunit;
 namespace NexusLabs.Needlr.Serilog.Tests;
 
 /// <summary>
-/// Marker type so the Needlr source generator emits a TypeRegistry and
-/// [ModuleInitializer] for this test assembly, enabling source-gen plugin
-/// discovery of SerilogPlugin.
-/// </summary>
-internal sealed class TestAssemblyMarker;
-
-/// <summary>
 /// Tests for <see cref="SerilogPlugin"/> covering both reflection and source-gen
 /// discovery paths, configuration override scenarios, and parity between modes.
 /// </summary>
@@ -55,9 +48,7 @@ public sealed class SerilogPluginTests
     {
         var sp = BuildReflectionProvider(SerilogConfig);
 
-        var logger = sp.GetService<ILogger<SerilogPluginTests>>();
-
-        Assert.NotNull(logger);
+        Assert.NotNull(sp.GetService<ILogger<SerilogPluginTests>>());
     }
 
     [Fact]
@@ -66,8 +57,8 @@ public sealed class SerilogPluginTests
         var sink = new CapturingSink();
         var sp = BuildReflectionProviderWithSink(EmptyConfig, sink);
 
-        var logger = sp.GetRequiredService<ILogger<SerilogPluginTests>>();
-        logger.LogInformation("test message from reflection");
+        sp.GetRequiredService<ILogger<SerilogPluginTests>>()
+            .LogInformation("test message from reflection");
 
         Assert.NotEmpty(sink.Events);
         Assert.Contains(sink.Events, e => e.RenderMessage().Contains("test message from reflection"));
@@ -90,9 +81,7 @@ public sealed class SerilogPluginTests
     {
         var sp = BuildSourceGenProvider(SerilogConfig);
 
-        var logger = sp.GetService<ILogger<SerilogPluginTests>>();
-
-        Assert.NotNull(logger);
+        Assert.NotNull(sp.GetService<ILogger<SerilogPluginTests>>());
     }
 
     [Fact]
@@ -101,8 +90,8 @@ public sealed class SerilogPluginTests
         var sink = new CapturingSink();
         var sp = BuildSourceGenProviderWithSink(EmptyConfig, sink);
 
-        var logger = sp.GetRequiredService<ILogger<SerilogPluginTests>>();
-        logger.LogInformation("test message from source-gen");
+        sp.GetRequiredService<ILogger<SerilogPluginTests>>()
+            .LogInformation("test message from source-gen");
 
         Assert.NotEmpty(sink.Events);
         Assert.Contains(sink.Events, e => e.RenderMessage().Contains("test message from source-gen"));
@@ -118,11 +107,8 @@ public sealed class SerilogPluginTests
         var reflectionSp = BuildReflectionProvider(SerilogConfig);
         var sourceGenSp = BuildSourceGenProvider(SerilogConfig);
 
-        var reflectionFactory = reflectionSp.GetService<ILoggerFactory>();
-        var sourceGenFactory = sourceGenSp.GetService<ILoggerFactory>();
-
-        Assert.NotNull(reflectionFactory);
-        Assert.NotNull(sourceGenFactory);
+        Assert.NotNull(reflectionSp.GetService<ILoggerFactory>());
+        Assert.NotNull(sourceGenSp.GetService<ILoggerFactory>());
     }
 
     [Fact]
@@ -147,8 +133,7 @@ public sealed class SerilogPluginTests
     }
 
     // -------------------------------------------------------------------------
-    // Override: plugin provides the open generic ILogger<T>, consumer overrides
-    // the Serilog configuration after the plugin runs
+    // Override: consumer replaces the plugin's Serilog configuration
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -157,8 +142,8 @@ public sealed class SerilogPluginTests
         var overrideSink = new CapturingSink();
         var sp = BuildReflectionProviderWithSink(EmptyConfig, overrideSink);
 
-        var logger = sp.GetRequiredService<ILogger<SerilogPluginTests>>();
-        logger.LogInformation("override message");
+        sp.GetRequiredService<ILogger<SerilogPluginTests>>()
+            .LogInformation("override message");
 
         Assert.NotEmpty(overrideSink.Events);
         Assert.Contains(overrideSink.Events, e => e.RenderMessage().Contains("override message"));
@@ -170,8 +155,8 @@ public sealed class SerilogPluginTests
         var overrideSink = new CapturingSink();
         var sp = BuildSourceGenProviderWithSink(EmptyConfig, overrideSink);
 
-        var logger = sp.GetRequiredService<ILogger<SerilogPluginTests>>();
-        logger.LogInformation("override message");
+        sp.GetRequiredService<ILogger<SerilogPluginTests>>()
+            .LogInformation("override message");
 
         Assert.NotEmpty(overrideSink.Events);
         Assert.Contains(overrideSink.Events, e => e.RenderMessage().Contains("override message"));
@@ -188,7 +173,6 @@ public sealed class SerilogPluginTests
             })
             .Build();
 
-        // Build with a sink that captures events — the plugin reads MinimumLevel from config
         var sp = BuildReflectionProviderWithSink(config, sink);
 
         var logger = sp.GetRequiredService<ILogger<SerilogPluginTests>>();
@@ -197,70 +181,6 @@ public sealed class SerilogPluginTests
 
         Assert.Single(sink.Events);
         Assert.Contains(sink.Events, e => e.RenderMessage().Contains("should appear"));
-    }
-
-    // -------------------------------------------------------------------------
-    // Bootstrapper path: scenario coverage
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public async Task Bootstrapper_DefaultConfig_InvokesCallbackWithLogger()
-    {
-        Microsoft.Extensions.Logging.ILogger? capturedLogger = null;
-
-        await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
-            .RunAsync((ctx, ct) =>
-            {
-                capturedLogger = ctx.Logger;
-                return Task.CompletedTask;
-            }, TestContext.Current.CancellationToken);
-
-        Assert.NotNull(capturedLogger);
-    }
-
-    [Fact]
-    public async Task Bootstrapper_CustomSink_ReceivesLogEvents()
-    {
-        var sink = new CapturingSink();
-
-        await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => cfg.WriteTo.Sink(sink))
-            .RunAsync((ctx, ct) =>
-            {
-                ctx.Logger.LogInformation("bootstrapper event");
-                return Task.CompletedTask;
-            }, TestContext.Current.CancellationToken);
-
-        Assert.NotEmpty(sink.Events);
-        Assert.Contains(sink.Events, e => e.RenderMessage().Contains("bootstrapper event"));
-    }
-
-    [Fact]
-    public async Task Bootstrapper_ExceptionInCallback_DoesNotPropagate()
-    {
-        await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
-            .RunAsync(
-                (ctx, ct) => throw new InvalidOperationException("expected failure"),
-                TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task Bootstrapper_CancellationToken_IsForwardedToCallback()
-    {
-        var token = TestContext.Current.CancellationToken;
-        CancellationToken received = default;
-
-        await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
-            .RunAsync((ctx, ct) =>
-            {
-                received = ct;
-                return Task.CompletedTask;
-            }, token);
-
-        Assert.Equal(token, received);
     }
 
     // -------------------------------------------------------------------------
@@ -293,13 +213,6 @@ public sealed class SerilogPluginTests
             .UsingPostPluginRegistrationCallback(OverrideSerilogWith(config, sink))
             .BuildServiceProvider(config);
 
-    /// <summary>
-    /// Produces the post-plugin callback that replaces the plugin's config-driven
-    /// Serilog logger with one that writes to a test sink. This is the consumer
-    /// override pattern: the plugin provides the <c>ILoggerFactory</c> /
-    /// <c>ILogger&lt;T&gt;</c> open-generic registration; the consumer swaps
-    /// the underlying Serilog pipeline.
-    /// </summary>
     private static Action<IServiceCollection> OverrideSerilogWith(
         IConfiguration config, ILogEventSink sink) =>
         services => services.AddLogging(builder =>

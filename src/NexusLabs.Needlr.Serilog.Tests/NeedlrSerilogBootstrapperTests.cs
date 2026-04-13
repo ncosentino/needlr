@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
 
-using Serilog.Core;
-using Serilog.Events;
-
 using Xunit;
 
 namespace NexusLabs.Needlr.Serilog.Tests;
 
-// All tests in one class so xUnit v3 runs them sequentially,
-// avoiding parallel interference on the global Log.Logger.
+/// <summary>
+/// Tests for <see cref="NeedlrSerilogBootstrapper"/> covering the two-stage
+/// bootstrap lifecycle: configuration, callback invocation, logger provisioning,
+/// cancellation forwarding, and exception handling.
+/// </summary>
 public sealed class NeedlrSerilogBootstrapperTests
 {
     // -------------------------------------------------------------------------
@@ -107,7 +107,6 @@ public sealed class NeedlrSerilogBootstrapperTests
     [Fact]
     public async Task RunAsync_WithDefaultConfig_DoesNotThrow()
     {
-        // Default config (WriteTo.Console) should run without error.
         await new NeedlrSerilogBootstrapper()
             .RunAsync(
                 (ctx, ct) => Task.CompletedTask,
@@ -159,22 +158,10 @@ public sealed class NeedlrSerilogBootstrapperTests
     [Fact]
     public async Task RunAsync_DoesNotRethrow_OnException()
     {
-        // Must not propagate the exception.
         await new NeedlrSerilogBootstrapper()
             .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
             .RunAsync(
                 (ctx, ct) => throw new InvalidOperationException("boom"),
                 TestContext.Current.CancellationToken);
     }
-}
-
-// ---------------------------------------------------------------------------
-// Test helpers
-// ---------------------------------------------------------------------------
-
-internal sealed class CapturingSink : ILogEventSink
-{
-    public readonly List<LogEvent> Events = [];
-
-    public void Emit(LogEvent logEvent) => Events.Add(logEvent);
 }
