@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.AI;
 
 namespace NexusLabs.Needlr.AgentFramework;
 
@@ -267,12 +268,20 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             var lastMessage = historyList[^1];
             var agentId = lastMessage.AuthorName ?? string.Empty;
             var responseText = lastMessage.Text ?? string.Empty;
+
+            var toolCallNames = lastMessage.Contents
+                .OfType<FunctionCallContent>()
+                .Select(fc => fc.Name)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToList();
+
             var ctx = new TerminationContext
             {
                 AgentId = agentId,
                 ResponseText = responseText,
                 TurnCount = historyList.Count,
                 ConversationHistory = historyList,
+                ToolCallNames = toolCallNames,
             };
 
             foreach (var (_, condition) in conditions)

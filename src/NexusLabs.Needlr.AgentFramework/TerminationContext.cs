@@ -28,4 +28,11 @@ public sealed class TerminationContext
     /// when the model does not return usage metadata.
     /// </summary>
     public UsageDetails? Usage { get; init; }
+
+    /// <summary>
+    /// Gets the names of tools/functions called by the agent during this turn.
+    /// Extracted from <see cref="FunctionCallContent"/> entries in the last message's
+    /// <see cref="ChatMessage.Contents"/>. Empty if no tool calls were made.
+    /// </summary>
+    public IReadOnlyList<string> ToolCallNames { get; init; } = [];
 }

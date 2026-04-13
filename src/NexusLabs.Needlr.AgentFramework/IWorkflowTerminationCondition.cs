@@ -9,6 +9,7 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <list type="bullet">
 /// <item><c>KeywordTerminationCondition</c> — stops when a response contains a keyword.</item>
 /// <item><c>RegexTerminationCondition</c> — stops when a response matches a regex.</item>
+/// <item><c>ToolCallTerminationCondition</c> — stops when an agent calls a specific tool. Preferred over keyword matching for structured approval workflows.</item>
 /// </list>
 /// <para>
 /// Conditions are declared on agent classes via
