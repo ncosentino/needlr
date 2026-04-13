@@ -4,4 +4,18 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <!-- Embed the Avalonia design-time constructor generator into this package -->
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Avalonia\NexusLabs.Needlr.Avalonia.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\NexusLabs.Needlr.Avalonia\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.Avalonia.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
 </Project>
