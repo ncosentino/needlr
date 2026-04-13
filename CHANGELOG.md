@@ -5,6 +5,52 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.33] - 2026-04-13
+
+Source-gen registration fixes, Serilog plugin, Avalonia primary
+constructor diagnostic, and documentation improvements.
+
+### Added
+
+#### Serilog Integration
+
+- **`SerilogPlugin`** — auto-discovered `IServiceCollectionPlugin` that wires
+  `ILogger<T>` from `appsettings.json` with zero ceremony. Reads the
+  `"Serilog"` section from `IConfiguration`, registers with `dispose: true`
+  for automatic sink flushing on container disposal. Works in both
+  source-gen and reflection modes.
+
+- **`GeneratorAssemblyInfo.cs` for `NexusLabs.Needlr.Serilog`** — the Serilog
+  package now includes `[GenerateTypeRegistry]` so the source generator emits
+  a `[ModuleInitializer]` that registers `SerilogPlugin` into the bootstrap.
+  Source-gen consumers discover the plugin automatically without
+  `UsingAdditionalAssemblies`.
+
+- **Source-gen Serilog example** (`SerilogSourceGenExample`) demonstrating
+  zero-ceremony plugin discovery via `UsingSourceGen()`.
+
+### Fixed
+
+#### Agent Framework
+
+- **`AgentMetrics` and `AgentDiagnosticsAccessor` missing `[DoNotAutoRegister]`.**
+  The source generator's `TypeRegistry` was registering both types, clobbering
+  the hand-written factory lambdas in `RegisterAgentFrameworkInfrastructure`.
+  `AgentMetrics` was registered with `GetRequiredService<AgentFrameworkMetricsOptions>()`
+  (which throws because the options are `[DoNotAutoRegister]`).
+  `AgentDiagnosticsAccessor` was registered without `ChatCompletionCollectorHolder`
+  injection, causing `CompletionCollector` to be null and the group chat token
+  collector fallback to silently fail. Both now have `[DoNotAutoRegister]`.
+
+#### Avalonia Integration
+
+- **NDLRAVA004: primary constructors are not supported.** The generator now
+  emits an error diagnostic when `[GenerateAvaloniaDesignTimeConstructor]` is
+  applied to a class with a primary constructor. Chaining via `: this(default!)`
+  would pass null for all captured parameters, causing `NullReferenceException`
+  during design-time preview. The diagnostic directs users to use a regular
+  constructor with fields instead.
+
 ## [0.0.2-alpha.32] - 2026-04-12
 
 Group chat diagnostics accuracy and Avalonia packaging fix.
