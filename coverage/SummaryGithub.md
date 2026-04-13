@@ -3,15 +3,15 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/13/2026 - 06:41:42 |
-| Coverage date: | 04/13/2026 - 06:40:13 - 04/13/2026 - 06:41:39 |
+| Generated on: | 04/13/2026 - 06:57:58 |
+| Coverage date: | 04/13/2026 - 06:56:32 - 04/13/2026 - 06:57:54 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 23 |
 | Classes: | 357 |
 | Files: | 321 |
-| **Line coverage:** | 86.1% (13499 of 15663) |
-| Covered lines: | 13499 |
-| Uncovered lines: | 2164 |
+| **Line coverage:** | 86.1% (13498 of 15663) |
+| Covered lines: | 13498 |
+| Uncovered lines: | 2165 |
 | Coverable lines: | 15663 |
 | Total lines: | 39102 |
 | **Branch coverage:** | 75.3% (5543 of 7357) |
@@ -443,20 +443,20 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.4%**|**88.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
