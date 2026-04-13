@@ -240,13 +240,11 @@ public class DiagnosticsIntegrationTests
     [Fact]
     public void AccessorCompletionCollector_WithoutDiagnostics_IsNotNull()
     {
-        // Even without UsingDiagnostics, the holder is registered (as NullChatCompletionCollector delegate)
         var mockChat = CreateMockChat("ok");
         var sp = BuildServiceProvider(mockChat, useDiagnostics: false);
 
         var accessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
 
-        // The holder exists but wraps NullChatCompletionCollector
         Assert.NotNull(accessor.CompletionCollector);
     }
 

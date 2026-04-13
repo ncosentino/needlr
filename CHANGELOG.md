@@ -5,6 +5,57 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.31] - 2026-04-12
+
+Source generator correctness fixes, Avalonia design-time constructor
+generation, and group chat diagnostics fix.
+
+### Added
+
+#### Avalonia Integration
+
+- **`NexusLabs.Needlr.Avalonia` package** — source generator that emits
+  parameterless design-time constructors for Avalonia controls using
+  Needlr's constructor-based DI. Opt in per class with
+  `[GenerateAvaloniaDesignTimeConstructor]`. The generated constructor
+  includes a `Design.IsDesignMode` guard (throws at runtime),
+  `InitializeComponent()` call, and `#pragma warning disable CS8618`.
+  Diagnostics: NDLRAVA001 (not partial), NDLRAVA002 (already has
+  parameterless ctor), NDLRAVA003 (no parameterized ctor).
+
+- **`NexusLabs.Needlr.Avalonia.Attributes` package** — contains the
+  `[GenerateAvaloniaDesignTimeConstructor]` marker attribute
+  (netstandard2.0).
+
+### Fixed
+
+#### Source Generation
+
+- **Array-of-objects tool parameter schema.** The agent framework
+  generator now emits full JSON schema (`items` with `properties` and
+  `required`) for `T[]` / `IReadOnlyList<T>` parameters where `T` is a
+  complex object. Deserialization uses AOT-safe `JsonElement.TryGetProperty`
+  extraction instead of `JsonSerializer.Deserialize<T>`.
+
+- **Richest satisfiable constructor selection.** The type registry
+  generator now picks the constructor with the most resolvable
+  parameters instead of the first match. Fixes cases where a type with
+  both a parameterless and a parameterized constructor would get
+  registered with the parameterless one.
+
+#### Agent Framework
+
+- **Group chat workflows reporting 0 tokens in `RunWithDiagnosticsAsync`.**
+  MAF's `InProcessExecution.RunStreamingAsync()` runs the workflow on a
+  separate async context where the `AsyncLocal`-based diagnostics holder
+  doesn't propagate. The `DiagnosticsChatClientMiddleware` always captures
+  completions into a `ConcurrentQueue` regardless of async context, but
+  the simple `RunWithDiagnosticsAsync` overloads defaulted to
+  `NullChatCompletionCollector`. Fix: `IAgentDiagnosticsAccessor` now
+  exposes `CompletionCollector` (wired automatically by `UsingDiagnostics()`)
+  so the pipeline extensions resolve the real collector without requiring
+  consumers to pass it explicitly.
+
 ## [0.0.2-alpha.30] - 2026-04-12
 
 Agent framework usability, source generator hardening for UI frameworks
@@ -52,22 +103,6 @@ Agent framework usability, source generator hardening for UI frameworks
   with newline separators. Skips whitespace-only messages. Returns
   `null` when no text content is present. Standard replacement for the
   text-extraction helper every consumer ends up writing.
-
-#### Source Generation
-
-- **`ExcludeNamespacePrefixes` on `[GenerateTypeRegistry]`.** Blacklist
-  namespace prefixes to prevent the source generator from scanning
-  framework types (Avalonia, MAUI, etc.) that Needlr would otherwise
-  try to register. Applied after inclusion — if a type matches both an
-  include and exclude prefix, it is excluded. Configure via attribute:
-  ```csharp
-  [assembly: GenerateTypeRegistry(
-      ExcludeNamespacePrefixes = new[] { "Avalonia" })]
-  ```
-  Or via MSBuild property in `Directory.Build.props`:
-  ```xml
-  <NeedlrExcludeNamespacePrefix>Avalonia;Microsoft.Maui</NeedlrExcludeNamespacePrefix>
-  ```
 
 #### Hosting & Bootstrapping
 
