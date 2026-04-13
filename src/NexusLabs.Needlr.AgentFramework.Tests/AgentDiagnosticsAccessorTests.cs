@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -210,6 +211,51 @@ public class AgentDiagnosticsAccessorTests
         Assert.Equal(0, result.ChatCompletions[0].Sequence);
         Assert.Equal(1, result.ChatCompletions[1].Sequence);
         Assert.Equal(2, result.ChatCompletions[2].Sequence);
+    }
+
+    // -------------------------------------------------------------------------
+    // CompletionCollector property
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void CompletionCollector_WithoutHolder_ReturnsNull()
+    {
+        var accessor = new AgentDiagnosticsAccessor();
+
+        Assert.Null(accessor.CompletionCollector);
+    }
+
+    [Fact]
+    public void CompletionCollector_WithHolder_ReturnsHolder()
+    {
+        var holder = new ChatCompletionCollectorHolder();
+        var accessor = new AgentDiagnosticsAccessor(holder);
+
+        Assert.Same(holder, accessor.CompletionCollector);
+    }
+
+    [Fact]
+    public void CompletionCollector_WithDiagnostics_ReturnsRealCollector()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, "ok")]));
+
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChat.Object)
+                .UsingDiagnostics())
+            .BuildServiceProvider(config);
+
+        var accessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+        Assert.NotNull(accessor.CompletionCollector);
     }
 
     // -------------------------------------------------------------------------

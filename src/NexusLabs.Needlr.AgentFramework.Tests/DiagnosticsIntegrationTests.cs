@@ -191,8 +191,91 @@ public class DiagnosticsIntegrationTests
     }
 
     // -------------------------------------------------------------------------
+    // Fix 3: Collector fallback when AsyncLocal breaks (group chat scenario)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task CollectorFallback_WhenAsyncLocalBreaks_StillCapturesTokens()
+    {
+        var mockChat = CreateMockChatWithTokens("Response text", inputTokens: 100, outputTokens: 50);
+        var sp = BuildServiceProvider(mockChat, useDiagnostics: true);
+
+        var diagAccessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
+        var collector = diagAccessor.CompletionCollector;
+
+        Assert.NotNull(collector);
+
+        var factory = sp.GetRequiredService<IAgentFactory>();
+        var agent = factory.CreateAgent(opts =>
+        {
+            opts.Name = "CollectorAgent";
+            opts.Instructions = "Respond.";
+        });
+
+        // Run the agent WITHOUT BeginCapture — simulates what happens when
+        // AsyncLocal doesn't propagate (as in MAF's InProcessExecution).
+        // The diagnostics middleware still captures completions via the collector.
+        await agent.RunAsync("Hello", cancellationToken: TestContext.Current.CancellationToken);
+
+        var completions = collector!.DrainCompletions();
+
+        Assert.NotEmpty(completions);
+        Assert.True(completions[0].Tokens.InputTokens > 0,
+            "Expected non-zero input tokens from collector fallback");
+        Assert.True(completions[0].Tokens.OutputTokens > 0,
+            "Expected non-zero output tokens from collector fallback");
+    }
+
+    [Fact]
+    public void AccessorCompletionCollector_IsWiredByUsingDiagnostics()
+    {
+        var mockChat = CreateMockChat("ok");
+        var sp = BuildServiceProvider(mockChat, useDiagnostics: true);
+
+        var accessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+        Assert.NotNull(accessor.CompletionCollector);
+    }
+
+    [Fact]
+    public void AccessorCompletionCollector_WithoutDiagnostics_IsNotNull()
+    {
+        // Even without UsingDiagnostics, the holder is registered (as NullChatCompletionCollector delegate)
+        var mockChat = CreateMockChat("ok");
+        var sp = BuildServiceProvider(mockChat, useDiagnostics: false);
+
+        var accessor = sp.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+        // The holder exists but wraps NullChatCompletionCollector
+        Assert.NotNull(accessor.CompletionCollector);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private static Mock<IChatClient> CreateMockChatWithTokens(
+        string responseText, long inputTokens, long outputTokens)
+    {
+        var mock = new Mock<IChatClient>();
+        mock
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                var response = new ChatResponse([new ChatMessage(ChatRole.Assistant, responseText)]);
+                response.Usage = new UsageDetails
+                {
+                    InputTokenCount = (int)inputTokens,
+                    OutputTokenCount = (int)outputTokens,
+                    TotalTokenCount = (int)(inputTokens + outputTokens),
+                };
+                return response;
+            });
+        return mock;
+    }
 
     private static Mock<IChatClient> CreateMockChat(string responseText)
     {

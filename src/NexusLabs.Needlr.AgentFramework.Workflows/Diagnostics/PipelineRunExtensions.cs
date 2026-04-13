@@ -85,7 +85,9 @@ public static class PipelineRunExtensions
 
         var diagnosticsAccessor = options.DiagnosticsAccessor;
         var reporter = options.ProgressReporter ?? ProgressEvents.NullProgressReporter.Instance;
-        var collector = options.CompletionCollector ?? NullChatCompletionCollector.Instance;
+        var collector = options.CompletionCollector
+            ?? diagnosticsAccessor.CompletionCollector
+            ?? NullChatCompletionCollector.Instance;
         var progressReporterAccessor = options.ProgressReporterAccessor;
         var cancellationToken = options.CancellationToken;
         var pipelineStart = Stopwatch.StartNew();

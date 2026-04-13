@@ -32,4 +32,12 @@ public interface IAgentDiagnosticsAccessor
     /// Disposing the returned handle restores the previous scope.
     /// </summary>
     IDisposable BeginCapture();
+
+    /// <summary>
+    /// Gets the <see cref="IChatCompletionCollector"/> wired by the diagnostics system,
+    /// or <see langword="null"/> if diagnostics were not configured. Used as a fallback
+    /// when <see cref="LastRunDiagnostics"/> is unavailable (e.g., when AsyncLocal state
+    /// does not propagate across workflow execution boundaries).
+    /// </summary>
+    IChatCompletionCollector? CompletionCollector => null;
 }

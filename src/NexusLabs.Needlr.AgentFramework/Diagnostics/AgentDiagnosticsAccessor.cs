@@ -9,9 +9,18 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor, IAgentDiagnosticsWriter
 {
     private static readonly AsyncLocal<Holder?> Current = new();
+    private readonly IChatCompletionCollector? _completionCollector;
+
+    internal AgentDiagnosticsAccessor(ChatCompletionCollectorHolder? completionCollector = null)
+    {
+        _completionCollector = completionCollector;
+    }
 
     /// <inheritdoc />
     public IAgentRunDiagnostics? LastRunDiagnostics => Current.Value?.Value;
+
+    /// <inheritdoc />
+    public IChatCompletionCollector? CompletionCollector => _completionCollector;
 
     /// <inheritdoc />
     public IDisposable BeginCapture()

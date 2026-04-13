@@ -168,7 +168,8 @@ public static class SyringeExtensionsForAgentFramework
     {
         services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
         services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
-        services.TryAddSingleton<AgentDiagnosticsAccessor>();
+        services.TryAddSingleton<AgentDiagnosticsAccessor>(sp =>
+            new AgentDiagnosticsAccessor(sp.GetService<ChatCompletionCollectorHolder>()));
         services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
