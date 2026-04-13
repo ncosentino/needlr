@@ -15,6 +15,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// <see cref="AgentFrameworkMetricsOptions.ActivitySourceName"/> to match consumers'
 /// existing dashboard queries.
 /// </remarks>
+[DoNotAutoRegister]
 internal sealed class AgentMetrics : IAgentMetrics, IDisposable
 {
     private readonly Meter _meter;

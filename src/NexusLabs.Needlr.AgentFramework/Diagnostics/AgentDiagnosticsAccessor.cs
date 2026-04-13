@@ -6,6 +6,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// <see cref="AsyncLocal{T}"/> slot — because the reference flows downward, mutations made by
 /// child async flows (middleware) are visible to the parent scope.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor, IAgentDiagnosticsWriter
 {
     private static readonly AsyncLocal<Holder?> Current = new();
