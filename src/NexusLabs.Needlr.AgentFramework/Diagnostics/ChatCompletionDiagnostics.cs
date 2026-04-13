@@ -12,4 +12,13 @@ public sealed record ChatCompletionDiagnostics(
     bool Succeeded,
     string? ErrorMessage,
     DateTimeOffset StartedAt,
-    DateTimeOffset CompletedAt);
+    DateTimeOffset CompletedAt)
+{
+    /// <summary>
+    /// The name of the agent that triggered this completion, or <see langword="null"/>
+    /// if the agent name was not available. Used to attribute completions to the
+    /// correct stage in group chat workflows where multiple agents share a single
+    /// chat client.
+    /// </summary>
+    public string? AgentName { get; init; }
+}

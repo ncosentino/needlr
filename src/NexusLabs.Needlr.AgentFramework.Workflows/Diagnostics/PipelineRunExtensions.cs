@@ -93,9 +93,8 @@ public static class PipelineRunExtensions
         var pipelineStart = Stopwatch.StartNew();
         var stages = new List<IAgentStageResult>();
         var responses = new Dictionary<string, StringBuilder>();
+        var invocations = new List<(string ExecutorId, DateTimeOffset InvokedAt)>();
         string? currentExecutorId = null;
-        var turnStopwatch = new Stopwatch();
-        var turnStartedAt = DateTimeOffset.UtcNow;
         bool succeeded = true;
         string? errorMessage = null;
         int superStepCount = 0;
@@ -140,14 +139,17 @@ public static class PipelineRunExtensions
                 {
                     if (evt is ExecutorInvokedEvent invoked)
                     {
+                        var invokedId = invoked.ExecutorId ?? "unknown";
+                        invocations.Add((invokedId, DateTimeOffset.UtcNow));
+
                         reporter.Report(new ProgressEvents.AgentInvokedEvent(
                             Timestamp: DateTimeOffset.UtcNow,
                             WorkflowId: reporter.WorkflowId,
-                            AgentId: invoked.ExecutorId,
+                            AgentId: invokedId,
                             ParentAgentId: null,
                             Depth: 1,
                             SequenceNumber: reporter.NextSequence(),
-                            AgentName: invoked.ExecutorId ?? "unknown"));
+                            AgentName: invokedId));
                         continue;
                     }
 
@@ -212,31 +214,10 @@ public static class PipelineRunExtensions
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    // Turn boundary
+                    // Emit handoff progress event at turn boundaries
                     if (currentExecutorId is not null
-                        && currentExecutorId != update.ExecutorId
-                        && responses.TryGetValue(currentExecutorId, out var completedSb))
+                        && currentExecutorId != update.ExecutorId)
                     {
-                        turnStopwatch.Stop();
-                        stages.Add(BuildStageResult(
-                            currentExecutorId,
-                            completedSb.ToString(),
-                            diagnosticsAccessor,
-                            collector,
-                            turnStopwatch.Elapsed,
-                            turnStartedAt));
-
-                        reporter.Report(new ProgressEvents.AgentCompletedEvent(
-                            Timestamp: DateTimeOffset.UtcNow,
-                            WorkflowId: reporter.WorkflowId,
-                            AgentId: currentExecutorId,
-                            ParentAgentId: null,
-                            Depth: 1,
-                            SequenceNumber: reporter.NextSequence(),
-                            AgentName: currentExecutorId,
-                            Duration: turnStopwatch.Elapsed,
-                            TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
-
                         reporter.Report(new ProgressEvents.AgentHandoffEvent(
                             Timestamp: DateTimeOffset.UtcNow,
                             WorkflowId: reporter.WorkflowId,
@@ -246,15 +227,6 @@ public static class PipelineRunExtensions
                             SequenceNumber: reporter.NextSequence(),
                             FromAgentId: currentExecutorId,
                             ToAgentId: update.ExecutorId));
-
-                        turnStopwatch.Restart();
-                        turnStartedAt = DateTimeOffset.UtcNow;
-                    }
-
-                    if (currentExecutorId != update.ExecutorId)
-                    {
-                        turnStopwatch.Restart();
-                        turnStartedAt = DateTimeOffset.UtcNow;
                     }
 
                     currentExecutorId = update.ExecutorId;
@@ -265,28 +237,61 @@ public static class PipelineRunExtensions
                     sb.Append(text);
                 }
 
-                // Capture the last agent's stage
-                if (currentExecutorId is not null
-                    && responses.TryGetValue(currentExecutorId, out var lastSb))
+                // Drain all completions and partition them across agent stages.
+                // Event loop timestamps are unreliable (events are buffered), so we use
+                // completion timestamps (captured at actual LLM call time) for both
+                // duration calculation and agent attribution.
+                var allCompletions = collector.DrainCompletions()
+                    .OrderBy(c => c.StartedAt)
+                    .ToList();
+
+                // Filter invocations to only real agents (have response text or completions
+                // attributed by name). Skips non-agent executors like "GroupChatHost".
+                var agentInvocations = invocations
+                    .Where(inv => responses.ContainsKey(inv.ExecutorId))
+                    .Select(inv => inv.ExecutorId)
+                    .Distinct()
+                    .ToList();
+
+                // Partition completions by agent using name matching or temporal gaps.
+                var partitioned = PartitionCompletionsByAgent(
+                    allCompletions, agentInvocations);
+
+                for (int i = 0; i < agentInvocations.Count; i++)
                 {
-                    turnStopwatch.Stop();
-                    stages.Add(BuildStageResult(
-                        currentExecutorId,
-                        lastSb.ToString(),
+                    var executorId = agentInvocations[i];
+                    var stageCompletions = i < partitioned.Count
+                        ? partitioned[i] : [];
+
+                    var responseText = responses.TryGetValue(executorId, out var respSb)
+                        ? respSb.ToString()
+                        : string.Empty;
+
+                    // Duration from completion timestamps (reliable), not event timestamps.
+                    var duration = stageCompletions.Count > 0
+                        ? stageCompletions[^1].CompletedAt - stageCompletions[0].StartedAt
+                        : TimeSpan.Zero;
+                    var startedAt = stageCompletions.Count > 0
+                        ? stageCompletions[0].StartedAt
+                        : DateTimeOffset.UtcNow;
+
+                    stages.Add(BuildStageResultFromCompletions(
+                        executorId,
+                        responseText,
                         diagnosticsAccessor,
-                        collector,
-                        turnStopwatch.Elapsed,
-                        turnStartedAt));
+                        stageCompletions,
+                        duration,
+                        startedAt));
 
                     reporter.Report(new ProgressEvents.AgentCompletedEvent(
                         Timestamp: DateTimeOffset.UtcNow,
                         WorkflowId: reporter.WorkflowId,
-                        AgentId: currentExecutorId,
+                        AgentId: executorId,
                         ParentAgentId: null,
                         Depth: 1,
                         SequenceNumber: reporter.NextSequence(),
-                        AgentName: currentExecutorId,
-                        Duration: turnStopwatch.Elapsed,
+                        AgentName: executorId,
+                        Duration: duration,
                         TotalTokens: stages[^1].Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
                 }
                 }
@@ -340,11 +345,11 @@ public static class PipelineRunExtensions
             errorMessage: errorMessage);
     }
 
-    private static IAgentStageResult BuildStageResult(
+    private static IAgentStageResult BuildStageResultFromCompletions(
         string agentName,
         string responseText,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
-        IChatCompletionCollector completionCollector,
+        IReadOnlyList<ChatCompletionDiagnostics> completions,
         TimeSpan turnDuration,
         DateTimeOffset turnStartedAt)
     {
@@ -353,8 +358,6 @@ public static class PipelineRunExtensions
         {
             return new AgentStageResult(agentName, responseText, middlewareDiag);
         }
-
-        var completions = completionCollector.DrainCompletions();
 
         var totalTokens = new TokenUsage(
             InputTokens: completions.Sum(c => c.Tokens.InputTokens),
@@ -378,5 +381,50 @@ public static class PipelineRunExtensions
                 ErrorMessage: null,
                 StartedAt: turnStartedAt,
                 CompletedAt: DateTimeOffset.UtcNow));
+    }
+
+    /// <summary>
+    /// Partitions an ordered list of completions into groups, one per agent invocation.
+    /// First attempts name-based matching. When completions lack agent names, uses temporal
+    /// gap analysis: finds the N-1 largest gaps between consecutive completions (where N is
+    /// the agent count) and splits at those boundaries.
+    /// </summary>
+    private static IReadOnlyList<IReadOnlyList<ChatCompletionDiagnostics>> PartitionCompletionsByAgent(
+        List<ChatCompletionDiagnostics> sorted,
+        IReadOnlyList<string> agentExecutorIds)
+    {
+        if (sorted.Count == 0 || agentExecutorIds.Count == 0)
+            return agentExecutorIds.Select(_ => (IReadOnlyList<ChatCompletionDiagnostics>)[]).ToList();
+
+        // Try name-based partitioning first.
+        var byName = new List<IReadOnlyList<ChatCompletionDiagnostics>>();
+        bool allMatched = true;
+        foreach (var executorId in agentExecutorIds)
+        {
+            var matched = sorted
+                .Where(c => c.AgentName is not null
+                    && (executorId.Equals(c.AgentName, StringComparison.Ordinal)
+                        || executorId.StartsWith(c.AgentName + "_", StringComparison.Ordinal)))
+                .ToList();
+            byName.Add(matched);
+            if (matched.Count == 0)
+                allMatched = false;
+        }
+
+        if (allMatched)
+            return byName;
+
+        // Fall back to round-robin interleaving: in a RoundRobinGroupChatManager,
+        // agents alternate turns. Completion[i] belongs to agent[i % N].
+        var interleaved = agentExecutorIds
+            .Select(_ => new List<ChatCompletionDiagnostics>())
+            .ToList();
+
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            interleaved[i % agentExecutorIds.Count].Add(sorted[i]);
+        }
+
+        return interleaved.Select(l => (IReadOnlyList<ChatCompletionDiagnostics>)l).ToList();
     }
 }

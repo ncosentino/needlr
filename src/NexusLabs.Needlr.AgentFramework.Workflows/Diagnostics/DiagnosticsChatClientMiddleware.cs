@@ -101,7 +101,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 Succeeded: true,
                 ErrorMessage: null,
                 StartedAt: startedAt,
-                CompletedAt: DateTimeOffset.UtcNow);
+                CompletedAt: DateTimeOffset.UtcNow)
+            { AgentName = builder?.AgentName };
 
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
@@ -140,7 +141,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 Succeeded: false,
                 ErrorMessage: ex.Message,
                 StartedAt: startedAt,
-                CompletedAt: DateTimeOffset.UtcNow);
+                CompletedAt: DateTimeOffset.UtcNow)
+            { AgentName = builder?.AgentName };
 
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
