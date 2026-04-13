@@ -3,15 +3,15 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/13/2026 - 19:55:41 |
-| Coverage date: | 04/13/2026 - 19:54:12 - 04/13/2026 - 19:55:37 |
+| Generated on: | 04/13/2026 - 20:33:41 |
+| Coverage date: | 04/13/2026 - 20:32:12 - 04/13/2026 - 20:33:37 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 23 |
 | Classes: | 363 |
 | Files: | 327 |
-| **Line coverage:** | 86.1% (13596 of 15781) |
-| Covered lines: | 13596 |
-| Uncovered lines: | 2185 |
+| **Line coverage:** | 86.1% (13595 of 15781) |
+| Covered lines: | 13595 |
+| Uncovered lines: | 2186 |
 | Coverable lines: | 15781 |
 | Total lines: | 39599 |
 | **Branch coverage:** | 75.4% (5566 of 7381) |
@@ -381,17 +381,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.6%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
