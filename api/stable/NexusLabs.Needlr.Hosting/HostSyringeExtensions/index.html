@@ -1083,6 +1083,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../serilog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serilog Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../plugin-development/" class="md-nav__link">
         
   
@@ -3477,28 +3505,56 @@ A new configured <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostS
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">CustomHostFactory</span><span class="p">(</span><span class="n">serviceProviderBuilder</span><span class="p">,</span><span class="w"> </span><span class="n">serviceCollectionPopulator</span><span class="p">);</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="p">});</span>
 </span></code></pre></div>
+<p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,Microsoft.Extensions.Logging.ILogger)'></a></p>
+<h2 id="hostsyringeextensionsusingoptionsthis-hostsyringe-ilogger-method">HostSyringeExtensions.UsingOptions(this HostSyringe, ILogger) Method<a class="headerlink" href="#hostsyringeextensionsusingoptionsthis-hostsyringe-ilogger-method" title="Permanent link">&para;</a></h2>
+<p>Configures the <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> to use <a href="../CreateHostOptions/#NexusLabs.Needlr.Hosting.CreateHostOptions.Default" title="NexusLabs.Needlr.Hosting.CreateHostOptions.Default">Default</a>
+with the specified logger for startup diagnostics.
+Use this when you already have an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger" title="Microsoft.Extensions.Logging.ILogger">Microsoft.Extensions.Logging.ILogger</a> instance and want to avoid
+the boilerplate of calling <code>UsingOptions(() =&gt; CreateHostOptions.Default.UsingLogger(logger))</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">UsingOptions</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ILogger</span><span class="w"> </span><span class="n">logger</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,Microsoft.Extensions.Logging.ILogger).syringe'></a></p>
+<p><code>syringe</code> <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a></p>
+<p>The <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> to configure.</p>
+<p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,Microsoft.Extensions.Logging.ILogger).logger'></a></p>
+<p><code>logger</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger" title="Microsoft.Extensions.Logging.ILogger">Microsoft.Extensions.Logging.ILogger</a></p>
+<p>The logger to use during startup.</p>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<p><a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a><br />
+A new configured <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> instance.</p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception" title="System.ArgumentNullException">System.ArgumentNullException</a><br />
+Thrown when <a href="./#NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,Microsoft.Extensions.Logging.ILogger).syringe" title="NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(this NexusLabs.Needlr.Hosting.HostSyringe, Microsoft.Extensions.Logging.ILogger).syringe">syringe</a> or <a href="./#NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,Microsoft.Extensions.Logging.ILogger).logger" title="NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(this NexusLabs.Needlr.Hosting.HostSyringe, Microsoft.Extensions.Logging.ILogger).logger">logger</a> is null.</p>
+<h3 id="example_3">Example<a class="headerlink" href="#example_3" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(</span><span class="n">bootstrapLogger</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
+</span></code></pre></div>
 <p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,System.Func_NexusLabs.Needlr.Hosting.CreateHostOptions_)'></a></p>
 <h2 id="hostsyringeextensionsusingoptionsthis-hostsyringe-funccreatehostoptions-method">HostSyringeExtensions.UsingOptions(this HostSyringe, Func&lt;CreateHostOptions&gt;) Method<a class="headerlink" href="#hostsyringeextensionsusingoptionsthis-hostsyringe-funccreatehostoptions-method" title="Permanent link">&para;</a></h2>
 <p>Configures the <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> to use the specified host options factory.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">UsingOptions</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">CreateHostOptions</span><span class="o">&gt;</span><span class="w"> </span><span class="n">optionsFactory</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">UsingOptions</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">HostSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">CreateHostOptions</span><span class="o">&gt;</span><span class="w"> </span><span class="n">optionsFactory</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,System.Func_NexusLabs.Needlr.Hosting.CreateHostOptions_).syringe'></a></p>
 <p><code>syringe</code> <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a></p>
 <p>The <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> to configure.</p>
 <p><a name='NexusLabs.Needlr.Hosting.HostSyringeExtensions.UsingOptions(thisNexusLabs.Needlr.Hosting.HostSyringe,System.Func_NexusLabs.Needlr.Hosting.CreateHostOptions_).optionsFactory'></a></p>
 <p><code>optionsFactory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">System.Func&lt;</a><a href="../CreateHostOptions/" title="NexusLabs.Needlr.Hosting.CreateHostOptions">CreateHostOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">&gt;</a></p>
 <p>The factory function for creating host options.</p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a><br />
 A new configured <a href="../HostSyringe/" title="NexusLabs.Needlr.Hosting.HostSyringe">HostSyringe</a> instance.</p>
-<h3 id="example_3">Example<a class="headerlink" href="#example_3" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">hostSyringe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syringe</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingArgs</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingApplicationName</span><span class="p">(</span><span class="s">&quot;My App&quot;</span><span class="p">)</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingStartupConsoleLogger</span><span class="p">());</span>
+<h3 id="example_4">Example<a class="headerlink" href="#example_4" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">hostSyringe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syringe</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingArgs</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingApplicationName</span><span class="p">(</span><span class="s">&quot;My App&quot;</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingStartupConsoleLogger</span><span class="p">());</span>
 </span></code></pre></div>
 
 

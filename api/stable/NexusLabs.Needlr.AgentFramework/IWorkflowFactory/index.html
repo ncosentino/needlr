@@ -1083,6 +1083,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../serilog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serilog Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../plugin-development/" class="md-nav__link">
         
   
@@ -3424,20 +3452,42 @@ A built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.a
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
 Thrown when <a href="./#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int).groupName" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string, int).groupName">groupName</a> has fewer than two registered members.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int,System.Action_System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)'></a></p>
+<h2 id="iworkflowfactorycreategroupchatworkflowstring-int-actiontypeagentfactoryoptions-method">IWorkflowFactory.CreateGroupChatWorkflow(string, int, Action&lt;Type,AgentFactoryOptions&gt;) Method<a class="headerlink" href="#iworkflowfactorycreategroupchatworkflowstring-int-actiontypeagentfactoryoptions-method" title="Permanent link">&para;</a></h2>
+<p>Creates a round-robin group chat <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> with per-agent configuration
+overrides. The <a href="./#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int,System.Action_System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configureAgent" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string, int, System.Action\&lt;System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;).configureAgent">configureAgent</a> callback is invoked for each agent
+type in the group with <a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a> pre-populated from the
+<a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>. The callback can override any field — most
+commonly <a href="../AgentFactoryOptions/#NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.Instructions" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.Instructions">Instructions</a> for per-run dynamic instructions.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateGroupChatWorkflow</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">groupName</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maxIterations</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Type</span><span class="p">,</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFactoryOptions</span><span class="o">&gt;</span><span class="w"> </span><span class="n">configureAgent</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int,System.Action_System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).groupName'></a></p>
+<p><code>groupName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The group name (case-sensitive).</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int,System.Action_System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).maxIterations'></a></p>
+<p><code>maxIterations</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+<p>Maximum round-robin turns before termination.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGroupChatWorkflow(string,int,System.Action_System.Type,NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configureAgent'></a></p>
+<p><code>configureAgent</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">System.Action&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" title="System.Type">System.Type</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">,</a><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-2" title="System.Action`2">&gt;</a></p>
+<p>Callback receiving (agentType, options) for each member. The options are pre-populated
+from the agent's <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>; the callback overrides what it needs.</p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow_TInitialAgent_()'></a></p>
 <h2 id="iworkflowfactorycreatehandoffworkflowtinitialagent-method">IWorkflowFactory.CreateHandoffWorkflow&lt;TInitialAgent&gt;() Method<a class="headerlink" href="#iworkflowfactorycreatehandoffworkflowtinitialagent-method" title="Permanent link">&para;</a></h2>
 <p>Creates a handoff <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> where <a href="./#NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow_TInitialAgent_().TInitialAgent" title="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow\&lt;TInitialAgent&gt;().TInitialAgent">TInitialAgent</a> is the
 starting agent and its <a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a> declarations determine the
 available handoff targets.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateHandoffWorkflow</span><span class="o">&lt;</span><span class="n">TInitialAgent</span><span class="o">&gt;</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">TInitialAgent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateHandoffWorkflow</span><span class="o">&lt;</span><span class="n">TInitialAgent</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">TInitialAgent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
 </span></code></pre></div>
 <h4 id="type-parameters">Type parameters<a class="headerlink" href="#type-parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateHandoffWorkflow_TInitialAgent_().TInitialAgent'></a></p>
 <p><code>TInitialAgent</code></p>
 <p>The type of the initial agent. Must be annotated with both <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>
 and at least one <a href="../AgentHandoffsToAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute">AgentHandoffsToAttribute</a>.</p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a><br />
 A built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> ready to run via MAF's execution environment.</p>
 <h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
@@ -3448,28 +3498,28 @@ attributes declared.</p>
 <h2 id="iworkflowfactorycreatesequentialworkflowaiagent-method">IWorkflowFactory.CreateSequentialWorkflow(AIAgent[]) Method<a class="headerlink" href="#iworkflowfactorycreatesequentialworkflowaiagent-method" title="Permanent link">&para;</a></h2>
 <p>Creates a sequential pipeline <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> where the output of each agent flows
 as input to the next agent in the sequence.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateSequentialWorkflow</span><span class="p">(</span><span class="k">params</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="p">[]</span><span class="w"> </span><span class="n">agents</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateSequentialWorkflow</span><span class="p">(</span><span class="k">params</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AIAgent</span><span class="p">[]</span><span class="w"> </span><span class="n">agents</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateSequentialWorkflow(Microsoft.Agents.AI.AIAgent[]).agents'></a></p>
 <p><code>agents</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagent" title="Microsoft.Agents.AI.AIAgent">Microsoft.Agents.AI.AIAgent</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.array" title="System.Array">[]</a></p>
 <p>The agents to chain in order. Must contain at least one agent.</p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a><br />
 A built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> ready to run via MAF's execution environment.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateSequentialWorkflow(string)'></a></p>
 <h2 id="iworkflowfactorycreatesequentialworkflowstring-method">IWorkflowFactory.CreateSequentialWorkflow(string) Method<a class="headerlink" href="#iworkflowfactorycreatesequentialworkflowstring-method" title="Permanent link">&para;</a></h2>
 <p>Creates a sequential pipeline <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> from a named pipeline declared via
 <a href="../AgentSequenceMemberAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute">AgentSequenceMemberAttribute</a>. Agents are assembled in ascending order.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateSequentialWorkflow</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">pipelineName</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Workflows</span><span class="p">.</span><span class="n">Workflow</span><span class="w"> </span><span class="n">CreateSequentialWorkflow</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">pipelineName</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateSequentialWorkflow(string).pipelineName'></a></p>
 <p><code>pipelineName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The pipeline name. Must match the <a href="../AgentSequenceMemberAttribute/#NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute.PipelineName" title="NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute.PipelineName">PipelineName</a> value
 (case-sensitive) on at least one agent type. Prefer using a generated extension method
 (e.g. <code>CreateContentPipelineSequentialWorkflow()</code>) to avoid referencing this string directly.</p>
-<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a><br />
 A built <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.workflows.workflow" title="Microsoft.Agents.AI.Workflows.Workflow">Microsoft.Agents.AI.Workflows.Workflow</a> ready to run via MAF's execution environment.</p>
 <h4 id="exceptions_2">Exceptions<a class="headerlink" href="#exceptions_2" title="Permanent link">&para;</a></h4>

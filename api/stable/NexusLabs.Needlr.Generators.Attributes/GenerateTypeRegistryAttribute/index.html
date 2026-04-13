@@ -1083,6 +1083,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../serilog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serilog Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../plugin-development/" class="md-nav__link">
         
   
@@ -3401,26 +3429,52 @@ runtime reflection-based type discovery.</p>
 are included in the generated registry. This is similar to the
 <code>MatchingAssemblies()</code> method in the reflection-based approach.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.ExcludeNamespacePrefixes'></a></p>
+<h2 id="generatetyperegistryattributeexcludenamespaceprefixes-property">GenerateTypeRegistryAttribute.ExcludeNamespacePrefixes Property<a class="headerlink" href="#generatetyperegistryattributeexcludenamespaceprefixes-property" title="Permanent link">&para;</a></h2>
+<p>Gets or sets namespace prefixes to exclude from the generated registry.
+Types whose namespace starts with any of these prefixes will be skipped,
+even if they match <a href="./#NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeNamespacePrefixes" title="NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeNamespacePrefixes">IncludeNamespacePrefixes</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">?</span><span class="w"> </span><span class="n">ExcludeNamespacePrefixes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.array" title="System.Array">[]</a></p>
+<h3 id="example_1">Example<a class="headerlink" href="#example_1" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Include MyApp types but exclude Avalonia framework types</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="na">[assembly: GenerateTypeRegistry(</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="na">    IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyApp&quot;</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">ExcludeNamespacePrefixes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;Avalonia&quot;</span><span class="w"> </span><span class="p">})]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1">// Include everything except Avalonia</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="na">[assembly: GenerateTypeRegistry(</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="na">    ExcludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;Avalonia&quot;</span><span class="w"> </span><span class="p">})]</span>
+</span></code></pre></div>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Use this to prevent scanning framework types from libraries like Avalonia, MAUI,
+or other UI frameworks that expose many public types Needlr would otherwise try
+to register. Exclusion is applied after inclusion — if a type matches both an
+include prefix and an exclude prefix, it is excluded.</p>
 <p><a name='NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeNamespacePrefixes'></a></p>
 <h2 id="generatetyperegistryattributeincludenamespaceprefixes-property">GenerateTypeRegistryAttribute.IncludeNamespacePrefixes Property<a class="headerlink" href="#generatetyperegistryattributeincludenamespaceprefixes-property" title="Permanent link">&para;</a></h2>
 <p>Gets or sets namespace prefix filters. Only types in namespaces starting with
 these prefixes will be included in the generated registry.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">?</span><span class="w"> </span><span class="n">IncludeNamespacePrefixes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">?</span><span class="w"> </span><span class="n">IncludeNamespacePrefixes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.array" title="System.Array">[]</a></p>
-<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
 <p>This is analogous to the <code>MatchingAssemblies()</code> configuration in the
-reflection-based approach. If null or empty, all namespaces are included.</p>
+reflection-based approach. If null or empty, all namespaces are included.
+When both <a href="./#NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeNamespacePrefixes" title="NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeNamespacePrefixes">IncludeNamespacePrefixes</a> and <a href="./#NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.ExcludeNamespacePrefixes" title="NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.ExcludeNamespacePrefixes">ExcludeNamespacePrefixes</a>
+are set, inclusion runs first, then exclusion filters out matches.</p>
 <p><a name='NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute.IncludeSelf'></a></p>
 <h2 id="generatetyperegistryattributeincludeself-property">GenerateTypeRegistryAttribute.IncludeSelf Property<a class="headerlink" href="#generatetyperegistryattributeincludeself-property" title="Permanent link">&para;</a></h2>
 <p>Gets or sets whether to include types from the current assembly
 in addition to referenced assemblies.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">IncludeSelf</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">IncludeSelf</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<h3 id="remarks_3">Remarks<a class="headerlink" href="#remarks_3" title="Permanent link">&para;</a></h3>
 <p>Defaults to <code>true</code>. Set to <code>false</code> to only include types
 from project references.</p>
 

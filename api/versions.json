@@ -1,9 +1,10 @@
 {
-  "current_stable": "0.0.2-alpha.29",
+  "current_stable": "0.0.2-alpha.30",
   "entries": [
-    { "label": "Stable (0.0.2-alpha.29)", "path": "stable" },
+    { "label": "Stable (0.0.2-alpha.30)", "path": "stable" },
     { "label": "Development (main)", "path": "dev" },
     { "separator": true },
+    { "label": "v0.0.2-alpha.30", "path": "v0.0.2-alpha.30" },
     { "label": "v0.0.2-alpha.29", "path": "v0.0.2-alpha.29" },
     { "label": "v0.0.2-alpha.28", "path": "v0.0.2-alpha.28" },
     { "label": "v0.0.2-alpha.27", "path": "v0.0.2-alpha.27" },
