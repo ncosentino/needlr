@@ -48,5 +48,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Avalonia.Attributes\NexusLabs.Needlr.Avalonia.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Avalonia\NexusLabs.Needlr.Avalonia.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

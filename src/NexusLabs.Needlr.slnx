@@ -112,6 +112,11 @@
     <Project Path="NexusLabs.Needlr.AgentFramework.Workflows/NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.csproj" />
   </Folder>
+  <Folder Name="/Integrations/Avalonia/">
+    <Project Path="NexusLabs.Needlr.Avalonia/NexusLabs.Needlr.Avalonia.csproj" />
+    <Project Path="NexusLabs.Needlr.Avalonia.Attributes/NexusLabs.Needlr.Avalonia.Attributes.csproj" />
+    <Project Path="NexusLabs.Needlr.Avalonia.Tests/NexusLabs.Needlr.Avalonia.Tests.csproj" />
+  </Folder>
   <Folder Name="/Integrations/SignalR/">
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />

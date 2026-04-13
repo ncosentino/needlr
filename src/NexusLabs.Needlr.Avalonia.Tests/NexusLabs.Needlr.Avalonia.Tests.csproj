@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net100" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Avalonia\NexusLabs.Needlr.Avalonia.csproj" />
+  </ItemGroup>
+</Project>
