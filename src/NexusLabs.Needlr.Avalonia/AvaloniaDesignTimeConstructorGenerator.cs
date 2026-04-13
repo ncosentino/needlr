@@ -45,6 +45,16 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
                 return;
             }
 
+            // Validate: must not use a primary constructor
+            if (classInfo.HasPrimaryConstructor)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    AvaloniaDiagnosticDescriptors.PrimaryConstructorNotSupported,
+                    classInfo.Location,
+                    classInfo.ClassName));
+                return;
+            }
+
             // Validate: must not already have a parameterless constructor
             if (classInfo.HasParameterlessCtor)
             {
@@ -82,6 +92,8 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
         var classDecl = ctx.TargetNode as ClassDeclarationSyntax;
         var isPartial = classDecl?.Modifiers.Any(SyntaxKind.PartialKeyword) ?? false;
 
+        var hasPrimaryConstructor = classDecl?.ParameterList != null;
+
         var hasParameterlessCtor = typeSymbol.InstanceConstructors
             .Any(c => !c.IsStatic &&
                       c.DeclaredAccessibility == Accessibility.Public &&
@@ -114,6 +126,7 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
             namespaceName: namespaceName,
             modifiers: modifiers,
             isPartial: isPartial,
+            hasPrimaryConstructor: hasPrimaryConstructor,
             hasParameterlessCtor: hasParameterlessCtor,
             hasParameterizedCtor: hasParameterizedCtor,
             location: ctx.TargetNode.GetLocation());
@@ -164,6 +177,7 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
             string? namespaceName,
             string modifiers,
             bool isPartial,
+            bool hasPrimaryConstructor,
             bool hasParameterlessCtor,
             bool hasParameterizedCtor,
             Location location)
@@ -172,6 +186,7 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
             NamespaceName = namespaceName;
             Modifiers = modifiers;
             IsPartial = isPartial;
+            HasPrimaryConstructor = hasPrimaryConstructor;
             HasParameterlessCtor = hasParameterlessCtor;
             HasParameterizedCtor = hasParameterizedCtor;
             Location = location;
@@ -181,6 +196,7 @@ public sealed class AvaloniaDesignTimeConstructorGenerator : IIncrementalGenerat
         public string? NamespaceName { get; }
         public string Modifiers { get; }
         public bool IsPartial { get; }
+        public bool HasPrimaryConstructor { get; }
         public bool HasParameterlessCtor { get; }
         public bool HasParameterizedCtor { get; }
         public Location Location { get; }

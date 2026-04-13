@@ -5,3 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRAVA004 | NexusLabs.Needlr.Avalonia | Error | Primary constructors are not supported for design-time constructor generation

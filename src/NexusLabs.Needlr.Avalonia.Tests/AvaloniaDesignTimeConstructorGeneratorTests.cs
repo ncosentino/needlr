@@ -94,6 +94,25 @@ public sealed class AvaloniaDesignTimeConstructorGeneratorTests
     }
 
     [Fact]
+    public void PrimaryConstructor_EmitsNDLRAVA004()
+    {
+        var diagnostics = RunGeneratorDiagnostics(PrimaryConstructorSource);
+
+        var error = diagnostics.FirstOrDefault(d => d.Id == "NDLRAVA004");
+        Assert.NotNull(error);
+        Assert.Equal(DiagnosticSeverity.Error, error.Severity);
+        Assert.Contains("primary constructor", error.GetMessage());
+    }
+
+    [Fact]
+    public void PrimaryConstructor_DoesNotGenerateCode()
+    {
+        var output = RunGenerator(PrimaryConstructorSource);
+
+        Assert.DoesNotContain("InitializeComponent", output);
+    }
+
+    [Fact]
     public void NonPartialClass_DoesNotGenerateCode()
     {
         var output = RunGenerator(NonPartialSource);
@@ -158,6 +177,19 @@ namespace TestApp
     {
         public WindowWithBothCtors() { }
         public WindowWithBothCtors(ViewModel vm) { }
+    }
+}
+";
+
+    private const string PrimaryConstructorSource = @"
+namespace TestApp
+{
+    public class ViewModel { }
+
+    [NexusLabs.Needlr.Avalonia.GenerateAvaloniaDesignTimeConstructor]
+    public partial class PrimaryCtorWindow(ViewModel vm)
+    {
+        private void InitializeComponent() { }
     }
 }
 ";

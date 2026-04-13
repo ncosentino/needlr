@@ -27,4 +27,12 @@ internal static class AvaloniaDiagnosticDescriptors
         category: "NexusLabs.Needlr.Avalonia",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor PrimaryConstructorNotSupported = new(
+        id: AvaloniaDiagnosticIds.PrimaryConstructorNotSupported,
+        title: "Primary constructors are not supported",
+        messageFormat: "'{0}' uses a primary constructor. [GenerateAvaloniaDesignTimeConstructor] cannot generate a safe design-time constructor for classes with primary constructors — the generated constructor would pass null for all parameters, causing NullReferenceExceptions during design-time preview. Use a regular constructor with fields instead.",
+        category: "NexusLabs.Needlr.Avalonia",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
