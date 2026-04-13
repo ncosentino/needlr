@@ -6,7 +6,18 @@
 
 
 	<ItemGroup>
+		<PackageReference Include="Serilog.Sinks.Console" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
+		<ProjectReference Include="..\..\..\NexusLabs.Needlr.Serilog\NexusLabs.Needlr.Serilog.csproj" />
 	</ItemGroup>
 
 </Project>
