@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/13/2026 - 15:48:03 |
-| Coverage date: | 04/13/2026 - 15:46:37 - 04/13/2026 - 15:47:59 |
+| Generated on: | 04/13/2026 - 19:12:40 |
+| Coverage date: | 04/13/2026 - 19:11:16 - 04/13/2026 - 19:12:36 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 23 |
-| Classes: | 361 |
-| Files: | 325 |
-| **Line coverage:** | 86.1% (13549 of 15728) |
-| Covered lines: | 13549 |
-| Uncovered lines: | 2179 |
-| Coverable lines: | 15728 |
-| Total lines: | 39385 |
-| **Branch coverage:** | 75.3% (5549 of 7363) |
-| Covered branches: | 5549 |
-| Total branches: | 7363 |
+| Classes: | 362 |
+| Files: | 326 |
+| **Line coverage:** | 86.1% (13592 of 15774) |
+| Covered lines: | 13592 |
+| Uncovered lines: | 2182 |
+| Coverable lines: | 15774 |
+| Total lines: | 39535 |
+| **Branch coverage:** | 75.3% (5565 of 7381) |
+| Covered branches: | 5565 |
+| Total branches: | 7381 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 81.9%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 82%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**81.9%**|**82.2%**|
+|**NexusLabs.Needlr.AgentFramework**|**82%**|**82.5%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|100%|91.6%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -156,7 +156,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|90.2%|76.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|91.1%|79.6%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|97.5%|
 
@@ -179,12 +179,12 @@
 |NexusLabs.Needlr.AgentFramework.Analyzers.TerminationConditionAnalyzer|98.5%|88%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 89.9%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 89.8%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Generators**|**89.9%**|**71.3%**|
-|NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper|84.7%|69.4%|
+|**NexusLabs.Needlr.AgentFramework.Generators**|**89.8%**|**71.1%**|
+|NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper|84.1%|69.1%|
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGe<br/>nerator|97.9%|75%|
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionGroupEntry|100%||
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionMethodInfo|88.8%||
@@ -217,11 +217,11 @@
 |NexusLabs.Needlr.AgentFramework.Testing.ScenarioVerificationException|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 79.7%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 80.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**79.7%**|**75%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**80.1%**|**75.8%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|80%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions|100%|50%|
@@ -237,6 +237,7 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ToolResultFunctionMidd<br/>leware|65.3%||
 |NexusLabs.Needlr.AgentFramework.Workflows.RegexTerminationCondition|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.StreamingRunWorkflowExtensions|64.1%|71.4%|
+|NexusLabs.Needlr.AgentFramework.Workflows.ToolCallTerminationCondition|100%|100%|
 
 </details>
 <details><summary>NexusLabs.Needlr.Analyzers - 91.4%</summary>

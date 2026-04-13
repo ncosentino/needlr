@@ -3444,6 +3444,26 @@ extension method to avoid referencing the string directly.</p>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute.Order'></a></p>
+<h2 id="agentgroupchatmemberattributeorder-property">AgentGroupChatMemberAttribute.Order Property<a class="headerlink" href="#agentgroupchatmemberattributeorder-property" title="Permanent link">&para;</a></h2>
+<p>Gets or sets the position of this agent in the round-robin turn order.
+Lower values run first. Agents with the same order are sorted alphabetically
+by type name for deterministic ordering.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Order</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>In a writer/reviewer group chat, the writer should have a lower order than
+the reviewer so it produces content before the reviewer evaluates it:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="na">[AgentGroupChatMember(&quot;article-writing&quot;, Order = 1)]</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ArticleWriterAgent</span><span class="p">;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">[AgentGroupChatMember(&quot;article-writing&quot;, Order = 2)]</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ArticleReviewerAgent</span><span class="p">;</span>
+</span></code></pre></div>
+<p>Defaults to <code>0</code>. When all agents have the default order, the round-robin
+position is determined alphabetically by type name.</p>
 
 
 

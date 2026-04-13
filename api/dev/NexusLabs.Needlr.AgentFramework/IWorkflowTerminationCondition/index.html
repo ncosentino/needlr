@@ -3419,7 +3419,8 @@
 <p>Implement this interface to provide custom termination logic. Built-in implementations are
 available in the <code>NexusLabs.Needlr.AgentFramework.Workflows</code> package:
 - <code>KeywordTerminationCondition</code> — stops when a response contains a keyword.
-- <code>RegexTerminationCondition</code> — stops when a response matches a regex.</p>
+- <code>RegexTerminationCondition</code> — stops when a response matches a regex.
+- <code>ToolCallTerminationCondition</code> — stops when an agent calls a specific tool. Preferred over keyword matching for structured approval workflows.</p>
 <p>Conditions are declared on agent classes via
 <a href="../AgentTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.AgentTerminationConditionAttribute">AgentTerminationConditionAttribute</a> (Layer 1: group chat, fires before the next
 turn) or <a href="../WorkflowRunTerminationConditionAttribute/" title="NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute">WorkflowRunTerminationConditionAttribute</a> (Layer 2: any workflow type,
