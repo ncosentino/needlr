@@ -3527,7 +3527,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IProgressSequence/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSequence">IProgressSequence</a></td>
-<td style="text-align: left;">Provides globally-ordered sequence numbers for progress events. Registered as a singleton in DI — resettable in tests.</td>
+<td style="text-align: left;">Provides globally-ordered sequence numbers for progress events across all concurrent orchestrations. Registered as a singleton in DI so all <a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances share a single monotonic counter.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a></td>

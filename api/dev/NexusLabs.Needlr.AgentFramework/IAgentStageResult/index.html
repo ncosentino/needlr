@@ -3412,30 +3412,45 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkdiagnostics"><a href="../NexusLabs.Needlr.AgentFramework.Diagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics">NexusLabs.Needlr.AgentFramework.Diagnostics</a><a class="headerlink" href="#nexuslabsneedlragentframeworkdiagnostics" title="Permanent link">&para;</a></h3>
 <h2 id="iagentstageresult-interface">IAgentStageResult Interface<a class="headerlink" href="#iagentstageresult-interface" title="Permanent link">&para;</a></h2>
-<p>Result of a single agent stage within a pipeline, combining the response text
-with the captured diagnostics for that stage.</p>
+<p>Result of a single agent stage within a multi-agent pipeline or group chat workflow,
+combining the response text with the captured diagnostics for that stage.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IAgentStageResult</span>
 </span></code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">workflow</span><span class="p">.</span><span class="n">RunWithDiagnosticsAsync</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span><span class="w"> </span><span class="n">accessor</span><span class="p">);</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">stage</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Stages</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">Diagnostics</span><span class="o">?.</span><span class="n">AggregateTokenUsage</span><span class="p">;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;[{stage.AgentName}] {tokens?.TotalTokens ?? 0} tokens, &quot;</span><span class="w"> </span><span class="o">+</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="s">$&quot;{stage.Diagnostics?.TotalDuration.TotalSeconds:F1}s&quot;</span><span class="p">);</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;  Response: {stage.ResponseText[..Math.Min(100, stage.ResponseText.Length)]}...&quot;</span><span class="p">);</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Access stage results via <a href="../IPipelineRunResult/#NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.Stages" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.Stages">Stages</a> after calling
+<code>RunWithDiagnosticsAsync</code>. Each stage corresponds to one agent turn in the
+workflow.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.AgentName'></a></p>
 <h2 id="iagentstageresultagentname-property">IAgentStageResult.AgentName Property<a class="headerlink" href="#iagentstageresultagentname-property" title="Permanent link">&para;</a></h2>
-<p>Gets the agent's executor ID (agent name or unique identifier).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">string</span><span class="w"> </span><span class="n">AgentName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<p>Gets the agent's executor ID (agent name, possibly with a MAF-assigned GUID suffix).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">string</span><span class="w"> </span><span class="n">AgentName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Diagnostics'></a></p>
 <h2 id="iagentstageresultdiagnostics-property">IAgentStageResult.Diagnostics Property<a class="headerlink" href="#iagentstageresultdiagnostics-property" title="Permanent link">&para;</a></h2>
-<p>Gets the diagnostics captured during this agent's execution, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>
-if diagnostics were not enabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IAgentRunDiagnostics</span><span class="o">?</span><span class="w"> </span><span class="n">Diagnostics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<p>Gets the diagnostics captured during this agent's execution, including per-call
+token usage, tool call details, and timing. <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if diagnostics
+were not enabled via <code>UsingDiagnostics()</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IAgentRunDiagnostics</span><span class="o">?</span><span class="w"> </span><span class="n">Diagnostics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="../IAgentRunDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics">IAgentRunDiagnostics</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.ResponseText'></a></p>
 <h2 id="iagentstageresultresponsetext-property">IAgentStageResult.ResponseText Property<a class="headerlink" href="#iagentstageresultresponsetext-property" title="Permanent link">&para;</a></h2>
-<p>Gets the agent's response text.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">string</span><span class="w"> </span><span class="n">ResponseText</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<p>Gets the text content the agent produced during this stage. Empty if the agent responded only via tool calls.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">string</span><span class="w"> </span><span class="n">ResponseText</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>

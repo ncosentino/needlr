@@ -3412,15 +3412,26 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkprogress"><a href="../NexusLabs.Needlr.AgentFramework.Progress/" title="NexusLabs.Needlr.AgentFramework.Progress">NexusLabs.Needlr.AgentFramework.Progress</a><a class="headerlink" href="#nexuslabsneedlragentframeworkprogress" title="Permanent link">&para;</a></h3>
 <h2 id="iprogresssequence-interface">IProgressSequence Interface<a class="headerlink" href="#iprogresssequence-interface" title="Permanent link">&para;</a></h2>
-<p>Provides globally-ordered sequence numbers for progress events.
-Registered as a singleton in DI — resettable in tests.</p>
+<p>Provides globally-ordered sequence numbers for progress events across all
+concurrent orchestrations. Registered as a singleton in DI so all
+<a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances share a single monotonic counter.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IProgressSequence</span>
 </span></code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serviceProvider</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">IProgressSequence</span><span class="o">&gt;</span><span class="p">();</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kt">var</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="p">.</span><span class="n">Next</span><span class="p">();</span><span class="w">  </span><span class="c1">// e.g., 1</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="p">.</span><span class="n">Next</span><span class="p">();</span><span class="w"> </span><span class="c1">// e.g., 2 — guaranteed &gt; first</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Sequence numbers establish a total order across events from different agents,
+workflows, and threads. This is useful for reconstructing the timeline of a
+multi-agent orchestration from interleaved event streams.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressSequence.Next()'></a></p>
 <h2 id="iprogresssequencenext-method">IProgressSequence.Next() Method<a class="headerlink" href="#iprogresssequencenext-method" title="Permanent link">&para;</a></h2>
-<p>Allocates the next globally-ordered sequence number.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">long</span><span class="w"> </span><span class="nf">Next</span><span class="p">();</span>
+<p>Allocates the next globally-ordered sequence number. Thread-safe and
+guaranteed to return a value greater than all previously returned values.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">long</span><span class="w"> </span><span class="nf">Next</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>

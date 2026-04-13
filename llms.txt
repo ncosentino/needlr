@@ -29,7 +29,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 ## Advanced
 
 - [Advanced Usage](https://github.devleader.ca/needlr/advanced-usage/) -- Advanced patterns for Needlr -- custom assembly scanning, conditional registration, multi-project setups, and edge cases for complex .NET dependency injection scenarios.
-- [Serilog Bootstrap](https://github.devleader.ca/needlr/serilog/) -- Serilog bootstrap integration for Needlr applications — two-stage init, structured logging before DI, and automatic log flushing on shutdown.
+- [Serilog Bootstrap](https://github.devleader.ca/needlr/serilog/) -- Serilog integration for Needlr — zero-ceremony plugin for ILogger<T> wiring, config-driven setup from appsettings.json, override patterns, and bootstrapper lifecycle management.
 - [Plugin Development](https://github.devleader.ca/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
 - [Solution-Wide Source Generation](https://github.devleader.ca/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Cross-Generator Plugins](https://github.devleader.ca/needlr/cross-generator-plugins/) -- Register plugin types emitted by a second source generator with Needlr using RegisterPlugins() and a module initializer, bypassing the Roslyn generator isolation boundary.

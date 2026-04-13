@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Serilog bootstrap integration for Needlr applications — two-stage init, structured logging before DI, and automatic log flushing on shutdown.">
+        <meta name="description" content="Serilog integration for Needlr — zero-ceremony plugin for ILogger<T> wiring, config-driven setup from appsettings.json, override patterns, and bootstrapper lifecycle management.">
       
       
       
@@ -73,12 +73,12 @@
   
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Serilog Bootstrap – Needlr" />
-  <meta property="og:description" content="Serilog bootstrap integration for Needlr applications — two-stage init, structured logging before DI, and automatic log flushing on shutdown." />
+  <meta property="og:description" content="Serilog integration for Needlr — zero-ceremony plugin for ILogger<T> wiring, config-driven setup from appsettings.json, override patterns, and bootstrapper lifecycle management." />
   <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   <meta property="og:url" content="https://github.devleader.ca/needlr/serilog/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Serilog Bootstrap – Needlr" />
-  <meta name="twitter:description" content="Serilog bootstrap integration for Needlr applications — two-stage init, structured logging before DI, and automatic log flushing on shutdown." />
+  <meta name="twitter:description" content="Serilog integration for Needlr — zero-ceremony plugin for ILogger<T> wiring, config-driven setup from appsettings.json, override patterns, and bootstrapper lifecycle management." />
   <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   
   
@@ -127,7 +127,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#serilog-bootstrap" class="md-skip">
+        <a href="#serilog-integration" class="md-skip">
           Skip to content
         </a>
       
@@ -1158,50 +1158,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-serilog-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Serilog Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#aspnet-core-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ASP.NET Core Example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-composes-with-needlrbootstrapper" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How It Composes with NeedlrBootstrapper
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1213,22 +1169,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#api-reference" class="md-nav__link">
+  <a href="#serilogplugin-recommended-for-most-apps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        API Reference
+        SerilogPlugin (Recommended for Most Apps)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="API Reference">
+    <nav class="md-nav" aria-label="SerilogPlugin (Recommended for Most Apps)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#needlrserilogbootstrapper" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        NeedlrSerilogBootstrapper
+        Quick Start
       
     </span>
   </a>
@@ -1236,10 +1192,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#needlrserilogbootstrapperextensions" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        NeedlrSerilogBootstrapperExtensions
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overriding-the-plugins-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overriding the Plugin's Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-plugin-does-not-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the Plugin Does NOT Do
       
     </span>
   </a>
@@ -1248,6 +1226,78 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#needlrserilogbootstrapper-lifecycle-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NeedlrSerilogBootstrapper (Lifecycle Management)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NeedlrSerilogBootstrapper (Lifecycle Management)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-start_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aspnet-core-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ASP.NET Core Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lifecycle-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle Guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-between-plugin-and-bootstrapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing Between Plugin and Bootstrapper
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3563,115 +3613,184 @@
   
 
 
-<h1 id="serilog-bootstrap">Serilog Bootstrap<a class="headerlink" href="#serilog-bootstrap" title="Permanent link">&para;</a></h1>
-<p>The <code>NexusLabs.Needlr.Serilog</code> package provides <code>NeedlrSerilogBootstrapper</code>, a thin wrapper around
-<a href="../advanced-usage/#application-bootstrap-lifecycle"><code>NeedlrBootstrapper</code></a> that adds Serilog-specific lifecycle
-management: two-stage initialization, a structured pre-DI logger, and automatic <code>Log.CloseAndFlushAsync</code> on shutdown.</p>
-<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Serilog</span><span class="p">;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">            </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingCurrentProcessArgs</span><span class="p">()</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingLogger</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">))</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="p">});</span>
+<h1 id="serilog-integration">Serilog Integration<a class="headerlink" href="#serilog-integration" title="Permanent link">&para;</a></h1>
+<p>The <code>NexusLabs.Needlr.Serilog</code> package provides two ways to use Serilog with Needlr:</p>
+<ol>
+<li><strong><code>SerilogPlugin</code></strong> — an auto-discovered <code>IServiceCollectionPlugin</code> that wires <code>ILogger&lt;T&gt;</code> from <code>appsettings.json</code> with zero ceremony. Best for most applications.</li>
+<li><strong><code>NeedlrSerilogBootstrapper</code></strong> — a lifecycle wrapper for applications that need pre-DI structured logging, the static <code>Log.Logger</code>, and automatic flush-on-shutdown. Best for hosted services and ASP.NET apps with strict startup logging requirements.</li>
+</ol>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Serilog&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
 </span></code></pre></div>
-<p><code>ctx.Logger</code> is a <code>Microsoft.Extensions.Logging.ILogger</code> backed by a Serilog pipeline. By default a console sink
-is configured. The bootstrapper sets the global <code>Log.Logger</code>, so Serilog's static API is also available inside the
-callback.</p>
-<h2 id="custom-serilog-configuration">Custom Serilog Configuration<a class="headerlink" href="#custom-serilog-configuration" title="Permanent link">&para;</a></h2>
-<p>Use <code>.Configure(Action&lt;LoggerConfiguration&gt;)</code> to replace the default console sink with your own pipeline:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">.</span><span class="n">Configure</span><span class="p">(</span><span class="n">cfg</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">cfg</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="p">.</span><span class="n">MinimumLevel</span><span class="p">.</span><span class="n">Debug</span><span class="p">()</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">Console</span><span class="p">()</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">File</span><span class="p">(</span><span class="s">&quot;logs/startup.log&quot;</span><span class="p">))</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="c1">// ctx.Logger routes through the configured pipeline</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Application starting with custom Serilog config...&quot;</span><span class="p">);</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="c1">// ...</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">});</span>
+<p>The package includes both the plugin and the bootstrapper. Use whichever fits your scenario — they are independent and do not conflict.</p>
+<hr />
+<h2 id="serilogplugin-recommended-for-most-apps">SerilogPlugin (Recommended for Most Apps)<a class="headerlink" href="#serilogplugin-recommended-for-most-apps" title="Permanent link">&para;</a></h2>
+<h3 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Reference <code>NexusLabs.Needlr.Serilog</code></li>
+<li>Add a <code>"Serilog"</code> section to <code>appsettings.json</code></li>
+<li>Call <code>UsingSourceGen()</code> or <code>UsingReflection()</code> — the plugin is auto-discovered</li>
+</ol>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;Serilog&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;Using&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Serilog.Sinks.Console&quot;</span><span class="p">],</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;MinimumLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Information&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;WriteTo&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;Name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Console&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
 </span></code></pre></div>
-<h2 id="aspnet-core-example">ASP.NET Core Example<a class="headerlink" href="#aspnet-core-example" title="Permanent link">&para;</a></h2>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AspNet</span><span class="p">;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Serilog</span><span class="p">;</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="p">.</span><span class="n">Configure</span><span class="p">(</span><span class="n">cfg</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">cfg</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="p">.</span><span class="n">MinimumLevel</span><span class="p">.</span><span class="n">Information</span><span class="p">()</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">Console</span><span class="p">())</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">webApp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">            </span><span class="p">.</span><span class="n">ForWebApplication</span><span class="p">()</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateWebApplicationOptions</span><span class="p">.</span><span class="n">Default</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingCurrentProcessCliArgs</span><span class="p">()</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingLogger</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">))</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildWebApplication</span><span class="p">();</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">webApp</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p">});</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ConfigurationBuilder</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">.</span><span class="n">AddJsonFile</span><span class="p">(</span><span class="s">&quot;appsettings.json&quot;</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="p">.</span><span class="n">Build</span><span class="p">();</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kt">var</span><span class="w"> </span><span class="n">sp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="p">.</span><span class="n">BuildServiceProvider</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="kt">var</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sp</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">ILogger</span><span class="o">&lt;</span><span class="n">MyService</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Running with Serilog — no manual setup&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<h2 id="how-it-composes-with-needlrbootstrapper">How It Composes with NeedlrBootstrapper<a class="headerlink" href="#how-it-composes-with-needlrbootstrapper" title="Permanent link">&para;</a></h2>
-<p><code>NeedlrSerilogBootstrapper</code> is not a parallel implementation — it delegates all lifecycle management to
-<code>NeedlrBootstrapper</code> internally:</p>
+<p>That's it. No <code>AddSerilog()</code>, no <code>Log.Logger</code>, no ceremony. The plugin reads the <code>"Serilog"</code> section from <code>IConfiguration</code>, configures the logger, and registers it with <code>dispose: true</code> so sinks flush when the DI container is disposed.</p>
+<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<p><code>SerilogPlugin</code> implements <code>IServiceCollectionPlugin</code> and is auto-discovered by Needlr's plugin system:</p>
+<ul>
+<li><strong>Source-gen mode</strong>: The plugin's assembly has <code>[GenerateTypeRegistry]</code>, so the source generator emits a <code>[ModuleInitializer]</code> that registers <code>SerilogPlugin</code> into the <code>NeedlrSourceGenBootstrap</code>. When you call <code>UsingSourceGen()</code>, the plugin is discovered automatically.</li>
+<li><strong>Reflection mode</strong>: The reflection scanner finds <code>SerilogPlugin</code> when its assembly is in the scan path. Use <code>UsingAdditionalAssemblies</code> if needed:</li>
+</ul>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">sp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingReflection</span><span class="p">()</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingAdditionalAssemblies</span><span class="p">([</span><span class="k">typeof</span><span class="p">(</span><span class="n">SerilogPlugin</span><span class="p">).</span><span class="n">Assembly</span><span class="p">])</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="p">.</span><span class="n">BuildServiceProvider</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="overriding-the-plugins-configuration">Overriding the Plugin's Configuration<a class="headerlink" href="#overriding-the-plugins-configuration" title="Permanent link">&para;</a></h3>
+<p>The plugin gives you a working default — Serilog configured from <code>appsettings.json</code>. If you need to replace or extend that configuration (e.g., add a custom sink, change the minimum level programmatically), use <code>UsingPostPluginRegistrationCallback</code>:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">sp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingPostPluginRegistrationCallback</span><span class="p">(</span><span class="n">services</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">services</span><span class="p">.</span><span class="n">AddLogging</span><span class="p">(</span><span class="n">builder</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">            </span><span class="n">builder</span><span class="p">.</span><span class="n">ClearProviders</span><span class="p">();</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">            </span><span class="n">builder</span><span class="p">.</span><span class="n">AddSerilog</span><span class="p">(</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="nf">LoggerConfiguration</span><span class="p">()</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">                    </span><span class="p">.</span><span class="n">MinimumLevel</span><span class="p">.</span><span class="n">Debug</span><span class="p">()</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">                    </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">Console</span><span class="p">()</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">                    </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">File</span><span class="p">(</span><span class="s">&quot;logs/app.log&quot;</span><span class="p">)</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">                    </span><span class="p">.</span><span class="n">CreateLogger</span><span class="p">(),</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">                </span><span class="n">dispose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="p">});</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="p">})</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="p">.</span><span class="n">BuildServiceProvider</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+</span></code></pre></div>
+<p>The override runs after the plugin, so it replaces the plugin's config-driven logger with your explicit one. <code>ILogger&lt;T&gt;</code> resolution continues to work because the plugin already registered the <code>ILoggerFactory</code> open generic — you're just swapping the underlying Serilog pipeline.</p>
+<h3 id="what-the-plugin-does-not-do">What the Plugin Does NOT Do<a class="headerlink" href="#what-the-plugin-does-not-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Does not set <code>Log.Logger</code></strong> — use <code>ILogger&lt;T&gt;</code> injection instead. If you need the static logger, use <code>NeedlrSerilogBootstrapper</code>.</li>
+<li><strong>Does not provide pre-DI logging</strong> — the plugin runs during DI registration, not before. If you need to log during startup before the container is built, use <code>NeedlrSerilogBootstrapper</code>.</li>
+</ul>
+<hr />
+<h2 id="needlrserilogbootstrapper-lifecycle-management">NeedlrSerilogBootstrapper (Lifecycle Management)<a class="headerlink" href="#needlrserilogbootstrapper-lifecycle-management" title="Permanent link">&para;</a></h2>
+<p>For applications that need structured logging before the DI container exists (e.g., logging configuration errors, startup diagnostics), the bootstrapper provides a two-stage lifecycle.</p>
+<h3 id="quick-start_1">Quick Start<a class="headerlink" href="#quick-start_1" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">            </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingCurrentProcessArgs</span><span class="p">()</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingLogger</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">))</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="p">});</span>
+</span></code></pre></div>
+<p><code>ctx.Logger</code> is a <code>Microsoft.Extensions.Logging.ILogger</code> backed by the Serilog pipeline. By default a console sink is configured. The bootstrapper sets the global <code>Log.Logger</code>, so Serilog's static API is also available.</p>
+<h3 id="custom-configuration">Custom Configuration<a class="headerlink" href="#custom-configuration" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="p">.</span><span class="n">Configure</span><span class="p">(</span><span class="n">cfg</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">cfg</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="p">.</span><span class="n">MinimumLevel</span><span class="p">.</span><span class="n">Debug</span><span class="p">()</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">Console</span><span class="p">()</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">File</span><span class="p">(</span><span class="s">&quot;logs/startup.log&quot;</span><span class="p">))</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Application starting...&quot;</span><span class="p">);</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="c1">// ...</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">});</span>
+</span></code></pre></div>
+<h3 id="aspnet-core-example">ASP.NET Core Example<a class="headerlink" href="#aspnet-core-example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrSerilogBootstrapper</span><span class="p">()</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="p">.</span><span class="n">Configure</span><span class="p">(</span><span class="n">cfg</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">cfg</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="p">.</span><span class="n">MinimumLevel</span><span class="p">.</span><span class="n">Information</span><span class="p">()</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="p">.</span><span class="n">WriteTo</span><span class="p">.</span><span class="n">Console</span><span class="p">())</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">webApp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">            </span><span class="p">.</span><span class="n">ForWebApplication</span><span class="p">()</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateWebApplicationOptions</span><span class="p">.</span><span class="n">Default</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingCurrentProcessCliArgs</span><span class="p">()</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">                </span><span class="p">.</span><span class="n">UsingLogger</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">))</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildWebApplication</span><span class="p">();</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">webApp</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="p">});</span>
+</span></code></pre></div>
+<h3 id="lifecycle-guarantees">Lifecycle Guarantees<a class="headerlink" href="#lifecycle-guarantees" title="Permanent link">&para;</a></h3>
+<p><code>NeedlrSerilogBootstrapper</code> composes <code>NeedlrBootstrapper</code> internally:</p>
 <ol>
 <li>Applies your <code>LoggerConfiguration</code> (or defaults to <code>WriteTo.Console()</code>).</li>
 <li>Sets <code>Log.Logger</code> globally.</li>
 <li>Creates a <code>SerilogLoggerFactory</code> and passes it to <code>NeedlrBootstrapper.UsingLoggerFactory(...)</code>.</li>
 <li>Registers <code>Log.CloseAndFlushAsync</code> via <code>NeedlrBootstrapper.WithCleanup(...)</code>.</li>
-<li>Calls <code>NeedlrBootstrapper.RunAsync(...)</code> — which handles exception catching, cleanup, and factory lifetime.</li>
+<li>Calls <code>NeedlrBootstrapper.RunAsync(...)</code> for exception catching, cleanup, and factory lifetime.</li>
 </ol>
-<p>This means you get all <code>NeedlrBootstrapper</code> guarantees automatically:</p>
+<p>This guarantees:</p>
 <ul>
 <li>Exceptions are caught, logged at <code>Critical</code>, and do <strong>not</strong> rethrow.</li>
 <li><code>Log.CloseAndFlushAsync</code> is called in <code>finally</code>, even if the callback throws.</li>
 <li><code>Log.Logger</code> is available via the static Serilog API throughout the application lifetime.</li>
 </ul>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<div class="language-xml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Serilog&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
-</span></code></pre></div>
-<h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
-<h3 id="needlrserilogbootstrapper"><code>NeedlrSerilogBootstrapper</code><a class="headerlink" href="#needlrserilogbootstrapper" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="choosing-between-plugin-and-bootstrapper">Choosing Between Plugin and Bootstrapper<a class="headerlink" href="#choosing-between-plugin-and-bootstrapper" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Member</th>
-<th>Description</th>
+<th>Scenario</th>
+<th>Use</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>RunAsync(Func&lt;NeedlrBootstrapContext, CancellationToken, Task&gt;, CancellationToken)</code></td>
-<td>Runs the application with full Serilog bootstrap lifecycle.</td>
+<td>Standard app, logging configured from appsettings.json</td>
+<td><code>SerilogPlugin</code></td>
+</tr>
+<tr>
+<td>Need <code>ILogger&lt;T&gt;</code> injection with zero ceremony</td>
+<td><code>SerilogPlugin</code></td>
+</tr>
+<tr>
+<td>Need to log before DI container is built</td>
+<td><code>NeedlrSerilogBootstrapper</code></td>
+</tr>
+<tr>
+<td>Need the static <code>Log.Logger</code> / <code>Log.Information(...)</code> API</td>
+<td><code>NeedlrSerilogBootstrapper</code></td>
+</tr>
+<tr>
+<td>Need guaranteed flush-on-shutdown (buffered file sinks)</td>
+<td>Either — plugin uses <code>dispose: true</code>, bootstrapper uses <code>CloseAndFlushAsync</code></td>
+</tr>
+<tr>
+<td>ASP.NET app with startup logging requirements</td>
+<td><code>NeedlrSerilogBootstrapper</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="needlrserilogbootstrapperextensions"><code>NeedlrSerilogBootstrapperExtensions</code><a class="headerlink" href="#needlrserilogbootstrapperextensions" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Extension</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.Configure(Action&lt;LoggerConfiguration&gt;)</code></td>
-<td>Replaces the default <code>WriteTo.Console()</code> with a custom Serilog configuration. Returns a new instance.</td>
-</tr>
-</tbody>
-</table>
+<p>Both can coexist in the same application, but typically you choose one.</p>
 
 
 

@@ -3417,23 +3417,92 @@
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; TokenUsage</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">diagnostics</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">accessor</span><span class="p">.</span><span class="n">LastRunDiagnostics</span><span class="p">;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kt">var</span><span class="w"> </span><span class="n">usage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnostics</span><span class="p">.</span><span class="n">AggregateTokenUsage</span><span class="p">;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Input: {usage.InputTokens} (cached: {usage.CachedInputTokens})&quot;</span><span class="p">);</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Output: {usage.OutputTokens} (reasoning: {usage.ReasoningTokens})&quot;</span><span class="p">);</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Total: {usage.TotalTokens}&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Each <a href="../ChatCompletionDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics">ChatCompletionDiagnostics</a> carries a <a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a> for
+that individual call. <a href="../IAgentRunDiagnostics/#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.AggregateTokenUsage" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.AggregateTokenUsage">AggregateTokenUsage</a> sums
+across all calls in one agent run. <a href="../IPipelineRunResult/#NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.AggregateTokenUsage" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.AggregateTokenUsage">AggregateTokenUsage</a>
+sums across all stages in a pipeline.</p>
+<p>Token counts come from the LLM provider's response metadata. If the provider does
+not report a field, the corresponding value is <code>0</code>.</p>
 <h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long)'></a></p>
 <h2 id="tokenusagelong-long-long-long-long-constructor">TokenUsage(long, long, long, long, long) Constructor<a class="headerlink" href="#tokenusagelong-long-long-long-long-constructor" title="Permanent link">&para;</a></h2>
 <p>Token usage breakdown for a single LLM call or aggregate across an agent run.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">TokenUsage</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">InputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">OutputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">TotalTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">CachedInputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ReasoningTokens</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">TokenUsage</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">InputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">OutputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">TotalTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">CachedInputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ReasoningTokens</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).InputTokens'></a></p>
 <p><code>InputTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p>Number of tokens in the prompt sent to the model.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).OutputTokens'></a></p>
 <p><code>OutputTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p>Number of tokens generated by the model.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).TotalTokens'></a></p>
 <p><code>TotalTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p>Sum of input and output tokens (may include overhead tokens not in either count).</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).CachedInputTokens'></a></p>
 <p><code>CachedInputTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p>Subset of <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).InputTokens" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long, long, long, long, long).InputTokens">InputTokens</a> served from the provider's prompt cache. Cached tokens are typically billed at a reduced rate.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TokenUsage(long,long,long,long,long).ReasoningTokens'></a></p>
 <p><code>ReasoningTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p>Tokens consumed by chain-of-thought reasoning (e.g., OpenAI o-series models). Zero for models that do not report reasoning tokens.</p>
+<h3 id="example_1">Example<a class="headerlink" href="#example_1" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">diagnostics</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">accessor</span><span class="p">.</span><span class="n">LastRunDiagnostics</span><span class="p">;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kt">var</span><span class="w"> </span><span class="n">usage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnostics</span><span class="p">.</span><span class="n">AggregateTokenUsage</span><span class="p">;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Input: {usage.InputTokens} (cached: {usage.CachedInputTokens})&quot;</span><span class="p">);</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Output: {usage.OutputTokens} (reasoning: {usage.ReasoningTokens})&quot;</span><span class="p">);</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Total: {usage.TotalTokens}&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Each <a href="../ChatCompletionDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics">ChatCompletionDiagnostics</a> carries a <a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a> for
+that individual call. <a href="../IAgentRunDiagnostics/#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.AggregateTokenUsage" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.AggregateTokenUsage">AggregateTokenUsage</a> sums
+across all calls in one agent run. <a href="../IPipelineRunResult/#NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.AggregateTokenUsage" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult.AggregateTokenUsage">AggregateTokenUsage</a>
+sums across all stages in a pipeline.</p>
+<p>Token counts come from the LLM provider's response metadata. If the provider does
+not report a field, the corresponding value is <code>0</code>.</p>
+<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.CachedInputTokens'></a></p>
+<h2 id="tokenusagecachedinputtokens-property">TokenUsage.CachedInputTokens Property<a class="headerlink" href="#tokenusagecachedinputtokens-property" title="Permanent link">&para;</a></h2>
+<p>Subset of InputTokens served from the provider's prompt cache. Cached tokens are typically billed at a reduced rate.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">CachedInputTokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.InputTokens'></a></p>
+<h2 id="tokenusageinputtokens-property">TokenUsage.InputTokens Property<a class="headerlink" href="#tokenusageinputtokens-property" title="Permanent link">&para;</a></h2>
+<p>Number of tokens in the prompt sent to the model.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">InputTokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.OutputTokens'></a></p>
+<h2 id="tokenusageoutputtokens-property">TokenUsage.OutputTokens Property<a class="headerlink" href="#tokenusageoutputtokens-property" title="Permanent link">&para;</a></h2>
+<p>Number of tokens generated by the model.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">OutputTokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.ReasoningTokens'></a></p>
+<h2 id="tokenusagereasoningtokens-property">TokenUsage.ReasoningTokens Property<a class="headerlink" href="#tokenusagereasoningtokens-property" title="Permanent link">&para;</a></h2>
+<p>Tokens consumed by chain-of-thought reasoning (e.g., OpenAI o-series models). Zero for models that do not report reasoning tokens.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ReasoningTokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage.TotalTokens'></a></p>
+<h2 id="tokenusagetotaltokens-property">TokenUsage.TotalTokens Property<a class="headerlink" href="#tokenusagetotaltokens-property" title="Permanent link">&para;</a></h2>
+<p>Sum of input and output tokens (may include overhead tokens not in either count).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">TotalTokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
 
 
 
