@@ -1,7 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\NexusLabs.Needlr.Serilog\NexusLabs.Needlr.Serilog.csproj" />
+    <PackageReference Include="Serilog.Sinks.Console" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Serilog\NexusLabs.Needlr.Serilog.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+  </ItemGroup>
+
+  <!-- Import Needlr targets for [GenerateTypeRegistry] auto-emit -->
+  <Import Project="..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
 
 </Project>
