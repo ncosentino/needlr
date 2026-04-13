@@ -22,7 +22,7 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 public class DiagnosticsIntegrationTests
 {
     // -------------------------------------------------------------------------
-    // Fix 1: Diagnostics capture via direct agent.RunAsync
+    // Direct agent.RunAsync diagnostics capture
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -105,7 +105,7 @@ public class DiagnosticsIntegrationTests
     }
 
     // -------------------------------------------------------------------------
-    // Fix 2: Resilience retry visibility
+    // Resilience retry visibility
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -149,7 +149,7 @@ public class DiagnosticsIntegrationTests
     }
 
     // -------------------------------------------------------------------------
-    // Fix 1 continued: Diagnostics via handoff workflow
+    // Handoff workflow diagnostics capture
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -191,7 +191,7 @@ public class DiagnosticsIntegrationTests
     }
 
     // -------------------------------------------------------------------------
-    // Fix 3: Collector fallback when AsyncLocal breaks (group chat scenario)
+    // Collector fallback when AsyncLocal doesn't propagate
     // -------------------------------------------------------------------------
 
     [Fact]
