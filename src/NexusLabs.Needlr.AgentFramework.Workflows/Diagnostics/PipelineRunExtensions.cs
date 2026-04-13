@@ -344,7 +344,8 @@ public static class PipelineRunExtensions
             stages: stages,
             totalDuration: pipelineStart.Elapsed,
             succeeded: succeeded,
-            errorMessage: errorMessage);
+            errorMessage: errorMessage,
+            exception: caughtException);
     }
 
     private static IAgentStageResult BuildStageResultFromCompletions(
