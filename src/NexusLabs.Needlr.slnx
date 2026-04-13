@@ -19,6 +19,7 @@
   </Folder>
   <Folder Name="/Examples/SourceGen/Avalonia/">
     <Project Path="Examples/SourceGen/AvaloniaDemoApp/AvaloniaDemoApp.csproj" />
+    <Project Path="Examples/SourceGen/SerilogSourceGenExample/SerilogSourceGenExample.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/TransitiveDependencyDemo/">
     <Project Path="Examples/SourceGen/TransitiveDependencyDemo/TransitiveDemo.FeatureA/TransitiveDemo.FeatureA.csproj" />
