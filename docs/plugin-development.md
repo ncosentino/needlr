@@ -169,6 +169,88 @@ this is done by the framework itself.
 > `NeedlrSourceGenBootstrap.RegisterPlugins()` from a `[ModuleInitializer]` to register those types
 > at runtime. See [Cross-Generator Plugins](cross-generator-plugins.md).
 
+### How Cross-Assembly Plugin Discovery Works
+
+Plugins often live in separate NuGet packages (e.g., `NexusLabs.Needlr.Carter`,
+`NexusLabs.Needlr.Serilog`). Needlr discovers these plugins automatically, but
+the mechanism differs between reflection and source-generation modes.
+
+#### Source-Generation Mode (`UsingSourceGen`)
+
+Every assembly that references the Needlr source generator and has
+`[GenerateTypeRegistry]` gets a compile-time `[ModuleInitializer]` emitted by
+the generator. This initializer calls `NeedlrSourceGenBootstrap.Register()` to
+register that assembly's types and plugins into a shared, append-only registry.
+
+```
+Assembly load order (CLR guarantees all [ModuleInitializer] methods complete
+before any application code runs):
+
+  NexusLabs.Needlr.Carter.dll loaded
+    └─ [ModuleInitializer] → Register(CarterWebApplicationBuilderPlugin, ...)
+
+  NexusLabs.Needlr.Serilog.dll loaded
+    └─ [ModuleInitializer] → Register(SerilogPlugin, ...)
+
+  MyApp.dll loaded
+    └─ [ModuleInitializer] → Register(MyPlugin, MyService, ...)
+
+  Application code starts
+    └─ new Syringe().UsingSourceGen()  ← sees ALL plugins from ALL assemblies
+```
+
+When `UsingSourceGen()` is called, it reads from `NeedlrSourceGenBootstrap` which
+contains the merged set of types and plugins from every registered assembly. No
+reflection, no assembly scanning, fully AOT-compatible.
+
+**Key requirement**: the package that ships the plugin must reference the Needlr
+generator so the `[ModuleInitializer]` is emitted. In the `.csproj`:
+
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                    OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  <ProjectReference Include="..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+</ItemGroup>
+```
+
+Or when consuming via NuGet:
+
+```xml
+<PackageReference Include="NexusLabs.Needlr.Build" PrivateAssets="all" />
+```
+
+Without this, the assembly has no `[ModuleInitializer]` and its plugins are
+invisible to `UsingSourceGen()`.
+
+#### Reflection Mode (`UsingReflection`)
+
+The reflection scanner loads assemblies from the application's base directory
+and scans them for types implementing plugin interfaces. Assemblies from
+referenced NuGet packages are in the output directory and are scanned
+automatically.
+
+If a referenced assembly is not in the default scan path (e.g., it's loaded
+lazily or from a non-standard location), use `UsingAdditionalAssemblies` to
+include it explicitly:
+
+```csharp
+new Syringe()
+    .UsingReflection()
+    .UsingAdditionalAssemblies([typeof(SerilogPlugin).Assembly])
+    .BuildServiceProvider(config);
+```
+
+#### Why This Matters for Package Authors
+
+If you're building a Needlr integration package that ships plugins:
+
+1. Reference the Needlr generator in your `.csproj` (see above)
+2. Make plugin classes `public` (the generator emits NDLRGEN002 if an internal
+   plugin is in an assembly without `[GenerateTypeRegistry]`)
+3. Don't require consumers to manually register your plugins — the
+   `[ModuleInitializer]` bootstrap handles it automatically in both modes
+
 ### Controlling Plugin Discovery
 
 #### Assembly Filtering
