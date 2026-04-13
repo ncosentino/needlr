@@ -5,6 +5,39 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha.32] - 2026-04-12
+
+Group chat diagnostics accuracy and Avalonia packaging fix.
+
+### Fixed
+
+#### Agent Framework
+
+- **Per-stage duration in group chat workflows.** Stage duration
+  previously measured streaming event delivery gap (~0.5ms) instead of
+  actual agent execution time. Now uses completion timestamps captured
+  at LLM call time by the chat client middleware.
+
+- **Per-stage token attribution in group chat workflows.** All tokens
+  were assigned to the first stage because the collector drain grabbed
+  every completion before subsequent stages were built. Completions are
+  now partitioned across stages using agent name matching or round-robin
+  interleaving when agent names are unavailable.
+
+- **`ChatCompletionDiagnostics.AgentName` property.** Each LLM
+  completion now carries the agent name that triggered it (when the
+  `AgentRunDiagnosticsBuilder` AsyncLocal propagates). Enables
+  name-based completion-to-stage attribution.
+
+#### Avalonia Integration
+
+- **Generator DLL missing from NuGet package.** The
+  `NexusLabs.Needlr.Avalonia` source generator was marked
+  `IsPackable=false` (correct) but was not embedded as an analyzer asset
+  in `NexusLabs.Needlr.Avalonia.Attributes`. Consumers got the marker
+  attribute but no generator to act on it. The generator is now packed
+  into `analyzers/dotnet/cs` in the Attributes package.
+
 ## [0.0.2-alpha.31] - 2026-04-12
 
 Source generator correctness fixes, Avalonia design-time constructor
