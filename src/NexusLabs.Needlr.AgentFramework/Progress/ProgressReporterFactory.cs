@@ -4,6 +4,18 @@ namespace NexusLabs.Needlr.AgentFramework.Progress;
 /// Default <see cref="IProgressReporterFactory"/> that creates reporters with
 /// DI-registered default sinks or caller-provided per-orchestration sinks.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Default sinks are resolved once at factory construction from all
+/// <see cref="IProgressSink"/> instances registered in DI. This includes
+/// sinks auto-discovered by Needlr and any added manually via
+/// <c>services.AddSingleton&lt;IProgressSink, T&gt;()</c>.
+/// </para>
+/// <para>
+/// The per-orchestration overload (<see cref="IProgressReporterFactory.Create(string, IEnumerable{IProgressSink})"/>)
+/// bypasses defaults entirely, giving callers full control.
+/// </para>
+/// </remarks>
 [DoNotAutoRegister]
 internal sealed class ProgressReporterFactory : IProgressReporterFactory
 {

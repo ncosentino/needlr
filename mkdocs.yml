@@ -72,6 +72,7 @@ nav:
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - AI Integrations: ai-integrations.md
+    - Progress Reporting: progress-reporting.md
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md

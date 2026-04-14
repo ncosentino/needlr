@@ -112,18 +112,9 @@ public static class SyringeExtensionsForAgentFramework
 
             services.TryAddSingleton<IProgressReporterFactory>(sp =>
             {
-                var built = sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value;
-                var diSinks = sp.GetServices<IProgressSink>().ToList();
-                var syringeSinkFactories = built.ProgressSinkFactories;
-                if (syringeSinkFactories is { Count: > 0 })
-                {
-                    foreach (var factory in syringeSinkFactories)
-                    {
-                        diSinks.Add(factory.Invoke(sp));
-                    }
-                }
+                var defaultSinks = sp.GetServices<IProgressSink>();
                 return new ProgressReporterFactory(
-                    diSinks,
+                    defaultSinks,
                     sp.GetRequiredService<IProgressSequence>(),
                     sp.GetRequiredService<IProgressReporterErrorHandler>());
             });

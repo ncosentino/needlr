@@ -5,6 +5,38 @@ All notable changes to Needlr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+#### Agent Framework
+
+- **`AddProgressSink<T>()` on `AgentFrameworkSyringe`** — removed the syringe-level
+  progress sink registration method. This API caused duplicate event delivery when
+  combined with Needlr's auto-discovery (which automatically registers any class
+  implementing `IProgressSink`). Use auto-discovery for default sinks, or pass sinks
+  explicitly via `IProgressReporterFactory.Create(workflowId, sinks)` for
+  per-orchestration isolation.
+
+- **`ProgressServiceCollectionExtensions`** — removed `IServiceCollection.AddProgressSink<T>()`
+  and `IServiceCollection.AddProgressSink(instance)`. These are redundant with standard DI
+  registration (`services.AddSingleton<IProgressSink, T>()`) and auto-discovery.
+
+### Changed
+
+#### Agent Framework
+
+- **`IProgressReporterFactory` default sink resolution** — the `Create(workflowId)`
+  overload now resolves default sinks exclusively from DI-registered `IProgressSink`
+  instances (including auto-discovered ones). The removed syringe factory merge path
+  is no longer involved.
+
+### Added
+
+- **Progress Reporting documentation** — new `docs/progress-reporting.md` page covering
+  auto-discovery, per-orchestration sinks, `[DoNotAutoRegister]` opt-out,
+  `[ProgressSinks]` attribute, `IProgressReporterAccessor`, and error handling.
+
 ## [0.0.2-alpha.34] - 2026-04-13
 
 Group chat ordering and structured tool-call termination.

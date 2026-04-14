@@ -66,15 +66,6 @@ public sealed record AgentFrameworkSyringe
     /// </summary>
     internal Diagnostics.AgentFrameworkMetricsOptions? MetricsOptions { get; init; }
 
-    /// <summary>
-    /// Factories for progress sinks to register in DI. Populated by
-    /// <c>AddProgressSink&lt;T&gt;()</c> on the syringe. Each factory captures its
-    /// closed generic type at the call site so the constructor requirements flow
-    /// through the AOT trim analyzer without needing to annotate a shared
-    /// <c>List&lt;Type&gt;</c> enumerator.
-    /// </summary>
-    internal List<Func<IServiceProvider, Progress.IProgressSink>>? ProgressSinkFactories { get; init; } = [];
-
     public IAgentFactory BuildAgentFactory()
     {
         var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())
