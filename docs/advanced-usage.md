@@ -1382,10 +1382,11 @@ These analyzers work with Needlr's registration attributes (`[Singleton]`, `[Sco
 `NeedlrBootstrapper` wraps your application's entry point with three responsibilities:
 
 1. **Pre-DI bootstrap logger** — a console logger is available before any DI container is built.
-2. **Top-level exception handling** — unhandled exceptions are logged at `Critical` level and do not rethrow.
-3. **Guaranteed cleanup** — an optional async cleanup delegate runs in `finally` (useful for flushing log sinks).
+2. **Pre-DI bootstrap configuration** — an `IConfiguration` is available before DI, so bootstrap behavior can be config-driven.
+3. **Top-level exception handling** — unhandled exceptions are logged at `Critical` level and do not rethrow.
+4. **Guaranteed cleanup** — an optional async cleanup delegate runs in `finally` (useful for flushing log sinks).
 
-The callback receives a `NeedlrBootstrapContext` that currently exposes the bootstrap `ILogger`. This context is an extensibility point — future versions may add pre-DI `IConfiguration` and other bootstrapped resources without breaking existing callbacks.
+The callback receives a `NeedlrBootstrapContext` that exposes the bootstrap `ILogger` and `IConfiguration`.
 
 ```csharp
 using NexusLabs.Needlr.Hosting;
@@ -1409,6 +1410,36 @@ await new NeedlrBootstrapper()
     The `CancellationToken` parameter follows standard .NET async conventions — it comes last and is separate from
     `NeedlrBootstrapContext`. Pass your own `CancellationToken` when you need cooperative cancellation; omit it to
     use the default.
+
+### Bootstrap Configuration
+
+By default, `context.BootstrapConfiguration` is an empty `IConfiguration` — no files, no environment variables. Use `ConfigureBootstrapConfiguration` to add whatever config sources your bootstrap phase needs:
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using NexusLabs.Needlr.Hosting;
+
+await new NeedlrBootstrapper()
+    .ConfigureBootstrapConfiguration(builder =>
+    {
+        builder.AddJsonFile("appsettings.json", optional: true);
+        builder.AddEnvironmentVariables("MYAPP_");
+    })
+    .RunAsync(async (context, ct) =>
+    {
+        var logPath = context.BootstrapConfiguration["Bootstrap:LogPath"]
+            ?? "logs/default.log";
+        context.Logger.LogInformation("Log path: {Path}", logPath);
+
+        // ... build and run your host/web application
+    });
+```
+
+!!! warning "Bootstrap configuration is NOT the application's configuration"
+    `context.BootstrapConfiguration` exists only for the **bootstrap phase** — the brief window before Syringe
+    builds the DI container. It is **not** forwarded to the application's `IConfiguration`. Once the DI container
+    builds, the host's own `IConfiguration` (driven by `appsettings.json`, environment variables, etc.) takes
+    over. Keep bootstrap config usage minimal: log paths, feature flags, and early diagnostic settings.
 
 ### Custom Logger Factory
 
@@ -1505,5 +1536,36 @@ await new NeedlrSerilogBootstrapper()
 `ctx.Logger` is backed by the configured Serilog pipeline. Omit `.Configure(...)` to use the default console sink.
 All lifecycle guarantees from `NeedlrBootstrapper` apply: exceptions are caught and logged at `Critical`,
 and `Log.CloseAndFlushAsync` is always called in `finally`.
+
+#### Config-driven Serilog bootstrap
+
+Use `ConfigureBootstrapConfiguration` to load config sources, then use the `Configure` overload that receives `IConfiguration`:
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using NexusLabs.Needlr.Serilog;
+
+await new NeedlrSerilogBootstrapper()
+    .ConfigureBootstrapConfiguration(builder =>
+    {
+        builder.AddJsonFile("appsettings.json", optional: true);
+    })
+    .Configure((cfg, bootstrapConfig) =>
+    {
+        cfg.ReadFrom.Configuration(bootstrapConfig);
+        cfg.WriteTo.Console(); // safety net
+    })
+    .RunAsync(async (context, ct) =>
+    {
+        // context.BootstrapConfiguration is available here too
+        // ...
+    });
+```
+
+!!! warning "Bootstrap Serilog config ≠ application Serilog config"
+    The `Configure` delegate configures the **bootstrap logger only** — the pre-DI logger that exists before
+    Syringe builds the container. Once the DI container builds, `SerilogPlugin` reads the application's own
+    `IConfiguration` (from the host) and creates the real Serilog pipeline. The two are independent — the
+    bootstrap logger does not affect the application logger.
 
 See the [Serilog](serilog.md) page for full documentation.

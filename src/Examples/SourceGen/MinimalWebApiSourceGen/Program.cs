@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 using MinimalWebApiSourceGen;
@@ -6,6 +7,8 @@ using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
 using NexusLabs.Needlr.Serilog;
+
+using Serilog;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MinimalWebApiSourceGen — demonstrates the Needlr source generator on the
@@ -31,9 +34,31 @@ using NexusLabs.Needlr.Serilog;
 //
 //   4. NeedlrSerilogBootstrapper provides a structured pre-DI bootstrap
 //      logger and automatically flushes Serilog on shutdown.
+//
+//   5. BootstrapConfiguration provides pre-DI IConfiguration so the
+//      bootstrap Serilog logger can be config-driven (e.g., reading from
+//      appsettings.json). This is NOT the application's IConfiguration —
+//      once the DI container builds, SerilogPlugin + Syringe take over.
 // ─────────────────────────────────────────────────────────────────────────────
 
 await new NeedlrSerilogBootstrapper()
+    .ConfigureBootstrapConfiguration(builder =>
+    {
+        // Bootstrap configuration is ONLY for the bootstrap phase — it is
+        // NOT forwarded to the application's IConfiguration built by Syringe.
+        // Use it for config-driven bootstrap behavior (log paths, feature
+        // flags, etc.) before the DI container exists.
+        builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+    })
+    .Configure((cfg, bootstrapConfig) =>
+    {
+        // This overload receives the bootstrap IConfiguration so Serilog
+        // can read from it. This is still a BOOTSTRAP-ONLY logger — once
+        // the DI container builds, the real Serilog pipeline (configured
+        // via SerilogPlugin + appsettings.json) takes over.
+        cfg.ReadFrom.Configuration(bootstrapConfig);
+        cfg.WriteTo.Console();
+    })
     .RunAsync(async (context, ct) =>
     {
         var webApplication = new Syringe()

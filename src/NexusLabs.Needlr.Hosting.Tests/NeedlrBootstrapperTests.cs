@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Xunit;
@@ -81,6 +82,35 @@ public sealed class NeedlrBootstrapperTests
     }
 
     // -------------------------------------------------------------------------
+    // ConfigureBootstrapConfiguration
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_WithNullBootstrapper_ThrowsArgumentNullException()
+    {
+        NeedlrBootstrapper bootstrapper = null!;
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.ConfigureBootstrapConfiguration(_ => { }));
+    }
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_WithNullConfigure_ThrowsArgumentNullException()
+    {
+        var bootstrapper = new NeedlrBootstrapper();
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.ConfigureBootstrapConfiguration(null!));
+    }
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_ReturnsNewInstance()
+    {
+        var bootstrapper = new NeedlrBootstrapper();
+        var result = bootstrapper.ConfigureBootstrapConfiguration(_ => { });
+
+        Assert.NotSame(bootstrapper, result);
+    }
+
+    // -------------------------------------------------------------------------
     // RunAsync -- null guard
     // -------------------------------------------------------------------------
 
@@ -146,6 +176,117 @@ public sealed class NeedlrBootstrapperTests
     }
 
     // -------------------------------------------------------------------------
+    // RunAsync -- bootstrap configuration (default)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_Default_BootstrapConfigurationIsNotNull()
+    {
+        IConfiguration? captured = null;
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory());
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            captured = ctx.BootstrapConfiguration;
+            return Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(captured);
+    }
+
+    [Fact]
+    public async Task RunAsync_Default_BootstrapConfigurationIsEmpty()
+    {
+        IConfiguration? captured = null;
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory());
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            captured = ctx.BootstrapConfiguration;
+            return Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(
+            captured!.AsEnumerable(),
+            kv => kv.Value is not null);
+    }
+
+    // -------------------------------------------------------------------------
+    // RunAsync -- bootstrap configuration (custom sources)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_ConfigureBootstrapConfiguration_AppliesConfiguredSources()
+    {
+        string? captured = null;
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory())
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["MyKey"] = "MyValue",
+                }));
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            captured = ctx.BootstrapConfiguration["MyKey"];
+            return Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Equal("MyValue", captured);
+    }
+
+    [Fact]
+    public async Task RunAsync_ConfigureBootstrapConfiguration_LastCallWins()
+    {
+        string? captured = null;
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory())
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Key"] = "First",
+                }))
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Key"] = "Second",
+                }));
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            captured = ctx.BootstrapConfiguration["Key"];
+            return Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Equal("Second", captured);
+    }
+
+    [Fact]
+    public async Task RunAsync_BootstrapConfiguration_AvailableEvenWhenCallbackThrows()
+    {
+        IConfiguration? captured = null;
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory())
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Key"] = "BeforeException",
+                }));
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            captured = ctx.BootstrapConfiguration;
+            throw new InvalidOperationException("boom");
+        }, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(captured);
+        Assert.Equal("BeforeException", captured!["Key"]);
+    }
+
+    // -------------------------------------------------------------------------
     // RunAsync -- cleanup
     // -------------------------------------------------------------------------
 
@@ -185,6 +326,36 @@ public sealed class NeedlrBootstrapperTests
             TestContext.Current.CancellationToken);
 
         Assert.True(cleanupCalled);
+    }
+
+    [Fact]
+    public async Task RunAsync_CleanupCanAccessBootstrapConfiguration()
+    {
+        string? capturedInCleanup = null;
+        string? configRef = null;
+
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(new CapturingLoggerFactory())
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["CleanupKey"] = "CleanupValue",
+                }))
+            .WithCleanup(() =>
+            {
+                // The config is captured by the callback closure, so cleanup
+                // can still read it because dispose happens after cleanup.
+                capturedInCleanup = configRef;
+                return Task.CompletedTask;
+            });
+
+        await bootstrapper.RunAsync((ctx, ct) =>
+        {
+            configRef = ctx.BootstrapConfiguration["CleanupKey"];
+            return Task.CompletedTask;
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Equal("CleanupValue", capturedInCleanup);
     }
 
     // -------------------------------------------------------------------------

@@ -140,6 +140,42 @@ await new NeedlrSerilogBootstrapper()
     });
 ```
 
+### Config-Driven Bootstrap Logging
+
+When bootstrap logging behavior (log paths, minimum levels, sinks) should come from configuration rather than hardcoded values, use `ConfigureBootstrapConfiguration` and the `Configure` overload that receives `IConfiguration`:
+
+```csharp
+await new NeedlrSerilogBootstrapper()
+    .ConfigureBootstrapConfiguration(builder =>
+    {
+        builder.AddJsonFile("appsettings.json", optional: true);
+        builder.AddEnvironmentVariables("MYAPP_");
+    })
+    .Configure((cfg, bootstrapConfig) =>
+    {
+        // Read serilog sinks, levels, etc. from bootstrap config
+        cfg.ReadFrom.Configuration(bootstrapConfig);
+        // Console as a safety net so something always logs
+        cfg.WriteTo.Console();
+    })
+    .RunAsync(async (ctx, ct) =>
+    {
+        // Bootstrap config is also available on the context
+        var logPath = ctx.BootstrapConfiguration["Logging:Path"];
+        ctx.Logger.LogInformation("Using log path: {Path}", logPath);
+        // ...
+    });
+```
+
+!!! warning "Bootstrap configuration is NOT the application's configuration"
+    `ConfigureBootstrapConfiguration` builds an `IConfiguration` that exists **only** for the bootstrap phase —
+    the brief window before Syringe builds the DI container. It is **not** forwarded to the application's
+    `IConfiguration`. Once the DI container builds, `SerilogPlugin` reads the host's own `IConfiguration`
+    (from `appsettings.json`, environment variables, etc.) and creates the real Serilog pipeline.
+
+    The bootstrap logger and the application logger are **independent**. If both read from `appsettings.json`,
+    the values may happen to overlap, but neither depends on the other.
+
 ### ASP.NET Core Example
 
 ```csharp

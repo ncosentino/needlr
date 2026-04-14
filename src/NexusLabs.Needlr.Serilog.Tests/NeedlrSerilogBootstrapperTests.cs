@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Xunit;
@@ -7,12 +8,12 @@ namespace NexusLabs.Needlr.Serilog.Tests;
 /// <summary>
 /// Tests for <see cref="NeedlrSerilogBootstrapper"/> covering the two-stage
 /// bootstrap lifecycle: configuration, callback invocation, logger provisioning,
-/// cancellation forwarding, and exception handling.
+/// cancellation forwarding, exception handling, and bootstrap configuration.
 /// </summary>
 public sealed class NeedlrSerilogBootstrapperTests
 {
     // -------------------------------------------------------------------------
-    // Configure extension method
+    // Configure extension method (Action<LoggerConfiguration>)
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -28,7 +29,7 @@ public sealed class NeedlrSerilogBootstrapperTests
     {
         var bootstrapper = new NeedlrSerilogBootstrapper();
         Assert.Throws<ArgumentNullException>(() =>
-            bootstrapper.Configure(null!));
+            bootstrapper.Configure((Action<global::Serilog.LoggerConfiguration>)null!));
     }
 
     [Fact]
@@ -36,6 +37,66 @@ public sealed class NeedlrSerilogBootstrapperTests
     {
         var bootstrapper = new NeedlrSerilogBootstrapper();
         var result = bootstrapper.Configure(_ => { });
+
+        Assert.NotSame(bootstrapper, result);
+    }
+
+    // -------------------------------------------------------------------------
+    // Configure extension method (Action<LoggerConfiguration, IConfiguration>)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Configure_WithConfig_WithNullBootstrapper_ThrowsArgumentNullException()
+    {
+        NeedlrSerilogBootstrapper bootstrapper = null!;
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.Configure((_, _) => { }));
+    }
+
+    [Fact]
+    public void Configure_WithConfig_WithNullAction_ThrowsArgumentNullException()
+    {
+        var bootstrapper = new NeedlrSerilogBootstrapper();
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.Configure(
+                (Action<global::Serilog.LoggerConfiguration, IConfiguration>)null!));
+    }
+
+    [Fact]
+    public void Configure_WithConfig_ReturnsNewInstance()
+    {
+        var bootstrapper = new NeedlrSerilogBootstrapper();
+        var result = bootstrapper.Configure(
+            (Action<global::Serilog.LoggerConfiguration, IConfiguration>)((_, _) => { }));
+
+        Assert.NotSame(bootstrapper, result);
+    }
+
+    // -------------------------------------------------------------------------
+    // ConfigureBootstrapConfiguration
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_WithNullBootstrapper_ThrowsArgumentNullException()
+    {
+        NeedlrSerilogBootstrapper bootstrapper = null!;
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.ConfigureBootstrapConfiguration(_ => { }));
+    }
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_WithNullAction_ThrowsArgumentNullException()
+    {
+        var bootstrapper = new NeedlrSerilogBootstrapper();
+        Assert.Throws<ArgumentNullException>(() =>
+            bootstrapper.ConfigureBootstrapConfiguration(null!));
+    }
+
+    [Fact]
+    public void ConfigureBootstrapConfiguration_ReturnsNewInstance()
+    {
+        var bootstrapper = new NeedlrSerilogBootstrapper();
+        var result = bootstrapper.ConfigureBootstrapConfiguration(_ => { });
 
         Assert.NotSame(bootstrapper, result);
     }
@@ -152,6 +213,118 @@ public sealed class NeedlrSerilogBootstrapperTests
     }
 
     // -------------------------------------------------------------------------
+    // RunAsync — bootstrap configuration
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_Default_BootstrapConfigurationIsNotNull()
+    {
+        IConfiguration? captured = null;
+
+        await new NeedlrSerilogBootstrapper()
+            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
+            .RunAsync((ctx, ct) =>
+            {
+                captured = ctx.BootstrapConfiguration;
+                return Task.CompletedTask;
+            }, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(captured);
+    }
+
+    [Fact]
+    public async Task RunAsync_Default_BootstrapConfigurationIsEmpty()
+    {
+        IConfiguration? captured = null;
+
+        await new NeedlrSerilogBootstrapper()
+            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
+            .RunAsync((ctx, ct) =>
+            {
+                captured = ctx.BootstrapConfiguration;
+                return Task.CompletedTask;
+            }, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(
+            captured!.AsEnumerable(),
+            kv => kv.Value is not null);
+    }
+
+    [Fact]
+    public async Task RunAsync_ConfigureBootstrapConfiguration_ValuesAccessibleInCallback()
+    {
+        string? captured = null;
+
+        await new NeedlrSerilogBootstrapper()
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["TestKey"] = "TestValue",
+                }))
+            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
+            .RunAsync((ctx, ct) =>
+            {
+                captured = ctx.BootstrapConfiguration["TestKey"];
+                return Task.CompletedTask;
+            }, TestContext.Current.CancellationToken);
+
+        Assert.Equal("TestValue", captured);
+    }
+
+    // -------------------------------------------------------------------------
+    // RunAsync — Configure with IConfiguration overload
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_ConfigureWithConfig_ReceivesBootstrapConfiguration()
+    {
+        IConfiguration? receivedConfig = null;
+
+        await new NeedlrSerilogBootstrapper()
+            .ConfigureBootstrapConfiguration(builder => builder
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Serilog:MinimumLevel"] = "Debug",
+                }))
+            .Configure((cfg, bootstrapConfiguration) =>
+            {
+                receivedConfig = bootstrapConfiguration;
+                cfg.WriteTo.Sink(new CapturingSink());
+            })
+            .RunAsync(
+                (ctx, ct) => Task.CompletedTask,
+                TestContext.Current.CancellationToken);
+
+        Assert.NotNull(receivedConfig);
+        Assert.Equal("Debug", receivedConfig!["Serilog:MinimumLevel"]);
+    }
+
+    [Fact]
+    public async Task RunAsync_ConfigureWithConfig_ReplacesSimpleConfigure()
+    {
+        var simpleInvoked = false;
+        var configInvoked = false;
+
+        await new NeedlrSerilogBootstrapper()
+            .Configure(cfg =>
+            {
+                simpleInvoked = true;
+                cfg.WriteTo.Sink(new CapturingSink());
+            })
+            .Configure((cfg, _) =>
+            {
+                configInvoked = true;
+                cfg.WriteTo.Sink(new CapturingSink());
+            })
+            .RunAsync(
+                (ctx, ct) => Task.CompletedTask,
+                TestContext.Current.CancellationToken);
+
+        Assert.False(simpleInvoked);
+        Assert.True(configInvoked);
+    }
+
+    // -------------------------------------------------------------------------
     // RunAsync — exception handling
     // -------------------------------------------------------------------------
 
@@ -162,6 +335,17 @@ public sealed class NeedlrSerilogBootstrapperTests
             .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
             .RunAsync(
                 (ctx, ct) => throw new InvalidOperationException("boom"),
+                TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task RunAsync_DoesNotRethrow_OnSerilogConfigurationFailure()
+    {
+        // Simulate a broken Configure delegate — should not escape
+        await new NeedlrSerilogBootstrapper()
+            .Configure(cfg => throw new InvalidOperationException("bad serilog config"))
+            .RunAsync(
+                (ctx, ct) => Task.CompletedTask,
                 TestContext.Current.CancellationToken);
     }
 }
