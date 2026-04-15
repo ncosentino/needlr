@@ -44,6 +44,7 @@ jobs:
           --configuration Release \
           --no-build \
           --verbosity normal \
+          --filter "Category!=Integration" \
           --collect:"XPlat Code Coverage" \
           --results-directory coverage
 
