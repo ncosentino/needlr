@@ -1007,4 +1007,179 @@ public sealed class IterativeAgentLoopTests
     }
 
     #endregion
+
+    #region ChatCompletion Diagnostics
+
+    [Fact]
+    public async Task RunAsync_ChatCompletions_ContainsOneEntryPerLlmCall()
+    {
+        var mockChat = CreateMockChatWithTokens("done", 100, 50);
+        var loop = CreateLoop(mockChat);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Diagnostics);
+        Assert.Single(result.Diagnostics!.ChatCompletions);
+        Assert.True(result.Diagnostics.ChatCompletions[0].Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_AggregateTokenUsage_MatchesSumOfIterationTokens()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount <= 2)
+                {
+                    var toolResponse = CreateToolCallResponse(("ping", $"c{callCount}", null));
+                    toolResponse.Usage = new UsageDetails
+                    {
+                        InputTokenCount = 100 * callCount,
+                        OutputTokenCount = 50 * callCount,
+                        TotalTokenCount = 150 * callCount,
+                    };
+                    return toolResponse;
+                }
+
+                var textResponse = new ChatResponse(
+                    [new ChatMessage(ChatRole.Assistant, "done")]);
+                textResponse.Usage = new UsageDetails
+                {
+                    InputTokenCount = 300,
+                    OutputTokenCount = 150,
+                    TotalTokenCount = 450,
+                };
+                return textResponse;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            tools: [tool],
+            toolResultMode: ToolResultMode.SingleCall);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        var diag = result.Diagnostics!;
+
+        // Sum tokens from IterationRecord
+        long expectedInput = result.Iterations.Sum(i => i.Tokens.InputTokens);
+        long expectedOutput = result.Iterations.Sum(i => i.Tokens.OutputTokens);
+        long expectedTotal = result.Iterations.Sum(i => i.Tokens.TotalTokens);
+
+        Assert.Equal(expectedInput, diag.AggregateTokenUsage.InputTokens);
+        Assert.Equal(expectedOutput, diag.AggregateTokenUsage.OutputTokens);
+        Assert.Equal(expectedTotal, diag.AggregateTokenUsage.TotalTokens);
+        Assert.True(diag.AggregateTokenUsage.TotalTokens > 0);
+    }
+
+    [Fact]
+    public async Task RunAsync_TotalInputAndOutputMessages_AreRecorded()
+    {
+        var mockChat = CreateMockChatWithTokens("done", 100, 50);
+        var loop = CreateLoop(mockChat);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        // [system, user] = 2 input messages
+        Assert.True(result.Diagnostics!.TotalInputMessages >= 2);
+        Assert.True(result.Diagnostics.TotalOutputMessages >= 1);
+    }
+
+    [Fact]
+    public async Task RunAsync_OneRoundTrip_RecordsTwoChatCompletionEntries()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    var toolResponse = CreateToolCallResponse(("ping", "c1", null));
+                    toolResponse.Usage = new UsageDetails
+                    {
+                        InputTokenCount = 100,
+                        OutputTokenCount = 50,
+                        TotalTokenCount = 150,
+                    };
+                    toolResponse.ModelId = "gpt-4o";
+                    return toolResponse;
+                }
+
+                var textResponse = new ChatResponse(
+                    [new ChatMessage(ChatRole.Assistant, "done")]);
+                textResponse.Usage = new UsageDetails
+                {
+                    InputTokenCount = 200,
+                    OutputTokenCount = 75,
+                    TotalTokenCount = 275,
+                };
+                textResponse.ModelId = "gpt-4o";
+                return textResponse;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            tools: [tool],
+            toolResultMode: ToolResultMode.OneRoundTrip);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        var completions = result.Diagnostics!.ChatCompletions;
+        Assert.Equal(2, completions.Count);
+        Assert.Equal(0, completions[0].Sequence);
+        Assert.Equal(1, completions[1].Sequence);
+        Assert.Equal("gpt-4o", completions[0].Model);
+        Assert.Equal("gpt-4o", completions[1].Model);
+        Assert.True(completions[0].Succeeded);
+        Assert.True(completions[1].Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_ChatCompletionFailure_IsRecordedInDiagnostics()
+    {
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("LLM provider error"));
+
+        var loop = CreateLoop(mockChat);
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.NotNull(result.Diagnostics);
+
+        // The failed completion should still be recorded
+        var completions = result.Diagnostics!.ChatCompletions;
+        Assert.Single(completions);
+        Assert.False(completions[0].Succeeded);
+        Assert.Equal("LLM provider error", completions[0].ErrorMessage);
+        Assert.Equal("unknown", completions[0].Model);
+    }
+
+    #endregion
 }
+

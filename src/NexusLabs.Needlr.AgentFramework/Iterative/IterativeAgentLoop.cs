@@ -57,6 +57,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 {
                     succeeded = false;
                     errorMessage = $"Prompt factory failed on iteration {i}: {ex.Message}";
+                    diagnosticsBuilder.RecordFailure(errorMessage);
                     break;
                 }
 
@@ -93,18 +94,72 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var response = await chatClient.GetResponseAsync(
-                        messages, chatOptions, cancellationToken).ConfigureAwait(false);
+                    var completionSequence = diagnosticsBuilder.NextChatCompletionSequence();
+                    var completionStartedAt = DateTimeOffset.UtcNow;
+                    var completionStopwatch = Stopwatch.StartNew();
+                    ChatResponse response;
 
+                    try
+                    {
+                        response = await chatClient.GetResponseAsync(
+                            messages, chatOptions, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw; // let outer handler deal with cancellation
+                    }
+                    catch (Exception ex)
+                    {
+                        completionStopwatch.Stop();
+                        diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
+                            Sequence: completionSequence,
+                            Model: "unknown",
+                            Tokens: new TokenUsage(0, 0, 0, 0, 0),
+                            InputMessageCount: messages.Count,
+                            Duration: completionStopwatch.Elapsed,
+                            Succeeded: false,
+                            ErrorMessage: ex.Message,
+                            StartedAt: completionStartedAt,
+                            CompletedAt: DateTimeOffset.UtcNow));
+                        diagnosticsBuilder.RecordInputMessageCount(messages.Count);
+                        throw;
+                    }
+
+                    completionStopwatch.Stop();
                     llmCallCount++;
 
                     // Track tokens
+                    long callInput = 0, callOutput = 0, callTotal = 0;
                     if (response.Usage is { } usage)
                     {
-                        iterationInputTokens += usage.InputTokenCount ?? 0;
-                        iterationOutputTokens += usage.OutputTokenCount ?? 0;
-                        iterationTotalTokens += usage.TotalTokenCount ?? 0;
+                        callInput = usage.InputTokenCount ?? 0;
+                        callOutput = usage.OutputTokenCount ?? 0;
+                        callTotal = usage.TotalTokenCount ?? 0;
+                        iterationInputTokens += callInput;
+                        iterationOutputTokens += callOutput;
+                        iterationTotalTokens += callTotal;
                     }
+
+                    var responseMessageCount = response.Messages.Count;
+
+                    // Record chat completion diagnostics
+                    diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
+                        Sequence: completionSequence,
+                        Model: response.ModelId ?? "unknown",
+                        Tokens: new TokenUsage(
+                            InputTokens: callInput,
+                            OutputTokens: callOutput,
+                            TotalTokens: callTotal,
+                            CachedInputTokens: 0,
+                            ReasoningTokens: 0),
+                        InputMessageCount: messages.Count,
+                        Duration: completionStopwatch.Elapsed,
+                        Succeeded: true,
+                        ErrorMessage: null,
+                        StartedAt: completionStartedAt,
+                        CompletedAt: DateTimeOffset.UtcNow));
+                    diagnosticsBuilder.RecordInputMessageCount(messages.Count);
+                    diagnosticsBuilder.RecordOutputMessageCount(responseMessageCount);
 
                     // Check for tool calls in response
                     var functionCalls = response.Messages
@@ -192,6 +247,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         {
             succeeded = false;
             errorMessage = "Loop was cancelled.";
+            diagnosticsBuilder.RecordFailure(errorMessage);
         }
         catch (Exception ex)
         {
