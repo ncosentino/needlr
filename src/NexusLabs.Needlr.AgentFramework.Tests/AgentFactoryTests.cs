@@ -355,6 +355,83 @@ public class AgentFactoryTests
         Assert.Throws<ArgumentNullException>(() =>
             factory.CreateAgent("FactoryTestAgent", (Action<AgentFactoryOptions>)null!));
     }
+
+    // -------------------------------------------------------------------------
+    // ResolveTools — tool resolution without agent creation
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ResolveTools_WithNoConfigure_ReturnsAllRegisteredFunctions()
+    {
+        var factory = CreateFactory((af, asm) => af
+            .AddAgentFunctionsFromAssemblies([asm])
+            .AddAgentFunctionGroupsFromAssemblies([asm]));
+
+        var tools = factory.ResolveTools();
+
+        Assert.NotNull(tools);
+        Assert.NotEmpty(tools);
+    }
+
+    [Fact]
+    public void ResolveTools_WithFunctionTypes_ReturnsScopedSubset()
+    {
+        var factory = CreateFactory((af, asm) => af
+            .AddAgentFunctionsFromAssemblies([asm])
+            .AddAgentFunctionGroupsFromAssemblies([asm]));
+
+        var tools = factory.ResolveTools(opts =>
+            opts.FunctionTypes = [typeof(FactoryTestFunctions)]);
+
+        Assert.NotNull(tools);
+        Assert.Single(tools);
+        Assert.Equal("GetTestData", tools[0].Name);
+    }
+
+    [Fact]
+    public void ResolveTools_WithFunctionGroups_ReturnsGroupScopedTools()
+    {
+        var factory = CreateFactory((af, asm) => af
+            .AddAgentFunctionsFromAssemblies([asm])
+            .AddAgentFunctionGroupsFromAssemblies([asm]));
+
+        var tools = factory.ResolveTools(opts =>
+            opts.FunctionGroups = ["agent-factory-test-b"]);
+
+        Assert.NotNull(tools);
+        Assert.Single(tools);
+        Assert.Equal("GetSecondaryData", tools[0].Name);
+    }
+
+    [Fact]
+    public void ResolveTools_TAgent_ReadsFromAttribute()
+    {
+        var factory = CreateFactory((af, asm) => af
+            .AddAgentFunctionsFromAssemblies([asm])
+            .AddAgentFunctionGroupsFromAssemblies([asm])
+            .AddAgent<GroupScopedTestAgent>());
+
+        var tools = factory.ResolveTools<GroupScopedTestAgent>();
+
+        Assert.NotNull(tools);
+        Assert.Single(tools);
+        Assert.Equal("GetTestData", tools[0].Name);
+    }
+
+    [Fact]
+    public async Task ResolveTools_ReturnsInvocableTools()
+    {
+        var factory = CreateFactory((af, asm) => af
+            .AddAgentFunctionsFromAssemblies([asm]));
+
+        var tools = factory.ResolveTools(opts =>
+            opts.FunctionTypes = [typeof(FactoryTestFunctions)]);
+
+        Assert.Single(tools);
+        var fn = Assert.IsAssignableFrom<AIFunction>(tools[0]);
+        var result = await fn.InvokeAsync(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("factory-test", result?.ToString());
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -368,6 +445,11 @@ public sealed class FactoryTestAgent { }
 public sealed class NoInstructionsFactoryAgent { }
 
 public sealed class UndecoratedFactoryAgent { }
+
+[NeedlrAiAgent(
+    Instructions = "Group-scoped test agent.",
+    FunctionGroups = ["agent-factory-test"])]
+public sealed class GroupScopedTestAgent { }
 
 [AgentFunctionGroup("agent-factory-test")]
 public sealed class FactoryTestFunctions

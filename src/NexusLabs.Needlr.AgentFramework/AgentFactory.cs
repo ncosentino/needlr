@@ -80,6 +80,58 @@ internal sealed class AgentFactory : IAgentFactory
         return CreateAgentFromType(type, configure);
     }
 
+    public IReadOnlyList<AITool> ResolveTools(Action<AgentFactoryOptions>? configure = null)
+    {
+        var agentOptions = new AgentFactoryOptions();
+        configure?.Invoke(agentOptions);
+        return ResolveToolsCore(agentOptions);
+    }
+
+    public IReadOnlyList<AITool> ResolveTools<TAgent>() where TAgent : class
+        => ResolveToolsFromType(typeof(TAgent));
+
+    public IReadOnlyList<AITool> ResolveTools<TAgent>(Action<AgentFactoryOptions> configure) where TAgent : class
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        return ResolveToolsFromType(typeof(TAgent), configure);
+    }
+
+    private IReadOnlyList<AITool> ResolveToolsFromType(
+        Type agentType,
+        Action<AgentFactoryOptions>? additionalConfigure = null)
+    {
+        var attr = agentType.GetCustomAttribute<NeedlrAiAgentAttribute>()
+            ?? throw new InvalidOperationException(
+                $"'{agentType.Name}' is not decorated with [NeedlrAiAgent]. " +
+                $"Apply [NeedlrAiAgent] to the class or use ResolveTools(configure) to set options manually.");
+
+        var agentOptions = new AgentFactoryOptions
+        {
+            FunctionTypes = attr.FunctionTypes,
+            FunctionGroups = attr.FunctionGroups,
+        };
+        additionalConfigure?.Invoke(agentOptions);
+
+        return ResolveToolsCore(agentOptions);
+    }
+
+    private IReadOnlyList<AITool> ResolveToolsCore(AgentFactoryOptions agentOptions)
+    {
+        var allFunctions = _lazyFunctionsCache.Value;
+        var applicableTypes = GetApplicableTypes(agentOptions);
+        var tools = new List<AITool>();
+
+        foreach (var type in applicableTypes)
+        {
+            if (allFunctions.TryGetValue(type, out var fns))
+            {
+                tools.AddRange(fns);
+            }
+        }
+
+        return tools;
+    }
+
     private AIAgent CreateAgentFromType(Type agentType, Action<AgentFactoryOptions>? additionalConfigure = null)
     {
         var attr = agentType.GetCustomAttribute<NeedlrAiAgentAttribute>()
@@ -120,18 +172,7 @@ internal sealed class AgentFactory : IAgentFactory
         configure?.Invoke(agentOptions);
 
         var configuredOpts = _lazyConfiguredOptions.Value;
-        var allFunctions = _lazyFunctionsCache.Value;
-
-        var applicableTypes = GetApplicableTypes(agentOptions);
-        var tools = new List<AITool>();
-
-        foreach (var type in applicableTypes)
-        {
-            if (allFunctions.TryGetValue(type, out var fns))
-            {
-                tools.AddRange(fns);
-            }
-        }
+        var tools = (IList<AITool>)ResolveToolsCore(agentOptions);
 
         var chatClient = configuredOpts.ChatClientFactory?.Invoke(_serviceProvider)
             ?? _serviceProvider.GetRequiredService<IChatClient>();

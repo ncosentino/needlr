@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 
 namespace NexusLabs.Needlr.AgentFramework;
 
@@ -73,4 +74,39 @@ public interface IAgentFactory
     /// Callback to override attribute-populated defaults.
     /// </param>
     AIAgent CreateAgent(string agentClassName, Action<AgentFactoryOptions> configure);
+
+    /// <summary>
+    /// Resolves the set of <see cref="AITool"/> instances that would be wired
+    /// to an agent, without creating the agent itself.
+    /// </summary>
+    /// <param name="configure">
+    /// Optional callback to scope tools by <see cref="AgentFactoryOptions.FunctionTypes"/>
+    /// or <see cref="AgentFactoryOptions.FunctionGroups"/>. When <c>null</c>, all
+    /// registered function types are included.
+    /// </param>
+    /// <returns>The resolved tools, ready to pass to <see cref="Iterative.IterativeLoopOptions.Tools"/>.</returns>
+    IReadOnlyList<AITool> ResolveTools(Action<AgentFactoryOptions>? configure = null);
+
+    /// <summary>
+    /// Resolves the tools scoped to the <see cref="NeedlrAiAgentAttribute"/> on
+    /// <typeparamref name="TAgent"/> (reads <c>FunctionTypes</c> and <c>FunctionGroups</c>
+    /// from the attribute).
+    /// </summary>
+    /// <typeparam name="TAgent">
+    /// A class decorated with <see cref="NeedlrAiAgentAttribute"/>.
+    /// </typeparam>
+    IReadOnlyList<AITool> ResolveTools<TAgent>() where TAgent : class;
+
+    /// <summary>
+    /// Resolves the tools scoped to the <see cref="NeedlrAiAgentAttribute"/> on
+    /// <typeparamref name="TAgent"/>, then applies the <paramref name="configure"/>
+    /// callback to override per-run scoping.
+    /// </summary>
+    /// <typeparam name="TAgent">
+    /// A class decorated with <see cref="NeedlrAiAgentAttribute"/>.
+    /// </typeparam>
+    /// <param name="configure">
+    /// Callback to override attribute-populated defaults.
+    /// </param>
+    IReadOnlyList<AITool> ResolveTools<TAgent>(Action<AgentFactoryOptions> configure) where TAgent : class;
 }
