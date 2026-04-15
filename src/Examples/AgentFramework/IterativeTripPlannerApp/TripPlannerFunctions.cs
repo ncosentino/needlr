@@ -128,8 +128,20 @@ internal sealed class TripPlannerFunctions(
             results = """[{"tip":"Book 3+ weeks ahead for 15-20% savings"},{"tip":"Tuesday/Wednesday departures are cheapest"},{"tip":"Consider layover in Honolulu to break up Pacific crossing"}]""";
         }
 
-        // Generic fallback
-        results ??= """[{"note":"No specific results found for this query. Try searching with city names like 'new york to london' or 'hotel london'."}]""";
+        // Generic fallback — list available routes so the LLM knows what queries will work.
+        // This is critical: without explicit guidance, LLMs use airport codes or free-form
+        // queries that miss the matching logic, causing death spirals of useless searches.
+        if (results is null)
+        {
+            var availableRoutes = string.Join(", ",
+                FlightRoutes.Select(r => $"{r.fromTerms[0]} → {r.toTerms[0]}"));
+            var availableHotelCities = string.Join(", ",
+                HotelDatabase.Keys);
+            results = $"{{\"error\":\"No results found for '{query}'.\","
+                + $"\"available_flight_routes\":[\"{string.Join("\",\"", FlightRoutes.Select(r => $"{r.fromTerms[0]} to {r.toTerms[0]}"))}\"],"
+                + $"\"available_hotel_cities\":[\"{string.Join("\",\"", HotelDatabase.Keys)}\"],"
+                + "\"hint\":\"Search using the exact city pair names above, e.g. 'flights new york to london' or 'hotel london'\"}";
+        }
 
         // Append to research notes (cap at last 5 searches)
         var existing = workspace.ReadFile("research-notes.md");
