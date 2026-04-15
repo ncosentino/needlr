@@ -1,12 +1,12 @@
 {
   "summary": {
-    "generatedon": "2026-04-15T15:57:49Z",
+    "generatedon": "2026-04-15T16:26:35Z",
     "parser": "MultiReport (26x Cobertura)",
     "assemblies": 24,
     "classes": 399,
     "files": 396,
-    "coveredlines": 15704,
-    "uncoveredlines": 3583,
+    "coveredlines": 15703,
+    "uncoveredlines": 3584,
     "coverablelines": 19287,
     "totallines": 47215,
     "linecoverage": 81.4,
@@ -14,7 +14,7 @@
     "totalbranches": 8301,
     "branchcoverage": 71.4,
     "coveredmethods": 1991,
-    "fullcoveredmethods": 1665,
+    "fullcoveredmethods": 1664,
     "totalmethods": 2521,
     "methodcoverage": 78.9,
     "fullmethodcoverage": 66
@@ -55,7 +55,7 @@
         { "name": "NexusLabs.Needlr.VerificationOptions", "coverage": 100, "coveredlines": 14, "coverablelines": 14, "totallines": 102, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
         { "name": "NexusLabs.Needlr.VerificationOptionsBuilder", "coverage": 70, "coveredlines": 14, "coverablelines": 20, "totallines": 68, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 71.4, "fullmethodcoverage": 71.4, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 7 },
         { "name": "NexusLabs.Needlr.VerificationResult", "coverage": 75, "coveredlines": 12, "coverablelines": 16, "totallines": 170, "branchcoverage": 62.5, "coveredbranches": 5, "totalbranches": 8, "methodcoverage": 75, "fullmethodcoverage": 50, "coveredmethods": 3, "fullcoveredmethods": 2, "totalmethods": 4 } ] },
-      { "name": "NexusLabs.Needlr.AgentFramework", "classes": 99, "coverage": 84, "coveredlines": 1816, "coverablelines": 2161, "totallines": 10083, "branchcoverage": 80.6, "coveredbranches": 476, "totalbranches": 590, "methodcoverage": 74.1, "fullmethodcoverage": 70, "coveredmethods": 453, "fullcoveredmethods": 428, "totalmethods": 611, "classesinassembly": [
+      { "name": "NexusLabs.Needlr.AgentFramework", "classes": 99, "coverage": 83.9, "coveredlines": 1815, "coverablelines": 2161, "totallines": 10083, "branchcoverage": 80.6, "coveredbranches": 476, "totalbranches": 590, "methodcoverage": 74.1, "fullmethodcoverage": 69.8, "coveredmethods": 453, "fullcoveredmethods": 427, "totalmethods": 611, "classesinassembly": [
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFactory", "coverage": 98.6, "coveredlines": 145, "coverablelines": 147, "totallines": 299, "branchcoverage": 89.7, "coveredbranches": 70, "totalbranches": 78, "methodcoverage": 100, "fullmethodcoverage": 88.2, "coveredmethods": 17, "fullcoveredmethods": 15, "totalmethods": 17 },
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFactoryOptions", "coverage": 100, "coveredlines": 5, "coverablelines": 5, "totallines": 43, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 5 },
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions", "coverage": 100, "coveredlines": 3, "coverablelines": 3, "totallines": 29, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 3, "fullcoveredmethods": 3, "totalmethods": 3 },
@@ -152,7 +152,7 @@
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolError", "coverage": 100, "coveredlines": 1, "coverablelines": 1, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolResult", "coverage": 100, "coveredlines": 13, "coverablelines": 13, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolResult\u00602", "coverage": 100, "coveredlines": 15, "coverablelines": 15, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
-        { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "coverage": 91.1, "coveredlines": 144, "coverablelines": 158, "totallines": 302, "branchcoverage": 79.6, "coveredbranches": 43, "totalbranches": 54, "methodcoverage": 93.7, "fullmethodcoverage": 56.2, "coveredmethods": 15, "fullcoveredmethods": 9, "totalmethods": 16 },
+        { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "coverage": 90.5, "coveredlines": 143, "coverablelines": 158, "totallines": 302, "branchcoverage": 79.6, "coveredbranches": 43, "totalbranches": 54, "methodcoverage": 93.7, "fullmethodcoverage": 50, "coveredmethods": 15, "fullcoveredmethods": 8, "totalmethods": 16 },
         { "name": "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute", "coverage": 0, "coveredlines": 0, "coverablelines": 7, "totallines": 60, "branchcoverage": 0, "coveredbranches": 0, "totalbranches": 2, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 3 },
         { "name": "NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace", "coverage": 100, "coveredlines": 63, "coverablelines": 63, "totallines": 167, "branchcoverage": 97.5, "coveredbranches": 39, "totalbranches": 40, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 12, "fullcoveredmethods": 12, "totalmethods": 12 } ] },
       { "name": "NexusLabs.Needlr.AgentFramework.Analyzers", "classes": 11, "coverage": 98.2, "coveredlines": 734, "coverablelines": 747, "totallines": 1303, "branchcoverage": 83.3, "coveredbranches": 260, "totalbranches": 312, "methodcoverage": 100, "fullmethodcoverage": 81, "coveredmethods": 37, "fullcoveredmethods": 30, "totalmethods": 37, "classesinassembly": [

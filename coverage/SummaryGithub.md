@@ -3,15 +3,15 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/15/2026 - 15:57:49 |
-| Coverage date: | 04/15/2026 - 15:56:26 - 04/15/2026 - 15:57:45 |
+| Generated on: | 04/15/2026 - 16:26:35 |
+| Coverage date: | 04/15/2026 - 16:25:12 - 04/15/2026 - 16:26:32 |
 | Parser: | MultiReport (26x Cobertura) |
 | Assemblies: | 24 |
 | Classes: | 399 |
 | Files: | 396 |
-| **Line coverage:** | 81.4% (15704 of 19287) |
-| Covered lines: | 15704 |
-| Uncovered lines: | 3583 |
+| **Line coverage:** | 81.4% (15703 of 19287) |
+| Covered lines: | 15703 |
+| Uncovered lines: | 3584 |
 | Coverable lines: | 19287 |
 | Total lines: | 47215 |
 | **Branch coverage:** | 71.4% (5928 of 8301) |
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 84%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 83.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**84%**|**80.6%**|
+|**NexusLabs.Needlr.AgentFramework**|**83.9%**|**80.6%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|89.7%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -163,7 +163,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|91.1%|79.6%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|90.5%|79.6%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|97.5%|
 
