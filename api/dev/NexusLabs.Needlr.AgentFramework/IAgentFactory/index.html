@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3501,6 +3585,53 @@ is pre-populated from the attribute; the callback can override any field.</p>
 <h4 id="exceptions_2">Exceptions<a class="headerlink" href="#exceptions_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
 Thrown when <a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).TAgent" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.CreateAgent\&lt;TAgent&gt;(System.Action\&lt;NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;).TAgent">TAgent</a> is not decorated with <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)'></a></p>
+<h2 id="iagentfactoryresolvetoolsactionagentfactoryoptions-method">IAgentFactory.ResolveTools(Action&lt;AgentFactoryOptions&gt;) Method<a class="headerlink" href="#iagentfactoryresolvetoolsactionagentfactoryoptions-method" title="Permanent link">&para;</a></h2>
+<p>Resolves the set of <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aitool" title="Microsoft.Extensions.AI.AITool">Microsoft.Extensions.AI.AITool</a> instances that would be wired
+to an agent, without creating the agent itself.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AITool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ResolveTools</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFactoryOptions</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">configure</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configure'></a></p>
+<p><code>configure</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
+<p>Optional callback to scope tools by <a href="../AgentFactoryOptions/#NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionTypes" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionTypes">FunctionTypes</a>
+or <a href="../AgentFactoryOptions/#NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionGroups" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions.FunctionGroups">FunctionGroups</a>. When <code>null</code>, all
+registered function types are included.</p>
+<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aitool" title="Microsoft.Extensions.AI.AITool">Microsoft.Extensions.AI.AITool</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a><br />
+The resolved tools, ready to pass to <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.Tools" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.Tools">Tools</a>.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_()'></a></p>
+<h2 id="iagentfactoryresolvetoolstagent-method">IAgentFactory.ResolveTools&lt;TAgent&gt;() Method<a class="headerlink" href="#iagentfactoryresolvetoolstagent-method" title="Permanent link">&para;</a></h2>
+<p>Resolves the tools scoped to the <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a> on
+<a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_().TAgent" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools\&lt;TAgent&gt;().TAgent">TAgent</a> (reads <code>FunctionTypes</code> and <code>FunctionGroups</code>
+from the attribute).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AITool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ResolveTools</span><span class="o">&lt;</span><span class="n">TAgent</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">TAgent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="type-parameters_2">Type parameters<a class="headerlink" href="#type-parameters_2" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_().TAgent'></a></p>
+<p><code>TAgent</code></p>
+<p>A class decorated with <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.</p>
+<h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aitool" title="Microsoft.Extensions.AI.AITool">Microsoft.Extensions.AI.AITool</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_)'></a></p>
+<h2 id="iagentfactoryresolvetoolstagentactionagentfactoryoptions-method">IAgentFactory.ResolveTools&lt;TAgent&gt;(Action&lt;AgentFactoryOptions&gt;) Method<a class="headerlink" href="#iagentfactoryresolvetoolstagentactionagentfactoryoptions-method" title="Permanent link">&para;</a></h2>
+<p>Resolves the tools scoped to the <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a> on
+<a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).TAgent" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools\&lt;TAgent&gt;(System.Action\&lt;NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;).TAgent">TAgent</a>, then applies the <a href="./#NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configure" title="NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools\&lt;TAgent&gt;(System.Action\&lt;NexusLabs.Needlr.AgentFramework.AgentFactoryOptions&gt;).configure">configure</a>
+callback to override per-run scoping.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AITool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ResolveTools</span><span class="o">&lt;</span><span class="n">TAgent</span><span class="o">&gt;</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFactoryOptions</span><span class="o">&gt;</span><span class="w"> </span><span class="n">configure</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="k">where</span><span class="w"> </span><span class="n">TAgent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">class</span><span class="p">;</span>
+</span></code></pre></div>
+<h4 id="type-parameters_3">Type parameters<a class="headerlink" href="#type-parameters_3" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).TAgent'></a></p>
+<p><code>TAgent</code></p>
+<p>A class decorated with <a href="../NeedlrAiAgentAttribute/" title="NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute">NeedlrAiAgentAttribute</a>.</p>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.IAgentFactory.ResolveTools_TAgent_(System.Action_NexusLabs.Needlr.AgentFramework.AgentFactoryOptions_).configure'></a></p>
+<p><code>configure</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="../AgentFactoryOptions/" title="NexusLabs.Needlr.AgentFramework.AgentFactoryOptions">AgentFactoryOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
+<p>Callback to override attribute-populated defaults.</p>
+<h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aitool" title="Microsoft.Extensions.AI.AITool">Microsoft.Extensions.AI.AITool</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
 
 
 

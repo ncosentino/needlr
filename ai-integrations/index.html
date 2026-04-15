@@ -16,7 +16,7 @@
         <link rel="prev" href="../breadcrumbs/">
       
       
-        <link rel="next" href="../advanced-usage/">
+        <link rel="next" href="../copilot/">
       
       
         
@@ -1349,6 +1349,90 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3776,10 +3860,11 @@
 
 <h1 id="ai-integrations">AI Integrations<a class="headerlink" href="#ai-integrations" title="Permanent link">&para;</a></h1>
 <p>Needlr provides first-class integrations for AI agent frameworks, taking care of function discovery, DI wiring, and factory lifecycle so that you focus on writing agent logic rather than plumbing.</p>
-<p>Two integrations are supported:</p>
+<p>Three integrations are supported:</p>
 <ul>
 <li><strong>Microsoft Agent Framework</strong> (<code>NexusLabs.Needlr.AgentFramework</code>) — for <code>[AgentFunction]</code>-annotated tools wired into <code>AIAgent</code> instances via <code>Microsoft.Extensions.AI</code></li>
 <li><strong>Semantic Kernel</strong> (<code>NexusLabs.Needlr.SemanticKernel</code>) — for <code>[KernelFunction]</code>-annotated plugin classes wired into a <code>Kernel</code> via <code>Microsoft.SemanticKernel</code></li>
+<li><strong>GitHub Copilot</strong> (<code>NexusLabs.Needlr.Copilot</code>) — an <code>IChatClient</code> backed by the GitHub Copilot API, plus a web search <code>AIFunction</code>. See the <a href="../copilot/">Copilot integration page</a> for details.</li>
 </ul>
 <p>Both integrations follow the same two-layer architecture that is explained below.</p>
 <hr />

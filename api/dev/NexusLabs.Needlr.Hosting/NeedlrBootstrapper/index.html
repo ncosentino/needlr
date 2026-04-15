@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3412,27 +3496,37 @@
 <h3 id="nexuslabsneedlrhosting"><a href="../NexusLabs.Needlr.Hosting/" title="NexusLabs.Needlr.Hosting">NexusLabs.Needlr.Hosting</a><a class="headerlink" href="#nexuslabsneedlrhosting" title="Permanent link">&para;</a></h3>
 <h2 id="needlrbootstrapper-class">NeedlrBootstrapper Class<a class="headerlink" href="#needlrbootstrapper-class" title="Permanent link">&para;</a></h2>
 <p>Wraps an application entry point with bootstrap lifecycle management: a pre-DI logger,
-top-level exception handling, and guaranteed cleanup.</p>
+a pre-DI <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a>, top-level exception handling, and guaranteed cleanup.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IEquatable</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="o">&gt;</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; NeedlrBootstrapper</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">().</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">UsingCurrentProcessArgs</span><span class="p">())</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">});</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureBootstrapConfiguration</span><span class="p">(</span><span class="n">builder</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">builder</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="p">.</span><span class="n">AddJsonFile</span><span class="p">(</span><span class="s">&quot;appsettings.json&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p">.</span><span class="n">AddEnvironmentVariables</span><span class="p">())</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">            </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">UsingCurrentProcessArgs</span><span class="p">())</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="p">});</span>
 </span></code></pre></div>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
-<p>By default a console logger is created automatically. Override with
+<p>By default a console logger and an <strong>empty</strong><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> are
+created automatically. Override with
 <a href="../NeedlrBootstrapperExtensions/#NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.UsingLoggerFactory(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,Microsoft.Extensions.Logging.ILoggerFactory)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.UsingLoggerFactory(this NexusLabs.Needlr.Hosting.NeedlrBootstrapper, Microsoft.Extensions.Logging.ILoggerFactory)">UsingLoggerFactory(this NeedlrBootstrapper, ILoggerFactory)</a> to supply your own factory
-(e.g. a Serilog two-stage init factory).</p>
+(e.g. a Serilog two-stage init factory), and
+<a href="../NeedlrBootstrapperExtensions/#NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Action_Microsoft.Extensions.Configuration.IConfigurationBuilder_)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(this NexusLabs.Needlr.Hosting.NeedlrBootstrapper, System.Action\&lt;Microsoft.Extensions.Configuration.IConfigurationBuilder&gt;)">ConfigureBootstrapConfiguration(this NeedlrBootstrapper, Action&lt;IConfigurationBuilder&gt;)</a> to add
+configuration sources needed during the bootstrap phase.</p>
+<p>The bootstrap configuration is <strong>not</strong> the same <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a>
+that the application's DI container will provide. They are independent instances.
+See <a href="../NeedlrBootstrapContext/#NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.BootstrapConfiguration" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.BootstrapConfiguration">BootstrapConfiguration</a> for details.</p>
 <p>Unhandled exceptions from the callback are caught, logged at <code>Critical</code>, and then
 swallowed so the process exits cleanly after cleanup.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
@@ -3445,7 +3539,8 @@ swallowed so the process exits cleanly after cleanup.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken).runAsync'></a></p>
 <p><code>runAsync</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-3" title="System.Func`3">System.Func&lt;</a><a href="../NeedlrBootstrapContext/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext">NeedlrBootstrapContext</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-3" title="System.Func`3">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-3" title="System.Func`3">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-3" title="System.Func`3">&gt;</a></p>
 <p>The application callback. Receives a <a href="../NeedlrBootstrapContext/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext">NeedlrBootstrapContext</a> containing
-the bootstrap logger, and the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a> passed to this method.</p>
+the bootstrap logger and bootstrap configuration, and the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a>
+passed to this method.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>Optional cancellation token forwarded to the callback.</p>
@@ -3456,8 +3551,9 @@ A <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.t
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">().</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p">{</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Application starting...&quot;</span><span class="p">);</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nf">RunMyAppAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">});</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">BootstrapConfiguration</span><span class="p">[</span><span class="s">&quot;SomeSetting&quot;</span><span class="p">];</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nf">RunMyAppAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">});</span>
 </span></code></pre></div>
 
 

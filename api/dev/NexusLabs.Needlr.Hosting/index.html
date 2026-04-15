@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3456,11 +3540,11 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="NeedlrBootstrapContext/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext">NeedlrBootstrapContext</a></td>
-<td style="text-align: left;">Contextual data passed to the <a href="NeedlrBootstrapper/#NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func\&lt;NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task&gt;, System.Threading.CancellationToken)">RunAsync(Func&lt;NeedlrBootstrapContext,CancellationToken,Task&gt;, CancellationToken)</a> callback. Provides access to a bootstrap logger that is available before the DI container is built.</td>
+<td style="text-align: left;">Contextual data passed to the <a href="NeedlrBootstrapper/#NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func\&lt;NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task&gt;, System.Threading.CancellationToken)">RunAsync(Func&lt;NeedlrBootstrapContext,CancellationToken,Task&gt;, CancellationToken)</a> callback. Provides access to a bootstrap logger and a bootstrap <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> that are available before the DI container is built.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a></td>
-<td style="text-align: left;">Wraps an application entry point with bootstrap lifecycle management: a pre-DI logger, top-level exception handling, and guaranteed cleanup.</td>
+<td style="text-align: left;">Wraps an application entry point with bootstrap lifecycle management: a pre-DI logger, a pre-DI <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a>, top-level exception handling, and guaranteed cleanup.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="NeedlrBootstrapperExtensions/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions">NeedlrBootstrapperExtensions</a></td>

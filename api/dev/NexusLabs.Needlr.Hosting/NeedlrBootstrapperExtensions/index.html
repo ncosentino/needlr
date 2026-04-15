@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3416,47 +3500,85 @@
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; NeedlrBootstrapperExtensions</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Action_Microsoft.Extensions.Configuration.IConfigurationBuilder_)'></a></p>
+<h2 id="needlrbootstrapperextensionsconfigurebootstrapconfigurationthis-needlrbootstrapper-actioniconfigurationbuilder-method">NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(this NeedlrBootstrapper, Action&lt;IConfigurationBuilder&gt;) Method<a class="headerlink" href="#needlrbootstrapperextensionsconfigurebootstrapconfigurationthis-needlrbootstrapper-actioniconfigurationbuilder-method" title="Permanent link">&para;</a></h2>
+<p>Configures the bootstrap-phase <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> by adding sources to the
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfigurationbuilder" title="Microsoft.Extensions.Configuration.IConfigurationBuilder">Microsoft.Extensions.Configuration.IConfigurationBuilder</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">ConfigureBootstrapConfiguration</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">bootstrapper</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">IConfigurationBuilder</span><span class="o">&gt;</span><span class="w"> </span><span class="n">configure</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Action_Microsoft.Extensions.Configuration.IConfigurationBuilder_).bootstrapper'></a></p>
+<p><code>bootstrapper</code> <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a></p>
+<p>The bootstrapper to configure.</p>
+<p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Action_Microsoft.Extensions.Configuration.IConfigurationBuilder_).configure'></a></p>
+<p><code>configure</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfigurationbuilder" title="Microsoft.Extensions.Configuration.IConfigurationBuilder">Microsoft.Extensions.Configuration.IConfigurationBuilder</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
+<p>A delegate that adds configuration sources to the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfigurationbuilder" title="Microsoft.Extensions.Configuration.IConfigurationBuilder">Microsoft.Extensions.Configuration.IConfigurationBuilder</a>.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a><br />
+A new <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a> with the configuration builder registered.</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureBootstrapConfiguration</span><span class="p">(</span><span class="n">builder</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">builder</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="p">.</span><span class="n">AddJsonFile</span><span class="p">(</span><span class="s">&quot;appsettings.json&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="p">.</span><span class="n">AddEnvironmentVariables</span><span class="p">())</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">logDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">BootstrapConfiguration</span><span class="p">[</span><span class="s">&quot;Logging:Directory&quot;</span><span class="p">]</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">            </span><span class="o">??</span><span class="w"> </span><span class="s">&quot;logs&quot;</span><span class="p">;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Bootstrap log directory: {Dir}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">logDir</span><span class="p">);</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">});</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>The bootstrap configuration is <strong>not</strong> the same <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a>
+that the application's DI container will provide. It exists only for the duration of the
+bootstrap callback and is disposed after <a href="../NeedlrBootstrapper/#NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func\&lt;NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task&gt;, System.Threading.CancellationToken)">RunAsync(Func&lt;NeedlrBootstrapContext,CancellationToken,Task&gt;, CancellationToken)</a> completes.
+Syringe (and the .NET Generic Host / WebApplication builder) builds its own
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> independently.</p>
+<p>By default the bootstrap configuration is <strong>empty</strong>. Call this method to add
+JSON files, environment variables, in-memory collections, or any other
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfigurationsource" title="Microsoft.Extensions.Configuration.IConfigurationSource">Microsoft.Extensions.Configuration.IConfigurationSource</a> needed during the bootstrap phase.</p>
+<p>If called multiple times, only the last call takes effect.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.UsingLoggerFactory(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,Microsoft.Extensions.Logging.ILoggerFactory)'></a></p>
 <h2 id="needlrbootstrapperextensionsusingloggerfactorythis-needlrbootstrapper-iloggerfactory-method">NeedlrBootstrapperExtensions.UsingLoggerFactory(this NeedlrBootstrapper, ILoggerFactory) Method<a class="headerlink" href="#needlrbootstrapperextensionsusingloggerfactorythis-needlrbootstrapper-iloggerfactory-method" title="Permanent link">&para;</a></h2>
 <p>Overrides the default console logger factory with a custom <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.iloggerfactory" title="Microsoft.Extensions.Logging.ILoggerFactory">Microsoft.Extensions.Logging.ILoggerFactory</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">UsingLoggerFactory</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">bootstrapper</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ILoggerFactory</span><span class="w"> </span><span class="n">loggerFactory</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">UsingLoggerFactory</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">bootstrapper</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ILoggerFactory</span><span class="w"> </span><span class="n">loggerFactory</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.UsingLoggerFactory(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,Microsoft.Extensions.Logging.ILoggerFactory).bootstrapper'></a></p>
 <p><code>bootstrapper</code> <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a></p>
 <p>The bootstrapper to configure.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.UsingLoggerFactory(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,Microsoft.Extensions.Logging.ILoggerFactory).loggerFactory'></a></p>
 <p><code>loggerFactory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.iloggerfactory" title="Microsoft.Extensions.Logging.ILoggerFactory">Microsoft.Extensions.Logging.ILoggerFactory</a></p>
 <p>The logger factory to use.</p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a><br />
 A new <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a> with the factory applied.</p>
-<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingLoggerFactory</span><span class="p">(</span><span class="n">myLoggerFactory</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
+<h3 id="example_1">Example<a class="headerlink" href="#example_1" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingLoggerFactory</span><span class="p">(</span><span class="n">myLoggerFactory</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
 </span></code></pre></div>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.WithCleanup(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Func_System.Threading.Tasks.Task_)'></a></p>
 <h2 id="needlrbootstrapperextensionswithcleanupthis-needlrbootstrapper-functask-method">NeedlrBootstrapperExtensions.WithCleanup(this NeedlrBootstrapper, Func&lt;Task&gt;) Method<a class="headerlink" href="#needlrbootstrapperextensionswithcleanupthis-needlrbootstrapper-functask-method" title="Permanent link">&para;</a></h2>
 <p>Registers an async cleanup callback that runs in the <code>finally</code> block of
 <a href="../NeedlrBootstrapper/#NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func\&lt;NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task&gt;, System.Threading.CancellationToken)">RunAsync(Func&lt;NeedlrBootstrapContext,CancellationToken,Task&gt;, CancellationToken)</a>, regardless of whether the application
 succeeds or throws.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">WithCleanup</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">bootstrapper</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cleanup</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">WithCleanup</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapper</span><span class="w"> </span><span class="n">bootstrapper</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cleanup</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.WithCleanup(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Func_System.Threading.Tasks.Task_).bootstrapper'></a></p>
 <p><code>bootstrapper</code> <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a></p>
 <p>The bootstrapper to configure.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.WithCleanup(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Func_System.Threading.Tasks.Task_).cleanup'></a></p>
 <p><code>cleanup</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">System.Func&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-1" title="System.Func`1">&gt;</a></p>
 <p>The async cleanup delegate (e.g. flushing a log sink).</p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a><br />
 A new <a href="../NeedlrBootstrapper/" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper">NeedlrBootstrapper</a> with the cleanup registered.</p>
-<h3 id="example_1">Example<a class="headerlink" href="#example_1" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">WithCleanup</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">FlushLogsAsync</span><span class="p">())</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
+<h3 id="example_2">Example<a class="headerlink" href="#example_2" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="p">.</span><span class="n">WithCleanup</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">FlushLogsAsync</span><span class="p">())</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
 </span></code></pre></div>
 
 

@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3412,10 +3496,20 @@
 <h4 id="nexuslabsneedlragentframework"><a href="../" title="index">NexusLabs.Needlr.AgentFramework</a><a class="headerlink" href="#nexuslabsneedlragentframework" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkprogress"><a href="../NexusLabs.Needlr.AgentFramework.Progress/" title="NexusLabs.Needlr.AgentFramework.Progress">NexusLabs.Needlr.AgentFramework.Progress</a><a class="headerlink" href="#nexuslabsneedlragentframeworkprogress" title="Permanent link">&para;</a></h3>
 <h2 id="iprogressreporterfactory-interface">IProgressReporterFactory Interface<a class="headerlink" href="#iprogressreporterfactory-interface" title="Permanent link">&para;</a></h2>
-<p>Creates <a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances scoped to a specific orchestration.
-Each orchestrator can have its own set of sinks.</p>
+<p>Creates <a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances scoped to a specific orchestration run.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IProgressReporterFactory</span>
 </span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Two creation patterns are supported:
+- <strong>Default sinks</strong> (<a href="./#NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string)" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string)">Create(string)</a>): Uses all
+              <a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a> instances registered in DI — including those
+              auto-discovered by Needlr and any added manually via
+              <code>services.AddSingleton&lt;IProgressSink, T&gt;()</code>.
+              Best for simple applications with a single agentic workflow.
+- <strong>Per-orchestration sinks</strong> (<a href="./#NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string,System.Collections.Generic.IEnumerable_NexusLabs.Needlr.AgentFramework.Progress.IProgressSink_)" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string, System.Collections.Generic.IEnumerable\&lt;NexusLabs.Needlr.AgentFramework.Progress.IProgressSink&gt;)">Create(string, IEnumerable&lt;IProgressSink&gt;)</a>):
+              Uses <em>only</em> the sinks you provide — default DI sinks are ignored entirely.
+              Best for complex server applications (multi-tenant, parallel workflows) where
+              each orchestration requires its own reporting channel.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string)'></a></p>
 <h2 id="iprogressreporterfactorycreatestring-method">IProgressReporterFactory.Create(string) Method<a class="headerlink" href="#iprogressreporterfactorycreatestring-method" title="Permanent link">&para;</a></h2>
@@ -3427,10 +3521,20 @@ Each orchestrator can have its own set of sinks.</p>
 <p><code>workflowId</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>Correlation ID for the orchestration run.</p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
-<p><a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a></p>
+<p><a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a><br />
+A reporter that delivers events to all DI-registered <a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a>
+instances, or <a href="../">NexusLabs.Needlr.AgentFramework.Progress.NullProgressReporter.Instance</a> if no sinks are registered.</p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Default sinks include all <a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a> implementations auto-discovered
+by Needlr plus any registered manually via
+<code>services.AddSingleton&lt;IProgressSink, T&gt;()</code>.
+To prevent a specific sink from being auto-discovered, decorate it with
+<a href="../../NexusLabs.Needlr/">NexusLabs.Needlr.DoNotAutoRegisterAttribute</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string,System.Collections.Generic.IEnumerable_NexusLabs.Needlr.AgentFramework.Progress.IProgressSink_)'></a></p>
 <h2 id="iprogressreporterfactorycreatestring-ienumerableiprogresssink-method">IProgressReporterFactory.Create(string, IEnumerable&lt;IProgressSink&gt;) Method<a class="headerlink" href="#iprogressreporterfactorycreatestring-ienumerableiprogresssink-method" title="Permanent link">&para;</a></h2>
-<p>Creates a reporter with specific sinks for this orchestration.</p>
+<p>Creates a reporter with specific sinks for this orchestration only.
+Default DI sinks are \&lt;strong&gt;not\&lt;/strong&gt; included — only the sinks you
+pass here receive events.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Progress</span><span class="p">.</span><span class="n">IProgressReporter</span><span class="w"> </span><span class="n">Create</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">workflowId</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Progress</span><span class="p">.</span><span class="n">IProgressSink</span><span class="o">&gt;</span><span class="w"> </span><span class="n">sinks</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
@@ -3439,9 +3543,17 @@ Each orchestrator can have its own set of sinks.</p>
 <p>Correlation ID for the orchestration run.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string,System.Collections.Generic.IEnumerable_NexusLabs.Needlr.AgentFramework.Progress.IProgressSink_).sinks'></a></p>
 <p><code>sinks</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">System.Collections.Generic.IEnumerable&lt;</a><a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">&gt;</a></p>
-<p>Sinks to receive events for this orchestration only.</p>
+<p>Sinks to receive events for this orchestration only. Pass an empty collection
+to get <a href="../">NexusLabs.Needlr.AgentFramework.Progress.NullProgressReporter.Instance</a> (zero-overhead no-op).</p>
 <h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
-<p><a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a></p>
+<p><a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a><br />
+A reporter that delivers events exclusively to <a href="./#NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string,System.Collections.Generic.IEnumerable_NexusLabs.Needlr.AgentFramework.Progress.IProgressSink_).sinks" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string, System.Collections.Generic.IEnumerable\&lt;NexusLabs.Needlr.AgentFramework.Progress.IProgressSink&gt;).sinks">sinks</a>,
+or <a href="../">NexusLabs.Needlr.AgentFramework.Progress.NullProgressReporter.Instance</a> if the collection is empty.</p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Use this overload in multi-tenant or multi-workflow server applications where
+each orchestration requires its own isolated reporting channel (e.g., per-tenant
+SSE streams, per-workflow log files). The caller is responsible for managing
+the lifetime and disposal of the provided sinks.</p>
 
 
 

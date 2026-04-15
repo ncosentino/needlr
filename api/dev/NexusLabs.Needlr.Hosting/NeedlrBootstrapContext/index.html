@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3412,26 +3496,71 @@
 <h3 id="nexuslabsneedlrhosting"><a href="../NexusLabs.Needlr.Hosting/" title="NexusLabs.Needlr.Hosting">NexusLabs.Needlr.Hosting</a><a class="headerlink" href="#nexuslabsneedlrhosting" title="Permanent link">&para;</a></h3>
 <h2 id="needlrbootstrapcontext-class">NeedlrBootstrapContext Class<a class="headerlink" href="#needlrbootstrapcontext-class" title="Permanent link">&para;</a></h2>
 <p>Contextual data passed to the <a href="../NeedlrBootstrapper/#NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func_NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapper.RunAsync(System.Func\&lt;NexusLabs.Needlr.Hosting.NeedlrBootstrapContext,System.Threading.CancellationToken,System.Threading.Tasks.Task&gt;, System.Threading.CancellationToken)">RunAsync(Func&lt;NeedlrBootstrapContext,CancellationToken,Task&gt;, CancellationToken)</a> callback.
-Provides access to a bootstrap logger that is available before the DI container is built.</p>
+Provides access to a bootstrap logger and a bootstrap <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a>
+that are available before the DI container is built.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="n">NeedlrBootstrapContext</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IEquatable</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Hosting</span><span class="p">.</span><span class="n">NeedlrBootstrapContext</span><span class="o">&gt;</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; NeedlrBootstrapContext</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext">NeedlrBootstrapContext</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">().</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Application starting...&quot;</span><span class="p">);</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="c1">// build your host, run your app, etc.</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">});</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">NeedlrBootstrapper</span><span class="p">()</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureBootstrapConfiguration</span><span class="p">(</span><span class="n">builder</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">builder</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="p">.</span><span class="n">AddJsonFile</span><span class="p">(</span><span class="s">&quot;appsettings.json&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p">.</span><span class="n">AddEnvironmentVariables</span><span class="p">())</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">logPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">BootstrapConfiguration</span><span class="p">[</span><span class="s">&quot;Logging:Path&quot;</span><span class="p">]</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">            </span><span class="o">??</span><span class="w"> </span><span class="s">&quot;logs/bootstrap.log&quot;</span><span class="p">;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="n">LogInformation</span><span class="p">(</span><span class="s">&quot;Bootstrap log path: {Path}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">logPath</span><span class="p">);</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="c1">// Build the real app — Syringe creates its own IConfiguration independently.</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Syringe</span><span class="p">()</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingSourceGen</span><span class="p">()</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">            </span><span class="p">.</span><span class="n">ForHost</span><span class="p">()</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">            </span><span class="p">.</span><span class="n">UsingOptions</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CreateHostOptions</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">UsingLogger</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Logger</span><span class="p">))</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">            </span><span class="p">.</span><span class="n">BuildHost</span><span class="p">();</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="p">});</span>
 </span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Everything on this context is <strong>bootstrap-phase only</strong>. These resources
+exist solely to bridge the gap until the DI container is built. Once Syringe (or any
+host builder) creates the real <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> and logging pipeline,
+the bootstrap versions are disposed and should no longer be referenced.</p>
+<p>In particular, <a href="./#NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.BootstrapConfiguration" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.BootstrapConfiguration">BootstrapConfiguration</a> is <strong>not</strong> the same
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> that the application's DI container will provide.
+They are independent instances that may read different sources, have different
+precedence rules, or contain different values. Do not cache or leak the bootstrap
+configuration beyond the callback.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.BootstrapConfiguration'></a></p>
+<h2 id="needlrbootstrapcontextbootstrapconfiguration-property">NeedlrBootstrapContext.BootstrapConfiguration Property<a class="headerlink" href="#needlrbootstrapcontextbootstrapconfiguration-property" title="Permanent link">&para;</a></h2>
+<p>Gets a minimal <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> built during the bootstrap phase,
+before the DI container exists.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">IConfiguration</span><span class="w"> </span><span class="n">BootstrapConfiguration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a></p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>This configuration is for <strong>bootstrap-phase use only</strong>. It is
+<strong>not</strong> the same <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> that will be available
+after the DI container is built. Syringe (and the .NET Generic Host / WebApplication
+builder) builds its own <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.iconfiguration" title="Microsoft.Extensions.Configuration.IConfiguration">Microsoft.Extensions.Configuration.IConfiguration</a> independently. The two may read
+the same files but are separate instances with no shared state.</p>
+<p>By default the bootstrap configuration is <strong>empty</strong>. Use
+<a href="../NeedlrBootstrapperExtensions/#NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(thisNexusLabs.Needlr.Hosting.NeedlrBootstrapper,System.Action_Microsoft.Extensions.Configuration.IConfigurationBuilder_)" title="NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions.ConfigureBootstrapConfiguration(this NexusLabs.Needlr.Hosting.NeedlrBootstrapper, System.Action\&lt;Microsoft.Extensions.Configuration.IConfigurationBuilder&gt;)">ConfigureBootstrapConfiguration(this NeedlrBootstrapper, Action&lt;IConfigurationBuilder&gt;)</a> to add
+configuration sources (JSON files, environment variables, in-memory collections, etc.)
+that are needed during the bootstrap phase.</p>
 <p><a name='NexusLabs.Needlr.Hosting.NeedlrBootstrapContext.Logger'></a></p>
 <h2 id="needlrbootstrapcontextlogger-property">NeedlrBootstrapContext.Logger Property<a class="headerlink" href="#needlrbootstrapcontextlogger-property" title="Permanent link">&para;</a></h2>
 <p>Gets the bootstrap logger, available before the DI container is configured.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ILogger</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ILogger</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger" title="Microsoft.Extensions.Logging.ILogger">Microsoft.Extensions.Logging.ILogger</a></p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>This logger is for bootstrap-phase diagnostics only. Once the DI container is built,
+the application's own <code>ILogger&lt;T&gt;</code> pipeline takes over.</p>
 
 
 
