@@ -149,6 +149,17 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine(ws.ReadFile("itinerary.json"));
     sb.AppendLine();
 
+    if (ws.FileExists("research-notes.md"))
+    {
+        var notes = ws.ReadFile("research-notes.md");
+        if (notes.Length > 0)
+        {
+            sb.AppendLine("## Research Notes (from previous web searches)");
+            sb.AppendLine(notes);
+            sb.AppendLine();
+        }
+    }
+
     foreach (var path in ws.GetFilePaths().Where(p => p.StartsWith("hotel-")))
     {
         var content = ws.ReadFile(path);
@@ -176,6 +187,8 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine();
     sb.AppendLine("Use web_search for ALL research — finding flights, comparing prices,");
     sb.AppendLine("discovering hotels. There is no other search tool.");
+    sb.AppendLine("IMPORTANT: After each web_search, call save_research with the key facts");
+    sb.AppendLine("(route, airline, price, duration) so you don't lose the data between iterations.");
     sb.AppendLine();
     sb.AppendLine("Follow these phases in order:");
     sb.AppendLine("1. RESEARCH: Use web_search to find flights between city pairs.");
@@ -243,6 +256,12 @@ var options = new IterativeLoopOptions
         - Stay within the budget shown in config.json — this is a hard limit.
         - Use web_search for ALL research — finding flights, comparing prices,
           discovering hotels. This is your ONLY research tool.
+        - After EVERY web_search call, immediately call save_research with the
+          key facts (airline, flight, price, duration for flights; hotel name,
+          price per night, rating for hotels). This persists your findings.
+        - When adding a leg with add_leg, use SIMPLE city names like 'New York',
+          'Los Angeles', 'Tokyo' — NOT airport codes or parenthesized forms like
+          'New York (JFK)'.
         - When adding a leg with add_leg, use realistic data from your web search
           results (airline, flight number, approximate price, duration).
         - When booking a hotel with book_hotel, provide the hotel name, city,

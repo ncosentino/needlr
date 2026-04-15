@@ -35,7 +35,8 @@ internal sealed class TripPlannerFunctions(
     [AgentFunction]
     [Description(
         "Add a flight leg to the itinerary. Use real flight data from web_search results. " +
-        "Each leg must connect to the previous one (route continuity).")]
+        "Each leg must connect to the previous one (route continuity). " +
+        "Use SIMPLE city names like 'New York', 'Los Angeles', 'Tokyo' — NOT airport codes or parenthesized forms.")]
     public string AddLeg(string from, string to, string airline, string flight, int price, string duration)
     {
         var workspace = Workspace;
@@ -46,7 +47,7 @@ internal sealed class TripPlannerFunctions(
         if (legs.Count > 0)
         {
             var lastTo = legs[^1]["to"].ToString()!;
-            if (!string.Equals(from, lastTo, StringComparison.OrdinalIgnoreCase))
+            if (!CityMatch(from, lastTo))
             {
                 return $"ERROR: Route continuity violation. Your last leg ends at {lastTo}, "
                     + $"but this leg starts at {from}. Either add a leg from {lastTo} to {from} first, "
@@ -58,9 +59,10 @@ internal sealed class TripPlannerFunctions(
             var configJson = workspace.ReadFile("config.json");
             var config = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
             var origin = config["origin"].ToString()!;
-            if (!string.Equals(from, origin, StringComparison.OrdinalIgnoreCase))
+            if (!CityMatch(from, origin))
             {
-                return $"ERROR: First leg must start from {origin}, not {from}.";
+                return $"ERROR: First leg must start from {origin}, not {from}. "
+                    + "Use simple city names without airport codes (e.g. 'New York' not 'New York (JFK)').";
             }
         }
 
@@ -249,7 +251,7 @@ internal sealed class TripPlannerFunctions(
         var intermediateCities = legs.Take(legs.Count > 0 ? legs.Count - 1 : 0)
             .Select(l => l["to"].ToString()!).ToList();
         if (legs.Count > 0)
-            intermediateCities.Remove(destCity);
+            intermediateCities.RemoveAll(c => CityMatch(c, destCity));
 
         foreach (var intermCity in intermediateCities)
         {
@@ -282,7 +284,7 @@ internal sealed class TripPlannerFunctions(
         // Route continuity
         for (int i = 1; i < legs.Count; i++)
         {
-            if (legs[i - 1]["to"].ToString() != legs[i]["from"].ToString())
+            if (!CityMatch(legs[i - 1]["to"].ToString()!, legs[i]["from"].ToString()!))
                 issues.Add(new
                 {
                     code = "ROUTE_GAP",
@@ -291,7 +293,7 @@ internal sealed class TripPlannerFunctions(
                 });
         }
 
-        if (legs.Count > 0 && legs[0]["from"].ToString() != originCity)
+        if (legs.Count > 0 && !CityMatch(legs[0]["from"].ToString()!, originCity))
             issues.Add(new
             {
                 code = "WRONG_ORIGIN",
@@ -299,7 +301,7 @@ internal sealed class TripPlannerFunctions(
                 action = $"Call remove_leg(1) and re-add the first leg starting from {originCity}.",
             });
 
-        if (legs.Count > 0 && legs[^1]["to"].ToString() != destCity)
+        if (legs.Count > 0 && !CityMatch(legs[^1]["to"].ToString()!, destCity))
             issues.Add(new
             {
                 code = "WRONG_DESTINATION",
@@ -339,5 +341,52 @@ internal sealed class TripPlannerFunctions(
         status["finalized"] = true;
         workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
         return "Trip finalized and summary saved.";
+    }
+
+    [AgentFunction]
+    [Description(
+        "Save research notes from web_search results to the workspace. " +
+        "Call this after each web_search to persist the data you found so you " +
+        "don't lose it between iterations. Keep notes concise — just the key " +
+        "facts (route, airline, price, duration for flights; name, price, rating for hotels).")]
+    public string SaveResearch(string notes)
+    {
+        var workspace = Workspace;
+        var existing = workspace.FileExists("research-notes.md")
+            ? workspace.ReadFile("research-notes.md")
+            : "";
+
+        // Cap at ~3000 chars to keep prompt size reasonable
+        var updated = existing + "\n" + notes;
+        if (updated.Length > 3000)
+            updated = updated[^3000..];
+
+        workspace.WriteFile("research-notes.md", updated);
+        return $"Research notes saved ({updated.Length} chars total).";
+    }
+
+    /// <summary>
+    /// Fuzzy city name matching. Handles cases where the LLM sends
+    /// "New York (JFK)" but the config says "New York".
+    /// </summary>
+    private static bool CityMatch(string a, string b)
+    {
+        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var aNorm = NormalizeCity(a);
+        var bNorm = NormalizeCity(b);
+        return string.Equals(aNorm, bNorm, StringComparison.OrdinalIgnoreCase)
+            || aNorm.StartsWith(bNorm, StringComparison.OrdinalIgnoreCase)
+            || bNorm.StartsWith(aNorm, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeCity(string city)
+    {
+        // Strip parenthesized airport codes: "New York (JFK)" → "New York"
+        var parenIdx = city.IndexOf('(');
+        if (parenIdx > 0)
+            city = city[..parenIdx];
+        return city.Trim();
     }
 }
