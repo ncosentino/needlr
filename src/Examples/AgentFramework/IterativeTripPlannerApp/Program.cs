@@ -340,6 +340,23 @@ var options = new IterativeLoopOptions
         var name = toolCallResult.FunctionName;
         var resultStr = toolCallResult.Result?.ToString() ?? "(null)";
 
+        // Auto-persist web_search results to workspace so they survive between
+        // iterations. The LLM won't reliably call SaveResearch on its own.
+        if (name == "web_search" && resultStr.Length > 0)
+        {
+            var existing = workspace.FileExists("research-notes.md")
+                ? workspace.ReadFile("research-notes.md")
+                : "";
+            var query = toolCallResult.Arguments.TryGetValue("query", out var q)
+                ? q?.ToString() ?? "unknown"
+                : "unknown";
+            var entry = $"\n### {query}\n{(resultStr.Length > 500 ? resultStr[..500] : resultStr)}\n";
+            var updated = existing + entry;
+            if (updated.Length > 3000)
+                updated = updated[^3000..];
+            workspace.WriteFile("research-notes.md", updated);
+        }
+
         // Summarize tool results for clean console output
         var summary = name switch
         {
