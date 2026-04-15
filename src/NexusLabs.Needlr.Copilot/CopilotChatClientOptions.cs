@@ -38,7 +38,7 @@ public sealed class CopilotChatClientOptions
     /// Value sent in the <c>Copilot-Integration-Id</c> header.
     /// Defaults to <c>needlr-copilot</c>.
     /// </summary>
-    public string IntegrationId { get; set; } = "needlr-copilot";
+    public string IntegrationId { get; set; } = "copilot-developer-cli";
 
     /// <summary>
     /// Value sent in the <c>Editor-Version</c> header.

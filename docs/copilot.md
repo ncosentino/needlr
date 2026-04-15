@@ -155,7 +155,7 @@ All settings are on `CopilotChatClientOptions`:
 | `DefaultModel` | `"claude-sonnet-4.6"` | Model to use when `ChatOptions.ModelId` is not set |
 | `CopilotApiBaseUrl` | `"https://api.githubcopilot.com"` | Base URL for the Copilot chat API |
 | `GitHubApiBaseUrl` | `"https://api.github.com"` | Base URL for the GitHub API (token exchange) |
-| `IntegrationId` | `"needlr-copilot"` | Sent as `Copilot-Integration-Id` header |
+| `IntegrationId` | `"copilot-developer-cli"` | Sent as `Copilot-Integration-Id` header |
 | `GitHubToken` | `null` | Explicit GitHub OAuth token (bypasses discovery) |
 | `TokenSource` | `Auto` | Which token sources to try |
 | `MaxRetries` | `3` | Maximum retry attempts for 429 responses |

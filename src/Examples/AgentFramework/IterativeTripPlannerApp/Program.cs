@@ -509,7 +509,7 @@ Console.WriteLine($"║                                                         
 Console.WriteLine($"║  ITERATIVE LOOP (this run):                                ║");
 Console.WriteLine($"║    Total input tokens:       {totalIn,8:N0}                       ║");
 Console.WriteLine($"║    Avg per iteration:        {avgInputPerIter,8:N0}                       ║");
-Console.WriteLine($"║    Peak single call:         {result.Iterations.Max(i => i.Tokens.InputTokens),8:N0}                       ║");
+Console.WriteLine($"║    Peak single call:         {(result.Iterations.Count > 0 ? result.Iterations.Max(i => i.Tokens.InputTokens) : 0),8:N0}                       ║");
 Console.WriteLine($"║                                                            ║");
 Console.WriteLine($"║  FIC ESTIMATE (same workload, O(n²) accumulation):         ║");
 Console.WriteLine($"║    Estimated total tokens:   {ficTotal,8:N0}                       ║");
