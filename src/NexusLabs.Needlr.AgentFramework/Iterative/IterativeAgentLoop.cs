@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Microsoft.Extensions.AI;
 
+using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Iterative;
@@ -16,13 +17,16 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 {
     private readonly IChatClientAccessor _chatClientAccessor;
     private readonly IAgentDiagnosticsWriter? _diagnosticsWriter;
+    private readonly IAgentExecutionContextAccessor? _executionContextAccessor;
 
     internal IterativeAgentLoop(
         IChatClientAccessor chatClientAccessor,
-        IAgentDiagnosticsWriter? diagnosticsWriter = null)
+        IAgentDiagnosticsWriter? diagnosticsWriter = null,
+        IAgentExecutionContextAccessor? executionContextAccessor = null)
     {
         _chatClientAccessor = chatClientAccessor;
         _diagnosticsWriter = diagnosticsWriter;
+        _executionContextAccessor = executionContextAccessor;
     }
 
     /// <summary>
@@ -45,6 +49,20 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         string? errorMessage = null;
 
         var diagnosticsBuilder = AgentRunDiagnosticsBuilder.StartNew(options.LoopName);
+
+        // Bridge: if an execution context accessor is available, set up a scope
+        // so that DI-resolved tools can access the workspace via
+        // IAgentExecutionContextAccessor.Current.GetRequiredWorkspace().
+        IDisposable? executionContextScope = null;
+        if (_executionContextAccessor != null)
+        {
+            var executionContext = options.ExecutionContext
+                ?? new AgentExecutionContext(
+                    UserId: "iterative-loop",
+                    OrchestrationId: options.LoopName,
+                    Workspace: context.Workspace);
+            executionContextScope = _executionContextAccessor.BeginScope(executionContext);
+        }
 
         try
         {
@@ -293,6 +311,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         var diagnostics = diagnosticsBuilder.Build();
         diagnosticsBuilder.Dispose();
         _diagnosticsWriter?.Set(diagnostics);
+        executionContextScope?.Dispose();
 
         return new IterativeLoopResult(
             Iterations: iterations,

@@ -155,4 +155,25 @@ public sealed class IterativeLoopOptions
     /// Hook exceptions propagate to the caller.
     /// </remarks>
     public Func<IterationRecord, Task>? OnIterationEnd { get; set; }
+
+    /// <summary>
+    /// An optional <see cref="Context.IAgentExecutionContext"/> to use for
+    /// bridging workspace state to DI-resolved tools.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set, the loop uses this context (and its workspace) for the
+    /// <see cref="Context.IAgentExecutionContextAccessor"/> scope. When
+    /// <see langword="null"/> (the default), the loop auto-creates a context
+    /// from the <see cref="IterativeContext.Workspace"/> if an accessor is
+    /// available via DI.
+    /// </para>
+    /// <para>
+    /// This is the <strong>bootstrap execution context only</strong> — it is
+    /// NOT the same as the full application execution context. It exists
+    /// solely so that DI-resolved tool classes can call
+    /// <c>accessor.Current.GetRequiredWorkspace()</c> during loop execution.
+    /// </para>
+    /// </remarks>
+    public Context.IAgentExecutionContext? ExecutionContext { get; set; }
 }
