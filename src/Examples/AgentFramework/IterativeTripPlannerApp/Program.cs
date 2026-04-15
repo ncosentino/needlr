@@ -95,27 +95,27 @@ var allTools = tools.Concat(copilotTools).ToList();
 var workspace = new InMemoryWorkspace();
 var origin = tripConfig["Origin"] ?? "New York";
 var destination = tripConfig["Destination"] ?? "Tokyo";
-var maxStops = int.Parse(tripConfig["MaxStops"] ?? "3");
-var budget = tripConfig["Budget"] ?? "1800";
+var maxStops = int.Parse(tripConfig["MaxStops"] ?? "5");
+var minStops = int.Parse(tripConfig["MinStops"] ?? "3");
+var budget = tripConfig["Budget"] ?? "3000";
 
 workspace.WriteFile("config.json", JsonSerializer.Serialize(new
 {
     origin,
     destination,
     maxStops,
+    minStops,
     budget,
     requirements = new[]
     {
-        "Must have at least 2 intermediate stops (layover cities)",
-        "Must book a hotel in each layover city",
+        $"Must have at least {minStops} intermediate stops (layover cities)",
+        "Must book a hotel in each layover city (1 night minimum)",
         "All hotels must be rated 3.5 stars or higher",
         "Must stay within budget including all flights AND hotels",
-        "Prefer European layover cities (London, Paris) for cultural richness",
+        "Use web_search to research real flights and hotel prices",
     },
 }));
 workspace.WriteFile("itinerary.json", "[]");
-workspace.WriteFile("research-notes.md", "");
-workspace.WriteFile("search-cache.txt", "");
 workspace.WriteFile("status.json", JsonSerializer.Serialize(new
 {
     phase = "research",
@@ -149,19 +149,15 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine(ws.ReadFile("itinerary.json"));
     sb.AppendLine();
 
-    var notes = ws.ReadFile("research-notes.md");
-    if (notes.Length > 0)
-    {
-        sb.AppendLine("## Research Notes");
-        sb.AppendLine(notes);
-        sb.AppendLine();
-    }
-
     foreach (var path in ws.GetFilePaths().Where(p => p.StartsWith("hotel-")))
     {
-        sb.AppendLine($"## Hotel Booking ({path})");
-        sb.AppendLine(ws.ReadFile(path));
-        sb.AppendLine();
+        var content = ws.ReadFile(path);
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            sb.AppendLine($"## Hotel Booking ({path})");
+            sb.AppendLine(content);
+            sb.AppendLine();
+        }
     }
 
     if (ctx.LastToolResults.Count > 0)
@@ -176,43 +172,42 @@ string BuildPrompt(IterativeContext ctx)
 
     sb.AppendLine("## Instructions");
     sb.AppendLine("You are planning a multi-stop trip from the origin to the destination.");
-    sb.AppendLine("Read the requirements in config.json carefully — the trip MUST have at");
-    sb.AppendLine("least 2 intermediate stops with hotels booked for each layover city.");
+    sb.AppendLine("Read the requirements in config.json carefully.");
+    sb.AppendLine();
+    sb.AppendLine("Use web_search for ALL research — finding flights, comparing prices,");
+    sb.AppendLine("discovering hotels. There is no other search tool.");
     sb.AppendLine();
     sb.AppendLine("Follow these phases in order:");
-    sb.AppendLine("1. RESEARCH: Search for flights between city pairs. Try 2-3 route options.");
-    sb.AppendLine("2. BUILD: Add flight legs using add_leg for the best route.");
-    sb.AppendLine("3. HOTELS: Search for and book hotels in each layover city.");
+    sb.AppendLine("1. RESEARCH: Use web_search to find flights between city pairs.");
+    sb.AppendLine("2. BUILD: Add flight legs using add_leg with data from your research.");
+    sb.AppendLine("3. HOTELS: Use web_search to find hotels, then call book_hotel.");
     sb.AppendLine("4. VALIDATE: Call validate_trip to check all constraints.");
-    sb.AppendLine("5. FIX: If validation fails, remove expensive legs or hotels and find");
-    sb.AppendLine("   cheaper alternatives. Then validate again.");
+    sb.AppendLine("5. FIX: If validation fails, adjust legs/hotels and validate again.");
     sb.AppendLine("6. FINALIZE: Once validated, call finalize_trip with a markdown summary.");
     sb.AppendLine();
 
     var itineraryJson = ws.ReadFile("itinerary.json");
     var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
-    var hasHotels = ws.GetFilePaths().Any(p => p.StartsWith("hotel-"));
+    var hasHotels = ws.GetFilePaths().Any(p =>
+        p.StartsWith("hotel-") && !string.IsNullOrWhiteSpace(ws.ReadFile(p)));
     var isValidated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
+    var configJson = ws.ReadFile("config.json");
+    var configData = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
+    var reqMinStops = int.Parse(configData.GetValueOrDefault("minStops", 3).ToString()!);
 
     if (isValidated)
     {
         sb.AppendLine(">>> The trip is VALIDATED. Call finalize_trip NOW with a summary. <<<");
     }
-    else if (legs.Count >= 3 && hasHotels)
+    else if (legs.Count >= reqMinStops + 1 && hasHotels)
     {
         sb.AppendLine(">>> You have legs and hotels. Call validate_trip to check constraints. <<<");
-        sb.AppendLine(">>> If it fails, fix the issues and validate again. Do NOT add duplicate legs. <<<");
     }
-    else if (legs.Count >= 3 && !hasHotels)
+    else if (legs.Count >= reqMinStops + 1 && !hasHotels)
     {
-        sb.AppendLine(">>> You have enough legs. Now search for and book hotels in layover cities. <<<");
-    }
-    else if (notes.Length > 800 && legs.Count == 0)
-    {
-        sb.AppendLine(">>> You have enough research data. Start adding legs with add_leg. <<<");
+        sb.AppendLine(">>> You have enough legs. Now use web_search to find hotels in layover cities. <<<");
     }
     sb.AppendLine();
-    sb.AppendLine("Do NOT repeat searches you already have data for.");
     sb.AppendLine("Respond with text ONLY after calling finalize_trip.");
 
     return sb.ToString();
@@ -225,10 +220,11 @@ Console.WriteLine("╠═══════════════════�
 Console.WriteLine($"║  Origin:       {origin,-45}║");
 Console.WriteLine($"║  Destination:  {destination,-45}║");
 Console.WriteLine($"║  Budget:       ${budget,-44}║");
-Console.WriteLine($"║  Min stops:    2 intermediate cities (3+ legs required)     ║");
+Console.WriteLine($"║  Min stops:    {minStops} intermediate cities ({minStops + 1}+ legs required){"",-13}║");
 Console.WriteLine($"║  Max stops:    {maxStops,-45}║");
 Console.WriteLine($"║  Hotels:       Required in every layover city (3.5★ min)   ║");
 Console.WriteLine($"║  LLM:         Copilot ({copilotOptions.DefaultModel}){"",-24}║");
+Console.WriteLine($"║  Web search:   Copilot MCP (real web data)                 ║");
 Console.WriteLine($"║  Tool mode:    OneRoundTrip (2 LLM calls/iter max)         ║");
 Console.WriteLine($"║  Tools:        {allTools.Count} ({string.Join(", ", allTools.Select(t => t.Name).Take(4))}...)  ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
@@ -236,33 +232,33 @@ Console.WriteLine();
 
 var options = new IterativeLoopOptions
 {
-    Instructions = """
+    Instructions = $"""
         You are an expert travel planner building a multi-stop trip.
         
         RULES:
-        - The trip MUST have at least 2 intermediate stops (3+ flight legs).
+        - The trip MUST have at least {minStops} intermediate stops ({minStops + 1}+ flight legs).
         - Book a hotel in EVERY layover city (not the final destination).
         - All hotels MUST be rated 3.5★ or higher. The book_hotel tool will
           reject hotels below this threshold.
         - Stay within the budget shown in config.json — this is a hard limit.
+        - Use web_search for ALL research — finding flights, comparing prices,
+          discovering hotels. This is your ONLY research tool.
+        - When adding a leg with add_leg, use realistic data from your web search
+          results (airline, flight number, approximate price, duration).
+        - When booking a hotel with book_hotel, provide the hotel name, city,
+          nights, price per night, and star rating from your web search results.
         - When validate_trip returns VALID, call finalize_trip immediately.
         - When validate_trip finds issues, fix them and validate again.
-        - Do NOT repeat the same search query — use data you already have.
         - Respond with text ONLY after calling finalize_trip.
-        - ONLY use flights that appeared in search results. Do NOT invent
-          flights, prices, or airlines. If a route has no results, try a
-          different route through cities that DO have results.
-        - Available city pairs: New York, Los Angeles, Honolulu, London,
-          Paris, Tokyo. Search for flights between these cities.
         
         Budget is TIGHT. You may need to choose budget hotels and cheaper
         flights to stay within limits. If your first route is over budget,
         try swapping to cheaper hotels or cheaper flights first. If still
-        over budget, look for alternative routes.
+        over budget, look for alternative routes via clear_itinerary.
         """,
     PromptFactory = BuildPrompt,
     Tools = allTools,
-    MaxIterations = 15,
+    MaxIterations = 20,
     IsComplete = ctx =>
     {
         // Read workspace from IterativeContext (not captured closure)
@@ -328,7 +324,6 @@ var options = new IterativeLoopOptions
         // Summarize tool results for clean console output
         var summary = name switch
         {
-            "Search" => $"{resultStr.Count(c => c == '{')} results found",
             "web_search" => resultStr.Length > 100 ? resultStr[..97] + "..." : resultStr,
             "AddLeg" => resultStr,
             "RemoveLeg" => resultStr,
