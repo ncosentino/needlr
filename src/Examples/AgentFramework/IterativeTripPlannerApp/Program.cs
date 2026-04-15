@@ -9,6 +9,7 @@ using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
+using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Copilot;
 using NexusLabs.Needlr.Injection;
@@ -403,6 +404,14 @@ var context = new IterativeContext { Workspace = workspace };
 // AsyncLocal values don't propagate back to the caller.
 using var diagnosticsScope = diagnosticsAccessor.BeginCapture();
 
+// ── Progress reporting scope ────────────────────────────────────────
+// Create a progress reporter so ToolCallStartedEvent/ToolCallCompletedEvent
+// are emitted in real-time. The trip planner sink prints them to console.
+var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
+var progressAccessor = serviceProvider.GetRequiredService<IProgressReporterAccessor>();
+var progressReporter = progressFactory.Create("trip-planner-run");
+using var progressScope = progressAccessor.BeginScope(progressReporter);
+
 var result = await loop.RunAsync(options, context);
 
 // Close the last iteration's timing
@@ -569,4 +578,36 @@ foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
         Console.WriteLine($"     {line.TrimEnd()}");
     }
     Console.WriteLine();
+}
+
+// ── Progress sink: prints tool call events to console ───────────────────
+// Auto-discovered by Needlr's reflection scanner via IProgressSink.
+// Demonstrates the progress reporting pipeline end-to-end.
+internal sealed class TripPlannerProgressSink : IProgressSink
+{
+    public ValueTask OnEventAsync(IProgressEvent evt, CancellationToken cancellationToken)
+    {
+        switch (evt)
+        {
+            case ToolCallStartedEvent tcs:
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine($"  ⚡ [progress] {tcs.ToolName} started (seq #{tcs.SequenceNumber})");
+                Console.ResetColor();
+                break;
+
+            case ToolCallCompletedEvent tcc:
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine($"  ⚡ [progress] {tcc.ToolName} completed ({tcc.Duration.TotalMilliseconds:F0}ms, seq #{tcc.SequenceNumber})");
+                Console.ResetColor();
+                break;
+
+            case ToolCallFailedEvent tcf:
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"  ⚡ [progress] {tcf.ToolName} FAILED: {tcf.ErrorMessage} ({tcf.Duration.TotalMilliseconds:F0}ms)");
+                Console.ResetColor();
+                break;
+        }
+
+        return ValueTask.CompletedTask;
+    }
 }
