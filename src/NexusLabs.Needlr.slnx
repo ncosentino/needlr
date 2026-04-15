@@ -119,6 +119,10 @@
     <Project Path="NexusLabs.Needlr.Avalonia.Attributes/NexusLabs.Needlr.Avalonia.Attributes.csproj" />
     <Project Path="NexusLabs.Needlr.Avalonia.Tests/NexusLabs.Needlr.Avalonia.Tests.csproj" />
   </Folder>
+  <Folder Name="/Integrations/Copilot/">
+    <Project Path="NexusLabs.Needlr.Copilot/NexusLabs.Needlr.Copilot.csproj" />
+    <Project Path="NexusLabs.Needlr.Copilot.Tests/NexusLabs.Needlr.Copilot.Tests.csproj" />
+  </Folder>
   <Folder Name="/Integrations/SignalR/">
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers/NexusLabs.Needlr.SignalR.Analyzers.csproj" />

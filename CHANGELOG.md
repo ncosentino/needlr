@@ -9,9 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Copilot Integration
+
+- **`NexusLabs.Needlr.Copilot`** — new integration package providing `CopilotChatClient`
+  (an `IChatClient` backed by the GitHub Copilot API) and `CopilotWebSearchFunction` (an
+  `AIFunction` wrapping Copilot's MCP `web_search` tool). Supports SSE streaming, automatic
+  token exchange from GitHub OAuth, and configurable retry with exponential backoff. Plugs
+  into the agent framework via the existing `UsingChatClient()` hook — no AF-specific
+  extensions needed.
+
 #### Agent Framework
 
-- **`IIterativeAgentLoop`** — workspace-driven agent execution loop that eliminates O(n²)
+- **`IIterativeAgentLoop`** — workspace-driven agent execution loopthat eliminates O(n²)
   token accumulation from `FunctionInvokingChatClient`. Each iteration constructs a fresh
   prompt from workspace files instead of appending to conversation history. Configurable
   via `IterativeLoopOptions` with three `ToolResultMode`s (`SingleCall`, `OneRoundTrip`,

@@ -6,10 +6,11 @@ description: Integrate AI agent frameworks with Needlr in .NET -- automatic func
 
 Needlr provides first-class integrations for AI agent frameworks, taking care of function discovery, DI wiring, and factory lifecycle so that you focus on writing agent logic rather than plumbing.
 
-Two integrations are supported:
+Three integrations are supported:
 
 - **Microsoft Agent Framework** (`NexusLabs.Needlr.AgentFramework`) — for `[AgentFunction]`-annotated tools wired into `AIAgent` instances via `Microsoft.Extensions.AI`
 - **Semantic Kernel** (`NexusLabs.Needlr.SemanticKernel`) — for `[KernelFunction]`-annotated plugin classes wired into a `Kernel` via `Microsoft.SemanticKernel`
+- **GitHub Copilot** (`NexusLabs.Needlr.Copilot`) — an `IChatClient` backed by the GitHub Copilot API, plus a web search `AIFunction`. See the [Copilot integration page](copilot.md) for details.
 
 Both integrations follow the same two-layer architecture that is explained below.
 
