@@ -21,6 +21,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         _chatClientAccessor = chatClientAccessor;
     }
 
+    /// <summary>
+    /// Sentinel wrapper so lifecycle hook exceptions escape the framework catch-all.
+    /// </summary>
+    private sealed class LifecycleHookException(Exception inner) : Exception(inner.Message, inner);
+
     public async Task<IterativeLoopResult> RunAsync(
         IterativeLoopOptions options,
         IterativeContext context,
@@ -46,6 +51,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 cancellationToken.ThrowIfCancellationRequested();
 
                 context.Iteration = i;
+
+                // Hook: iteration start (wrapped to escape catch-all)
+                if (options.OnIterationStart != null)
+                {
+                    await InvokeHookAsync(options.OnIterationStart, i, context).ConfigureAwait(false);
+                }
 
                 // Build fresh prompt from workspace state
                 string userPrompt;
@@ -177,7 +188,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                     // Execute tool calls
                     var roundResults = await ExecuteToolCallsAsync(
-                        functionCalls, options.Tools, diagnosticsBuilder, cancellationToken)
+                        functionCalls, options.Tools, diagnosticsBuilder,
+                        i, options.OnToolCall, cancellationToken)
                         .ConfigureAwait(false);
                     iterationToolCalls.AddRange(roundResults);
 
@@ -229,6 +241,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 // Update context for next iteration
                 context.LastToolResults = iterationToolCalls;
 
+                // Hook: iteration end (wrapped to escape catch-all)
+                if (options.OnIterationEnd != null)
+                {
+                    await InvokeHookAsync(options.OnIterationEnd, iterations[^1]).ConfigureAwait(false);
+                }
+
                 // Check IsComplete predicate
                 if (options.IsComplete?.Invoke(context) == true)
                 {
@@ -248,6 +266,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             succeeded = false;
             errorMessage = "Loop was cancelled.";
             diagnosticsBuilder.RecordFailure(errorMessage);
+        }
+        catch (LifecycleHookException hookEx)
+        {
+            // Lifecycle hook exceptions propagate to the caller — they are
+            // user-controlled code and should not be silently swallowed.
+            throw hookEx.InnerException!;
         }
         catch (Exception ex)
         {
@@ -277,6 +301,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         List<FunctionCallContent> functionCalls,
         IReadOnlyList<AITool> tools,
         AgentRunDiagnosticsBuilder diagnosticsBuilder,
+        int iteration,
+        Func<int, ToolCallResult, Task>? onToolCall,
         CancellationToken cancellationToken)
     {
         var toolMap = tools.OfType<AIFunction>()
@@ -312,6 +338,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     CustomMetrics: null));
 
                 results.Add(errorResult);
+
+                if (onToolCall != null)
+                {
+                    await InvokeHookAsync(onToolCall, iteration, errorResult).ConfigureAwait(false);
+                }
+
                 continue;
             }
 
@@ -340,6 +372,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     Duration: stopwatch.Elapsed,
                     Succeeded: true,
                     ErrorMessage: null));
+
+                if (onToolCall != null)
+                {
+                    await InvokeHookAsync(onToolCall, iteration, results[^1]).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -362,10 +399,39 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     Duration: stopwatch.Elapsed,
                     Succeeded: false,
                     ErrorMessage: ex.Message));
+
+                if (onToolCall != null)
+                {
+                    await InvokeHookAsync(onToolCall, iteration, results[^1]).ConfigureAwait(false);
+                }
             }
         }
 
         return results;
+    }
+
+    private static async Task InvokeHookAsync<T>(Func<T, Task> hook, T arg)
+    {
+        try
+        {
+            await hook(arg).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new LifecycleHookException(ex);
+        }
+    }
+
+    private static async Task InvokeHookAsync<T1, T2>(Func<T1, T2, Task> hook, T1 arg1, T2 arg2)
+    {
+        try
+        {
+            await hook(arg1, arg2).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new LifecycleHookException(ex);
+        }
     }
 
     private static IReadOnlyDictionary<string, object?> ToReadOnly(

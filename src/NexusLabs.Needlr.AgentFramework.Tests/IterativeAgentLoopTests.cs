@@ -1181,5 +1181,119 @@ public sealed class IterativeAgentLoopTests
     }
 
     #endregion
+
+    #region Lifecycle Hooks
+
+    [Fact]
+    public async Task RunAsync_OnIterationStart_FiresBeforePromptFactory()
+    {
+        var callOrder = new List<string>();
+
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions();
+        options.PromptFactory = ctx =>
+        {
+            callOrder.Add("prompt");
+            return "go";
+        };
+        options.OnIterationStart = (iter, ctx) =>
+        {
+            callOrder.Add($"start:{iter}");
+            return Task.CompletedTask;
+        };
+
+        await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.Equal(["start:0", "prompt"], callOrder);
+    }
+
+    [Fact]
+    public async Task RunAsync_OnToolCall_FiresForEachToolInOrderWithIteration()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var hookCalls = new List<(int Iteration, string ToolName)>();
+
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                return callCount == 1
+                    ? CreateToolCallResponse(("ping", "c1", null))
+                    : new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            tools: [tool],
+            toolResultMode: ToolResultMode.OneRoundTrip);
+        options.OnToolCall = (iter, result) =>
+        {
+            hookCalls.Add((iter, result.FunctionName));
+            return Task.CompletedTask;
+        };
+
+        await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.Single(hookCalls);
+        Assert.Equal(0, hookCalls[0].Iteration);
+        Assert.Equal("ping", hookCalls[0].ToolName);
+    }
+
+    [Fact]
+    public async Task RunAsync_OnIterationEnd_FiresWithCompleteRecord()
+    {
+        var endRecords = new List<IterationRecord>();
+
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions();
+        options.OnIterationEnd = record =>
+        {
+            endRecords.Add(record);
+            return Task.CompletedTask;
+        };
+
+        await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.Single(endRecords);
+        Assert.Equal(0, endRecords[0].Iteration);
+        Assert.Equal("done", endRecords[0].ResponseText);
+    }
+
+    [Fact]
+    public async Task RunAsync_NullHooks_DoNotThrow()
+    {
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions();
+
+        // All hooks are null by default — should not throw
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_HookException_PropagatesToCaller()
+    {
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions();
+        options.OnIterationStart = (_, _) =>
+            throw new InvalidOperationException("Hook blew up");
+
+        // Hook exception should NOT be caught by the loop's internal error handling
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken));
+    }
+
+    #endregion
 }
 

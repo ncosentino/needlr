@@ -123,4 +123,36 @@ public sealed class IterativeLoopOptions
     /// iteration.
     /// </remarks>
     public int MaxToolRoundsPerIteration { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets an optional async callback invoked at the start of each iteration,
+    /// before the prompt factory runs. Receives the zero-based iteration number and the
+    /// current <see cref="IterativeContext"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use this for progress reporting (e.g., updating a SignalR client). Hook exceptions
+    /// propagate directly to the caller — they are not caught by the loop's internal
+    /// error handling.
+    /// </remarks>
+    public Func<int, IterativeContext, Task>? OnIterationStart { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional async callback invoked after each tool call completes.
+    /// Receives the zero-based iteration number and the <see cref="ToolCallResult"/>.
+    /// </summary>
+    /// <remarks>
+    /// Fired once per tool call, in execution order. Use for real-time progress updates
+    /// such as streaming tool activity to a UI. Hook exceptions propagate to the caller.
+    /// </remarks>
+    public Func<int, ToolCallResult, Task>? OnToolCall { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional async callback invoked after each iteration completes.
+    /// Receives the <see cref="IterationRecord"/> containing tool calls, tokens, and timing.
+    /// </summary>
+    /// <remarks>
+    /// Fired after the <see cref="IterationRecord"/> is built and context is updated.
+    /// Hook exceptions propagate to the caller.
+    /// </remarks>
+    public Func<IterationRecord, Task>? OnIterationEnd { get; set; }
 }
