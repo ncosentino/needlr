@@ -268,22 +268,72 @@ internal sealed class TripPlannerFunctions(
         }
 
         var totalCost = flightCost + hotelCost;
-        var issues = new List<string>();
-        if (totalCost > budgetVal) issues.Add($"OVER BUDGET: ${totalCost} > ${budgetVal} (over by ${totalCost - budgetVal}). Consider cheaper alternatives.");
-        if (legs.Count > maxStopsVal + 1) issues.Add($"TOO MANY LEGS: {legs.Count} > {maxStopsVal + 1} allowed");
-        if (legs.Count == 0) issues.Add("NO LEGS: itinerary is empty");
-        if (legs.Count < 3) issues.Add($"NOT ENOUGH STOPS: need at least 3 legs (2 intermediate cities), have {legs.Count}");
+        var issues = new List<object>();
+        var originCity = config["origin"].ToString()!;
+        var destCity = config["destination"].ToString()!;
 
-        var intermediateCities = legs.Skip(0).Take(legs.Count - 1)
+        if (totalCost > budgetVal)
+        {
+            var overBy = totalCost - budgetVal;
+            issues.Add(new
+            {
+                code = "OVER_BUDGET",
+                detail = $"${totalCost} > ${budgetVal} (over by ${overBy})",
+                action = $"Remove expensive legs or hotels and replace with cheaper options. "
+                    + "Call remove_leg or remove_hotel, then search for cheaper alternatives. "
+                    + $"You need to save at least ${overBy}.",
+            });
+        }
+
+        if (legs.Count > maxStopsVal + 1)
+        {
+            issues.Add(new
+            {
+                code = "TOO_MANY_LEGS",
+                detail = $"{legs.Count} legs exceeds maximum {maxStopsVal + 1}",
+                action = "Call remove_leg to remove excess legs.",
+            });
+        }
+
+        if (legs.Count == 0)
+        {
+            issues.Add(new
+            {
+                code = "NO_LEGS",
+                detail = "Itinerary is empty — no flight legs added.",
+                action = $"Search for flights from {originCity} and call add_leg. "
+                    + $"You need at least 3 legs from {originCity} to {destCity} with 2 intermediate stops.",
+            });
+        }
+        else if (legs.Count < 3)
+        {
+            var currentTo = legs[^1]["to"].ToString()!;
+            issues.Add(new
+            {
+                code = "NOT_ENOUGH_STOPS",
+                detail = $"Have {legs.Count} leg(s), need at least 3 (2 intermediate cities).",
+                action = $"Add more legs. Your last leg ends at {currentTo}. "
+                    + $"Search for flights from {currentTo} toward {destCity} and call add_leg.",
+            });
+        }
+
+        // Check intermediate city hotels
+        var intermediateCities = legs.Take(legs.Count > 0 ? legs.Count - 1 : 0)
             .Select(l => l["to"].ToString()!).ToList();
         if (legs.Count > 0)
-            intermediateCities.Remove(config["destination"].ToString()!);
+            intermediateCities.Remove(destCity);
+
         foreach (var intermCity in intermediateCities)
         {
             var cityKey = $"hotel-{intermCity.ToLowerInvariant().Replace(' ', '-')}.json";
             if (!workspace.FileExists(cityKey) || string.IsNullOrWhiteSpace(workspace.ReadFile(cityKey)))
             {
-                issues.Add($"MISSING HOTEL: no hotel booked for layover in {intermCity}");
+                issues.Add(new
+                {
+                    code = "MISSING_HOTEL",
+                    detail = $"No hotel booked for layover in {intermCity}.",
+                    action = $"Search for 'hotel {intermCity.ToLowerInvariant()}' and then call book_hotel for {intermCity}.",
+                });
             }
             else
             {
@@ -291,7 +341,12 @@ internal sealed class TripPlannerFunctions(
                 if (hotelData.TryGetValue("rating", out var ratingObj) &&
                     double.TryParse(ratingObj.ToString(), out var rating) && rating < 3.5)
                 {
-                    issues.Add($"LOW RATING: hotel in {intermCity} rated {rating}★ — minimum 3.5★ required");
+                    issues.Add(new
+                    {
+                        code = "LOW_RATING",
+                        detail = $"Hotel in {intermCity} rated {rating}★ — minimum 3.5★ required.",
+                        action = $"Call remove_hotel for {intermCity}, then search for better-rated hotels and book one rated 3.5★ or higher.",
+                    });
                 }
             }
         }
@@ -300,13 +355,29 @@ internal sealed class TripPlannerFunctions(
         for (int i = 1; i < legs.Count; i++)
         {
             if (legs[i - 1]["to"].ToString() != legs[i]["from"].ToString())
-                issues.Add($"ROUTE GAP: leg {i} ends at {legs[i - 1]["to"]} but leg {i + 1} starts at {legs[i]["from"]}");
+                issues.Add(new
+                {
+                    code = "ROUTE_GAP",
+                    detail = $"Leg {i} ends at {legs[i - 1]["to"]} but leg {i + 1} starts at {legs[i]["from"]}.",
+                    action = $"Call remove_leg({i + 1}) and re-add it starting from {legs[i - 1]["to"]}.",
+                });
         }
 
-        if (legs.Count > 0 && legs[0]["from"].ToString() != config["origin"].ToString())
-            issues.Add($"WRONG ORIGIN: first leg starts at {legs[0]["from"]}, expected {config["origin"]}");
-        if (legs.Count > 0 && legs[^1]["to"].ToString() != config["destination"].ToString())
-            issues.Add($"WRONG DESTINATION: last leg ends at {legs[^1]["to"]}, expected {config["destination"]}");
+        if (legs.Count > 0 && legs[0]["from"].ToString() != originCity)
+            issues.Add(new
+            {
+                code = "WRONG_ORIGIN",
+                detail = $"First leg starts at {legs[0]["from"]}, expected {originCity}.",
+                action = $"Call remove_leg(1) and re-add the first leg starting from {originCity}.",
+            });
+
+        if (legs.Count > 0 && legs[^1]["to"].ToString() != destCity)
+            issues.Add(new
+            {
+                code = "WRONG_DESTINATION",
+                detail = $"Last leg ends at {legs[^1]["to"]}, expected {destCity}.",
+                action = $"Add another leg from {legs[^1]["to"]} to {destCity}, or remove the last leg and replace it.",
+            });
 
         var result = new
         {
@@ -317,6 +388,7 @@ internal sealed class TripPlannerFunctions(
             budget = budgetVal,
             remaining = budgetVal - totalCost,
             legCount = legs.Count,
+            issueCount = issues.Count,
             issues,
         };
 
