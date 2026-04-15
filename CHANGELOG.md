@@ -16,11 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `AIFunction` wrapping Copilot's MCP `web_search` tool). Supports SSE streaming, automatic
   token exchange from GitHub OAuth, and configurable retry with exponential backoff. Plugs
   into the agent framework via the existing `UsingChatClient()` hook — no AF-specific
-  extensions needed.
+  extensions needed. Default model is `claude-sonnet-4.6`.
 
 #### Agent Framework
 
-- **`IIterativeAgentLoop`** — workspace-driven agent execution loopthat eliminates O(n²)
+- **`IIterativeAgentLoop`** — workspace-driven agent execution loop that eliminates O(n²)
   token accumulation from `FunctionInvokingChatClient`. Each iteration constructs a fresh
   prompt from workspace files instead of appending to conversation history. Configurable
   via `IterativeLoopOptions` with three `ToolResultMode`s (`SingleCall`, `OneRoundTrip`,
@@ -31,15 +31,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   iterative loop to make LLM calls without depending on `FunctionInvokingChatClient`.
 
 - **`IterativeTripPlannerApp` example** — complex trip planner demonstrating the iterative
-  loop with a real LLM (Azure OpenAI). Plans multi-stop NY→Tokyo trips on a tight budget
-  with hotel rating constraints, showing budget failures, route pivots, fix cycles, and
-  91% token savings vs FIC. Uses full DI pattern: `[AgentFunctionGroup]` tools resolved
-  via `IAgentFactory.ResolveTools()`, workspace access via `IAgentExecutionContextAccessor`,
-  lifecycle hooks for progress output, and diagnostics via `IAgentDiagnosticsAccessor`.
+  loop with a real LLM (Copilot `claude-sonnet-4.6`) and real web search (Copilot MCP
+  `web_search`). Plans multi-stop NY→Tokyo trips with 3+ intermediate stops on a $3,000
+  budget with hotel rating constraints, showing research phases, budget failures, route
+  pivots, and 84% token savings vs FIC. Uses full DI pattern: `[AgentFunctionGroup]` tools
+  resolved via `IAgentFactory.ResolveTools()`, workspace access via
+  `IAgentExecutionContextAccessor`, lifecycle hooks for progress output, progress events
+  via `IProgressSink`, and diagnostics via `IAgentDiagnosticsAccessor`. No mocks or fake
+  data — all flight/hotel research uses live web search.
 
 - **Lifecycle hooks on `IterativeLoopOptions`** — `OnIterationStart`, `OnToolCall`, and
   `OnIterationEnd` async callbacks for real-time progress reporting (e.g., SignalR).
   Hook exceptions propagate to the caller; null hooks are safe.
+
+- **`ToolFilter` on `IterativeLoopOptions`** — per-iteration tool gating callback that
+  receives the iteration number, context, and full tool list, returning the filtered
+  subset to offer the LLM. Enables phase-gating patterns (e.g., only offer `finalize_trip`
+  after validation passes).
 
 - **`IAgentFactory.ResolveTools()`** — public API to resolve DI-wired tool instances
   without creating an `AIAgent`. Supports filtering by `FunctionGroups`, `FunctionTypes`,
@@ -56,6 +64,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 #### Agent Framework
+
+- **`IIterativeAgentLoop` now emits `ToolCallStartedEvent`/`ToolCallCompletedEvent`/
+  `ToolCallFailedEvent` to the progress system** — previously, these event types were
+  defined but only emitted by `DiagnosticsFunctionCallingMiddleware` (which the iterative
+  loop bypasses). The loop now accepts `IProgressReporterAccessor` and emits progress
+  events from `ExecuteToolCallsAsync`, giving consumers real-time tool call visibility
+  via `IProgressSink`. Falls back to `NullProgressReporter` (no-op) when no sinks are
+  registered.
 
 - **`IIterativeAgentLoop` now records `ChatCompletionDiagnostics`** — previously,
   `Diagnostics.AggregateTokenUsage` was always zero because the loop never called
