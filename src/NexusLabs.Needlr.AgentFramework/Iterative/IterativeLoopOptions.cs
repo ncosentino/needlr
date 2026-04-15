@@ -157,6 +157,38 @@ public sealed class IterativeLoopOptions
     public Func<IterationRecord, Task>? OnIterationEnd { get; set; }
 
     /// <summary>
+    /// Gets or sets an optional filter that narrows the tool list on each iteration.
+    /// Receives the zero-based iteration number, the current <see cref="IterativeContext"/>,
+    /// and the full <see cref="Tools"/> list. Returns the subset of tools the model should
+    /// see for that iteration.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Use this for <strong>phase-gating</strong> — restricting which tools are available
+    /// based on the current workspace state. For example, a trip planner might offer only
+    /// <c>search</c> during the research phase and only <c>add_leg</c>/<c>book_hotel</c>
+    /// during the build phase.
+    /// </para>
+    /// <para>
+    /// When <see langword="null"/> (the default), all <see cref="Tools"/> are available on
+    /// every iteration.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// ToolFilter = (iteration, ctx, allTools) =>
+    /// {
+    ///     var phase = ctx.Workspace.ReadFile("status.json");
+    ///     var allowed = phase.Contains("research")
+    ///         ? new[] { "search" }
+    ///         : new[] { "add_leg", "book_hotel", "validate_trip" };
+    ///     return allTools.Where(t => allowed.Contains(t.Name)).ToList();
+    /// };
+    /// </code>
+    /// </example>
+    public Func<int, IterativeContext, IReadOnlyList<AITool>, IReadOnlyList<AITool>>? ToolFilter { get; set; }
+
+    /// <summary>
     /// An optional <see cref="Context.IAgentExecutionContext"/> to use for
     /// bridging workspace state to DI-resolved tools.
     /// </summary>

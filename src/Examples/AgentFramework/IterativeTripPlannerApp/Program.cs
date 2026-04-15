@@ -270,6 +270,20 @@ var options = new IterativeLoopOptions
     ToolResultMode = ToolResultMode.OneRoundTrip,
     LoopName = "trip-planner",
 
+    // ── Tool filter: phase-gating ────────────────────────────────────
+    // Only offer finalize_trip after validation has passed. This prevents
+    // the LLM from skipping validation and finalizing an invalid trip.
+    ToolFilter = (iteration, ctx, allTools) =>
+    {
+        var statusJson = ctx.Workspace.ReadFile("status.json");
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
+        var validated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
+
+        return validated
+            ? allTools
+            : allTools.Where(t => !t.Name.Equals("finalize_trip", StringComparison.OrdinalIgnoreCase)).ToList();
+    },
+
     // ── Lifecycle hooks: progress reporting ──────────────────────────
     // All console output flows through hooks — tools themselves are silent.
     // This mirrors BrandGhost's pattern of reporting progress via SignalR.

@@ -109,9 +109,13 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     new(ChatRole.User, userPrompt),
                 };
 
+                var effectiveTools = options.ToolFilter is { } filter
+                    ? filter(i, context, options.Tools)
+                    : options.Tools;
+
                 var chatOptions = new ChatOptions
                 {
-                    Tools = options.Tools.Cast<AITool>().ToList(),
+                    Tools = effectiveTools.Cast<AITool>().ToList(),
                 };
 
                 // Execute rounds within this iteration based on ToolResultMode
