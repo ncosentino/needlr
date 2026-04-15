@@ -132,7 +132,7 @@ Use `IAgentFactory.ResolveTools()` to get DI-wired tool instances instead of han
 ```csharp
 var agentFactory = services.GetRequiredService<IAgentFactory>();
 
-// Resolve all tools in a function group
+// Resolve all tools in a function group (discovered by source generator)
 var tools = agentFactory.ResolveTools(opts =>
     opts.FunctionGroups = ["trip-planner"]);
 
@@ -141,6 +141,9 @@ var allTools = agentFactory.ResolveTools();
 ```
 
 This resolves tool classes through DI, so constructor-injected services (like `IAgentExecutionContextAccessor`) are available inside tool methods.
+
+!!! note "Source generator vs. reflection"
+    The source generator (`NexusLabs.Needlr.AgentFramework.Generators`) emits a `[ModuleInitializer]` that auto-registers `[AgentFunctionGroup]` types with `AgentFrameworkGeneratedBootstrap`. Add the generator as an analyzer reference in your `.csproj` to enable this. For projects that cannot use source generation, call `AddAgentFunctionGroupsFromAssemblies()` as a reflection-based fallback.
 
 ---
 

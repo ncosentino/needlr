@@ -16,8 +16,6 @@ using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
-using IterativeTripPlannerApp;
-
 // ============================================================================
 // Iterative Trip Planner — IIterativeAgentLoop Example
 //
@@ -69,15 +67,14 @@ else
 Console.WriteLine();
 
 // ── DI setup — mirrors real consumer patterns ───────────────────────────
-// UsingAgentFramework() sets up the agent factory and iterative loop.
-// AddAgentFunctionGroupsFromAssemblies() discovers [AgentFunctionGroup]
-// classes via reflection — the source generator doesn't handle agent
-// framework discovery yet. Diagnostics services are registered automatically.
+// UsingAgentFramework() auto-discovers [AgentFunctionGroup("trip-planner")]
+// on TripPlannerFunctions via the source generator's [ModuleInitializer].
+// Diagnostics services (IAgentDiagnosticsAccessor + IAgentDiagnosticsWriter)
+// are registered automatically so the loop publishes diagnostics after each run.
 var serviceProvider = new Syringe()
     .UsingReflection()
     .UsingAgentFramework(af => af
-        .UsingChatClient(chatClient)
-        .AddAgentFunctionGroupsFromAssemblies([typeof(TripPlannerFunctions).Assembly]))
+        .UsingChatClient(chatClient))
     .BuildServiceProvider(configuration);
 
 // Resolve services — same pattern as BrandGhost's orchestrator
