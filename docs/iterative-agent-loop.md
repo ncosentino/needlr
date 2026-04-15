@@ -109,13 +109,38 @@ Console.WriteLine($"Total tokens: {result.Diagnostics?.AggregateTokenUsage.Total
 
 ```csharp
 var services = new Syringe()
-    .UsingGeneratedComponents(/* ... */)
+    .UsingReflection()
+    .UsingAgentFramework(af => af
+        .UsingChatClient(chatClient)
+        .AddAgentFunctionGroupsFromAssemblies([typeof(MyTools).Assembly]))
     .BuildServiceProvider(configuration);
 
 var loop = services.GetRequiredService<IIterativeAgentLoop>();
 ```
 
-The loop depends on `IChatClientAccessor`, which is also registered automatically.
+The loop depends on `IChatClientAccessor` (registered automatically). It also accepts optional dependencies that are injected when available:
+
+| Optional Dependency | Purpose |
+|---|---|
+| `IAgentDiagnosticsWriter` | Publishes run diagnostics to `IAgentDiagnosticsAccessor` |
+| `IAgentExecutionContextAccessor` | Bridges workspace to DI-resolved tools |
+
+### Tool Resolution
+
+Use `IAgentFactory.ResolveTools()` to get DI-wired tool instances instead of hand-wiring `AIFunctionFactory.Create()`:
+
+```csharp
+var agentFactory = services.GetRequiredService<IAgentFactory>();
+
+// Resolve all tools in a function group
+var tools = agentFactory.ResolveTools(opts =>
+    opts.FunctionGroups = ["trip-planner"]);
+
+// Or resolve all registered tools
+var allTools = agentFactory.ResolveTools();
+```
+
+This resolves tool classes through DI, so constructor-injected services (like `IAgentExecutionContextAccessor`) are available inside tool methods.
 
 ---
 
@@ -133,6 +158,10 @@ The loop depends on `IChatClientAccessor`, which is also registered automaticall
 | `IsComplete` | `Func<IterativeContext, bool>?` | `null` | Domain-specific termination predicate |
 | `ToolResultMode` | `ToolResultMode` | `OneRoundTrip` | How tool results feed back within an iteration |
 | `MaxToolRoundsPerIteration` | `int` | `5` | Safety valve for `MultiRound` mode |
+| `OnIterationStart` | `Func<int, IterativeContext, Task>?` | `null` | Async callback fired before each iteration's prompt factory |
+| `OnToolCall` | `Func<int, ToolCallResult, Task>?` | `null` | Async callback fired after each tool executes (includes iteration number) |
+| `OnIterationEnd` | `Func<IterationRecord, Task>?` | `null` | Async callback fired after each iteration completes |
+| `ExecutionContext` | `IAgentExecutionContext?` | `null` | Explicit execution context (auto-created from workspace if omitted) |
 
 ### ToolResultMode
 
@@ -183,6 +212,131 @@ PromptFactory = ctx =>
 
     return sb.ToString();
 }
+```
+
+---
+
+## Lifecycle Hooks
+
+The iterative loop provides async lifecycle hooks for real-time progress reporting. These are essential for scenarios like sending updates over SignalR or updating a UI.
+
+```csharp
+var options = new IterativeLoopOptions
+{
+    // ... other options ...
+
+    OnIterationStart = async (iteration, ctx) =>
+    {
+        await hub.SendAsync("IterationStarted", iteration);
+    },
+
+    OnToolCall = async (iteration, toolResult) =>
+    {
+        await hub.SendAsync("ToolExecuted", new
+        {
+            Iteration = iteration,
+            Tool = toolResult.FunctionName,
+            Succeeded = toolResult.Succeeded,
+        });
+    },
+
+    OnIterationEnd = async (record) =>
+    {
+        await hub.SendAsync("IterationCompleted", new
+        {
+            record.Iteration,
+            ToolCount = record.ToolCalls.Count,
+            record.Duration,
+        });
+    },
+};
+```
+
+### Hook behavior
+
+- **Hooks are async** (`Func<..., Task>`) — await I/O operations safely.
+- **Hook exceptions propagate** to the caller — they are not swallowed by the loop's error handling. If a hook throws, the loop terminates with that exception.
+- **Null hooks are safe** — omitting any hook has no effect.
+- **`OnToolCall` receives the iteration number** as the first parameter, so progress reporters know which iteration a tool call belongs to.
+
+---
+
+## Diagnostics Accessor
+
+The loop automatically publishes diagnostics to `IAgentDiagnosticsAccessor` when the service is registered. This eliminates the need to inspect `IterationRecord.Tokens` directly.
+
+### Setup
+
+Call `BeginCapture()` before running the loop so the diagnostics are visible to the caller after the run completes:
+
+```csharp
+var diagnosticsAccessor = services.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+// Create a capture scope — diagnostics written inside RunAsync will be
+// visible via LastRunDiagnostics after the run completes.
+using var scope = diagnosticsAccessor.BeginCapture();
+
+var result = await loop.RunAsync(options, context);
+
+// Read diagnostics from the accessor (same data as result.Diagnostics)
+var diag = diagnosticsAccessor.LastRunDiagnostics!;
+Console.WriteLine($"LLM calls: {diag.ChatCompletions.Count}");
+Console.WriteLine($"Tool calls: {diag.ToolCalls.Count}");
+Console.WriteLine($"Tokens: {diag.AggregateTokenUsage.TotalTokens}");
+```
+
+!!! warning "BeginCapture is required"
+    Without `BeginCapture()`, `LastRunDiagnostics` will be `null` after the run. The loop writes diagnostics into an `AsyncLocal<T>` holder — `BeginCapture()` creates the shared holder that both the loop and the caller can access.
+
+---
+
+## Execution Context Bridge
+
+DI-resolved tools often need access to the workspace. The iterative loop automatically bridges its `IterativeContext.Workspace` to `IAgentExecutionContextAccessor` so that tool classes can read/write workspace files.
+
+### How it works
+
+When `IAgentExecutionContextAccessor` is available via DI, the loop:
+
+1. Creates an `AgentExecutionContext` with the workspace from `IterativeContext`
+2. Calls `accessor.BeginScope(context)` before the first iteration
+3. Disposes the scope after the loop completes
+
+### DI-resolved tool example
+
+```csharp
+[AgentFunctionGroup("my-tools")]
+public class MyTools
+{
+    private readonly IAgentExecutionContextAccessor _contextAccessor;
+
+    public MyTools(IAgentExecutionContextAccessor contextAccessor)
+    {
+        _contextAccessor = contextAccessor;
+    }
+
+    [AgentFunction]
+    public string ReadConfig()
+    {
+        var workspace = _contextAccessor.Current!.GetRequiredWorkspace();
+        return workspace.ReadFile("config.json");
+    }
+}
+```
+
+### Explicit context
+
+If you need custom `UserId` or `OrchestrationId` values, provide an explicit execution context:
+
+```csharp
+var options = new IterativeLoopOptions
+{
+    // ... other options ...
+    ExecutionContext = new AgentExecutionContext(
+        UserId: "user-123",
+        OrchestrationId: "trip-planner-run-42",
+        Workspace: workspace),
+};
 ```
 
 ---
@@ -261,7 +415,7 @@ Console.WriteLine($"Total tokens: {diag?.AggregateTokenUsage.TotalTokens}");
 
 ## Example: Trip Planner
 
-The `IterativeTripPlannerApp` example in `src/Examples/AgentFramework/` demonstrates the full pattern with a real LLM:
+The `IterativeTripPlannerApp` example in `src/Examples/AgentFramework/` demonstrates the full pattern — matching the architecture of production consumers like BrandGhost:
 
 ```
 dotnet run --project src/Examples/AgentFramework/IterativeTripPlannerApp
@@ -269,11 +423,15 @@ dotnet run --project src/Examples/AgentFramework/IterativeTripPlannerApp
 
 This example plans a multi-stop trip from New York to Tokyo on a tight budget with constraints (3.5★ minimum hotel rating, 2+ intermediate stops). It demonstrates:
 
+- **DI-resolved tools** — `TripPlannerFunctions` class with `[AgentFunctionGroup("trip-planner")]`, resolved via `IAgentFactory.ResolveTools()`
+- **Workspace access via DI** — tools read/write workspace through `IAgentExecutionContextAccessor` (not captured closures)
+- **Lifecycle hooks** — progress output driven by `OnIterationStart`, `OnToolCall`, `OnIterationEnd`
+- **Diagnostics accessor** — aggregate metrics read from `IAgentDiagnosticsAccessor.LastRunDiagnostics` after the run
+- **Execution context bridge** — workspace automatically available to DI-resolved tools
 - **Budget failures** — the preferred European route exceeds the budget
 - **Route pivots** — the model discovers cheaper US West Coast alternatives
 - **Fix cycles** — validation failures trigger leg removal, hotel swaps, and replanning
 - **Full diagnostics** — per-iteration token counts, tool call logs, and O(n²) comparison
-- **91% token savings** — 55K tokens (iterative) vs 649K estimated (FIC)
 
 Configure via `appsettings.json`:
 

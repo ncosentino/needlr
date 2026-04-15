@@ -24,7 +24,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`IterativeTripPlannerApp` example** — complex trip planner demonstrating the iterative
   loop with a real LLM (Azure OpenAI). Plans multi-stop NY→Tokyo trips on a tight budget
   with hotel rating constraints, showing budget failures, route pivots, fix cycles, and
-  91% token savings vs FIC.
+  91% token savings vs FIC. Uses full DI pattern: `[AgentFunctionGroup]` tools resolved
+  via `IAgentFactory.ResolveTools()`, workspace access via `IAgentExecutionContextAccessor`,
+  lifecycle hooks for progress output, and diagnostics via `IAgentDiagnosticsAccessor`.
+
+- **Lifecycle hooks on `IterativeLoopOptions`** — `OnIterationStart`, `OnToolCall`, and
+  `OnIterationEnd` async callbacks for real-time progress reporting (e.g., SignalR).
+  Hook exceptions propagate to the caller; null hooks are safe.
+
+- **`IAgentFactory.ResolveTools()`** — public API to resolve DI-wired tool instances
+  without creating an `AIAgent`. Supports filtering by `FunctionGroups`, `FunctionTypes`,
+  or agent attribute via generic overloads.
+
+- **Diagnostics accessor integration** — `IIterativeAgentLoop` automatically publishes
+  `IAgentRunDiagnostics` to `IAgentDiagnosticsAccessor` after each run when the service
+  is registered. Consumers call `BeginCapture()` before the run to receive diagnostics.
+
+- **Execution context bridge** — `IIterativeAgentLoop` automatically bridges
+  `IterativeContext.Workspace` to `IAgentExecutionContextAccessor` so DI-resolved tools
+  can access workspace files via constructor injection.
+
+### Fixed
+
+#### Agent Framework
+
+- **`IIterativeAgentLoop` now records `ChatCompletionDiagnostics`** — previously,
+  `Diagnostics.AggregateTokenUsage` was always zero because the loop never called
+  `diagnosticsBuilder.AddChatCompletion()`. Now records diagnostics for both success
+  and failure paths, and calls `RecordFailure()` for prompt-factory exceptions and
+  cancellation.
 
 ### Removed
 

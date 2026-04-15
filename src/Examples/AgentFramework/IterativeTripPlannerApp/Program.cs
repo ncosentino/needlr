@@ -9,28 +9,32 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
+using NexusLabs.Needlr.AgentFramework.Context;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
+using IterativeTripPlannerApp;
+
 // ============================================================================
 // Iterative Trip Planner — IIterativeAgentLoop Example
 //
-// This example demonstrates workspace-driven iterative agent execution that
-// avoids the O(n²) token accumulation inherent in FunctionInvokingChatClient.
+// This example demonstrates the FULL integration surface of the iterative
+// agent loop, mirroring real-world consumer patterns like BrandGhost:
 //
-// The scenario mirrors a real-world agentic workflow: a multi-stop trip planner
-// that researches destinations, builds an itinerary, validates constraints,
-// discovers a budget overrun, replans cheaper alternatives, re-validates, and
-// summarizes — across ~12 iterations with ~25 tool calls.
+//   ✓ DI-resolved tool classes with [AgentFunction] + [AgentFunctionGroup]
+//   ✓ Tools access workspace via IAgentExecutionContextAccessor (not closures)
+//   ✓ Tools resolved via IAgentFactory.ResolveTools() (not AIFunctionFactory)
+//   ✓ Lifecycle hooks for progress reporting (not in-tool console output)
+//   ✓ Diagnostics via IAgentDiagnosticsAccessor (not IterationRecord.Tokens)
+//   ✓ Explicit ExecutionContext bridging on IterativeLoopOptions
+//   ✓ Full Syringe DI with UsingAgentFramework() + UsingDiagnostics()
 //
-// Each iteration builds a FRESH 2-message prompt from workspace state.
-// No conversation history accumulates. The workspace IS the memory.
-//
-// At the end, we print a side-by-side comparison showing what this same
-// workload would cost under FunctionInvokingChatClient (O(n²)) versus
-// the iterative loop (O(n)).
+// The scenario: a multi-stop trip planner that researches, builds, validates,
+// and finalizes an itinerary across multiple iterations with ~10+ tool calls.
+// Each iteration builds a FRESH prompt from workspace state — O(n) tokens.
 // ============================================================================
 
 var configuration = new ConfigurationBuilder()
@@ -46,7 +50,7 @@ IChatClient chatClient;
 if (useMock)
 {
     Console.WriteLine("Using MOCK chat client (set TripPlanner:UseMockClient=false for real API)");
-    Console.WriteLine("Mock simulates ~12 iterations of multi-phase trip planning");
+    Console.WriteLine("Mock simulates multi-phase trip planning with budget challenges");
     chatClient = new MockTripPlannerChatClient();
 }
 else
@@ -64,16 +68,32 @@ else
 
 Console.WriteLine();
 
+// ── DI setup — mirrors real consumer patterns ───────────────────────────
+// UsingAgentFramework() sets up the agent factory and iterative loop.
+// AddAgentFunctionGroupsFromAssemblies() discovers [AgentFunctionGroup]
+// classes via reflection — the source generator doesn't handle agent
+// framework discovery yet. Diagnostics services are registered automatically.
 var serviceProvider = new Syringe()
     .UsingReflection()
     .UsingAgentFramework(af => af
-        .UsingChatClient(chatClient))
+        .UsingChatClient(chatClient)
+        .AddAgentFunctionGroupsFromAssemblies([typeof(TripPlannerFunctions).Assembly]))
     .BuildServiceProvider(configuration);
 
+// Resolve services — same pattern as BrandGhost's orchestrator
 var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
-var workspace = new InMemoryWorkspace();
+var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
+var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+// ── Resolve tools via IAgentFactory (not AIFunctionFactory) ─────────────
+// This resolves DI-wired instances of TripPlannerFunctions with
+// IAgentExecutionContextAccessor injected. The accessor gets populated
+// by the loop via the ExecutionContext bridge.
+var tools = agentFactory.ResolveTools(opts =>
+    opts.FunctionGroups = ["trip-planner"]);
 
 // ── Seed workspace ──────────────────────────────────────────────────────
+var workspace = new InMemoryWorkspace();
 var origin = tripConfig["Origin"] ?? "New York";
 var destination = tripConfig["Destination"] ?? "Tokyo";
 var maxStops = int.Parse(tripConfig["MaxStops"] ?? "3");
@@ -103,413 +123,33 @@ workspace.WriteFile("status.json", JsonSerializer.Serialize(new
     finalized = false,
 }));
 
-// ── Hotel price database (shared between search and book_hotel) ────────
-var hotelDatabase = new Dictionary<string, (string[] cityTerms, (string name, int price, double rating)[] hotels)>
-{
-    ["honolulu"] = (["honolulu", "hnl", "waikiki"], [
-        ("Waikiki Beach Hotel", 180, 4.2),
-        ("Ala Moana Suites", 145, 3.9),
-        ("Pacific Hostel", 65, 2.8),
-    ]),
-    ["los angeles"] = (["los angeles", "la", "lax"], [
-        ("LAX Hilton", 195, 4.0),
-        ("Venice Beach Inn", 155, 3.8),
-        ("Downtown Budget", 89, 3.2),
-    ]),
-    ["london"] = (["london", "lhr", "heathrow"], [
-        ("The Langham London", 280, 4.5),
-        ("Premier Inn Heathrow", 120, 3.8),
-        ("Holiday Inn Express", 95, 3.2),
-    ]),
-    ["paris"] = (["paris", "cdg"], [
-        ("Hotel Le Marais", 220, 4.3),
-        ("Ibis Paris CDG", 110, 3.5),
-        ("Generator Paris", 75, 3.0),
-    ]),
-    ["tokyo"] = (["tokyo", "nrt", "narita", "hnd", "haneda"], [
-        ("Shinjuku Granbell", 160, 4.1),
-        ("APA Hotel Asakusa", 95, 3.9),
-        ("Tokyo Bay Hilton", 250, 4.4),
-    ]),
-};
-
-// ── Tool definitions ────────────────────────────────────────────────────
-// Helper: print live tool execution to console
-void LogToolCall(string name, string detail, string result)
-{
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.Write($"  ├─ {name}");
-    Console.ForegroundColor = ConsoleColor.DarkGray;
-    Console.Write($"({detail})");
-    Console.ForegroundColor = ConsoleColor.White;
-    Console.WriteLine($" → {(result.Length > 80 ? result[..77] + "..." : result)}");
-    Console.ResetColor();
-}
-
-var tools = new List<AITool>
-{
-    AIFunctionFactory.Create((string query) =>
-    {
-        // Route database keyed on normalized city/airport pairs.
-        // The LLM may use airport codes (JFK, LHR) or city names — match both.
-        var q = query.ToLowerInvariant();
-
-        string? results = null;
-
-        // Flight routes — match on city names OR airport codes
-        var flightRoutes = new (string[] fromTerms, string[] toTerms, string data)[]
-        {
-            (["new york", "nyc", "jfk"], ["los angeles", "la", "lax"],
-                """[{"airline":"United","flight":"UA201","price":380,"duration":"5h30m","stops":0},{"airline":"Delta","flight":"DL445","price":340,"duration":"5h45m","stops":0},{"airline":"JetBlue","flight":"B6123","price":290,"duration":"6h10m","stops":0}]"""),
-            (["new york", "nyc", "jfk"], ["london", "lhr", "heathrow"],
-                """[{"airline":"British Airways","flight":"BA178","price":520,"duration":"7h00m","stops":0},{"airline":"Virgin Atlantic","flight":"VS4","price":480,"duration":"7h15m","stops":0},{"airline":"Delta","flight":"DL1","price":560,"duration":"7h30m","stops":0}]"""),
-            (["new york", "nyc", "jfk"], ["paris", "cdg", "charles de gaulle"],
-                """[{"airline":"Air France","flight":"AF9","price":510,"duration":"7h45m","stops":0},{"airline":"Delta","flight":"DL264","price":490,"duration":"8h00m","stops":0},{"airline":"United","flight":"UA57","price":530,"duration":"7h50m","stops":0}]"""),
-            (["new york", "nyc", "jfk"], ["tokyo", "nrt", "narita", "hnd", "haneda"],
-                """[{"airline":"ANA","flight":"NH9","price":1250,"duration":"14h00m","stops":0},{"airline":"JAL","flight":"JL5","price":1350,"duration":"13h45m","stops":0},{"airline":"United","flight":"UA79","price":1180,"duration":"14h30m","stops":0}]"""),
-            (["los angeles", "la", "lax"], ["honolulu", "hnl"],
-                """[{"airline":"Hawaiian","flight":"HA12","price":420,"duration":"5h40m","stops":0},{"airline":"United","flight":"UA877","price":380,"duration":"5h55m","stops":0},{"airline":"Delta","flight":"DL302","price":350,"duration":"6h20m","stops":0}]"""),
-            (["los angeles", "la", "lax"], ["tokyo", "nrt", "narita", "hnd", "haneda"],
-                """[{"airline":"ANA","flight":"NH105","price":890,"duration":"11h30m","stops":0},{"airline":"JAL","flight":"JL15","price":950,"duration":"11h15m","stops":0},{"airline":"United","flight":"UA32","price":820,"duration":"12h00m","stops":0}]"""),
-            (["honolulu", "hnl"], ["tokyo", "nrt", "narita", "hnd", "haneda"],
-                """[{"airline":"JAL","flight":"JL73","price":650,"duration":"8h30m","stops":0},{"airline":"ANA","flight":"NH183","price":720,"duration":"8h15m","stops":0},{"airline":"Hawaiian","flight":"HA441","price":580,"duration":"9h10m","stops":0}]"""),
-            (["london", "lhr", "heathrow"], ["tokyo", "nrt", "narita", "hnd", "haneda"],
-                """[{"airline":"ANA","flight":"NH902","price":980,"duration":"12h30m","stops":0},{"airline":"JAL","flight":"JL44","price":920,"duration":"12h00m","stops":0},{"airline":"British Airways","flight":"BA5","price":1050,"duration":"11h45m","stops":0}]"""),
-            (["london", "lhr", "heathrow"], ["paris", "cdg"],
-                """[{"airline":"British Airways","flight":"BA304","price":120,"duration":"1h15m","stops":0},{"airline":"Air France","flight":"AF1681","price":110,"duration":"1h20m","stops":0},{"airline":"EasyJet","flight":"U28443","price":75,"duration":"1h25m","stops":0}]"""),
-            (["paris", "cdg"], ["tokyo", "nrt", "narita", "hnd", "haneda"],
-                """[{"airline":"Air France","flight":"AF276","price":950,"duration":"12h15m","stops":0},{"airline":"JAL","flight":"JL46","price":910,"duration":"12h30m","stops":0},{"airline":"ANA","flight":"NH216","price":980,"duration":"12h00m","stops":0}]"""),
-        };
-
-        foreach (var (fromTerms, toTerms, data) in flightRoutes)
-        {
-            if (fromTerms.Any(t => q.Contains(t)) && toTerms.Any(t => q.Contains(t)))
-            {
-                results = data;
-                break;
-            }
-        }
-
-        // Hotel searches
-        if (results is null)
-        {
-            if (q.Contains("hotel") || q.Contains("accommodation") || q.Contains("stay"))
-            {
-                foreach (var (_, (cityTerms, hotels)) in hotelDatabase)
-                {
-                    if (cityTerms.Any(t => q.Contains(t)))
-                    {
-                        results = "[" + string.Join(",", hotels.Select(h =>
-                            $"{{\"hotel\":\"{h.name}\",\"price_per_night\":{h.price},\"rating\":{h.rating}}}")) + "]";
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Budget/tips fallback
-        if (results is null && (q.Contains("budget") || q.Contains("cheap") || q.Contains("tip")))
-        {
-            results = """[{"tip":"Book 3+ weeks ahead for 15-20% savings"},{"tip":"Tuesday/Wednesday departures are cheapest"},{"tip":"Consider layover in Honolulu to break up Pacific crossing"}]""";
-        }
-
-        // Generic fallback — still useful data, not empty hints
-        results ??= """[{"note":"No specific results found for this query. Try searching with city names like 'new york to london' or 'hotel london'."}]""";
-
-        // Append to research notes (cap at last 5 searches to prevent prompt bloat)
-        var existing = workspace.ReadFile("research-notes.md");
-        var newEntry = $"\n### Search: {query}\n{results}\n";
-        var allEntries = existing + newEntry;
-
-        // Keep only the last 5 search entries to bound prompt size
-        var sections = allEntries.Split("\n### Search: ", StringSplitOptions.RemoveEmptyEntries);
-        if (sections.Length > 5)
-        {
-            allEntries = string.Join("", sections[^5..].Select(s => "\n### Search: " + s));
-        }
-        workspace.WriteFile("research-notes.md", allEntries);
-
-        var resultCount = results.Count(c => c == '{');
-        LogToolCall("search", query, $"{resultCount} results found");
-        return results;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "search",
-        Description = "Search for flights, hotels, or travel tips. Use specific city pairs for best results.",
-    }),
-
-    AIFunctionFactory.Create((string from, string to, string airline, string flight, int price, string duration) =>
-    {
-        var itineraryJson = workspace.ReadFile("itinerary.json");
-        var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
-        legs.Add(new Dictionary<string, object>
-        {
-            ["leg"] = legs.Count + 1,
-            ["from"] = from,
-            ["to"] = to,
-            ["airline"] = airline,
-            ["flight"] = flight,
-            ["price"] = price,
-            ["duration"] = duration,
-        });
-        workspace.WriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
-        var msg = $"Added leg {legs.Count}: {from} → {to} on {airline} {flight} (${price}, {duration})";
-        LogToolCall("add_leg", $"{from}→{to}", msg);
-        return msg;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "add_leg",
-        Description = "Add a flight leg to the itinerary.",
-    }),
-
-    AIFunctionFactory.Create((int legNumber) =>
-    {
-        var itineraryJson = workspace.ReadFile("itinerary.json");
-        var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
-        if (legNumber < 1 || legNumber > legs.Count)
-            return $"Error: leg {legNumber} not found (have {legs.Count} legs)";
-        var removed = legs[legNumber - 1];
-        legs.RemoveAt(legNumber - 1);
-        // Renumber
-        for (int i = 0; i < legs.Count; i++)
-            legs[i]["leg"] = i + 1;
-        workspace.WriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
-        var msg = $"Removed leg {legNumber} ({removed["from"]} → {removed["to"]})";
-        LogToolCall("remove_leg", $"leg {legNumber}", msg);
-        return msg;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "remove_leg",
-        Description = "Remove a leg from the itinerary by leg number.",
-    }),
-
-    AIFunctionFactory.Create((string hotel, string city, int nights) =>
-    {
-        // Look up real price from hotel database — reject hallucinated prices
-        var cityLower = city.ToLowerInvariant();
-        (string name, int price, double rating)? match = null;
-        foreach (var (_, (cityTerms, hotels)) in hotelDatabase)
-        {
-            if (cityTerms.Any(t => cityLower.Contains(t)))
-            {
-                match = hotels.FirstOrDefault(h =>
-                    h.name.Equals(hotel, StringComparison.OrdinalIgnoreCase));
-                break;
-            }
-        }
-
-        if (match is null)
-        {
-            var errMsg = $"ERROR: Hotel '{hotel}' not found in {city}. Search for hotels first to see available options.";
-            LogToolCall("book_hotel", city, errMsg);
-            return errMsg;
-        }
-
-        if (match.Value.rating < 3.5)
-        {
-            var errMsg = $"ERROR: {match.Value.name} is rated {match.Value.rating}★ — minimum 3.5★ required. Pick a higher-rated hotel.";
-            LogToolCall("book_hotel", city, errMsg);
-            return errMsg;
-        }
-
-        var realPrice = match.Value.price;
-        var key = $"hotel-{cityLower.Replace(' ', '-')}.json";
-        workspace.WriteFile(key, JsonSerializer.Serialize(new
-        {
-            hotel = match.Value.name,
-            city,
-            nights,
-            pricePerNight = realPrice,
-            rating = match.Value.rating,
-            total = nights * realPrice,
-        }, new JsonSerializerOptions { WriteIndented = true }));
-        var msg = $"Booked {match.Value.name} in {city}: {nights} nights × ${realPrice} = ${nights * realPrice}";
-        LogToolCall("book_hotel", city, msg);
-        return msg;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "book_hotel",
-        Description = "Book a hotel for a layover city. Must use a hotel name from search results. Price is looked up automatically.",
-    }),
-
-    AIFunctionFactory.Create((string city) =>
-    {
-        var key = $"hotel-{city.ToLowerInvariant().Replace(' ', '-')}.json";
-        if (!workspace.FileExists(key))
-        {
-            var msg = $"No hotel found for {city}";
-            LogToolCall("remove_hotel", city, msg);
-            return msg;
-        }
-        workspace.WriteFile(key, ""); // clear it
-        // Remove from file list by writing empty — prompt factory will see no hotel file
-        var msgOk = $"Removed hotel booking in {city}";
-        LogToolCall("remove_hotel", city, msgOk);
-        return msgOk;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "remove_hotel",
-        Description = "Remove hotel booking for a city so you can book a cheaper alternative.",
-    }),
-
-    AIFunctionFactory.Create(() =>
-    {
-        var configJson = workspace.ReadFile("config.json");
-        var itineraryJson = workspace.ReadFile("itinerary.json");
-        var config = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
-        var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson)!;
-        var budgetVal = int.Parse(config["budget"].ToString()!);
-        var maxStopsVal = int.Parse(config["maxStops"].ToString()!);
-
-        var flightCost = legs.Sum(l => int.Parse(l["price"].ToString()!));
-        var hotelCost = 0;
-        foreach (var path in workspace.GetFilePaths().Where(p => p.StartsWith("hotel-")))
-        {
-            var content = workspace.ReadFile(path);
-            if (string.IsNullOrWhiteSpace(content)) continue;
-            var hotel = JsonSerializer.Deserialize<Dictionary<string, object>>(content)!;
-            hotelCost += int.Parse(hotel["total"].ToString()!);
-        }
-
-        var totalCost = flightCost + hotelCost;
-        var issues = new List<string>();
-        if (totalCost > budgetVal) issues.Add($"OVER BUDGET: ${totalCost} > ${budgetVal} (over by ${totalCost - budgetVal}). Consider a completely different route — US West Coast cities (Los Angeles, Honolulu) often have cheaper combinations than European routes.");
-        if (legs.Count > maxStopsVal + 1) issues.Add($"TOO MANY LEGS: {legs.Count} > {maxStopsVal + 1} allowed");
-        if (legs.Count == 0) issues.Add("NO LEGS: itinerary is empty");
-        if (legs.Count < 3) issues.Add($"NOT ENOUGH STOPS: need at least 3 legs (2 intermediate cities), have {legs.Count}");
-
-        // Check that hotels exist for each intermediate city
-        var intermediateCities = legs.Skip(0).Take(legs.Count - 1)
-            .Select(l => l["to"].ToString()!).ToList();
-        // Don't require hotel for final destination
-        if (legs.Count > 0)
-            intermediateCities.Remove(config["destination"].ToString()!);
-        foreach (var city in intermediateCities)
-        {
-            var cityKey = $"hotel-{city.ToLowerInvariant().Replace(' ', '-')}.json";
-            if (!workspace.FileExists(cityKey) || string.IsNullOrWhiteSpace(workspace.ReadFile(cityKey)))
-            {
-                issues.Add($"MISSING HOTEL: no hotel booked for layover in {city}");
-            }
-            else
-            {
-                var hotelData = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.ReadFile(cityKey))!;
-                if (hotelData.TryGetValue("rating", out var ratingObj) &&
-                    double.TryParse(ratingObj.ToString(), out var rating) && rating < 3.5)
-                {
-                    issues.Add($"LOW RATING: hotel in {city} rated {rating}★ — minimum 3.5★ required");
-                }
-            }
-        }
-
-        // Check route continuity
-        for (int i = 1; i < legs.Count; i++)
-        {
-            if (legs[i - 1]["to"].ToString() != legs[i]["from"].ToString())
-                issues.Add($"ROUTE GAP: leg {i} ends at {legs[i - 1]["to"]} but leg {i + 1} starts at {legs[i]["from"]}");
-        }
-
-        if (legs.Count > 0 && legs[0]["from"].ToString() != config["origin"].ToString())
-            issues.Add($"WRONG ORIGIN: first leg starts at {legs[0]["from"]}, expected {config["origin"]}");
-        if (legs.Count > 0 && legs[^1]["to"].ToString() != config["destination"].ToString())
-            issues.Add($"WRONG DESTINATION: last leg ends at {legs[^1]["to"]}, expected {config["destination"]}");
-
-        var result = new
-        {
-            status = issues.Count == 0 ? "VALID" : "ISSUES_FOUND",
-            flightCost,
-            hotelCost,
-            totalCost,
-            budget = budgetVal,
-            remaining = budgetVal - totalCost,
-            legCount = legs.Count,
-            issues,
-        };
-
-        // Update status
-        var statusJson = workspace.ReadFile("status.json");
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
-        status["validated"] = issues.Count == 0;
-        status["phase"] = issues.Count == 0 ? "finalize" : "fix";
-        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
-
-        var resultJson = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
-        var statusLabel = issues.Count == 0 ? "✓ VALID" : $"✗ {issues.Count} issue(s)";
-        LogToolCall("validate_trip", $"${totalCost}/{budgetVal}", statusLabel);
-        return resultJson;
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "validate_trip",
-        Description = "Validate the entire trip against budget, stop limits, and route continuity.",
-    }),
-
-    AIFunctionFactory.Create((string summary) =>
-    {
-        workspace.WriteFile("trip-summary.md", summary);
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.ReadFile("status.json"))!;
-        status["finalized"] = true;
-        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
-        LogToolCall("finalize_trip", $"{summary.Length} chars", "Trip finalized and summary saved.");
-        return "Trip finalized and summary saved.";
-    }, new AIFunctionFactoryOptions
-    {
-        Name = "finalize_trip",
-        Description = "Write the final trip summary to the workspace and mark as complete.",
-    }),
-};
-
-// ── Prompt factory ──────────────────────────────────────────────────────
+// ── Prompt factory (reads workspace from IterativeContext, not closure) ──
 var iterationStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
 string BuildPrompt(IterativeContext ctx)
 {
-    // ── Live progress: iteration header ──
-    if (ctx.Iteration > 0)
-    {
-        // Close the previous iteration's timing
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.WriteLine($"  └─ iteration {ctx.Iteration - 1} complete ({iterationStopwatch.ElapsedMilliseconds}ms)");
-        Console.ResetColor();
-        Console.WriteLine();
-    }
-    iterationStopwatch.Restart();
-
-    // Determine current phase from status
-    var statusJson = workspace.ReadFile("status.json");
+    var ws = ctx.Workspace;
+    var statusJson = ws.ReadFile("status.json");
     var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
     var phase = status.GetValueOrDefault("phase", "research").ToString()!.ToUpperInvariant();
 
-    Console.ForegroundColor = ConsoleColor.Cyan;
-    Console.Write($"▶ Iteration {ctx.Iteration}");
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.Write($"  [{phase}]");
-    Console.ResetColor();
-
-    // Show workspace size growth
-    var workspaceSize = workspace.GetFilePaths().Sum(p => workspace.ReadFile(p).Length);
-    Console.ForegroundColor = ConsoleColor.DarkGray;
-    Console.WriteLine($"  (workspace: {workspaceSize:N0} chars across {workspace.GetFilePaths().Count()} files)");
-    Console.ResetColor();
     var sb = new StringBuilder();
     sb.AppendLine($"=== ITERATION {ctx.Iteration} ===");
     sb.AppendLine();
 
-    // Always include current config and status
     sb.AppendLine("## Trip Configuration");
-    sb.AppendLine(workspace.ReadFile("config.json"));
+    sb.AppendLine(ws.ReadFile("config.json"));
     sb.AppendLine();
 
     sb.AppendLine("## Current Status");
-    sb.AppendLine(workspace.ReadFile("status.json"));
+    sb.AppendLine(ws.ReadFile("status.json"));
     sb.AppendLine();
 
-    // Include current itinerary (grows each iteration — this is the O(n) part)
     sb.AppendLine("## Current Itinerary");
-    sb.AppendLine(workspace.ReadFile("itinerary.json"));
+    sb.AppendLine(ws.ReadFile("itinerary.json"));
     sb.AppendLine();
 
-    // Include research notes (grows as more searches happen)
-    var notes = workspace.ReadFile("research-notes.md");
+    var notes = ws.ReadFile("research-notes.md");
     if (notes.Length > 0)
     {
         sb.AppendLine("## Research Notes");
@@ -517,21 +157,19 @@ string BuildPrompt(IterativeContext ctx)
         sb.AppendLine();
     }
 
-    // Include hotel bookings if any
-    foreach (var path in workspace.GetFilePaths().Where(p => p.StartsWith("hotel-")))
+    foreach (var path in ws.GetFilePaths().Where(p => p.StartsWith("hotel-")))
     {
         sb.AppendLine($"## Hotel Booking ({path})");
-        sb.AppendLine(workspace.ReadFile(path));
+        sb.AppendLine(ws.ReadFile(path));
         sb.AppendLine();
     }
 
-    // Include last tool results for context
     if (ctx.LastToolResults.Count > 0)
     {
         sb.AppendLine("## Previous Tool Results");
-        foreach (var result in ctx.LastToolResults)
+        foreach (var toolResult in ctx.LastToolResults)
         {
-            sb.AppendLine($"- {result.FunctionName}: {result.Result}");
+            sb.AppendLine($"- {toolResult.FunctionName}: {toolResult.Result}");
         }
         sb.AppendLine();
     }
@@ -551,10 +189,9 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine("6. FINALIZE: Once validated, call finalize_trip with a markdown summary.");
     sb.AppendLine();
 
-    // Inject phase-aware nudge based on workspace state
-    var itineraryJson = workspace.ReadFile("itinerary.json");
+    var itineraryJson = ws.ReadFile("itinerary.json");
     var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
-    var hasHotels = workspace.GetFilePaths().Any(p => p.StartsWith("hotel-"));
+    var hasHotels = ws.GetFilePaths().Any(p => p.StartsWith("hotel-"));
     var isValidated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
 
     if (isValidated)
@@ -581,7 +218,7 @@ string BuildPrompt(IterativeContext ctx)
     return sb.ToString();
 }
 
-// ── Run ─────────────────────────────────────────────────────────────────
+// ── Run with lifecycle hooks ────────────────────────────────────────────
 Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
 Console.WriteLine("║        ITERATIVE TRIP PLANNER — BUDGET CHALLENGE            ║");
 Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
@@ -626,15 +263,98 @@ var options = new IterativeLoopOptions
     MaxIterations = 15,
     IsComplete = ctx =>
     {
-        if (!workspace.FileExists("status.json")) return false;
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.ReadFile("status.json"))!;
+        // Read workspace from IterativeContext (not captured closure)
+        if (!ctx.Workspace.FileExists("status.json")) return false;
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(
+            ctx.Workspace.ReadFile("status.json"))!;
         return status.TryGetValue("finalized", out var f) && f.ToString() == "True";
     },
     ToolResultMode = ToolResultMode.OneRoundTrip,
     LoopName = "trip-planner",
+
+    // ── Lifecycle hooks: progress reporting ──────────────────────────
+    // All console output flows through hooks — tools themselves are silent.
+    // This mirrors BrandGhost's pattern of reporting progress via SignalR.
+    OnIterationStart = (iteration, ctx) =>
+    {
+        if (iteration > 0)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"  └─ iteration {iteration - 1} complete ({iterationStopwatch.ElapsedMilliseconds}ms)");
+            Console.ResetColor();
+            Console.WriteLine();
+        }
+        iterationStopwatch.Restart();
+
+        var statusJson = ctx.Workspace.ReadFile("status.json");
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
+        var phase = status.GetValueOrDefault("phase", "research").ToString()!.ToUpperInvariant();
+
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.Write($"▶ Iteration {iteration}");
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.Write($"  [{phase}]");
+        Console.ResetColor();
+
+        var workspaceSize = ctx.Workspace.GetFilePaths().Sum(p => ctx.Workspace.ReadFile(p).Length);
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"  (workspace: {workspaceSize:N0} chars across {ctx.Workspace.GetFilePaths().Count()} files)");
+        Console.ResetColor();
+
+        return Task.CompletedTask;
+    },
+
+    OnToolCall = (iteration, toolCallResult) =>
+    {
+        var name = toolCallResult.FunctionName;
+        var resultStr = toolCallResult.Result?.ToString() ?? "(null)";
+
+        // Summarize tool results for clean console output
+        var summary = name switch
+        {
+            "Search" => $"{resultStr.Count(c => c == '{')} results found",
+            "AddLeg" => resultStr,
+            "RemoveLeg" => resultStr,
+            "BookHotel" => resultStr,
+            "RemoveHotel" => resultStr,
+            "ValidateTrip" => resultStr.Contains("\"VALID\"") ? "✓ VALID" : $"✗ issues found",
+            "FinalizeTrip" => "Trip finalized and summary saved.",
+            _ => resultStr.Length > 80 ? resultStr[..77] + "..." : resultStr,
+        };
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"  ├─ {name}");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($" → {summary}");
+        Console.ResetColor();
+
+        return Task.CompletedTask;
+    },
+
+    OnIterationEnd = (iterationRecord) =>
+    {
+        // Timing handled by OnIterationStart for the NEXT iteration
+        return Task.CompletedTask;
+    },
+
+    // ── Execution context bridge ────────────────────────────────────
+    // Explicitly set to demonstrate the API. The loop would auto-create
+    // one from IterativeContext.Workspace, but setting it explicitly is
+    // the recommended pattern for real consumers who need custom UserId
+    // or OrchestrationId values.
+    ExecutionContext = new AgentExecutionContext(
+        UserId: "trip-planner-user",
+        OrchestrationId: "trip-planner-run",
+        Workspace: workspace),
 };
 
 var context = new IterativeContext { Workspace = workspace };
+
+// Begin a diagnostics capture scope — the loop publishes diagnostics
+// into this scope via IAgentDiagnosticsWriter.Set(). Without this,
+// AsyncLocal values don't propagate back to the caller.
+using var diagnosticsScope = diagnosticsAccessor.BeginCapture();
+
 var result = await loop.RunAsync(options, context);
 
 // Close the last iteration's timing
@@ -642,8 +362,33 @@ Console.ForegroundColor = ConsoleColor.DarkGray;
 Console.WriteLine($"  └─ iteration {result.Iterations.Count - 1} complete ({iterationStopwatch.ElapsedMilliseconds}ms)");
 Console.ResetColor();
 
-// ── Per-iteration diagnostics table ─────────────────────────────────────
+// ── Diagnostics from IAgentDiagnosticsAccessor ──────────────────────────
+// The loop publishes diagnostics to the accessor automatically. Real
+// consumers (like BrandGhost) read from this accessor after the run
+// rather than inspecting IterationRecord.Tokens directly.
+var accessorDiagnostics = diagnosticsAccessor.LastRunDiagnostics;
 Console.WriteLine();
+Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
+Console.WriteLine("║             DIAGNOSTICS (from accessor)                     ║");
+Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
+if (accessorDiagnostics != null)
+{
+    Console.WriteLine($"║  Agent name:     {accessorDiagnostics.AgentName,-43}║");
+    Console.WriteLine($"║  Succeeded:      {accessorDiagnostics.Succeeded,-43}║");
+    Console.WriteLine($"║  Duration:       {accessorDiagnostics.TotalDuration.TotalSeconds:F1}s{"",-40}║");
+    Console.WriteLine($"║  LLM calls:      {accessorDiagnostics.ChatCompletions.Count,-43}║");
+    Console.WriteLine($"║  Tool calls:     {accessorDiagnostics.ToolCalls.Count,-43}║");
+    Console.WriteLine($"║  Input tokens:   {accessorDiagnostics.AggregateTokenUsage.InputTokens,-43:N0}║");
+    Console.WriteLine($"║  Output tokens:  {accessorDiagnostics.AggregateTokenUsage.OutputTokens,-43:N0}║");
+}
+else
+{
+    Console.WriteLine("║  (no diagnostics available)                                ║");
+}
+Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
+Console.WriteLine();
+
+// ── Per-iteration diagnostics table ─────────────────────────────────────
 Console.WriteLine("╔═══════════╦═══════════════╦═══════════════╦═══════╦═══════════╦═════════════════════════════════╗");
 Console.WriteLine("║ Iteration ║   Input Tok   ║  Output Tok   ║ Tools ║  Duration ║ Tool Calls                      ║");
 Console.WriteLine("╠═══════════╬═══════════════╬═══════════════╬═══════╬═══════════╬═════════════════════════════════╣");
@@ -685,7 +430,6 @@ foreach (var iter in result.Iterations)
         Console.WriteLine($"  ({tc.Duration.TotalMilliseconds:F0}ms)");
         Console.ResetColor();
 
-        // Full arguments
         if (tc.Arguments.Count > 0)
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -699,7 +443,6 @@ foreach (var iter in result.Iterations)
             }
         }
 
-        // Full result
         Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.Write("      Result: ");
         Console.ResetColor();
@@ -728,12 +471,8 @@ Console.WriteLine();
 var iterCount = result.Iterations.Count;
 var avgInputPerIter = iterCount > 0 ? totalIn / iterCount : 0;
 
-// Simulate what FunctionInvokingChatClient would have cost:
-// Each call re-sends the ENTIRE conversation history.
-// Call k sends: system prompt + k-1 prior (user+assistant+tool) messages.
-// Modeled as: base_cost + k * growth_per_call
-var ficBaseCost = avgInputPerIter; // first call ≈ same as iterative
-var ficGrowthPerCall = avgInputPerIter / 3; // each tool result adds ~1/3 of a prompt
+var ficBaseCost = avgInputPerIter;
+var ficGrowthPerCall = avgInputPerIter / 3;
 long ficTotal = 0;
 long ficPeak = 0;
 var totalLlmCalls = result.Iterations.Sum(i => i.LlmCallCount);
@@ -835,30 +574,30 @@ internal sealed class MockTripPlannerChatClient : IChatClient
         {
             // ── Phase 1: Research ───────────────────────────────────────
             // Iter 0: search NY→LA flights
-            1 => ToolCall("search", "c1", new() { ["query"] = "flights new york to los angeles" }),
+            1 => ToolCall("Search", "c1", new() { ["query"] = "flights new york to los angeles" }),
             // Iter 0 (round 2): search LA→HNL
-            2 => ToolCall("search", "c2", new() { ["query"] = "flights los angeles to honolulu" }),
+            2 => ToolCall("Search", "c2", new() { ["query"] = "flights los angeles to honolulu" }),
 
             // Iter 1: search HNL→Tokyo
-            3 => ToolCall("search", "c3", new() { ["query"] = "flights honolulu to tokyo" }),
+            3 => ToolCall("Search", "c3", new() { ["query"] = "flights honolulu to tokyo" }),
             // Iter 1 (round 2): search direct NY→Tokyo for comparison
-            4 => ToolCall("search", "c4", new() { ["query"] = "flights new york to tokyo direct" }),
+            4 => ToolCall("Search", "c4", new() { ["query"] = "flights new york to tokyo direct" }),
 
             // Iter 2: search hotels
-            5 => ToolCall("search", "c5", new() { ["query"] = "hotel los angeles layover" }),
+            5 => ToolCall("Search", "c5", new() { ["query"] = "hotel los angeles layover" }),
             // Iter 2 (round 2): search Honolulu hotels
-            6 => ToolCall("search", "c6", new() { ["query"] = "hotel honolulu layover" }),
+            6 => ToolCall("Search", "c6", new() { ["query"] = "hotel honolulu layover" }),
 
             // ── Phase 2: Build itinerary ────────────────────────────────
             // Iter 3: add first two legs (picking mid-price options)
-            7 => ToolCall("add_leg", "c7", new()
+            7 => ToolCall("AddLeg", "c7", new()
             {
                 ["from"] = "New York", ["to"] = "Los Angeles",
                 ["airline"] = "Delta", ["flight"] = "DL445",
                 ["price"] = 340, ["duration"] = "5h45m",
             }),
             // Iter 3 (round 2): add second leg
-            8 => ToolCall("add_leg", "c8", new()
+            8 => ToolCall("AddLeg", "c8", new()
             {
                 ["from"] = "Los Angeles", ["to"] = "Honolulu",
                 ["airline"] = "United", ["flight"] = "UA877",
@@ -866,48 +605,45 @@ internal sealed class MockTripPlannerChatClient : IChatClient
             }),
 
             // Iter 4: add third leg (expensive one — will trigger budget fix later)
-            9 => ToolCall("add_leg", "c9", new()
+            9 => ToolCall("AddLeg", "c9", new()
             {
                 ["from"] = "Honolulu", ["to"] = "Tokyo",
                 ["airline"] = "ANA", ["flight"] = "NH183",
                 ["price"] = 720, ["duration"] = "8h15m",
             }),
             // Iter 4 (round 2): book LA hotel
-            10 => ToolCall("book_hotel", "c10", new()
+            10 => ToolCall("BookHotel", "c10", new()
             {
                 ["hotel"] = "LAX Hilton", ["city"] = "Los Angeles",
                 ["nights"] = 1, ["pricePerNight"] = 195,
             }),
 
             // Iter 5: book Honolulu hotel (3 nights — vacation extension!)
-            11 => ToolCall("book_hotel", "c11", new()
+            11 => ToolCall("BookHotel", "c11", new()
             {
                 ["hotel"] = "Waikiki Beach Hotel", ["city"] = "Honolulu",
                 ["nights"] = 3, ["pricePerNight"] = 180,
             }),
             // Iter 5 (round 2): search budget tips
-            12 => ToolCall("search", "c12", new() { ["query"] = "budget travel tips cheap flights" }),
+            12 => ToolCall("Search", "c12", new() { ["query"] = "budget travel tips cheap flights" }),
 
             // ── Phase 3: Validate ───────────────────────────────────────
-            // Iter 6: validate (will find budget overrun: 340+380+720+195+540 = $2175... 
-            // actually that's within budget. Let's make Honolulu hotel longer)
-            // Total: flights $1440 + hotels $735 = $2175. Within $5000.
-            // Hmm, need to make it over budget for the "fix" phase to matter.
-            // Actually, let's just validate and it passes. The complexity is still
-            // demonstrated through the multi-phase workflow.
-            13 => ToolCall("validate_trip", "c13", new()),
+            // Iter 6: validate — Total: $1440 flights + $735 hotels = $2175.
+            // Within $5000 budget. Complexity still demonstrated through
+            // the multi-phase workflow with 9 iterations and 18 tool calls.
+            13 => ToolCall("ValidateTrip", "c13", new()),
             // Iter 6 (round 2): model sees "VALID" result
-            14 => ToolCall("search", "c14", new() { ["query"] = "flights los angeles to tokyo direct alternative" }),
+            14 => ToolCall("Search", "c14", new() { ["query"] = "flights los angeles to tokyo direct alternative" }),
 
             // ── Phase 4: Optimize (look for alternatives even though valid) ─
             // Iter 7: search for direct LA→Tokyo to compare
-            15 => ToolCall("search", "c15", new() { ["query"] = "flights los angeles to tokyo" }),
+            15 => ToolCall("Search", "c15", new() { ["query"] = "flights los angeles to tokyo" }),
             // Iter 7 (round 2): decide to keep current route (multi-stop is cheaper + vacation)
-            16 => ToolCall("validate_trip", "c16", new()),
+            16 => ToolCall("ValidateTrip", "c16", new()),
 
             // ── Phase 5: Finalize ───────────────────────────────────────
             // Iter 8: write summary
-            17 => ToolCall("finalize_trip", "c17", new()
+            17 => ToolCall("FinalizeTrip", "c17", new()
             {
                 ["summary"] = """
                     # Trip Summary: New York → Tokyo
