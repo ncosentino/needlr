@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Agent Framework
+
+- **`IIterativeAgentLoop`** — workspace-driven agent execution loop that eliminates O(n²)
+  token accumulation from `FunctionInvokingChatClient`. Each iteration constructs a fresh
+  prompt from workspace files instead of appending to conversation history. Configurable
+  via `IterativeLoopOptions` with three `ToolResultMode`s (`SingleCall`, `OneRoundTrip`,
+  `MultiRound`). Returns `IterativeLoopResult` with per-iteration diagnostics including
+  tool call records, token counts, and timing. Automatically registered via DI.
+
+- **`IChatClientAccessor`** — accessor for the DI-registered `IChatClient`, used by the
+  iterative loop to make LLM calls without depending on `FunctionInvokingChatClient`.
+
+- **`IterativeTripPlannerApp` example** — complex trip planner demonstrating the iterative
+  loop with a real LLM (Azure OpenAI). Plans multi-stop NY→Tokyo trips on a tight budget
+  with hotel rating constraints, showing budget failures, route pivots, fix cycles, and
+  91% token savings vs FIC.
+
 ### Removed
 
 #### Agent Framework

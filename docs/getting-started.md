@@ -396,6 +396,7 @@ var webApplication = new Syringe()
 - Read about [Interceptors](interceptors.md) for cross-cutting concerns
 - See [Advanced Usage](advanced-usage.md) for complex scenarios
 - Track agent execution in real-time with [Progress Reporting](progress-reporting.md)
+- Run multi-step agentic workloads with O(n) token cost via [Iterative Agent Loop](iterative-agent-loop.md)
 !!! info "Read More on Dev Leader"
     - [Getting Started with Needlr: Fluent DI for .NET Applications](https://www.devleader.ca/2026/02/05/getting-started-with-needlr-fluent-di-for-net-applications)
     - [Automatic Dependency Injection in C#: The Complete Guide to Needlr](https://www.devleader.ca/2026/02/03/automatic-dependency-injection-in-c-the-complete-guide-to-needlr)
