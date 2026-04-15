@@ -113,6 +113,7 @@ workspace.WriteFile("config.json", JsonSerializer.Serialize(new
 }));
 workspace.WriteFile("itinerary.json", "[]");
 workspace.WriteFile("research-notes.md", "");
+workspace.WriteFile("search-cache.txt", "");
 workspace.WriteFile("status.json", JsonSerializer.Serialize(new
 {
     phase = "research",

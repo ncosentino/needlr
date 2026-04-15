@@ -143,7 +143,7 @@ internal sealed class TripPlannerFunctions(
                 + "\"hint\":\"Search using the exact city pair names above, e.g. 'flights new york to london' or 'hotel london'\"}";
         }
 
-        // Append to research notes (cap at last 5 searches)
+        // Append to research notes (cap at last 5 searches for prompt brevity)
         var existing = workspace.ReadFile("research-notes.md");
         var newEntry = $"\n### Search: {query}\n{results}\n";
         var allEntries = existing + newEntry;
@@ -155,14 +155,34 @@ internal sealed class TripPlannerFunctions(
         }
         workspace.WriteFile("research-notes.md", allEntries);
 
+        // Also append to full search cache (never capped) — used by AddLeg
+        // to validate that flights actually came from search results.
+        var cache = workspace.ReadFile("search-cache.txt");
+        workspace.WriteFile("search-cache.txt", cache + results + "\n");
+
         return results;
     }
 
     [AgentFunction]
-    [Description("Add a flight leg to the itinerary.")]
+    [Description(
+        "Add a flight leg to the itinerary. The flight MUST appear in your research " +
+        "notes from a prior search call. Hallucinated or invented flights are rejected.")]
     public string AddLeg(string from, string to, string airline, string flight, int price, string duration)
     {
         var workspace = Workspace;
+
+        // Validate that this flight was actually found by a search call.
+        // This prevents the LLM from hallucinating flights and prices.
+        var searchCache = workspace.ReadFile("search-cache.txt");
+        if (string.IsNullOrWhiteSpace(searchCache) || !searchCache.Contains(flight, StringComparison.OrdinalIgnoreCase))
+        {
+            var fromLower = from.ToLowerInvariant();
+            var toLower = to.ToLowerInvariant();
+            return $"ERROR: Flight {flight} was not found in your research notes. "
+                + $"Call search('flights {fromLower} to {toLower}') first to find available flights, "
+                + "then use a flight number from the results.";
+        }
+
         var itineraryJson = workspace.ReadFile("itinerary.json");
         var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
         legs.Add(new Dictionary<string, object>
