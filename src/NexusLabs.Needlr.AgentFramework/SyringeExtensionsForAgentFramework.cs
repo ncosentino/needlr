@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.AgentFramework.Progress;
 using NexusLabs.Needlr.Injection;
 
@@ -121,6 +122,15 @@ public static class SyringeExtensionsForAgentFramework
 
             services.AddSingleton<IAgentFactory>(sp =>
                 sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value.BuildAgentFactory());
+
+            services.AddSingleton<IChatClientAccessor>(sp =>
+            {
+                var afSyringe = sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value;
+                return new ChatClientAccessor(sp, afSyringe.ConfigureAgentFactory ?? []);
+            });
+
+            services.AddSingleton<IIterativeAgentLoop>(sp =>
+                new IterativeAgentLoop(sp.GetRequiredService<IChatClientAccessor>()));
 
             services.AddSingleton<IWorkflowFactory>(provider =>
                 new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
