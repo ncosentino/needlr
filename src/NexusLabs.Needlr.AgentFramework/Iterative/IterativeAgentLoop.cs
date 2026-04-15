@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Iterative;
 
@@ -18,15 +19,18 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
     private readonly IChatClientAccessor _chatClientAccessor;
     private readonly IAgentDiagnosticsWriter? _diagnosticsWriter;
     private readonly IAgentExecutionContextAccessor? _executionContextAccessor;
+    private readonly IProgressReporterAccessor? _progressReporterAccessor;
 
     internal IterativeAgentLoop(
         IChatClientAccessor chatClientAccessor,
         IAgentDiagnosticsWriter? diagnosticsWriter = null,
-        IAgentExecutionContextAccessor? executionContextAccessor = null)
+        IAgentExecutionContextAccessor? executionContextAccessor = null,
+        IProgressReporterAccessor? progressReporterAccessor = null)
     {
         _chatClientAccessor = chatClientAccessor;
         _diagnosticsWriter = diagnosticsWriter;
         _executionContextAccessor = executionContextAccessor;
+        _progressReporterAccessor = progressReporterAccessor;
     }
 
     /// <summary>
@@ -215,7 +219,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     // Execute tool calls
                     var roundResults = await ExecuteToolCallsAsync(
                         functionCalls, options.Tools, diagnosticsBuilder,
-                        i, options.OnToolCall, cancellationToken)
+                        i, options.OnToolCall, _progressReporterAccessor,
+                        cancellationToken)
                         .ConfigureAwait(false);
                     iterationToolCalls.AddRange(roundResults);
 
@@ -331,18 +336,29 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         AgentRunDiagnosticsBuilder diagnosticsBuilder,
         int iteration,
         Func<int, ToolCallResult, Task>? onToolCall,
+        IProgressReporterAccessor? progressAccessor,
         CancellationToken cancellationToken)
     {
         var toolMap = tools.OfType<AIFunction>()
             .ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase);
 
         var results = new List<ToolCallResult>();
+        var reporter = progressAccessor?.Current;
 
         foreach (var fc in functionCalls)
         {
             var sequence = diagnosticsBuilder.NextToolCallSequence();
             var startedAt = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
+
+            reporter?.Report(new ToolCallStartedEvent(
+                Timestamp: startedAt,
+                WorkflowId: reporter.WorkflowId,
+                AgentId: reporter.AgentId,
+                ParentAgentId: null,
+                Depth: reporter.Depth,
+                SequenceNumber: reporter.NextSequence(),
+                ToolName: fc.Name));
 
             if (!toolMap.TryGetValue(fc.Name, out var function))
             {
@@ -364,6 +380,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     StartedAt: startedAt,
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null));
+
+                reporter?.Report(new ToolCallFailedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: reporter.WorkflowId,
+                    AgentId: reporter.AgentId,
+                    ParentAgentId: null,
+                    Depth: reporter.Depth,
+                    SequenceNumber: reporter.NextSequence(),
+                    ToolName: fc.Name,
+                    ErrorMessage: errorResult.ErrorMessage ?? "Unknown tool",
+                    Duration: stopwatch.Elapsed));
 
                 results.Add(errorResult);
 
@@ -393,6 +420,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null));
 
+                reporter?.Report(new ToolCallCompletedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: reporter.WorkflowId,
+                    AgentId: reporter.AgentId,
+                    ParentAgentId: null,
+                    Depth: reporter.Depth,
+                    SequenceNumber: reporter.NextSequence(),
+                    ToolName: fc.Name,
+                    Duration: stopwatch.Elapsed,
+                    CustomMetrics: null));
+
                 results.Add(new ToolCallResult(
                     FunctionName: fc.Name,
                     Arguments: ToReadOnly(fc.Arguments),
@@ -419,6 +457,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     StartedAt: startedAt,
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null));
+
+                reporter?.Report(new ToolCallFailedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: reporter.WorkflowId,
+                    AgentId: reporter.AgentId,
+                    ParentAgentId: null,
+                    Depth: reporter.Depth,
+                    SequenceNumber: reporter.NextSequence(),
+                    ToolName: fc.Name,
+                    ErrorMessage: ex.Message,
+                    Duration: stopwatch.Elapsed));
 
                 results.Add(new ToolCallResult(
                     FunctionName: fc.Name,
