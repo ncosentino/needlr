@@ -32,7 +32,7 @@ namespace NexusLabs.Needlr.Copilot;
 /// // With explicit model and token:
 /// IChatClient client = new CopilotChatClient(new CopilotChatClientOptions
 /// {
-///     DefaultModel = "gpt-4o",
+///     DefaultModel = "gpt-5.4",
 ///     GitHubToken = "gho_xxx",
 /// });
 /// </code>
