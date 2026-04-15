@@ -1,9 +1,6 @@
 using System.Text;
 using System.Text.Json;
 
-using Azure;
-using Azure.AI.OpenAI;
-
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +10,7 @@ using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.AgentFramework.Workspace;
+using NexusLabs.Needlr.Copilot;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
@@ -22,6 +20,8 @@ using NexusLabs.Needlr.Injection.Reflection;
 // This example demonstrates the FULL integration surface of the iterative
 // agent loop, mirroring real-world consumer patterns like BrandGhost:
 //
+//   ✓ CopilotChatClient as the LLM provider (no mocks, no Azure keys)
+//   ✓ CopilotWebSearchFunction as a real web search tool via Copilot MCP
 //   ✓ DI-resolved tool classes with [AgentFunction] + [AgentFunctionGroup]
 //   ✓ Tools access workspace via IAgentExecutionContextAccessor (not closures)
 //   ✓ Tools resolved via IAgentFactory.ResolveTools() (not AIFunctionFactory)
@@ -33,6 +33,10 @@ using NexusLabs.Needlr.Injection.Reflection;
 // The scenario: a multi-stop trip planner that researches, builds, validates,
 // and finalizes an itinerary across multiple iterations with ~10+ tool calls.
 // Each iteration builds a FRESH prompt from workspace state — O(n) tokens.
+//
+// Requirements:
+//   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
+//   - No API keys needed — auth flows through your GitHub OAuth token
 // ============================================================================
 
 var configuration = new ConfigurationBuilder()
@@ -42,28 +46,24 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 var tripConfig = configuration.GetSection("TripPlanner");
-var useMock = tripConfig["UseMockClient"]?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? true;
 
-IChatClient chatClient;
-if (useMock)
+// ── Copilot as the LLM provider ────────────────────────────────────────
+// CopilotChatClient implements IChatClient backed by GitHub Copilot API.
+// Auth is automatic: discovers your GitHub OAuth token from Copilot CLI
+// (apps.json), GH_TOKEN, or GITHUB_TOKEN environment variables.
+var copilotSection = configuration.GetSection("Copilot");
+var copilotOptions = new CopilotChatClientOptions
 {
-    Console.WriteLine("Using MOCK chat client (set TripPlanner:UseMockClient=false for real API)");
-    Console.WriteLine("Mock simulates multi-phase trip planning with budget challenges");
-    chatClient = new MockTripPlannerChatClient();
-}
-else
-{
-    var azureSection = configuration.GetSection("AzureOpenAI");
-    chatClient = new AzureOpenAIClient(
-            new Uri(azureSection["Endpoint"]
-                ?? throw new InvalidOperationException("No AzureOpenAI:Endpoint set")),
-            new AzureKeyCredential(azureSection["ApiKey"]
-                ?? throw new InvalidOperationException("No AzureOpenAI:ApiKey set")))
-        .GetChatClient(azureSection["DeploymentName"]
-            ?? throw new InvalidOperationException("No AzureOpenAI:DeploymentName set"))
-        .AsIChatClient();
-}
+    DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4",
+};
+IChatClient chatClient = new CopilotChatClient(copilotOptions);
+Console.WriteLine($"Using Copilot chat client (model: {copilotOptions.DefaultModel})");
 
+// ── Copilot web search tool ────────────────────────────────────────────
+// CopilotWebSearchFunction is a real AIFunction that calls the Copilot MCP
+// server's web_search tool. This gives the agent access to live web data.
+var copilotTools = CopilotToolSet.Create(t => t.EnableWebSearch = true);
+Console.WriteLine($"Copilot tools enabled: {string.Join(", ", copilotTools.Select(t => t.Name))}");
 Console.WriteLine();
 
 // ── DI setup — mirrors real consumer patterns ───────────────────────────
@@ -86,8 +86,10 @@ var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAc
 // This resolves DI-wired instances of TripPlannerFunctions with
 // IAgentExecutionContextAccessor injected. The accessor gets populated
 // by the loop via the ExecutionContext bridge.
+// Copilot web search is added alongside the domain-specific trip tools.
 var tools = agentFactory.ResolveTools(opts =>
     opts.FunctionGroups = ["trip-planner"]);
+var allTools = tools.Concat(copilotTools).ToList();
 
 // ── Seed workspace ──────────────────────────────────────────────────────
 var workspace = new InMemoryWorkspace();
@@ -218,7 +220,7 @@ string BuildPrompt(IterativeContext ctx)
 
 // ── Run with lifecycle hooks ────────────────────────────────────────────
 Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║        ITERATIVE TRIP PLANNER — BUDGET CHALLENGE            ║");
+Console.WriteLine("║   ITERATIVE TRIP PLANNER — Copilot + Web Search             ║");
 Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
 Console.WriteLine($"║  Origin:       {origin,-45}║");
 Console.WriteLine($"║  Destination:  {destination,-45}║");
@@ -226,7 +228,9 @@ Console.WriteLine($"║  Budget:       ${budget,-44}║");
 Console.WriteLine($"║  Min stops:    2 intermediate cities (3+ legs required)     ║");
 Console.WriteLine($"║  Max stops:    {maxStops,-45}║");
 Console.WriteLine($"║  Hotels:       Required in every layover city (3.5★ min)   ║");
+Console.WriteLine($"║  LLM:         Copilot ({copilotOptions.DefaultModel}){"",-24}║");
 Console.WriteLine($"║  Tool mode:    OneRoundTrip (2 LLM calls/iter max)         ║");
+Console.WriteLine($"║  Tools:        {allTools.Count} ({string.Join(", ", allTools.Select(t => t.Name).Take(4))}...)  ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
 Console.WriteLine();
 
@@ -257,7 +261,7 @@ var options = new IterativeLoopOptions
         over budget, look for alternative routes.
         """,
     PromptFactory = BuildPrompt,
-    Tools = tools,
+    Tools = allTools,
     MaxIterations = 15,
     IsComplete = ctx =>
     {
@@ -325,6 +329,7 @@ var options = new IterativeLoopOptions
         var summary = name switch
         {
             "Search" => $"{resultStr.Count(c => c == '{')} results found",
+            "web_search" => resultStr.Length > 100 ? resultStr[..97] + "..." : resultStr,
             "AddLeg" => resultStr,
             "RemoveLeg" => resultStr,
             "BookHotel" => resultStr,
@@ -533,178 +538,4 @@ foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
         Console.WriteLine($"     {line.TrimEnd()}");
     }
     Console.WriteLine();
-}
-
-// =============================================================================
-// Mock chat client that simulates a complex multi-phase trip planning session.
-//
-// Phases:
-//   1. Research (iter 0-2): Search flights for each segment
-//   2. Build (iter 3-5): Add legs, book hotels
-//   3. Validate (iter 6): Check constraints — discovers budget overrun
-//   4. Fix (iter 7-9): Remove expensive leg, search cheaper, re-add
-//   5. Re-validate (iter 10): Confirms valid
-//   6. Finalize (iter 11): Write summary
-//
-// With OneRoundTrip mode, each iteration makes 2 LLM calls (initial + after
-// tool results). The mock uses _callCount to track across all calls.
-// =============================================================================
-internal sealed class MockTripPlannerChatClient : IChatClient
-{
-    private int _callCount;
-
-    // Simulate growing prompt size: base cost + workspace growth per iteration.
-    // In a real scenario, the workspace (itinerary, research notes, hotel
-    // bookings) grows each iteration, making each prompt slightly larger.
-    // But critically, it's LINEAR growth — not the exponential growth of FIC.
-    private const int BaseInputTokens = 1800;
-    private const int WorkspaceGrowthPerCall = 250;
-    private const int BaseOutputTokens = 120;
-
-    public void Dispose() { }
-
-    public object? GetService(Type serviceType, object? serviceKey = null) => null;
-
-    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-        => throw new NotSupportedException("Use GetResponseAsync");
-
-    public Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        _callCount++;
-
-        // Each call simulates realistic token usage with linear growth
-        var inputTokens = BaseInputTokens + (_callCount * WorkspaceGrowthPerCall);
-        var outputTokens = BaseOutputTokens + (_callCount * 15);
-
-        ChatResponse response = _callCount switch
-        {
-            // ── Phase 1: Research ───────────────────────────────────────
-            // Iter 0: search NY→LA flights
-            1 => ToolCall("Search", "c1", new() { ["query"] = "flights new york to los angeles" }),
-            // Iter 0 (round 2): search LA→HNL
-            2 => ToolCall("Search", "c2", new() { ["query"] = "flights los angeles to honolulu" }),
-
-            // Iter 1: search HNL→Tokyo
-            3 => ToolCall("Search", "c3", new() { ["query"] = "flights honolulu to tokyo" }),
-            // Iter 1 (round 2): search direct NY→Tokyo for comparison
-            4 => ToolCall("Search", "c4", new() { ["query"] = "flights new york to tokyo direct" }),
-
-            // Iter 2: search hotels
-            5 => ToolCall("Search", "c5", new() { ["query"] = "hotel los angeles layover" }),
-            // Iter 2 (round 2): search Honolulu hotels
-            6 => ToolCall("Search", "c6", new() { ["query"] = "hotel honolulu layover" }),
-
-            // ── Phase 2: Build itinerary ────────────────────────────────
-            // Iter 3: add first two legs (picking mid-price options)
-            7 => ToolCall("AddLeg", "c7", new()
-            {
-                ["from"] = "New York", ["to"] = "Los Angeles",
-                ["airline"] = "Delta", ["flight"] = "DL445",
-                ["price"] = 340, ["duration"] = "5h45m",
-            }),
-            // Iter 3 (round 2): add second leg
-            8 => ToolCall("AddLeg", "c8", new()
-            {
-                ["from"] = "Los Angeles", ["to"] = "Honolulu",
-                ["airline"] = "United", ["flight"] = "UA877",
-                ["price"] = 380, ["duration"] = "5h55m",
-            }),
-
-            // Iter 4: add third leg (expensive one — will trigger budget fix later)
-            9 => ToolCall("AddLeg", "c9", new()
-            {
-                ["from"] = "Honolulu", ["to"] = "Tokyo",
-                ["airline"] = "ANA", ["flight"] = "NH183",
-                ["price"] = 720, ["duration"] = "8h15m",
-            }),
-            // Iter 4 (round 2): book LA hotel
-            10 => ToolCall("BookHotel", "c10", new()
-            {
-                ["hotel"] = "LAX Hilton", ["city"] = "Los Angeles",
-                ["nights"] = 1, ["pricePerNight"] = 195,
-            }),
-
-            // Iter 5: book Honolulu hotel (3 nights — vacation extension!)
-            11 => ToolCall("BookHotel", "c11", new()
-            {
-                ["hotel"] = "Waikiki Beach Hotel", ["city"] = "Honolulu",
-                ["nights"] = 3, ["pricePerNight"] = 180,
-            }),
-            // Iter 5 (round 2): search budget tips
-            12 => ToolCall("Search", "c12", new() { ["query"] = "budget travel tips cheap flights" }),
-
-            // ── Phase 3: Validate ───────────────────────────────────────
-            // Iter 6: validate — Total: $1440 flights + $735 hotels = $2175.
-            // Within $5000 budget. Complexity still demonstrated through
-            // the multi-phase workflow with 9 iterations and 18 tool calls.
-            13 => ToolCall("ValidateTrip", "c13", new()),
-            // Iter 6 (round 2): model sees "VALID" result
-            14 => ToolCall("Search", "c14", new() { ["query"] = "flights los angeles to tokyo direct alternative" }),
-
-            // ── Phase 4: Optimize (look for alternatives even though valid) ─
-            // Iter 7: search for direct LA→Tokyo to compare
-            15 => ToolCall("Search", "c15", new() { ["query"] = "flights los angeles to tokyo" }),
-            // Iter 7 (round 2): decide to keep current route (multi-stop is cheaper + vacation)
-            16 => ToolCall("ValidateTrip", "c16", new()),
-
-            // ── Phase 5: Finalize ───────────────────────────────────────
-            // Iter 8: write summary
-            17 => ToolCall("FinalizeTrip", "c17", new()
-            {
-                ["summary"] = """
-                    # Trip Summary: New York → Tokyo
-                    
-                    ## Route
-                    1. **New York → Los Angeles** — Delta DL445, $340 (5h45m)
-                       - 1 night at LAX Hilton ($195)
-                    2. **Los Angeles → Honolulu** — United UA877, $380 (5h55m)
-                       - 3 nights at Waikiki Beach Hotel ($540)
-                    3. **Honolulu → Tokyo** — ANA NH183, $720 (8h15m)
-                    
-                    ## Cost Breakdown
-                    | Category | Cost |
-                    |----------|------|
-                    | Flights  | $1,440 |
-                    | Hotels   | $735 |
-                    | **Total** | **$2,175** |
-                    | Budget   | $5,000 |
-                    | Remaining | $2,825 |
-                    
-                    ## Highlights
-                    - 3-night stopover in Honolulu to enjoy Waikiki Beach
-                    - All direct flights on major carriers
-                    - 56% of budget remaining for activities and dining
-                    """,
-            }),
-            // Iter 8 (round 2): text confirmation
-            18 => TextResponse("Trip planning complete! Your New York → Tokyo itinerary via LA and Honolulu " +
-                "is booked at $2,175 total (56% under your $5,000 budget). The 3-night Honolulu " +
-                "stopover gives you time to enjoy the beach. All flights and hotels are confirmed."),
-
-            // Safety: any further calls just return text
-            _ => TextResponse("Trip is already finalized."),
-        };
-
-        response.Usage = new UsageDetails
-        {
-            InputTokenCount = inputTokens,
-            OutputTokenCount = outputTokens,
-            TotalTokenCount = inputTokens + outputTokens,
-        };
-
-        return Task.FromResult(response);
-    }
-
-    private static ChatResponse ToolCall(
-        string name, string id, Dictionary<string, object?> args) =>
-        new([new ChatMessage(ChatRole.Assistant, [new FunctionCallContent(id, name, args)])]);
-
-    private static ChatResponse TextResponse(string text) =>
-        new([new ChatMessage(ChatRole.Assistant, text)]);
 }

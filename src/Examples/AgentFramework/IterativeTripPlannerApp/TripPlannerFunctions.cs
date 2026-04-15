@@ -185,6 +185,29 @@ internal sealed class TripPlannerFunctions(
 
         var itineraryJson = workspace.ReadFile("itinerary.json");
         var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
+
+        // Route continuity: new leg must connect to the existing chain
+        if (legs.Count > 0)
+        {
+            var lastTo = legs[^1]["to"].ToString()!;
+            if (!string.Equals(from, lastTo, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"ERROR: Route continuity violation. Your last leg ends at {lastTo}, "
+                    + $"but this leg starts at {from}. Either add a leg from {lastTo} to {from} first, "
+                    + "or call remove_leg to clear legs and rebuild the route.";
+            }
+        }
+        else
+        {
+            var configJson = workspace.ReadFile("config.json");
+            var config = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
+            var origin = config["origin"].ToString()!;
+            if (!string.Equals(from, origin, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"ERROR: First leg must start from {origin}, not {from}.";
+            }
+        }
+
         legs.Add(new Dictionary<string, object>
         {
             ["leg"] = legs.Count + 1,
@@ -200,7 +223,9 @@ internal sealed class TripPlannerFunctions(
     }
 
     [AgentFunction]
-    [Description("Remove a leg from the itinerary by leg number.")]
+    [Description("Remove a leg from the itinerary by leg number. " +
+        "WARNING: After removal, remaining legs are renumbered starting from 1. " +
+        "Always remove from highest leg number to lowest to avoid index shifting.")]
     public string RemoveLeg(int legNumber)
     {
         var workspace = Workspace;
@@ -213,7 +238,37 @@ internal sealed class TripPlannerFunctions(
         for (int i = 0; i < legs.Count; i++)
             legs[i]["leg"] = i + 1;
         workspace.WriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
-        return $"Removed leg {legNumber} ({removed["from"]} → {removed["to"]})";
+        var remaining = legs.Count == 0
+            ? "Itinerary is now empty."
+            : $"Remaining {legs.Count} leg(s): " + string.Join(" → ",
+                legs.Select(l => $"{l["from"]}→{l["to"]}"));
+        return $"Removed leg {legNumber} ({removed["from"]} → {removed["to"]}). {remaining}";
+    }
+
+    [AgentFunction]
+    [Description("Clear ALL legs and hotels to start building a completely new route. " +
+        "Use this when your current route cannot meet the budget and you need to try " +
+        "different intermediate cities. Much faster than removing legs one by one.")]
+    public string ClearItinerary()
+    {
+        var workspace = Workspace;
+        workspace.WriteFile("itinerary.json", "[]");
+
+        // Remove all hotel files
+        var hotelFiles = workspace.GetFilePaths().Where(p => p.StartsWith("hotel-")).ToList();
+        foreach (var hf in hotelFiles)
+            workspace.WriteFile(hf, "");
+
+        // Reset status
+        var statusJson = workspace.ReadFile("status.json");
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
+        status["phase"] = "research";
+        status["validated"] = false;
+        status["overBudgetAttempts"] = 0;
+        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
+
+        return $"Cleared all legs and {hotelFiles.Count} hotel booking(s). "
+            + "Itinerary is empty. Search for a new route and start adding legs.";
     }
 
     [AgentFunction]
@@ -292,16 +347,38 @@ internal sealed class TripPlannerFunctions(
         var originCity = config["origin"].ToString()!;
         var destCity = config["destination"].ToString()!;
 
+        // Track how many times we've been over budget — escalate after 2 attempts
+        var statusJson = workspace.ReadFile("status.json");
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
+        var overBudgetAttempts = status.TryGetValue("overBudgetAttempts", out var oba)
+            ? int.Parse(oba.ToString()!)
+            : 0;
+
         if (totalCost > budgetVal)
         {
+            overBudgetAttempts++;
+            status["overBudgetAttempts"] = overBudgetAttempts;
+            workspace.WriteFile("status.json", JsonSerializer.Serialize(status, new JsonSerializerOptions { WriteIndented = true }));
+
             var overBy = totalCost - budgetVal;
+            var action = overBudgetAttempts >= 3
+                ? $"You have tried to fix the budget {overBudgetAttempts} times on this route without success. "
+                    + "STOP tweaking — start over with a COMPLETELY DIFFERENT route. "
+                    + "Call clear_itinerary to wipe all legs and hotels at once, "
+                    + "then search for flights through different intermediate cities "
+                    + "(e.g., try Los Angeles and Honolulu instead of your current stops). "
+                    + $"You need total cost under ${budgetVal}."
+                : $"Remove expensive legs or hotels and replace with cheaper options. "
+                    + "Call remove_leg or remove_hotel, then search for cheaper alternatives. "
+                    + $"You need to save at least ${overBy}. "
+                    + "If you cannot find cheaper options on this route, "
+                    + "call clear_itinerary to wipe everything and try a COMPLETELY DIFFERENT route "
+                    + "through different intermediate cities.";
             issues.Add(new
             {
                 code = "OVER_BUDGET",
-                detail = $"${totalCost} > ${budgetVal} (over by ${overBy})",
-                action = $"Remove expensive legs or hotels and replace with cheaper options. "
-                    + "Call remove_leg or remove_hotel, then search for cheaper alternatives. "
-                    + $"You need to save at least ${overBy}.",
+                detail = $"${totalCost} > ${budgetVal} (over by ${overBy}). Attempt {overBudgetAttempts}.",
+                action,
             });
         }
 
@@ -413,10 +490,12 @@ internal sealed class TripPlannerFunctions(
         };
 
         // Update status
-        var statusJson = workspace.ReadFile("status.json");
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
         status["validated"] = issues.Count == 0;
         status["phase"] = issues.Count == 0 ? "finalize" : "fix";
+        if (issues.Count == 0)
+        {
+            status["overBudgetAttempts"] = 0; // reset on success
+        }
         workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
 
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
