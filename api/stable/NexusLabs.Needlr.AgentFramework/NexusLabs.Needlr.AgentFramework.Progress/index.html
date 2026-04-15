@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3464,10 +3548,6 @@
 <td style="text-align: left;">An LLM request has been sent.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="../ProgressServiceCollectionExtensions/" title="NexusLabs.Needlr.AgentFramework.Progress.ProgressServiceCollectionExtensions">ProgressServiceCollectionExtensions</a></td>
-<td style="text-align: left;">Extension methods for registering progress sinks in DI.</td>
-</tr>
-<tr>
 <td style="text-align: left;"><a href="../SuperStepCompletedProgressEvent/" title="NexusLabs.Needlr.AgentFramework.Progress.SuperStepCompletedProgressEvent">SuperStepCompletedProgressEvent</a></td>
 <td style="text-align: left;">A workflow control-flow step (SuperStep) has completed.</td>
 </tr>
@@ -3523,7 +3603,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IProgressReporterFactory/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory">IProgressReporterFactory</a></td>
-<td style="text-align: left;">Creates <a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances scoped to a specific orchestration. Each orchestrator can have its own set of sinks.</td>
+<td style="text-align: left;">Creates <a href="../IProgressReporter/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter">IProgressReporter</a> instances scoped to a specific orchestration run.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IProgressSequence/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSequence">IProgressSequence</a></td>
@@ -3531,7 +3611,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a></td>
-<td style="text-align: left;">Receives progress events as they occur during agent/workflow execution. Consumers implement this to build SSE streams, console displays, trace diagrams, etc.</td>
+<td style="text-align: left;">Receives progress events as they occur during agent/workflow execution. Implement this interface to build SSE streams, console displays, trace diagrams, etc.</td>
 </tr>
 </tbody>
 </table>

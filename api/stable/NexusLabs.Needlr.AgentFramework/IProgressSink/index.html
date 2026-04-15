@@ -987,6 +987,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../copilot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../iterative-agent-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iterative Agent Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../progress-reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3413,15 +3497,47 @@
 <h3 id="nexuslabsneedlragentframeworkprogress"><a href="../NexusLabs.Needlr.AgentFramework.Progress/" title="NexusLabs.Needlr.AgentFramework.Progress">NexusLabs.Needlr.AgentFramework.Progress</a><a class="headerlink" href="#nexuslabsneedlragentframeworkprogress" title="Permanent link">&para;</a></h3>
 <h2 id="iprogresssink-interface">IProgressSink Interface<a class="headerlink" href="#iprogresssink-interface" title="Permanent link">&para;</a></h2>
 <p>Receives progress events as they occur during agent/workflow execution.
-Consumers implement this to build SSE streams, console displays, trace diagrams, etc.</p>
+Implement this interface to build SSE streams, console displays, trace diagrams, etc.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IProgressSink</span>
 </span></code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Auto-discovered by Needlr — no explicit registration needed.</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ConsoleSink</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IProgressSink</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">ValueTask</span><span class="w"> </span><span class="nf">OnEventAsync</span><span class="p">(</span><span class="n">IProgressEvent</span><span class="w"> </span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;[{e.WorkflowId}] {e.GetType().Name}&quot;</span><span class="p">);</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ValueTask</span><span class="p">.</span><span class="n">CompletedTask</span><span class="p">;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p><strong>Auto-discovery (simple apps):</strong> If Needlr's source generator or
+            reflection-based scanning is active, any class implementing
+            <a href="./" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a> is automatically registered in DI as a singleton.
+            These auto-discovered sinks become the <em>default sinks</em> used by
+            <a href="../IProgressReporterFactory/#NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string)" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string)">Create(string)</a>.
+            You can also register sinks manually via
+            <code>services.AddSingleton&lt;IProgressSink, MySink&gt;()</code> — all DI-registered
+            <a href="./" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a> instances are treated as defaults.</p>
+<p><strong>Per-orchestration sinks (complex apps):</strong> Use
+            <a href="../IProgressReporterFactory/#NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string,System.Collections.Generic.IEnumerable_NexusLabs.Needlr.AgentFramework.Progress.IProgressSink_)" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterFactory.Create(string, System.Collections.Generic.IEnumerable\&lt;NexusLabs.Needlr.AgentFramework.Progress.IProgressSink&gt;)">Create(string, IEnumerable&lt;IProgressSink&gt;)</a>
+            to pass sinks explicitly for a specific workflow run. This overload ignores the
+            default sinks entirely, giving multi-tenant or multi-workflow applications full
+            control over which sinks receive events for each orchestration.</p>
+<p><strong>Opting out of auto-discovery:</strong> Apply <a href="../../NexusLabs.Needlr/">NexusLabs.Needlr.DoNotAutoRegisterAttribute</a>
+            to a sink class to prevent Needlr from automatically registering it.
+            This is useful when you want the sink registered only through explicit
+            per-orchestration passing or manual DI registration with a specific lifetime.</p>
+<p><strong>Performance:</strong> Implementations should be fast — a slow sink delays
+            the agent pipeline. Use <code>ChannelProgressReporter</code> for non-blocking delivery
+            when sinks perform I/O.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressSink.OnEventAsync(NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent,System.Threading.CancellationToken)'></a></p>
 <h2 id="iprogresssinkoneventasynciprogressevent-cancellationtoken-method">IProgressSink.OnEventAsync(IProgressEvent, CancellationToken) Method<a class="headerlink" href="#iprogresssinkoneventasynciprogressevent-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Called for each progress event. Implementations should be fast — a slow sink
 delays the agent pipeline (use <code>ChannelProgressReporter</code> for non-blocking delivery).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">ValueTask</span><span class="w"> </span><span class="n">OnEventAsync</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Progress</span><span class="p">.</span><span class="n">IProgressEvent</span><span class="w"> </span><span class="n">progressEvent</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">ValueTask</span><span class="w"> </span><span class="n">OnEventAsync</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Progress</span><span class="p">.</span><span class="n">IProgressEvent</span><span class="w"> </span><span class="n">progressEvent</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Progress.IProgressSink.OnEventAsync(NexusLabs.Needlr.AgentFramework.Progress.IProgressEvent,System.Threading.CancellationToken).progressEvent'></a></p>
