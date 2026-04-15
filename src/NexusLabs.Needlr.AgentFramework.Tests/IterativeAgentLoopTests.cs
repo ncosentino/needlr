@@ -2,6 +2,7 @@ using Microsoft.Extensions.AI;
 
 using Moq;
 
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.AgentFramework.Workspace;
 
@@ -11,11 +12,13 @@ public sealed class IterativeAgentLoopTests
 {
     #region Helpers
 
-    private static IterativeAgentLoop CreateLoop(Mock<IChatClient> mockChat)
+    private static IterativeAgentLoop CreateLoop(
+        Mock<IChatClient> mockChat,
+        IAgentDiagnosticsWriter? diagnosticsWriter = null)
     {
         var accessor = new Mock<IChatClientAccessor>();
         accessor.Setup(a => a.ChatClient).Returns(mockChat.Object);
-        return new IterativeAgentLoop(accessor.Object);
+        return new IterativeAgentLoop(accessor.Object, diagnosticsWriter);
     }
 
     private static Mock<IChatClient> CreateMockChat(string responseText)
@@ -1292,6 +1295,85 @@ public sealed class IterativeAgentLoopTests
         // Hook exception should NOT be caught by the loop's internal error handling
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken));
+    }
+
+    #endregion
+
+    #region Diagnostics Accessor Integration
+
+    [Fact]
+    public async Task RunAsync_WriterPopulatedAfterRun()
+    {
+        var mockWriter = new Mock<IAgentDiagnosticsWriter>();
+        IAgentRunDiagnostics? captured = null;
+        mockWriter
+            .Setup(w => w.Set(It.IsAny<IAgentRunDiagnostics>()))
+            .Callback<IAgentRunDiagnostics>(d => captured = d);
+
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat, mockWriter.Object);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(captured);
+        Assert.Equal(result.Diagnostics!.AgentName, captured!.AgentName);
+    }
+
+    [Fact]
+    public async Task RunAsync_NullWriter_DoesNotThrow()
+    {
+        var mockChat = CreateMockChat("done");
+        var loop = CreateLoop(mockChat, diagnosticsWriter: null);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_AccessorDiagnosticsMatchesResultDiagnostics()
+    {
+        var mockWriter = new Mock<IAgentDiagnosticsWriter>();
+        IAgentRunDiagnostics? captured = null;
+        mockWriter
+            .Setup(w => w.Set(It.IsAny<IAgentRunDiagnostics>()))
+            .Callback<IAgentRunDiagnostics>(d => captured = d);
+
+        var mockChat = CreateMockChatWithTokens("done", 100, 50);
+        var loop = CreateLoop(mockChat, mockWriter.Object);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(captured);
+        Assert.NotNull(result.Diagnostics);
+
+        // The diagnostics written to the accessor should be the same object
+        Assert.Same(result.Diagnostics, captured);
+    }
+
+    [Fact]
+    public async Task RunAsync_WriterCalledEvenOnFailure()
+    {
+        var mockWriter = new Mock<IAgentDiagnosticsWriter>();
+        IAgentRunDiagnostics? captured = null;
+        mockWriter
+            .Setup(w => w.Set(It.IsAny<IAgentRunDiagnostics>()))
+            .Callback<IAgentRunDiagnostics>(d => captured = d);
+
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("LLM error"));
+
+        var loop = CreateLoop(mockChat, mockWriter.Object);
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.NotNull(captured);
+        Assert.False(captured!.Succeeded);
     }
 
     #endregion

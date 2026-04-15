@@ -130,7 +130,9 @@ public static class SyringeExtensionsForAgentFramework
             });
 
             services.AddSingleton<IIterativeAgentLoop>(sp =>
-                new IterativeAgentLoop(sp.GetRequiredService<IChatClientAccessor>()));
+                new IterativeAgentLoop(
+                    sp.GetRequiredService<IChatClientAccessor>(),
+                    sp.GetService<IAgentDiagnosticsWriter>()));
 
             services.AddSingleton<IWorkflowFactory>(provider =>
                 new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));

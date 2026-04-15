@@ -15,10 +15,14 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 {
     private readonly IChatClientAccessor _chatClientAccessor;
+    private readonly IAgentDiagnosticsWriter? _diagnosticsWriter;
 
-    internal IterativeAgentLoop(IChatClientAccessor chatClientAccessor)
+    internal IterativeAgentLoop(
+        IChatClientAccessor chatClientAccessor,
+        IAgentDiagnosticsWriter? diagnosticsWriter = null)
     {
         _chatClientAccessor = chatClientAccessor;
+        _diagnosticsWriter = diagnosticsWriter;
     }
 
     /// <summary>
@@ -288,6 +292,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
         var diagnostics = diagnosticsBuilder.Build();
         diagnosticsBuilder.Dispose();
+        _diagnosticsWriter?.Set(diagnostics);
 
         return new IterativeLoopResult(
             Iterations: iterations,
