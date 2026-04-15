@@ -160,7 +160,7 @@ public class CopilotTokenProviderTests
         Assert.Equal(CopilotTokenSource.Auto, options.TokenSource);
         Assert.Equal("https://api.githubcopilot.com", options.CopilotApiBaseUrl);
         Assert.Equal("https://api.github.com", options.GitHubApiBaseUrl);
-        Assert.Equal("needlr-copilot", options.IntegrationId);
+        Assert.Equal("copilot-developer-cli", options.IntegrationId);
         Assert.Equal(3, options.MaxRetries);
         Assert.Equal(1000, options.RetryBaseDelayMs);
         Assert.Equal(60, options.TokenRefreshBufferSeconds);
