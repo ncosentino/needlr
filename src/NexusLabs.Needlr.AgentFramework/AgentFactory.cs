@@ -177,6 +177,12 @@ internal sealed class AgentFactory : IAgentFactory
         var chatClient = configuredOpts.ChatClientFactory?.Invoke(_serviceProvider)
             ?? _serviceProvider.GetRequiredService<IChatClient>();
 
+        // Apply per-agent middleware if configured
+        if (agentOptions.ChatClientFactory is { } perAgentFactory)
+        {
+            chatClient = perAgentFactory(chatClient);
+        }
+
         var instructions = agentOptions.Instructions ?? configuredOpts.DefaultInstructions;
 
         var rawAgent = chatClient.AsAIAgent(

@@ -74,7 +74,11 @@ public sealed record AgentCompletedEvent(
     long SequenceNumber,
     string AgentName,
     TimeSpan Duration,
-    long TotalTokens) : IProgressEvent;
+    long TotalTokens,
+    long? InputTokens = null,
+    long? OutputTokens = null,
+    int? ToolCallCount = null,
+    string? TerminationReason = null) : IProgressEvent;
 
 /// <summary>An agent run failed.</summary>
 public sealed record AgentFailedEvent(

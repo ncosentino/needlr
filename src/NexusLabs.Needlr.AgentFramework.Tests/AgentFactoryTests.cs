@@ -432,6 +432,44 @@ public class AgentFactoryTests
         var result = await fn.InvokeAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("factory-test", result?.ToString());
     }
+
+    [Fact]
+    public void CreateAgent_WithChatClientFactory_WrapsInnerClient()
+    {
+        var factory = CreateFactory();
+        var wrapperCalled = false;
+
+        var agent = factory.CreateAgent(o =>
+        {
+            o.Name = "wrapped-agent";
+            o.Instructions = "test";
+            o.ChatClientFactory = inner =>
+            {
+                wrapperCalled = true;
+                Assert.NotNull(inner);
+                return inner;
+            };
+        });
+
+        Assert.NotNull(agent);
+        Assert.True(wrapperCalled, "ChatClientFactory should be invoked during CreateAgent");
+    }
+
+    [Fact]
+    public void CreateAgent_NullChatClientFactory_UsesGlobalClient()
+    {
+        var factory = CreateFactory();
+
+        // No exception — the global mock client is used
+        var agent = factory.CreateAgent(o =>
+        {
+            o.Name = "unwrapped-agent";
+            o.Instructions = "test";
+            // ChatClientFactory is null by default
+        });
+
+        Assert.NotNull(agent);
+    }
 }
 
 // ---------------------------------------------------------------------------

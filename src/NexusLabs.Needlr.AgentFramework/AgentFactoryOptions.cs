@@ -40,4 +40,25 @@ public sealed class AgentFactoryOptions
     /// all registered function types are used.
     /// </summary>
     public IReadOnlyList<string>? FunctionGroups { get; set; }
+
+    /// <summary>
+    /// Optional factory that wraps the <see cref="Microsoft.Extensions.AI.IChatClient"/>
+    /// resolved for this agent. Use this to inject per-agent middleware such as
+    /// <c>ContextWindowGuardMiddleware</c> with agent-specific limits.
+    /// When <see langword="null"/>, the global chat client is used unmodified.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var agent = agentFactory.CreateAgent(o =>
+    /// {
+    ///     o.Name = "ColdReader";
+    ///     o.ChatClientFactory = inner => new ContextWindowGuardMiddleware(
+    ///         innerClient: inner,
+    ///         maxContextTokens: 40_000,
+    ///         progressAccessor: progressAccessor,
+    ///         pruneOnOverflow: true);
+    /// });
+    /// </code>
+    /// </example>
+    public Func<Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.IChatClient>? ChatClientFactory { get; set; }
 }
