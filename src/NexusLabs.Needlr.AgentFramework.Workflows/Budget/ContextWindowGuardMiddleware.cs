@@ -72,12 +72,31 @@ public sealed class ContextWindowGuardMiddleware : DelegatingChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var messageList = messages as IList<ChatMessage> ?? messages.ToList();
+        var messageList = messages as List<ChatMessage> ?? [.. messages];
         var estimatedTokens = EstimateTokenCount(messageList);
         var reporter = _progressAccessor.Current;
 
         var warningLimit = (long)(_maxContextTokens * _warningThreshold);
-        if (estimatedTokens >= warningLimit)
+
+        if (estimatedTokens > _maxContextTokens)
+        {
+            reporter.Report(new BudgetExceededEvent(
+                Timestamp: DateTimeOffset.UtcNow,
+                WorkflowId: reporter.WorkflowId,
+                AgentId: reporter.AgentId,
+                ParentAgentId: null,
+                Depth: reporter.Depth,
+                SequenceNumber: reporter.NextSequence(),
+                LimitType: "context_window",
+                CurrentValue: estimatedTokens,
+                MaxValue: _maxContextTokens));
+
+            if (_pruneOnOverflow)
+            {
+                PruneMessages(messageList, estimatedTokens);
+            }
+        }
+        else if (estimatedTokens >= warningLimit)
         {
             reporter.Report(new BudgetUpdatedEvent(
                 Timestamp: DateTimeOffset.UtcNow,
@@ -94,13 +113,44 @@ public sealed class ContextWindowGuardMiddleware : DelegatingChatClient
                 MaxTotalTokens: _maxContextTokens));
         }
 
-        if (estimatedTokens > _maxContextTokens && _pruneOnOverflow && messageList is List<ChatMessage> mutable)
-        {
-            PruneMessages(mutable, estimatedTokens);
-        }
-
         return await base.GetResponseAsync(messageList, options, cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages,
+        ChatOptions? options = null,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var messageList = messages as List<ChatMessage> ?? [.. messages];
+        var estimatedTokens = EstimateTokenCount(messageList);
+        var reporter = _progressAccessor.Current;
+
+        if (estimatedTokens > _maxContextTokens)
+        {
+            reporter.Report(new BudgetExceededEvent(
+                Timestamp: DateTimeOffset.UtcNow,
+                WorkflowId: reporter.WorkflowId,
+                AgentId: reporter.AgentId,
+                ParentAgentId: null,
+                Depth: reporter.Depth,
+                SequenceNumber: reporter.NextSequence(),
+                LimitType: "context_window",
+                CurrentValue: estimatedTokens,
+                MaxValue: _maxContextTokens));
+
+            if (_pruneOnOverflow)
+            {
+                PruneMessages(messageList, estimatedTokens);
+            }
+        }
+
+        await foreach (var update in base.GetStreamingResponseAsync(messageList, options, cancellationToken)
+            .ConfigureAwait(false))
+        {
+            yield return update;
+        }
     }
 
     private long EstimateTokenCount(IEnumerable<ChatMessage> messages)

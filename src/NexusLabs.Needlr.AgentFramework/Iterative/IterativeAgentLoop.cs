@@ -156,6 +156,20 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    // Check budget pressure between rounds (not just per iteration)
+                    if (round > 0
+                        && !budgetPressureTriggered
+                        && options.BudgetPressureThreshold is { } roundThreshold
+                        && _budgetTracker is { MaxTokens: > 0 } roundTracker)
+                    {
+                        var roundUsage = (double)roundTracker.CurrentTokens / roundTracker.MaxTokens.Value;
+                        if (roundUsage >= roundThreshold)
+                        {
+                            budgetPressureTriggered = true;
+                            break;
+                        }
+                    }
+
                     var completionSequence = diagnosticsBuilder.NextChatCompletionSequence();
                     var completionStartedAt = DateTimeOffset.UtcNow;
                     var completionStopwatch = Stopwatch.StartNew();
@@ -237,9 +251,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         break;
                     }
 
-                    // Execute tool calls
+                    // Execute tool calls — limit to remaining allowance if MaxTotalToolCalls is set
+                    var remainingAllowance = options.MaxTotalToolCalls.HasValue
+                        ? options.MaxTotalToolCalls.Value - totalToolCalls
+                        : (int?)null;
+
+                    var callsToExecute = remainingAllowance.HasValue && remainingAllowance.Value < functionCalls.Count
+                        ? functionCalls.Take(remainingAllowance.Value).ToList()
+                        : functionCalls;
+
                     var roundResults = await ExecuteToolCallsAsync(
-                        functionCalls, options.Tools, diagnosticsBuilder,
+                        callsToExecute, options.Tools, diagnosticsBuilder,
                         i, options.OnToolCall, _progressReporterAccessor,
                         cancellationToken)
                         .ConfigureAwait(false);

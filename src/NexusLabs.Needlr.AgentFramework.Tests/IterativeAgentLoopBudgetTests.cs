@@ -265,8 +265,56 @@ public sealed class IterativeAgentLoopBudgetTests
                     TestContext.Current.CancellationToken);
             }
 
-            // Parent should see the child's usage rolled up
-            Assert.True(tracker.CurrentTokens > 0, "Parent should have tokens from child");
+            // Parent should see exactly 150 tokens (100 input + 50 output from the one LLM call)
+            Assert.Equal(150, tracker.CurrentTokens);
+            Assert.Equal(100, tracker.CurrentInputTokens);
+            Assert.Equal(50, tracker.CurrentOutputTokens);
+        }
+    }
+
+    [Fact]
+    public void ChildScope_ParentCancellation_CascadesToChild()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        using (tracker.BeginScope(100))
+        {
+            using (tracker.BeginChildScope("child", 500))
+            {
+                var childToken = tracker.BudgetCancellationToken;
+                Assert.False(childToken.IsCancellationRequested);
+
+                // Push parent past its limit
+                tracker.Record(200);
+
+                // Child should be cancelled because its CTS is linked to parent
+                Assert.True(childToken.IsCancellationRequested);
+            }
+        }
+    }
+
+    [Fact]
+    public void ChildScope_OwnLimitExceeded_DoesNotCancelParent()
+    {
+        var tracker = new TokenBudgetTracker();
+
+        using (tracker.BeginScope(10000))
+        {
+            var parentToken = tracker.BudgetCancellationToken;
+
+            using (tracker.BeginChildScope("child", 50))
+            {
+                // Push child past its own limit
+                tracker.Record(100);
+
+                var childToken = tracker.BudgetCancellationToken;
+                Assert.True(childToken.IsCancellationRequested);
+            }
+
+            // Parent should NOT be cancelled — child's limit doesn't affect parent
+            Assert.False(parentToken.IsCancellationRequested);
+            // But parent should see the usage rolled up
+            Assert.Equal(100, tracker.CurrentTokens);
         }
     }
 

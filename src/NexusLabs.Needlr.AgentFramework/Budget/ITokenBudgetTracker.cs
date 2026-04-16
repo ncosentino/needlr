@@ -79,6 +79,19 @@ public interface ITokenBudgetTracker
     /// Called automatically by <c>TokenBudgetChatMiddleware</c> after each LLM response.
     /// </summary>
     void Record(long inputTokens, long outputTokens);
+
+    /// <summary>
+    /// Opens a child scope with its own budget that counts against the parent.
+    /// Token usage in the child rolls up to the parent in real-time. Exceeding
+    /// the child's limit cancels the child's token. If the parent scope is
+    /// cancelled, all active children are also cancelled.
+    /// </summary>
+    /// <param name="name">Human-readable name for diagnostics (e.g., stage name).</param>
+    /// <param name="maxTokens">Maximum total tokens for this child scope, or
+    /// <see langword="null"/> for unlimited (still counts against parent).</param>
+    /// <returns>A disposable handle that restores the parent scope when disposed.</returns>
+    /// <exception cref="InvalidOperationException">No parent scope is active.</exception>
+    IDisposable BeginChildScope(string name, long? maxTokens = null);
 }
 
 /// <summary>

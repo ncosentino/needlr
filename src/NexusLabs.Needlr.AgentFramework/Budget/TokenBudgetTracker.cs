@@ -29,22 +29,14 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
         return scope;
     }
 
-    /// <summary>
-    /// Opens a child scope with its own budget that counts against the parent.
-    /// When the child scope is disposed, its accumulated usage rolls up to the
-    /// parent scope. The child's budget is enforced independently — exceeding
-    /// the child's limit cancels the child's token without affecting the parent.
-    /// </summary>
-    /// <param name="name">Human-readable name for diagnostics (e.g., stage name).</param>
-    /// <param name="maxTokens">Maximum total tokens for this child scope, or
-    /// <see langword="null"/> for unlimited (still counts against parent).</param>
-    /// <returns>A disposable handle that rolls up usage and restores the parent scope.</returns>
+    /// <inheritdoc />
     public IDisposable BeginChildScope(string name, long? maxTokens = null)
     {
         var parent = _current.Value
             ?? throw new InvalidOperationException("Cannot open a child scope without an active parent scope.");
 
         var scope = new ScopeState(
+            name: name,
             maxInputTokens: null,
             maxOutputTokens: null,
             maxTotalTokens: maxTokens,
@@ -92,17 +84,24 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
         private long _currentInputTokens;
         private long _currentOutputTokens;
         private long _currentTotalTokens;
-        private readonly CancellationTokenSource _cts = new();
+        private readonly CancellationTokenSource _cts;
         private readonly ScopeState? _parent;
 
-        public ScopeState(long? maxInputTokens, long? maxOutputTokens, long? maxTotalTokens, ScopeState? parent = null)
+        public ScopeState(long? maxInputTokens, long? maxOutputTokens, long? maxTotalTokens, ScopeState? parent = null, string? name = null)
         {
             MaxInputTokens = maxInputTokens;
             MaxOutputTokens = maxOutputTokens;
             MaxTotalTokens = maxTotalTokens;
             _parent = parent;
+            Name = name;
+
+            // Link to parent's CTS so parent cancellation cascades to children
+            _cts = parent is not null
+                ? CancellationTokenSource.CreateLinkedTokenSource(parent.CancellationToken)
+                : new CancellationTokenSource();
         }
 
+        public string? Name { get; }
         public long? MaxInputTokens { get; }
         public long? MaxOutputTokens { get; }
         public long? MaxTotalTokens { get; }
