@@ -125,6 +125,20 @@ public sealed class IterativeLoopOptions
     public int MaxToolRoundsPerIteration { get; set; } = 5;
 
     /// <summary>
+    /// Gets or sets the maximum cumulative tool call count across all iterations.
+    /// When exceeded, the loop terminates with
+    /// <see cref="TerminationReason.MaxToolCallsReached"/>.
+    /// Defaults to <see langword="null"/> (unlimited).
+    /// </summary>
+    /// <remarks>
+    /// This is a safety guard against runaway tool-calling loops that stay under
+    /// <see cref="MaxIterations"/> but make an excessive number of tool calls per
+    /// iteration. Set this when token cost is proportional to tool call volume
+    /// (e.g., web search or fetch tools).
+    /// </remarks>
+    public int? MaxTotalToolCalls { get; set; }
+
+    /// <summary>
     /// Gets or sets an optional async callback invoked at the start of each iteration,
     /// before the prompt factory runs. Receives the zero-based iteration number and the
     /// current <see cref="IterativeContext"/>.

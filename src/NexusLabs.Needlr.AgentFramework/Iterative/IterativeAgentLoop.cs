@@ -51,6 +51,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         string? finalResponse = null;
         var succeeded = true;
         string? errorMessage = null;
+        var termination = TerminationReason.Completed;
+        int totalToolCalls = 0;
 
         var diagnosticsBuilder = AgentRunDiagnosticsBuilder.StartNew(options.LoopName);
 
@@ -223,6 +225,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         cancellationToken)
                         .ConfigureAwait(false);
                     iterationToolCalls.AddRange(roundResults);
+                    totalToolCalls += roundResults.Count;
+
+                    // Check MaxTotalToolCalls guard
+                    if (options.MaxTotalToolCalls is { } maxCalls && totalToolCalls >= maxCalls)
+                    {
+                        termination = TerminationReason.MaxToolCallsReached;
+                        succeeded = false;
+                        errorMessage = $"Cumulative tool call count ({totalToolCalls}) reached MaxTotalToolCalls ({maxCalls}).";
+                        diagnosticsBuilder.RecordFailure(errorMessage);
+                        break;
+                    }
 
                     // For SingleCall mode, don't send results back — just store them
                     if (options.ToolResultMode == ToolResultMode.SingleCall)
@@ -250,6 +263,22 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     // For OneRoundTrip, if this was the first round (round 0),
                     // we'll do ONE more LLM call. If it's round 1, we're done.
                     // For MultiRound, we continue until maxRounds or text response.
+                }
+
+                // If a guard triggered termination inside the round loop, break outer loop too
+                if (termination == TerminationReason.MaxToolCallsReached)
+                {
+                    // Still record the partial iteration
+                    iterationStopwatch.Stop();
+                    iterations.Add(new IterationRecord(
+                        Iteration: i,
+                        ToolCalls: iterationToolCalls,
+                        ResponseText: iterationResponseText,
+                        Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
+                        Duration: iterationStopwatch.Elapsed,
+                        LlmCallCount: llmCallCount));
+                    context.LastToolResults = iterationToolCalls;
+                    break;
                 }
 
                 iterationStopwatch.Stop();
@@ -281,6 +310,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 // Check IsComplete predicate
                 if (options.IsComplete?.Invoke(context) == true)
                 {
+                    termination = TerminationReason.Completed;
                     break;
                 }
 
@@ -288,17 +318,20 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 if (iterationResponseText != null)
                 {
                     finalResponse = iterationResponseText;
+                    termination = TerminationReason.NaturalCompletion;
                     break;
                 }
             }
 
             // If the loop exhausted MaxIterations without IsComplete returning true
             // and without a text response, that's a failure — the agent didn't finish.
-            if (succeeded && finalResponse == null
+            if (termination == TerminationReason.Completed
+                && finalResponse == null
                 && options.IsComplete?.Invoke(context) != true
                 && iterations.Count >= options.MaxIterations)
             {
                 succeeded = false;
+                termination = TerminationReason.MaxIterationsReached;
                 errorMessage = $"Loop exhausted {options.MaxIterations} iterations without completing. "
                     + "The IsComplete predicate never returned true and the model never produced a text response.";
                 diagnosticsBuilder.RecordFailure(errorMessage);
@@ -307,6 +340,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         catch (OperationCanceledException)
         {
             succeeded = false;
+            termination = TerminationReason.Cancelled;
             errorMessage = "Loop was cancelled.";
             diagnosticsBuilder.RecordFailure(errorMessage);
         }
@@ -319,6 +353,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         catch (Exception ex)
         {
             succeeded = false;
+            termination = TerminationReason.Error;
             errorMessage = ex.Message;
             diagnosticsBuilder.RecordFailure(errorMessage);
         }
@@ -339,7 +374,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             FinalResponse: finalResponse,
             Diagnostics: diagnostics,
             Succeeded: succeeded,
-            ErrorMessage: errorMessage);
+            ErrorMessage: errorMessage,
+            Termination: termination);
     }
 
     private static async Task<List<ToolCallResult>> ExecuteToolCallsAsync(

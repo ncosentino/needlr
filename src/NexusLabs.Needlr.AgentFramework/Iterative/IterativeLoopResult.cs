@@ -34,9 +34,15 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// Populated when the prompt factory throws, the loop is cancelled, or an
 /// unrecoverable LLM error occurs.
 /// </param>
+/// <param name="Termination">
+/// Why the loop stopped. Use this instead of inspecting <see cref="Succeeded"/>
+/// and <see cref="ErrorMessage"/> separately — it provides a single discriminator
+/// for all termination paths.
+/// </param>
 public sealed record IterativeLoopResult(
     IReadOnlyList<IterationRecord> Iterations,
     string? FinalResponse,
     IAgentRunDiagnostics? Diagnostics,
     bool Succeeded,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    TerminationReason Termination);
