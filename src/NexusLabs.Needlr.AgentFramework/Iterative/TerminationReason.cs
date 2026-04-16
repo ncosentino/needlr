@@ -46,4 +46,12 @@ public enum TerminationReason
     /// An unrecoverable error occurred (prompt factory failure, LLM exception, etc.).
     /// </summary>
     Error,
+
+    /// <summary>
+    /// The loop detected that consecutive iterations produced nearly identical
+    /// token usage, indicating the LLM is repeating the same work without
+    /// making progress. Controlled by
+    /// <see cref="IterativeLoopOptions.StallDetection"/>.
+    /// </summary>
+    StallDetected,
 }

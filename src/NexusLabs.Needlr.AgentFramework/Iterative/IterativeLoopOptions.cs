@@ -139,6 +139,28 @@ public sealed class IterativeLoopOptions
     public int? MaxTotalToolCalls { get; set; }
 
     /// <summary>
+    /// Gets or sets the stall detection configuration. When set, the loop
+    /// compares consecutive iterations and terminates with
+    /// <see cref="TerminationReason.StallDetected"/> if
+    /// <see cref="StallDetectionOptions.ConsecutiveThreshold"/> iterations
+    /// in a row have total token counts within
+    /// <see cref="StallDetectionOptions.TolerancePercent"/> of each other.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Stall detection catches loops where the LLM repeats identical work
+    /// every iteration because it has no cross-iteration memory. Without stall
+    /// detection, these loops burn through <see cref="MaxIterations"/> or
+    /// <see cref="MaxTotalToolCalls"/> with zero useful output.
+    /// </para>
+    /// <para>
+    /// When <see langword="null"/> (the default), no stall detection is
+    /// performed — the loop relies on existing guards.
+    /// </para>
+    /// </remarks>
+    public StallDetectionOptions? StallDetection { get; set; }
+
+    /// <summary>
     /// Gets or sets an optional async callback invoked at the start of each iteration,
     /// before the prompt factory runs. Receives the zero-based iteration number and the
     /// current <see cref="IterativeContext"/>.
@@ -260,4 +282,23 @@ public sealed class IterativeLoopOptions
         "⚠️ TOKEN BUDGET PRESSURE: You are approaching the token budget limit. " +
         "Finalize your work NOW. Write any remaining output and stop. " +
         "Do not start new research or tool-heavy operations.";
+
+    /// <summary>
+    /// Optional factory that wraps the <see cref="Microsoft.Extensions.AI.IChatClient"/>
+    /// used for LLM calls within this loop run. Use this to inject per-loop middleware
+    /// such as <c>ReducingChatClient</c> to cap within-iteration conversation growth.
+    /// When <see langword="null"/>, the global chat client from
+    /// <see cref="IChatClientAccessor"/> is used unmodified.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var loopOptions = new IterativeLoopOptions
+    /// {
+    ///     ChatClientFactory = inner => new ChatClientBuilder(inner)
+    ///         .UseChatReducer(new MessageCountingChatReducer(maxNonSystemMessages: 20))
+    ///         .Build(),
+    /// };
+    /// </code>
+    /// </example>
+    public Func<Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.IChatClient>? ChatClientFactory { get; set; }
 }

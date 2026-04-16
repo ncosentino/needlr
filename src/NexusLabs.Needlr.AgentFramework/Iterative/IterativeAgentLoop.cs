@@ -51,6 +51,13 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         ArgumentNullException.ThrowIfNull(context);
 
         var chatClient = _chatClientAccessor.ChatClient;
+
+        // Apply per-loop middleware if configured
+        if (options.ChatClientFactory is { } loopClientFactory)
+        {
+            chatClient = loopClientFactory(chatClient);
+        }
+
         var iterations = new List<IterationRecord>();
         string? finalResponse = null;
         var succeeded = true;
@@ -349,6 +356,46 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 if (options.OnIterationEnd != null)
                 {
                     await InvokeHookAsync(options.OnIterationEnd, iterations[^1]).ConfigureAwait(false);
+                }
+
+                // Stall detection — compare consecutive iterations
+                if (options.StallDetection is { } stallOpts && iterations.Count >= 2)
+                {
+                    var currentTokens = iterations[^1].Tokens.TotalTokens;
+                    var consecutiveSimilar = 0;
+
+                    for (int s = iterations.Count - 2; s >= 0; s--)
+                    {
+                        var prevTokens = iterations[s].Tokens.TotalTokens;
+                        if (prevTokens > 0)
+                        {
+                            var delta = Math.Abs(currentTokens - prevTokens) / (double)prevTokens;
+                            if (delta <= stallOpts.TolerancePercent)
+                            {
+                                consecutiveSimilar++;
+                                currentTokens = prevTokens;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (consecutiveSimilar >= stallOpts.ConsecutiveThreshold - 1)
+                    {
+                        termination = TerminationReason.StallDetected;
+                        succeeded = false;
+                        errorMessage = $"Stall detected: {consecutiveSimilar + 1} consecutive iterations " +
+                            $"with similar token counts (~{iterations[^1].Tokens.TotalTokens} tokens, " +
+                            $"tolerance {stallOpts.TolerancePercent:P0}).";
+                        diagnosticsBuilder.RecordFailure(errorMessage);
+                        break;
+                    }
                 }
 
                 // Check IsComplete predicate
