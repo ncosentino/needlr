@@ -291,6 +291,18 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     break;
                 }
             }
+
+            // If the loop exhausted MaxIterations without IsComplete returning true
+            // and without a text response, that's a failure — the agent didn't finish.
+            if (succeeded && finalResponse == null
+                && options.IsComplete?.Invoke(context) != true
+                && iterations.Count >= options.MaxIterations)
+            {
+                succeeded = false;
+                errorMessage = $"Loop exhausted {options.MaxIterations} iterations without completing. "
+                    + "The IsComplete predicate never returned true and the model never produced a text response.";
+                diagnosticsBuilder.RecordFailure(errorMessage);
+            }
         }
         catch (OperationCanceledException)
         {
