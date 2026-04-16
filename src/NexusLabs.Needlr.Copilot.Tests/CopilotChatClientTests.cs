@@ -302,6 +302,87 @@ public class CopilotChatClientTests
         Assert.Equal("github-copilot", client.Metadata.ProviderName);
     }
 
+    [Fact]
+    public async Task GetResponseAsync_ParallelToolResults_SendsAllResults()
+    {
+        var requestBodies = new List<string>();
+
+        using var client = CreateClient(async req =>
+        {
+            if (req.RequestUri!.PathAndQuery.Contains("copilot_internal"))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(TokenExchangeResponse, Encoding.UTF8, "application/json"),
+                };
+            }
+
+            var body = await req.Content!.ReadAsStringAsync();
+            requestBodies.Add(body);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """
+                    {
+                        "id": "test-par",
+                        "object": "chat.completion",
+                        "created": 1700000000,
+                        "model": "claude-sonnet-4.6",
+                        "choices": [{
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": "Done."
+                            },
+                            "finish_reason": "stop"
+                        }]
+                    }
+                    """, Encoding.UTF8, "application/json"),
+            };
+        });
+
+        // Simulate a conversation where the assistant made 3 parallel tool calls
+        // and we're sending back 3 tool results. The Copilot API requires one
+        // "tool" message per tool_call_id — packing them into one message violates
+        // the Anthropic API contract.
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "Search for 3 things"),
+            new(ChatRole.Assistant,
+            [
+                new FunctionCallContent("call_1", "web_search", new Dictionary<string, object?> { ["query"] = "q1" }),
+                new FunctionCallContent("call_2", "web_search", new Dictionary<string, object?> { ["query"] = "q2" }),
+                new FunctionCallContent("call_3", "web_search", new Dictionary<string, object?> { ["query"] = "q3" }),
+            ]),
+            new(ChatRole.Tool,
+            [
+                new FunctionResultContent("call_1", "result 1"),
+                new FunctionResultContent("call_2", "result 2"),
+                new FunctionResultContent("call_3", "result 3"),
+            ]),
+        };
+
+        await client.GetResponseAsync(messages, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Single(requestBodies);
+        var json = JsonDocument.Parse(requestBodies[0]);
+        var msgs = json.RootElement.GetProperty("messages");
+
+        // Count tool-role messages — should be 3 (one per parallel tool result)
+        var toolMessages = msgs.EnumerateArray()
+            .Where(m => m.GetProperty("role").GetString() == "tool")
+            .ToList();
+
+        Assert.Equal(3, toolMessages.Count);
+        Assert.Equal("call_1", toolMessages[0].GetProperty("tool_call_id").GetString());
+        Assert.Equal("call_2", toolMessages[1].GetProperty("tool_call_id").GetString());
+        Assert.Equal("call_3", toolMessages[2].GetProperty("tool_call_id").GetString());
+        Assert.Equal("result 1", toolMessages[0].GetProperty("content").GetString());
+        Assert.Equal("result 2", toolMessages[1].GetProperty("content").GetString());
+        Assert.Equal("result 3", toolMessages[2].GetProperty("content").GetString());
+    }
+
     private static CopilotChatClient CreateClient(
         Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
     {

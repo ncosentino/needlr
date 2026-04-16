@@ -156,7 +156,7 @@ public class CopilotTokenProviderTests
     {
         var options = new CopilotChatClientOptions();
 
-        Assert.Equal("claude-sonnet-4.6", options.DefaultModel);
+        Assert.Equal("claude-sonnet-4", options.DefaultModel);
         Assert.Equal(CopilotTokenSource.Auto, options.TokenSource);
         Assert.Equal("https://api.githubcopilot.com", options.CopilotApiBaseUrl);
         Assert.Equal("https://api.github.com", options.GitHubApiBaseUrl);

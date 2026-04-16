@@ -234,24 +234,23 @@ public sealed class CopilotChatClient : IChatClient
                 _ => msg.Role.Value,
             };
 
-            // Handle tool result messages
-            var toolCallId = msg.Contents
-                .OfType<FunctionResultContent>()
-                .FirstOrDefault()?.CallId;
-
-            if (toolCallId is not null)
+            // Handle tool result messages — one RequestMessage per FunctionResultContent.
+            // MAF may pack multiple tool results into a single ChatMessage when the model
+            // made parallel tool calls. The Copilot API (OpenAI format) requires a separate
+            // "tool" message for each tool_call_id.
+            var functionResults = msg.Contents.OfType<FunctionResultContent>().ToList();
+            if (functionResults.Count > 0)
             {
-                var resultContent = msg.Contents
-                    .OfType<FunctionResultContent>()
-                    .Select(r => r.Result?.ToString() ?? "")
-                    .FirstOrDefault() ?? "";
-
-                result.Add(new RequestMessage
+                foreach (var fr in functionResults)
                 {
-                    Role = role,
-                    Content = resultContent,
-                    ToolCallId = toolCallId,
-                });
+                    result.Add(new RequestMessage
+                    {
+                        Role = role,
+                        Content = fr.Result?.ToString() ?? "",
+                        ToolCallId = fr.CallId ?? "",
+                    });
+                }
+
                 continue;
             }
 

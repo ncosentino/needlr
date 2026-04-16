@@ -9,7 +9,7 @@ public sealed class CopilotChatClientOptions
     /// The default model to use when <see cref="Microsoft.Extensions.AI.ChatOptions.ModelId"/>
     /// is not specified by the caller. Defaults to <c>claude-sonnet-4</c>.
     /// </summary>
-    public string DefaultModel { get; set; } = "claude-sonnet-4.6";
+    public string DefaultModel { get; set; } = "claude-sonnet-4";
 
     /// <summary>
     /// Controls where the GitHub OAuth token is sourced from.
