@@ -222,4 +222,29 @@ public sealed class IterativeLoopOptions
     /// </para>
     /// </remarks>
     public Context.IAgentExecutionContext? ExecutionContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the fraction of the token budget at which the loop injects
+    /// a finalization instruction. When
+    /// <see cref="Budget.ITokenBudgetTracker.CurrentTokens"/> divided by
+    /// <see cref="Budget.ITokenBudgetTracker.MaxTokens"/> reaches this value,
+    /// the loop prepends <see cref="BudgetPressureInstruction"/> to the next
+    /// iteration's prompt and runs one final iteration before terminating with
+    /// <see cref="TerminationReason.BudgetPressure"/>.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see langword="null"/> (disabled). Set to e.g. <c>0.8</c>
+    /// (80%) to give the agent one iteration to finalize cleanly before the
+    /// hard budget limit cancels the chat client.
+    /// </remarks>
+    public double? BudgetPressureThreshold { get; set; }
+
+    /// <summary>
+    /// Gets or sets the instruction prepended to the user message on the
+    /// budget-pressure finalization iteration.
+    /// </summary>
+    public string BudgetPressureInstruction { get; set; } =
+        "⚠️ TOKEN BUDGET PRESSURE: You are approaching the token budget limit. " +
+        "Finalize your work NOW. Write any remaining output and stop. " +
+        "Do not start new research or tool-heavy operations.";
 }

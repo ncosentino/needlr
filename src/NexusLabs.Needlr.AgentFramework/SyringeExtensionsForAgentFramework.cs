@@ -134,7 +134,8 @@ public static class SyringeExtensionsForAgentFramework
                     sp.GetRequiredService<IChatClientAccessor>(),
                     sp.GetService<IAgentDiagnosticsWriter>(),
                     sp.GetService<IAgentExecutionContextAccessor>(),
-                    sp.GetService<IProgressReporterAccessor>()));
+                    sp.GetService<IProgressReporterAccessor>(),
+                    sp.GetService<ITokenBudgetTracker>()));
 
             services.AddSingleton<IWorkflowFactory>(provider =>
                 new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));

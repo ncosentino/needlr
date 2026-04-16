@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Microsoft.Extensions.AI;
 
+using NexusLabs.Needlr.AgentFramework.Budget;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Progress;
@@ -20,17 +21,20 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
     private readonly IAgentDiagnosticsWriter? _diagnosticsWriter;
     private readonly IAgentExecutionContextAccessor? _executionContextAccessor;
     private readonly IProgressReporterAccessor? _progressReporterAccessor;
+    private readonly ITokenBudgetTracker? _budgetTracker;
 
     internal IterativeAgentLoop(
         IChatClientAccessor chatClientAccessor,
         IAgentDiagnosticsWriter? diagnosticsWriter = null,
         IAgentExecutionContextAccessor? executionContextAccessor = null,
-        IProgressReporterAccessor? progressReporterAccessor = null)
+        IProgressReporterAccessor? progressReporterAccessor = null,
+        ITokenBudgetTracker? budgetTracker = null)
     {
         _chatClientAccessor = chatClientAccessor;
         _diagnosticsWriter = diagnosticsWriter;
         _executionContextAccessor = executionContextAccessor;
         _progressReporterAccessor = progressReporterAccessor;
+        _budgetTracker = budgetTracker;
     }
 
     /// <summary>
@@ -87,6 +91,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 }
 
                 // Build fresh prompt from workspace state
+                var budgetPressureTriggered = false;
                 string userPrompt;
                 try
                 {
@@ -95,9 +100,23 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 catch (Exception ex)
                 {
                     succeeded = false;
+                    termination = TerminationReason.Error;
                     errorMessage = $"Prompt factory failed on iteration {i}: {ex.Message}";
                     diagnosticsBuilder.RecordFailure(errorMessage);
                     break;
+                }
+
+                // Budget pressure: if token usage is at or above the threshold,
+                // prepend the finalization instruction and mark this as the last iteration.
+                if (options.BudgetPressureThreshold is { } threshold
+                    && _budgetTracker is { MaxTokens: > 0 } tracker)
+                {
+                    var usage = (double)tracker.CurrentTokens / tracker.MaxTokens.Value;
+                    if (usage >= threshold)
+                    {
+                        userPrompt = options.BudgetPressureInstruction + "\n\n" + userPrompt;
+                        budgetPressureTriggered = true;
+                    }
                 }
 
                 var iterationStopwatch = Stopwatch.StartNew();
@@ -311,6 +330,13 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 if (options.IsComplete?.Invoke(context) == true)
                 {
                     termination = TerminationReason.Completed;
+                    break;
+                }
+
+                // Budget pressure: this was the finalization iteration — stop now
+                if (budgetPressureTriggered)
+                {
+                    termination = TerminationReason.BudgetPressure;
                     break;
                 }
 
