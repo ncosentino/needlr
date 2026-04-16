@@ -200,6 +200,15 @@ public sealed class ContextWindowGuardMiddleware : DelegatingChatClient
             {
                 if (content is TextContent tc && tc.Text is { } text)
                     removedTokens += text.Length / CharsPerToken;
+                else if (content is FunctionCallContent fc)
+                {
+                    removedTokens += (fc.Name.Length + 50) / CharsPerToken;
+                    if (fc.Arguments is { } args)
+                    {
+                        foreach (var (_, value) in args)
+                            removedTokens += (value?.ToString()?.Length ?? 0) / CharsPerToken;
+                    }
+                }
                 else if (content is FunctionResultContent fr)
                     removedTokens += (fr.Result?.ToString()?.Length ?? 0) / CharsPerToken;
             }

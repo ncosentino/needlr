@@ -223,6 +223,8 @@ public sealed class IterativeLoopOptions
     /// </remarks>
     public Context.IAgentExecutionContext? ExecutionContext { get; set; }
 
+    private double? _budgetPressureThreshold;
+
     /// <summary>
     /// Gets or sets the fraction of the token budget at which the loop injects
     /// a finalization instruction. When
@@ -235,9 +237,20 @@ public sealed class IterativeLoopOptions
     /// <remarks>
     /// Defaults to <see langword="null"/> (disabled). Set to e.g. <c>0.8</c>
     /// (80%) to give the agent one iteration to finalize cleanly before the
-    /// hard budget limit cancels the chat client.
+    /// hard budget limit cancels the chat client. Must be between 0.0 and 1.0
+    /// (exclusive) when set.
     /// </remarks>
-    public double? BudgetPressureThreshold { get; set; }
+    /// <exception cref="ArgumentOutOfRangeException">Value is not between 0 and 1.</exception>
+    public double? BudgetPressureThreshold
+    {
+        get => _budgetPressureThreshold;
+        set
+        {
+            if (value is < 0.0 or >= 1.0)
+                throw new ArgumentOutOfRangeException(nameof(value), "BudgetPressureThreshold must be between 0.0 (inclusive) and 1.0 (exclusive).");
+            _budgetPressureThreshold = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the instruction prepended to the user message on the

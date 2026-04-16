@@ -32,6 +32,10 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
     /// <inheritdoc />
     public IDisposable BeginChildScope(string name, long? maxTokens = null)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (maxTokens is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxTokens), "Child scope budget must be greater than zero.");
+
         var parent = _current.Value
             ?? throw new InvalidOperationException("Cannot open a child scope without an active parent scope.");
 
