@@ -41,7 +41,7 @@
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="6">6</td>
+<td class="limit-width right" title="7">7</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="6">6</td>
+<td class="limit-width right" title="7">7</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="42">42</td>
+<td class="limit-width right" title="48">48</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="6 of 6">100%</td>
+<td class="limit-width right" title="7 of 7">100%</td>
 </tr>
 </table>
 </div>
@@ -107,12 +107,13 @@
 </colgroup>
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String)"><a href="#file0_line37" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Iterations()"><a href="#file0_line38" class="navigatetohash">get_Iterations()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_FinalResponse()"><a href="#file0_line39" class="navigatetohash">get_FinalResponse()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Diagnostics()"><a href="#file0_line40" class="navigatetohash">get_Diagnostics()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Succeeded()"><a href="#file0_line41" class="navigatetohash">get_Succeeded()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ErrorMessage()"><a href="#file0_line42" class="navigatetohash">get_ErrorMessage()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title=".ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String,NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason)"><a href="#file0_line42" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Iterations()"><a href="#file0_line43" class="navigatetohash">get_Iterations()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_FinalResponse()"><a href="#file0_line44" class="navigatetohash">get_FinalResponse()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Diagnostics()"><a href="#file0_line45" class="navigatetohash">get_Diagnostics()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Succeeded()"><a href="#file0_line46" class="navigatetohash">get_Succeeded()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ErrorMessage()"><a href="#file0_line47" class="navigatetohash">get_ErrorMessage()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Termination()"><a href="#file0_line48" class="navigatetohash">get_Termination()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -158,25 +159,32 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgray"><code>///&nbsp;Populated&nbsp;when&nbsp;the&nbsp;prompt&nbsp;factory&nbsp;throws,&nbsp;the&nbsp;loop&nbsp;is&nbsp;cancelled,&nbsp;or&nbsp;an</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code>///&nbsp;unrecoverable&nbsp;LLM&nbsp;error&nbsp;occurs.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;/param&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (45 visits)" data-coverage="{'AllTestMethods': {'VC': '45', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">45</td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterativeLoopResult(</code></td></tr>
-<tr class="coverableline" title="Covered (31 visits)" data-coverage="{'AllTestMethods': {'VC': '31', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">31</td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IReadOnlyList&lt;IterationRecord&gt;&nbsp;Iterations,</code></td></tr>
-<tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;FinalResponse,</code></td></tr>
-<tr class="coverableline" title="Covered (19 visits)" data-coverage="{'AllTestMethods': {'VC': '19', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">19</td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IAgentRunDiagnostics?&nbsp;Diagnostics,</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;Succeeded,</code></td></tr>
-<tr class="coverableline" title="Covered (46 visits)" data-coverage="{'AllTestMethods': {'VC': '46', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">46</td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;ErrorMessage);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;Termination&quot;&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgray"><code>///&nbsp;Why&nbsp;the&nbsp;loop&nbsp;stopped.&nbsp;Use&nbsp;this&nbsp;instead&nbsp;of&nbsp;inspecting&nbsp;&lt;see&nbsp;cref=&quot;Succeeded&quot;/&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgray"><code>///&nbsp;and&nbsp;&lt;see&nbsp;cref=&quot;ErrorMessage&quot;/&gt;&nbsp;separately&nbsp;—&nbsp;it&nbsp;provides&nbsp;a&nbsp;single&nbsp;discriminator</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgray"><code>///&nbsp;for&nbsp;all&nbsp;termination&nbsp;paths.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;/param&gt;</code></td></tr>
+<tr class="coverableline" title="Covered (51 visits)" data-coverage="{'AllTestMethods': {'VC': '51', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">51</td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterativeLoopResult(</code></td></tr>
+<tr class="coverableline" title="Covered (34 visits)" data-coverage="{'AllTestMethods': {'VC': '34', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">34</td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IReadOnlyList&lt;IterationRecord&gt;&nbsp;Iterations,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line44"></a><code>44</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;FinalResponse,</code></td></tr>
+<tr class="coverableline" title="Covered (19 visits)" data-coverage="{'AllTestMethods': {'VC': '19', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">19</td><td class="rightmargin right"><a id="file0_line45"></a><code>45</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IAgentRunDiagnostics?&nbsp;Diagnostics,</code></td></tr>
+<tr class="coverableline" title="Covered (17 visits)" data-coverage="{'AllTestMethods': {'VC': '17', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">17</td><td class="rightmargin right"><a id="file0_line46"></a><code>46</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;Succeeded,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line47"></a><code>47</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;ErrorMessage,</code></td></tr>
+<tr class="coverableline" title="Covered (56 visits)" data-coverage="{'AllTestMethods': {'VC': '56', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">56</td><td class="rightmargin right"><a id="file0_line48"></a><code>48</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;TerminationReason&nbsp;Termination);</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/16/2026 - 04:55:16<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/16/2026 - 14:46:22<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
-<a href="#file0_line37" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String)"><i class="icon-cube"></i>.ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String)</a><br />
-<a href="#file0_line38" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Iterations()"><i class="icon-wrench"></i>get_Iterations()</a><br />
-<a href="#file0_line39" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_FinalResponse()"><i class="icon-wrench"></i>get_FinalResponse()</a><br />
-<a href="#file0_line40" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Diagnostics()"><i class="icon-wrench"></i>get_Diagnostics()</a><br />
-<a href="#file0_line41" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Succeeded()"><i class="icon-wrench"></i>get_Succeeded()</a><br />
-<a href="#file0_line42" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ErrorMessage()"><i class="icon-wrench"></i>get_ErrorMessage()</a><br />
+<a href="#file0_line42" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String,NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason)"><i class="icon-cube"></i>.ctor(System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,System.Boolean,System.String,NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason)</a><br />
+<a href="#file0_line43" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Iterations()"><i class="icon-wrench"></i>get_Iterations()</a><br />
+<a href="#file0_line44" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_FinalResponse()"><i class="icon-wrench"></i>get_FinalResponse()</a><br />
+<a href="#file0_line45" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Diagnostics()"><i class="icon-wrench"></i>get_Diagnostics()</a><br />
+<a href="#file0_line46" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Succeeded()"><i class="icon-wrench"></i>get_Succeeded()</a><br />
+<a href="#file0_line47" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ErrorMessage()"><i class="icon-wrench"></i>get_ErrorMessage()</a><br />
+<a href="#file0_line48" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Termination()"><i class="icon-wrench"></i>get_Termination()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

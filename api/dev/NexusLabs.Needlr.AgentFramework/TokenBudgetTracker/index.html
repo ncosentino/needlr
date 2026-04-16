@@ -3568,26 +3568,49 @@ when any budget limit is exceeded.</p>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a><br />
 <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if no scope is active or no total limit set.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginChildScope(string,System.Nullable_long_)'></a></p>
+<h2 id="tokenbudgettrackerbeginchildscopestring-nullablelong-method">TokenBudgetTracker.BeginChildScope(string, Nullable&lt;long&gt;) Method<a class="headerlink" href="#tokenbudgettrackerbeginchildscopestring-nullablelong-method" title="Permanent link">&para;</a></h2>
+<p>Opens a child scope with its own budget that counts against the parent.
+Token usage in the child rolls up to the parent in real-time. Exceeding
+the child's limit cancels the child's token. If the parent scope is
+cancelled, all active children are also cancelled.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginChildScope</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxTokens</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginChildScope(string,System.Nullable_long_).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>Human-readable name for diagnostics (e.g., stage name).</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginChildScope(string,System.Nullable_long_).maxTokens'></a></p>
+<p><code>maxTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
+<p>Maximum total tokens for this child scope, or
+            <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for unlimited (still counts against parent).</p>
+<p>Implements <a href="../ITokenBudgetTracker/#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginChildScope(string,System.Nullable_long_)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginChildScope(string, System.Nullable\&lt;long&gt;)">BeginChildScope(string, Nullable&lt;long&gt;)</a></p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a><br />
+A disposable handle that restores the parent scope when disposed.</p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
+No parent scope is active.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginScope(long)'></a></p>
 <h2 id="tokenbudgettrackerbeginscopelong-method">TokenBudgetTracker.BeginScope(long) Method<a class="headerlink" href="#tokenbudgettrackerbeginscopelong-method" title="Permanent link">&para;</a></h2>
 <p>Opens a token-budget scope with a total token limit.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginScope</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">maxTokens</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginScope</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">maxTokens</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginScope(long).maxTokens'></a></p>
 <p><code>maxTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
 <p>Maximum total tokens allowed.</p>
 <p>Implements <a href="../ITokenBudgetTracker/#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginScope(long)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginScope(long)">BeginScope(long)</a></p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a><br />
 A disposable handle that ends the scope when disposed.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginScope(System.Nullable_long_,System.Nullable_long_,System.Nullable_long_)'></a></p>
 <h2 id="tokenbudgettrackerbeginscopenullablelong-nullablelong-nullablelong-method">TokenBudgetTracker.BeginScope(Nullable&lt;long&gt;, Nullable&lt;long&gt;, Nullable&lt;long&gt;) Method<a class="headerlink" href="#tokenbudgettrackerbeginscopenullablelong-nullablelong-nullablelong-method" title="Permanent link">&para;</a></h2>
 <p>Opens a token-budget scope with granular limits for input, output,
 and/or total tokens. At least one limit must be specified.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginScope</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxInputTokens</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxOutputTokens</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxTotalTokens</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginScope</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxInputTokens</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxOutputTokens</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxTotalTokens</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.BeginScope(System.Nullable_long_,System.Nullable_long_,System.Nullable_long_).maxInputTokens'></a></p>
 <p><code>maxInputTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
 <p>Maximum input tokens, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for no limit.</p>
@@ -3598,19 +3621,19 @@ and/or total tokens. At least one limit must be specified.</p>
 <p><code>maxTotalTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
 <p>Maximum total tokens, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for no limit.</p>
 <p>Implements <a href="../ITokenBudgetTracker/#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginScope(System.Nullable_long_,System.Nullable_long_,System.Nullable_long_)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginScope(System.Nullable\&lt;long&gt;, System.Nullable\&lt;long&gt;, System.Nullable\&lt;long&gt;)">BeginScope(Nullable&lt;long&gt;, Nullable&lt;long&gt;, Nullable&lt;long&gt;)</a></p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a><br />
 A disposable handle that ends the scope when disposed.</p>
-<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a><br />
 All three parameters are <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long)'></a></p>
 <h2 id="tokenbudgettrackerrecordlong-method">TokenBudgetTracker.Record(long) Method<a class="headerlink" href="#tokenbudgettrackerrecordlong-method" title="Permanent link">&para;</a></h2>
 <p>Records <a href="./#NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long).tokenCount" title="NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long).tokenCount">tokenCount</a> as total tokens against the active scope's budget.
 Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM response.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">tokenCount</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">tokenCount</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long).tokenCount'></a></p>
 <p><code>tokenCount</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
 <p>Implements <a href="../ITokenBudgetTracker/#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long)">Record(long)</a></p>
@@ -3618,9 +3641,9 @@ Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM re
 <h2 id="tokenbudgettrackerrecordlong-long-method">TokenBudgetTracker.Record(long, long) Method<a class="headerlink" href="#tokenbudgettrackerrecordlong-long-method" title="Permanent link">&para;</a></h2>
 <p>Records input and output tokens separately against the active scope's budget.
 Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM response.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">inputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">outputTokens</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">inputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">outputTokens</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long,long).inputTokens'></a></p>
 <p><code>inputTokens</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetTracker.Record(long,long).outputTokens'></a></p>
