@@ -777,6 +777,10 @@
     <lastmod>2026-04-16</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/TerminationReason/</loc>
+    <lastmod>2026-04-16</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/AsyncLocalScopedAttribute/</loc>
     <lastmod>2026-04-16</lastmod>
   </url>
@@ -1398,6 +1402,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Workflows/KeywordTerminationCondition/</loc>
+    <lastmod>2026-04-16</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Workflows/ContextWindowGuardMiddleware/</loc>
     <lastmod>2026-04-16</lastmod>
   </url>
   <url>

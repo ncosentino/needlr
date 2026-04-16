@@ -3504,6 +3504,10 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../ContextWindowGuardMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddleware">ContextWindowGuardMiddleware</a></td>
+<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> safety net that estimates cumulative context             size across LLM calls and emits a warning when approaching a configurable limit.             Optionally prunes oldest non-system messages to keep context under the limit.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../TokenBudgetChatMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware">TokenBudgetChatMiddleware</a></td>
 <td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that accumulates token usage from each LLM call             into an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a> and aborts when the budget is exceeded.             Emits <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetUpdatedEvent</a> and <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetExceededEvent</a> to the             progress reporter in real-time.</td>
 </tr>
