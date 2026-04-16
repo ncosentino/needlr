@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/15/2026 - 16:26:30 |
-| Coverage date: | 04/15/2026 - 16:25:00 - 04/15/2026 - 16:26:26 |
+| Generated on: | 04/16/2026 - 04:34:22 |
+| Coverage date: | 04/16/2026 - 04:33:01 - 04/16/2026 - 04:34:19 |
 | Parser: | MultiReport (26x Cobertura) |
 | Assemblies: | 24 |
 | Classes: | 399 |
 | Files: | 396 |
-| **Line coverage:** | 81.4% (15704 of 19287) |
-| Covered lines: | 15704 |
-| Uncovered lines: | 3583 |
-| Coverable lines: | 19287 |
-| Total lines: | 47215 |
-| **Branch coverage:** | 71.4% (5929 of 8301) |
-| Covered branches: | 5929 |
+| **Line coverage:** | 81.8% (15776 of 19281) |
+| Covered lines: | 15776 |
+| Uncovered lines: | 3505 |
+| Coverable lines: | 19281 |
+| Total lines: | 47214 |
+| **Branch coverage:** | 71.7% (5960 of 8301) |
+| Covered branches: | 5960 |
 | Total branches: | 8301 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -290,17 +290,17 @@
 |NexusLabs.Needlr.Carter.Generated.TypeRegistry|76.9%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Copilot - 55.2%</summary>
+<details><summary>NexusLabs.Needlr.Copilot - 57.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Copilot**|**55.2%**|**35.9%**|
+|**NexusLabs.Needlr.Copilot**|**57.7%**|**39.8%**|
 |NexusLabs.Needlr.Copilot.ChatCompletionChunk|83.3%||
 |NexusLabs.Needlr.Copilot.ChatCompletionRequest|100%||
 |NexusLabs.Needlr.Copilot.ChatCompletionResponse|100%||
-|NexusLabs.Needlr.Copilot.CopilotChatClient|62.9%|53.4%|
+|NexusLabs.Needlr.Copilot.CopilotChatClient|74.5%|60.3%|
 |NexusLabs.Needlr.Copilot.CopilotChatClientOptions|100%||
-|NexusLabs.Needlr.Copilot.CopilotJsonContext|72.6%|41.4%|
+|NexusLabs.Needlr.Copilot.CopilotJsonContext|74.8%|46.2%|
 |NexusLabs.Needlr.Copilot.CopilotMcpToolClient|11.6%|9%|
 |NexusLabs.Needlr.Copilot.CopilotTokenProvider|95.8%|75%|
 |NexusLabs.Needlr.Copilot.CopilotTokenResponse|100%||
@@ -317,8 +317,8 @@
 |NexusLabs.Needlr.Copilot.McpResult|0%||
 |NexusLabs.Needlr.Copilot.RequestMessage|100%||
 |NexusLabs.Needlr.Copilot.RequestTool|0%||
-|NexusLabs.Needlr.Copilot.RequestToolCall|0%||
-|NexusLabs.Needlr.Copilot.RequestToolCallFunction|0%||
+|NexusLabs.Needlr.Copilot.RequestToolCall|100%||
+|NexusLabs.Needlr.Copilot.RequestToolCallFunction|100%||
 |NexusLabs.Needlr.Copilot.RequestToolFunction|0%||
 |NexusLabs.Needlr.Copilot.ResponseChoice|100%||
 |NexusLabs.Needlr.Copilot.ResponseMessage|100%||
@@ -424,17 +424,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.6%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
