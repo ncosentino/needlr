@@ -23,7 +23,32 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
         if (maxInputTokens is null && maxOutputTokens is null && maxTotalTokens is null)
             throw new ArgumentException("At least one budget limit must be specified.");
 
-        var scope = new ScopeState(maxInputTokens, maxOutputTokens, maxTotalTokens);
+        var parent = _current.Value;
+        var scope = new ScopeState(maxInputTokens, maxOutputTokens, maxTotalTokens, parent);
+        _current.Value = scope;
+        return scope;
+    }
+
+    /// <summary>
+    /// Opens a child scope with its own budget that counts against the parent.
+    /// When the child scope is disposed, its accumulated usage rolls up to the
+    /// parent scope. The child's budget is enforced independently — exceeding
+    /// the child's limit cancels the child's token without affecting the parent.
+    /// </summary>
+    /// <param name="name">Human-readable name for diagnostics (e.g., stage name).</param>
+    /// <param name="maxTokens">Maximum total tokens for this child scope, or
+    /// <see langword="null"/> for unlimited (still counts against parent).</param>
+    /// <returns>A disposable handle that rolls up usage and restores the parent scope.</returns>
+    public IDisposable BeginChildScope(string name, long? maxTokens = null)
+    {
+        var parent = _current.Value
+            ?? throw new InvalidOperationException("Cannot open a child scope without an active parent scope.");
+
+        var scope = new ScopeState(
+            maxInputTokens: null,
+            maxOutputTokens: null,
+            maxTotalTokens: maxTokens,
+            parent: parent);
         _current.Value = scope;
         return scope;
     }
@@ -68,12 +93,14 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
         private long _currentOutputTokens;
         private long _currentTotalTokens;
         private readonly CancellationTokenSource _cts = new();
+        private readonly ScopeState? _parent;
 
-        public ScopeState(long? maxInputTokens, long? maxOutputTokens, long? maxTotalTokens)
+        public ScopeState(long? maxInputTokens, long? maxOutputTokens, long? maxTotalTokens, ScopeState? parent = null)
         {
             MaxInputTokens = maxInputTokens;
             MaxOutputTokens = maxOutputTokens;
             MaxTotalTokens = maxTotalTokens;
+            _parent = parent;
         }
 
         public long? MaxInputTokens { get; }
@@ -90,6 +117,7 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
         {
             var newTotal = Interlocked.Add(ref _currentTotalTokens, tokens);
             CheckBudget(CurrentInputTokens, CurrentOutputTokens, newTotal);
+            _parent?.AddTotal(tokens);
         }
 
         public void AddDetailed(long inputTokens, long outputTokens)
@@ -98,6 +126,7 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
             var newOutput = Interlocked.Add(ref _currentOutputTokens, outputTokens);
             var newTotal = Interlocked.Add(ref _currentTotalTokens, inputTokens + outputTokens);
             CheckBudget(newInput, newOutput, newTotal);
+            _parent?.AddDetailed(inputTokens, outputTokens);
         }
 
         private void CheckBudget(long currentInput, long currentOutput, long currentTotal)
@@ -118,7 +147,7 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
 
         public void Dispose()
         {
-            _current.Value = null;
+            _current.Value = _parent;
             _cts.Dispose();
         }
     }
