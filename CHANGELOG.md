@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `AIFunction` wrapping Copilot's MCP `web_search` tool). Supports SSE streaming, automatic
   token exchange from GitHub OAuth, and configurable retry with exponential backoff. Plugs
   into the agent framework via the existing `UsingChatClient()` hook — no AF-specific
-  extensions needed. Default model is `claude-sonnet-4.6`.
+  extensions needed. Default model is `claude-sonnet-4`.
 
 #### Agent Framework
 
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   iterative loop to make LLM calls without depending on `FunctionInvokingChatClient`.
 
 - **`IterativeTripPlannerApp` example** — complex trip planner demonstrating the iterative
-  loop with a real LLM (Copilot `claude-sonnet-4.6`) and real web search (Copilot MCP
+  loop with a real LLM (Copilot `claude-sonnet-4`) and real web search (Copilot MCP
   `web_search`). Plans multi-stop NY→Tokyo trips with 3+ intermediate stops on a $3,000
   budget with hotel rating constraints, showing research phases, budget failures, route
   pivots, and 84% token savings vs FIC. Uses full DI pattern: `[AgentFunctionGroup]` tools
@@ -61,6 +61,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `IterativeContext.Workspace` to `IAgentExecutionContextAccessor` so DI-resolved tools
   can access workspace files via constructor injection.
 
+- **`TerminationReason` enum on `IterativeLoopResult`** — single discriminator for why
+  the loop stopped: `Completed`, `NaturalCompletion`, `MaxIterationsReached`,
+  `MaxToolCallsReached`, `BudgetPressure`, `Cancelled`, `Error`. Replaces the need to
+  inspect `Succeeded` + `ErrorMessage` separately.
+
+- **`MaxTotalToolCalls` on `IterativeLoopOptions`** — cumulative tool call guard across
+  all iterations. The loop truncates tool call batches to the remaining allowance before
+  execution, preventing overshoot. Terminates with `MaxToolCallsReached`.
+
+- **Budget-pressure early-exit** — when `ITokenBudgetTracker` reports usage at or above
+  `BudgetPressureThreshold` (e.g., 0.8 = 80%), the loop prepends
+  `BudgetPressureInstruction` to the next prompt and runs one final iteration before
+  terminating with `BudgetPressure`. Checked between rounds in `MultiRound` mode to
+  prevent overshoot. Threshold is validated to `[0.0, 1.0)`.
+
+- **`ContextWindowGuardMiddleware`** — `DelegatingChatClient` safety net for remaining
+  FIC-based stages. Estimates accumulated context size before each LLM call (including
+  streaming), emits `BudgetUpdatedEvent` at warning threshold and `BudgetExceededEvent`
+  at overflow. Optionally prunes oldest non-system messages. Token estimation includes
+  `TextContent`, `FunctionCallContent`, and `FunctionResultContent`.
+
+- **`ITokenBudgetTracker.BeginChildScope(name, maxTokens)`** — hierarchical budget
+  scoping. Child scopes have their own cap, roll up usage to the parent in real-time,
+  and are automatically cancelled when the parent scope is cancelled (linked CTS).
+  Child exceeding its own limit does not cancel the parent. Validates `name` is not
+  null/whitespace and `maxTokens` is positive.
+
 ### Fixed
 
 #### Agent Framework
@@ -72,6 +99,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   events from `ExecuteToolCallsAsync`, giving consumers real-time tool call visibility
   via `IProgressSink`. Falls back to `NullProgressReporter` (no-op) when no sinks are
   registered.
+
+- **`IIterativeAgentLoop` reports failure when `MaxIterations` exhausted** — previously,
+  exhausting `MaxIterations` without `IsComplete` returning `true` left `Succeeded=true`
+  with no error message. Now correctly sets `Succeeded=false` with
+  `TerminationReason.MaxIterationsReached`.
 
 - **`IIterativeAgentLoop` now records `ChatCompletionDiagnostics`** — previously,
   `Diagnostics.AggregateTokenUsage` was always zero because the loop never called
