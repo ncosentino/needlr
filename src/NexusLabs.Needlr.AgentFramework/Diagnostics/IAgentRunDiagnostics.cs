@@ -61,4 +61,11 @@ public interface IAgentRunDiagnostics
 
     /// <summary>Gets when the agent run completed.</summary>
     DateTimeOffset CompletedAt { get; }
+
+    /// <summary>
+    /// Gets the execution mode that produced these diagnostics, or
+    /// <see langword="null"/> if unknown. Known values:
+    /// <c>"FunctionInvokingChatClient"</c>, <c>"IterativeLoop"</c>.
+    /// </summary>
+    string? ExecutionMode { get; }
 }

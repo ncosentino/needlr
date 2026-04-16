@@ -59,6 +59,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         int totalToolCalls = 0;
 
         var diagnosticsBuilder = AgentRunDiagnosticsBuilder.StartNew(options.LoopName);
+        diagnosticsBuilder.SetExecutionMode("IterativeLoop");
 
         // Bridge: if an execution context accessor is available, set up a scope
         // so that DI-resolved tools can access the workspace via
@@ -317,7 +318,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         ResponseText: iterationResponseText,
                         Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
                         Duration: iterationStopwatch.Elapsed,
-                        LlmCallCount: llmCallCount));
+                        LlmCallCount: llmCallCount,
+                        ToolCallCount: iterationToolCalls.Count));
                     context.LastToolResults = iterationToolCalls;
                     break;
                 }
@@ -337,7 +339,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ResponseText: iterationResponseText,
                     Tokens: tokenUsage,
                     Duration: iterationStopwatch.Elapsed,
-                    LlmCallCount: llmCallCount));
+                    LlmCallCount: llmCallCount,
+                    ToolCallCount: iterationToolCalls.Count));
 
                 // Update context for next iteration
                 context.LastToolResults = iterationToolCalls;
@@ -417,13 +420,22 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         _diagnosticsWriter?.Set(diagnostics);
         executionContextScope?.Dispose();
 
+        var configuration = new IterativeLoopConfiguration(
+            ToolResultMode: options.ToolResultMode,
+            MaxIterations: options.MaxIterations,
+            MaxToolRoundsPerIteration: options.MaxToolRoundsPerIteration,
+            MaxTotalToolCalls: options.MaxTotalToolCalls,
+            BudgetPressureThreshold: options.BudgetPressureThreshold,
+            LoopName: options.LoopName);
+
         return new IterativeLoopResult(
             Iterations: iterations,
             FinalResponse: finalResponse,
             Diagnostics: diagnostics,
             Succeeded: succeeded,
             ErrorMessage: errorMessage,
-            Termination: termination);
+            Termination: termination,
+            Configuration: configuration);
     }
 
     private static async Task<List<ToolCallResult>> ExecuteToolCallsAsync(

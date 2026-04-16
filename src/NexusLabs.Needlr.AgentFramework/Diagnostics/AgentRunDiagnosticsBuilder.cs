@@ -40,6 +40,7 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
     private int _totalOutputMessages;
     private bool _succeeded = true;
     private string? _errorMessage;
+    private string? _executionMode;
 
     public string AgentName { get; }
 
@@ -98,6 +99,13 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
         _errorMessage = errorMessage;
     }
 
+    /// <summary>
+    /// Sets the execution mode label for these diagnostics.
+    /// Known values: <c>"FunctionInvokingChatClient"</c>, <c>"IterativeLoop"</c>.
+    /// </summary>
+    public void SetExecutionMode(string executionMode) =>
+        _executionMode = executionMode;
+
     public IAgentRunDiagnostics Build()
     {
         var completedAt = DateTimeOffset.UtcNow;
@@ -118,7 +126,8 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
             Succeeded: _succeeded,
             ErrorMessage: _errorMessage,
             StartedAt: StartedAt,
-            CompletedAt: completedAt);
+            CompletedAt: completedAt,
+            ExecutionMode: _executionMode);
     }
 
     /// <summary>Clears the builder from the current async flow.</summary>

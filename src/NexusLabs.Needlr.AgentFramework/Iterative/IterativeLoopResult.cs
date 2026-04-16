@@ -39,10 +39,16 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// and <see cref="ErrorMessage"/> separately — it provides a single discriminator
 /// for all termination paths.
 /// </param>
+/// <param name="Configuration">
+/// Snapshot of the resolved configuration used for this run. Allows consumers
+/// to inspect mode, limits, and budget settings after execution without
+/// referencing the original <see cref="IterativeLoopOptions"/>.
+/// </param>
 public sealed record IterativeLoopResult(
     IReadOnlyList<IterationRecord> Iterations,
     string? FinalResponse,
     IAgentRunDiagnostics? Diagnostics,
     bool Succeeded,
     string? ErrorMessage,
-    TerminationReason Termination);
+    TerminationReason Termination,
+    IterativeLoopConfiguration Configuration);

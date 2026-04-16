@@ -24,10 +24,14 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// <see cref="ToolResultMode.SingleCall"/>, at most 2 for
 /// <see cref="ToolResultMode.OneRoundTrip"/>.
 /// </param>
+/// <param name="ToolCallCount">
+/// Number of tool calls executed during this iteration.
+/// </param>
 public sealed record IterationRecord(
     int Iteration,
     IReadOnlyList<ToolCallResult> ToolCalls,
     string? ResponseText,
     TokenUsage Tokens,
     TimeSpan Duration,
-    int LlmCallCount);
+    int LlmCallCount,
+    int ToolCallCount);

@@ -15,4 +15,5 @@ internal sealed record AgentRunDiagnostics(
     bool Succeeded,
     string? ErrorMessage,
     DateTimeOffset StartedAt,
-    DateTimeOffset CompletedAt) : IAgentRunDiagnostics;
+    DateTimeOffset CompletedAt,
+    string? ExecutionMode = null) : IAgentRunDiagnostics;
