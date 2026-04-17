@@ -88,6 +88,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Child exceeding its own limit does not cancel the parent. Validates `name` is not
   null/whitespace and `maxTokens` is positive.
 
+- **`ChatClientFactory` on `AgentFactoryOptions`** — per-agent `IChatClient` middleware
+  injection. Wraps the global chat client for a specific agent, enabling per-agent
+  `ContextWindowGuardMiddleware` with agent-specific context limits.
+
+- **`ChatClientFactory` on `IterativeLoopOptions`** — per-loop `IChatClient` middleware
+  injection. Enables wiring `ReducingChatClient` (`MessageCountingChatReducer`) per-stage
+  to mechanically cap within-iteration conversation growth in `MultiRound` mode, making
+  O(n²) token growth structurally impossible.
+
+- **Stall detection on `IIterativeAgentLoop`** — `StallDetectionOptions` on
+  `IterativeLoopOptions` with `ConsecutiveThreshold` (default 3) and `TolerancePercent`
+  (default 10%). Compares consecutive iteration token counts and terminates with
+  `TerminationReason.StallDetected` when N iterations produce similar totals. Runs after
+  `OnIterationEnd` (hooks still fire), produces a clean termination — not an exception.
+  Prevents loops from burning through `MaxIterations` with zero useful output.
+
+- **`IterativeLoopConfiguration` on `IterativeLoopResult`** — snapshot of the resolved
+  configuration used for the run (`ToolResultMode`, `MaxIterations`,
+  `MaxToolRoundsPerIteration`, `MaxTotalToolCalls`, `BudgetPressureThreshold`, `LoopName`).
+  Consumers can inspect settings after execution without referencing the original options.
+
+- **`string? ExecutionMode` on `IAgentRunDiagnostics`** — distinguishes diagnostics
+  origin. Known values: `"IterativeLoop"`, `"FunctionInvokingChatClient"`. Open-ended
+  string (not an enum) so future execution patterns don't require interface changes.
+
+- **`ToolCallCount` on `IterationRecord`** — consistency with `LlmCallCount`.
+
+- **Richer `AgentCompletedEvent`** — optional `InputTokens`, `OutputTokens`,
+  `ToolCallCount`, and `TerminationReason` fields with backward-compatible defaults.
+
 ### Fixed
 
 #### Agent Framework
