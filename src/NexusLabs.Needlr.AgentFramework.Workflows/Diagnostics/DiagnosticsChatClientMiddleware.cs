@@ -59,7 +59,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             Timestamp: startedAt,
             WorkflowId: _progressAccessor.Current.WorkflowId,
             AgentId: _progressAccessor.Current.AgentId,
-            ParentAgentId: null,
+            ParentAgentId: builder?.ParentAgentName,
             Depth: _progressAccessor.Current.Depth,
             SequenceNumber: _progressAccessor.Current.NextSequence(),
             CallSequence: sequence));
@@ -77,7 +77,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             activity?.SetTag("agent.chat.sequence", sequence);
             activity?.SetTag("status", "success");
 
-            _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true);
+            _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
 
             var usage = response.Usage;
             var tokens = new TokenUsage(
@@ -111,7 +111,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 Timestamp: DateTimeOffset.UtcNow,
                 WorkflowId: _progressAccessor.Current.WorkflowId,
                 AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: null,
+                ParentAgentId: builder?.ParentAgentName,
                 Depth: _progressAccessor.Current.Depth,
                 SequenceNumber: _progressAccessor.Current.NextSequence(),
                 CallSequence: sequence,
@@ -130,7 +130,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("status", "failed");
 
-            _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false);
+            _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
@@ -151,7 +151,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 Timestamp: DateTimeOffset.UtcNow,
                 WorkflowId: _progressAccessor.Current.WorkflowId,
                 AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: null,
+                ParentAgentId: builder?.ParentAgentName,
                 Depth: _progressAccessor.Current.Depth,
                 SequenceNumber: _progressAccessor.Current.NextSequence(),
                 CallSequence: sequence,

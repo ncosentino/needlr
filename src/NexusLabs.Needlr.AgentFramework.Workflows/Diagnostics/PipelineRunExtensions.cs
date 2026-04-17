@@ -88,6 +88,7 @@ public static class PipelineRunExtensions
         var collector = options.CompletionCollector
             ?? diagnosticsAccessor.CompletionCollector
             ?? NullChatCompletionCollector.Instance;
+        var toolCollector = diagnosticsAccessor.ToolCallCollector;
         var progressReporterAccessor = options.ProgressReporterAccessor;
         var cancellationToken = options.CancellationToken;
         var pipelineStart = Stopwatch.StartNew();
@@ -101,6 +102,7 @@ public static class PipelineRunExtensions
         int superStepCount = 0;
 
         collector.DrainCompletions(); // drain stale
+        toolCollector?.DrainToolCalls(); // drain stale
 
         // Set the progress reporter on the AsyncLocal accessor so chat/tool middleware
         // can emit LLM call and tool call events in real-time.
@@ -246,6 +248,12 @@ public static class PipelineRunExtensions
                     .OrderBy(c => c.StartedAt)
                     .ToList();
 
+                // Drain tool calls from the collector for the fallback path.
+                var allToolCalls = toolCollector?.DrainToolCalls()
+                    ?.OrderBy(t => t.StartedAt)
+                    .ToList()
+                    ?? [];
+
                 // Filter invocations to only real agents (have response text or completions
                 // attributed by name). Skips non-agent executors like "GroupChatHost".
                 var agentInvocations = invocations
@@ -258,11 +266,17 @@ public static class PipelineRunExtensions
                 var partitioned = PartitionCompletionsByAgent(
                     allCompletions, agentInvocations);
 
+                // Partition tool calls by agent using AgentName attribution.
+                var partitionedToolCalls = PartitionToolCallsByAgent(
+                    allToolCalls, agentInvocations);
+
                 for (int i = 0; i < agentInvocations.Count; i++)
                 {
                     var executorId = agentInvocations[i];
                     var stageCompletions = i < partitioned.Count
                         ? partitioned[i] : [];
+                    var stageToolCalls = i < partitionedToolCalls.Count
+                        ? partitionedToolCalls[i] : [];
 
                     var responseText = responses.TryGetValue(executorId, out var respSb)
                         ? respSb.ToString()
@@ -281,6 +295,7 @@ public static class PipelineRunExtensions
                         responseText,
                         diagnosticsAccessor,
                         stageCompletions,
+                        stageToolCalls,
                         duration,
                         startedAt));
 
@@ -353,6 +368,7 @@ public static class PipelineRunExtensions
         string responseText,
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         IReadOnlyList<ChatCompletionDiagnostics> completions,
+        IReadOnlyList<ToolCallDiagnostics> toolCalls,
         TimeSpan turnDuration,
         DateTimeOffset turnStartedAt)
     {
@@ -377,7 +393,7 @@ public static class PipelineRunExtensions
                 TotalDuration: turnDuration,
                 AggregateTokenUsage: totalTokens,
                 ChatCompletions: completions,
-                ToolCalls: [],
+                ToolCalls: toolCalls,
                 TotalInputMessages: 0,
                 TotalOutputMessages: 0,
                 Succeeded: true,
@@ -429,5 +445,44 @@ public static class PipelineRunExtensions
         }
 
         return interleaved.Select(l => (IReadOnlyList<ChatCompletionDiagnostics>)l).ToList();
+    }
+
+    /// <summary>
+    /// Partitions tool calls by agent using the <see cref="ToolCallDiagnostics.AgentName"/>
+    /// field. Tool calls without an agent name are distributed to the first agent bucket.
+    /// </summary>
+    private static IReadOnlyList<IReadOnlyList<ToolCallDiagnostics>> PartitionToolCallsByAgent(
+        List<ToolCallDiagnostics> sorted,
+        IReadOnlyList<string> agentExecutorIds)
+    {
+        if (sorted.Count == 0 || agentExecutorIds.Count == 0)
+            return agentExecutorIds.Select(_ => (IReadOnlyList<ToolCallDiagnostics>)[]).ToList();
+
+        var buckets = agentExecutorIds
+            .Select(_ => new List<ToolCallDiagnostics>())
+            .ToList();
+
+        foreach (var tc in sorted)
+        {
+            var matched = false;
+            for (int i = 0; i < agentExecutorIds.Count; i++)
+            {
+                if (tc.AgentName is not null
+                    && (agentExecutorIds[i].Equals(tc.AgentName, StringComparison.Ordinal)
+                        || agentExecutorIds[i].StartsWith(tc.AgentName + "_", StringComparison.Ordinal)))
+                {
+                    buckets[i].Add(tc);
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched)
+            {
+                buckets[0].Add(tc);
+            }
+        }
+
+        return buckets.Select(l => (IReadOnlyList<ToolCallDiagnostics>)l).ToList();
     }
 }

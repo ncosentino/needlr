@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
@@ -13,23 +14,45 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// <see cref="IAgentMetrics"/> counters on start and completion.
 /// </summary>
 /// <remarks>
-/// Streaming <c>RunStreamingAsync()</c> passes through without diagnostics capture —
-/// the same approach taken by <see cref="Middleware.AgentResiliencePlugin"/>.
+/// Streaming <c>RunStreamingAsync()</c> logs a warning because diagnostics capture is
+/// not supported for streaming calls. This prevents silent diagnostic loss.
 /// </remarks>
-internal sealed class DiagnosticsAgentRunMiddleware
+internal sealed partial class DiagnosticsAgentRunMiddleware
 {
     private readonly string _agentName;
     private readonly IAgentDiagnosticsWriter _writer;
     private readonly IAgentMetrics _metrics;
+    private readonly ILogger _logger;
 
     internal DiagnosticsAgentRunMiddleware(
         string agentName,
         IAgentDiagnosticsWriter writer,
-        IAgentMetrics metrics)
+        IAgentMetrics metrics,
+        ILogger logger)
     {
         _agentName = agentName;
         _writer = writer;
         _metrics = metrics;
+        _logger = logger;
+    }
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Agent '{AgentName}' is using RunStreamingAsync with diagnostics configured. " +
+                  "Streaming calls bypass diagnostics capture — tool calls and chat completions " +
+                  "will not be recorded. Switch to RunAsync for full diagnostics.")]
+    private partial void LogStreamingDiagnosticsSkipped(string agentName);
+
+    internal IAsyncEnumerable<AgentResponseUpdate> HandleStreamingAsync(
+        IEnumerable<ChatMessage> messages,
+        AgentSession? session,
+        AgentRunOptions? options,
+        AIAgent innerAgent,
+        CancellationToken cancellationToken)
+    {
+        var resolvedName = !string.IsNullOrEmpty(innerAgent.Name) ? innerAgent.Name : _agentName;
+        LogStreamingDiagnosticsSkipped(resolvedName);
+        return innerAgent.RunStreamingAsync(messages, session, options, cancellationToken);
     }
 
     internal async Task<AgentResponse> HandleAsync(

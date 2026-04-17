@@ -40,4 +40,12 @@ public interface IAgentDiagnosticsAccessor
     /// does not propagate across workflow execution boundaries).
     /// </summary>
     IChatCompletionCollector? CompletionCollector => null;
+
+    /// <summary>
+    /// Gets the <see cref="IToolCallCollector"/> wired by the diagnostics system,
+    /// or <see langword="null"/> if diagnostics were not configured. Used as a fallback
+    /// when <see cref="LastRunDiagnostics"/> is unavailable (e.g., when AsyncLocal state
+    /// does not propagate across workflow execution boundaries).
+    /// </summary>
+    IToolCallCollector? ToolCallCollector => null;
 }

@@ -175,7 +175,9 @@ public static class SyringeExtensionsForAgentFramework
         services.TryAddSingleton<ITokenBudgetTracker, TokenBudgetTracker>();
         services.TryAddSingleton<IAgentExecutionContextAccessor, AgentExecutionContextAccessor>();
         services.TryAddSingleton<AgentDiagnosticsAccessor>(sp =>
-            new AgentDiagnosticsAccessor(sp.GetService<ChatCompletionCollectorHolder>()));
+            new AgentDiagnosticsAccessor(
+                sp.GetService<ChatCompletionCollectorHolder>(),
+                sp.GetService<ToolCallCollectorHolder>()));
         services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
@@ -187,6 +189,8 @@ public static class SyringeExtensionsForAgentFramework
         });
         services.TryAddSingleton<ChatCompletionCollectorHolder>();
         services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
+        services.TryAddSingleton<ToolCallCollectorHolder>();
+        services.TryAddSingleton<IToolCallCollector>(sp => sp.GetRequiredService<ToolCallCollectorHolder>());
         services.TryAddSingleton<IProgressSequence, ProgressSequenceProvider>();
         services.TryAddSingleton<IProgressReporterAccessor, ProgressReporterAccessor>();
         services.TryAddSingleton<IProgressReporterErrorHandler, NullProgressReporterErrorHandler>();

@@ -204,7 +204,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                             Succeeded: false,
                             ErrorMessage: ex.Message,
                             StartedAt: completionStartedAt,
-                            CompletedAt: DateTimeOffset.UtcNow));
+                            CompletedAt: DateTimeOffset.UtcNow)
+                        {
+                            AgentName = diagnosticsBuilder.AgentName
+                        });
                         diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                         throw;
                     }
@@ -241,7 +244,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         Succeeded: true,
                         ErrorMessage: null,
                         StartedAt: completionStartedAt,
-                        CompletedAt: DateTimeOffset.UtcNow));
+                        CompletedAt: DateTimeOffset.UtcNow)
+                    {
+                        AgentName = diagnosticsBuilder.AgentName
+                    });
                     diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                     diagnosticsBuilder.RecordOutputMessageCount(responseMessageCount);
 
@@ -534,7 +540,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ErrorMessage: errorResult.ErrorMessage,
                     StartedAt: startedAt,
                     CompletedAt: DateTimeOffset.UtcNow,
-                    CustomMetrics: null));
+                    CustomMetrics: null)
+                {
+                    AgentName = diagnosticsBuilder.AgentName
+                });
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -573,7 +582,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ErrorMessage: null,
                     StartedAt: startedAt,
                     CompletedAt: DateTimeOffset.UtcNow,
-                    CustomMetrics: null));
+                    CustomMetrics: null)
+                {
+                    AgentName = diagnosticsBuilder.AgentName
+                });
 
                 reporter?.Report(new ToolCallCompletedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -611,7 +623,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ErrorMessage: ex.Message,
                     StartedAt: startedAt,
                     CompletedAt: DateTimeOffset.UtcNow,
-                    CustomMetrics: null));
+                    CustomMetrics: null)
+                {
+                    AgentName = diagnosticsBuilder.AgentName
+                });
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,

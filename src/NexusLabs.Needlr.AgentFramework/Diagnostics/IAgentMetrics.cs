@@ -30,13 +30,15 @@ public interface IAgentMetrics
     /// <param name="toolName">The tool that was invoked.</param>
     /// <param name="duration">How long the tool call took.</param>
     /// <param name="succeeded">Whether the tool call succeeded.</param>
-    void RecordToolCall(string toolName, TimeSpan duration, bool succeeded);
+    /// <param name="agentName">The name of the agent that invoked the tool, or <see langword="null"/> if unknown.</param>
+    void RecordToolCall(string toolName, TimeSpan duration, bool succeeded, string? agentName = null);
 
     /// <summary>Records a completed LLM chat completion call.</summary>
     /// <param name="model">The model identifier.</param>
     /// <param name="duration">How long the completion took.</param>
     /// <param name="succeeded">Whether the completion succeeded.</param>
-    void RecordChatCompletion(string model, TimeSpan duration, bool succeeded);
+    /// <param name="agentName">The name of the agent that triggered the completion, or <see langword="null"/> if unknown.</param>
+    void RecordChatCompletion(string model, TimeSpan duration, bool succeeded, string? agentName = null);
 
     /// <summary>
     /// Gets the <see cref="System.Diagnostics.ActivitySource"/> for creating distributed

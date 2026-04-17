@@ -26,6 +26,7 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
 
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _chatCompletions = new();
     private readonly ConcurrentQueue<ToolCallDiagnostics> _toolCalls = new();
+    private readonly AgentRunDiagnosticsBuilder? _previousBuilder;
 
     private int _nextChatCompletionSequence;
     private int _nextToolCallSequence;
@@ -44,20 +45,31 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
 
     public string AgentName { get; }
 
+    /// <summary>
+    /// Gets the name of the parent (outer) agent when this builder was created
+    /// inside a nested sub-agent run, or <see langword="null"/> if this is a
+    /// top-level agent.
+    /// </summary>
+    public string? ParentAgentName => _previousBuilder?.AgentName;
+
     public DateTimeOffset StartedAt { get; }
 
-    private AgentRunDiagnosticsBuilder(string agentName)
+    private AgentRunDiagnosticsBuilder(string agentName, AgentRunDiagnosticsBuilder? previous)
     {
         AgentName = agentName;
         StartedAt = DateTimeOffset.UtcNow;
+        _previousBuilder = previous;
     }
 
     /// <summary>
     /// Creates a new builder and stores it in the current async flow so middleware can access it.
+    /// If a builder already exists (nested sub-agent scenario), the previous builder is saved
+    /// and restored when this builder is disposed.
     /// </summary>
     public static AgentRunDiagnosticsBuilder StartNew(string agentName)
     {
-        var builder = new AgentRunDiagnosticsBuilder(agentName);
+        var previous = CurrentBuilder.Value;
+        var builder = new AgentRunDiagnosticsBuilder(agentName, previous);
         CurrentBuilder.Value = builder;
         return builder;
     }
@@ -134,8 +146,9 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
     public static void ClearCurrent() => CurrentBuilder.Value = null;
 
     /// <summary>
-    /// Clears this builder from the current async flow. Equivalent to calling
-    /// <see cref="ClearCurrent"/> but usable in a <c>using</c> statement.
+    /// Restores the previous builder (if any) to the current async flow. If this builder
+    /// was created inside a nested sub-agent run, the outer agent's builder is restored.
+    /// Otherwise equivalent to <see cref="ClearCurrent"/>.
     /// </summary>
-    public void Dispose() => ClearCurrent();
+    public void Dispose() => CurrentBuilder.Value = _previousBuilder;
 }

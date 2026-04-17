@@ -42,4 +42,12 @@ public sealed record ToolCallDiagnostics(
     string? ErrorMessage,
     DateTimeOffset StartedAt,
     DateTimeOffset CompletedAt,
-    IReadOnlyDictionary<string, object?>? CustomMetrics);
+    IReadOnlyDictionary<string, object?>? CustomMetrics)
+{
+    /// <summary>
+    /// The name of the agent that triggered this tool call, or <see langword="null"/>
+    /// if the agent name was not available. Used to attribute tool calls to the
+    /// correct agent in multi-agent workflows where diagnostics are aggregated.
+    /// </summary>
+    public string? AgentName { get; init; }
+}

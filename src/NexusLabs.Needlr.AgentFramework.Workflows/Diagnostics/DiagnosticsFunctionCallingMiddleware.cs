@@ -14,7 +14,11 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// </summary>
 internal static class DiagnosticsFunctionCallingMiddleware
 {
-    internal static void Wire(AIAgentBuilder builder, IAgentMetrics metrics, IProgressReporterAccessor progressAccessor)
+    internal static void Wire(
+        AIAgentBuilder builder,
+        IAgentMetrics metrics,
+        IProgressReporterAccessor progressAccessor,
+        IToolCallCollector? toolCallCollector = null)
     {
         FunctionInvocationDelegatingAgentBuilderExtensions.Use(
             builder,
@@ -30,12 +34,13 @@ internal static class DiagnosticsFunctionCallingMiddleware
                 using var activity = metrics.ActivitySource.StartActivity($"agent.tool {toolName}", ActivityKind.Internal);
                 activity?.SetTag("agent.tool.name", toolName);
                 activity?.SetTag("agent.tool.sequence", sequence);
+                activity?.SetTag("gen_ai.agent.name", diagnosticsBuilder?.AgentName);
 
                 progressAccessor.Current.Report(new ToolCallStartedEvent(
                     Timestamp: startedAt,
                     WorkflowId: progressAccessor.Current.WorkflowId,
                     AgentId: progressAccessor.Current.AgentId,
-                    ParentAgentId: null,
+                    ParentAgentId: diagnosticsBuilder?.ParentAgentName,
                     Depth: progressAccessor.Current.Depth,
                     SequenceNumber: progressAccessor.Current.NextSequence(),
                     ToolName: toolName));
@@ -56,9 +61,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
                             activity.SetTag($"tool.custom.{key}", value);
                     }
 
-                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: true);
+                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: true, agentName: diagnosticsBuilder?.AgentName);
 
-                    diagnosticsBuilder?.AddToolCall(new ToolCallDiagnostics(
+                    var toolDiag = new ToolCallDiagnostics(
                         Sequence: sequence,
                         ToolName: toolName,
                         Duration: stopwatch.Elapsed,
@@ -66,13 +71,18 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         ErrorMessage: null,
                         StartedAt: startedAt,
                         CompletedAt: DateTimeOffset.UtcNow,
-                        CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
+                        CustomMetrics: customMetrics.Count > 0 ? customMetrics : null)
+                    {
+                        AgentName = diagnosticsBuilder?.AgentName
+                    };
+                    diagnosticsBuilder?.AddToolCall(toolDiag);
+                    (toolCallCollector as ToolCallCollector)?.Add(toolDiag);
 
                     progressAccessor.Current.Report(new ToolCallCompletedEvent(
                         Timestamp: DateTimeOffset.UtcNow,
                         WorkflowId: progressAccessor.Current.WorkflowId,
                         AgentId: progressAccessor.Current.AgentId,
-                        ParentAgentId: null,
+                        ParentAgentId: diagnosticsBuilder?.ParentAgentName,
                         Depth: progressAccessor.Current.Depth,
                         SequenceNumber: progressAccessor.Current.NextSequence(),
                         ToolName: toolName,
@@ -88,9 +98,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     activity?.SetTag("status", "failed");
 
-                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: false);
+                    metrics.RecordToolCall(toolName, stopwatch.Elapsed, succeeded: false, agentName: diagnosticsBuilder?.AgentName);
 
-                    diagnosticsBuilder?.AddToolCall(new ToolCallDiagnostics(
+                    var failedToolDiag = new ToolCallDiagnostics(
                         Sequence: sequence,
                         ToolName: toolName,
                         Duration: stopwatch.Elapsed,
@@ -98,13 +108,18 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         ErrorMessage: ex.Message,
                         StartedAt: startedAt,
                         CompletedAt: DateTimeOffset.UtcNow,
-                        CustomMetrics: customMetrics.Count > 0 ? customMetrics : null));
+                        CustomMetrics: customMetrics.Count > 0 ? customMetrics : null)
+                    {
+                        AgentName = diagnosticsBuilder?.AgentName
+                    };
+                    diagnosticsBuilder?.AddToolCall(failedToolDiag);
+                    (toolCallCollector as ToolCallCollector)?.Add(failedToolDiag);
 
                     progressAccessor.Current.Report(new ToolCallFailedEvent(
                         Timestamp: DateTimeOffset.UtcNow,
                         WorkflowId: progressAccessor.Current.WorkflowId,
                         AgentId: progressAccessor.Current.AgentId,
-                        ParentAgentId: null,
+                        ParentAgentId: diagnosticsBuilder?.ParentAgentName,
                         Depth: progressAccessor.Current.Depth,
                         SequenceNumber: progressAccessor.Current.NextSequence(),
                         ToolName: toolName,

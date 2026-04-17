@@ -102,24 +102,41 @@ internal sealed class AgentMetrics : IAgentMetrics, IDisposable
     }
 
     /// <inheritdoc />
-    public void RecordToolCall(string toolName, TimeSpan duration, bool succeeded)
+    public void RecordToolCall(string toolName, TimeSpan duration, bool succeeded, string? agentName = null)
     {
         var status = succeeded ? "success" : "failed";
         KeyValuePair<string, object?> toolTag = new("tool_name", toolName);
         KeyValuePair<string, object?> statusTag = new("status", status);
 
-        _toolCallsCompleted.Add(1, toolTag, statusTag);
-        _toolCallDuration.Record(duration.TotalSeconds, toolTag, statusTag);
+        if (agentName is not null)
+        {
+            KeyValuePair<string, object?> agentTag = new("agent_name", agentName);
+            _toolCallsCompleted.Add(1, toolTag, statusTag, agentTag);
+            _toolCallDuration.Record(duration.TotalSeconds, toolTag, statusTag, agentTag);
+        }
+        else
+        {
+            _toolCallsCompleted.Add(1, toolTag, statusTag);
+            _toolCallDuration.Record(duration.TotalSeconds, toolTag, statusTag);
+        }
     }
 
     /// <inheritdoc />
-    public void RecordChatCompletion(string model, TimeSpan duration, bool succeeded)
+    public void RecordChatCompletion(string model, TimeSpan duration, bool succeeded, string? agentName = null)
     {
         var status = succeeded ? "success" : "failed";
-        _chatCompletionDuration.Record(
-            duration.TotalSeconds,
-            new KeyValuePair<string, object?>("model", model),
-            new KeyValuePair<string, object?>("status", status));
+        KeyValuePair<string, object?> modelTag = new("model", model);
+        KeyValuePair<string, object?> statusTag = new("status", status);
+
+        if (agentName is not null)
+        {
+            KeyValuePair<string, object?> agentTag = new("agent_name", agentName);
+            _chatCompletionDuration.Record(duration.TotalSeconds, modelTag, statusTag, agentTag);
+        }
+        else
+        {
+            _chatCompletionDuration.Record(duration.TotalSeconds, modelTag, statusTag);
+        }
     }
 
     /// <summary>Disposes the underlying <see cref="Meter"/> and <see cref="System.Diagnostics.ActivitySource"/>.</summary>

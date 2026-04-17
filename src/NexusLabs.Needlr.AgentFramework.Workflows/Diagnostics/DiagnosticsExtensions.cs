@@ -36,6 +36,11 @@ public static class DiagnosticsExtensions
             var holder = opts.ServiceProvider.GetRequiredService<ChatCompletionCollectorHolder>();
             holder.SetCollector(chatMiddleware);
 
+            // Register the tool call collector via the DI-managed holder.
+            var toolCallCollector = new ToolCallCollector();
+            var toolCallHolder = opts.ServiceProvider.GetRequiredService<ToolCallCollectorHolder>();
+            toolCallHolder.SetCollector(toolCallCollector);
+
             var existingFactory = opts.ChatClientFactory;
             opts.ChatClientFactory = sp =>
             {

@@ -11,10 +11,14 @@ internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor, IAge
 {
     private static readonly AsyncLocal<Holder?> Current = new();
     private readonly IChatCompletionCollector? _completionCollector;
+    private readonly IToolCallCollector? _toolCallCollector;
 
-    internal AgentDiagnosticsAccessor(ChatCompletionCollectorHolder? completionCollector = null)
+    internal AgentDiagnosticsAccessor(
+        ChatCompletionCollectorHolder? completionCollector = null,
+        ToolCallCollectorHolder? toolCallCollector = null)
     {
         _completionCollector = completionCollector;
+        _toolCallCollector = toolCallCollector;
     }
 
     /// <inheritdoc />
@@ -22,6 +26,9 @@ internal sealed class AgentDiagnosticsAccessor : IAgentDiagnosticsAccessor, IAge
 
     /// <inheritdoc />
     public IChatCompletionCollector? CompletionCollector => _completionCollector;
+
+    /// <inheritdoc />
+    public IToolCallCollector? ToolCallCollector => _toolCallCollector;
 
     /// <inheritdoc />
     public IDisposable BeginCapture()
