@@ -155,7 +155,7 @@ public class AgentScenarioRunnerTests
         scenario.Setup(s => s.SystemPrompt).Returns("You are a test agent.");
         scenario.Setup(s => s.UserPrompt).Returns("What is the answer?");
         scenario.Setup(s => s.SeedWorkspace(It.IsAny<IWorkspace>()))
-            .Callback<IWorkspace>(ws => ws.WriteFile("seed.txt", "seeded"));
+            .Callback<IWorkspace>(ws => ws.TryWriteFile("seed.txt", "seeded"));
         scenario.Setup(s => s.Verify(It.IsAny<IWorkspace>(), It.IsAny<IAgentRunDiagnostics?>()));
 
         var result = await runner.RunAsync(scenario.Object, TestContext.Current.CancellationToken);

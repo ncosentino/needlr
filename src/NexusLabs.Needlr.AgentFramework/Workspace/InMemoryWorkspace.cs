@@ -23,19 +23,20 @@ public sealed class InMemoryWorkspace : IWorkspace
         new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
-    public string ReadFile(string path)
+    public WorkspaceResult<ReadFileResult> TryReadFile(string path)
     {
         var normalized = NormalizePath(path);
         return _files.TryGetValue(normalized, out var content)
-            ? content
-            : throw new FileNotFoundException($"File not found: {normalized}", normalized);
+            ? WorkspaceResult<ReadFileResult>.Ok(new ReadFileResult(normalized, content))
+            : WorkspaceResult<ReadFileResult>.Fail(new FileNotFoundException($"File not found: {normalized}", normalized));
     }
 
     /// <inheritdoc />
-    public void WriteFile(string path, string content)
+    public WorkspaceResult<WriteFileResult> TryWriteFile(string path, string content)
     {
         var normalized = NormalizePath(path);
         _files[normalized] = content;
+        return WorkspaceResult<WriteFileResult>.Ok(new WriteFileResult(normalized, content.Length));
     }
 
     /// <inheritdoc />
@@ -49,10 +50,10 @@ public sealed class InMemoryWorkspace : IWorkspace
     /// <inheritdoc />
     public ReadOnlyMemory<char> ReadFileAsMemory(string path)
     {
-        var normalized = NormalizePath(path);
-        return _files.TryGetValue(normalized, out var content)
-            ? content.AsMemory()
-            : throw new FileNotFoundException($"File not found: {normalized}", normalized);
+        var result = TryReadFile(path);
+        return result.Success
+            ? result.Value.Content.AsMemory()
+            : throw result.Exception!;
     }
 
     /// <inheritdoc />
@@ -140,19 +141,21 @@ public sealed class InMemoryWorkspace : IWorkspace
     }
 
     /// <inheritdoc />
-    public bool CompareExchange(string path, string expectedContent, string newContent)
+    public WorkspaceResult<CompareExchangeResult> TryCompareExchange(string path, string expectedContent, string newContent)
     {
         var normalized = NormalizePath(path);
 
         if (!_files.TryGetValue(normalized, out var current))
-            return false;
+            return WorkspaceResult<CompareExchangeResult>.Fail(
+                new FileNotFoundException($"File not found: {normalized}", normalized));
 
         if (!string.Equals(current, expectedContent, StringComparison.Ordinal))
-            return false;
+            return WorkspaceResult<CompareExchangeResult>.Ok(
+                new CompareExchangeResult(false, "Content mismatch — file was modified since last read."));
 
-        // ConcurrentDictionary.TryUpdate uses reference equality for the comparand,
-        // so we pass the exact reference we just read.
-        return _files.TryUpdate(normalized, newContent, current);
+        var exchanged = _files.TryUpdate(normalized, newContent, current);
+        return WorkspaceResult<CompareExchangeResult>.Ok(
+            new CompareExchangeResult(exchanged, exchanged ? null : "Concurrent modification during exchange."));
     }
 
     /// <summary>

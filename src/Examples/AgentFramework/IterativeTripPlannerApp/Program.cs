@@ -100,7 +100,7 @@ var maxStops = int.Parse(tripConfig["MaxStops"] ?? "5");
 var minStops = int.Parse(tripConfig["MinStops"] ?? "3");
 var budget = tripConfig["Budget"] ?? "3000";
 
-workspace.WriteFile("config.json", JsonSerializer.Serialize(new
+workspace.SeedFile("config.json", JsonSerializer.Serialize(new
 {
     origin,
     destination,
@@ -116,8 +116,8 @@ workspace.WriteFile("config.json", JsonSerializer.Serialize(new
         "Use web_search to research real flights and hotel prices",
     },
 }));
-workspace.WriteFile("itinerary.json", "[]");
-workspace.WriteFile("status.json", JsonSerializer.Serialize(new
+workspace.SeedFile("itinerary.json", "[]");
+workspace.SeedFile("status.json", JsonSerializer.Serialize(new
 {
     phase = "research",
     validated = false,
@@ -130,7 +130,7 @@ var iterationStopwatch = System.Diagnostics.Stopwatch.StartNew();
 string BuildPrompt(IterativeContext ctx)
 {
     var ws = ctx.Workspace;
-    var statusJson = ws.ReadFile("status.json");
+    var statusJson = ws.TryReadFile("status.json").Value.Content;
     var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
     var phase = status.GetValueOrDefault("phase", "research").ToString()!.ToUpperInvariant();
 
@@ -139,20 +139,20 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine();
 
     sb.AppendLine("## Trip Configuration");
-    sb.AppendLine(ws.ReadFile("config.json"));
+    sb.AppendLine(ws.TryReadFile("config.json").Value.Content);
     sb.AppendLine();
 
     sb.AppendLine("## Current Status");
-    sb.AppendLine(ws.ReadFile("status.json"));
+    sb.AppendLine(ws.TryReadFile("status.json").Value.Content);
     sb.AppendLine();
 
     sb.AppendLine("## Current Itinerary");
-    sb.AppendLine(ws.ReadFile("itinerary.json"));
+    sb.AppendLine(ws.TryReadFile("itinerary.json").Value.Content);
     sb.AppendLine();
 
     if (ws.FileExists("research-notes.md"))
     {
-        var notes = ws.ReadFile("research-notes.md");
+        var notes = ws.TryReadFile("research-notes.md").Value.Content;
         if (notes.Length > 0)
         {
             sb.AppendLine("## Research Notes (from previous web searches)");
@@ -163,7 +163,7 @@ string BuildPrompt(IterativeContext ctx)
 
     foreach (var path in ws.GetFilePaths().Where(p => p.StartsWith("hotel-")))
     {
-        var content = ws.ReadFile(path);
+        var content = ws.TryReadFile(path).Value.Content;
         if (!string.IsNullOrWhiteSpace(content))
         {
             sb.AppendLine($"## Hotel Booking ({path})");
@@ -200,12 +200,12 @@ string BuildPrompt(IterativeContext ctx)
     sb.AppendLine("6. FINALIZE: Once validated, call finalize_trip with a markdown summary.");
     sb.AppendLine();
 
-    var itineraryJson = ws.ReadFile("itinerary.json");
+    var itineraryJson = ws.TryReadFile("itinerary.json").Value.Content;
     var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
     var hasHotels = ws.GetFilePaths().Any(p =>
-        p.StartsWith("hotel-") && !string.IsNullOrWhiteSpace(ws.ReadFile(p)));
+        p.StartsWith("hotel-") && !string.IsNullOrWhiteSpace(ws.TryReadFile(p).Value.Content));
     var isValidated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
-    var configJson = ws.ReadFile("config.json");
+    var configJson = ws.TryReadFile("config.json").Value.Content;
     var configData = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
     var reqMinStops = int.Parse(configData.GetValueOrDefault("minStops", 3).ToString()!);
 
@@ -284,7 +284,7 @@ var options = new IterativeLoopOptions
         // Read workspace from IterativeContext (not captured closure)
         if (!ctx.Workspace.FileExists("status.json")) return false;
         var status = JsonSerializer.Deserialize<Dictionary<string, object>>(
-            ctx.Workspace.ReadFile("status.json"))!;
+            ctx.Workspace.TryReadFile("status.json").Value.Content)!;
         return status.TryGetValue("finalized", out var f) && f.ToString() == "True";
     },
     ToolResultMode = ToolResultMode.OneRoundTrip,
@@ -295,7 +295,7 @@ var options = new IterativeLoopOptions
     // the LLM from skipping validation and finalizing an invalid trip.
     ToolFilter = (iteration, ctx, allTools) =>
     {
-        var statusJson = ctx.Workspace.ReadFile("status.json");
+        var statusJson = ctx.Workspace.TryReadFile("status.json").Value.Content;
         var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
         var validated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
 
@@ -318,7 +318,7 @@ var options = new IterativeLoopOptions
         }
         iterationStopwatch.Restart();
 
-        var statusJson = ctx.Workspace.ReadFile("status.json");
+        var statusJson = ctx.Workspace.TryReadFile("status.json").Value.Content;
         var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
         var phase = status.GetValueOrDefault("phase", "research").ToString()!.ToUpperInvariant();
 
@@ -328,7 +328,7 @@ var options = new IterativeLoopOptions
         Console.Write($"  [{phase}]");
         Console.ResetColor();
 
-        var workspaceSize = ctx.Workspace.GetFilePaths().Sum(p => ctx.Workspace.ReadFile(p).Length);
+        var workspaceSize = ctx.Workspace.GetFilePaths().Sum(p => ctx.Workspace.TryReadFile(p).Value.Content.Length);
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine($"  (workspace: {workspaceSize:N0} chars across {ctx.Workspace.GetFilePaths().Count()} files)");
         Console.ResetColor();
@@ -346,7 +346,7 @@ var options = new IterativeLoopOptions
         if (name == "web_search" && resultStr.Length > 0)
         {
             var existing = workspace.FileExists("research-notes.md")
-                ? workspace.ReadFile("research-notes.md")
+                ? workspace.TryReadFile("research-notes.md").Value.Content
                 : "";
             var query = toolCallResult.Arguments.TryGetValue("query", out var q)
                 ? q?.ToString() ?? "unknown"
@@ -355,7 +355,7 @@ var options = new IterativeLoopOptions
             var updated = existing + entry;
             if (updated.Length > 3000)
                 updated = updated[^3000..];
-            workspace.WriteFile("research-notes.md", updated);
+            workspace.TryWriteFile("research-notes.md", updated);
         }
 
         // Summarize tool results for clean console output
@@ -570,7 +570,7 @@ Console.WriteLine();
 Console.WriteLine("═══ Final Workspace Files ═══");
 foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
 {
-    var content = workspace.ReadFile(file);
+    var content = workspace.TryReadFile(file).Value.Content;
     var preview = content.Length > 200 ? content[..197] + "..." : content;
     Console.WriteLine($"  📄 {file} ({content.Length:N0} chars)");
     foreach (var line in preview.Split('\n').Take(6))

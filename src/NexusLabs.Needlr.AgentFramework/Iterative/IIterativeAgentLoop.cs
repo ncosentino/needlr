@@ -40,7 +40,7 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 ///     PromptFactory = ctx =>
 ///     {
 ///         var itinerary = ctx.Workspace.FileExists("itinerary.json")
-///             ? ctx.Workspace.ReadFile("itinerary.json")
+///             ? ctx.Workspace.TryReadFile("itinerary.json").Value.Content
 ///             : "No legs planned yet.";
 ///         return $"Plan a 7-day trip to Japan. Current itinerary:\n{itinerary}";
 ///     },

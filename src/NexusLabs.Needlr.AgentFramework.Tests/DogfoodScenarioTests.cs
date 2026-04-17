@@ -74,7 +74,7 @@ public class DogfoodScenarioTests
 
         public void SeedWorkspace(IWorkspace workspace)
         {
-            workspace.WriteFile("readme.md", "# Test Workspace");
+            workspace.TryWriteFile("readme.md", "# Test Workspace");
         }
 
         public void Verify(IWorkspace workspace, IAgentRunDiagnostics? diagnostics)

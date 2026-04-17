@@ -18,11 +18,10 @@ namespace NexusLabs.Needlr.AgentFramework.Workspace;
 public interface IWorkspace
 {
     /// <summary>Reads the entire content of a file.</summary>
-    /// <exception cref="FileNotFoundException">The file does not exist.</exception>
-    string ReadFile(string path);
+    WorkspaceResult<ReadFileResult> TryReadFile(string path);
 
     /// <summary>Writes content to a file, creating or overwriting it.</summary>
-    void WriteFile(string path, string content);
+    WorkspaceResult<WriteFileResult> TryWriteFile(string path, string content);
 
     /// <summary>Returns whether a file exists at the given path.</summary>
     bool FileExists(string path);
@@ -38,9 +37,8 @@ public interface IWorkspace
     /// <remarks>
     /// Callers that enumerate lines (e.g., <c>MemoryExtensions.EnumerateLines()</c>) benefit
     /// from the zero-copy path. Callers that need a <see cref="string"/> should use
-    /// <see cref="ReadFile"/> instead.
+    /// <see cref="TryReadFile"/> instead.
     /// </remarks>
-    /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     ReadOnlyMemory<char> ReadFileAsMemory(string path);
 
     /// <summary>
@@ -56,13 +54,13 @@ public interface IWorkspace
 
     /// <summary>
     /// Atomically replaces file content only if the current content matches
-    /// <paramref name="expectedContent"/>. Returns <see langword="true"/> if the swap
-    /// succeeded, <see langword="false"/> if the content had changed.
+    /// <paramref name="expectedContent"/>. Returns a structured result indicating
+    /// whether the exchange succeeded and why it failed if it didn't.
     /// </summary>
     /// <remarks>
     /// Enables optimistic concurrency for multi-agent pipelines where multiple agents
     /// may edit the same file. Callers read, transform, then CAS — if another agent
     /// wrote in between, the CAS fails and the caller can re-read and retry.
     /// </remarks>
-    bool CompareExchange(string path, string expectedContent, string newContent);
+    WorkspaceResult<CompareExchangeResult> TryCompareExchange(string path, string expectedContent, string newContent);
 }

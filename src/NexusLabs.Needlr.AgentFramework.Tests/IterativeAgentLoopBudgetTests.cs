@@ -165,7 +165,7 @@ public sealed class IterativeAgentLoopBudgetTests
 
         var loop = CreateLoop(mockChat);
         var workspace = new InMemoryWorkspace();
-        workspace.WriteFile("done.txt", "");
+        workspace.SeedFile("done.txt", "");
 
         var options = new IterativeLoopOptions
         {

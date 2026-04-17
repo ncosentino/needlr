@@ -12,19 +12,19 @@ public class InMemoryWorkspaceTests
     public void WriteFile_ThenReadFile_ReturnsContent()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("test.txt", "hello world");
+        ws.SeedFile("test.txt", "hello world");
 
-        Assert.Equal("hello world", ws.ReadFile("test.txt"));
+        Assert.Equal("hello world", ws.TryReadFile("test.txt").Value.Content);
     }
 
     [Fact]
     public void WriteFile_Overwrites_ExistingContent()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("test.txt", "v1");
-        ws.WriteFile("test.txt", "v2");
+        ws.SeedFile("test.txt", "v1");
+        ws.TryWriteFile("test.txt", "v2");
 
-        Assert.Equal("v2", ws.ReadFile("test.txt"));
+        Assert.Equal("v2", ws.TryReadFile("test.txt").Value.Content);
     }
 
     [Fact]
@@ -32,7 +32,9 @@ public class InMemoryWorkspaceTests
     {
         var ws = new InMemoryWorkspace();
 
-        Assert.Throws<FileNotFoundException>(() => ws.ReadFile("missing.txt"));
+        var result = ws.TryReadFile("missing.txt");
+        Assert.False(result.Success);
+        Assert.IsType<FileNotFoundException>(result.Exception);
     }
 
     // -------------------------------------------------------------------------
@@ -43,7 +45,7 @@ public class InMemoryWorkspaceTests
     public void FileExists_ExistingFile_ReturnsTrue()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("test.txt", "content");
+        ws.SeedFile("test.txt", "content");
 
         Assert.True(ws.FileExists("test.txt"));
     }
@@ -64,9 +66,9 @@ public class InMemoryWorkspaceTests
     public void GetFilePaths_ReturnsAllPaths()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("a.txt", "a");
-        ws.WriteFile("b.txt", "b");
-        ws.WriteFile("dir/c.txt", "c");
+        ws.SeedFile("a.txt", "a");
+        ws.SeedFile("b.txt", "b");
+        ws.SeedFile("dir/c.txt", "c");
 
         var paths = ws.GetFilePaths().OrderBy(p => p).ToList();
 
@@ -92,17 +94,17 @@ public class InMemoryWorkspaceTests
     public void Paths_AreNormalized_BackslashToForward()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile(@"dir\sub\file.txt", "content");
+        ws.SeedFile(@"dir\sub\file.txt", "content");
 
         Assert.True(ws.FileExists("dir/sub/file.txt"));
-        Assert.Equal("content", ws.ReadFile("dir/sub/file.txt"));
+        Assert.Equal("content", ws.TryReadFile("dir/sub/file.txt").Value.Content);
     }
 
     [Fact]
     public void Paths_LeadingSlash_IsTrimmed()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("/root/file.txt", "content");
+        ws.SeedFile("/root/file.txt", "content");
 
         Assert.True(ws.FileExists("root/file.txt"));
     }
@@ -111,10 +113,10 @@ public class InMemoryWorkspaceTests
     public void Paths_AreCaseInsensitive()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("File.TXT", "content");
+        ws.SeedFile("File.TXT", "content");
 
         Assert.True(ws.FileExists("file.txt"));
-        Assert.Equal("content", ws.ReadFile("FILE.TXT"));
+        Assert.Equal("content", ws.TryReadFile("FILE.TXT").Value.Content);
     }
 
     // -------------------------------------------------------------------------
@@ -125,34 +127,37 @@ public class InMemoryWorkspaceTests
     public void CompareExchange_MatchingContent_SwapsAndReturnsTrue()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("doc.md", "version 1");
+        ws.SeedFile("doc.md", "version 1");
 
-        var result = ws.CompareExchange("doc.md", "version 1", "version 2");
+        var result = ws.TryCompareExchange("doc.md", "version 1", "version 2");
 
-        Assert.True(result);
-        Assert.Equal("version 2", ws.ReadFile("doc.md"));
+        Assert.True(result.Success);
+        Assert.True(result.Value.Exchanged);
+        Assert.Equal("version 2", ws.TryReadFile("doc.md").Value.Content);
     }
 
     [Fact]
     public void CompareExchange_MismatchedContent_ReturnsFalse()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("doc.md", "version 1");
+        ws.SeedFile("doc.md", "version 1");
 
-        var result = ws.CompareExchange("doc.md", "wrong content", "version 2");
+        var result = ws.TryCompareExchange("doc.md", "wrong content", "version 2");
 
-        Assert.False(result);
-        Assert.Equal("version 1", ws.ReadFile("doc.md"));
+        Assert.True(result.Success);
+        Assert.False(result.Value.Exchanged);
+        Assert.Equal("version 1", ws.TryReadFile("doc.md").Value.Content);
     }
 
     [Fact]
-    public void CompareExchange_NonExistentFile_ReturnsFalse()
+    public void TryCompareExchange_NonExistentFile_ReturnsFail()
     {
         var ws = new InMemoryWorkspace();
 
-        var result = ws.CompareExchange("missing.md", "any", "new");
+        var result = ws.TryCompareExchange("missing.md", "any", "new");
 
-        Assert.False(result);
+        Assert.False(result.Success);
+        Assert.IsType<FileNotFoundException>(result.Exception);
     }
 
     // -------------------------------------------------------------------------
@@ -166,7 +171,7 @@ public class InMemoryWorkspaceTests
         ws.SeedFile("setup.txt", "seeded content");
 
         Assert.True(ws.FileExists("setup.txt"));
-        Assert.Equal("seeded content", ws.ReadFile("setup.txt"));
+        Assert.Equal("seeded content", ws.TryReadFile("setup.txt").Value.Content);
     }
 
     // -------------------------------------------------------------------------
@@ -180,7 +185,7 @@ public class InMemoryWorkspaceTests
         var ct = TestContext.Current.CancellationToken;
 
         var tasks = Enumerable.Range(0, 100).Select(i =>
-            Task.Run(() => ws.WriteFile($"file-{i}.txt", $"content-{i}"), ct));
+            Task.Run(() => ws.TryWriteFile($"file-{i}.txt", $"content-{i}"), ct));
 
         await Task.WhenAll(tasks);
 
@@ -195,7 +200,7 @@ public class InMemoryWorkspaceTests
     public void ReadFileAsMemory_ExistingFile_ReturnsContent()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("test.md", "# Hello\n\nWorld");
+        ws.SeedFile("test.md", "# Hello\n\nWorld");
 
         var memory = ws.ReadFileAsMemory("test.md");
 
@@ -214,7 +219,7 @@ public class InMemoryWorkspaceTests
     public void ReadFileAsMemory_CanEnumerateLines()
     {
         var ws = new InMemoryWorkspace();
-        ws.WriteFile("lines.txt", "line1\nline2\nline3");
+        ws.SeedFile("lines.txt", "line1\nline2\nline3");
 
         var memory = ws.ReadFileAsMemory("lines.txt");
         var lineCount = 0;

@@ -26,7 +26,7 @@ internal sealed class NoteFunctions(IAgentExecutionContextAccessor contextAccess
         if (!ctx.Properties.TryGetValue("workspace", out var wsObj) || wsObj is not IWorkspace workspace)
             return "No workspace configured — note not saved.";
 
-        workspace.WriteFile(filename, content);
+        workspace.TryWriteFile(filename, content);
         return $"Saved note to {filename} ({content.Length} chars).";
     }
 }

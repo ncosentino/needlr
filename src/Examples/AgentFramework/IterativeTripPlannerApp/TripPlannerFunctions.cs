@@ -40,7 +40,7 @@ internal sealed class TripPlannerFunctions(
     public string AddLeg(string from, string to, string airline, string flight, int price, string duration)
     {
         var workspace = Workspace;
-        var itineraryJson = workspace.ReadFile("itinerary.json");
+        var itineraryJson = workspace.TryReadFile("itinerary.json").Value.Content;
         var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
 
         // Route continuity: new leg must connect to the existing chain
@@ -56,7 +56,7 @@ internal sealed class TripPlannerFunctions(
         }
         else
         {
-            var configJson = workspace.ReadFile("config.json");
+            var configJson = workspace.TryReadFile("config.json").Value.Content;
             var config = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
             var origin = config["origin"].ToString()!;
             if (!CityMatch(from, origin))
@@ -76,7 +76,7 @@ internal sealed class TripPlannerFunctions(
             ["price"] = price,
             ["duration"] = duration,
         });
-        workspace.WriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
+        workspace.TryWriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
         return $"Added leg {legs.Count}: {from} → {to} on {airline} {flight} (${price}, {duration})";
     }
 
@@ -86,7 +86,7 @@ internal sealed class TripPlannerFunctions(
     public string RemoveLeg(int legNumber)
     {
         var workspace = Workspace;
-        var itineraryJson = workspace.ReadFile("itinerary.json");
+        var itineraryJson = workspace.TryReadFile("itinerary.json").Value.Content;
         var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
         if (legNumber < 1 || legNumber > legs.Count)
             return $"Error: leg {legNumber} not found (have {legs.Count} legs)";
@@ -94,7 +94,7 @@ internal sealed class TripPlannerFunctions(
         legs.RemoveAt(legNumber - 1);
         for (int i = 0; i < legs.Count; i++)
             legs[i]["leg"] = i + 1;
-        workspace.WriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
+        workspace.TryWriteFile("itinerary.json", JsonSerializer.Serialize(legs, new JsonSerializerOptions { WriteIndented = true }));
         var remaining = legs.Count == 0
             ? "Itinerary is now empty."
             : $"Remaining {legs.Count} leg(s): " + string.Join(" → ",
@@ -108,18 +108,18 @@ internal sealed class TripPlannerFunctions(
     public string ClearItinerary()
     {
         var workspace = Workspace;
-        workspace.WriteFile("itinerary.json", "[]");
+        workspace.TryWriteFile("itinerary.json", "[]");
 
         var hotelFiles = workspace.GetFilePaths().Where(p => p.StartsWith("hotel-")).ToList();
         foreach (var hf in hotelFiles)
-            workspace.WriteFile(hf, "");
+            workspace.TryWriteFile(hf, "");
 
-        var statusJson = workspace.ReadFile("status.json");
+        var statusJson = workspace.TryReadFile("status.json").Value.Content;
         var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
         status["phase"] = "research";
         status["validated"] = false;
         status["overBudgetAttempts"] = 0;
-        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
+        workspace.TryWriteFile("status.json", JsonSerializer.Serialize(status));
 
         return $"Cleared all legs and {hotelFiles.Count} hotel booking(s). "
             + "Itinerary is empty. Use web_search to research a new route.";
@@ -137,7 +137,7 @@ internal sealed class TripPlannerFunctions(
 
         var workspace = Workspace;
         var key = $"hotel-{city.ToLowerInvariant().Replace(' ', '-')}.json";
-        workspace.WriteFile(key, JsonSerializer.Serialize(new
+        workspace.TryWriteFile(key, JsonSerializer.Serialize(new
         {
             hotel,
             city,
@@ -157,7 +157,7 @@ internal sealed class TripPlannerFunctions(
         var key = $"hotel-{city.ToLowerInvariant().Replace(' ', '-')}.json";
         if (!workspace.FileExists(key))
             return $"No hotel found for {city}";
-        workspace.WriteFile(key, "");
+        workspace.TryWriteFile(key, "");
         return $"Removed hotel booking in {city}";
     }
 
@@ -166,8 +166,8 @@ internal sealed class TripPlannerFunctions(
     public string ValidateTrip()
     {
         var workspace = Workspace;
-        var configJson = workspace.ReadFile("config.json");
-        var itineraryJson = workspace.ReadFile("itinerary.json");
+        var configJson = workspace.TryReadFile("config.json").Value.Content;
+        var itineraryJson = workspace.TryReadFile("itinerary.json").Value.Content;
         var config = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
         var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson)!;
         var budgetVal = int.Parse(config["budget"].ToString()!);
@@ -178,7 +178,7 @@ internal sealed class TripPlannerFunctions(
         var hotelCost = 0;
         foreach (var path in workspace.GetFilePaths().Where(p => p.StartsWith("hotel-")))
         {
-            var content = workspace.ReadFile(path);
+            var content = workspace.TryReadFile(path).Value.Content;
             if (string.IsNullOrWhiteSpace(content)) continue;
             var hotelData = JsonSerializer.Deserialize<Dictionary<string, object>>(content)!;
             hotelCost += int.Parse(hotelData["total"].ToString()!);
@@ -189,7 +189,7 @@ internal sealed class TripPlannerFunctions(
         var originCity = config["origin"].ToString()!;
         var destCity = config["destination"].ToString()!;
 
-        var statusJson = workspace.ReadFile("status.json");
+        var statusJson = workspace.TryReadFile("status.json").Value.Content;
         var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
         var overBudgetAttempts = status.TryGetValue("overBudgetAttempts", out var oba)
             ? int.Parse(oba.ToString()!)
@@ -199,7 +199,7 @@ internal sealed class TripPlannerFunctions(
         {
             overBudgetAttempts++;
             status["overBudgetAttempts"] = overBudgetAttempts;
-            workspace.WriteFile("status.json", JsonSerializer.Serialize(status, new JsonSerializerOptions { WriteIndented = true }));
+            workspace.TryWriteFile("status.json", JsonSerializer.Serialize(status, new JsonSerializerOptions { WriteIndented = true }));
 
             var overBy = totalCost - budgetVal;
             var action = overBudgetAttempts >= 3
@@ -256,7 +256,7 @@ internal sealed class TripPlannerFunctions(
         foreach (var intermCity in intermediateCities)
         {
             var cityKey = $"hotel-{intermCity.ToLowerInvariant().Replace(' ', '-')}.json";
-            if (!workspace.FileExists(cityKey) || string.IsNullOrWhiteSpace(workspace.ReadFile(cityKey)))
+            if (!workspace.FileExists(cityKey) || string.IsNullOrWhiteSpace(workspace.TryReadFile(cityKey).Value.Content))
             {
                 issues.Add(new
                 {
@@ -267,7 +267,7 @@ internal sealed class TripPlannerFunctions(
             }
             else
             {
-                var hotelData = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.ReadFile(cityKey))!;
+                var hotelData = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.TryReadFile(cityKey).Value.Content)!;
                 if (hotelData.TryGetValue("rating", out var ratingObj) &&
                     double.TryParse(ratingObj.ToString(), out var rating) && rating < 3.5)
                 {
@@ -326,7 +326,7 @@ internal sealed class TripPlannerFunctions(
         status["phase"] = issues.Count == 0 ? "finalize" : "fix";
         if (issues.Count == 0)
             status["overBudgetAttempts"] = 0;
-        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
+        workspace.TryWriteFile("status.json", JsonSerializer.Serialize(status));
 
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
@@ -336,10 +336,10 @@ internal sealed class TripPlannerFunctions(
     public string FinalizeTrip(string summary)
     {
         var workspace = Workspace;
-        workspace.WriteFile("trip-summary.md", summary);
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.ReadFile("status.json"))!;
+        workspace.TryWriteFile("trip-summary.md", summary);
+        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(workspace.TryReadFile("status.json").Value.Content)!;
         status["finalized"] = true;
-        workspace.WriteFile("status.json", JsonSerializer.Serialize(status));
+        workspace.TryWriteFile("status.json", JsonSerializer.Serialize(status));
         return "Trip finalized and summary saved.";
     }
 
@@ -353,7 +353,7 @@ internal sealed class TripPlannerFunctions(
     {
         var workspace = Workspace;
         var existing = workspace.FileExists("research-notes.md")
-            ? workspace.ReadFile("research-notes.md")
+            ? workspace.TryReadFile("research-notes.md").Value.Content
             : "";
 
         // Cap at ~3000 chars to keep prompt size reasonable
@@ -361,7 +361,7 @@ internal sealed class TripPlannerFunctions(
         if (updated.Length > 3000)
             updated = updated[^3000..];
 
-        workspace.WriteFile("research-notes.md", updated);
+        workspace.TryWriteFile("research-notes.md", updated);
         return $"Research notes saved ({updated.Length} chars total).";
     }
 

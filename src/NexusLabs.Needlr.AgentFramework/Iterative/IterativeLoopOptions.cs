@@ -32,7 +32,7 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 ///     PromptFactory = ctx =>
 ///     {
 ///         var article = ctx.Workspace.FileExists("article.md")
-///             ? ctx.Workspace.ReadFile("article.md")
+///             ? ctx.Workspace.TryReadFile("article.md").Value.Content
 ///             : "(empty)";
 ///         return $"Continue writing. Current article:\n{article}";
 ///     },
@@ -214,7 +214,7 @@ public sealed class IterativeLoopOptions
     /// <code>
     /// ToolFilter = (iteration, ctx, allTools) =>
     /// {
-    ///     var phase = ctx.Workspace.ReadFile("status.json");
+    ///     var phase = ctx.Workspace.TryReadFile("status.json").Value.Content;
     ///     var allowed = phase.Contains("research")
     ///         ? new[] { "search" }
     ///         : new[] { "add_leg", "book_hotel", "validate_trip" };

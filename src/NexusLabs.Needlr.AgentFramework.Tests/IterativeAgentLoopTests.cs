@@ -244,7 +244,7 @@ public sealed class IterativeAgentLoopTests
 
         var tool = CreateTool("write_stuff", () =>
         {
-            workspace.WriteFile("output.txt", "hello");
+            workspace.TryWriteFile("output.txt", "hello");
             return "written";
         });
 
@@ -325,7 +325,7 @@ public sealed class IterativeAgentLoopTests
         var workspace = new InMemoryWorkspace();
         var tool = CreateTool("mark_done", () =>
         {
-            workspace.WriteFile("done.txt", "yes");
+            workspace.TryWriteFile("done.txt", "yes");
             return "marked";
         });
 
@@ -477,13 +477,13 @@ public sealed class IterativeAgentLoopTests
 
         var writeTool = CreateTool("write_file", () =>
         {
-            workspace.WriteFile("data.txt", "iteration-data");
+            workspace.TryWriteFile("data.txt", "iteration-data");
             return "written";
         });
 
         var readTool = CreateTool("read_file", () =>
         {
-            readContent = workspace.ReadFile("data.txt");
+            readContent = workspace.TryReadFile("data.txt").Value.Content;
             return readContent;
         });
 
@@ -1412,7 +1412,7 @@ public sealed class IterativeAgentLoopTests
         var loop = CreateLoop(mockChat, executionContextAccessor: contextAccessor);
 
         var ctx = CreateContext();
-        ctx.Workspace.WriteFile("data.txt", "hello");
+        ctx.Workspace.TryWriteFile("data.txt", "hello");
 
         var result = await loop.RunAsync(
             CreateOptions(tools: [tool]),
@@ -1420,7 +1420,7 @@ public sealed class IterativeAgentLoopTests
             TestContext.Current.CancellationToken);
 
         Assert.NotNull(capturedWorkspace);
-        Assert.Equal("hello", capturedWorkspace!.ReadFile("data.txt"));
+        Assert.Equal("hello", capturedWorkspace!.TryReadFile("data.txt").Value.Content);
     }
 
     [Fact]
@@ -1580,14 +1580,14 @@ public sealed class IterativeAgentLoopTests
             });
 
         var workspace = new InMemoryWorkspace();
-        workspace.WriteFile("phase.txt", "research");
+        workspace.SeedFile("phase.txt", "research");
 
         var loop = CreateLoop(mockChat);
         var options = CreateOptions(maxIterations: 1);
         options.ToolFilter = (iteration, ctx, tools) =>
         {
             capturedIterations.Add(iteration);
-            capturedFileContents.Add(ctx.Workspace.ReadFile("phase.txt"));
+            capturedFileContents.Add(ctx.Workspace.TryReadFile("phase.txt").Value.Content);
             return tools;
         };
 

@@ -175,7 +175,7 @@ if (workspaceFiles.Count > 0)
     foreach (var file in workspaceFiles)
     {
         Console.WriteLine($"  [{file}]:");
-        Console.WriteLine($"    {workspace.ReadFile(file)}");
+        Console.WriteLine($"    {workspace.TryReadFile(file).Value.Content}");
     }
     Console.WriteLine();
 }
