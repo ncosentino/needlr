@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/16/2026 - 15:03:25 |
-| Coverage date: | 04/16/2026 - 15:01:52 - 04/16/2026 - 15:03:20 |
+| Generated on: | 04/17/2026 - 00:16:08 |
+| Coverage date: | 04/17/2026 - 00:14:37 - 04/17/2026 - 00:16:05 |
 | Parser: | MultiReport (26x Cobertura) |
 | Assemblies: | 24 |
-| Classes: | 400 |
-| Files: | 397 |
-| **Line coverage:** | 81.9% (15951 of 19469) |
-| Covered lines: | 15951 |
-| Uncovered lines: | 3518 |
-| Coverable lines: | 19469 |
-| Total lines: | 47634 |
-| **Branch coverage:** | 71.8% (6066 of 8437) |
-| Covered branches: | 6066 |
-| Total branches: | 8437 |
+| Classes: | 402 |
+| Files: | 399 |
+| **Line coverage:** | 81.9% (16008 of 19535) |
+| Covered lines: | 16008 |
+| Uncovered lines: | 3527 |
+| Coverable lines: | 19535 |
+| Total lines: | 47860 |
+| **Branch coverage:** | 71.9% (6086 of 8461) |
+| Covered branches: | 6086 |
+| Total branches: | 8461 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,12 +62,12 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 84.4%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 84.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**84.4%**|**81.9%**|
-|NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|89.7%|
+|**NexusLabs.Needlr.AgentFramework**|**84.5%**|**81.9%**|
+|NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|90%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap|81.3%|54.5%|
@@ -94,7 +94,7 @@
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentDiagnosticsAccessor|100%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentMetrics|100%|90%|
-|NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnostics|91.6%||
+|NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnostics|84.6%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentStageResult|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionCollectorHolder|100%||
@@ -124,13 +124,15 @@
 |NexusLabs.Needlr.AgentFramework.Generated.TypeRegistry|0%||
 |NexusLabs.Needlr.AgentFramework.Iterative.ChatClientAccessor|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord|100%||
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96%|87%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.3%|88.4%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeContext|100%||
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|95.6%|62.5%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration|100%||
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|96%|62.5%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult|100%||
+|NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions|83.3%|50%|
 |NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult|71.4%||
 |NexusLabs.Needlr.AgentFramework.NeedlrAiAgentAttribute|100%||
-|NexusLabs.Needlr.AgentFramework.Progress.AgentCompletedEvent|20%||
+|NexusLabs.Needlr.AgentFramework.Progress.AgentCompletedEvent|14.2%||
 |NexusLabs.Needlr.AgentFramework.Progress.AgentFailedEvent|33.3%||
 |NexusLabs.Needlr.AgentFramework.Progress.AgentHandoffEvent|22.2%||
 |NexusLabs.Needlr.AgentFramework.Progress.AgentInvokedEvent|25%||

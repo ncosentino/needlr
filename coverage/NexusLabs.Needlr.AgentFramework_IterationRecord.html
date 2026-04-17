@@ -41,7 +41,7 @@
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="7">7</td>
+<td class="limit-width right" title="8">8</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="7">7</td>
+<td class="limit-width right" title="8">8</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="33">33</td>
+<td class="limit-width right" title="37">37</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="7 of 7">100%</td>
+<td class="limit-width right" title="8 of 8">100%</td>
 </tr>
 </table>
 </div>
@@ -107,13 +107,14 @@
 </colgroup>
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32)"><a href="#file0_line27" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Iteration()"><a href="#file0_line28" class="navigatetohash">get_Iteration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ToolCalls()"><a href="#file0_line29" class="navigatetohash">get_ToolCalls()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ResponseText()"><a href="#file0_line30" class="navigatetohash">get_ResponseText()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Tokens()"><a href="#file0_line31" class="navigatetohash">get_Tokens()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Duration()"><a href="#file0_line32" class="navigatetohash">get_Duration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_LlmCallCount()"><a href="#file0_line33" class="navigatetohash">get_LlmCallCount()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title=".ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32,System.Int32)"><a href="#file0_line30" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Iteration()"><a href="#file0_line31" class="navigatetohash">get_Iteration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ToolCalls()"><a href="#file0_line32" class="navigatetohash">get_ToolCalls()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ResponseText()"><a href="#file0_line33" class="navigatetohash">get_ResponseText()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Tokens()"><a href="#file0_line34" class="navigatetohash">get_Tokens()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Duration()"><a href="#file0_line35" class="navigatetohash">get_Duration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_LlmCallCount()"><a href="#file0_line36" class="navigatetohash">get_LlmCallCount()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ToolCallCount()"><a href="#file0_line37" class="navigatetohash">get_ToolCallCount()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -149,27 +150,32 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line24"></a><code>24</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;see&nbsp;cref=&quot;ToolResultMode.SingleCall&quot;/&gt;,&nbsp;at&nbsp;most&nbsp;2&nbsp;for</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line25"></a><code>25</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;see&nbsp;cref=&quot;ToolResultMode.OneRoundTrip&quot;/&gt;.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line26"></a><code>26</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;/param&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (73 visits)" data-coverage="{'AllTestMethods': {'VC': '73', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">73</td><td class="rightmargin right"><a id="file0_line27"></a><code>27</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterationRecord(</code></td></tr>
-<tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line28"></a><code>28</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;Iteration,</code></td></tr>
-<tr class="coverableline" title="Covered (9 visits)" data-coverage="{'AllTestMethods': {'VC': '9', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">9</td><td class="rightmargin right"><a id="file0_line29"></a><code>29</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IReadOnlyList&lt;ToolCallResult&gt;&nbsp;ToolCalls,</code></td></tr>
-<tr class="coverableline" title="Covered (14 visits)" data-coverage="{'AllTestMethods': {'VC': '14', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">14</td><td class="rightmargin right"><a id="file0_line30"></a><code>30</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;ResponseText,</code></td></tr>
-<tr class="coverableline" title="Covered (11 visits)" data-coverage="{'AllTestMethods': {'VC': '11', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">11</td><td class="rightmargin right"><a id="file0_line31"></a><code>31</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;TokenUsage&nbsp;Tokens,</code></td></tr>
-<tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line32"></a><code>32</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;TimeSpan&nbsp;Duration,</code></td></tr>
-<tr class="coverableline" title="Covered (79 visits)" data-coverage="{'AllTestMethods': {'VC': '79', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">79</td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;LlmCallCount);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line27"></a><code>27</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;ToolCallCount&quot;&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line28"></a><code>28</code></td><td></td><td class="lightgray"><code>///&nbsp;Number&nbsp;of&nbsp;tool&nbsp;calls&nbsp;executed&nbsp;during&nbsp;this&nbsp;iteration.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line29"></a><code>29</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;/param&gt;</code></td></tr>
+<tr class="coverableline" title="Covered (102 visits)" data-coverage="{'AllTestMethods': {'VC': '102', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">102</td><td class="rightmargin right"><a id="file0_line30"></a><code>30</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterationRecord(</code></td></tr>
+<tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line31"></a><code>31</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;Iteration,</code></td></tr>
+<tr class="coverableline" title="Covered (10 visits)" data-coverage="{'AllTestMethods': {'VC': '10', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">10</td><td class="rightmargin right"><a id="file0_line32"></a><code>32</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IReadOnlyList&lt;ToolCallResult&gt;&nbsp;ToolCalls,</code></td></tr>
+<tr class="coverableline" title="Covered (19 visits)" data-coverage="{'AllTestMethods': {'VC': '19', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">19</td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;ResponseText,</code></td></tr>
+<tr class="coverableline" title="Covered (41 visits)" data-coverage="{'AllTestMethods': {'VC': '41', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">41</td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;TokenUsage&nbsp;Tokens,</code></td></tr>
+<tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;TimeSpan&nbsp;Duration,</code></td></tr>
+<tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;LlmCallCount,</code></td></tr>
+<tr class="coverableline" title="Covered (104 visits)" data-coverage="{'AllTestMethods': {'VC': '104', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">104</td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;ToolCallCount);</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/16/2026 - 15:03:24<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/17/2026 - 00:16:08<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
-<a href="#file0_line27" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32)"><i class="icon-cube"></i>.ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32)</a><br />
-<a href="#file0_line28" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Iteration()"><i class="icon-wrench"></i>get_Iteration()</a><br />
-<a href="#file0_line29" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ToolCalls()"><i class="icon-wrench"></i>get_ToolCalls()</a><br />
-<a href="#file0_line30" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ResponseText()"><i class="icon-wrench"></i>get_ResponseText()</a><br />
-<a href="#file0_line31" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Tokens()"><i class="icon-wrench"></i>get_Tokens()</a><br />
-<a href="#file0_line32" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Duration()"><i class="icon-wrench"></i>get_Duration()</a><br />
-<a href="#file0_line33" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_LlmCallCount()"><i class="icon-wrench"></i>get_LlmCallCount()</a><br />
+<a href="#file0_line30" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32,System.Int32)"><i class="icon-cube"></i>.ctor(System.Int32,System.Collections.Generic.IReadOnlyList`1&lt;NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult&gt;,System.String,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,System.Int32,System.Int32)</a><br />
+<a href="#file0_line31" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Iteration()"><i class="icon-wrench"></i>get_Iteration()</a><br />
+<a href="#file0_line32" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ToolCalls()"><i class="icon-wrench"></i>get_ToolCalls()</a><br />
+<a href="#file0_line33" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ResponseText()"><i class="icon-wrench"></i>get_ResponseText()</a><br />
+<a href="#file0_line34" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Tokens()"><i class="icon-wrench"></i>get_Tokens()</a><br />
+<a href="#file0_line35" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Duration()"><i class="icon-wrench"></i>get_Duration()</a><br />
+<a href="#file0_line36" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_LlmCallCount()"><i class="icon-wrench"></i>get_LlmCallCount()</a><br />
+<a href="#file0_line37" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ToolCallCount()"><i class="icon-wrench"></i>get_ToolCallCount()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

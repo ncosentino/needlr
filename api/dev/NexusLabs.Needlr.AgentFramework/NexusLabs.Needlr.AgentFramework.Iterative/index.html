@@ -3512,12 +3512,20 @@
 <td style="text-align: left;">Mutable state passed to the prompt factory and <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate on each iteration of an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a>.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../IterativeLoopConfiguration/" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration">IterativeLoopConfiguration</a></td>
+<td style="text-align: left;">Snapshot of the resolved configuration used for an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a> run. Echoed on <a href="../IterativeLoopResult/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult.Configuration" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult.Configuration">Configuration</a> so consumers can inspect the loop's settings after execution without referencing the original <a href="../IterativeLoopOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions">IterativeLoopOptions</a>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../IterativeLoopOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions">IterativeLoopOptions</a></td>
 <td style="text-align: left;">Configuration for a single run of an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IterativeLoopResult/" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult">IterativeLoopResult</a></td>
 <td style="text-align: left;">The result of running an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a> to completion, including per-iteration records, aggregate diagnostics, and the final model response.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StallDetectionOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions">StallDetectionOptions</a></td>
+<td style="text-align: left;">Configuration for iterative loop stall detection.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ToolCallResult/" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult">ToolCallResult</a></td>

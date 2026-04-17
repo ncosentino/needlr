@@ -3528,6 +3528,12 @@ iteration before terminating.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason.Error'></a></p>
 <p><code>Error</code> 6</p>
 <p>An unrecoverable error occurred (prompt factory failure, LLM exception, etc.).</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason.StallDetected'></a></p>
+<p><code>StallDetected</code> 7</p>
+<p>The loop detected that consecutive iterations produced nearly identical
+token usage, indicating the LLM is repeating the same work without
+making progress. Controlled by
+<a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.StallDetection" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.StallDetection">StallDetection</a>.</p>
 
 
 
