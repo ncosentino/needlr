@@ -3545,12 +3545,21 @@ ensuring parallel tool calls are ordered by invocation time, not completion time
 </span></code></pre></div>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.SetExecutionMode(string)'></a></p>
+<h2 id="agentrundiagnosticsbuildersetexecutionmodestring-method">AgentRunDiagnosticsBuilder.SetExecutionMode(string) Method<a class="headerlink" href="#agentrundiagnosticsbuildersetexecutionmodestring-method" title="Permanent link">&para;</a></h2>
+<p>Sets the execution mode label for these diagnostics.
+Known values: <code>"FunctionInvokingChatClient"</code>, <code>"IterativeLoop"</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SetExecutionMode</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">executionMode</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.SetExecutionMode(string).executionMode'></a></p>
+<p><code>executionMode</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)'></a></p>
 <h2 id="agentrundiagnosticsbuilderstartnewstring-method">AgentRunDiagnosticsBuilder.StartNew(string) Method<a class="headerlink" href="#agentrundiagnosticsbuilderstartnewstring-method" title="Permanent link">&para;</a></h2>
 <p>Creates a new builder and stores it in the current async flow so middleware can access it.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="n">StartNew</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentName</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="n">StartNew</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentName</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string).agentName'></a></p>
 <p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
