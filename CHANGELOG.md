@@ -141,6 +141,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and failure paths, and calls `RecordFailure()` for prompt-factory exceptions and
   cancellation.
 
+- **Diagnostic attribution across multi-agent pipelines** — `ToolCallDiagnostics` and
+  `ChatCompletionDiagnostics` previously had no way to identify which agent produced
+  them, so workflow runs with sub-agents lost tool-call and LLM-call attribution.
+  Added `AgentName` and `ParentAgentId` init-only properties to both diagnostic
+  records and wired them through `DiagnosticsFunctionCallingMiddleware`,
+  `DiagnosticsAgentRunMiddleware`, and `IterativeAgentLoop`.
+  `AgentRunDiagnosticsBuilder` is now stack-safe for nested sub-agents via
+  `_previousBuilder` save/restore. Workflows gain a fallback tool-call capture path
+  via a new `IToolCallCollector` with an `AsyncLocal` holder, so streaming scenarios
+  that bypass the middleware still surface tool calls. Added a
+  `nexuslabs.agent.name` activity tag for OpenTelemetry correlation.
+  `DiagnosticsAgentRunMiddleware` now logs a warning when streaming paths bypass
+  diagnostics. Covered by 15 new tests in `DiagnosticAttributionTests` and a new
+  `DiagnosticAttributionApp` example with a mock `IChatClient`.
+
 ### Removed
 
 #### Agent Framework
@@ -159,6 +174,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 #### Agent Framework
+
+- **`IAgentMetrics.RecordToolCall` and `RecordChatCompletion` gain an `agentName`
+  dimension** — both methods now require an `agentName` parameter (may be `null`)
+  and emit it as a metric tag. **Breaking** for custom `IAgentMetrics`
+  implementations; the built-in `AgentMetrics` is updated. Call sites that don't
+  know the agent name can pass `null`.
 
 - **`IProgressReporterFactory` default sink resolution** — the `Create(workflowId)`
   overload now resolves default sinks exclusively from DI-registered `IProgressSink`
