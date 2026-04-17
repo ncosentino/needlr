@@ -633,8 +633,11 @@ internal static class AgentDiscoveryHelper
 
     public static string GetFullyQualifiedName(ITypeSymbol typeSymbol) =>
         "global::" + typeSymbol.ToDisplayString(
-            SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
-                SymbolDisplayGlobalNamespaceStyle.Omitted));
+            SymbolDisplayFormat.FullyQualifiedFormat
+                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
+                .WithMiscellaneousOptions(
+                    SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions
+                        & ~SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
 
     public static string SanitizeIdentifier(string name)
     {

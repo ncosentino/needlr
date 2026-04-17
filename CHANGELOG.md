@@ -122,6 +122,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Agent Framework
 
+- **Source generator emitted invalid `global::string[]` for primitive-alias array parameters**
+  on agent functions — any `[AgentFunction]` method taking `string[]`, `int[]`, `long[]`,
+  `bool[]`, `double[]`, `float[]`, or `decimal[]` produced uncompilable generated code
+  because `SymbolDisplayFormat.FullyQualifiedFormat` emits C# keyword aliases, and
+  prepending `global::` to a keyword is invalid. Fixed by stripping
+  `SymbolDisplayMiscellaneousOptions.UseSpecialTypes` from the FQN format used when
+  emitting parameter types — primitives now emit as `global::System.String[]`,
+  `global::System.Int32[]`, etc. Scalar primitive parameters were unaffected (already
+  special-cased). Added regression coverage via a `TagTopics(string[], int[])` example
+  in `SimpleAgentFrameworkApp.Agents`.
+
 - **`IIterativeAgentLoop` now emits `ToolCallStartedEvent`/`ToolCallCompletedEvent`/
   `ToolCallFailedEvent` to the progress system** — previously, these event types were
   defined but only emitted by `DiagnosticsFunctionCallingMiddleware` (which the iterative

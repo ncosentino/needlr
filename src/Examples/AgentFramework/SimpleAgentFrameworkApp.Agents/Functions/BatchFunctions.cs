@@ -34,6 +34,24 @@ internal sealed class BatchFunctions
     [AgentFunction]
     [Description("Returns all recorded feedback entries.")]
     public FeedbackEntry[] GetAllFeedback() => _feedback.ToArray();
+
+    /// <summary>
+    /// Exercises primitive-alias array parameters (<c>string[]</c>, <c>int[]</c>) through
+    /// the source generator. Regression coverage for the generator bug where
+    /// <c>SymbolDisplayFormat.FullyQualifiedFormat</c> emitted <c>global::string</c> /
+    /// <c>global::int</c> — which is invalid C# — instead of <c>global::System.String</c> /
+    /// <c>global::System.Int32</c>.
+    /// </summary>
+    [AgentFunction]
+    [Description("Tags a set of topics with integer priority scores. Demonstrates primitive array parameters.")]
+    public string TagTopics(
+        [Description("Array of topic names to tag.")]
+        string[] topics,
+        [Description("Array of priority scores (1-10) corresponding to each topic.")]
+        int[] priorities)
+    {
+        return $"Tagged {topics.Length} topic(s) with {priorities.Length} priority score(s).";
+    }
 }
 
 /// <summary>
