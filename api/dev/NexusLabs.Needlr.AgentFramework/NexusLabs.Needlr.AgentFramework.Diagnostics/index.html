@@ -3524,6 +3524,10 @@
 <td style="text-align: left;">Token usage breakdown for a single LLM call or aggregate across an agent run.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ToolCallCollectorHolder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallCollectorHolder">ToolCallCollectorHolder</a></td>
+<td style="text-align: left;">DI-registered singleton that holds the <a href="../IToolCallCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolCallCollector">IToolCallCollector</a> instance. The diagnostics middleware sets the real collector during factory construction; consumers resolve this to access it. Unlike a static holder, each DI container has its own instance, making it testable and thread-safe across containers.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ToolCallDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallDiagnostics">ToolCallDiagnostics</a></td>
 <td style="text-align: left;">Diagnostics for a single tool/function invocation within an agent run.</td>
 </tr>
@@ -3568,6 +3572,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IPipelineRunResult/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult">IPipelineRunResult</a></td>
 <td style="text-align: left;">Aggregated result of a multi-agent pipeline run, providing per-stage diagnostics alongside the response text from each agent.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IToolCallCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolCallCollector">IToolCallCollector</a></td>
+<td style="text-align: left;">Provides access to per-tool-call diagnostics captured by the function-calling middleware. Used by pipeline run extensions to prevent silent tool call data loss when AsyncLocal diagnostics builders don't propagate across workflow infrastructure.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IToolMetricsAccessor/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolMetricsAccessor">IToolMetricsAccessor</a></td>

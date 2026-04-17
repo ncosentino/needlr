@@ -3625,11 +3625,22 @@ A disposable handle that ends the scope when disposed.</p>
 <h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a><br />
 All three parameters are <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BeginTrackingScope()'></a></p>
+<h2 id="itokenbudgettrackerbegintrackingscope-method">ITokenBudgetTracker.BeginTrackingScope() Method<a class="headerlink" href="#itokenbudgettrackerbegintrackingscope-method" title="Permanent link">&para;</a></h2>
+<p>Opens a pure tracking scope with no budget limits. Token usage is accumulated
+via <a href="./#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long)">Record(long)</a> and <a href="./#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long,long)" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long, long)">Record(long, long)</a> but no
+cancellation or enforcement occurs. Use this when you need visibility into
+token usage without restricting it.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginTrackingScope</span><span class="p">();</span>
+</span></code></pre></div>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a><br />
+A disposable handle that ends the tracking scope when disposed.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long)'></a></p>
 <h2 id="itokenbudgettrackerrecordlong-method">ITokenBudgetTracker.Record(long) Method<a class="headerlink" href="#itokenbudgettrackerrecordlong-method" title="Permanent link">&para;</a></h2>
 <p>Records <a href="./#NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long).tokenCount" title="NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long).tokenCount">tokenCount</a> as total tokens against the active scope's budget.
 Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM response.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">tokenCount</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">tokenCount</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long).tokenCount'></a></p>
@@ -3637,8 +3648,8 @@ Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM re
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long,long)'></a></p>
 <h2 id="itokenbudgettrackerrecordlong-long-method">ITokenBudgetTracker.Record(long, long) Method<a class="headerlink" href="#itokenbudgettrackerrecordlong-long-method" title="Permanent link">&para;</a></h2>
 <p>Records input and output tokens separately against the active scope's budget.
-Called automatically by <code>TokenBudgetChatMiddleware</code> after each LLM response.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">inputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">outputTokens</span><span class="p">);</span>
+Called automatically by <code>TokenUsageRecordingMiddleware</code> after each LLM response.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">Record</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">inputTokens</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">outputTokens</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.Record(long,long).inputTokens'></a></p>

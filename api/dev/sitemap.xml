@@ -457,6 +457,10 @@
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Workflows/TokenUsageRecordingMiddleware/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Workflows/PipelineRunExtensions/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
@@ -757,6 +761,10 @@
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/ReadFileResult/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.Context/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
@@ -865,6 +873,14 @@
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IToolCallCollector/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/WorkspaceResult_T_/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/TokenBudgetExceededException/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
@@ -882,6 +898,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/CollectorServiceCollectionExtensions/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/WriteFileResult/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>
@@ -1073,6 +1093,10 @@
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/CompareExchangeResult/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentFunctionGroupAttribute/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
@@ -1170,6 +1194,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IQuotaGate/</loc>
+    <lastmod>2026-04-17</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/ToolCallCollectorHolder/</loc>
     <lastmod>2026-04-17</lastmod>
   </url>
   <url>

@@ -3496,21 +3496,22 @@
 <h4 id="nexuslabsneedlragentframeworkworkflows"><a href="../" title="index">NexusLabs.Needlr.AgentFramework.Workflows</a><a class="headerlink" href="#nexuslabsneedlragentframeworkworkflows" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkworkflowsbudget"><a href="../NexusLabs.Needlr.AgentFramework.Workflows.Budget/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget">NexusLabs.Needlr.AgentFramework.Workflows.Budget</a><a class="headerlink" href="#nexuslabsneedlragentframeworkworkflowsbudget" title="Permanent link">&para;</a></h3>
 <h2 id="tokenbudgetchatmiddleware-class">TokenBudgetChatMiddleware Class<a class="headerlink" href="#tokenbudgetchatmiddleware-class" title="Permanent link">&para;</a></h2>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that accumulates token usage from each LLM call
-            into an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a> and aborts when the budget is exceeded.
-            Emits <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetUpdatedEvent</a> and <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetExceededEvent</a> to the
-            progress reporter in real-time.</p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that enforces token budget limits by aborting
+            when <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a> thresholds are exceeded. Depends on
+            <a href="../TokenUsageRecordingMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddleware">TokenUsageRecordingMiddleware</a> (wired as an inner middleware) to
+            keep the tracker's token counts up to date.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">TokenBudgetChatMiddleware</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">DelegatingChatClient</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> &#129106; TokenBudgetChatMiddleware</p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>This middleware does NOT record token usage — that is handled by
+<a href="../TokenUsageRecordingMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddleware">TokenUsageRecordingMiddleware</a>, which runs before this middleware
+in the pipeline. Use <code>UsingTokenBudget()</code> to wire both correctly.</p>
 <p>Budget enforcement uses two mechanisms:
 1. <a href="https://learn.microsoft.com/en-us/dotnet/api/system.operationcanceledexception" title="System.OperationCanceledException">System.OperationCanceledException</a> wrapping <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.TokenBudgetExceededException</a>
                   thrown from the middleware (works for direct agent runs).
 2. <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.BudgetCancellationToken</a> cancelled when tokens are recorded
                   past the limit (works for MAF workflow runs — pass this token to the workflow).</p>
-<p><strong>Limitation:</strong> Only <code>GetResponseAsync</code> is budget-tracked.
-            Streaming via <code>GetStreamingResponseAsync</code> passes through without enforcement.</p>
 <h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware.TokenBudgetChatMiddleware(Microsoft.Extensions.AI.IChatClient,NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker,NexusLabs.Needlr.AgentFramework.Progress.IProgressReporterAccessor)'></a></p>
 <h2 id="tokenbudgetchatmiddlewareichatclient-itokenbudgettracker-iprogressreporteraccessor-constructor">TokenBudgetChatMiddleware(IChatClient, ITokenBudgetTracker, IProgressReporterAccessor) Constructor<a class="headerlink" href="#tokenbudgetchatmiddlewareichatclient-itokenbudgettracker-iprogressreporteraccessor-constructor" title="Permanent link">&para;</a></h2>

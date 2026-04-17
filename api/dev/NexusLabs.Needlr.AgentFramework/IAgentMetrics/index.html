@@ -3519,21 +3519,24 @@ OpenTelemetry when a listener is registered.</p>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.activitysource" title="System.Diagnostics.ActivitySource">System.Diagnostics.ActivitySource</a></p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool)'></a></p>
-<h2 id="iagentmetricsrecordchatcompletionstring-timespan-bool-method">IAgentMetrics.RecordChatCompletion(string, TimeSpan, bool) Method<a class="headerlink" href="#iagentmetricsrecordchatcompletionstring-timespan-bool-method" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool,string)'></a></p>
+<h2 id="iagentmetricsrecordchatcompletionstring-timespan-bool-string-method">IAgentMetrics.RecordChatCompletion(string, TimeSpan, bool, string) Method<a class="headerlink" href="#iagentmetricsrecordchatcompletionstring-timespan-bool-string-method" title="Permanent link">&para;</a></h2>
 <p>Records a completed LLM chat completion call.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">RecordChatCompletion</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">duration</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">succeeded</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">RecordChatCompletion</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">duration</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">succeeded</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">agentName</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool).model'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool,string).model'></a></p>
 <p><code>model</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The model identifier.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool).duration'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool,string).duration'></a></p>
 <p><code>duration</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p>How long the completion took.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool).succeeded'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool,string).succeeded'></a></p>
 <p><code>succeeded</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p>Whether the completion succeeded.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordChatCompletion(string,System.TimeSpan,bool,string).agentName'></a></p>
+<p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The name of the agent that triggered the completion, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if unknown.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordRunCompleted(NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)'></a></p>
 <h2 id="iagentmetricsrecordruncompletediagentrundiagnostics-method">IAgentMetrics.RecordRunCompleted(IAgentRunDiagnostics) Method<a class="headerlink" href="#iagentmetricsrecordruncompletediagentrundiagnostics-method" title="Permanent link">&para;</a></h2>
 <p>Records that an agent run has completed with the given diagnostics.</p>
@@ -3552,21 +3555,24 @@ OpenTelemetry when a listener is registered.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordRunStarted(string).agentName'></a></p>
 <p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The name of the agent.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool)'></a></p>
-<h2 id="iagentmetricsrecordtoolcallstring-timespan-bool-method">IAgentMetrics.RecordToolCall(string, TimeSpan, bool) Method<a class="headerlink" href="#iagentmetricsrecordtoolcallstring-timespan-bool-method" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool,string)'></a></p>
+<h2 id="iagentmetricsrecordtoolcallstring-timespan-bool-string-method">IAgentMetrics.RecordToolCall(string, TimeSpan, bool, string) Method<a class="headerlink" href="#iagentmetricsrecordtoolcallstring-timespan-bool-string-method" title="Permanent link">&para;</a></h2>
 <p>Records a completed tool call.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">RecordToolCall</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">toolName</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">duration</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">succeeded</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">RecordToolCall</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">toolName</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">duration</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">succeeded</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">agentName</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool).toolName'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool,string).toolName'></a></p>
 <p><code>toolName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The tool that was invoked.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool).duration'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool,string).duration'></a></p>
 <p><code>duration</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p>How long the tool call took.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool).succeeded'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool,string).succeeded'></a></p>
 <p><code>succeeded</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p>Whether the tool call succeeded.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics.RecordToolCall(string,System.TimeSpan,bool,string).agentName'></a></p>
+<p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The name of the agent that invoked the tool, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if unknown.</p>
 
 
 

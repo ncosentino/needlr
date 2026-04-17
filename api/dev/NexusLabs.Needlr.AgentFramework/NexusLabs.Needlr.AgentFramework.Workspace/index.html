@@ -3504,8 +3504,24 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../CompareExchangeResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult">CompareExchangeResult</a></td>
+<td style="text-align: left;">Result data for a successful <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryCompareExchange(string,string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryCompareExchange(string, string, string)">TryCompareExchange(string, string, string)</a> call.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../InMemoryWorkspace/" title="NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace">InMemoryWorkspace</a></td>
 <td style="text-align: left;">Thread-safe in-memory <a href="../IWorkspace/" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace">IWorkspace</a> backed by a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.concurrent.concurrentdictionary-2" title="System.Collections.Concurrent.ConcurrentDictionary`2">System.Collections.Concurrent.ConcurrentDictionary&lt;&gt;</a>. Suitable for testing, sandboxed agent runs, and scenarios where persistence is not needed.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ReadFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.ReadFileResult">ReadFileResult</a></td>
+<td style="text-align: left;">Result data for a successful <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)">TryReadFile(string)</a> call.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">WorkspaceResult&lt;T&gt;</a></td>
+<td style="text-align: left;">Result of a workspace operation — either a success value of type <a href="../WorkspaceResult_T_/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult_T_.T" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;.T">T</a> or a failure carrying an <a href="https://learn.microsoft.com/en-us/dotnet/api/system.exception" title="System.Exception">System.Exception</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../WriteFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.WriteFileResult">WriteFileResult</a></td>
+<td style="text-align: left;">Result data for a successful <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryWriteFile(string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryWriteFile(string, string)">TryWriteFile(string, string)</a> call.</td>
 </tr>
 </tbody>
 </table>
