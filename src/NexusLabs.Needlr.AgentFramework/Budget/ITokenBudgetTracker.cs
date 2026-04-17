@@ -76,7 +76,7 @@ public interface ITokenBudgetTracker
 
     /// <summary>
     /// Records input and output tokens separately against the active scope's budget.
-    /// Called automatically by <c>TokenBudgetChatMiddleware</c> after each LLM response.
+    /// Called automatically by <c>TokenUsageRecordingMiddleware</c> after each LLM response.
     /// </summary>
     void Record(long inputTokens, long outputTokens);
 
@@ -92,6 +92,15 @@ public interface ITokenBudgetTracker
     /// <returns>A disposable handle that restores the parent scope when disposed.</returns>
     /// <exception cref="InvalidOperationException">No parent scope is active.</exception>
     IDisposable BeginChildScope(string name, long? maxTokens = null);
+
+    /// <summary>
+    /// Opens a pure tracking scope with no budget limits. Token usage is accumulated
+    /// via <see cref="Record(long)"/> and <see cref="Record(long,long)"/> but no
+    /// cancellation or enforcement occurs. Use this when you need visibility into
+    /// token usage without restricting it.
+    /// </summary>
+    /// <returns>A disposable handle that ends the tracking scope when disposed.</returns>
+    IDisposable BeginTrackingScope();
 }
 
 /// <summary>

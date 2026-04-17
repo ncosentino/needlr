@@ -66,6 +66,13 @@ public sealed record AgentFrameworkSyringe
     /// </summary>
     internal Diagnostics.AgentFrameworkMetricsOptions? MetricsOptions { get; init; }
 
+    /// <summary>
+    /// Whether <c>UsingTokenTracking()</c> has already been called. Prevents
+    /// double-wiring the recording middleware when both <c>UsingTokenBudget()</c>
+    /// and <c>UsingDiagnostics()</c> are used together.
+    /// </summary>
+    internal bool TokenTrackingWired { get; init; }
+
     public IAgentFactory BuildAgentFactory()
     {
         var groupTypes = (FunctionGroupMap ?? new Dictionary<string, IReadOnlyList<Type>>())

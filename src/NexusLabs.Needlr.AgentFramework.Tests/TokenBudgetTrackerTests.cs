@@ -151,12 +151,19 @@ public class TokenBudgetTrackerTests
     }
 
     [Fact]
-    public void BeginScope_WithNoBudgets_ThrowsArgumentException()
+    public void BeginScope_WithNoBudgets_CreatesTrackingOnlyScope()
     {
         var tracker = new TokenBudgetTracker();
 
-        Assert.Throws<ArgumentException>(() =>
-            tracker.BeginScope(maxInputTokens: null, maxOutputTokens: null, maxTotalTokens: null));
+        using (tracker.BeginScope(maxInputTokens: null, maxOutputTokens: null, maxTotalTokens: null))
+        {
+            tracker.Record(500, 200);
+            Assert.Equal(700, tracker.CurrentTokens);
+            Assert.Equal(500, tracker.CurrentInputTokens);
+            Assert.Equal(200, tracker.CurrentOutputTokens);
+            Assert.Null(tracker.MaxTokens);
+            Assert.False(tracker.BudgetCancellationToken.IsCancellationRequested);
+        }
     }
 
     [Fact]

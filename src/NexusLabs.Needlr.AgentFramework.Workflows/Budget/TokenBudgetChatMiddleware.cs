@@ -6,12 +6,17 @@ using NexusLabs.Needlr.AgentFramework.Progress;
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 
 /// <summary>
-/// <see cref="DelegatingChatClient"/> that accumulates token usage from each LLM call
-/// into an <see cref="ITokenBudgetTracker"/> and aborts when the budget is exceeded.
-/// Emits <see cref="BudgetUpdatedEvent"/> and <see cref="BudgetExceededEvent"/> to the
-/// progress reporter in real-time.
+/// <see cref="DelegatingChatClient"/> that enforces token budget limits by aborting
+/// when <see cref="ITokenBudgetTracker"/> thresholds are exceeded. Depends on
+/// <see cref="TokenUsageRecordingMiddleware"/> (wired as an inner middleware) to
+/// keep the tracker's token counts up to date.
 /// </summary>
 /// <remarks>
+/// <para>
+/// This middleware does NOT record token usage — that is handled by
+/// <see cref="TokenUsageRecordingMiddleware"/>, which runs before this middleware
+/// in the pipeline. Use <c>UsingTokenBudget()</c> to wire both correctly.
+/// </para>
 /// <para>
 /// Budget enforcement uses two mechanisms:
 /// <list type="number">
@@ -24,10 +29,6 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 ///     past the limit (works for MAF workflow runs — pass this token to the workflow).
 ///   </item>
 /// </list>
-/// </para>
-/// <para>
-/// <strong>Limitation:</strong> Only <c>GetResponseAsync</c> is budget-tracked.
-/// Streaming via <c>GetStreamingResponseAsync</c> passes through without enforcement.
 /// </para>
 /// </remarks>
 public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
@@ -66,30 +67,18 @@ public sealed class TokenBudgetChatMiddleware : DelegatingChatClient
         var response = await base.GetResponseAsync(messages, options, cancellationToken)
             .ConfigureAwait(false);
 
-        // Accumulate tokens — this also cancels the BudgetCancellationToken if exceeded.
-        var usage = response.Usage;
-        if (usage is not null)
+        // Post-call check: the recording middleware (inner) has already updated
+        // the tracker. Check if any limit was exceeded.
+        if (IsBudgetExceeded())
         {
-            var inputCount = usage.InputTokenCount ?? 0;
-            var outputCount = usage.OutputTokenCount ?? 0;
+            EmitBudgetExceededEvent();
+            ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens ?? 0);
+        }
 
-            if (inputCount > 0 || outputCount > 0)
-            {
-                _tracker.Record(inputCount, outputCount);
-            }
-            else if (usage.TotalTokenCount is long totalOnly)
-            {
-                _tracker.Record(totalOnly);
-            }
-
+        // Emit an update event if a budget scope is active
+        if (_tracker.MaxTokens.HasValue || _tracker.MaxInputTokens.HasValue || _tracker.MaxOutputTokens.HasValue)
+        {
             EmitBudgetUpdatedEvent();
-
-            // Post-call check: throw for direct agent runs.
-            if (IsBudgetExceeded())
-            {
-                EmitBudgetExceededEvent();
-                ThrowBudgetExceeded(_tracker.CurrentTokens, _tracker.MaxTokens ?? 0);
-            }
         }
 
         return response;

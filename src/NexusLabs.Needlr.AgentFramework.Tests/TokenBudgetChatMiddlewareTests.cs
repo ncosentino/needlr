@@ -15,7 +15,9 @@ public class TokenBudgetChatMiddlewareTests
         var tracker = new TokenBudgetTracker();
         var inner = new Mock<IChatClient>();
         var progressAccessor = new ProgressReporterAccessor();
-        var middleware = new TokenBudgetChatMiddleware(inner.Object, tracker, progressAccessor);
+        // Recording middleware handles token accumulation; budget middleware handles enforcement
+        var recordingMiddleware = new TokenUsageRecordingMiddleware(inner.Object, tracker);
+        var middleware = new TokenBudgetChatMiddleware(recordingMiddleware, tracker, progressAccessor);
         return (middleware, tracker, inner);
     }
 

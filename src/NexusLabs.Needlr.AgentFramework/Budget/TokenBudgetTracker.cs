@@ -20,13 +20,16 @@ public sealed class TokenBudgetTracker : ITokenBudgetTracker
     /// <inheritdoc />
     public IDisposable BeginScope(long? maxInputTokens = null, long? maxOutputTokens = null, long? maxTotalTokens = null)
     {
-        if (maxInputTokens is null && maxOutputTokens is null && maxTotalTokens is null)
-            throw new ArgumentException("At least one budget limit must be specified.");
-
         var parent = _current.Value;
         var scope = new ScopeState(maxInputTokens, maxOutputTokens, maxTotalTokens, parent);
         _current.Value = scope;
         return scope;
+    }
+
+    /// <inheritdoc />
+    public IDisposable BeginTrackingScope()
+    {
+        return BeginScope(null, null, null);
     }
 
     /// <inheritdoc />

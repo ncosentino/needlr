@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Progress;
+using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
@@ -16,11 +17,14 @@ public static class DiagnosticsExtensions
     /// Enables agent-run diagnostics for every agent created by the factory.
     /// Wires the agent-run, chat-completion, and function-calling middleware layers,
     /// and emits <see cref="IAgentMetrics"/> counters/histograms for OpenTelemetry.
+    /// Automatically includes token tracking via <c>UsingTokenTracking()</c>.
     /// </summary>
     public static AgentFrameworkSyringe UsingDiagnostics(
         this AgentFrameworkSyringe syringe)
     {
         ArgumentNullException.ThrowIfNull(syringe);
+
+        syringe = syringe.UsingTokenTracking();
 
         var result = syringe.Configure(opts =>
         {
