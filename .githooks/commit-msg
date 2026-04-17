@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# commit-msg hook — validates commit message format
+#
+# Rules:
+#   - Must not be empty
+#   - First line must be 72 characters or fewer
+#   - First line must start with a conventional commit type prefix
+
+MSG_FILE="$1"
+MSG=$(head -1 "$MSG_FILE")
+
+# Check empty
+if [ -z "$MSG" ]; then
+    echo ""
+    echo "❌ Commit message is empty."
+    echo ""
+    exit 1
+fi
+
+# Check length
+LENGTH=$(echo -n "$MSG" | wc -c)
+if [ "$LENGTH" -gt 72 ]; then
+    echo ""
+    echo "❌ Commit message first line is $LENGTH characters (max 72)."
+    echo "   Message: $MSG"
+    echo ""
+    exit 1
+fi
+
+# Check conventional commit prefix
+VALID_PREFIXES="feat fix chore refactor docs test style perf ci build revert"
+PREFIX=$(echo "$MSG" | sed -n 's/^\([a-z]*\).*/\1/p')
+MATCHED=false
+for p in $VALID_PREFIXES; do
+    if [ "$PREFIX" = "$p" ]; then
+        MATCHED=true
+        break
+    fi
+done
+
+if [ "$MATCHED" = false ]; then
+    echo ""
+    echo "❌ Commit message must start with a conventional commit prefix."
+    echo "   Valid prefixes: $VALID_PREFIXES"
+    echo "   Got: $MSG"
+    echo ""
+    exit 1
+fi
+
+exit 0

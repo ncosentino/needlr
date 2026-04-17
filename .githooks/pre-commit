@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# pre-commit hook — LLM agent self-assessment gate
+#
+# First attempt: prints checklist and exits 1 (commit blocked).
+# Agent must address items with the user, then re-attempt with:
+#   GENESIS_PRECOMMIT_ACK=true git commit -m "..."
+#
+# On Windows (PowerShell):
+#   $env:GENESIS_PRECOMMIT_ACK = "true"
+#   git commit -m "..."
+
+if [ "$GENESIS_PRECOMMIT_ACK" = "true" ]; then
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║  ✅ Self-assessment acknowledged — commit proceeding        ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+    exit 0
+fi
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  ❌ COMMIT BLOCKED — Self-Assessment Required               ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║                                                              ║"
+echo "║  Before committing, you MUST address each item with the     ║"
+echo "║  user. Report honestly — do not skip or minimize.           ║"
+echo "║                                                              ║"
+echo "║  [HIGH]   Omitted behavior that was discussed or realized   ║"
+echo "║  [HIGH]   Implementation gaps                               ║"
+echo "║  [HIGH]   Whether you ran the tests and the results         ║"
+echo "║  [MEDIUM] Tech debt introduced                              ║"
+echo "║  [MEDIUM] Missing test coverage                             ║"
+echo "║  [MEDIUM] Weak assertions in tests                          ║"
+echo "║  [MEDIUM] Assumptions made along the way                    ║"
+echo "║                                                              ║"
+echo "║  Rules:                                                      ║"
+echo "║  • Any HIGH issue  → MUST be fixed before committing        ║"
+echo "║  • Any MEDIUM issue → MUST be discussed with the user       ║"
+echo "║  • Only LOW issues  → proceed and share after commit        ║"
+echo "║  • Only after addressing all items, re-attempt with:        ║"
+echo "║                                                              ║"
+echo "║    GENESIS_PRECOMMIT_ACK=true git commit -m \"...\"            ║"
+echo "║                                                              ║"
+echo "║  On Windows (PowerShell):                                    ║"
+echo "║    \$env:GENESIS_PRECOMMIT_ACK = \"true\"                      ║"
+echo "║    git commit -m \"...\"                                       ║"
+echo "║                                                              ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+exit 1

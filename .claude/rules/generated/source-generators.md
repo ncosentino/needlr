@@ -3,19 +3,9 @@
 paths:
   - "**/*Generator.cs"
 ---
-# Source Generator Rules
+# Needlr Source Generator Rules
 
-## Class shape
-
-- Decorate with `[Generator(LanguageNames.CSharp)]`, implement `IIncrementalGenerator`.
-- Generator projects target `netstandard2.0` — no `record`, no `init`, no `ImplicitUsings`.
-
-## Structural discipline
-
-- The generator file contains ONLY the `Initialize` method and a top-level orchestration method (e.g., `ExecuteAll`).
-- **NEVER put emission logic inline in the generator.** Delegate to `CodeGen/*CodeGenerator.cs` files.
-- **NEVER put discovery logic inline.** Delegate to `*DiscoveryHelper.cs` or `*AttributeHelper.cs` files.
-- Discovery results go in `Models/` as `internal readonly struct`, one type per file.
+General source generator rules (class shape, structural discipline, netstandard2.0 constraints) are in `genesis/source-generators.instructions.md`. This file covers needlr-specific wiring only.
 
 ## Bootstrap wiring
 

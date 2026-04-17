@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# post-commit hook — prompts LLM agent to share evidence with the user
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  📋 COMMIT COMPLETE — Share Evidence With The User          ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║                                                              ║"
+echo "║  You MUST share the following with the user now:            ║"
+echo "║                                                              ║"
+echo "║  1. Test results: how many passed, failed, skipped          ║"
+echo "║  2. What specific behavior was verified by tests            ║"
+echo "║  3. Build output: warning count, error count                ║"
+echo "║  4. Files changed summary                                   ║"
+echo "║                                                              ║"
+echo "║  Do NOT just say \"all tests pass\" — show the numbers.       ║"
+echo "║  Do NOT skip this. The user needs proof, not promises.      ║"
+echo "║                                                              ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
