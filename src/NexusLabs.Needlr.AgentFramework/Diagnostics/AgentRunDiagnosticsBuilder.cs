@@ -7,20 +7,26 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
 /// Thread-safe accumulator for diagnostics captured during a single agent run.
-/// Both Needlr's built-in diagnostics middleware and consumer-provided middleware
-/// use this class to record tool calls, chat completions, and message counts as
-/// an agent executes.
+/// Implements <see cref="IDiagnosticsSink"/> so writers (middleware, loops) record
+/// through a stable interface rather than coupling to the concrete builder.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Stored in an <see cref="AsyncLocal{T}"/> so the agent-run, chat-completion, and
-/// function-calling middleware all access the same builder instance within an async flow.
-/// Call <see cref="StartNew"/> at the beginning of an agent run and dispose the returned
-/// builder when the run completes.
+/// Stored in an <see cref="AsyncLocal{T}"/> so middleware layers access the same
+/// builder instance within an async flow. Call <see cref="StartNew"/> at the
+/// beginning of an agent run and dispose the returned builder when the run completes.
 /// </para>
 /// <para>
-/// Sequence numbers are reserved BEFORE async work begins (via <see cref="Interlocked.Increment(ref int)"/>),
-/// ensuring parallel tool calls are ordered by invocation time, not completion time.
+/// Each event class has a single designated writer. Chat completions are written
+/// exclusively by <see cref="DiagnosticsChatClientMiddleware"/>. Tool calls are
+/// written exclusively by the <c>IterativeAgentLoop</c> (MEAI path) or
+/// <c>DiagnosticsFunctionCallingMiddleware</c> (MAF path). Two writers for the same
+/// event class is a bug.
+/// </para>
+/// <para>
+/// Sequence numbers are reserved BEFORE async work begins (via
+/// <see cref="Interlocked.Increment(ref int)"/>), ensuring parallel tool calls are
+/// ordered by invocation time, not completion time.
 /// </para>
 /// </remarks>
 public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
@@ -89,14 +95,6 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
     /// <summary>Reserves a sequence number for a chat completion (thread-safe).</summary>
     public int NextChatCompletionSequence() =>
         Interlocked.Increment(ref _nextChatCompletionSequence) - 1;
-
-    /// <summary>
-    /// Gets the current number of chat completion diagnostics recorded on this builder.
-    /// Callers use this to detect whether a middleware in the chat client pipeline has
-    /// already recorded a completion for a given call, so they can avoid recording a
-    /// duplicate entry.
-    /// </summary>
-    public int ChatCompletionCount => _chatCompletions.Count;
 
     public void AddChatCompletion(ChatCompletionDiagnostics diagnostics)
     {

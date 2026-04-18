@@ -14,6 +14,15 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// with fresh prompts per iteration, bypassing <c>FunctionInvokingChatClient</c>'s
 /// accumulating conversation history.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Internally wraps the chat client with <see cref="DiagnosticsChatClientMiddleware"/>,
+/// which is the single writer for <see cref="ChatCompletionDiagnostics"/>. The loop
+/// itself writes <see cref="ToolCallDiagnostics"/> and OTel metrics for tool calls
+/// and run lifecycle. Do not add external chat-completion recording middleware when
+/// using this loop — it will produce duplicates.
+/// </para>
+/// </remarks>
 [DoNotAutoRegister]
 internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 {

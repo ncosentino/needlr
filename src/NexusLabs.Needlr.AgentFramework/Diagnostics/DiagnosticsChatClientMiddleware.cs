@@ -9,12 +9,26 @@ using NexusLabs.Needlr.AgentFramework.Progress;
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
-/// Middle middleware layer: wraps each <c>IChatClient.GetResponseAsync()</c> call to capture
-/// per-completion timing and token usage. Records to both the AsyncLocal builder (for direct
-/// agent runs) AND a thread-safe collection (for workflow runs where AsyncLocal doesn't propagate).
-/// Emits <see cref="LlmCallStartedEvent"/> and <see cref="LlmCallCompletedEvent"/> to the
-/// progress reporter in real-time.
+/// Single writer for chat completion diagnostics. Wraps each
+/// <c>IChatClient.GetResponseAsync()</c> call to capture per-completion timing,
+/// token usage, and full request/response payloads. Records to the AsyncLocal
+/// <see cref="AgentRunDiagnosticsBuilder"/> and a thread-safe collection (for
+/// workflow runs where AsyncLocal doesn't propagate). Optionally emits
+/// <see cref="LlmCallStartedEvent"/>/<see cref="LlmCallCompletedEvent"/> to the
+/// progress reporter and OTel metrics via <see cref="IAgentMetrics"/>.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <c>IterativeAgentLoop</c> wraps its chat client with this middleware
+/// internally, making it the sole writer for <see cref="ChatCompletionDiagnostics"/>.
+/// No other code should call <see cref="AgentRunDiagnosticsBuilder.AddChatCompletion"/>
+/// for calls that pass through this middleware.
+/// </para>
+/// <para>
+/// <see cref="IAgentMetrics"/> and <see cref="IProgressReporterAccessor"/> are optional.
+/// When null, recording still occurs but OTel metrics and progress events are skipped.
+/// </para>
+/// </remarks>
 [DoNotAutoRegister]
 internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
