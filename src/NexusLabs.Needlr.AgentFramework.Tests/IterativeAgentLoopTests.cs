@@ -1869,5 +1869,306 @@ public sealed class IterativeAgentLoopTests
     }
 
     #endregion
+
+    #region Diagnostics Invariants
+
+    private static void AssertDiagnosticsInvariants(IAgentRunDiagnostics diagnostics)
+    {
+        var chatSequences = diagnostics.ChatCompletions.Select(c => c.Sequence).ToList();
+        Assert.Equal(
+            chatSequences.Distinct().Count(),
+            chatSequences.Count);
+
+        var toolSequences = diagnostics.ToolCalls.Select(t => t.Sequence).ToList();
+        Assert.Equal(
+            toolSequences.Distinct().Count(),
+            toolSequences.Count);
+
+        long chatTotalTokens = diagnostics.ChatCompletions.Sum(c => c.Tokens.TotalTokens);
+        Assert.Equal(chatTotalTokens, diagnostics.AggregateTokenUsage.TotalTokens);
+
+        foreach (var chat in diagnostics.ChatCompletions.Where(c => c.Succeeded))
+        {
+            Assert.NotNull(chat.RequestMessages);
+            Assert.NotEmpty(chat.RequestMessages);
+            Assert.True(chat.RequestCharCount > 0,
+                $"Successful chat completion seq={chat.Sequence} has RequestCharCount=0");
+            Assert.NotNull(chat.Response);
+        }
+
+        foreach (var tool in diagnostics.ToolCalls.Where(t => t.Succeeded && t.Arguments is { Count: > 0 }))
+        {
+            Assert.True(tool.ArgumentsCharCount > 0,
+                $"Successful tool call seq={tool.Sequence} has ArgumentsCharCount=0 but Arguments has entries");
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ChatCompletionSequences_AreUnique()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount <= 2)
+                {
+                    return CreateToolCallResponse(("ping", $"c{callCount}", null));
+                }
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(tools: [tool], toolResultMode: ToolResultMode.SingleCall);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        Assert.Equal(3, result.Diagnostics.ChatCompletions.Count);
+
+        var sequences = result.Diagnostics.ChatCompletions.Select(c => c.Sequence).ToList();
+        Assert.Equal(sequences.Distinct().Count(), sequences.Count);
+    }
+
+    [Fact]
+    public async Task RunAsync_AggregateTokens_EqualsSumOfChatCompletionTokens()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    var toolResp = CreateToolCallResponse(("ping", "c1", null));
+                    toolResp.Usage = new UsageDetails
+                    {
+                        InputTokenCount = 100,
+                        OutputTokenCount = 50,
+                        TotalTokenCount = 150,
+                    };
+                    return toolResp;
+                }
+
+                var textResp = new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+                textResp.Usage = new UsageDetails
+                {
+                    InputTokenCount = 200,
+                    OutputTokenCount = 100,
+                    TotalTokenCount = 300,
+                };
+                return textResp;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(tools: [tool], toolResultMode: ToolResultMode.SingleCall);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        var diag = result.Diagnostics;
+
+        long expectedTotal = diag.ChatCompletions.Sum(c => c.Tokens.TotalTokens);
+        long expectedInput = diag.ChatCompletions.Sum(c => c.Tokens.InputTokens);
+        long expectedOutput = diag.ChatCompletions.Sum(c => c.Tokens.OutputTokens);
+
+        Assert.Equal(expectedTotal, diag.AggregateTokenUsage.TotalTokens);
+        Assert.Equal(expectedInput, diag.AggregateTokenUsage.InputTokens);
+        Assert.Equal(expectedOutput, diag.AggregateTokenUsage.OutputTokens);
+        Assert.Equal(450, diag.AggregateTokenUsage.TotalTokens);
+    }
+
+    [Fact]
+    public async Task RunAsync_SuccessfulCompletions_AlwaysHavePayloads()
+    {
+        var tool = CreateToolWithArgs("search", input => $"found-{input}");
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return CreateToolCallResponse(
+                        ("search", "call-1", new Dictionary<string, object?> { { "input", "test-query" } }));
+                }
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "final answer")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(tools: [tool], toolResultMode: ToolResultMode.SingleCall);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        AssertDiagnosticsInvariants(result.Diagnostics);
+    }
+
+    [Fact]
+    public async Task RunAsync_FailedChatCompletion_ProducesExactlyOneEntry()
+    {
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    throw new InvalidOperationException("Provider is down");
+                }
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(maxIterations: 2);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        var failed = result.Diagnostics.ChatCompletions.Where(c => !c.Succeeded).ToList();
+        Assert.Single(failed);
+        Assert.Equal("Provider is down", failed[0].ErrorMessage);
+
+        Assert.NotNull(failed[0].RequestMessages);
+        Assert.True(failed[0].RequestCharCount > 0,
+            "Failed completion should still capture the request messages");
+
+        var sequences = result.Diagnostics.ChatCompletions.Select(c => c.Sequence).ToList();
+        Assert.Equal(sequences.Distinct().Count(), sequences.Count);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithMiddlewarePreRecording_SatisfiesAllInvariants()
+    {
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+
+                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
+                var reqMessages = new List<ChatMessage>
+                {
+                    new(ChatRole.User, $"request-{callCount}")
+                }.AsReadOnly();
+
+                ChatResponse resp;
+                if (callCount == 1)
+                {
+                    resp = CreateToolCallResponse(("ping", "c1", null));
+                }
+                else
+                {
+                    resp = new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+                }
+
+                resp.Usage = new UsageDetails
+                {
+                    InputTokenCount = 100,
+                    OutputTokenCount = 50,
+                    TotalTokenCount = 150,
+                };
+
+                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
+                    Sequence: builder.NextChatCompletionSequence(),
+                    Model: $"middleware-{callCount}",
+                    Tokens: new TokenUsage(100, 50, 150, 0, 0),
+                    InputMessageCount: reqMessages.Count,
+                    Duration: TimeSpan.FromMilliseconds(42),
+                    Succeeded: true,
+                    ErrorMessage: null,
+                    StartedAt: DateTimeOffset.UtcNow,
+                    CompletedAt: DateTimeOffset.UtcNow)
+                {
+                    RequestMessages = reqMessages,
+                    Response = resp,
+                    RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(reqMessages),
+                    ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(resp),
+                });
+
+                return resp;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(tools: [tool], toolResultMode: ToolResultMode.SingleCall);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        Assert.Equal(2, result.Diagnostics.ChatCompletions.Count);
+        AssertDiagnosticsInvariants(result.Diagnostics);
+    }
+
+    [Fact]
+    public async Task RunAsync_FailedToolCall_ProducesExactlyOneEntryWithArguments()
+    {
+        var tool = CreateToolWithArgs("boom", _ => throw new InvalidOperationException("tool exploded"));
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return CreateToolCallResponse(
+                        ("boom", "call-1", new Dictionary<string, object?> { { "input", "kaboom" } }));
+                }
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "recovered")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(tools: [tool], toolResultMode: ToolResultMode.SingleCall, maxIterations: 2);
+
+        var result = await loop.RunAsync(options, CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+
+        var failedTools = result.Diagnostics.ToolCalls.Where(t => !t.Succeeded).ToList();
+        Assert.Single(failedTools);
+        Assert.Equal("boom", failedTools[0].ToolName);
+        Assert.Equal("tool exploded", failedTools[0].ErrorMessage);
+
+        Assert.NotNull(failedTools[0].Arguments);
+        Assert.True(failedTools[0].ArgumentsCharCount > 0,
+            "Failed tool call should still capture the arguments");
+
+        var sequences = result.Diagnostics.ToolCalls.Select(t => t.Sequence).ToList();
+        Assert.Equal(sequences.Distinct().Count(), sequences.Count);
+    }
+
+    #endregion
 }
 
