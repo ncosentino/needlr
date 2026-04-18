@@ -3,8 +3,8 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/18/2026 - 06:15:34 |
-| Coverage date: | 04/18/2026 - 06:14:06 - 04/18/2026 - 06:15:30 |
+| Generated on: | 04/18/2026 - 06:27:13 |
+| Coverage date: | 04/18/2026 - 06:25:39 - 04/18/2026 - 06:27:09 |
 | Parser: | MultiReport (26x Cobertura) |
 | Assemblies: | 24 |
 | Classes: | 415 |
@@ -14,8 +14,8 @@
 | Uncovered lines: | 3603 |
 | Coverable lines: | 20097 |
 | Total lines: | 49173 |
-| **Branch coverage:** | 71.8% (6267 of 8725) |
-| Covered branches: | 6267 |
+| **Branch coverage:** | 71.8% (6268 of 8725) |
+| Covered branches: | 6268 |
 | Total branches: | 8725 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -444,13 +444,13 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
