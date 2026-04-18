@@ -28,6 +28,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [GitHub Copilot](https://github.devleader.ca/needlr/copilot/) -- Use GitHub Copilot as an IChatClient provider in Needlr -- zero-cost local AI for agent development with web search tool support.
 - [Iterative Agent Loop](https://github.devleader.ca/needlr/iterative-agent-loop/) -- Run multi-step agentic workloads with O(n) token cost using Needlr's iterative agent loop -- workspace-driven prompt construction eliminates conversation history accumulation.
 - [Progress Reporting](https://github.devleader.ca/needlr/progress-reporting/) -- Track agent and workflow execution in real-time with Needlr's progress reporting system -- auto-discovered sinks, per-orchestration isolation, and ambient async context.
+- [Evaluation](https://github.devleader.ca/needlr/evaluation/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Advanced
 
@@ -117,5 +118,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Development](https://github.devleader.ca/needlr/api/dev/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Stable](https://github.devleader.ca/needlr/api/stable/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Coverage](https://github.devleader.ca/needlr/coverage/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Articles](https://github.devleader.ca/needlr/articles/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Video Tutorials](https://github.devleader.ca/needlr/video-tutorials/) -- Opinionated fluent dependency injection for .NET with source generation

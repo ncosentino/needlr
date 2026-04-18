@@ -41,7 +41,7 @@
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="16">16</td>
+<td class="limit-width right" title="17">17</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="16">16</td>
+<td class="limit-width right" title="17">17</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="74">74</td>
+<td class="limit-width right" title="75">75</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="16 of 16">100%</td>
+<td class="limit-width right" title="17 of 17">100%</td>
 </tr>
 </table>
 </div>
@@ -66,20 +66,20 @@
 <div class="card">
 <div class="card-header">Branch coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar0">100%</div>
+<div class="large cardpercentagebar cardpercentagebar20">80%</div>
 <div class="table">
 <table>
 <tr>
 <th>Covered branches:</th>
-<td class="limit-width right" title="6">6</td>
+<td class="limit-width right" title="8">8</td>
 </tr>
 <tr>
 <th>Total branches:</th>
-<td class="limit-width right" title="6">6</td>
+<td class="limit-width right" title="10">10</td>
 </tr>
 <tr>
 <th>Branch coverage:</th>
-<td class="limit-width right" title="6 of 6">100%</td>
+<td class="limit-width right" title="8 of 10">80%</td>
 </tr>
 </table>
 </div>
@@ -110,7 +110,7 @@
 <tr><td title=".ctor(System.String)"><a href="#file0_line25" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title=".ctor(System.String,System.String)"><a href="#file0_line39" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title=".ctor(System.String,System.String,System.StringComparison)"><a href="#file0_line52" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="ShouldTerminate(NexusLabs.Needlr.AgentFramework.TerminationContext)"><a href="#file0_line63" class="navigatetohash">ShouldTerminate(...)</a></td><td>100%</td><td>6</td><td>6</td><td>100%</td></tr>
+<tr><td title="ShouldTerminate(NexusLabs.Needlr.AgentFramework.TerminationContext)"><a href="#file0_line63" class="navigatetohash">ShouldTerminate(...)</a></td><td>80%</td><td>10</td><td>10</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -191,13 +191,14 @@
 <tr class="coverableline" title="Covered (21 visits)" data-coverage="{'AllTestMethods': {'VC': '21', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">21</td><td class="rightmargin right"><a id="file0_line69"></a><code>69</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line70"></a><code>70</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line71"></a><code>71</code></td><td></td><td class="lightgray"><code></code></td></tr>
-<tr class="coverableline" title="Covered (24 visits)" data-coverage="{'AllTestMethods': {'VC': '24', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">24</td><td class="rightmargin right"><a id="file0_line72"></a><code>72</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;context.ResponseText.Contains(_keyword,&nbsp;_comparison);</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line73"></a><code>73</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line74"></a><code>74</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="coverableline" title="Partially covered (24 visits, 2 of 4 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '24', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">24</td><td class="rightmargin right"><a id="file0_line72"></a><code>72</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;text&nbsp;=&nbsp;context.LastMessage?.Text&nbsp;??&nbsp;string.Empty;</code></td></tr>
+<tr class="coverableline" title="Covered (24 visits)" data-coverage="{'AllTestMethods': {'VC': '24', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">24</td><td class="rightmargin right"><a id="file0_line73"></a><code>73</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;text.Contains(_keyword,&nbsp;_comparison);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line74"></a><code>74</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line75"></a><code>75</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/18/2026 - 01:23:03<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/18/2026 - 06:15:34<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>

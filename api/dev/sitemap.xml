@@ -933,6 +933,10 @@
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentRunDiagnosticsTranscriptExtensions/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAgentDiagnosticsAccessor/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
@@ -966,6 +970,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.Progress/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsTimelineEntry/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
@@ -1010,6 +1018,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/LlmCallStartedEvent/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IterationRecordEvaluationExtensions/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
@@ -1141,6 +1153,10 @@
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentRunDiagnosticsTimelineExtensions/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/SuperStepStartedProgressEvent/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
@@ -1173,6 +1189,10 @@
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsTimelineEntryKind/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/AgentSequentialTopologyRegistry/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
@@ -1182,6 +1202,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IAgentExecutionContextAccessor/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsCharCounter/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>

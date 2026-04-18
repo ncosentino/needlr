@@ -438,25 +438,6 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../articles/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Articles
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
       <a href="../../../../video-tutorials/" class="md-tabs__link">
         
   
@@ -1058,6 +1039,34 @@
     
   
     Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
   
 
     
@@ -3424,33 +3433,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../articles/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Articles
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../../video-tutorials/" class="md-nav__link">
         
   
@@ -3611,33 +3593,74 @@ chat client.</p>
 </span></code></pre></div>
 <h4 id="property-value_5">Property Value<a class="headerlink" href="#property-value_5" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.RequestCharCount'></a></p>
+<h2 id="chatcompletiondiagnosticsrequestcharcount-property">ChatCompletionDiagnostics.RequestCharCount Property<a class="headerlink" href="#chatcompletiondiagnosticsrequestcharcount-property" title="Permanent link">&para;</a></h2>
+<p>Total character count of the text content across every message in
+<a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.RequestMessages" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.RequestMessages">RequestMessages</a>. Complements token-based metrics with a
+direct programmatic measure of payload size. Defaults to <code>0</code>
+when not populated by the capture middleware.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">RequestCharCount</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.RequestMessages'></a></p>
+<h2 id="chatcompletiondiagnosticsrequestmessages-property">ChatCompletionDiagnostics.RequestMessages Property<a class="headerlink" href="#chatcompletiondiagnosticsrequestmessages-property" title="Permanent link">&para;</a></h2>
+<p>The full list of <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a> instances sent to the model for this
+completion. Captured losslessly to enable post-hoc replay and evaluation
+without re-invoking the agent. <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if capture was unavailable
+(e.g., on call failure before messages were materialized).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatMessage</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">RequestMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_7">Property Value<a class="headerlink" href="#property-value_7" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Alpha default: always populated on success. This is the input side of the call
+and is directly consumable by <code>Microsoft.Extensions.AI.Evaluation</code> evaluators.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Response'></a></p>
+<h2 id="chatcompletiondiagnosticsresponse-property">ChatCompletionDiagnostics.Response Property<a class="headerlink" href="#chatcompletiondiagnosticsresponse-property" title="Permanent link">&para;</a></h2>
+<p>The full <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a> returned by the model for this completion,
+or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if the call failed or the response was not captured.
+Captured losslessly to enable post-hoc replay and evaluation.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatResponse</span><span class="o">?</span><span class="w"> </span><span class="n">Response</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_8">Property Value<a class="headerlink" href="#property-value_8" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.ResponseCharCount'></a></p>
+<h2 id="chatcompletiondiagnosticsresponsecharcount-property">ChatCompletionDiagnostics.ResponseCharCount Property<a class="headerlink" href="#chatcompletiondiagnosticsresponsecharcount-property" title="Permanent link">&para;</a></h2>
+<p>Total character count of the text content across every message in
+<a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Response" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Response">Response</a>. Defaults to <code>0</code> when not populated by
+the capture middleware.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ResponseCharCount</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_9">Property Value<a class="headerlink" href="#property-value_9" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Sequence'></a></p>
 <h2 id="chatcompletiondiagnosticssequence-property">ChatCompletionDiagnostics.Sequence Property<a class="headerlink" href="#chatcompletiondiagnosticssequence-property" title="Permanent link">&para;</a></h2>
 <p>Zero-based invocation order within the agent run.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Sequence</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Sequence</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_10">Property Value<a class="headerlink" href="#property-value_10" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.StartedAt'></a></p>
 <h2 id="chatcompletiondiagnosticsstartedat-property">ChatCompletionDiagnostics.StartedAt Property<a class="headerlink" href="#chatcompletiondiagnosticsstartedat-property" title="Permanent link">&para;</a></h2>
 <p>UTC timestamp when the API call began.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">DateTimeOffset</span><span class="w"> </span><span class="n">StartedAt</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">DateTimeOffset</span><span class="w"> </span><span class="n">StartedAt</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_7">Property Value<a class="headerlink" href="#property-value_7" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_11">Property Value<a class="headerlink" href="#property-value_11" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset" title="System.DateTimeOffset">System.DateTimeOffset</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Succeeded'></a></p>
 <h2 id="chatcompletiondiagnosticssucceeded-property">ChatCompletionDiagnostics.Succeeded Property<a class="headerlink" href="#chatcompletiondiagnosticssucceeded-property" title="Permanent link">&para;</a></h2>
 <p>Whether the call returned without throwing.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Succeeded</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Succeeded</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_8">Property Value<a class="headerlink" href="#property-value_8" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_12">Property Value<a class="headerlink" href="#property-value_12" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics.Tokens'></a></p>
 <h2 id="chatcompletiondiagnosticstokens-property">ChatCompletionDiagnostics.Tokens Property<a class="headerlink" href="#chatcompletiondiagnosticstokens-property" title="Permanent link">&para;</a></h2>
 <p>Token usage breakdown for this single call.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">TokenUsage</span><span class="w"> </span><span class="n">Tokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">TokenUsage</span><span class="w"> </span><span class="n">Tokens</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_9">Property Value<a class="headerlink" href="#property-value_9" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_13">Property Value<a class="headerlink" href="#property-value_13" title="Permanent link">&para;</a></h4>
 <p><a href="../TokenUsage/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a></p>
 
 

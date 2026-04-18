@@ -438,25 +438,6 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../articles/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Articles
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
       <a href="../../../../video-tutorials/" class="md-tabs__link">
         
   
@@ -1058,6 +1039,34 @@
     
   
     Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
   
 
     
@@ -3424,33 +3433,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../articles/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Articles
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../../video-tutorials/" class="md-nav__link">
         
   
@@ -3503,38 +3485,40 @@ including tool calls made, any text response produced, token usage, and wall-clo
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; IterationRecord</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord">IterationRecord</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
 <h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int)'></a></p>
-<h2 id="iterationrecordint-ireadonlylisttoolcallresult-string-tokenusage-timespan-int-int-constructor">IterationRecord(int, IReadOnlyList&lt;ToolCallResult&gt;, string, TokenUsage, TimeSpan, int, int) Constructor<a class="headerlink" href="#iterationrecordint-ireadonlylisttoolcallresult-string-tokenusage-timespan-int-int-constructor" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int)'></a></p>
+<h2 id="iterationrecordint-ireadonlylisttoolcallresult-chatresponse-tokenusage-timespan-int-int-constructor">IterationRecord(int, IReadOnlyList&lt;ToolCallResult&gt;, ChatResponse, TokenUsage, TimeSpan, int, int) Constructor<a class="headerlink" href="#iterationrecordint-ireadonlylisttoolcallresult-chatresponse-tokenusage-timespan-int-int-constructor" title="Permanent link">&para;</a></h2>
 <p>Captures what happened during a single iteration of an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a>,
 including tool calls made, any text response produced, token usage, and wall-clock duration.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">IterationRecord</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">Iteration</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolCallResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ToolCalls</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">ResponseText</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">TokenUsage</span><span class="w"> </span><span class="n">Tokens</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Duration</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">LlmCallCount</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ToolCallCount</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">IterationRecord</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">Iteration</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolCallResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ToolCalls</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatResponse</span><span class="o">?</span><span class="w"> </span><span class="n">FinalResponse</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">TokenUsage</span><span class="w"> </span><span class="n">Tokens</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Duration</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">LlmCallCount</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ToolCallCount</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Iteration'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Iteration'></a></p>
 <p><code>Iteration</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Zero-based iteration index.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).ToolCalls'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).ToolCalls'></a></p>
 <p><code>ToolCalls</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="../ToolCallResult/" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult">ToolCallResult</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
 <p>All tool calls executed during this iteration, in execution order.
 Empty if the model produced a text response without requesting tools.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).ResponseText'></a></p>
-<p><code>ResponseText</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>The text content the model produced during this iteration, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>
-if the model only made tool calls. In <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a> and
-<a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound">MultiRound</a> modes, this is the final text response after
-tool results were sent back.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Tokens'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).FinalResponse'></a></p>
+<p><code>FinalResponse</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a></p>
+<p>The final <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a> produced by the model during this iteration
+(preserving full message content, role, usage, and metadata), or
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if the model only made tool calls without a terminating
+text response. In <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a> and
+<a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound">MultiRound</a> modes, this is the response emitted after
+tool results were sent back. Call <code>.Text</code> for a flat text view when evaluating.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Tokens'></a></p>
 <p><code>Tokens</code> <a href="../TokenUsage/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a></p>
 <p>Aggregate token usage across all LLM calls in this iteration.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Duration'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).Duration'></a></p>
 <p><code>Duration</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p>Wall-clock time for the entire iteration (LLM calls + tool execution).</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).LlmCallCount'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).LlmCallCount'></a></p>
 <p><code>LlmCallCount</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Number of LLM calls made during this iteration. Always 1 for
 <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.SingleCall" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.SingleCall">SingleCall</a>, at most 2 for
 <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a>.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,string,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).ToolCallCount'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.IterationRecord(int,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult_,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage,System.TimeSpan,int,int).ToolCallCount'></a></p>
 <p><code>ToolCallCount</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Number of tool calls executed during this iteration.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
@@ -3545,32 +3529,34 @@ tool results were sent back.</p>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.FinalResponse'></a></p>
+<h2 id="iterationrecordfinalresponse-property">IterationRecord.FinalResponse Property<a class="headerlink" href="#iterationrecordfinalresponse-property" title="Permanent link">&para;</a></h2>
+<p>The final <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a> produced by the model during this iteration
+(preserving full message content, role, usage, and metadata), or
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if the model only made tool calls without a terminating
+text response. In <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a> and
+<a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound">MultiRound</a> modes, this is the response emitted after
+tool results were sent back. Call <code>.Text</code> for a flat text view when evaluating.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatResponse</span><span class="o">?</span><span class="w"> </span><span class="n">FinalResponse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.Iteration'></a></p>
 <h2 id="iterationrecorditeration-property">IterationRecord.Iteration Property<a class="headerlink" href="#iterationrecorditeration-property" title="Permanent link">&para;</a></h2>
 <p>Zero-based iteration index.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Iteration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Iteration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.LlmCallCount'></a></p>
 <h2 id="iterationrecordllmcallcount-property">IterationRecord.LlmCallCount Property<a class="headerlink" href="#iterationrecordllmcallcount-property" title="Permanent link">&para;</a></h2>
 <p>Number of LLM calls made during this iteration. Always 1 for
 <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.SingleCall" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.SingleCall">SingleCall</a>, at most 2 for
 <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">LlmCallCount</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.ResponseText'></a></p>
-<h2 id="iterationrecordresponsetext-property">IterationRecord.ResponseText Property<a class="headerlink" href="#iterationrecordresponsetext-property" title="Permanent link">&para;</a></h2>
-<p>The text content the model produced during this iteration, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>
-if the model only made tool calls. In <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.OneRoundTrip">OneRoundTrip</a> and
-<a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound">MultiRound</a> modes, this is the final text response after
-tool results were sent back.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">ResponseText</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">LlmCallCount</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord.Tokens'></a></p>
 <h2 id="iterationrecordtokens-property">IterationRecord.Tokens Property<a class="headerlink" href="#iterationrecordtokens-property" title="Permanent link">&para;</a></h2>
 <p>Aggregate token usage across all LLM calls in this iteration.</p>
