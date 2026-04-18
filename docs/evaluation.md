@@ -1,25 +1,26 @@
 # Evaluation
 
-Needlr's agent framework is designed to plug directly into [Microsoft.Extensions.AI.Evaluation](https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries) without adapters or flattening.
+Needlr's agent framework plugs directly into [`Microsoft.Extensions.AI.Evaluation`](https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries) without adapters or flattening.
 
 ## Overview
 
-`Microsoft.Extensions.AI.Evaluation` (MEAI.Evaluation) evaluates LLM interactions by consuming native MEAI primitives: `ChatMessage`, `ChatResponse`, and `UsageDetails`. To feed a Needlr-powered agent run into an evaluator, the same shapes must be present on Needlr's result surfaces.
+`Microsoft.Extensions.AI.Evaluation` (MEAI.Evaluation) evaluates LLM interactions by consuming native MEAI primitives: `ChatMessage`, `ChatResponse`, and `UsageDetails`. Needlr exposes these same shapes on its result surfaces, so evaluators slot in directly — no string flattening, no re-hydration step.
 
-Phase 1 of Needlr's evaluation support retypes the live-path surfaces so evaluators slot in directly — no string flattening, no re-hydration step.
+## Live-path result types
 
-## Phase 1 live-path retypes
+The surfaces an agent run returns expose full MEAI types rather than flattened strings, so the output of a run is feedable to an evaluator as-is.
 
-| Surface | Before | After |
-|---|---|---|
-| `IterativeLoopResult.FinalResponse` | `string?` | `ChatResponse?` |
-| `IterationRecord.ResponseText` | `string?` | `FinalResponse : ChatResponse?` (renamed + retyped) |
-| `TerminationContext.ResponseText` | `string` (required) | Removed; `LastMessage : ChatMessage?` added; `Usage` populated |
-| `IAgentStageResult.ResponseText` | `string` | `FinalResponse : ChatResponse?` |
-| `AgentStageResult` | positional `string` | positional `ChatResponse?` |
-| `IPipelineRunResult.Responses` | `IReadOnlyDictionary<string, string>` | `FinalResponses : IReadOnlyDictionary<string, ChatResponse?>` |
+| Surface | Type |
+|---|---|
+| `IterativeLoopResult.FinalResponse` | `ChatResponse?` |
+| `IterationRecord.FinalResponse` | `ChatResponse?` |
+| `TerminationContext.LastMessage` | `ChatMessage?` |
+| `TerminationContext.Usage` | `UsageDetails?` |
+| `IAgentStageResult.FinalResponse` | `ChatResponse?` |
+| `AgentStageResult` | positional `ChatResponse?` |
+| `IPipelineRunResult.FinalResponses` | `IReadOnlyDictionary<string, ChatResponse?>` |
 
-These are **hard breaks** on the alpha channel. Callers that previously read flattened strings now receive full `ChatResponse` / `ChatMessage` objects. Use `response.Text` to recover the string projection when needed.
+Use `response.Text` when a string projection is needed.
 
 ## Wiring an evaluator
 
@@ -51,7 +52,7 @@ using NexusLabs.Needlr.AgentFramework.Iterative;
 IEnumerable<AIContent> trajectory = iterationRecord.ToToolCallTrajectory();
 ```
 
-The returned sequence alternates `FunctionCallContent` (the call) and `FunctionResultContent` (the result) in call order — the exact shape MEAI.Evaluation evaluators consume when they land in a future `Microsoft.Extensions.AI.Evaluation.Quality` release that ships a tool-call evaluator.
+The returned sequence alternates `FunctionCallContent` (the call) and `FunctionResultContent` (the result) in call order — the exact shape MEAI.Evaluation tool-call evaluators consume.
 
 ## Example
 
@@ -65,16 +66,16 @@ dotnet run --project src/Examples/AgentFramework/EvaluationExampleApp
 
 ## Post-hoc replay from diagnostics
 
-As of Phase 2, `ChatCompletionDiagnostics` and `ToolCallDiagnostics` capture enough information that a serialized `AgentRunDiagnostics` is sufficient for offline replay and evaluation — no need to re-invoke the agent or the underlying model.
+A serialized `AgentRunDiagnostics` is sufficient for offline replay and evaluation — no need to re-invoke the agent or the underlying model.
 
-| Diagnostic | New property | Contents |
+| Diagnostic | Property | Contents |
 |---|---|---|
 | `ChatCompletionDiagnostics` | `RequestMessages : IReadOnlyList<ChatMessage>?` | The exact messages sent to the chat client on that call. |
 | `ChatCompletionDiagnostics` | `Response : ChatResponse?` | The full response returned by the chat client (null on failure). |
 | `ToolCallDiagnostics` | `Arguments : IReadOnlyDictionary<string, object?>?` | Snapshot of the arguments the tool was invoked with. |
 | `ToolCallDiagnostics` | `Result : object?` | The value returned by the tool invocation (null on failure). |
 
-All four properties are init-only, default to `null`, and are populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware`. On the alpha channel, capture is always on — there is no opt-out flag yet.
+All four properties are init-only, default to `null`, and are populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware`. Capture is always on.
 
 With these in hand you can rehydrate a MEAI `ChatResponse` + trajectory from a persisted diagnostics document and feed it into any `IEvaluator` offline.
 
@@ -86,7 +87,7 @@ Evaluation and agent-assisted debugging both depend on **replay-grade** transcri
 
 `DiagnosticsChatClientMiddleware` instruments both paths:
 
-- `GetResponseAsync` — captured on completion (existed prior).
+- `GetResponseAsync` — captured on completion.
 - `GetStreamingResponseAsync` — streaming updates are teed through to the caller in real time, then buffered via `ToChatResponse()` at stream completion. The synthesized `ChatResponse` is written to `ChatCompletionDiagnostics.Response` with identical shape to the non-streaming path.
 
 Errors mid-stream still populate `ChatCompletionDiagnostics.{Success=false, ErrorMessage, Response}` with the partial response built from updates observed before the failure. No data is silently dropped.
@@ -95,7 +96,7 @@ Errors mid-stream still populate `ChatCompletionDiagnostics.{Success=false, Erro
 
 `DiagnosticsAgentRunMiddleware` instruments both agent-run paths:
 
-- `HandleAsync` — captured on completion (existed prior).
+- `HandleAsync` — captured on completion.
 - `HandleStreamingAsync` — `AgentResponseUpdate`s are teed through to the caller in real time while distinct non-null `MessageId`s accumulate into `AgentRunDiagnostics.TotalOutputMessages`. On stream completion the builder is finalized and written to the configured `IAgentDiagnosticsWriter` with identical shape to the non-streaming path.
 
 Mid-stream failures record the partial output-message count observed so far and call `AgentRunDiagnosticsBuilder.RecordFailure(...)` before rethrowing, so streaming agent runs surface in diagnostics the same way non-streaming runs do.
@@ -155,9 +156,4 @@ The output is byte-stable across locales — it uses `CultureInfo.InvariantCultu
 - `## Output response` — only emitted when `OutputResponse` is non-null and carries at least one message.
 - `## Error` — only emitted when `Succeeded` is false.
 
-No new live-path behavior; the renderer is purely a read-side projection over the existing `IAgentRunDiagnostics` surface.
-
-## Further phases (planned)
-
-- **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.
-- **Phase 4** — xUnit harness (`NeedlrEvaluationFixture`, `[NeedlrEvaluationFact]`) + Needlr-native evaluators (`ToolCallTrajectoryEvaluator`, `IterationCoherenceEvaluator`, `TerminationAppropriatenessEvaluator`).
+The renderer is a read-side projection over `IAgentRunDiagnostics` — calling it has no effect on the live path.
