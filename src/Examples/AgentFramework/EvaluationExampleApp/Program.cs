@@ -65,15 +65,50 @@ await TryRunEvaluatorAsync(
     });
 
 PrintSection("Demo B — ToolCallAccuracyEvaluator on trajectory");
-WriteColored(
-    ConsoleColor.DarkYellow,
-    "  [SKIPPED] ToolCallAccuracyEvaluator is not shipped in Microsoft.Extensions.AI.Evaluation.Quality 9.6.0.");
-WriteColored(
-    ConsoleColor.DarkYellow,
-    "    The trajectory emitted by IterationRecord.ToToolCallTrajectory() above is the");
-WriteColored(
-    ConsoleColor.DarkYellow,
-    "    exact MEAI-native shape such an evaluator would consume when it becomes available.");
+await TryRunEvaluatorAsync(
+    "ToolCallAccuracyEvaluator",
+    async () =>
+    {
+        // ToolCallAccuracyEvaluator is flagged [Experimental("AIEVAL001")] in
+        // Microsoft.Extensions.AI.Evaluation.Quality. Suppress only at the
+        // instantiation + context-construction site so the rest of the sample
+        // stays warning-clean.
+#pragma warning disable AIEVAL001
+        var evaluator = new ToolCallAccuracyEvaluator();
+
+        // The evaluator inspects FunctionCallContent in modelResponse and
+        // cross-references it against the supplied tool definitions.
+        var getWeatherTool = AIFunctionFactory.Create(
+            (string city) => $"Weather for {city}",
+            name: "get_weather",
+            description: "Gets the current weather for a given city.");
+
+        var toolContext = new ToolCallAccuracyEvaluatorContext(getWeatherTool);
+#pragma warning restore AIEVAL001
+
+        var userPrompt = new ChatMessage(
+            ChatRole.User,
+            "Summarize the weather in Seattle and Portland.");
+
+        // Collapse all FunctionCallContents from the trajectory into a single
+        // assistant ChatResponse — this is the "model response being judged".
+        var functionCalls = trajectory
+            .Where(m => m.Role == ChatRole.Assistant)
+            .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
+            .Cast<AIContent>()
+            .ToList();
+        var assistantMessage = new ChatMessage(ChatRole.Assistant, functionCalls);
+        var response = new ChatResponse([assistantMessage])
+        {
+            ModelId = "mock-model",
+        };
+
+        return await evaluator.EvaluateAsync(
+            [userPrompt],
+            response,
+            chatConfiguration,
+            [toolContext]);
+    });
 
 PrintSection("Demo C — Character counts on captured diagnostics (Phase 2.5c)");
 PrintCharCountsDemo();

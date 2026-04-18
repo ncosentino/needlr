@@ -163,8 +163,14 @@ hook may be introduced before stable.
   `src/Examples/AgentFramework/` demonstrating `RelevanceEvaluator` on an
   `IterativeLoopResult.FinalResponse`, plus the trajectory-adapter shape for
   future tool-call evaluators.
-- **`Microsoft.Extensions.AI.Evaluation` + `.Evaluation.Quality`** pinned in
-  `Directory.Packages.props` (9.6.0).
+- **`Microsoft.Extensions.AI.Evaluation` + `.Evaluation.Quality` + `.Evaluation.Reporting`**
+  pinned in `Directory.Packages.props` at `10.5.0`. The Quality package version
+  unlocks `ToolCallAccuracyEvaluator`, which is flagged `[Experimental("AIEVAL001")]`
+  and must be suppressed at the call site.
+- **`EvaluationExampleApp` — Demo B** now wires `ToolCallAccuracyEvaluator`
+  end-to-end against the tool-call trajectory, demonstrating how to split a
+  trajectory into `messages` + `ChatResponse` and pass tool definitions via
+  `ToolCallAccuracyEvaluatorContext`.
 - **`docs/evaluation.md`** — new documentation page covering the retype
   surface, wiring, trajectory adapter, and the phased roadmap (Phases 2–4:
   diagnostics capture, dedicated `.Evaluation` assembly, xUnit harness).
