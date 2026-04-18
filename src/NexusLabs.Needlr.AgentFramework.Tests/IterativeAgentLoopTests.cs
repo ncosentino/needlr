@@ -1783,5 +1783,91 @@ public sealed class IterativeAgentLoopTests
     }
 
     #endregion
+
+    #region Payload Capture (Bug #2)
+
+    [Fact]
+    public async Task RunAsync_ChatCompletion_CapturesRequestAndResponsePayloads()
+    {
+        var mockChat = CreateMockChatWithTokens("done", 42, 17);
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            promptFactory: _ => "hello",
+            isComplete: _ => true);
+        var context = CreateContext();
+
+        var result = await loop.RunAsync(options, context, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        Assert.Single(result.Diagnostics.ChatCompletions);
+        var chat = result.Diagnostics.ChatCompletions[0];
+        Assert.NotNull(chat.RequestMessages);
+        Assert.NotEmpty(chat.RequestMessages);
+        Assert.True(chat.RequestCharCount > 0, "Expected RequestCharCount to reflect captured request messages");
+        Assert.NotNull(chat.Response);
+        Assert.True(chat.ResponseCharCount > 0, "Expected ResponseCharCount to reflect captured response");
+    }
+
+    [Fact]
+    public async Task RunAsync_ToolCall_SingleCallMode_CapturesArgumentsAndResult()
+    {
+        await AssertToolCallPayloadCaptured(ToolResultMode.SingleCall);
+    }
+
+    [Fact]
+    public async Task RunAsync_ToolCall_OneRoundTripMode_CapturesArgumentsAndResult()
+    {
+        await AssertToolCallPayloadCaptured(ToolResultMode.OneRoundTrip);
+    }
+
+    [Fact]
+    public async Task RunAsync_ToolCall_MultiRoundMode_CapturesArgumentsAndResult()
+    {
+        await AssertToolCallPayloadCaptured(ToolResultMode.MultiRound);
+    }
+
+    private static async Task AssertToolCallPayloadCaptured(ToolResultMode toolResultMode)
+    {
+        var tool = CreateToolWithArgs("search", input => $"result-for-{input}");
+
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return CreateToolCallResponse(
+                        ("search", "call-1", new Dictionary<string, object?> { { "input", "query-value" } }));
+                }
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "done")]);
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            promptFactory: _ => "invoke tool",
+            tools: [tool],
+            maxIterations: 2,
+            toolResultMode: toolResultMode);
+        var context = CreateContext();
+
+        var result = await loop.RunAsync(options, context, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        Assert.NotEmpty(result.Diagnostics.ToolCalls);
+        var toolCall = result.Diagnostics.ToolCalls[0];
+        Assert.Equal("search", toolCall.ToolName);
+        Assert.NotNull(toolCall.Arguments);
+        Assert.True(toolCall.ArgumentsCharCount > 0, "Expected ArgumentsCharCount to reflect captured arguments");
+        Assert.NotNull(toolCall.Result);
+        Assert.True(toolCall.ResultCharCount > 0, "Expected ResultCharCount to reflect captured tool result");
+    }
+
+    #endregion
 }
 
