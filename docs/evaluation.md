@@ -100,6 +100,17 @@ Errors mid-stream still populate `ChatCompletionDiagnostics.{Success=false, Erro
 
 Mid-stream failures record the partial output-message count observed so far and call `AgentRunDiagnosticsBuilder.RecordFailure(...)` before rethrowing, so streaming agent runs surface in diagnostics the same way non-streaming runs do.
 
+### Character counts
+
+Tokens are an LLM-reported abstraction; character counts are a direct measure of the payload Needlr actually shipped and received. Both are captured on every completion.
+
+- **`ChatCompletionDiagnostics.RequestCharCount`** — sum of `TextContent.Text?.Length` across all `RequestMessages`.
+- **`ChatCompletionDiagnostics.ResponseCharCount`** — sum of text length across the aggregated `Response`.
+- **`ToolCallDiagnostics.ArgumentsCharCount`** — length of the `System.Text.Json` serialization of the captured `Arguments` dictionary.
+- **`ToolCallDiagnostics.ResultCharCount`** — length of the `System.Text.Json` serialization of the captured `Result`.
+
+Populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware` on both success and failure paths. `DiagnosticsCharCounter` (in `NexusLabs.Needlr.AgentFramework.Diagnostics`) exposes the same helpers for callers who want to compute counts outside the middlewares. All helpers are null-safe and exception-tolerant — a counter failure never destabilizes the live path; it just yields `0`.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

@@ -107,6 +107,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 AgentName = builder?.AgentName,
                 RequestMessages = messageList as IReadOnlyList<ChatMessage> ?? messageList.ToList(),
                 Response = response,
+                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messageList as IReadOnlyList<ChatMessage> ?? messageList.ToList()),
+                ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(response),
             };
 
             builder?.AddChatCompletion(diagnostics);
@@ -152,6 +154,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             {
                 AgentName = builder?.AgentName,
                 RequestMessages = failedMessageList,
+                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(failedMessageList),
             };
 
             builder?.AddChatCompletion(diagnostics);
@@ -269,6 +272,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 AgentName = builder?.AgentName,
                 RequestMessages = messageList,
                 Response = aggregated,
+                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messageList),
+                ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(aggregated),
             };
 
             builder?.AddChatCompletion(diagnostics);
@@ -309,6 +314,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 AgentName = builder?.AgentName,
                 RequestMessages = messageList,
                 Response = aggregated,
+                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messageList),
+                ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(aggregated),
             };
 
             builder?.AddChatCompletion(diagnostics);

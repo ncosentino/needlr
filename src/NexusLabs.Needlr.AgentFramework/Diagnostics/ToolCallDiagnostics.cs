@@ -65,4 +65,20 @@ public sealed record ToolCallDiagnostics(
     /// evaluation and replay.
     /// </summary>
     public object? Result { get; init; }
+
+    /// <summary>
+    /// Character count of the JSON-serialized representation of
+    /// <see cref="Arguments"/>. <c>0</c> when arguments are absent or
+    /// serialization failed. Useful for detecting unexpectedly large
+    /// tool argument payloads.
+    /// </summary>
+    public long ArgumentsCharCount { get; init; }
+
+    /// <summary>
+    /// Character count of the JSON-serialized representation of
+    /// <see cref="Result"/>. <c>0</c> when the result is absent or
+    /// serialization failed. Useful for detecting tool responses that
+    /// bloat the chat window.
+    /// </summary>
+    public long ResultCharCount { get; init; }
 }

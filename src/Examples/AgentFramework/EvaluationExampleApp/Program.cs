@@ -74,8 +74,74 @@ WriteColored(
     ConsoleColor.DarkYellow,
     "    exact MEAI-native shape such an evaluator would consume when it becomes available.");
 
+PrintSection("Demo C — Character counts on captured diagnostics (Phase 2.5c)");
+PrintCharCountsDemo();
+
 PrintHeader("Done");
 return 0;
+
+static void PrintCharCountsDemo()
+{
+    var requestMessages = new[]
+    {
+        new ChatMessage(ChatRole.System, "You are a helpful weather assistant."),
+        new ChatMessage(ChatRole.User, "Summarize the weather in Seattle and Portland."),
+    };
+    var responseMessage = new ChatMessage(
+        ChatRole.Assistant,
+        "Seattle is 52F with light rain; Portland is 55F and cloudy.");
+    var chatResponse = new ChatResponse([responseMessage]) { ModelId = "mock-model" };
+
+    var chatDiag = new ChatCompletionDiagnostics(
+        Sequence: 0,
+        Model: "mock-model",
+        Tokens: new TokenUsage(
+            InputTokens: 240,
+            OutputTokens: 60,
+            TotalTokens: 300,
+            CachedInputTokens: 0,
+            ReasoningTokens: 0),
+        InputMessageCount: requestMessages.Length,
+        Duration: TimeSpan.FromMilliseconds(450),
+        Succeeded: true,
+        ErrorMessage: null,
+        StartedAt: DateTimeOffset.UtcNow,
+        CompletedAt: DateTimeOffset.UtcNow)
+    {
+        RequestMessages = requestMessages,
+        Response = chatResponse,
+        RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(requestMessages),
+        ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(chatResponse),
+    };
+
+    Console.WriteLine(
+        $"  ChatCompletion  : in={chatDiag.Tokens.InputTokens}tok / {chatDiag.RequestCharCount}chars, " +
+        $"out={chatDiag.Tokens.OutputTokens}tok / {chatDiag.ResponseCharCount}chars");
+
+    var toolArgs = new Dictionary<string, object?> { ["city"] = "Seattle" };
+    var toolResult = "Seattle: 52F, light rain";
+    var toolDiag = new ToolCallDiagnostics(
+        Sequence: 1,
+        ToolName: "get_weather",
+        Duration: TimeSpan.FromMilliseconds(120),
+        Succeeded: true,
+        ErrorMessage: null,
+        StartedAt: DateTimeOffset.UtcNow,
+        CompletedAt: DateTimeOffset.UtcNow,
+        CustomMetrics: null)
+    {
+        Arguments = toolArgs,
+        Result = toolResult,
+        ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(toolArgs),
+        ResultCharCount = DiagnosticsCharCounter.JsonLength(toolResult),
+    };
+
+    Console.WriteLine(
+        $"  ToolCall        : {toolDiag.ToolName} " +
+        $"args={toolDiag.ArgumentsCharCount}chars, result={toolDiag.ResultCharCount}chars");
+    Console.WriteLine(
+        "  (Character counts are programmatic truth — computed from serialized payloads, not LLM-reported tokens.)");
+}
 
 static IterativeLoopResult BuildSampleLoopResult()
 {

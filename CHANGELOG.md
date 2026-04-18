@@ -51,6 +51,27 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Character counts on diagnostics (Phase 2.5c)
+
+- **`ChatCompletionDiagnostics`** — adds `RequestCharCount : long` and
+  `ResponseCharCount : long` init-only properties. Computed as the sum of
+  `TextContent.Text?.Length` across all messages in `RequestMessages` / the
+  response.
+- **`ToolCallDiagnostics`** — adds `ArgumentsCharCount : long` and
+  `ResultCharCount : long` init-only properties. Computed from
+  `System.Text.Json` serialized length of the captured arguments and result.
+- **`DiagnosticsCharCounter`** — new public helper in
+  `NexusLabs.Needlr.AgentFramework.Diagnostics` with
+  `ChatMessagesLength(IEnumerable<ChatMessage>?)`,
+  `ChatResponseLength(ChatResponse?)`, and `JsonLength(object?)`. Exception-
+  tolerant by design — capture sites never destabilize the live path.
+- Populated automatically by `DiagnosticsChatClientMiddleware` (all four
+  streaming + non-streaming × success + failure branches) and
+  `DiagnosticsFunctionCallingMiddleware` (both success and failure).
+- Complements token metrics with **programmatic truth**: tokens are an
+  LLM-reported abstraction; character counts are a direct measure of the
+  payload Needlr actually shipped and received.
+
 #### Agent Framework — Full-fidelity streaming transcript capture (Phase 2.5a)
 
 - **`DiagnosticsChatClientMiddleware`** now instruments `GetStreamingResponseAsync`

@@ -71,4 +71,19 @@ public sealed record ChatCompletionDiagnostics(
     /// Captured losslessly to enable post-hoc replay and evaluation.
     /// </summary>
     public ChatResponse? Response { get; init; }
+
+    /// <summary>
+    /// Total character count of the text content across every message in
+    /// <see cref="RequestMessages"/>. Complements token-based metrics with a
+    /// direct programmatic measure of payload size. Defaults to <c>0</c>
+    /// when not populated by the capture middleware.
+    /// </summary>
+    public long RequestCharCount { get; init; }
+
+    /// <summary>
+    /// Total character count of the text content across every message in
+    /// <see cref="Response"/>. Defaults to <c>0</c> when not populated by
+    /// the capture middleware.
+    /// </summary>
+    public long ResponseCharCount { get; init; }
 }

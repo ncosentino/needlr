@@ -76,6 +76,8 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         AgentName = diagnosticsBuilder?.AgentName,
                         Arguments = SnapshotArguments(context.Arguments),
                         Result = result,
+                        ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(SnapshotArguments(context.Arguments)),
+                        ResultCharCount = DiagnosticsCharCounter.JsonLength(result),
                     };
                     diagnosticsBuilder?.AddToolCall(toolDiag);
                     (toolCallCollector as ToolCallCollector)?.Add(toolDiag);
@@ -114,6 +116,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     {
                         AgentName = diagnosticsBuilder?.AgentName,
                         Arguments = SnapshotArguments(context.Arguments),
+                        ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(SnapshotArguments(context.Arguments)),
                     };
                     diagnosticsBuilder?.AddToolCall(failedToolDiag);
                     (toolCallCollector as ToolCallCollector)?.Add(failedToolDiag);
