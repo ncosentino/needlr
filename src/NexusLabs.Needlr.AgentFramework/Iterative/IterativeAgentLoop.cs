@@ -79,6 +79,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
         var diagnosticsBuilder = AgentRunDiagnosticsBuilder.StartNew(options.LoopName);
         diagnosticsBuilder.SetExecutionMode("IterativeLoop");
+        _metrics?.RecordRunStarted(options.LoopName);
 
         // Bridge: if an execution context accessor is available, set up a scope
         // so that DI-resolved tools can access the workspace via
@@ -256,7 +257,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     var roundResults = await ExecuteToolCallsAsync(
                         callsToExecute, options.Tools, diagnosticsBuilder,
                         i, options.OnToolCall, _progressReporterAccessor,
-                        cancellationToken)
+                        _metrics, cancellationToken)
                         .ConfigureAwait(false);
                     iterationToolCalls.AddRange(roundResults);
                     totalToolCalls += roundResults.Count;
@@ -450,6 +451,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         var diagnostics = diagnosticsBuilder.Build();
         diagnosticsBuilder.Dispose();
         _diagnosticsWriter?.Set(diagnostics);
+        _metrics?.RecordRunCompleted(diagnostics);
         executionContextScope?.Dispose();
 
         var configuration = new IterativeLoopConfiguration(
@@ -477,6 +479,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         int iteration,
         Func<int, ToolCallResult, Task>? onToolCall,
         IProgressReporterAccessor? progressAccessor,
+        IAgentMetrics? metrics,
         CancellationToken cancellationToken)
     {
         var toolMap = tools.OfType<AIFunction>()
@@ -525,6 +528,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     Arguments = ToReadOnly(fc.Arguments),
                     ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
+                metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: false, agentName: diagnosticsBuilder.AgentName);
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -571,6 +575,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                     ResultCharCount = DiagnosticsCharCounter.JsonLength(result),
                 });
+                metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: true, agentName: diagnosticsBuilder.AgentName);
 
                 reporter?.Report(new ToolCallCompletedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -614,6 +619,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     Arguments = ToReadOnly(fc.Arguments),
                     ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
+                metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: false, agentName: diagnosticsBuilder.AgentName);
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
