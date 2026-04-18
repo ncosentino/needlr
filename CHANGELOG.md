@@ -31,6 +31,24 @@ Callers that previously read `.ResponseText` / `.FinalResponse` as `string`
 should call `.GetText()` (existing `AgentResponseExtensions` helper) on the
 new `ChatResponse?` value to recover the flattened text when needed.
 
+#### Agent Framework — Lossless diagnostics capture (Phase 2)
+
+Phase 2 of MEAI.Evaluation integration. Diagnostics records now capture the full
+request/response and tool argument/result content so a serialized
+`AgentRunDiagnostics` is sufficient for offline replay and evaluation.
+
+- **`ChatCompletionDiagnostics`** — adds `RequestMessages : IReadOnlyList<ChatMessage>?`
+  and `Response : ChatResponse?` init-only properties. Populated automatically
+  by `DiagnosticsChatClientMiddleware` on both success and failure paths.
+- **`ToolCallDiagnostics`** — adds `Arguments : IReadOnlyDictionary<string, object?>?`
+  and `Result : object?` init-only properties. Populated automatically by
+  `DiagnosticsFunctionCallingMiddleware`; arguments are snapshotted into an
+  independent dictionary so later mutation of the MEAI `AIFunctionArguments`
+  does not alter captured diagnostics.
+
+On the alpha channel these captures are always on. A future opt-out / redaction
+hook may be introduced before stable.
+
 ### Added
 
 #### Agent Framework — Evaluation support (Phase 1)

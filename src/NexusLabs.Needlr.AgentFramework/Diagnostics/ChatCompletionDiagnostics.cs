@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -50,4 +52,23 @@ public sealed record ChatCompletionDiagnostics(
     /// chat client.
     /// </summary>
     public string? AgentName { get; init; }
+
+    /// <summary>
+    /// The full list of <see cref="ChatMessage"/> instances sent to the model for this
+    /// completion. Captured losslessly to enable post-hoc replay and evaluation
+    /// without re-invoking the agent. <see langword="null"/> if capture was unavailable
+    /// (e.g., on call failure before messages were materialized).
+    /// </summary>
+    /// <remarks>
+    /// Alpha default: always populated on success. This is the input side of the call
+    /// and is directly consumable by <c>Microsoft.Extensions.AI.Evaluation</c> evaluators.
+    /// </remarks>
+    public IReadOnlyList<ChatMessage>? RequestMessages { get; init; }
+
+    /// <summary>
+    /// The full <see cref="ChatResponse"/> returned by the model for this completion,
+    /// or <see langword="null"/> if the call failed or the response was not captured.
+    /// Captured losslessly to enable post-hoc replay and evaluation.
+    /// </summary>
+    public ChatResponse? Response { get; init; }
 }

@@ -50,4 +50,19 @@ public sealed record ToolCallDiagnostics(
     /// correct agent in multi-agent workflows where diagnostics are aggregated.
     /// </summary>
     public string? AgentName { get; init; }
+
+    /// <summary>
+    /// The arguments passed to the tool invocation, keyed by parameter name.
+    /// <see langword="null"/> if the tool took no arguments or capture was unavailable.
+    /// Captured losslessly to enable post-hoc replay and tool-call-accuracy evaluation.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?>? Arguments { get; init; }
+
+    /// <summary>
+    /// The value returned by the tool invocation, or <see langword="null"/> if the
+    /// tool returned <see langword="null"/> or the call failed. Captured losslessly
+    /// (the actual object returned, not a serialized form) to enable post-hoc
+    /// evaluation and replay.
+    /// </summary>
+    public object? Result { get; init; }
 }

@@ -73,7 +73,9 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null)
                     {
-                        AgentName = diagnosticsBuilder?.AgentName
+                        AgentName = diagnosticsBuilder?.AgentName,
+                        Arguments = SnapshotArguments(context.Arguments),
+                        Result = result,
                     };
                     diagnosticsBuilder?.AddToolCall(toolDiag);
                     (toolCallCollector as ToolCallCollector)?.Add(toolDiag);
@@ -110,7 +112,8 @@ internal static class DiagnosticsFunctionCallingMiddleware
                         CompletedAt: DateTimeOffset.UtcNow,
                         CustomMetrics: customMetrics.Count > 0 ? customMetrics : null)
                     {
-                        AgentName = diagnosticsBuilder?.AgentName
+                        AgentName = diagnosticsBuilder?.AgentName,
+                        Arguments = SnapshotArguments(context.Arguments),
                     };
                     diagnosticsBuilder?.AddToolCall(failedToolDiag);
                     (toolCallCollector as ToolCallCollector)?.Add(failedToolDiag);
@@ -133,5 +136,16 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     ToolMetricsAccessor.CurrentToolMetrics.Value = null;
                 }
             });
+    }
+
+    private static IReadOnlyDictionary<string, object?>? SnapshotArguments(
+        IDictionary<string, object?>? arguments)
+    {
+        if (arguments is null || arguments.Count == 0)
+        {
+            return null;
+        }
+
+        return new Dictionary<string, object?>(arguments);
     }
 }

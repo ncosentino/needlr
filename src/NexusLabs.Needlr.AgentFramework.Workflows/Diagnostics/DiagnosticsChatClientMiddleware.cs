@@ -102,7 +102,11 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 ErrorMessage: null,
                 StartedAt: startedAt,
                 CompletedAt: DateTimeOffset.UtcNow)
-            { AgentName = builder?.AgentName };
+            {
+                AgentName = builder?.AgentName,
+                RequestMessages = messageList as IReadOnlyList<ChatMessage> ?? messageList.ToList(),
+                Response = response,
+            };
 
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
@@ -132,6 +136,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
+            var failedMessageList = messages as IReadOnlyList<ChatMessage> ?? messages.ToList();
+
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: "unknown",
@@ -142,7 +148,10 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 ErrorMessage: ex.Message,
                 StartedAt: startedAt,
                 CompletedAt: DateTimeOffset.UtcNow)
-            { AgentName = builder?.AgentName };
+            {
+                AgentName = builder?.AgentName,
+                RequestMessages = failedMessageList,
+            };
 
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);

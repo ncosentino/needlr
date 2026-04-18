@@ -63,8 +63,22 @@ Run it:
 dotnet run --project src/Examples/AgentFramework/EvaluationExampleApp
 ```
 
+## Post-hoc replay from diagnostics
+
+As of Phase 2, `ChatCompletionDiagnostics` and `ToolCallDiagnostics` capture enough information that a serialized `AgentRunDiagnostics` is sufficient for offline replay and evaluation — no need to re-invoke the agent or the underlying model.
+
+| Diagnostic | New property | Contents |
+|---|---|---|
+| `ChatCompletionDiagnostics` | `RequestMessages : IReadOnlyList<ChatMessage>?` | The exact messages sent to the chat client on that call. |
+| `ChatCompletionDiagnostics` | `Response : ChatResponse?` | The full response returned by the chat client (null on failure). |
+| `ToolCallDiagnostics` | `Arguments : IReadOnlyDictionary<string, object?>?` | Snapshot of the arguments the tool was invoked with. |
+| `ToolCallDiagnostics` | `Result : object?` | The value returned by the tool invocation (null on failure). |
+
+All four properties are init-only, default to `null`, and are populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware`. On the alpha channel, capture is always on — there is no opt-out flag yet.
+
+With these in hand you can rehydrate a MEAI `ChatResponse` + trajectory from a persisted diagnostics document and feed it into any `IEvaluator` offline.
+
 ## Further phases (planned)
 
-- **Phase 2** — Add lossless transcript capture to `ChatCompletionDiagnostics` and tool argument/result capture to `ToolCallDiagnostics` so a serialized `AgentRunDiagnostics` is sufficient for offline replay + evaluation.
-- **Phase 3** — Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.
+- **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.
 - **Phase 4** — xUnit harness (`NeedlrEvaluationFixture`, `[NeedlrEvaluationFact]`) + Needlr-native evaluators (`ToolCallTrajectoryEvaluator`, `IterationCoherenceEvaluator`, `TerminationAppropriatenessEvaluator`).
