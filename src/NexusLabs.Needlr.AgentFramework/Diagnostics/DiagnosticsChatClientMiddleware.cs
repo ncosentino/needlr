@@ -18,12 +18,14 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 [DoNotAutoRegister]
 internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
-    private readonly IAgentMetrics _metrics;
-    private readonly IProgressReporterAccessor _progressAccessor;
+    private readonly IAgentMetrics? _metrics;
+    private readonly IProgressReporterAccessor? _progressAccessor;
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
     private int _sequenceCounter;
 
-    internal DiagnosticsChatClientMiddleware(IAgentMetrics metrics, IProgressReporterAccessor progressAccessor)
+    internal DiagnosticsChatClientMiddleware(
+        IAgentMetrics? metrics = null,
+        IProgressReporterAccessor? progressAccessor = null)
     {
         _metrics = metrics;
         _progressAccessor = progressAccessor;
@@ -54,16 +56,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = _metrics.ActivitySource.StartActivity("agent.chat", ActivityKind.Client);
+        using var activity = _metrics?.ActivitySource.StartActivity("agent.chat", ActivityKind.Client);
 
-        _progressAccessor.Current.Report(new LlmCallStartedEvent(
-            Timestamp: startedAt,
-            WorkflowId: _progressAccessor.Current.WorkflowId,
-            AgentId: _progressAccessor.Current.AgentId,
-            ParentAgentId: builder?.ParentAgentName,
-            Depth: _progressAccessor.Current.Depth,
-            SequenceNumber: _progressAccessor.Current.NextSequence(),
-            CallSequence: sequence));
+        if (_progressAccessor is not null)
+        {
+            _progressAccessor.Current.Report(new LlmCallStartedEvent(
+                Timestamp: startedAt,
+                WorkflowId: _progressAccessor.Current.WorkflowId,
+                AgentId: _progressAccessor.Current.AgentId,
+                ParentAgentId: builder?.ParentAgentName,
+                Depth: _progressAccessor.Current.Depth,
+                SequenceNumber: _progressAccessor.Current.NextSequence(),
+                CallSequence: sequence));
+        }
 
         try
         {
@@ -78,7 +83,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             activity?.SetTag("agent.chat.sequence", sequence);
             activity?.SetTag("status", "success");
 
-            _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
+            _metrics?.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
 
             var usage = response.Usage;
             var tokens = new TokenUsage(
@@ -114,19 +119,22 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            _progressAccessor.Current.Report(new LlmCallCompletedEvent(
-                Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: _progressAccessor.Current.WorkflowId,
-                AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: builder?.ParentAgentName,
-                Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: _progressAccessor.Current.NextSequence(),
-                CallSequence: sequence,
-                Model: model,
-                Duration: stopwatch.Elapsed,
-                InputTokens: tokens.InputTokens,
-                OutputTokens: tokens.OutputTokens,
-                TotalTokens: tokens.TotalTokens));
+            if (_progressAccessor is not null)
+            {
+                _progressAccessor.Current.Report(new LlmCallCompletedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: _progressAccessor.Current.WorkflowId,
+                    AgentId: _progressAccessor.Current.AgentId,
+                    ParentAgentId: builder?.ParentAgentName,
+                    Depth: _progressAccessor.Current.Depth,
+                    SequenceNumber: _progressAccessor.Current.NextSequence(),
+                    CallSequence: sequence,
+                    Model: model,
+                    Duration: stopwatch.Elapsed,
+                    InputTokens: tokens.InputTokens,
+                    OutputTokens: tokens.OutputTokens,
+                    TotalTokens: tokens.TotalTokens));
+            }
 
             return response;
         }
@@ -137,7 +145,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("status", "failed");
 
-            _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
+            _metrics?.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
             var failedMessageList = messages as IReadOnlyList<ChatMessage> ?? messages.ToList();
 
@@ -160,16 +168,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            _progressAccessor.Current.Report(new LlmCallFailedEvent(
-                Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: _progressAccessor.Current.WorkflowId,
-                AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: builder?.ParentAgentName,
-                Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: _progressAccessor.Current.NextSequence(),
-                CallSequence: sequence,
-                ErrorMessage: ex.Message,
-                Duration: stopwatch.Elapsed));
+            if (_progressAccessor is not null)
+            {
+                _progressAccessor.Current.Report(new LlmCallFailedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: _progressAccessor.Current.WorkflowId,
+                    AgentId: _progressAccessor.Current.AgentId,
+                    ParentAgentId: builder?.ParentAgentName,
+                    Depth: _progressAccessor.Current.Depth,
+                    SequenceNumber: _progressAccessor.Current.NextSequence(),
+                    CallSequence: sequence,
+                    ErrorMessage: ex.Message,
+                    Duration: stopwatch.Elapsed));
+            }
 
             throw;
         }
@@ -187,16 +198,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = _metrics.ActivitySource.StartActivity("agent.chat.stream", ActivityKind.Client);
+        using var activity = _metrics?.ActivitySource.StartActivity("agent.chat.stream", ActivityKind.Client);
 
-        _progressAccessor.Current.Report(new LlmCallStartedEvent(
-            Timestamp: startedAt,
-            WorkflowId: _progressAccessor.Current.WorkflowId,
-            AgentId: _progressAccessor.Current.AgentId,
-            ParentAgentId: builder?.ParentAgentName,
-            Depth: _progressAccessor.Current.Depth,
-            SequenceNumber: _progressAccessor.Current.NextSequence(),
-            CallSequence: sequence));
+        if (_progressAccessor is not null)
+        {
+            _progressAccessor.Current.Report(new LlmCallStartedEvent(
+                Timestamp: startedAt,
+                WorkflowId: _progressAccessor.Current.WorkflowId,
+                AgentId: _progressAccessor.Current.AgentId,
+                ParentAgentId: builder?.ParentAgentName,
+                Depth: _progressAccessor.Current.Depth,
+                SequenceNumber: _progressAccessor.Current.NextSequence(),
+                CallSequence: sequence));
+        }
 
         var messageList = messages as IReadOnlyList<ChatMessage> ?? messages.ToList();
         var buffered = new List<ChatResponseUpdate>();
@@ -245,7 +259,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             activity?.SetTag("agent.chat.sequence", sequence);
             activity?.SetTag("status", "success");
 
-            _metrics.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
+            _metrics?.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
 
             var usage = aggregated.Usage;
             var tokens = new TokenUsage(
@@ -279,26 +293,29 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            _progressAccessor.Current.Report(new LlmCallCompletedEvent(
-                Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: _progressAccessor.Current.WorkflowId,
-                AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: builder?.ParentAgentName,
-                Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: _progressAccessor.Current.NextSequence(),
-                CallSequence: sequence,
-                Model: model,
-                Duration: stopwatch.Elapsed,
-                InputTokens: tokens.InputTokens,
-                OutputTokens: tokens.OutputTokens,
-                TotalTokens: tokens.TotalTokens));
+            if (_progressAccessor is not null)
+            {
+                _progressAccessor.Current.Report(new LlmCallCompletedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: _progressAccessor.Current.WorkflowId,
+                    AgentId: _progressAccessor.Current.AgentId,
+                    ParentAgentId: builder?.ParentAgentName,
+                    Depth: _progressAccessor.Current.Depth,
+                    SequenceNumber: _progressAccessor.Current.NextSequence(),
+                    CallSequence: sequence,
+                    Model: model,
+                    Duration: stopwatch.Elapsed,
+                    InputTokens: tokens.InputTokens,
+                    OutputTokens: tokens.OutputTokens,
+                    TotalTokens: tokens.TotalTokens));
+            }
         }
         else
         {
             activity?.SetStatus(ActivityStatusCode.Error, failure.Message);
             activity?.SetTag("status", "failed");
 
-            _metrics.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
+            _metrics?.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
@@ -321,16 +338,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             builder?.AddChatCompletion(diagnostics);
             _allCompletions.Enqueue(diagnostics);
 
-            _progressAccessor.Current.Report(new LlmCallFailedEvent(
-                Timestamp: DateTimeOffset.UtcNow,
-                WorkflowId: _progressAccessor.Current.WorkflowId,
-                AgentId: _progressAccessor.Current.AgentId,
-                ParentAgentId: builder?.ParentAgentName,
-                Depth: _progressAccessor.Current.Depth,
-                SequenceNumber: _progressAccessor.Current.NextSequence(),
-                CallSequence: sequence,
-                ErrorMessage: failure.Message,
-                Duration: stopwatch.Elapsed));
+            if (_progressAccessor is not null)
+            {
+                _progressAccessor.Current.Report(new LlmCallFailedEvent(
+                    Timestamp: DateTimeOffset.UtcNow,
+                    WorkflowId: _progressAccessor.Current.WorkflowId,
+                    AgentId: _progressAccessor.Current.AgentId,
+                    ParentAgentId: builder?.ParentAgentName,
+                    Depth: _progressAccessor.Current.Depth,
+                    SequenceNumber: _progressAccessor.Current.NextSequence(),
+                    CallSequence: sequence,
+                    ErrorMessage: failure.Message,
+                    Duration: stopwatch.Elapsed));
+            }
 
             throw failure;
         }

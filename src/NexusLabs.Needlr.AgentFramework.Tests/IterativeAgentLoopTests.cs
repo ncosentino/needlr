@@ -1186,16 +1186,14 @@ public sealed class IterativeAgentLoopTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenMiddlewarePreRecordsCompletion_DoesNotDoubleRecord()
+    public async Task RunAsync_InternalMiddleware_RecordsExactlyOneCompletionPerCall()
     {
-        // Simulates the Workflows DiagnosticsChatClientMiddleware, which also
-        // records a ChatCompletionDiagnostics entry on the current builder.
-        // The loop must detect that recording already happened and skip its
-        // manual AddChatCompletion, otherwise token usage is doubled.
-        const int MiddlewareInputTokens = 100;
-        const int MiddlewareOutputTokens = 50;
+        // The loop internally wraps the chat client with DiagnosticsChatClientMiddleware,
+        // which is the single writer for chat completion diagnostics. Verify exactly one
+        // entry per LLM call, with correct token counts.
+        const int InputTokens = 100;
+        const int OutputTokens = 50;
 
-        var callCount = 0;
         var mockChat = new Mock<IChatClient>();
         mockChat
             .Setup(c => c.GetResponseAsync(
@@ -1204,32 +1202,13 @@ public sealed class IterativeAgentLoopTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(() =>
             {
-                callCount++;
-
-                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
-                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
-                    Sequence: builder.NextChatCompletionSequence(),
-                    Model: "middleware-model",
-                    Tokens: new TokenUsage(
-                        InputTokens: MiddlewareInputTokens,
-                        OutputTokens: MiddlewareOutputTokens,
-                        TotalTokens: MiddlewareInputTokens + MiddlewareOutputTokens,
-                        CachedInputTokens: 0,
-                        ReasoningTokens: 0),
-                    InputMessageCount: 1,
-                    Duration: TimeSpan.FromMilliseconds(42),
-                    Succeeded: true,
-                    ErrorMessage: null,
-                    StartedAt: DateTimeOffset.UtcNow,
-                    CompletedAt: DateTimeOffset.UtcNow));
-
                 var response = new ChatResponse(
                     [new ChatMessage(ChatRole.Assistant, "done")]);
                 response.Usage = new UsageDetails
                 {
-                    InputTokenCount = MiddlewareInputTokens,
-                    OutputTokenCount = MiddlewareOutputTokens,
-                    TotalTokenCount = MiddlewareInputTokens + MiddlewareOutputTokens,
+                    InputTokenCount = InputTokens,
+                    OutputTokenCount = OutputTokens,
+                    TotalTokenCount = InputTokens + OutputTokens,
                 };
                 return response;
             });
@@ -1242,27 +1221,24 @@ public sealed class IterativeAgentLoopTests
             CreateContext(),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(1, callCount);
-
         var completions = result.Diagnostics!.ChatCompletions;
         Assert.Single(completions);
-        Assert.Equal("middleware-model", completions[0].Model);
-        Assert.Equal(MiddlewareInputTokens, completions[0].Tokens.InputTokens);
-        Assert.Equal(MiddlewareOutputTokens, completions[0].Tokens.OutputTokens);
+        Assert.Equal(InputTokens, completions[0].Tokens.InputTokens);
+        Assert.Equal(OutputTokens, completions[0].Tokens.OutputTokens);
 
         var aggregate = result.Diagnostics.AggregateTokenUsage;
-        Assert.Equal(MiddlewareInputTokens, aggregate.InputTokens);
-        Assert.Equal(MiddlewareOutputTokens, aggregate.OutputTokens);
-        Assert.Equal(MiddlewareInputTokens + MiddlewareOutputTokens, aggregate.TotalTokens);
+        Assert.Equal(InputTokens, aggregate.InputTokens);
+        Assert.Equal(OutputTokens, aggregate.OutputTokens);
+        Assert.Equal(InputTokens + OutputTokens, aggregate.TotalTokens);
     }
 
     [Fact]
-    public async Task RunAsync_WhenMiddlewarePreRecordsMultipleRounds_AllEntriesRecordedExactlyOnce()
+    public async Task RunAsync_InternalMiddleware_MultiRound_RecordsExactlyOneEntryPerCall()
     {
-        // Multi-round variant of the duplication regression test to mirror the
-        // observed production symptom (identical consecutive pairs in the list).
-        const int MiddlewareInputTokens = 200;
-        const int MiddlewareOutputTokens = 75;
+        // Multi-round variant: the loop's internal middleware records one chat
+        // completion per LLM call across tool-call rounds. No external middleware.
+        const int InputTokens = 200;
+        const int OutputTokens = 75;
 
         var tool = CreateTool("ping", () => "pong");
         var callCount = 0;
@@ -1276,35 +1252,25 @@ public sealed class IterativeAgentLoopTests
             {
                 callCount++;
 
-                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
-                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
-                    Sequence: builder.NextChatCompletionSequence(),
-                    Model: $"middleware-model-{callCount}",
-                    Tokens: new TokenUsage(
-                        InputTokens: MiddlewareInputTokens,
-                        OutputTokens: MiddlewareOutputTokens,
-                        TotalTokens: MiddlewareInputTokens + MiddlewareOutputTokens,
-                        CachedInputTokens: 0,
-                        ReasoningTokens: 0),
-                    InputMessageCount: callCount,
-                    Duration: TimeSpan.FromMilliseconds(42),
-                    Succeeded: true,
-                    ErrorMessage: null,
-                    StartedAt: DateTimeOffset.UtcNow,
-                    CompletedAt: DateTimeOffset.UtcNow));
-
                 if (callCount == 1)
                 {
-                    return CreateToolCallResponse(("ping", "c1", null));
+                    var toolResp = CreateToolCallResponse(("ping", "c1", null));
+                    toolResp.Usage = new UsageDetails
+                    {
+                        InputTokenCount = InputTokens,
+                        OutputTokenCount = OutputTokens,
+                        TotalTokenCount = InputTokens + OutputTokens,
+                    };
+                    return toolResp;
                 }
 
                 var response = new ChatResponse(
                     [new ChatMessage(ChatRole.Assistant, "done")]);
                 response.Usage = new UsageDetails
                 {
-                    InputTokenCount = MiddlewareInputTokens,
-                    OutputTokenCount = MiddlewareOutputTokens,
-                    TotalTokenCount = MiddlewareInputTokens + MiddlewareOutputTokens,
+                    InputTokenCount = InputTokens,
+                    OutputTokenCount = OutputTokens,
+                    TotalTokenCount = InputTokens + OutputTokens,
                 };
                 return response;
             });
@@ -1323,13 +1289,11 @@ public sealed class IterativeAgentLoopTests
 
         var completions = result.Diagnostics!.ChatCompletions;
         Assert.Equal(2, completions.Count);
-        Assert.Equal("middleware-model-1", completions[0].Model);
-        Assert.Equal("middleware-model-2", completions[1].Model);
 
         var aggregate = result.Diagnostics.AggregateTokenUsage;
-        Assert.Equal(2 * MiddlewareInputTokens, aggregate.InputTokens);
-        Assert.Equal(2 * MiddlewareOutputTokens, aggregate.OutputTokens);
-        Assert.Equal(2 * (MiddlewareInputTokens + MiddlewareOutputTokens), aggregate.TotalTokens);
+        Assert.Equal(2 * InputTokens, aggregate.InputTokens);
+        Assert.Equal(2 * OutputTokens, aggregate.OutputTokens);
+        Assert.Equal(2 * (InputTokens + OutputTokens), aggregate.TotalTokens);
     }
 
     #endregion
@@ -2060,7 +2024,7 @@ public sealed class IterativeAgentLoopTests
     }
 
     [Fact]
-    public async Task RunAsync_WithMiddlewarePreRecording_SatisfiesAllInvariants()
+    public async Task RunAsync_MultiCallWithTools_SatisfiesAllInvariants()
     {
         var tool = CreateTool("ping", () => "pong");
         var callCount = 0;
@@ -2073,12 +2037,6 @@ public sealed class IterativeAgentLoopTests
             .ReturnsAsync(() =>
             {
                 callCount++;
-
-                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
-                var reqMessages = new List<ChatMessage>
-                {
-                    new(ChatRole.User, $"request-{callCount}")
-                }.AsReadOnly();
 
                 ChatResponse resp;
                 if (callCount == 1)
@@ -2096,23 +2054,6 @@ public sealed class IterativeAgentLoopTests
                     OutputTokenCount = 50,
                     TotalTokenCount = 150,
                 };
-
-                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
-                    Sequence: builder.NextChatCompletionSequence(),
-                    Model: $"middleware-{callCount}",
-                    Tokens: new TokenUsage(100, 50, 150, 0, 0),
-                    InputMessageCount: reqMessages.Count,
-                    Duration: TimeSpan.FromMilliseconds(42),
-                    Succeeded: true,
-                    ErrorMessage: null,
-                    StartedAt: DateTimeOffset.UtcNow,
-                    CompletedAt: DateTimeOffset.UtcNow)
-                {
-                    RequestMessages = reqMessages,
-                    Response = resp,
-                    RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(reqMessages),
-                    ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(resp),
-                });
 
                 return resp;
             });

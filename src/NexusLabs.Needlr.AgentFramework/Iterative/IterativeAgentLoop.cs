@@ -22,19 +22,22 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
     private readonly IAgentExecutionContextAccessor? _executionContextAccessor;
     private readonly IProgressReporterAccessor? _progressReporterAccessor;
     private readonly ITokenBudgetTracker? _budgetTracker;
+    private readonly IAgentMetrics? _metrics;
 
     internal IterativeAgentLoop(
         IChatClientAccessor chatClientAccessor,
         IAgentDiagnosticsWriter? diagnosticsWriter = null,
         IAgentExecutionContextAccessor? executionContextAccessor = null,
         IProgressReporterAccessor? progressReporterAccessor = null,
-        ITokenBudgetTracker? budgetTracker = null)
+        ITokenBudgetTracker? budgetTracker = null,
+        IAgentMetrics? metrics = null)
     {
         _chatClientAccessor = chatClientAccessor;
         _diagnosticsWriter = diagnosticsWriter;
         _executionContextAccessor = executionContextAccessor;
         _progressReporterAccessor = progressReporterAccessor;
         _budgetTracker = budgetTracker;
+        _metrics = metrics;
     }
 
     /// <summary>
@@ -57,6 +60,15 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         {
             chatClient = loopClientFactory(chatClient);
         }
+
+        // Wrap with the diagnostics recording middleware so chat completions
+        // are captured by a single writer. Metrics and progress are optional.
+        var chatMiddleware = new DiagnosticsChatClientMiddleware(_metrics, _progressReporterAccessor);
+        chatClient = chatClient
+            .AsBuilder()
+            .Use(getResponseFunc: chatMiddleware.HandleAsync,
+                getStreamingResponseFunc: chatMiddleware.HandleStreamingAsync)
+            .Build();
 
         var iterations = new List<IterationRecord>();
         ChatResponse? finalResponse = null;
@@ -178,14 +190,6 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         }
                     }
 
-                    var completionStartedAt = DateTimeOffset.UtcNow;
-                    var completionStopwatch = Stopwatch.StartNew();
-                    // Snapshot the chat-completion count so we can detect whether a middleware
-                    // in the chat client pipeline (e.g. DiagnosticsChatClientMiddleware from the
-                    // Workflows package) already recorded a ChatCompletionDiagnostics entry for
-                    // this call. If it did, we skip our own manual AddChatCompletion to avoid
-                    // double-counting tokens and producing duplicate entries.
-                    var completionCountBefore = diagnosticsBuilder.ChatCompletionCount;
                     ChatResponse response;
 
                     try
@@ -197,32 +201,14 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     {
                         throw; // let outer handler deal with cancellation
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        completionStopwatch.Stop();
-                        if (diagnosticsBuilder.ChatCompletionCount == completionCountBefore)
-                        {
-                            diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
-                                Sequence: diagnosticsBuilder.NextChatCompletionSequence(),
-                                Model: "unknown",
-                                Tokens: new TokenUsage(0, 0, 0, 0, 0),
-                                InputMessageCount: messages.Count,
-                                Duration: completionStopwatch.Elapsed,
-                                Succeeded: false,
-                                ErrorMessage: ex.Message,
-                                StartedAt: completionStartedAt,
-                                CompletedAt: DateTimeOffset.UtcNow)
-                            {
-                                AgentName = diagnosticsBuilder.AgentName,
-                                RequestMessages = messages.ToList().AsReadOnly(),
-                                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messages),
-                            });
-                        }
+                        // Chat completion diagnostics are recorded by the middleware
+                        // wrapping the chat client — the loop does not record them.
                         diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                         throw;
                     }
 
-                    completionStopwatch.Stop();
                     llmCallCount++;
 
                     // Track tokens
@@ -239,33 +225,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                     var responseMessageCount = response.Messages.Count;
 
-                    // Record chat completion diagnostics only if no middleware in the chat
-                    // client pipeline already recorded one for this call.
-                    if (diagnosticsBuilder.ChatCompletionCount == completionCountBefore)
-                    {
-                        diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
-                            Sequence: diagnosticsBuilder.NextChatCompletionSequence(),
-                            Model: response.ModelId ?? "unknown",
-                            Tokens: new TokenUsage(
-                                InputTokens: callInput,
-                                OutputTokens: callOutput,
-                                TotalTokens: callTotal,
-                                CachedInputTokens: 0,
-                                ReasoningTokens: 0),
-                            InputMessageCount: messages.Count,
-                            Duration: completionStopwatch.Elapsed,
-                            Succeeded: true,
-                            ErrorMessage: null,
-                            StartedAt: completionStartedAt,
-                            CompletedAt: DateTimeOffset.UtcNow)
-                        {
-                            AgentName = diagnosticsBuilder.AgentName,
-                            RequestMessages = messages.ToList().AsReadOnly(),
-                            Response = response,
-                            RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messages),
-                            ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(response),
-                        });
-                    }
+                    // Chat completion diagnostics are recorded by the middleware
+                    // wrapping the chat client — the loop does not record them.
                     diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                     diagnosticsBuilder.RecordOutputMessageCount(responseMessageCount);
 
