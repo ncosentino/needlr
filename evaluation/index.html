@@ -1266,11 +1266,161 @@
   
 </li>
         
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#native-agent-run-evaluators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native agent-run evaluators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Native agent-run evaluators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentrundiagnosticscontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AgentRunDiagnosticsContext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolcalltrajectoryevaluator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolCallTrajectoryEvaluator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iterationcoherenceevaluator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IterationCoherenceEvaluator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminationappropriatenessevaluator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TerminationAppropriatenessEvaluator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiring-native-evaluators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wiring native evaluators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-with-copilot-as-the-judge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing with Copilot as the judge
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing with Copilot as the judge">
+      <ul class="md-nav__list">
+        
           <li class="md-nav__item">
   <a href="#transcript-markdown" class="md-nav__link">
     <span class="md-ellipsis">
       
         Transcript markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capture-chat-client-middleware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capture-chat-client middleware
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capture-chat-client middleware">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cache-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#store-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Store contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-not-to-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When not to use it
       
     </span>
   </a>
@@ -3836,12 +3986,85 @@
 <li><strong><code>OutputResponse : AgentResponse?</code></strong> — the full response assembled at run completion. For non-streaming runs this is the underlying <code>AgentResponse</code>; for streaming runs the middleware aggregates <code>AgentResponseUpdate</code> fragments by <code>MessageId</code> (updates without an id become discrete messages keyed by arrival ordinal).</li>
 </ul>
 <p>Partial responses are still captured when a streaming run fails mid-stream — <code>OutputResponse</code> carries whatever messages were assembled before the fault, alongside <code>Succeeded = false</code> and the <code>ErrorMessage</code>. This makes a serialized <code>AgentRunDiagnostics</code> replay-complete: an evaluator can consume <code>InputMessages</code> + <code>OutputResponse</code> directly, without reaching back to the caller for the original prompt or the streamed output.</p>
+<h2 id="native-agent-run-evaluators">Native agent-run evaluators<a class="headerlink" href="#native-agent-run-evaluators" title="Permanent link">&para;</a></h2>
+<p><code>NexusLabs.Needlr.AgentFramework.Evaluation</code> ships three deterministic evaluators that operate directly on <code>IAgentRunDiagnostics</code>. They are pure computations over captured diagnostics — no LLM judge is invoked, so they run offline and are cheap enough to assert in unit tests.</p>
+<p>All three evaluators consume the same bridge type:</p>
+<h3 id="agentrundiagnosticscontext">AgentRunDiagnosticsContext<a class="headerlink" href="#agentrundiagnosticscontext" title="Permanent link">&para;</a></h3>
+<p><code>AgentRunDiagnosticsContext : EvaluationContext</code> wraps an <code>IAgentRunDiagnostics</code> instance and exposes it through an <code>EvaluationContext</code> so native evaluators (and MEAI-provided evaluators that accept supplemental context) can read diagnostics without a custom adapter.</p>
+<ul>
+<li><strong><code>ContextName = "Needlr Agent Run Diagnostics"</code></strong> — stable constant used as the context identifier.</li>
+<li><strong><code>Diagnostics</code></strong> — the wrapped <code>IAgentRunDiagnostics</code>.</li>
+<li><code>BuildContents()</code> emits a single <code>TextContent</code> summary of the run (agent name, execution mode, outcome, chat-completion count, tool-call count, duration) so MEAI judge-based evaluators that round-trip context through a prompt still see a readable summary.</li>
+</ul>
+<p>Evaluators downcast the context to <code>AgentRunDiagnosticsContext</code> to reach the full <code>Diagnostics</code> surface.</p>
+<h3 id="toolcalltrajectoryevaluator">ToolCallTrajectoryEvaluator<a class="headerlink" href="#toolcalltrajectoryevaluator" title="Permanent link">&para;</a></h3>
+<p>Reports on the sequence of tool calls across a run.</p>
+<ul>
+<li><strong><code>Tool Calls Total</code></strong> — total tool-call records observed.</li>
+<li><strong><code>Tool Calls Failed</code></strong> — count of records where <code>Succeeded</code> is false.</li>
+<li><strong><code>Tool Call Sequence Gaps</code></strong> — number of positions where consecutive tool-call <code>SequenceNumber</code> values are not strictly increasing by one.</li>
+<li><strong><code>All Tool Calls Succeeded</code></strong> — boolean rollup, true when every tool call succeeded.</li>
+</ul>
+<p>When no <code>AgentRunDiagnosticsContext</code> is present in the evaluation's additional context, the evaluator returns an empty result ("not applicable"). This lets callers include it unconditionally in a pipeline of evaluators.</p>
+<h3 id="iterationcoherenceevaluator">IterationCoherenceEvaluator<a class="headerlink" href="#iterationcoherenceevaluator" title="Permanent link">&para;</a></h3>
+<p>Reports on iterative-loop structure.</p>
+<ul>
+<li><strong><code>Iteration Count</code></strong> — number of <code>IterationRecord</code> entries.</li>
+<li><strong><code>Iteration Empty Outputs</code></strong> — count of iterations whose <code>FinalResponse</code> has no text content.</li>
+<li><strong><code>Terminated Coherently</code></strong> — boolean, true when the run reports a terminated-coherently signal consistent with the captured iterations.</li>
+</ul>
+<p>Gated on execution mode: the evaluator only emits metrics when <code>Diagnostics.ExecutionMode == "IterativeLoop"</code> (available as the <code>IterativeLoopExecutionMode</code> const). Other execution modes produce an empty result.</p>
+<h3 id="terminationappropriatenessevaluator">TerminationAppropriatenessEvaluator<a class="headerlink" href="#terminationappropriatenessevaluator" title="Permanent link">&para;</a></h3>
+<p>Reports on whether the run's terminal state is internally consistent.</p>
+<ul>
+<li><strong><code>Run Succeeded</code></strong> — boolean mirror of <code>Diagnostics.Succeeded</code>.</li>
+<li><strong><code>Termination Consistent</code></strong> — boolean, true when <code>Succeeded</code> agrees with the presence/absence of <code>ErrorMessage</code> (success ⇔ no error message).</li>
+<li><strong><code>Execution Mode</code></strong> — string metric carrying the run's execution mode, or the <code>UnknownExecutionMode = "Unknown"</code> fallback when null.</li>
+</ul>
+<h3 id="wiring-native-evaluators">Wiring native evaluators<a class="headerlink" href="#wiring-native-evaluators" title="Permanent link">&para;</a></h3>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentRunDiagnosticsContext</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">);</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kt">var</span><span class="w"> </span><span class="n">additionalContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="p">};</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">// ChatConfiguration is required by the MEAI evaluator contract even for</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">// deterministic evaluators. Pass a judge when you also run judge-based</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">// evaluators; deterministic evaluators ignore it.</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="kt">var</span><span class="w"> </span><span class="n">chatConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ChatConfiguration</span><span class="p">(</span><span class="n">judgeChatClient</span><span class="p">);</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="kt">var</span><span class="w"> </span><span class="n">trajectory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ToolCallTrajectoryEvaluator</span><span class="p">()</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="p">.</span><span class="n">EvaluateAsync</span><span class="p">(</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="n">messages</span><span class="p">:</span><span class="w"> </span><span class="n">Array</span><span class="p">.</span><span class="n">Empty</span><span class="o">&lt;</span><span class="n">ChatMessage</span><span class="o">&gt;</span><span class="p">(),</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">        </span><span class="n">modelResponse</span><span class="p">:</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ChatResponse</span><span class="p">(),</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">        </span><span class="n">chatConfiguration</span><span class="p">:</span><span class="w"> </span><span class="k">null</span><span class="p">,</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="n">additionalContext</span><span class="p">);</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="kt">var</span><span class="w"> </span><span class="n">coherence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterationCoherenceEvaluator</span><span class="p">()</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="p">.</span><span class="n">EvaluateAsync</span><span class="p">(</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">        </span><span class="n">messages</span><span class="p">:</span><span class="w"> </span><span class="n">Array</span><span class="p">.</span><span class="n">Empty</span><span class="o">&lt;</span><span class="n">ChatMessage</span><span class="o">&gt;</span><span class="p">(),</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">        </span><span class="n">modelResponse</span><span class="p">:</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ChatResponse</span><span class="p">(),</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span><span class="n">chatConfiguration</span><span class="p">:</span><span class="w"> </span><span class="k">null</span><span class="p">,</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">        </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="n">additionalContext</span><span class="p">);</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="kt">var</span><span class="w"> </span><span class="n">termination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TerminationAppropriatenessEvaluator</span><span class="p">()</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">    </span><span class="p">.</span><span class="n">EvaluateAsync</span><span class="p">(</span>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">        </span><span class="n">messages</span><span class="p">:</span><span class="w"> </span><span class="n">Array</span><span class="p">.</span><span class="n">Empty</span><span class="o">&lt;</span><span class="n">ChatMessage</span><span class="o">&gt;</span><span class="p">(),</span>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">        </span><span class="n">modelResponse</span><span class="p">:</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ChatResponse</span><span class="p">(),</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="n">chatConfiguration</span><span class="p">:</span><span class="w"> </span><span class="k">null</span><span class="p">,</span>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">        </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="n">additionalContext</span><span class="p">);</span>
+</span></code></pre></div>
+<p>Each <code>EvaluationResult</code> exposes metrics by name — use the <code>*MetricName</code> constants on each evaluator type to look them up without string literals at the call site.</p>
+<h2 id="testing-with-copilot-as-the-judge">Testing with Copilot as the judge<a class="headerlink" href="#testing-with-copilot-as-the-judge" title="Permanent link">&para;</a></h2>
+<p><code>NexusLabs.Needlr.AgentFramework.Evaluation.Testing</code> provides a reusable xUnit fixture and skip attribute for judge-based evaluator tests.</p>
+<ul>
+<li><strong><code>NeedlrEvaluationFixture</code></strong> — discovers a judge chat client from the environment (Copilot CLI by default) and exposes it as <code>Judge : IChatClient?</code>. When no judge provider is configured the property is <code>null</code> and judge-based tests are skipped.</li>
+<li><strong><code>RequiresEvaluationJudgeFactAttribute</code></strong> / <strong><code>RequiresEvaluationJudgeTheoryAttribute</code></strong> — xUnit attributes that skip the test at discovery time when no judge is available, so unconfigured machines see explicit skips rather than hard failures.</li>
+</ul>
+<p>Azure OpenAI is deliberately excluded from automatic discovery. Tests that hit a live model run only through Copilot CLI, which is rate-limited by the user's subscription rather than a metered API.</p>
 <h3 id="transcript-markdown">Transcript markdown<a class="headerlink" href="#transcript-markdown" title="Permanent link">&para;</a></h3>
 <p>For snapshot tests, review artifacts, and CI log attachments, render an entire agent run as deterministic Markdown with <code>ToTranscriptMarkdown()</code>:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Diagnostics</span><span class="p">;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kt">string</span><span class="w"> </span><span class="n">transcript</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diag</span><span class="p">.</span><span class="n">ToTranscriptMarkdown</span><span class="p">();</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;run.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">transcript</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Diagnostics</span><span class="p">;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kt">string</span><span class="w"> </span><span class="n">transcript</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diag</span><span class="p">.</span><span class="n">ToTranscriptMarkdown</span><span class="p">();</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;run.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">transcript</span><span class="p">);</span>
 </span></code></pre></div>
 <p>The output is byte-stable across locales — it uses <code>CultureInfo.InvariantCulture</code> for numeric formatting and <code>System.Text.Json</code> with <code>WriteIndented = true</code> for embedded tool arguments and results. Structure:</p>
 <ul>
@@ -3852,6 +4075,59 @@
 <li><code>## Error</code> — only emitted when <code>Succeeded</code> is false.</li>
 </ul>
 <p>The renderer is a read-side projection over <code>IAgentRunDiagnostics</code> — calling it has no effect on the live path.</p>
+<h2 id="capture-chat-client-middleware">Capture-chat-client middleware<a class="headerlink" href="#capture-chat-client-middleware" title="Permanent link">&para;</a></h2>
+<p>Evaluation suites and CI harnesses benefit from deterministic, repeatable chat responses: the first run against a real model captures the response; subsequent runs replay it without hitting the network. <code>EvaluationCaptureChatClient</code> is a transparent <code>IChatClient</code> decorator that implements this pattern.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Evaluation</span><span class="p">;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">IChatClient</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">realChatClient</span><span class="p">.</span><span class="n">WithEvaluationCapture</span><span class="p">(</span><span class="s">&quot;./cache/evaluation&quot;</span><span class="p">);</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1">// First call: delegates to realChatClient and persists the response.</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1">// Second call with the same request: served from the store, real client untouched.</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">ChatResponse</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">cached</span><span class="p">.</span><span class="n">GetResponseAsync</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="cache-key">Cache key<a class="headerlink" href="#cache-key" title="Permanent link">&para;</a></h3>
+<p>The key is a SHA-256 lowercase hex digest (64 chars) computed over:</p>
+<ul>
+<li>Each <code>ChatMessage</code> formatted as <code>"{role}:{text}\n"</code> in order.</li>
+<li>A <code>---\n</code> separator.</li>
+<li>The tuple <code>model</code>, <code>temperature</code>, <code>top_p</code>, <code>max_tokens</code> from the supplied <code>ChatOptions</code> (missing values emit empty strings, floats are formatted with <code>"R"</code> + <code>InvariantCulture</code>).</li>
+</ul>
+<p>The key intentionally excludes tool definitions, response format, and custom options. Two requests that differ only in those fields collide on the same cache entry — if your suite needs them to vary, route them to separate stores.</p>
+<h3 id="store-contract">Store contract<a class="headerlink" href="#store-contract" title="Permanent link">&para;</a></h3>
+<p><code>IEvaluationCaptureStore</code> has two methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Semantics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TryGetAsync(key, ct)</code></td>
+<td>Returns the captured <code>ChatResponse?</code> for the key, or <code>null</code> on miss.</td>
+</tr>
+<tr>
+<td><code>SaveAsync(key, response, ct)</code></td>
+<td>Persists the response under the key, overwriting any existing entry.</td>
+</tr>
+</tbody>
+</table>
+<p>Two implementations ship in-box:</p>
+<ul>
+<li><strong><code>FileEvaluationCaptureStore</code></strong> — one JSON file per key under a caller-supplied directory. Writes are atomic via write-then-rename. Directory is created on first save.</li>
+<li>Custom stores — implement <code>IEvaluationCaptureStore</code> for Redis, blob storage, in-memory dictionaries, or any other backing.</li>
+</ul>
+<p>Use the fluent extension to wrap a client with a file store:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">IChatClient</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">realChatClient</span><span class="p">.</span><span class="n">WithEvaluationCapture</span><span class="p">(</span><span class="s">&quot;./cache/evaluation&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<p>Or inject any <code>IEvaluationCaptureStore</code>:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">IChatClient</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">realChatClient</span><span class="p">.</span><span class="n">WithEvaluationCapture</span><span class="p">(</span><span class="n">myStore</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="streaming">Streaming<a class="headerlink" href="#streaming" title="Permanent link">&para;</a></h3>
+<p><code>GetStreamingResponseAsync</code> aggregates updates via <code>ToChatResponse()</code>, saves the aggregated response under the same key used by the non-streaming path, then re-emits the captured response as a single <code>ChatResponseUpdate</code>. A cache hit yields one update; the caller sees the same <code>await foreach</code> surface either way. Mid-stream failures are not cached — only complete responses reach the store.</p>
+<h3 id="when-not-to-use-it">When not to use it<a class="headerlink" href="#when-not-to-use-it" title="Permanent link">&para;</a></h3>
+<p>Capture-replay is unsuitable for suites that rely on response variance (temperature sampling across runs), suites that depend on live model behavior changes, or suites where the cache key's intentional omissions (tools, response format) would cause false hits. For those, bypass the decorator and use the underlying client directly.</p>
 
 
 

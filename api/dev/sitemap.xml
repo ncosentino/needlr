@@ -121,6 +121,54 @@
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ToolCallTrajectoryEvaluator/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationInputs/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/AgentRunDiagnosticsEvaluationExtensions/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationCaptureChatClientExtensions/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/FileEvaluationCaptureStore/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationCaptureChatClient/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/AgentRunDiagnosticsContext/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IterationCoherenceEvaluator/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IEvaluationCaptureStore/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/TerminationAppropriatenessEvaluator/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/NexusLabs.Needlr.AgentFramework.Evaluation/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.Avalonia/AvaloniaDesignTimeConstructorGenerator/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
@@ -1086,6 +1134,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IProgressSink/</loc>
+    <lastmod>2026-04-18</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IDiagnosticsSink/</loc>
     <lastmod>2026-04-18</lastmod>
   </url>
   <url>
