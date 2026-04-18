@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -30,8 +32,13 @@ public interface IPipelineRunResult
     /// <summary>Gets the per-stage results in execution order.</summary>
     IReadOnlyList<IAgentStageResult> Stages { get; }
 
-    /// <summary>Gets the responses as a dictionary (agent name → response text).</summary>
-    IReadOnlyDictionary<string, string> Responses { get; }
+    /// <summary>
+    /// Gets the final responses as a dictionary (agent name →
+    /// <see cref="ChatResponse"/>). When an agent ran multiple stages, the last
+    /// stage's response wins. Values may be <see langword="null"/> for stages that
+    /// produced no terminating text response.
+    /// </summary>
+    IReadOnlyDictionary<string, ChatResponse?> FinalResponses { get; }
 
     /// <summary>Gets the total wall-clock duration of the pipeline.</summary>
     TimeSpan TotalDuration { get; }

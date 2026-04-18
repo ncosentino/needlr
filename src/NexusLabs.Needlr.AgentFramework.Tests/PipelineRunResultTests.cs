@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
@@ -13,8 +14,8 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("Writer", "wrote something", null),
-            new AgentStageResult("Editor", "edited it", null),
+            new AgentStageResult("Writer", Resp("wrote something"), null),
+            new AgentStageResult("Editor", Resp("edited it"), null),
         };
 
         var result = CreateResult(stages);
@@ -29,15 +30,15 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("Writer", "text-1", null),
-            new AgentStageResult("Editor", "text-2", null),
+            new AgentStageResult("Writer", Resp("text-1"), null),
+            new AgentStageResult("Editor", Resp("text-2"), null),
         };
 
         var result = CreateResult(stages);
 
-        Assert.Equal(2, result.Responses.Count);
-        Assert.Equal("text-1", result.Responses["Writer"]);
-        Assert.Equal("text-2", result.Responses["Editor"]);
+        Assert.Equal(2, result.FinalResponses.Count);
+        Assert.Equal("text-1", result.FinalResponses["Writer"]?.Text);
+        Assert.Equal("text-2", result.FinalResponses["Editor"]?.Text);
     }
 
     // -------------------------------------------------------------------------
@@ -49,8 +50,8 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("A", "text", CreateDiagnostics("A", inputTokens: 10, outputTokens: 20, totalTokens: 30)),
-            new AgentStageResult("B", "text", CreateDiagnostics("B", inputTokens: 5, outputTokens: 15, totalTokens: 20)),
+            new AgentStageResult("A", Resp("text"), CreateDiagnostics("A", inputTokens: 10, outputTokens: 20, totalTokens: 30)),
+            new AgentStageResult("B", Resp("text"), CreateDiagnostics("B", inputTokens: 5, outputTokens: 15, totalTokens: 20)),
         };
 
         var result = CreateResult(stages);
@@ -66,7 +67,7 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("A", "text", null),
+            new AgentStageResult("A", Resp("text"), null),
         };
 
         var result = CreateResult(stages);
@@ -79,8 +80,8 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("A", "text", CreateDiagnostics("A", inputTokens: 10, outputTokens: 20, totalTokens: 30)),
-            new AgentStageResult("B", "text", null), // no diagnostics
+            new AgentStageResult("A", Resp("text"), CreateDiagnostics("A", inputTokens: 10, outputTokens: 20, totalTokens: 30)),
+            new AgentStageResult("B", Resp("text"), null), // no diagnostics
         };
 
         var result = CreateResult(stages);
@@ -98,8 +99,8 @@ public class PipelineRunResultTests
     {
         var stages = new IAgentStageResult[]
         {
-            new AgentStageResult("Writer", "draft-v1", null),
-            new AgentStageResult("Writer", "draft-v2", null),
+            new AgentStageResult("Writer", Resp("draft-v1"), null),
+            new AgentStageResult("Writer", Resp("draft-v2"), null),
         };
 
         var result = CreateResult(stages);
@@ -107,8 +108,8 @@ public class PipelineRunResultTests
         // Stages preserves all entries
         Assert.Equal(2, result.Stages.Count);
         // Responses deduplicates — last wins
-        Assert.Single(result.Responses);
-        Assert.Equal("draft-v2", result.Responses["Writer"]);
+        Assert.Single(result.FinalResponses);
+        Assert.Equal("draft-v2", result.FinalResponses["Writer"]?.Text);
     }
 
     // -------------------------------------------------------------------------
@@ -155,13 +156,16 @@ public class PipelineRunResultTests
         var result = CreateResult([]);
 
         Assert.Empty(result.Stages);
-        Assert.Empty(result.Responses);
+        Assert.Empty(result.FinalResponses);
         Assert.Null(result.AggregateTokenUsage);
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private static ChatResponse Resp(string text) =>
+        new(new ChatMessage(ChatRole.Assistant, text));
 
     private static IPipelineRunResult CreateResult(
         IAgentStageResult[] stages,

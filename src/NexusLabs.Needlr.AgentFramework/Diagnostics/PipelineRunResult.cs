@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 [DoNotAutoRegister]
 internal sealed class PipelineRunResult : IPipelineRunResult
 {
-    private readonly Lazy<IReadOnlyDictionary<string, string>> _lazyResponses;
+    private readonly Lazy<IReadOnlyDictionary<string, ChatResponse?>> _lazyResponses;
     private readonly Lazy<TokenUsage?> _lazyAggregateTokenUsage;
 
     internal PipelineRunResult(
@@ -23,10 +25,10 @@ internal sealed class PipelineRunResult : IPipelineRunResult
         Exception = exception;
 
         // GroupBy handles duplicate agent names (last stage wins).
-        _lazyResponses = new Lazy<IReadOnlyDictionary<string, string>>(() =>
+        _lazyResponses = new Lazy<IReadOnlyDictionary<string, ChatResponse?>>(() =>
             stages
                 .GroupBy(s => s.AgentName)
-                .ToDictionary(g => g.Key, g => g.Last().ResponseText));
+                .ToDictionary(g => g.Key, g => g.Last().FinalResponse));
 
         _lazyAggregateTokenUsage = new Lazy<TokenUsage?>(() =>
         {
@@ -50,7 +52,7 @@ internal sealed class PipelineRunResult : IPipelineRunResult
 
     public IReadOnlyList<IAgentStageResult> Stages { get; }
 
-    public IReadOnlyDictionary<string, string> Responses => _lazyResponses.Value;
+    public IReadOnlyDictionary<string, ChatResponse?> FinalResponses => _lazyResponses.Value;
 
     public TimeSpan TotalDuration { get; }
 

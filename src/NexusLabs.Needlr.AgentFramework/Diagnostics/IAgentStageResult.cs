@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -19,7 +21,8 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 ///     var tokens = stage.Diagnostics?.AggregateTokenUsage;
 ///     Console.WriteLine($"[{stage.AgentName}] {tokens?.TotalTokens ?? 0} tokens, " +
 ///         $"{stage.Diagnostics?.TotalDuration.TotalSeconds:F1}s");
-///     Console.WriteLine($"  Response: {stage.ResponseText[..Math.Min(100, stage.ResponseText.Length)]}...");
+///     var text = stage.FinalResponse?.Text ?? string.Empty;
+///     Console.WriteLine($"  Response: {text[..Math.Min(100, text.Length)]}...");
 /// }
 /// </code>
 /// </example>
@@ -28,8 +31,13 @@ public interface IAgentStageResult
     /// <summary>Gets the agent's executor ID (agent name, possibly with a MAF-assigned GUID suffix).</summary>
     string AgentName { get; }
 
-    /// <summary>Gets the text content the agent produced during this stage. Empty if the agent responded only via tool calls.</summary>
-    string ResponseText { get; }
+    /// <summary>
+    /// Gets the final <see cref="ChatResponse"/> the agent produced during this stage
+    /// (preserving full message content, role, usage, and metadata), or
+    /// <see langword="null"/> if the agent responded only via tool calls with no
+    /// terminating text response. Call <c>.Text</c> for a flat text view when evaluating.
+    /// </summary>
+    ChatResponse? FinalResponse { get; }
 
     /// <summary>
     /// Gets the diagnostics captured during this agent's execution, including per-call

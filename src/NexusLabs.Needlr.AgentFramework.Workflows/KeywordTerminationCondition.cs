@@ -69,6 +69,7 @@ public sealed class KeywordTerminationCondition : IWorkflowTerminationCondition
             return false;
         }
 
-        return context.ResponseText.Contains(_keyword, _comparison);
+        var text = context.LastMessage?.Text ?? string.Empty;
+        return text.Contains(_keyword, _comparison);
     }
 }

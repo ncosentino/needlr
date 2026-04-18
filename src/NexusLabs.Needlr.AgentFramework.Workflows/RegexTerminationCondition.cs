@@ -68,6 +68,7 @@ public sealed class RegexTerminationCondition : IWorkflowTerminationCondition
             return false;
         }
 
-        return _regex.IsMatch(context.ResponseText);
+        var text = context.LastMessage?.Text ?? string.Empty;
+        return _regex.IsMatch(text);
     }
 }

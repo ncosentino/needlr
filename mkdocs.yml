@@ -75,6 +75,7 @@ nav:
     - GitHub Copilot: copilot.md
     - Iterative Agent Loop: iterative-agent-loop.md
     - Progress Reporting: progress-reporting.md
+    - Evaluation: evaluation.md
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md

@@ -10,7 +10,7 @@ public class KeywordTerminationConditionTests
         new()
         {
             AgentId = agentId,
-            ResponseText = response,
+            LastMessage = new ChatMessage(ChatRole.Assistant, response),
             TurnCount = 1,
             ConversationHistory = [],
         };

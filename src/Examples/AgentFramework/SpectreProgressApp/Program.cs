@@ -119,7 +119,7 @@ using (contextAccessor.BeginScope(executionContext))
         {
             foreach (var stage in result.Stages)
             {
-                AnsiConsole.MarkupLine($"  [green]{Markup.Escape(ShortName(stage.AgentName))}[/]: {Markup.Escape(stage.ResponseText.Trim())}");
+                AnsiConsole.MarkupLine($"  [green]{Markup.Escape(ShortName(stage.AgentName))}[/]: {Markup.Escape((stage.FinalResponse?.Text ?? string.Empty).Trim())}");
             }
 
             if (result.AggregateTokenUsage is { } t)

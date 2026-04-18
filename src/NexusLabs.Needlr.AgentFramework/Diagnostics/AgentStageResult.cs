@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -6,5 +8,5 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 [DoNotAutoRegister]
 internal sealed record AgentStageResult(
     string AgentName,
-    string ResponseText,
+    ChatResponse? FinalResponse,
     IAgentRunDiagnostics? Diagnostics) : IAgentStageResult;

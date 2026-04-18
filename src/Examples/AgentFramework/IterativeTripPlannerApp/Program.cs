@@ -563,8 +563,9 @@ Console.WriteLine();
 // ── Final workspace state ───────────────────────────────────────────────
 Console.WriteLine($"Result: {(result.Succeeded ? "SUCCESS" : $"FAILED: {result.ErrorMessage}")}");
 Console.WriteLine($"Iterations: {result.Iterations.Count}");
-if (result.FinalResponse is { Length: > 0 })
-    Console.WriteLine($"Final response: {result.FinalResponse[..Math.Min(300, result.FinalResponse.Length)]}");
+var finalText = result.FinalResponse?.Text ?? string.Empty;
+if (finalText.Length > 0)
+    Console.WriteLine($"Final response: {finalText[..Math.Min(300, finalText.Length)]}");
 Console.WriteLine();
 
 Console.WriteLine("═══ Final Workspace Files ═══");

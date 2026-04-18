@@ -135,7 +135,7 @@ public sealed class IterativeAgentLoopTests
         var result = await loop.RunAsync(options, context, TestContext.Current.CancellationToken);
 
         Assert.True(result.Succeeded);
-        Assert.Equal("All done!", result.FinalResponse);
+        Assert.Equal("All done!", result.FinalResponse?.Text);
         Assert.Single(result.Iterations);
         Assert.Equal(0, result.Iterations[0].Iteration);
     }
@@ -149,7 +149,7 @@ public sealed class IterativeAgentLoopTests
         var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
 
         Assert.Empty(result.Iterations[0].ToolCalls);
-        Assert.Equal("Done", result.Iterations[0].ResponseText);
+        Assert.Equal("Done", result.Iterations[0].FinalResponse?.Text);
     }
 
     #endregion
@@ -749,7 +749,7 @@ public sealed class IterativeAgentLoopTests
         }
 
         // Last iteration should have the text response
-        Assert.Equal("final", result.Iterations[3].ResponseText);
+        Assert.Equal("final", result.Iterations[3].FinalResponse?.Text);
     }
 
     #endregion
@@ -944,7 +944,7 @@ public sealed class IterativeAgentLoopTests
 
         var iter = Assert.Single(result.Iterations);
         Assert.Equal(3, iter.LlmCallCount);
-        Assert.Equal("done chaining", iter.ResponseText);
+        Assert.Equal("done chaining", iter.FinalResponse?.Text);
     }
 
     #endregion
@@ -1269,7 +1269,7 @@ public sealed class IterativeAgentLoopTests
 
         Assert.Single(endRecords);
         Assert.Equal(0, endRecords[0].Iteration);
-        Assert.Equal("done", endRecords[0].ResponseText);
+        Assert.Equal("done", endRecords[0].FinalResponse?.Text);
     }
 
     [Fact]

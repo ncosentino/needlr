@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Iterative;
@@ -11,11 +13,13 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// All tool calls executed during this iteration, in execution order.
 /// Empty if the model produced a text response without requesting tools.
 /// </param>
-/// <param name="ResponseText">
-/// The text content the model produced during this iteration, or <see langword="null"/>
-/// if the model only made tool calls. In <see cref="ToolResultMode.OneRoundTrip"/> and
-/// <see cref="ToolResultMode.MultiRound"/> modes, this is the final text response after
-/// tool results were sent back.
+/// <param name="FinalResponse">
+/// The final <see cref="ChatResponse"/> produced by the model during this iteration
+/// (preserving full message content, role, usage, and metadata), or
+/// <see langword="null"/> if the model only made tool calls without a terminating
+/// text response. In <see cref="ToolResultMode.OneRoundTrip"/> and
+/// <see cref="ToolResultMode.MultiRound"/> modes, this is the response emitted after
+/// tool results were sent back. Call <c>.Text</c> for a flat text view when evaluating.
 /// </param>
 /// <param name="Tokens">Aggregate token usage across all LLM calls in this iteration.</param>
 /// <param name="Duration">Wall-clock time for the entire iteration (LLM calls + tool execution).</param>
@@ -30,7 +34,7 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 public sealed record IterationRecord(
     int Iteration,
     IReadOnlyList<ToolCallResult> ToolCalls,
-    string? ResponseText,
+    ChatResponse? FinalResponse,
     TokenUsage Tokens,
     TimeSpan Duration,
     int LlmCallCount,

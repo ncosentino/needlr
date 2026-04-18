@@ -273,7 +273,6 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
             var lastMessage = historyList[^1];
             var agentId = lastMessage.AuthorName ?? string.Empty;
-            var responseText = lastMessage.Text ?? string.Empty;
 
             var toolCallNames = lastMessage.Contents
                 .OfType<FunctionCallContent>()
@@ -284,7 +283,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             var ctx = new TerminationContext
             {
                 AgentId = agentId,
-                ResponseText = responseText,
+                LastMessage = lastMessage,
                 TurnCount = historyList.Count,
                 ConversationHistory = historyList,
                 ToolCallNames = toolCallNames,

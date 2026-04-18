@@ -11,8 +11,13 @@ public sealed class TerminationContext
     /// <summary>Gets the executor ID of the agent that produced this response.</summary>
     public required string AgentId { get; init; }
 
-    /// <summary>Gets the complete response text emitted by the agent for this turn.</summary>
-    public required string ResponseText { get; init; }
+    /// <summary>
+    /// Gets the last <see cref="ChatMessage"/> emitted by the agent for this turn
+    /// (preserving full content including function calls, role, and metadata), or
+    /// <see langword="null"/> if the agent produced no message. Use the <c>.Text</c>
+    /// property on the message for a flat text view.
+    /// </summary>
+    public ChatMessage? LastMessage { get; init; }
 
     /// <summary>Gets the number of agent turns completed so far (1-based).</summary>
     public required int TurnCount { get; init; }

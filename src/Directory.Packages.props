@@ -27,6 +27,10 @@
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.3.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.3.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.3.0" />
+    <!-- Microsoft.Extensions.AI.Evaluation -->
+    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation" Version="9.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="9.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Reporting" Version="9.6.0" />
     <!-- Azure OpenAI (for SimpleAgentFrameworkApp example) -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.7.0-beta.2" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.72.0" />

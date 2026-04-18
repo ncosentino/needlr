@@ -140,7 +140,7 @@ public class ToolCallTerminationConditionTests
         new()
         {
             AgentId = agentId,
-            ResponseText = responseText,
+            LastMessage = new ChatMessage(ChatRole.Assistant, responseText),
             TurnCount = 1,
             ConversationHistory = [],
             ToolCallNames = toolCallNames ?? [],

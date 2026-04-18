@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Iterative;
@@ -18,10 +20,11 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// Per-iteration records in execution order. Always contains at least one entry.
 /// </param>
 /// <param name="FinalResponse">
-/// The last text response produced by the model, or <see langword="null"/> if the loop
-/// was terminated by <see cref="IterativeLoopOptions.MaxIterations"/>,
+/// The last <see cref="ChatResponse"/> produced by the model (preserving full message
+/// content, role, usage, and metadata), or <see langword="null"/> if the loop was
+/// terminated by <see cref="IterativeLoopOptions.MaxIterations"/>,
 /// <see cref="IterativeLoopOptions.IsComplete"/>, or cancellation before the model
-/// produced a text response.
+/// produced a response. Call <c>.Text</c> for a flat text view when evaluating.
 /// </param>
 /// <param name="Diagnostics">
 /// Aggregate diagnostics for the entire loop run, including total token usage,
@@ -46,7 +49,7 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// </param>
 public sealed record IterativeLoopResult(
     IReadOnlyList<IterationRecord> Iterations,
-    string? FinalResponse,
+    ChatResponse? FinalResponse,
     IAgentRunDiagnostics? Diagnostics,
     bool Succeeded,
     string? ErrorMessage,

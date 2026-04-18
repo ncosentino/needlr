@@ -59,7 +59,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         }
 
         var iterations = new List<IterationRecord>();
-        string? finalResponse = null;
+        ChatResponse? finalResponse = null;
         var succeeded = true;
         string? errorMessage = null;
         var termination = TerminationReason.Completed;
@@ -129,7 +129,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                 var iterationStopwatch = Stopwatch.StartNew();
                 var iterationToolCalls = new List<ToolCallResult>();
-                string? iterationResponseText = null;
+                ChatResponse? iterationResponse = null;
                 long iterationInputTokens = 0;
                 long iterationOutputTokens = 0;
                 long iterationTotalTokens = 0;
@@ -258,10 +258,10 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                     if (functionCalls.Count == 0)
                     {
-                        // Model produced text — natural termination for this iteration
-                        iterationResponseText = string.Join("",
-                            response.Messages.SelectMany(m => m.Contents.OfType<TextContent>())
-                                .Select(t => t.Text));
+                        // Model produced text — natural termination for this iteration.
+                        // Capture the full ChatResponse to preserve messages, usage, and
+                        // any other metadata for downstream consumers and evaluation.
+                        iterationResponse = response;
                         break;
                     }
 
@@ -328,7 +328,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     iterations.Add(new IterationRecord(
                         Iteration: i,
                         ToolCalls: iterationToolCalls,
-                        ResponseText: iterationResponseText,
+                        FinalResponse: iterationResponse,
                         Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
                         Duration: iterationStopwatch.Elapsed,
                         LlmCallCount: llmCallCount,
@@ -349,7 +349,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 iterations.Add(new IterationRecord(
                     Iteration: i,
                     ToolCalls: iterationToolCalls,
-                    ResponseText: iterationResponseText,
+                    FinalResponse: iterationResponse,
                     Tokens: tokenUsage,
                     Duration: iterationStopwatch.Elapsed,
                     LlmCallCount: llmCallCount,
@@ -419,9 +419,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 }
 
                 // If model produced text (no tool calls), the loop is done
-                if (iterationResponseText != null)
+                if (iterationResponse != null)
                 {
-                    finalResponse = iterationResponseText;
+                    finalResponse = iterationResponse;
                     termination = TerminationReason.NaturalCompletion;
                     break;
                 }
@@ -465,7 +465,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         if (finalResponse == null && iterations.Count > 0)
         {
             // Get final response from last iteration if available
-            finalResponse = iterations[^1].ResponseText;
+            finalResponse = iterations[^1].FinalResponse;
         }
 
         var diagnostics = diagnosticsBuilder.Build();

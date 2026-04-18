@@ -217,7 +217,7 @@ public class GroupChatDiagnosticsIntegrationTests
         var reviewerStage = result.Stages.FirstOrDefault(
             s => s.AgentName.StartsWith("DiagReviewer"));
         Assert.NotNull(reviewerStage);
-        Assert.Contains("APPROVED", reviewerStage.ResponseText);
+        Assert.Contains("APPROVED", reviewerStage.FinalResponse?.Text ?? string.Empty);
     }
 
     // -------------------------------------------------------------------------

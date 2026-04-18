@@ -7,9 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Breaking — Alpha)
+
+#### Agent Framework — Lossless live-path retypes for Microsoft.Extensions.AI.Evaluation
+
+Phase 1 of MEAI.Evaluation integration. Every live-path surface that previously
+flattened agent state to `string` now carries the native MEAI shape
+(`ChatResponse` / `ChatMessage`) so evaluators can consume Needlr results
+directly — no adapters, no re-parsing.
+
+- **`IterativeLoopResult.FinalResponse`** — `string?` → `ChatResponse?`.
+- **`IterationRecord.ResponseText`** — renamed and retyped to
+  `FinalResponse : ChatResponse?`.
+- **`TerminationContext`** — removes `ResponseText`; adds
+  `LastMessage : ChatMessage?`; `Usage` is now populated (previously empty).
+- **`IAgentStageResult.ResponseText`** — retyped to
+  `FinalResponse : ChatResponse?`.
+- **`AgentStageResult`** — positional record reshape to match the interface.
+- **`IPipelineRunResult.Responses`** — renamed to `FinalResponses` and
+  retyped to `IReadOnlyDictionary<string, ChatResponse?>`.
+
+Callers that previously read `.ResponseText` / `.FinalResponse` as `string`
+should call `.GetText()` (existing `AgentResponseExtensions` helper) on the
+new `ChatResponse?` value to recover the flattened text when needed.
+
 ### Added
 
-#### Copilot Integration
+#### Agent Framework — Evaluation support (Phase 1)
+
+- **`IterationRecordEvaluationExtensions.ToToolCallTrajectory()`** — materializes
+  a MEAI tool-call trajectory from an `IterationRecord.ToolCalls` sequence,
+  ready to feed trajectory-based evaluators.
+- **`EvaluationExampleApp`** — new example under
+  `src/Examples/AgentFramework/` demonstrating `RelevanceEvaluator` on an
+  `IterativeLoopResult.FinalResponse`, plus the trajectory-adapter shape for
+  future tool-call evaluators.
+- **`Microsoft.Extensions.AI.Evaluation` + `.Evaluation.Quality`** pinned in
+  `Directory.Packages.props` (9.6.0).
+- **`docs/evaluation.md`** — new documentation page covering the retype
+  surface, wiring, trajectory adapter, and the phased roadmap (Phases 2–4:
+  diagnostics capture, dedicated `.Evaluation` assembly, xUnit harness).
+
+
 
 - **`NexusLabs.Needlr.Copilot`** — new integration package providing `CopilotChatClient`
   (an `IChatClient` backed by the GitHub Copilot API) and `CopilotWebSearchFunction` (an

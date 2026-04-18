@@ -213,12 +213,13 @@ public static class StreamingRunWorkflowExtensions
             {
                 var responseText = completedSb.ToString();
                 turnCount++;
-                history.Add(new ChatMessage(ChatRole.Assistant, responseText));
+                var completedMessage = new ChatMessage(ChatRole.Assistant, responseText);
+                history.Add(completedMessage);
 
                 var ctx = new TerminationContext
                 {
                     AgentId = currentExecutorId,
-                    ResponseText = responseText,
+                    LastMessage = completedMessage,
                     TurnCount = turnCount,
                     ConversationHistory = history,
                 };
@@ -241,12 +242,13 @@ public static class StreamingRunWorkflowExtensions
         {
             var responseText = lastSb.ToString();
             turnCount++;
-            history.Add(new ChatMessage(ChatRole.Assistant, responseText));
+            var lastMessage = new ChatMessage(ChatRole.Assistant, responseText);
+            history.Add(lastMessage);
 
             var ctx = new TerminationContext
             {
                 AgentId = currentExecutorId,
-                ResponseText = responseText,
+                LastMessage = lastMessage,
                 TurnCount = turnCount,
                 ConversationHistory = history,
             };

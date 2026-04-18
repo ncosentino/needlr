@@ -372,10 +372,14 @@ public static class PipelineRunExtensions
         TimeSpan turnDuration,
         DateTimeOffset turnStartedAt)
     {
+        var finalResponse = string.IsNullOrEmpty(responseText)
+            ? null
+            : new ChatResponse(new ChatMessage(ChatRole.Assistant, responseText));
+
         var middlewareDiag = diagnosticsAccessor.LastRunDiagnostics;
         if (middlewareDiag is not null)
         {
-            return new AgentStageResult(agentName, responseText, middlewareDiag);
+            return new AgentStageResult(agentName, finalResponse, middlewareDiag);
         }
 
         var totalTokens = new TokenUsage(
@@ -387,7 +391,7 @@ public static class PipelineRunExtensions
 
         return new AgentStageResult(
             agentName,
-            responseText,
+            finalResponse,
             new AgentRunDiagnostics(
                 AgentName: agentName,
                 TotalDuration: turnDuration,

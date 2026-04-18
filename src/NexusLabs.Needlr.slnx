@@ -46,6 +46,7 @@
     <Project Path="Examples/AgentFramework/SpectreProgressApp/SpectreProgressApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp/IterativeTripPlannerApp.csproj" />
     <Project Path="Examples/AgentFramework/DiagnosticAttributionApp/DiagnosticAttributionApp.csproj" />
+    <Project Path="Examples/AgentFramework/EvaluationExampleApp/EvaluationExampleApp.csproj" />
   </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />

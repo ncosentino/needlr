@@ -216,7 +216,7 @@ public sealed class IterativeAgentLoopBudgetTests
 
         Assert.Equal(TerminationReason.NaturalCompletion, result.Termination);
         Assert.True(result.Succeeded);
-        Assert.Equal("I'm done", result.FinalResponse);
+        Assert.Equal("I'm done", result.FinalResponse?.Text);
     }
 
     [Fact]

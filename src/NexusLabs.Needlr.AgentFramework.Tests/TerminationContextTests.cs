@@ -12,13 +12,13 @@ public class TerminationContextTests
         var ctx = new TerminationContext
         {
             AgentId = "agent-1",
-            ResponseText = "hello",
+            LastMessage = new ChatMessage(ChatRole.Assistant, "hello"),
             TurnCount = 1,
             ConversationHistory = history,
         };
 
         Assert.Equal("agent-1", ctx.AgentId);
-        Assert.Equal("hello", ctx.ResponseText);
+        Assert.Equal("hello", ctx.LastMessage?.Text);
         Assert.Equal(1, ctx.TurnCount);
         Assert.Same(history, ctx.ConversationHistory);
         Assert.Null(ctx.Usage);
@@ -31,7 +31,7 @@ public class TerminationContextTests
         var ctx = new TerminationContext
         {
             AgentId = "a",
-            ResponseText = "r",
+            LastMessage = new ChatMessage(ChatRole.Assistant, "r"),
             TurnCount = 1,
             ConversationHistory = [],
             Usage = usage,

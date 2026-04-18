@@ -134,7 +134,7 @@ using (contextAccessor.BeginScope(executionContext))
 
         foreach (var stage in result.Stages)
         {
-            Console.WriteLine($"  [{stage.AgentName}]: {stage.ResponseText.Trim()}");
+            Console.WriteLine($"  [{stage.AgentName}]: {(stage.FinalResponse?.Text ?? string.Empty).Trim()}");
 
             if (stage.Diagnostics is { } diag)
             {
@@ -220,7 +220,7 @@ using (tokenBudgetTracker.BeginScope(maxTokens: 100_000))
 
     foreach (var stage in budgetResult.Stages)
     {
-        Console.WriteLine($"    [{stage.AgentName}]: {stage.ResponseText.Trim()}");
+        Console.WriteLine($"    [{stage.AgentName}]: {(stage.FinalResponse?.Text ?? string.Empty).Trim()}");
         if (stage.Diagnostics is { } diag)
         {
             foreach (var cc in diag.ChatCompletions)
@@ -294,7 +294,8 @@ foreach (var topic in topics)
 
     foreach (var stage in pipelineResult.Stages)
     {
-        Console.WriteLine($"  [{stage.AgentName}]: {stage.ResponseText.Trim()[..Math.Min(120, stage.ResponseText.Trim().Length)]}...");
+        var stageText = (stage.FinalResponse?.Text ?? string.Empty).Trim();
+        Console.WriteLine($"  [{stage.AgentName}]: {stageText[..Math.Min(120, stageText.Length)]}...");
         if (stage.Diagnostics is { } diag)
         {
             Console.WriteLine($"    Tokens: {diag.AggregateTokenUsage.TotalTokens} | Duration: {diag.TotalDuration.TotalMilliseconds:F0}ms | Tools: {diag.ToolCalls.Count}");
