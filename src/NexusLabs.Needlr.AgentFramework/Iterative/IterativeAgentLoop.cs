@@ -213,7 +213,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                                 StartedAt: completionStartedAt,
                                 CompletedAt: DateTimeOffset.UtcNow)
                             {
-                                AgentName = diagnosticsBuilder.AgentName
+                                AgentName = diagnosticsBuilder.AgentName,
+                                RequestMessages = messages.ToList().AsReadOnly(),
+                                RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messages),
                             });
                         }
                         diagnosticsBuilder.RecordInputMessageCount(messages.Count);
@@ -257,7 +259,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                             StartedAt: completionStartedAt,
                             CompletedAt: DateTimeOffset.UtcNow)
                         {
-                            AgentName = diagnosticsBuilder.AgentName
+                            AgentName = diagnosticsBuilder.AgentName,
+                            RequestMessages = messages.ToList().AsReadOnly(),
+                            Response = response,
+                            RequestCharCount = DiagnosticsCharCounter.ChatMessagesLength(messages),
+                            ResponseCharCount = DiagnosticsCharCounter.ChatResponseLength(response),
                         });
                     }
                     diagnosticsBuilder.RecordInputMessageCount(messages.Count);
@@ -554,7 +560,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null)
                 {
-                    AgentName = diagnosticsBuilder.AgentName
+                    AgentName = diagnosticsBuilder.AgentName,
+                    Arguments = ToReadOnly(fc.Arguments),
+                    ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
 
                 reporter?.Report(new ToolCallFailedEvent(
@@ -596,7 +604,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null)
                 {
-                    AgentName = diagnosticsBuilder.AgentName
+                    AgentName = diagnosticsBuilder.AgentName,
+                    Arguments = ToReadOnly(fc.Arguments),
+                    Result = result,
+                    ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
+                    ResultCharCount = DiagnosticsCharCounter.JsonLength(result),
                 });
 
                 reporter?.Report(new ToolCallCompletedEvent(
@@ -637,7 +649,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     CompletedAt: DateTimeOffset.UtcNow,
                     CustomMetrics: null)
                 {
-                    AgentName = diagnosticsBuilder.AgentName
+                    AgentName = diagnosticsBuilder.AgentName,
+                    Arguments = ToReadOnly(fc.Arguments),
+                    ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
 
                 reporter?.Report(new ToolCallFailedEvent(
