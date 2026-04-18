@@ -323,7 +323,7 @@ For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
    ```
 
    If the build fails with `RS2001`, `RS2002`, or `RS2007`, re-read
-   the [Version header format](#version-header-format--the-non-obvious-rule)
+   the [Version header format](#version-header-format-the-non-obvious-rule)
    section above and fix the header before proceeding.
 
 7. Commit with the conventional message:
