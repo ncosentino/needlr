@@ -78,6 +78,19 @@ All four properties are init-only, default to `null`, and are populated automati
 
 With these in hand you can rehydrate a MEAI `ChatResponse` + trajectory from a persisted diagnostics document and feed it into any `IEvaluator` offline.
 
+## Full-fidelity transcripts
+
+Evaluation and agent-assisted debugging both depend on **replay-grade** transcripts — every chat exchange, not just totals.
+
+### Streaming capture
+
+`DiagnosticsChatClientMiddleware` instruments both paths:
+
+- `GetResponseAsync` — captured on completion (existed prior).
+- `GetStreamingResponseAsync` — streaming updates are teed through to the caller in real time, then buffered via `ToChatResponse()` at stream completion. The synthesized `ChatResponse` is written to `ChatCompletionDiagnostics.Response` with identical shape to the non-streaming path.
+
+Errors mid-stream still populate `ChatCompletionDiagnostics.{Success=false, ErrorMessage, Response}` with the partial response built from updates observed before the failure. No data is silently dropped.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

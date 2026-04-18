@@ -51,6 +51,20 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Full-fidelity streaming transcript capture (Phase 2.5a)
+
+- **`DiagnosticsChatClientMiddleware`** now instruments `GetStreamingResponseAsync`
+  with parity to `GetResponseAsync`. Streaming updates are teed through to the
+  caller in real time, buffered, and aggregated via `ToChatResponse()` at stream
+  completion. The synthesized `ChatResponse` is written to
+  `ChatCompletionDiagnostics.Response` — same shape as the non-streaming path.
+- **Mid-stream failures** populate `ChatCompletionDiagnostics.Success = false`,
+  `ErrorMessage`, and a partial `Response` built from updates observed before
+  the error. No partial data is silently dropped.
+- Closes a transcript-fidelity gap where streaming agents produced
+  `ChatCompletions` entries with empty `Response` fields, blocking replay-grade
+  evaluation and agent-assisted debugging.
+
 #### Agent Framework — Evaluation support (Phase 1)
 
 - **`IterationRecordEvaluationExtensions.ToToolCallTrajectory()`** — materializes

@@ -50,7 +50,7 @@ public static class DiagnosticsExtensions
                 return innerClient
                     .AsBuilder()
                     .Use(getResponseFunc: chatMiddleware.HandleAsync,
-                        getStreamingResponseFunc: null)
+                        getStreamingResponseFunc: chatMiddleware.HandleStreamingAsync)
                     .Build();
             };
         });

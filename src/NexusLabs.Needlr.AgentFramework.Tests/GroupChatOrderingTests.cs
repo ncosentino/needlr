@@ -26,6 +26,16 @@ public class GroupChatOrderingTests
     {
         var turnOrder = new List<string>();
         var callCount = 0;
+
+        Task<ChatResponse> ProduceAsync()
+        {
+            var turn = Interlocked.Increment(ref callCount);
+            var text = turn == 1 ? "Article content here." : "APPROVED";
+            turnOrder.Add(turn == 1 ? "first-agent" : "second-agent");
+            return Task.FromResult(
+                new ChatResponse([new ChatMessage(ChatRole.Assistant, text)]));
+        }
+
         var mockChat = new Mock<IChatClient>();
         mockChat
             .Setup(c => c.GetResponseAsync(
@@ -33,15 +43,14 @@ public class GroupChatOrderingTests
                 It.IsAny<ChatOptions>(),
                 It.IsAny<CancellationToken>()))
             .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
-                (messages, _, ct) =>
-                {
-                    var turn = Interlocked.Increment(ref callCount);
-                    // First call is the first agent in round-robin
-                    var text = turn == 1 ? "Article content here." : "APPROVED";
-                    turnOrder.Add(turn == 1 ? "first-agent" : "second-agent");
-                    return Task.FromResult(
-                        new ChatResponse([new ChatMessage(ChatRole.Assistant, text)]));
-                });
+                (_, __, ___) => ProduceAsync());
+        mockChat
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
+                (_, __, ___) => ToStream(ProduceAsync()));
 
         var sp = BuildServiceProvider(mockChat);
         var workflowFactory = sp.GetRequiredService<IWorkflowFactory>();
@@ -67,6 +76,15 @@ public class GroupChatOrderingTests
     {
         var turnOrder = new List<string>();
         var callCount = 0;
+
+        Task<ChatResponse> ProduceAsync()
+        {
+            var turn = Interlocked.Increment(ref callCount);
+            var text = turn <= 1 ? "Content." : "APPROVED";
+            return Task.FromResult(
+                new ChatResponse([new ChatMessage(ChatRole.Assistant, text)]));
+        }
+
         var mockChat = new Mock<IChatClient>();
         mockChat
             .Setup(c => c.GetResponseAsync(
@@ -74,13 +92,14 @@ public class GroupChatOrderingTests
                 It.IsAny<ChatOptions>(),
                 It.IsAny<CancellationToken>()))
             .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
-                (messages, _, ct) =>
-                {
-                    var turn = Interlocked.Increment(ref callCount);
-                    var text = turn <= 1 ? "Content." : "APPROVED";
-                    return Task.FromResult(
-                        new ChatResponse([new ChatMessage(ChatRole.Assistant, text)]));
-                });
+                (_, __, ___) => ProduceAsync());
+        mockChat
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
+                (_, __, ___) => ToStream(ProduceAsync()));
 
         var sp = BuildServiceProvider(mockChat);
         var workflowFactory = sp.GetRequiredService<IWorkflowFactory>();
@@ -159,6 +178,14 @@ public class GroupChatOrderingTests
                 .AddAgent<AaaOrderedReviewerAgent>()
                 .AddAgent<ZzzOrderedWriterAgent>())
             .BuildServiceProvider(config);
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> ToStream(
+        Task<ChatResponse> responseTask)
+    {
+        var response = await responseTask;
+        foreach (var update in response.ToChatResponseUpdates())
+            yield return update;
     }
 }
 

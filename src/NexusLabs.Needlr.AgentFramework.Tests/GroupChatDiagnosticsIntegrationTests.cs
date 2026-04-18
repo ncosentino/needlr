@@ -287,6 +287,38 @@ public class GroupChatDiagnosticsIntegrationTests
         int responseDelayMs = 0)
     {
         var callCount = 0;
+
+        async Task<ChatResponse> ProduceResponseAsync(CancellationToken ct)
+        {
+            if (responseDelayMs > 0)
+                await Task.Delay(responseDelayMs, ct);
+
+            var turn = Interlocked.Increment(ref callCount);
+            var text = turn == 1 ? writerResponse : reviewerResponse;
+            var response = new ChatResponse(
+                [new ChatMessage(ChatRole.Assistant, text)]);
+
+            if (inputTokens > 0 || outputTokens > 0)
+            {
+                response.Usage = new UsageDetails
+                {
+                    InputTokenCount = (int)inputTokens,
+                    OutputTokenCount = (int)outputTokens,
+                    TotalTokenCount = (int)(inputTokens + outputTokens),
+                };
+            }
+
+            return response;
+        }
+
+        static async IAsyncEnumerable<ChatResponseUpdate> ToStream(
+            Task<ChatResponse> responseTask)
+        {
+            var response = await responseTask;
+            foreach (var update in response.ToChatResponseUpdates())
+                yield return update;
+        }
+
         var mockChat = new Mock<IChatClient>();
         mockChat
             .Setup(c => c.GetResponseAsync(
@@ -294,28 +326,15 @@ public class GroupChatDiagnosticsIntegrationTests
                 It.IsAny<ChatOptions>(),
                 It.IsAny<CancellationToken>()))
             .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
-                async (messages, _, ct) =>
-                {
-                    if (responseDelayMs > 0)
-                        await Task.Delay(responseDelayMs, ct);
+                (_, __, ct) => ProduceResponseAsync(ct));
 
-                    var turn = Interlocked.Increment(ref callCount);
-                    var text = turn == 1 ? writerResponse : reviewerResponse;
-                    var response = new ChatResponse(
-                        [new ChatMessage(ChatRole.Assistant, text)]);
-
-                    if (inputTokens > 0 || outputTokens > 0)
-                    {
-                        response.Usage = new UsageDetails
-                        {
-                            InputTokenCount = (int)inputTokens,
-                            OutputTokenCount = (int)outputTokens,
-                            TotalTokenCount = (int)(inputTokens + outputTokens),
-                        };
-                    }
-
-                    return response;
-                });
+        mockChat
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>(
+                (_, __, ct) => ToStream(ProduceResponseAsync(ct)));
 
         var config = new ConfigurationBuilder().Build();
         return new Syringe()
