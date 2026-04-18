@@ -438,25 +438,6 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../articles/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Articles
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
       <a href="../../../../video-tutorials/" class="md-tabs__link">
         
   
@@ -1058,6 +1039,34 @@
     
   
     Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
   
 
     
@@ -3424,33 +3433,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../articles/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Articles
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../../video-tutorials/" class="md-nav__link">
         
   
@@ -3563,47 +3545,67 @@ or via <a href="../IAgentStageResult/#NexusLabs.Needlr.AgentFramework.Diagnostic
 </span></code></pre></div>
 <h4 id="property-value_5">Property Value<a class="headerlink" href="#property-value_5" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.InputMessages'></a></p>
+<h2 id="iagentrundiagnosticsinputmessages-property">IAgentRunDiagnostics.InputMessages Property<a class="headerlink" href="#iagentrundiagnosticsinputmessages-property" title="Permanent link">&para;</a></h2>
+<p>Gets the full input messages provided to the agent for this run. Captured once
+at the agent-run boundary so evaluators can replay the exact prompt without
+re-reading per-call chat completion snapshots. Empty when no messages were
+captured (e.g., the run failed before the middleware observed the input).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatMessage</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InputMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.OutputResponse'></a></p>
+<h2 id="iagentrundiagnosticsoutputresponse-property">IAgentRunDiagnostics.OutputResponse Property<a class="headerlink" href="#iagentrundiagnosticsoutputresponse-property" title="Permanent link">&para;</a></h2>
+<p>Gets the aggregated output response produced by the agent for this run, or
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> when no output was produced (e.g., the run failed
+before any updates were emitted). For streaming runs this is synthesized
+from accumulated <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.agentresponseupdate" title="Microsoft.Agents.AI.AgentResponseUpdate">Microsoft.Agents.AI.AgentResponseUpdate</a> items grouped by message.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">Microsoft</span><span class="p">.</span><span class="n">Agents</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">AgentResponse</span><span class="o">?</span><span class="w"> </span><span class="n">OutputResponse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_7">Property Value<a class="headerlink" href="#property-value_7" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.agentresponse" title="Microsoft.Agents.AI.AgentResponse">Microsoft.Agents.AI.AgentResponse</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.StartedAt'></a></p>
 <h2 id="iagentrundiagnosticsstartedat-property">IAgentRunDiagnostics.StartedAt Property<a class="headerlink" href="#iagentrundiagnosticsstartedat-property" title="Permanent link">&para;</a></h2>
 <p>Gets when the agent run started.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">DateTimeOffset</span><span class="w"> </span><span class="n">StartedAt</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">System</span><span class="p">.</span><span class="n">DateTimeOffset</span><span class="w"> </span><span class="n">StartedAt</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_8">Property Value<a class="headerlink" href="#property-value_8" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset" title="System.DateTimeOffset">System.DateTimeOffset</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.Succeeded'></a></p>
 <h2 id="iagentrundiagnosticssucceeded-property">IAgentRunDiagnostics.Succeeded Property<a class="headerlink" href="#iagentrundiagnosticssucceeded-property" title="Permanent link">&para;</a></h2>
 <p>Gets whether the agent run completed successfully.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">bool</span><span class="w"> </span><span class="n">Succeeded</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kt">bool</span><span class="w"> </span><span class="n">Succeeded</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_7">Property Value<a class="headerlink" href="#property-value_7" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_9">Property Value<a class="headerlink" href="#property-value_9" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.ToolCalls'></a></p>
 <h2 id="iagentrundiagnosticstoolcalls-property">IAgentRunDiagnostics.ToolCalls Property<a class="headerlink" href="#iagentrundiagnosticstoolcalls-property" title="Permanent link">&para;</a></h2>
 <p>Gets per-call diagnostics for each tool invocation, ordered by invocation time.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">ToolCallDiagnostics</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ToolCalls</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">ToolCallDiagnostics</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ToolCalls</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_8">Property Value<a class="headerlink" href="#property-value_8" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_10">Property Value<a class="headerlink" href="#property-value_10" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="../ToolCallDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallDiagnostics">ToolCallDiagnostics</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.TotalDuration'></a></p>
 <h2 id="iagentrundiagnosticstotalduration-property">IAgentRunDiagnostics.TotalDuration Property<a class="headerlink" href="#iagentrundiagnosticstotalduration-property" title="Permanent link">&para;</a></h2>
 <p>Gets the total wall-clock duration of the agent run.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">TotalDuration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">TotalDuration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_9">Property Value<a class="headerlink" href="#property-value_9" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_11">Property Value<a class="headerlink" href="#property-value_11" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.TotalInputMessages'></a></p>
 <h2 id="iagentrundiagnosticstotalinputmessages-property">IAgentRunDiagnostics.TotalInputMessages Property<a class="headerlink" href="#iagentrundiagnosticstotalinputmessages-property" title="Permanent link">&para;</a></h2>
 <p>Gets the number of input messages provided to the agent.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">TotalInputMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">TotalInputMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_10">Property Value<a class="headerlink" href="#property-value_10" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_12">Property Value<a class="headerlink" href="#property-value_12" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics.TotalOutputMessages'></a></p>
 <h2 id="iagentrundiagnosticstotaloutputmessages-property">IAgentRunDiagnostics.TotalOutputMessages Property<a class="headerlink" href="#iagentrundiagnosticstotaloutputmessages-property" title="Permanent link">&para;</a></h2>
 <p>Gets the number of output messages produced by the agent.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">TotalOutputMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">TotalOutputMessages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_11">Property Value<a class="headerlink" href="#property-value_11" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_13">Property Value<a class="headerlink" href="#property-value_13" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 
 

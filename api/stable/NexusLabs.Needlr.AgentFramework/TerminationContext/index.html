@@ -438,25 +438,6 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../articles/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Articles
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
       <a href="../../../../video-tutorials/" class="md-tabs__link">
         
   
@@ -1058,6 +1039,34 @@
     
   
     Progress Reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
   
 
     
@@ -3424,33 +3433,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../articles/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Articles
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../../video-tutorials/" class="md-nav__link">
         
   
@@ -3517,13 +3499,16 @@ Each entry corresponds to one completed agent response.</p>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.TerminationContext.ResponseText'></a></p>
-<h2 id="terminationcontextresponsetext-property">TerminationContext.ResponseText Property<a class="headerlink" href="#terminationcontextresponsetext-property" title="Permanent link">&para;</a></h2>
-<p>Gets the complete response text emitted by the agent for this turn.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">ResponseText</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<p><a name='NexusLabs.Needlr.AgentFramework.TerminationContext.LastMessage'></a></p>
+<h2 id="terminationcontextlastmessage-property">TerminationContext.LastMessage Property<a class="headerlink" href="#terminationcontextlastmessage-property" title="Permanent link">&para;</a></h2>
+<p>Gets the last <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a> emitted by the agent for this turn
+(preserving full content including function calls, role, and metadata), or
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if the agent produced no message. Use the <code>.Text</code>
+property on the message for a flat text view.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">ChatMessage</span><span class="o">?</span><span class="w"> </span><span class="n">LastMessage</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatmessage" title="Microsoft.Extensions.AI.ChatMessage">Microsoft.Extensions.AI.ChatMessage</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.TerminationContext.ToolCallNames'></a></p>
 <h2 id="terminationcontexttoolcallnames-property">TerminationContext.ToolCallNames Property<a class="headerlink" href="#terminationcontexttoolcallnames-property" title="Permanent link">&para;</a></h2>
 <p>Gets the names of tools/functions called by the agent during this turn.
