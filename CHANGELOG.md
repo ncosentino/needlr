@@ -120,6 +120,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+#### Copilot Integration
+
+- **`CopilotMcpToolClient` sent `Content-Type: application/json; charset=utf-8`** which the
+  GitHub Copilot MCP server rejects with `HTTP 415 UnsupportedMediaType` (`Content-Type must
+  be 'application/json'`). Fixed by setting the `Content-Type` header explicitly without a
+  charset parameter. Re-enables `CopilotWebSearchFunction` end-to-end.
+
 #### Agent Framework
 
 - **Source generator emitted invalid `global::string[]` for primitive-alias array parameters**

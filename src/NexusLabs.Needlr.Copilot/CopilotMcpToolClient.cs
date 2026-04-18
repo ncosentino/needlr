@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -51,9 +52,11 @@ internal sealed class CopilotMcpToolClient : IDisposable
 
         for (int attempt = 0; ; attempt++)
         {
+            var content = new StringContent(jsonBody, Encoding.UTF8);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = new StringContent(jsonBody, Encoding.UTF8, "application/json"),
+                Content = content,
             };
 
             httpRequest.Headers.Add("Authorization", $"Bearer {oauthToken}");
