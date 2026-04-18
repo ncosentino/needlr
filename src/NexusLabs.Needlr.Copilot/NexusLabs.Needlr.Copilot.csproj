@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NexusLabs.Needlr.Copilot.Tests" />
-    <InternalsVisibleTo Include="NexusLabs.Needlr.AgentFramework.Evaluation.Testing" />
   </ItemGroup>
 
 </Project>

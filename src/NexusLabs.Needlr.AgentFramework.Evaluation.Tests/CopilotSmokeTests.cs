@@ -1,23 +1,30 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
-using NexusLabs.Needlr.AgentFramework.Evaluation.Testing;
+using NexusLabs.Needlr.Copilot;
 
 namespace NexusLabs.Needlr.AgentFramework.Evaluation.Tests;
 
-public sealed class CopilotSmokeTests : IClassFixture<NeedlrEvaluationFixture>
+/// <summary>
+/// Smoke test that exercises a real <see cref="RelevanceEvaluator"/> run against a
+/// live Copilot-backed judge. Requires a logged-in Copilot CLI or a
+/// <c>GH_TOKEN</c>/<c>GITHUB_TOKEN</c> environment variable. If the token cannot
+/// be resolved, the test fails loudly with the underlying exception — there is
+/// no skip path.
+/// </summary>
+[Trait("Category", "Integration")]
+public sealed class CopilotSmokeTests
 {
-    private readonly NeedlrEvaluationFixture _fixture;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
-    public CopilotSmokeTests(NeedlrEvaluationFixture fixture)
-    {
-        _fixture = fixture;
-    }
-
-    [NeedlrEvaluationFact]
+    [Fact]
     public async Task RelevanceEvaluator_WithCopilotJudge_ProducesMetric()
     {
+        using var judge = new CopilotChatClient(new CopilotChatClientOptions
+        {
+            DefaultModel = "claude-sonnet-4",
+        });
+
         var evaluator = new RelevanceEvaluator();
         var userPrompt = new ChatMessage(
             ChatRole.User,
@@ -28,7 +35,7 @@ public sealed class CopilotSmokeTests : IClassFixture<NeedlrEvaluationFixture>
         var result = await evaluator.EvaluateAsync(
             [userPrompt],
             response,
-            new ChatConfiguration(_fixture.Judge),
+            new ChatConfiguration(judge),
             cancellationToken: _ct);
 
         Assert.NotNull(result);
