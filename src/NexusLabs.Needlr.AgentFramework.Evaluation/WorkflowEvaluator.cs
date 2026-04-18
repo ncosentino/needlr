@@ -45,6 +45,7 @@ public static class WorkflowEvaluator
 
         var inputs = diagnostics.ToEvaluationInputs();
         var items = new List<CompositeEvaluationItem>();
+        var diagnosticsContext = new AgentRunDiagnosticsContext(diagnostics);
 
         foreach (var evaluator in evaluators)
         {
@@ -55,7 +56,7 @@ public static class WorkflowEvaluator
                     inputs.Messages,
                     inputs.ModelResponse,
                     chatConfiguration,
-                    additionalContext: null,
+                    additionalContext: [diagnosticsContext],
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
