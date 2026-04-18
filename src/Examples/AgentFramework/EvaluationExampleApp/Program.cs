@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
+using NexusLabs.Needlr.Copilot;
 
 // =============================================================================
 // EvaluationExampleApp
@@ -17,9 +18,8 @@ using NexusLabs.Needlr.AgentFramework.Iterative;
 //   3. Convert IterationRecord tool calls to an MEAI trajectory via the
 //      ToToolCallTrajectory() extension and print the resulting shape.
 //
-// The app uses a local mock judge IChatClient so no API keys or network access
-// are required. Evaluator invocation is guarded — if the MEAI evaluation API
-// shifts in a future package version, the deterministic print path still runs.
+// The judge is a real CopilotChatClient — no mocks. Requires an authenticated
+// GitHub Copilot CLI (run `gh auth login` first). No API keys needed.
 // =============================================================================
 
 PrintHeader("Needlr + Microsoft.Extensions.AI.Evaluation");
@@ -44,7 +44,11 @@ foreach (var message in trajectory)
     Console.WriteLine($"  [{message.Role}] {contentSummary}");
 }
 
-var judge = new MockJudgeChatClient();
+var judge = new CopilotChatClient(new CopilotChatClientOptions
+{
+    DefaultModel = "claude-sonnet-4",
+});
+Console.WriteLine("  Judge: CopilotChatClient (model: claude-sonnet-4)");
 var chatConfiguration = new ChatConfiguration(judge);
 
 PrintSection("Demo A — RelevanceEvaluator on IterativeLoopResult.FinalResponse");
@@ -384,54 +388,6 @@ static void WriteColored(ConsoleColor color, string text)
     Console.ForegroundColor = color;
     Console.WriteLine(text);
     Console.ForegroundColor = previous;
-}
-
-// =============================================================================
-// Mock judge — returns a canned JSON response that mimics the shape
-// Microsoft.Extensions.AI.Evaluation judge prompts expect. Real evaluators
-// may parse this strictly; the guarded TryRunEvaluatorAsync keeps the example
-// always-runnable if the schema shifts.
-// =============================================================================
-
-internal sealed class MockJudgeChatClient : IChatClient
-{
-    public Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        const string cannedJson = """
-            {
-              "relevance": {
-                "rating": 4,
-                "rationale": "The assistant answered the question directly and concisely."
-              },
-              "toolCallAccuracy": {
-                "rating": 5,
-                "rationale": "Tool calls align with the user's request."
-              }
-            }
-            """;
-
-        var response = new ChatResponse(
-        [
-            new ChatMessage(ChatRole.Assistant, cannedJson),
-        ])
-        {
-            ModelId = "mock-judge",
-        };
-        return Task.FromResult(response);
-    }
-
-    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException();
-
-    public void Dispose() { }
-
-    public object? GetService(Type serviceType, object? serviceKey = null) => null;
 }
 
 // =============================================================================
