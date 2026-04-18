@@ -4,10 +4,9 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.AI;
 
-using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Progress;
 
-namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
+namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
 /// Middle middleware layer: wraps each <c>IChatClient.GetResponseAsync()</c> call to capture
@@ -16,6 +15,7 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 /// Emits <see cref="LlmCallStartedEvent"/> and <see cref="LlmCallCompletedEvent"/> to the
 /// progress reporter in real-time.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
     private readonly IAgentMetrics _metrics;

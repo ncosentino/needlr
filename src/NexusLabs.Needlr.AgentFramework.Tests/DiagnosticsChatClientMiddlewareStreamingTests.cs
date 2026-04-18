@@ -4,7 +4,6 @@ using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Progress;
-using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
