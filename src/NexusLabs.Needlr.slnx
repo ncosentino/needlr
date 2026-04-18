@@ -110,6 +110,8 @@
   <Folder Name="/Integrations/AgentFramework/">
     <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers.Tests/NexusLabs.Needlr.AgentFramework.Analyzers.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation/NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Testing/NexusLabs.Needlr.AgentFramework.Testing.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
