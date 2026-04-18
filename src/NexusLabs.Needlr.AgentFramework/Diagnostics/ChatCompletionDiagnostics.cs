@@ -60,8 +60,8 @@ public sealed record ChatCompletionDiagnostics(
     /// (e.g., on call failure before messages were materialized).
     /// </summary>
     /// <remarks>
-    /// Alpha default: always populated on success. This is the input side of the call
-    /// and is directly consumable by <c>Microsoft.Extensions.AI.Evaluation</c> evaluators.
+    /// Populated on success. This is the input side of the call and is directly
+    /// consumable by <c>Microsoft.Extensions.AI.Evaluation</c> evaluators.
     /// </remarks>
     public IReadOnlyList<ChatMessage>? RequestMessages { get; init; }
 
