@@ -3511,37 +3511,48 @@ Call <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnostics
 builder when the run completes.</p>
 <p>Sequence numbers are reserved BEFORE async work begins (via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked.increment#system-threading-interlocked-increment(system-int32@)" title="System.Threading.Interlocked.Increment(System.Int32@)">System.Threading.Interlocked.Increment(System.Int32@)</a>),
 ensuring parallel tool calls are ordered by invocation time, not completion time.</p>
+<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ParentAgentName'></a></p>
+<h2 id="agentrundiagnosticsbuilderparentagentname-property">AgentRunDiagnosticsBuilder.ParentAgentName Property<a class="headerlink" href="#agentrundiagnosticsbuilderparentagentname-property" title="Permanent link">&para;</a></h2>
+<p>Gets the name of the parent (outer) agent when this builder was created
+inside a nested sub-agent run, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if this is a
+top-level agent.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">ParentAgentName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ClearCurrent()'></a></p>
 <h2 id="agentrundiagnosticsbuilderclearcurrent-method">AgentRunDiagnosticsBuilder.ClearCurrent() Method<a class="headerlink" href="#agentrundiagnosticsbuilderclearcurrent-method" title="Permanent link">&para;</a></h2>
 <p>Clears the builder from the current async flow.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">ClearCurrent</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">ClearCurrent</span><span class="p">();</span>
 </span></code></pre></div>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.Dispose()'></a></p>
 <h2 id="agentrundiagnosticsbuilderdispose-method">AgentRunDiagnosticsBuilder.Dispose() Method<a class="headerlink" href="#agentrundiagnosticsbuilderdispose-method" title="Permanent link">&para;</a></h2>
-<p>Clears this builder from the current async flow. Equivalent to calling
-<a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ClearCurrent()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ClearCurrent()">ClearCurrent()</a> but usable in a <code>using</code> statement.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Dispose</span><span class="p">();</span>
+<p>Restores the previous builder (if any) to the current async flow. If this builder
+was created inside a nested sub-agent run, the outer agent's builder is restored.
+Otherwise equivalent to <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ClearCurrent()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ClearCurrent()">ClearCurrent()</a>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Dispose</span><span class="p">();</span>
 </span></code></pre></div>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable.dispose" title="System.IDisposable.Dispose">Dispose()</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.GetCurrent()'></a></p>
 <h2 id="agentrundiagnosticsbuildergetcurrent-method">AgentRunDiagnosticsBuilder.GetCurrent() Method<a class="headerlink" href="#agentrundiagnosticsbuildergetcurrent-method" title="Permanent link">&para;</a></h2>
 <p>Gets the builder for the current async flow, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if outside a run.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="o">?</span><span class="w"> </span><span class="n">GetCurrent</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="o">?</span><span class="w"> </span><span class="n">GetCurrent</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.NextChatCompletionSequence()'></a></p>
 <h2 id="agentrundiagnosticsbuildernextchatcompletionsequence-method">AgentRunDiagnosticsBuilder.NextChatCompletionSequence() Method<a class="headerlink" href="#agentrundiagnosticsbuildernextchatcompletionsequence-method" title="Permanent link">&para;</a></h2>
 <p>Reserves a sequence number for a chat completion (thread-safe).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextChatCompletionSequence</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextChatCompletionSequence</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.NextToolCallSequence()'></a></p>
 <h2 id="agentrundiagnosticsbuildernexttoolcallsequence-method">AgentRunDiagnosticsBuilder.NextToolCallSequence() Method<a class="headerlink" href="#agentrundiagnosticsbuildernexttoolcallsequence-method" title="Permanent link">&para;</a></h2>
 <p>Reserves a sequence number for a tool call (thread-safe).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextToolCallSequence</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextToolCallSequence</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
@@ -3549,15 +3560,17 @@ ensuring parallel tool calls are ordered by invocation time, not completion time
 <h2 id="agentrundiagnosticsbuildersetexecutionmodestring-method">AgentRunDiagnosticsBuilder.SetExecutionMode(string) Method<a class="headerlink" href="#agentrundiagnosticsbuildersetexecutionmodestring-method" title="Permanent link">&para;</a></h2>
 <p>Sets the execution mode label for these diagnostics.
 Known values: <code>"FunctionInvokingChatClient"</code>, <code>"IterativeLoop"</code>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SetExecutionMode</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">executionMode</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SetExecutionMode</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">executionMode</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.SetExecutionMode(string).executionMode'></a></p>
 <p><code>executionMode</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)'></a></p>
 <h2 id="agentrundiagnosticsbuilderstartnewstring-method">AgentRunDiagnosticsBuilder.StartNew(string) Method<a class="headerlink" href="#agentrundiagnosticsbuilderstartnewstring-method" title="Permanent link">&para;</a></h2>
-<p>Creates a new builder and stores it in the current async flow so middleware can access it.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="n">StartNew</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentName</span><span class="p">);</span>
+<p>Creates a new builder and stores it in the current async flow so middleware can access it.
+If a builder already exists (nested sub-agent scenario), the previous builder is saved
+and restored when this builder is disposed.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="n">StartNew</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentName</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string).agentName'></a></p>

@@ -3508,45 +3508,24 @@ singleton — workspaces have per-orchestration lifecycle and must be explicitly
 <p>Paths are normalized: backslashes are replaced with forward slashes, leading slashes are trimmed,
 and comparison is case-insensitive (matching Windows file system behavior by default).</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string,string,string)'></a></p>
-<h2 id="inmemoryworkspacecompareexchangestring-string-string-method">InMemoryWorkspace.CompareExchange(string, string, string) Method<a class="headerlink" href="#inmemoryworkspacecompareexchangestring-string-string-method" title="Permanent link">&para;</a></h2>
-<p>Atomically replaces file content only if the current content matches
-<a href="./#NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string,string,string).expectedContent" title="NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string, string, string).expectedContent">expectedContent</a>. Returns <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the swap
-succeeded, <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a> if the content had changed.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">CompareExchange</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">expectedContent</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">newContent</span><span class="p">);</span>
-</span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string,string,string).path'></a></p>
-<p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string,string,string).expectedContent'></a></p>
-<p><code>expectedContent</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.CompareExchange(string,string,string).newContent'></a></p>
-<p><code>newContent</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.CompareExchange(string,string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.CompareExchange(string, string, string)">CompareExchange(string, string, string)</a></p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
-<p>Enables optimistic concurrency for multi-agent pipelines where multiple agents
-may edit the same file. Callers read, transform, then CAS — if another agent
-wrote in between, the CAS fails and the caller can re-read and retry.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.FileExists(string)'></a></p>
 <h2 id="inmemoryworkspacefileexistsstring-method">InMemoryWorkspace.FileExists(string) Method<a class="headerlink" href="#inmemoryworkspacefileexistsstring-method" title="Permanent link">&para;</a></h2>
 <p>Returns whether a file exists at the given path.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">FileExists</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">FileExists</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.FileExists(string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.FileExists(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.FileExists(string)">FileExists(string)</a></p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.GetFilePaths()'></a></p>
 <h2 id="inmemoryworkspacegetfilepaths-method">InMemoryWorkspace.GetFilePaths() Method<a class="headerlink" href="#inmemoryworkspacegetfilepaths-method" title="Permanent link">&para;</a></h2>
 <p>Returns all file paths in the workspace.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">GetFilePaths</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">GetFilePaths</span><span class="p">();</span>
 </span></code></pre></div>
 <p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.GetFilePaths()" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.GetFilePaths()">GetFilePaths()</a></p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">System.Collections.Generic.IEnumerable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ListDirectory(string,int)'></a></p>
 <h2 id="inmemoryworkspacelistdirectorystring-int-method">InMemoryWorkspace.ListDirectory(string, int) Method<a class="headerlink" href="#inmemoryworkspacelistdirectorystring-int-method" title="Permanent link">&para;</a></h2>
@@ -3554,9 +3533,9 @@ wrote in between, the CAS fails and the caller can re-read and retry.</p>
 descending up to <a href="./#NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ListDirectory(string,int).maxDepth" title="NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ListDirectory(string, int).maxDepth">maxDepth</a> levels. The output format is
 implementation-defined but should be human-readable (tree characters, indentation,
 file/directory markers).</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ListDirectory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">directory</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maxDepth</span><span class="o">=</span><span class="m">2</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ListDirectory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">directory</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maxDepth</span><span class="o">=</span><span class="m">2</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ListDirectory(string,int).directory'></a></p>
 <p><code>directory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The root directory to list. Use <code>""</code> or <code>"."</code> for the workspace root.</p>
@@ -3564,65 +3543,82 @@ file/directory markers).</p>
 <p><code>maxDepth</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Maximum directory depth to descend. Defaults to 2.</p>
 <p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string, int)">ListDirectory(string, int)</a></p>
-<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><br />
 A formatted string representing the directory tree.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ReadFile(string)'></a></p>
-<h2 id="inmemoryworkspacereadfilestring-method">InMemoryWorkspace.ReadFile(string) Method<a class="headerlink" href="#inmemoryworkspacereadfilestring-method" title="Permanent link">&para;</a></h2>
-<p>Reads the entire content of a file.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ReadFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
-</span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ReadFile(string).path'></a></p>
-<p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)">ReadFile(string)</a></p>
-<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.io.filenotfoundexception" title="System.IO.FileNotFoundException">System.IO.FileNotFoundException</a><br />
-The file does not exist.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ReadFileAsMemory(string)'></a></p>
 <h2 id="inmemoryworkspacereadfileasmemorystring-method">InMemoryWorkspace.ReadFileAsMemory(string) Method<a class="headerlink" href="#inmemoryworkspacereadfileasmemorystring-method" title="Permanent link">&para;</a></h2>
 <p>Reads the content of a file as a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">System.ReadOnlyMemory&lt;&gt;</a> of <a href="https://learn.microsoft.com/en-us/dotnet/api/system.char" title="System.Char">System.Char</a>.
 Implementations that store content as strings can return a zero-copy slice over
 the internal string via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions" title="System.MemoryExtensions">System.MemoryExtensions</a>, avoiding per-read allocation.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">ReadOnlyMemory</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ReadFileAsMemory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">ReadOnlyMemory</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ReadFileAsMemory</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.ReadFileAsMemory(string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFileAsMemory(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFileAsMemory(string)">ReadFileAsMemory(string)</a></p>
-<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">System.ReadOnlyMemory&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.char" title="System.Char">System.Char</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.readonlymemory-1" title="System.ReadOnlyMemory`1">&gt;</a></p>
-<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.io.filenotfoundexception" title="System.IO.FileNotFoundException">System.IO.FileNotFoundException</a><br />
-The file does not exist.</p>
-<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
 <p>Callers that enumerate lines (e.g., <code>MemoryExtensions.EnumerateLines()</code>) benefit
 from the zero-copy path. Callers that need a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a> should use
-<a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ReadFile(string)">ReadFile(string)</a> instead.</p>
+<a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)">TryReadFile(string)</a> instead.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.SeedFile(string,string)'></a></p>
 <h2 id="inmemoryworkspaceseedfilestring-string-method">InMemoryWorkspace.SeedFile(string, string) Method<a class="headerlink" href="#inmemoryworkspaceseedfilestring-string-method" title="Permanent link">&para;</a></h2>
 <p>Seeds the workspace with a file before agent execution begins.
 Convenience method for test setup and scenario harnesses.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SeedFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SeedFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.SeedFile(string,string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.SeedFile(string,string).content'></a></p>
 <p><code>content</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.WriteFile(string,string)'></a></p>
-<h2 id="inmemoryworkspacewritefilestring-string-method">InMemoryWorkspace.WriteFile(string, string) Method<a class="headerlink" href="#inmemoryworkspacewritefilestring-string-method" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string,string,string)'></a></p>
+<h2 id="inmemoryworkspacetrycompareexchangestring-string-string-method">InMemoryWorkspace.TryCompareExchange(string, string, string) Method<a class="headerlink" href="#inmemoryworkspacetrycompareexchangestring-string-string-method" title="Permanent link">&para;</a></h2>
+<p>Atomically replaces file content only if the current content matches
+<a href="./#NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string,string,string).expectedContent" title="NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string, string, string).expectedContent">expectedContent</a>. Returns a structured result indicating
+whether the exchange succeeded and why it failed if it didn't.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">WorkspaceResult</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">CompareExchangeResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">TryCompareExchange</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">expectedContent</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">newContent</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string,string,string).path'></a></p>
+<p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string,string,string).expectedContent'></a></p>
+<p><code>expectedContent</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryCompareExchange(string,string,string).newContent'></a></p>
+<p><code>newContent</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryCompareExchange(string,string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryCompareExchange(string, string, string)">TryCompareExchange(string, string, string)</a></p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<p><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult&lt;</a><a href="../CompareExchangeResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult">CompareExchangeResult</a><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">&gt;</a></p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Enables optimistic concurrency for multi-agent pipelines where multiple agents
+may edit the same file. Callers read, transform, then CAS — if another agent
+wrote in between, the CAS fails and the caller can re-read and retry.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryReadFile(string)'></a></p>
+<h2 id="inmemoryworkspacetryreadfilestring-method">InMemoryWorkspace.TryReadFile(string) Method<a class="headerlink" href="#inmemoryworkspacetryreadfilestring-method" title="Permanent link">&para;</a></h2>
+<p>Reads the entire content of a file.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">WorkspaceResult</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">ReadFileResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">TryReadFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryReadFile(string).path'></a></p>
+<p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryReadFile(string)">TryReadFile(string)</a></p>
+<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<p><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult&lt;</a><a href="../ReadFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.ReadFileResult">ReadFileResult</a><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryWriteFile(string,string)'></a></p>
+<h2 id="inmemoryworkspacetrywritefilestring-string-method">InMemoryWorkspace.TryWriteFile(string, string) Method<a class="headerlink" href="#inmemoryworkspacetrywritefilestring-string-method" title="Permanent link">&para;</a></h2>
 <p>Writes content to a file, creating or overwriting it.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">WriteFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">WorkspaceResult</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">WriteFileResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">TryWriteFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.WriteFile(string,string).path'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryWriteFile(string,string).path'></a></p>
 <p><code>path</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.WriteFile(string,string).content'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace.TryWriteFile(string,string).content'></a></p>
 <p><code>content</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.WriteFile(string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.WriteFile(string, string)">WriteFile(string, string)</a></p>
+<p>Implements <a href="../IWorkspace/#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryWriteFile(string,string)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.TryWriteFile(string, string)">TryWriteFile(string, string)</a></p>
+<h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
+<p><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult&lt;</a><a href="../WriteFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.WriteFileResult">WriteFileResult</a><a href="../WorkspaceResult_T_/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;">&gt;</a></p>
 
 
 

@@ -3504,7 +3504,8 @@
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions.UsingTokenBudget(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe)'></a></p>
 <h2 id="tokenbudgetextensionsusingtokenbudgetthis-agentframeworksyringe-method">TokenBudgetExtensions.UsingTokenBudget(this AgentFrameworkSyringe) Method<a class="headerlink" href="#tokenbudgetextensionsusingtokenbudgetthis-agentframeworksyringe-method" title="Permanent link">&para;</a></h2>
 <p>Wraps the configured <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a> with <a href="../TokenBudgetChatMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware">TokenBudgetChatMiddleware</a>,
-enabling per-pipeline token budgets via <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a>.</p>
+enabling per-pipeline token budgets via <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a>.
+Automatically includes <a href="./#NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions.UsingTokenTracking(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe)" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions.UsingTokenTracking(this NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe)">UsingTokenTracking(this AgentFrameworkSyringe)</a> for token recording.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingTokenBudget</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
@@ -3512,6 +3513,21 @@ enabling per-pipeline token budgets via <a href="../../NexusLabs.Needlr.AgentFra
 <p><code>syringe</code> <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe</a></p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions.UsingTokenTracking(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe)'></a></p>
+<h2 id="tokenbudgetextensionsusingtokentrackingthis-agentframeworksyringe-method">TokenBudgetExtensions.UsingTokenTracking(this AgentFrameworkSyringe) Method<a class="headerlink" href="#tokenbudgetextensionsusingtokentrackingthis-agentframeworksyringe-method" title="Permanent link">&para;</a></h2>
+<p>Wires <a href="../TokenUsageRecordingMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddleware">TokenUsageRecordingMiddleware</a> to record token usage from
+every LLM call into <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a>. This enables
+<a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker.CurrentTokens</a> without enforcing any budget.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingTokenTracking</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions.UsingTokenTracking(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe).syringe'></a></p>
+<p><code>syringe</code> <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe</a></p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<p><a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe</a></p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Idempotent — calling this multiple times (or via both <code>UsingTokenBudget()</code>
+and <code>UsingDiagnostics()</code>) wires the recording middleware exactly once.</p>
 
 
 

@@ -3529,13 +3529,23 @@ or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/ke
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="../IAgentRunDiagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics">IAgentRunDiagnostics</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.ToolCallCollector'></a></p>
+<h2 id="iagentdiagnosticsaccessortoolcallcollector-property">IAgentDiagnosticsAccessor.ToolCallCollector Property<a class="headerlink" href="#iagentdiagnosticsaccessortoolcallcollector-property" title="Permanent link">&para;</a></h2>
+<p>Gets the <a href="../IToolCallCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolCallCollector">IToolCallCollector</a> wired by the diagnostics system,
+or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if diagnostics were not configured. Used as a fallback
+when <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics">LastRunDiagnostics</a> is unavailable (e.g., when AsyncLocal state
+does not propagate across workflow execution boundaries).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IToolCallCollector</span><span class="o">?</span><span class="w"> </span><span class="n">ToolCallCollector</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<p><a href="../IToolCallCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolCallCollector">IToolCallCollector</a></p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.BeginCapture()'></a></p>
 <h2 id="iagentdiagnosticsaccessorbegincapture-method">IAgentDiagnosticsAccessor.BeginCapture() Method<a class="headerlink" href="#iagentdiagnosticsaccessorbegincapture-method" title="Permanent link">&para;</a></h2>
 <p>Opens a capture scope. Diagnostics written by middleware during agent execution
 are visible via <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics">LastRunDiagnostics</a> after the run completes.
 Disposing the returned handle restores the previous scope.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginCapture</span><span class="p">();</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="n">BeginCapture</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>

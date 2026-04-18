@@ -3509,11 +3509,15 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TokenBudgetChatMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware">TokenBudgetChatMiddleware</a></td>
-<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that accumulates token usage from each LLM call             into an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a> and aborts when the budget is exceeded.             Emits <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetUpdatedEvent</a> and <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Progress.BudgetExceededEvent</a> to the             progress reporter in real-time.</td>
+<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that enforces token budget limits by aborting             when <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a> thresholds are exceeded. Depends on             <a href="../TokenUsageRecordingMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddleware">TokenUsageRecordingMiddleware</a> (wired as an inner middleware) to             keep the tracker's token counts up to date.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TokenBudgetExtensions/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions">TokenBudgetExtensions</a></td>
 <td style="text-align: left;">Extension methods for wiring token-budget enforcement into the agent framework.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TokenUsageRecordingMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddleware">TokenUsageRecordingMiddleware</a></td>
+<td style="text-align: left;">Lightweight <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that records token usage from each LLM call into <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Budget.ITokenBudgetTracker</a>. Does NOT enforce budgets — that is the responsibility of <a href="../TokenBudgetChatMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware">TokenBudgetChatMiddleware</a>.</td>
 </tr>
 </tbody>
 </table>
