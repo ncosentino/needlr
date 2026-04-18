@@ -51,6 +51,38 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Evaluation capture/replay middleware
+
+- **`NexusLabs.Needlr.AgentFramework.Evaluation`** — new assembly housing
+  evaluation-oriented building blocks that compose on top of the agent
+  framework without coupling it to any evaluation runtime.
+- **`IEvaluationCaptureStore`** — contract with `TryGetAsync(key, ct)` and
+  `SaveAsync(key, response, ct)`. Custom backings (Redis, blob, in-memory)
+  slot in via this interface.
+- **`FileEvaluationCaptureStore`** — disk-backed implementation; one JSON
+  file per key under a caller-supplied directory. Writes are atomic via
+  write-then-rename; directory is created on first save.
+- **`EvaluationCaptureChatClient`** — transparent `IChatClient` decorator
+  that serves matching requests from the store and forwards misses to the
+  inner client, persisting the captured response for subsequent replay.
+  Supports both `GetResponseAsync` and `GetStreamingResponseAsync` — the
+  streaming path aggregates updates, stores the complete response under
+  the same key as the non-streaming path, and re-emits it as a single
+  `ChatResponseUpdate` on replay.
+- **`EvaluationCaptureChatClientExtensions.WithEvaluationCapture(...)`** —
+  fluent extensions over `IChatClient` accepting either an
+  `IEvaluationCaptureStore` or a directory path (wires up a
+  `FileEvaluationCaptureStore`).
+- Cache key is a SHA-256 lowercase hex digest over the message list
+  (`"{role}:{text}\n"` per message) plus a `---\n` separator plus the
+  tuple `model`, `temperature`, `top_p`, `max_tokens` from `ChatOptions`
+  (floats formatted with `"R"` + `InvariantCulture`). Tools, response
+  format, and custom options are intentionally excluded from the key.
+- Motivation: evaluation suites and CI harnesses need deterministic,
+  repeatable chat responses without hitting the network on every run. A
+  transparent decorator keeps the consuming code identical between
+  record and replay modes.
+
 #### Agent Framework — Transcript markdown rendering (Phase 2.5f)
 
 - **`AgentRunDiagnosticsTranscriptExtensions.ToTranscriptMarkdown(this IAgentRunDiagnostics)`** —

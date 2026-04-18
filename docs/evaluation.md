@@ -157,3 +157,61 @@ The output is byte-stable across locales — it uses `CultureInfo.InvariantCultu
 - `## Error` — only emitted when `Succeeded` is false.
 
 The renderer is a read-side projection over `IAgentRunDiagnostics` — calling it has no effect on the live path.
+
+## Capture-chat-client middleware
+
+Evaluation suites and CI harnesses benefit from deterministic, repeatable chat responses: the first run against a real model captures the response; subsequent runs replay it without hitting the network. `EvaluationCaptureChatClient` is a transparent `IChatClient` decorator that implements this pattern.
+
+```csharp
+using NexusLabs.Needlr.AgentFramework.Evaluation;
+
+IChatClient cached = realChatClient.WithEvaluationCapture("./cache/evaluation");
+
+// First call: delegates to realChatClient and persists the response.
+// Second call with the same request: served from the store, real client untouched.
+ChatResponse response = await cached.GetResponseAsync(messages, options, ct);
+```
+
+### Cache key
+
+The key is a SHA-256 lowercase hex digest (64 chars) computed over:
+
+- Each `ChatMessage` formatted as `"{role}:{text}\n"` in order.
+- A `---\n` separator.
+- The tuple `model`, `temperature`, `top_p`, `max_tokens` from the supplied `ChatOptions` (missing values emit empty strings, floats are formatted with `"R"` + `InvariantCulture`).
+
+The key intentionally excludes tool definitions, response format, and custom options. Two requests that differ only in those fields collide on the same cache entry — if your suite needs them to vary, route them to separate stores.
+
+### Store contract
+
+`IEvaluationCaptureStore` has two methods:
+
+| Method | Semantics |
+|---|---|
+| `TryGetAsync(key, ct)` | Returns the captured `ChatResponse?` for the key, or `null` on miss. |
+| `SaveAsync(key, response, ct)` | Persists the response under the key, overwriting any existing entry. |
+
+Two implementations ship in-box:
+
+- **`FileEvaluationCaptureStore`** — one JSON file per key under a caller-supplied directory. Writes are atomic via write-then-rename. Directory is created on first save.
+- Custom stores — implement `IEvaluationCaptureStore` for Redis, blob storage, in-memory dictionaries, or any other backing.
+
+Use the fluent extension to wrap a client with a file store:
+
+```csharp
+IChatClient cached = realChatClient.WithEvaluationCapture("./cache/evaluation");
+```
+
+Or inject any `IEvaluationCaptureStore`:
+
+```csharp
+IChatClient cached = realChatClient.WithEvaluationCapture(myStore);
+```
+
+### Streaming
+
+`GetStreamingResponseAsync` aggregates updates via `ToChatResponse()`, saves the aggregated response under the same key used by the non-streaming path, then re-emits the captured response as a single `ChatResponseUpdate`. A cache hit yields one update; the caller sees the same `await foreach` surface either way. Mid-stream failures are not cached — only complete responses reach the store.
+
+### When not to use it
+
+Capture-replay is unsuitable for suites that rely on response variance (temperature sampling across runs), suites that depend on live model behavior changes, or suites where the cache key's intentional omissions (tools, response format) would cause false hits. For those, bypass the decorator and use the underlying client directly.
