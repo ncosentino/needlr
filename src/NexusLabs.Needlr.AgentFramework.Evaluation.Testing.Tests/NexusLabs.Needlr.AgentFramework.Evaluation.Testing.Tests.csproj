@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Evaluation\NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Evaluation.Testing\NexusLabs.Needlr.AgentFramework.Evaluation.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
