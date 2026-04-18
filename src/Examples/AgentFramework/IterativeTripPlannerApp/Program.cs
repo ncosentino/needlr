@@ -1,39 +1,19 @@
-using System.Text;
 using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
-using NexusLabs.Needlr.AgentFramework;
-using NexusLabs.Needlr.AgentFramework.Context;
-using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using IterativeTripPlannerApp.Core;
+
 using NexusLabs.Needlr.AgentFramework.Iterative;
-using NexusLabs.Needlr.AgentFramework.Progress;
-using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Copilot;
-using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Reflection;
 
 // ============================================================================
-// Iterative Trip Planner — IIterativeAgentLoop Example
+// Iterative Trip Planner — Console Entry Point
 //
-// This example demonstrates the FULL integration surface of the iterative
-// agent loop, mirroring real-world consumer patterns like BrandGhost:
-//
-//   ✓ CopilotChatClient as the LLM provider (no mocks, no Azure keys)
-//   ✓ CopilotWebSearchFunction as a real web search tool via Copilot MCP
-//   ✓ DI-resolved tool classes with [AgentFunction] + [AgentFunctionGroup]
-//   ✓ Tools access workspace via IAgentExecutionContextAccessor (not closures)
-//   ✓ Tools resolved via IAgentFactory.ResolveTools() (not AIFunctionFactory)
-//   ✓ Lifecycle hooks for progress reporting (not in-tool console output)
-//   ✓ Diagnostics via IAgentDiagnosticsAccessor (not IterationRecord.Tokens)
-//   ✓ Explicit ExecutionContext bridging on IterativeLoopOptions
-//   ✓ Full Syringe DI with UsingAgentFramework() + UsingDiagnostics()
-//
-// The scenario: a multi-stop trip planner that researches, builds, validates,
-// and finalizes an itinerary across multiple iterations with ~10+ tool calls.
-// Each iteration builds a FRESH prompt from workspace state — O(n) tokens.
+// Thin entry point that demonstrates the IterativeTripPlannerApp.Core library.
+// All trip planning logic lives in Core; this file handles configuration,
+// Copilot wiring, console output hooks, and result rendering.
 //
 // Requirements:
 //   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
@@ -46,12 +26,15 @@ var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var tripConfig = configuration.GetSection("TripPlanner");
+var tripSection = configuration.GetSection("TripPlanner");
+var config = new TripPlannerConfig(
+    Origin: tripSection["Origin"] ?? "New York",
+    Destination: tripSection["Destination"] ?? "Tokyo",
+    MaxStops: int.Parse(tripSection["MaxStops"] ?? "5"),
+    MinStops: int.Parse(tripSection["MinStops"] ?? "3"),
+    Budget: tripSection["Budget"] ?? "3000");
 
 // ── Copilot as the LLM provider ────────────────────────────────────────
-// CopilotChatClient implements IChatClient backed by GitHub Copilot API.
-// Auth is automatic: discovers your GitHub OAuth token from Copilot CLI
-// (apps.json), GH_TOKEN, or GITHUB_TOKEN environment variables.
 var copilotSection = configuration.GetSection("Copilot");
 var copilotOptions = new CopilotChatClientOptions
 {
@@ -60,253 +43,15 @@ var copilotOptions = new CopilotChatClientOptions
 IChatClient chatClient = new CopilotChatClient(copilotOptions);
 Console.WriteLine($"Using Copilot chat client (model: {copilotOptions.DefaultModel})");
 
-// ── Copilot web search tool ────────────────────────────────────────────
-// CopilotWebSearchFunction is a real AIFunction that calls the Copilot MCP
-// server's web_search tool. This gives the agent access to live web data.
 var copilotTools = CopilotToolSet.Create(t => t.EnableWebSearch = true);
 Console.WriteLine($"Copilot tools enabled: {string.Join(", ", copilotTools.Select(t => t.Name))}");
 Console.WriteLine();
 
-// ── DI setup — mirrors real consumer patterns ───────────────────────────
-// UsingAgentFramework() auto-discovers [AgentFunctionGroup("trip-planner")]
-// on TripPlannerFunctions via the source generator's [ModuleInitializer].
-// Diagnostics services (IAgentDiagnosticsAccessor + IAgentDiagnosticsWriter)
-// are registered automatically so the loop publishes diagnostics after each run.
-var serviceProvider = new Syringe()
-    .UsingReflection()
-    .UsingAgentFramework(af => af
-        .UsingChatClient(chatClient))
-    .BuildServiceProvider(configuration);
-
-// Resolve services — same pattern as BrandGhost's orchestrator
-var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
-var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
-var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
-
-// ── Resolve tools via IAgentFactory (not AIFunctionFactory) ─────────────
-// This resolves DI-wired instances of TripPlannerFunctions with
-// IAgentExecutionContextAccessor injected. The accessor gets populated
-// by the loop via the ExecutionContext bridge.
-// Copilot web search is added alongside the domain-specific trip tools.
-var tools = agentFactory.ResolveTools(opts =>
-    opts.FunctionGroups = ["trip-planner"]);
-var allTools = tools.Concat(copilotTools).ToList();
-
-// ── Seed workspace ──────────────────────────────────────────────────────
-var workspace = new InMemoryWorkspace();
-var origin = tripConfig["Origin"] ?? "New York";
-var destination = tripConfig["Destination"] ?? "Tokyo";
-var maxStops = int.Parse(tripConfig["MaxStops"] ?? "5");
-var minStops = int.Parse(tripConfig["MinStops"] ?? "3");
-var budget = tripConfig["Budget"] ?? "3000";
-
-workspace.SeedFile("config.json", JsonSerializer.Serialize(new
-{
-    origin,
-    destination,
-    maxStops,
-    minStops,
-    budget,
-    requirements = new[]
-    {
-        $"Must have at least {minStops} intermediate stops (layover cities)",
-        "Must book a hotel in each layover city (1 night minimum)",
-        "All hotels must be rated 3.5 stars or higher",
-        "Must stay within budget including all flights AND hotels",
-        "Use web_search to research real flights and hotel prices",
-    },
-}));
-workspace.SeedFile("itinerary.json", "[]");
-workspace.SeedFile("status.json", JsonSerializer.Serialize(new
-{
-    phase = "research",
-    validated = false,
-    finalized = false,
-}));
-
-// ── Prompt factory (reads workspace from IterativeContext, not closure) ──
+// ── Console output hooks ────────────────────────────────────────────────
 var iterationStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-string BuildPrompt(IterativeContext ctx)
+var hooks = new TripPlannerHooks
 {
-    var ws = ctx.Workspace;
-    var statusJson = ws.TryReadFile("status.json").Value.Content;
-    var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
-    var phase = status.GetValueOrDefault("phase", "research").ToString()!.ToUpperInvariant();
-
-    var sb = new StringBuilder();
-    sb.AppendLine($"=== ITERATION {ctx.Iteration} ===");
-    sb.AppendLine();
-
-    sb.AppendLine("## Trip Configuration");
-    sb.AppendLine(ws.TryReadFile("config.json").Value.Content);
-    sb.AppendLine();
-
-    sb.AppendLine("## Current Status");
-    sb.AppendLine(ws.TryReadFile("status.json").Value.Content);
-    sb.AppendLine();
-
-    sb.AppendLine("## Current Itinerary");
-    sb.AppendLine(ws.TryReadFile("itinerary.json").Value.Content);
-    sb.AppendLine();
-
-    if (ws.FileExists("research-notes.md"))
-    {
-        var notes = ws.TryReadFile("research-notes.md").Value.Content;
-        if (notes.Length > 0)
-        {
-            sb.AppendLine("## Research Notes (from previous web searches)");
-            sb.AppendLine(notes);
-            sb.AppendLine();
-        }
-    }
-
-    foreach (var path in ws.GetFilePaths().Where(p => p.StartsWith("hotel-")))
-    {
-        var content = ws.TryReadFile(path).Value.Content;
-        if (!string.IsNullOrWhiteSpace(content))
-        {
-            sb.AppendLine($"## Hotel Booking ({path})");
-            sb.AppendLine(content);
-            sb.AppendLine();
-        }
-    }
-
-    if (ctx.LastToolResults.Count > 0)
-    {
-        sb.AppendLine("## Previous Tool Results");
-        foreach (var toolResult in ctx.LastToolResults)
-        {
-            sb.AppendLine($"- {toolResult.FunctionName}: {toolResult.Result}");
-        }
-        sb.AppendLine();
-    }
-
-    sb.AppendLine("## Instructions");
-    sb.AppendLine("You are planning a multi-stop trip from the origin to the destination.");
-    sb.AppendLine("Read the requirements in config.json carefully.");
-    sb.AppendLine();
-    sb.AppendLine("Use web_search for ALL research — finding flights, comparing prices,");
-    sb.AppendLine("discovering hotels. There is no other search tool.");
-    sb.AppendLine("IMPORTANT: After each web_search, call save_research with the key facts");
-    sb.AppendLine("(route, airline, price, duration) so you don't lose the data between iterations.");
-    sb.AppendLine();
-    sb.AppendLine("Follow these phases in order:");
-    sb.AppendLine("1. RESEARCH: Use web_search to find flights between city pairs.");
-    sb.AppendLine("2. BUILD: Add flight legs using add_leg with data from your research.");
-    sb.AppendLine("3. HOTELS: Use web_search to find hotels, then call book_hotel.");
-    sb.AppendLine("4. VALIDATE: Call validate_trip to check all constraints.");
-    sb.AppendLine("5. FIX: If validation fails, adjust legs/hotels and validate again.");
-    sb.AppendLine("6. FINALIZE: Once validated, call finalize_trip with a markdown summary.");
-    sb.AppendLine();
-
-    var itineraryJson = ws.TryReadFile("itinerary.json").Value.Content;
-    var legs = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(itineraryJson) ?? [];
-    var hasHotels = ws.GetFilePaths().Any(p =>
-        p.StartsWith("hotel-") && !string.IsNullOrWhiteSpace(ws.TryReadFile(p).Value.Content));
-    var isValidated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
-    var configJson = ws.TryReadFile("config.json").Value.Content;
-    var configData = JsonSerializer.Deserialize<Dictionary<string, object>>(configJson)!;
-    var reqMinStops = int.Parse(configData.GetValueOrDefault("minStops", 3).ToString()!);
-
-    if (isValidated)
-    {
-        sb.AppendLine(">>> The trip is VALIDATED. Call finalize_trip NOW with a summary. <<<");
-    }
-    else if (legs.Count >= reqMinStops + 1 && hasHotels)
-    {
-        sb.AppendLine(">>> You have legs and hotels. Call validate_trip to check constraints. <<<");
-    }
-    else if (legs.Count >= reqMinStops + 1 && !hasHotels)
-    {
-        sb.AppendLine(">>> You have enough legs. Now use web_search to find hotels in layover cities. <<<");
-    }
-    sb.AppendLine();
-    sb.AppendLine("Respond with text ONLY after calling finalize_trip.");
-
-    return sb.ToString();
-}
-
-// ── Run with lifecycle hooks ────────────────────────────────────────────
-Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║   ITERATIVE TRIP PLANNER — Copilot + Web Search             ║");
-Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
-Console.WriteLine($"║  Origin:       {origin,-45}║");
-Console.WriteLine($"║  Destination:  {destination,-45}║");
-Console.WriteLine($"║  Budget:       ${budget,-44}║");
-Console.WriteLine($"║  Min stops:    {minStops} intermediate cities ({minStops + 1}+ legs required){"",-13}║");
-Console.WriteLine($"║  Max stops:    {maxStops,-45}║");
-Console.WriteLine($"║  Hotels:       Required in every layover city (3.5★ min)   ║");
-Console.WriteLine($"║  LLM:         Copilot ({copilotOptions.DefaultModel}){"",-24}║");
-Console.WriteLine($"║  Web search:   Copilot MCP (real web data)                 ║");
-Console.WriteLine($"║  Tool mode:    OneRoundTrip (2 LLM calls/iter max)         ║");
-Console.WriteLine($"║  Tools:        {allTools.Count} ({string.Join(", ", allTools.Select(t => t.Name).Take(4))}...)  ║");
-Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
-Console.WriteLine();
-
-var options = new IterativeLoopOptions
-{
-    Instructions = $"""
-        You are an expert travel planner building a multi-stop trip.
-        
-        RULES:
-        - The trip MUST have at least {minStops} intermediate stops ({minStops + 1}+ flight legs).
-        - Book a hotel in EVERY layover city (not the final destination).
-        - All hotels MUST be rated 3.5★ or higher. The book_hotel tool will
-          reject hotels below this threshold.
-        - Stay within the budget shown in config.json — this is a hard limit.
-        - Use web_search for ALL research — finding flights, comparing prices,
-          discovering hotels. This is your ONLY research tool.
-        - After EVERY web_search call, immediately call save_research with the
-          key facts (airline, flight, price, duration for flights; hotel name,
-          price per night, rating for hotels). This persists your findings.
-        - When adding a leg with add_leg, use SIMPLE city names like 'New York',
-          'Los Angeles', 'Tokyo' — NOT airport codes or parenthesized forms like
-          'New York (JFK)'.
-        - When adding a leg with add_leg, use realistic data from your web search
-          results (airline, flight number, approximate price, duration).
-        - When booking a hotel with book_hotel, provide the hotel name, city,
-          nights, price per night, and star rating from your web search results.
-        - When validate_trip returns VALID, call finalize_trip immediately.
-        - When validate_trip finds issues, fix them and validate again.
-        - Respond with text ONLY after calling finalize_trip.
-        
-        Budget is TIGHT. You may need to choose budget hotels and cheaper
-        flights to stay within limits. If your first route is over budget,
-        try swapping to cheaper hotels or cheaper flights first. If still
-        over budget, look for alternative routes via clear_itinerary.
-        """,
-    PromptFactory = BuildPrompt,
-    Tools = allTools,
-    MaxIterations = 20,
-    IsComplete = ctx =>
-    {
-        // Read workspace from IterativeContext (not captured closure)
-        if (!ctx.Workspace.FileExists("status.json")) return false;
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(
-            ctx.Workspace.TryReadFile("status.json").Value.Content)!;
-        return status.TryGetValue("finalized", out var f) && f.ToString() == "True";
-    },
-    ToolResultMode = ToolResultMode.OneRoundTrip,
-    LoopName = "trip-planner",
-
-    // ── Tool filter: phase-gating ────────────────────────────────────
-    // Only offer finalize_trip after validation has passed. This prevents
-    // the LLM from skipping validation and finalizing an invalid trip.
-    ToolFilter = (iteration, ctx, allTools) =>
-    {
-        var statusJson = ctx.Workspace.TryReadFile("status.json").Value.Content;
-        var status = JsonSerializer.Deserialize<Dictionary<string, object>>(statusJson)!;
-        var validated = status.TryGetValue("validated", out var v) && v.ToString() == "True";
-
-        return validated
-            ? allTools
-            : allTools.Where(t => !t.Name.Equals("finalize_trip", StringComparison.OrdinalIgnoreCase)).ToList();
-    },
-
-    // ── Lifecycle hooks: progress reporting ──────────────────────────
-    // All console output flows through hooks — tools themselves are silent.
-    // This mirrors BrandGhost's pattern of reporting progress via SignalR.
     OnIterationStart = (iteration, ctx) =>
     {
         if (iteration > 0)
@@ -341,24 +86,6 @@ var options = new IterativeLoopOptions
         var name = toolCallResult.FunctionName;
         var resultStr = toolCallResult.Result?.ToString() ?? "(null)";
 
-        // Auto-persist web_search results to workspace so they survive between
-        // iterations. The LLM won't reliably call SaveResearch on its own.
-        if (name == "web_search" && resultStr.Length > 0)
-        {
-            var existing = workspace.FileExists("research-notes.md")
-                ? workspace.TryReadFile("research-notes.md").Value.Content
-                : "";
-            var query = toolCallResult.Arguments.TryGetValue("query", out var q)
-                ? q?.ToString() ?? "unknown"
-                : "unknown";
-            var entry = $"\n### {query}\n{(resultStr.Length > 500 ? resultStr[..500] : resultStr)}\n";
-            var updated = existing + entry;
-            if (updated.Length > 3000)
-                updated = updated[^3000..];
-            workspace.TryWriteFile("research-notes.md", updated);
-        }
-
-        // Summarize tool results for clean console output
         var summary = name switch
         {
             "web_search" => resultStr.Length > 100 ? resultStr[..97] + "..." : resultStr,
@@ -380,39 +107,30 @@ var options = new IterativeLoopOptions
         return Task.CompletedTask;
     },
 
-    OnIterationEnd = (iterationRecord) =>
-    {
-        // Timing handled by OnIterationStart for the NEXT iteration
-        return Task.CompletedTask;
-    },
-
-    // ── Execution context bridge ────────────────────────────────────
-    // Explicitly set to demonstrate the API. The loop would auto-create
-    // one from IterativeContext.Workspace, but setting it explicitly is
-    // the recommended pattern for real consumers who need custom UserId
-    // or OrchestrationId values.
-    ExecutionContext = new AgentExecutionContext(
-        UserId: "trip-planner-user",
-        OrchestrationId: "trip-planner-run",
-        Workspace: workspace),
+    OnIterationEnd = (_) => Task.CompletedTask,
 };
 
-var context = new IterativeContext { Workspace = workspace };
+// ── Print banner ────────────────────────────────────────────────────────
+Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
+Console.WriteLine("║   ITERATIVE TRIP PLANNER — Copilot + Web Search             ║");
+Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
+Console.WriteLine($"║  Origin:       {config.Origin,-45}║");
+Console.WriteLine($"║  Destination:  {config.Destination,-45}║");
+Console.WriteLine($"║  Budget:       ${config.Budget,-44}║");
+Console.WriteLine($"║  Min stops:    {config.MinStops} intermediate cities ({config.MinStops + 1}+ legs required){"",-13}║");
+Console.WriteLine($"║  Max stops:    {config.MaxStops,-45}║");
+Console.WriteLine($"║  Hotels:       Required in every layover city (3.5★ min)   ║");
+Console.WriteLine($"║  LLM:         Copilot ({copilotOptions.DefaultModel}){"",-24}║");
+Console.WriteLine($"║  Web search:   Copilot MCP (real web data)                 ║");
+Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
+Console.WriteLine();
 
-// Begin a diagnostics capture scope — the loop publishes diagnostics
-// into this scope via IAgentDiagnosticsWriter.Set(). Without this,
-// AsyncLocal values don't propagate back to the caller.
-using var diagnosticsScope = diagnosticsAccessor.BeginCapture();
+// ── Run ─────────────────────────────────────────────────────────────────
+var runner = new TripPlannerRunner(chatClient, copilotTools);
+var runResult = await runner.RunAsync(config, hooks, CancellationToken.None);
 
-// ── Progress reporting scope ────────────────────────────────────────
-// Create a progress reporter so ToolCallStartedEvent/ToolCallCompletedEvent
-// are emitted in real-time. The trip planner sink prints them to console.
-var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
-var progressAccessor = serviceProvider.GetRequiredService<IProgressReporterAccessor>();
-var progressReporter = progressFactory.Create("trip-planner-run");
-using var progressScope = progressAccessor.BeginScope(progressReporter);
-
-var result = await loop.RunAsync(options, context);
+var result = runResult.LoopResult;
+var accessorDiagnostics = runResult.Diagnostics;
 
 // Close the last iteration's timing
 Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -420,10 +138,6 @@ Console.WriteLine($"  └─ iteration {result.Iterations.Count - 1} complete ({
 Console.ResetColor();
 
 // ── Diagnostics from IAgentDiagnosticsAccessor ──────────────────────────
-// The loop publishes diagnostics to the accessor automatically. Real
-// consumers (like BrandGhost) read from this accessor after the run
-// rather than inspecting IterationRecord.Tokens directly.
-var accessorDiagnostics = diagnosticsAccessor.LastRunDiagnostics;
 Console.WriteLine();
 Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
 Console.WriteLine("║             DIAGNOSTICS (from accessor)                     ║");
@@ -569,9 +283,9 @@ if (finalText.Length > 0)
 Console.WriteLine();
 
 Console.WriteLine("═══ Final Workspace Files ═══");
-foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
+foreach (var file in runResult.Workspace.GetFilePaths().OrderBy(f => f))
 {
-    var content = workspace.TryReadFile(file).Value.Content;
+    var content = runResult.Workspace.TryReadFile(file).Value.Content;
     var preview = content.Length > 200 ? content[..197] + "..." : content;
     Console.WriteLine($"  📄 {file} ({content.Length:N0} chars)");
     foreach (var line in preview.Split('\n').Take(6))
@@ -579,36 +293,4 @@ foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
         Console.WriteLine($"     {line.TrimEnd()}");
     }
     Console.WriteLine();
-}
-
-// ── Progress sink: prints tool call events to console ───────────────────
-// Auto-discovered by Needlr's reflection scanner via IProgressSink.
-// Demonstrates the progress reporting pipeline end-to-end.
-internal sealed class TripPlannerProgressSink : IProgressSink
-{
-    public ValueTask OnEventAsync(IProgressEvent evt, CancellationToken cancellationToken)
-    {
-        switch (evt)
-        {
-            case ToolCallStartedEvent tcs:
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine($"  ⚡ [progress] {tcs.ToolName} started (seq #{tcs.SequenceNumber})");
-                Console.ResetColor();
-                break;
-
-            case ToolCallCompletedEvent tcc:
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine($"  ⚡ [progress] {tcc.ToolName} completed ({tcc.Duration.TotalMilliseconds:F0}ms, seq #{tcc.SequenceNumber})");
-                Console.ResetColor();
-                break;
-
-            case ToolCallFailedEvent tcf:
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"  ⚡ [progress] {tcf.ToolName} FAILED: {tcf.ErrorMessage} ({tcf.Duration.TotalMilliseconds:F0}ms)");
-                Console.ResetColor();
-                break;
-        }
-
-        return ValueTask.CompletedTask;
-    }
 }

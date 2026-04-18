@@ -5,7 +5,7 @@ using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Context;
 using NexusLabs.Needlr.AgentFramework.Workspace;
 
-namespace IterativeTripPlannerApp;
+namespace IterativeTripPlannerApp.Core;
 
 /// <summary>
 /// DI-resolved tool functions for the iterative trip planner.
