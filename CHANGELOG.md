@@ -65,6 +65,22 @@ hook may be introduced before stable.
   `ChatCompletions` entries with empty `Response` fields, blocking replay-grade
   evaluation and agent-assisted debugging.
 
+#### Agent Framework — Streaming agent-run diagnostics capture (Phase 2.5b)
+
+- **`DiagnosticsAgentRunMiddleware`** now instruments `HandleStreamingAsync`
+  with parity to `HandleAsync`. Previously the streaming path logged a warning
+  and bypassed `AgentRunDiagnosticsBuilder` entirely, leaving streamed agent
+  runs invisible to diagnostics writers.
+- Updates are teed through to the caller in real time while distinct non-null
+  `MessageId`s are accumulated into `TotalOutputMessages`. On stream completion
+  the builder is finalized and written via `IAgentDiagnosticsWriter.Set`.
+- **Mid-stream failures** record the partial output message count seen so far
+  and call `RecordFailure(failure.Message)` before rethrowing, so transient
+  streaming errors surface in diagnostics instead of vanishing.
+- `DiagnosticsAgentRunMiddleware` no longer takes an `ILogger` constructor
+  parameter (the bypass warning it emitted is now unreachable); callers
+  resolving it through `AgentDiagnosticsPlugin` need no changes.
+
 #### Agent Framework — Evaluation support (Phase 1)
 
 - **`IterationRecordEvaluationExtensions.ToToolCallTrajectory()`** — materializes

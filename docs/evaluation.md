@@ -91,6 +91,15 @@ Evaluation and agent-assisted debugging both depend on **replay-grade** transcri
 
 Errors mid-stream still populate `ChatCompletionDiagnostics.{Success=false, ErrorMessage, Response}` with the partial response built from updates observed before the failure. No data is silently dropped.
 
+### Streaming agent runs
+
+`DiagnosticsAgentRunMiddleware` instruments both agent-run paths:
+
+- `HandleAsync` — captured on completion (existed prior).
+- `HandleStreamingAsync` — `AgentResponseUpdate`s are teed through to the caller in real time while distinct non-null `MessageId`s accumulate into `AgentRunDiagnostics.TotalOutputMessages`. On stream completion the builder is finalized and written to the configured `IAgentDiagnosticsWriter` with identical shape to the non-streaming path.
+
+Mid-stream failures record the partial output-message count observed so far and call `AgentRunDiagnosticsBuilder.RecordFailure(...)` before rethrowing, so streaming agent runs surface in diagnostics the same way non-streaming runs do.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

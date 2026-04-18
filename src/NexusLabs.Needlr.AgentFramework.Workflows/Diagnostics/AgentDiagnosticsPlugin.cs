@@ -1,7 +1,5 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
@@ -32,10 +30,8 @@ internal sealed class AgentDiagnosticsPlugin : IAIAgentBuilderPlugin
 
         var writer = _serviceProvider.GetRequiredService<IAgentDiagnosticsWriter>();
         var metrics = _serviceProvider.GetRequiredService<IAgentMetrics>();
-        var logger = _serviceProvider.GetService<ILogger<DiagnosticsAgentRunMiddleware>>()
-            ?? NullLogger<DiagnosticsAgentRunMiddleware>.Instance;
 
-        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", writer, metrics, logger);
+        var runMiddleware = new DiagnosticsAgentRunMiddleware("Agent", writer, metrics);
         builder.Use(
             runFunc: runMiddleware.HandleAsync,
             runStreamingFunc: runMiddleware.HandleStreamingAsync);
