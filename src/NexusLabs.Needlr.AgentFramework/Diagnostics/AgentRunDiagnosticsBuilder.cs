@@ -23,7 +23,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// ensuring parallel tool calls are ordered by invocation time, not completion time.
 /// </para>
 /// </remarks>
-public sealed class AgentRunDiagnosticsBuilder : IDisposable
+public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
 {
     private static readonly AsyncLocal<AgentRunDiagnosticsBuilder?> CurrentBuilder = new();
 
