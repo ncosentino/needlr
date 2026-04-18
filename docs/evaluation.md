@@ -137,6 +137,95 @@ Beyond the per-completion and per-tool-call records, `IAgentRunDiagnostics` capt
 
 Partial responses are still captured when a streaming run fails mid-stream — `OutputResponse` carries whatever messages were assembled before the fault, alongside `Succeeded = false` and the `ErrorMessage`. This makes a serialized `AgentRunDiagnostics` replay-complete: an evaluator can consume `InputMessages` + `OutputResponse` directly, without reaching back to the caller for the original prompt or the streamed output.
 
+## Native agent-run evaluators
+
+`NexusLabs.Needlr.AgentFramework.Evaluation` ships three deterministic evaluators that operate directly on `IAgentRunDiagnostics`. They are pure computations over captured diagnostics — no LLM judge is invoked, so they run offline and are cheap enough to assert in unit tests.
+
+All three evaluators consume the same bridge type:
+
+### AgentRunDiagnosticsContext
+
+`AgentRunDiagnosticsContext : EvaluationContext` wraps an `IAgentRunDiagnostics` instance and exposes it through an `EvaluationContext` so native evaluators (and MEAI-provided evaluators that accept supplemental context) can read diagnostics without a custom adapter.
+
+- **`ContextName = "Needlr Agent Run Diagnostics"`** — stable constant used as the context identifier.
+- **`Diagnostics`** — the wrapped `IAgentRunDiagnostics`.
+- `BuildContents()` emits a single `TextContent` summary of the run (agent name, execution mode, outcome, chat-completion count, tool-call count, duration) so MEAI judge-based evaluators that round-trip context through a prompt still see a readable summary.
+
+Evaluators downcast the context to `AgentRunDiagnosticsContext` to reach the full `Diagnostics` surface.
+
+### ToolCallTrajectoryEvaluator
+
+Reports on the sequence of tool calls across a run.
+
+- **`Tool Calls Total`** — total tool-call records observed.
+- **`Tool Calls Failed`** — count of records where `Succeeded` is false.
+- **`Tool Call Sequence Gaps`** — number of positions where consecutive tool-call `SequenceNumber` values are not strictly increasing by one.
+- **`All Tool Calls Succeeded`** — boolean rollup, true when every tool call succeeded.
+
+When no `AgentRunDiagnosticsContext` is present in the evaluation's additional context, the evaluator returns an empty result ("not applicable"). This lets callers include it unconditionally in a pipeline of evaluators.
+
+### IterationCoherenceEvaluator
+
+Reports on iterative-loop structure.
+
+- **`Iteration Count`** — number of `IterationRecord` entries.
+- **`Iteration Empty Outputs`** — count of iterations whose `FinalResponse` has no text content.
+- **`Terminated Coherently`** — boolean, true when the run reports a terminated-coherently signal consistent with the captured iterations.
+
+Gated on execution mode: the evaluator only emits metrics when `Diagnostics.ExecutionMode == "IterativeLoop"` (available as the `IterativeLoopExecutionMode` const). Other execution modes produce an empty result.
+
+### TerminationAppropriatenessEvaluator
+
+Reports on whether the run's terminal state is internally consistent.
+
+- **`Run Succeeded`** — boolean mirror of `Diagnostics.Succeeded`.
+- **`Termination Consistent`** — boolean, true when `Succeeded` agrees with the presence/absence of `ErrorMessage` (success ⇔ no error message).
+- **`Execution Mode`** — string metric carrying the run's execution mode, or the `UnknownExecutionMode = "Unknown"` fallback when null.
+
+### Wiring native evaluators
+
+```csharp
+var context = new AgentRunDiagnosticsContext(diagnostics);
+var additionalContext = new[] { context };
+
+// ChatConfiguration is required by the MEAI evaluator contract even for
+// deterministic evaluators. Pass a judge when you also run judge-based
+// evaluators; deterministic evaluators ignore it.
+var chatConfiguration = new ChatConfiguration(judgeChatClient);
+
+var trajectory = await new ToolCallTrajectoryEvaluator()
+    .EvaluateAsync(
+        messages: Array.Empty<ChatMessage>(),
+        modelResponse: new ChatResponse(),
+        chatConfiguration: null,
+        additionalContext: additionalContext);
+
+var coherence = await new IterationCoherenceEvaluator()
+    .EvaluateAsync(
+        messages: Array.Empty<ChatMessage>(),
+        modelResponse: new ChatResponse(),
+        chatConfiguration: null,
+        additionalContext: additionalContext);
+
+var termination = await new TerminationAppropriatenessEvaluator()
+    .EvaluateAsync(
+        messages: Array.Empty<ChatMessage>(),
+        modelResponse: new ChatResponse(),
+        chatConfiguration: null,
+        additionalContext: additionalContext);
+```
+
+Each `EvaluationResult` exposes metrics by name — use the `*MetricName` constants on each evaluator type to look them up without string literals at the call site.
+
+## Testing with Copilot as the judge
+
+`NexusLabs.Needlr.AgentFramework.Evaluation.Testing` provides a reusable xUnit fixture and skip attribute for judge-based evaluator tests.
+
+- **`NeedlrEvaluationFixture`** — discovers a judge chat client from the environment (Copilot CLI by default) and exposes it as `Judge : IChatClient?`. When no judge provider is configured the property is `null` and judge-based tests are skipped.
+- **`RequiresEvaluationJudgeFactAttribute`** / **`RequiresEvaluationJudgeTheoryAttribute`** — xUnit attributes that skip the test at discovery time when no judge is available, so unconfigured machines see explicit skips rather than hard failures.
+
+Azure OpenAI is deliberately excluded from automatic discovery. Tests that hit a live model run only through Copilot CLI, which is rate-limited by the user's subscription rather than a metered API.
+
 ### Transcript markdown
 
 For snapshot tests, review artifacts, and CI log attachments, render an entire agent run as deterministic Markdown with `ToTranscriptMarkdown()`:

@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (Breaking — Alpha)
 
+#### Agent Framework — Evaluation assembly with native evaluators (Phase 4)
+
+Ships `NexusLabs.Needlr.AgentFramework.Evaluation` and
+`NexusLabs.Needlr.AgentFramework.Evaluation.Testing` so Needlr agent runs can
+be evaluated directly against captured diagnostics.
+
+- **`AgentRunDiagnosticsContext : EvaluationContext`** — bridge type that
+  wraps `IAgentRunDiagnostics` for consumption by MEAI evaluators. Stable
+  `ContextName = "Needlr Agent Run Diagnostics"`. `BuildContents()` emits a
+  summary `TextContent` (agent, execution mode, outcome, chat-completion
+  count, tool-call count, duration) so judge-based evaluators that round-trip
+  context through a prompt still see a readable summary.
+- **`ToolCallTrajectoryEvaluator`** — deterministic evaluator over tool-call
+  records. Emits `Tool Calls Total`, `Tool Calls Failed`,
+  `Tool Call Sequence Gaps`, and `All Tool Calls Succeeded`. Returns an
+  empty result when no `AgentRunDiagnosticsContext` is supplied.
+- **`IterationCoherenceEvaluator`** — deterministic evaluator gated on
+  `ExecutionMode == "IterativeLoop"`. Emits `Iteration Count`,
+  `Iteration Empty Outputs`, and `Terminated Coherently`.
+- **`TerminationAppropriatenessEvaluator`** — deterministic evaluator that
+  emits `Run Succeeded`, `Termination Consistent`, and `Execution Mode`
+  (with an `Unknown` fallback when the diagnostics did not record one).
+- **`NeedlrEvaluationFixture`** — xUnit fixture in the `.Testing` assembly
+  that discovers a judge chat client from the environment (Copilot CLI by
+  default) and exposes it as `Judge : IChatClient?`. Azure OpenAI is
+  deliberately excluded from automatic discovery so test runs cannot incur
+  metered API costs.
+- **`RequiresEvaluationJudgeFactAttribute`** /
+  **`RequiresEvaluationJudgeTheoryAttribute`** — xUnit attributes that skip
+  judge-based tests at discovery time when no judge provider is configured,
+  so unconfigured environments see explicit skips instead of failures.
+
 #### Agent Framework — Lossless live-path retypes for Microsoft.Extensions.AI.Evaluation
 
 Phase 1 of MEAI.Evaluation integration. Every live-path surface that previously
