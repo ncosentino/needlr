@@ -50,10 +50,12 @@ internal sealed class DiagnosticsAgentRunMiddleware
 
         using var builder = AgentRunDiagnosticsBuilder.StartNew(resolvedName);
 
-        var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
+        var messageList = messages as IReadOnlyList<ChatMessage> ?? messages.ToList();
         builder.RecordInputMessageCount(messageList.Count);
+        builder.RecordInputMessages(messageList);
 
         var messageIds = new HashSet<string>(StringComparer.Ordinal);
+        var accumulated = new List<AgentResponseUpdate>();
         Exception? failure = null;
 
         var enumerator = innerAgent
@@ -82,6 +84,7 @@ internal sealed class DiagnosticsAgentRunMiddleware
                 {
                     messageIds.Add(update.MessageId);
                 }
+                accumulated.Add(update);
 
                 yield return update;
             }
@@ -91,13 +94,11 @@ internal sealed class DiagnosticsAgentRunMiddleware
             await enumerator.DisposeAsync().ConfigureAwait(false);
         }
 
-        if (failure is null)
+        builder.RecordOutputMessageCount(messageIds.Count);
+        builder.RecordOutputResponse(SynthesizeResponse(accumulated));
+
+        if (failure is not null)
         {
-            builder.RecordOutputMessageCount(messageIds.Count);
-        }
-        else
-        {
-            builder.RecordOutputMessageCount(messageIds.Count);
             builder.RecordFailure(failure.Message);
             activity?.SetStatus(ActivityStatusCode.Error, failure.Message);
         }
@@ -137,13 +138,15 @@ internal sealed class DiagnosticsAgentRunMiddleware
 
         try
         {
-            var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
+            var messageList = messages as IReadOnlyList<ChatMessage> ?? messages.ToList();
             builder.RecordInputMessageCount(messageList.Count);
+            builder.RecordInputMessages(messageList);
 
             var response = await innerAgent.RunAsync(messageList, session, options, cancellationToken)
                 .ConfigureAwait(false);
 
             builder.RecordOutputMessageCount(response.Messages?.Count ?? 0);
+            builder.RecordOutputResponse(response);
 
             return response;
         }
@@ -164,5 +167,54 @@ internal sealed class DiagnosticsAgentRunMiddleware
             activity?.SetTag("gen_ai.usage.output_tokens", diagnostics.AggregateTokenUsage.OutputTokens);
             activity?.SetTag("gen_ai.usage.total_tokens", diagnostics.AggregateTokenUsage.TotalTokens);
         }
+    }
+
+    /// <summary>
+    /// Synthesizes an <see cref="AgentResponse"/> from the raw stream of
+    /// <see cref="AgentResponseUpdate"/> items observed during a streaming run.
+    /// Groups contents by <c>MessageId</c> so each logical message becomes one
+    /// <see cref="ChatMessage"/>. Updates with no <c>MessageId</c> are grouped
+    /// positionally so partial streams (mid-failure) still capture what was
+    /// observed. Returns <see langword="null"/> when no updates were received.
+    /// </summary>
+    private static AgentResponse? SynthesizeResponse(List<AgentResponseUpdate> updates)
+    {
+        if (updates.Count == 0)
+        {
+            return null;
+        }
+
+        var order = new List<string>();
+        var groups = new Dictionary<string, (ChatRole Role, List<AIContent> Contents, string? AuthorName)>(StringComparer.Ordinal);
+
+        for (var i = 0; i < updates.Count; i++)
+        {
+            var u = updates[i];
+            var key = !string.IsNullOrEmpty(u.MessageId) ? u.MessageId : $"__ordinal_{i}";
+            if (!groups.TryGetValue(key, out var entry))
+            {
+                entry = (u.Role ?? ChatRole.Assistant, new List<AIContent>(), u.AuthorName);
+                groups[key] = entry;
+                order.Add(key);
+            }
+            if (u.Contents is { Count: > 0 })
+            {
+                entry.Contents.AddRange(u.Contents);
+            }
+        }
+
+        var messages = new List<ChatMessage>(order.Count);
+        foreach (var k in order)
+        {
+            var (role, contents, authorName) = groups[k];
+            var msg = new ChatMessage(role, contents);
+            if (!string.IsNullOrEmpty(authorName))
+            {
+                msg.AuthorName = authorName;
+            }
+            messages.Add(msg);
+        }
+
+        return new AgentResponse(messages);
     }
 }

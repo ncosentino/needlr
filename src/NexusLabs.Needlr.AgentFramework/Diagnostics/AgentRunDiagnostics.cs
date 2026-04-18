@@ -1,3 +1,6 @@
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -12,6 +15,8 @@ internal sealed record AgentRunDiagnostics(
     IReadOnlyList<ToolCallDiagnostics> ToolCalls,
     int TotalInputMessages,
     int TotalOutputMessages,
+    IReadOnlyList<ChatMessage> InputMessages,
+    AgentResponse? OutputResponse,
     bool Succeeded,
     string? ErrorMessage,
     DateTimeOffset StartedAt,

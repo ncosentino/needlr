@@ -127,6 +127,15 @@ foreach (var entry in timeline)
 
 The returned list merges both collections and sorts them by `StartedAt` (wall-clock). When two entries share the same `StartedAt`, `ChatCompletion` entries sort before `ToolCall` entries (a chat completion is what triggers a tool call, not the reverse); further ties resolve by `Sequence` within kind. Each `DiagnosticsTimelineEntry` carries the original `ChatCompletionDiagnostics` or `ToolCallDiagnostics` reference in the property matching its `Kind`, so no information is lost in the merge — the ordered view is purely additive.
 
+### Agent-run boundary capture
+
+Beyond the per-completion and per-tool-call records, `IAgentRunDiagnostics` captures the exact input and output at the run boundary:
+
+- **`InputMessages : IReadOnlyList<ChatMessage>`** — the full input list handed to the middleware at run start. Empty when no input was supplied.
+- **`OutputResponse : AgentResponse?`** — the full response assembled at run completion. For non-streaming runs this is the underlying `AgentResponse`; for streaming runs the middleware aggregates `AgentResponseUpdate` fragments by `MessageId` (updates without an id become discrete messages keyed by arrival ordinal).
+
+Partial responses are still captured when a streaming run fails mid-stream — `OutputResponse` carries whatever messages were assembled before the fault, alongside `Succeeded = false` and the `ErrorMessage`. This makes a serialized `AgentRunDiagnostics` replay-complete: an evaluator can consume `InputMessages` + `OutputResponse` directly, without reaching back to the caller for the original prompt or the streamed output.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

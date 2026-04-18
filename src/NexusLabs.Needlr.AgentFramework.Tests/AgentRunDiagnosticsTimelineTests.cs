@@ -1,3 +1,5 @@
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
@@ -185,6 +187,8 @@ public class AgentRunDiagnosticsTimelineTests
         public IReadOnlyList<ToolCallDiagnostics> ToolCalls => tools;
         public int TotalInputMessages => 0;
         public int TotalOutputMessages => 0;
+        public IReadOnlyList<ChatMessage> InputMessages => [];
+        public AgentResponse? OutputResponse => null;
         public bool Succeeded => true;
         public string? ErrorMessage => null;
         public DateTimeOffset StartedAt => DateTimeOffset.UnixEpoch;

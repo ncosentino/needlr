@@ -173,6 +173,8 @@ public class AgentMetricsTests
             ToolCalls: [],
             TotalInputMessages: 1,
             TotalOutputMessages: 1,
+            InputMessages: [],
+            OutputResponse: null,
             Succeeded: true,
             ErrorMessage: null,
             StartedAt: DateTimeOffset.UtcNow,

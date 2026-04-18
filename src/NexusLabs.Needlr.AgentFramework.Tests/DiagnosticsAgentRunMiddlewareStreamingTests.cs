@@ -128,6 +128,91 @@ public sealed class DiagnosticsAgentRunMiddlewareStreamingTests
         Assert.Equal("resolved-name", captured[0].AgentName);
     }
 
+    [Fact]
+    public async Task HandleStreamingAsync_RecordsInputMessagesLosslessly()
+    {
+        var captured = new List<IAgentRunDiagnostics>();
+        var (middleware, innerAgent, _) = CreateMiddleware(
+            captured,
+            new[]
+            {
+                new ChatResponseUpdate { Role = ChatRole.Assistant, Contents = [new TextContent("ok")], MessageId = "m-1" },
+            });
+
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "first"),
+            new(ChatRole.User, "second"),
+        };
+
+        await foreach (var _u in middleware.HandleStreamingAsync(messages, session: null, options: null, innerAgent, _ct))
+        {
+        }
+
+        Assert.Single(captured);
+        var diag = captured[0];
+        Assert.Equal(2, diag.InputMessages.Count);
+        Assert.Equal("first", diag.InputMessages[0].Text);
+        Assert.Equal("second", diag.InputMessages[1].Text);
+        Assert.Equal(ChatRole.User, diag.InputMessages[0].Role);
+    }
+
+    [Fact]
+    public async Task HandleStreamingAsync_AggregatesOutputResponseByMessageId()
+    {
+        var captured = new List<IAgentRunDiagnostics>();
+        var (middleware, innerAgent, _) = CreateMiddleware(
+            captured,
+            new[]
+            {
+                new ChatResponseUpdate { Role = ChatRole.Assistant, Contents = [new TextContent("hel")], MessageId = "m-1" },
+                new ChatResponseUpdate { Role = ChatRole.Assistant, Contents = [new TextContent("lo")], MessageId = "m-1" },
+                new ChatResponseUpdate { Role = ChatRole.Assistant, Contents = [new TextContent(" world")], MessageId = "m-2" },
+            });
+
+        var messages = new List<ChatMessage> { new(ChatRole.User, "hi") };
+
+        await foreach (var _u in middleware.HandleStreamingAsync(messages, session: null, options: null, innerAgent, _ct))
+        {
+        }
+
+        Assert.Single(captured);
+        var diag = captured[0];
+        Assert.NotNull(diag.OutputResponse);
+        Assert.Equal(2, diag.OutputResponse!.Messages.Count);
+        Assert.Equal("hello", diag.OutputResponse.Messages[0].Text);
+        Assert.Equal(" world", diag.OutputResponse.Messages[1].Text);
+    }
+
+    [Fact]
+    public async Task HandleStreamingAsync_MidStreamFailure_RecordsPartialOutputResponse()
+    {
+        var captured = new List<IAgentRunDiagnostics>();
+        var (middleware, innerAgent, _) = CreateMiddleware(
+            captured,
+            ThrowingStream(
+                new ChatResponseUpdate { Role = ChatRole.Assistant, Contents = [new TextContent("partial")], MessageId = "m-1" },
+                new InvalidOperationException("stream boom")));
+
+        var messages = new List<ChatMessage> { new(ChatRole.User, "hi") };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _u in middleware.HandleStreamingAsync(messages, session: null, options: null, innerAgent, _ct))
+            {
+            }
+        });
+
+        Assert.Single(captured);
+        var diag = captured[0];
+        Assert.False(diag.Succeeded, "Expected failed streaming run to be marked not succeeded");
+        Assert.NotNull(diag.OutputResponse);
+        Assert.Single(diag.OutputResponse!.Messages);
+        Assert.Equal("partial", diag.OutputResponse.Messages[0].Text);
+        Assert.Single(diag.InputMessages);
+        Assert.Equal("hi", diag.InputMessages[0].Text);
+    }
+
     private static (DiagnosticsAgentRunMiddleware middleware, AIAgent innerAgent, Mock<IChatClient> mockChat)
         CreateMiddleware(
             List<IAgentRunDiagnostics> captured,

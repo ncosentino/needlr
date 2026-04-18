@@ -400,6 +400,8 @@ public static class PipelineRunExtensions
                 ToolCalls: toolCalls,
                 TotalInputMessages: 0,
                 TotalOutputMessages: 0,
+                InputMessages: [],
+                OutputResponse: null,
                 Succeeded: true,
                 ErrorMessage: null,
                 StartedAt: turnStartedAt,

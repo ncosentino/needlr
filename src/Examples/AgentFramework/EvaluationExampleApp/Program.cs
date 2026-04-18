@@ -1,3 +1,4 @@
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
@@ -372,6 +373,8 @@ internal sealed class TimelineDemoDiagnostics(
     public IReadOnlyList<ToolCallDiagnostics> ToolCalls => tools;
     public int TotalInputMessages => 0;
     public int TotalOutputMessages => 0;
+    public IReadOnlyList<ChatMessage> InputMessages => [];
+    public AgentResponse? OutputResponse => null;
     public bool Succeeded => true;
     public string? ErrorMessage => null;
     public DateTimeOffset StartedAt => DateTimeOffset.UnixEpoch;

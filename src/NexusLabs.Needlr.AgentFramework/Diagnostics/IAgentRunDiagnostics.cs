@@ -1,3 +1,6 @@
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -49,6 +52,22 @@ public interface IAgentRunDiagnostics
 
     /// <summary>Gets the number of output messages produced by the agent.</summary>
     int TotalOutputMessages { get; }
+
+    /// <summary>
+    /// Gets the full input messages provided to the agent for this run. Captured once
+    /// at the agent-run boundary so evaluators can replay the exact prompt without
+    /// re-reading per-call chat completion snapshots. Empty when no messages were
+    /// captured (e.g., the run failed before the middleware observed the input).
+    /// </summary>
+    IReadOnlyList<ChatMessage> InputMessages { get; }
+
+    /// <summary>
+    /// Gets the aggregated output response produced by the agent for this run, or
+    /// <see langword="null"/> when no output was produced (e.g., the run failed
+    /// before any updates were emitted). For streaming runs this is synthesized
+    /// from accumulated <see cref="AgentResponseUpdate"/> items grouped by message.
+    /// </summary>
+    AgentResponse? OutputResponse { get; }
 
     /// <summary>Gets whether the agent run completed successfully.</summary>
     bool Succeeded { get; }

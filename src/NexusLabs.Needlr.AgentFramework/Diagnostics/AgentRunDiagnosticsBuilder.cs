@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -42,6 +45,8 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
     private bool _succeeded = true;
     private string? _errorMessage;
     private string? _executionMode;
+    private IReadOnlyList<ChatMessage>? _inputMessages;
+    private AgentResponse? _outputResponse;
 
     public string AgentName { get; }
 
@@ -105,6 +110,20 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
     public void RecordOutputMessageCount(int count) =>
         Interlocked.Add(ref _totalOutputMessages, count);
 
+    /// <summary>
+    /// Records the full input messages supplied to the agent for this run. Captured
+    /// once at the agent-run boundary; calling more than once replaces the snapshot.
+    /// </summary>
+    public void RecordInputMessages(IReadOnlyList<ChatMessage> messages) =>
+        Volatile.Write(ref _inputMessages, messages);
+
+    /// <summary>
+    /// Records the aggregated output response produced by the agent for this run.
+    /// Pass <see langword="null"/> when no response was produced.
+    /// </summary>
+    public void RecordOutputResponse(AgentResponse? response) =>
+        Volatile.Write(ref _outputResponse, response);
+
     public void RecordFailure(string? errorMessage)
     {
         _succeeded = false;
@@ -135,6 +154,8 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
             ToolCalls: _toolCalls.OrderBy(t => t.Sequence).ToArray(),
             TotalInputMessages: Volatile.Read(ref _totalInputMessages),
             TotalOutputMessages: Volatile.Read(ref _totalOutputMessages),
+            InputMessages: Volatile.Read(ref _inputMessages) ?? Array.Empty<ChatMessage>(),
+            OutputResponse: Volatile.Read(ref _outputResponse),
             Succeeded: _succeeded,
             ErrorMessage: _errorMessage,
             StartedAt: StartedAt,

@@ -51,6 +51,23 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Lossless agent-run boundary capture (Phase 2.5e)
+
+- **`IAgentRunDiagnostics.InputMessages`** — new `IReadOnlyList<ChatMessage>`
+  capturing the complete input message list handed to the middleware at run
+  start. Empty list when no input was supplied.
+- **`IAgentRunDiagnostics.OutputResponse`** — new `AgentResponse?` carrying
+  the full response assembled at run completion. For non-streaming runs this
+  is the underlying `AgentResponse`; for streaming runs, update fragments are
+  aggregated by `MessageId` (updates with null/empty ids become discrete
+  messages keyed by arrival ordinal). Partial responses are still captured
+  when a streaming run fails mid-stream.
+- Motivation: evaluation harnesses need the exact boundary artifacts of a
+  run — not derived counts, not stitched text — so `AgentRunDiagnostics`
+  alone is sufficient to replay or evaluate a run without also persisting the
+  caller's input/output. This closes the last hole in the diagnostics record
+  for MEAI.Evaluation adoption.
+
 #### Agent Framework — Ordered diagnostics timeline (Phase 2.5d)
 
 - **`DiagnosticsTimelineEntryKind`** — new enum in
