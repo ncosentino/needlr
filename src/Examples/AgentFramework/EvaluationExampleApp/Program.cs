@@ -81,6 +81,9 @@ PrintCharCountsDemo();
 PrintSection("Demo D — Ordered diagnostics timeline (Phase 2.5d)");
 PrintOrderedTimelineDemo();
 
+PrintSection("Demo E — Transcript markdown rendering (Phase 2.5f)");
+PrintTranscriptMarkdownDemo();
+
 PrintHeader("Done");
 return 0;
 
@@ -195,6 +198,46 @@ static void PrintOrderedTimelineDemo()
     }
     Console.WriteLine(
         "  (Ordered by StartedAt — ties break chat-before-tool, then by Sequence within kind.)");
+}
+
+static void PrintTranscriptMarkdownDemo()
+{
+    var t0 = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
+    var tokens = new TokenUsage(12, 24, 36, 0, 0);
+
+    var chat0 = new ChatCompletionDiagnostics(
+        Sequence: 0, Model: "mock-model", Tokens: tokens,
+        InputMessageCount: 2, Duration: TimeSpan.FromMilliseconds(90),
+        Succeeded: true, ErrorMessage: null,
+        StartedAt: t0, CompletedAt: t0.AddMilliseconds(90));
+
+    var tool0 = new ToolCallDiagnostics(
+        Sequence: 0, ToolName: "get_weather", Duration: TimeSpan.FromMilliseconds(40),
+        Succeeded: true, ErrorMessage: null,
+        StartedAt: t0.AddMilliseconds(100), CompletedAt: t0.AddMilliseconds(140),
+        CustomMetrics: null);
+
+    var inputMessages = new List<ChatMessage>
+    {
+        new(ChatRole.System, "You are a helpful weather assistant."),
+        new(ChatRole.User, "What's the weather in Seattle?"),
+    };
+
+    var outputResponse = new AgentResponse(new List<ChatMessage>
+    {
+        new(ChatRole.Assistant, "Seattle is 52F with light rain."),
+    });
+
+    IAgentRunDiagnostics diag = new TranscriptDemoDiagnostics(
+        chats: [chat0],
+        tools: [tool0],
+        input: inputMessages,
+        output: outputResponse);
+
+    var markdown = diag.ToTranscriptMarkdown();
+    Console.WriteLine(markdown);
+    Console.WriteLine(
+        "  (Deterministic: InvariantCulture, ordered timeline, JSON with WriteIndented=true.)");
 }
 
 static IterativeLoopResult BuildSampleLoopResult()
@@ -379,5 +422,27 @@ internal sealed class TimelineDemoDiagnostics(
     public string? ErrorMessage => null;
     public DateTimeOffset StartedAt => DateTimeOffset.UnixEpoch;
     public DateTimeOffset CompletedAt => DateTimeOffset.UnixEpoch;
+    public string? ExecutionMode => "demo";
+}
+
+internal sealed class TranscriptDemoDiagnostics(
+    IReadOnlyList<ChatCompletionDiagnostics> chats,
+    IReadOnlyList<ToolCallDiagnostics> tools,
+    IReadOnlyList<ChatMessage> input,
+    AgentResponse output) : IAgentRunDiagnostics
+{
+    public string AgentName => "transcript-demo";
+    public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(150);
+    public TokenUsage AggregateTokenUsage => new(12, 24, 36, 0, 0);
+    public IReadOnlyList<ChatCompletionDiagnostics> ChatCompletions => chats;
+    public IReadOnlyList<ToolCallDiagnostics> ToolCalls => tools;
+    public int TotalInputMessages => input.Count;
+    public int TotalOutputMessages => output.Messages.Count;
+    public IReadOnlyList<ChatMessage> InputMessages => input;
+    public AgentResponse? OutputResponse => output;
+    public bool Succeeded => true;
+    public string? ErrorMessage => null;
+    public DateTimeOffset StartedAt => new(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
+    public DateTimeOffset CompletedAt => StartedAt.AddMilliseconds(150);
     public string? ExecutionMode => "demo";
 }

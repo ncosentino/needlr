@@ -136,6 +136,27 @@ Beyond the per-completion and per-tool-call records, `IAgentRunDiagnostics` capt
 
 Partial responses are still captured when a streaming run fails mid-stream — `OutputResponse` carries whatever messages were assembled before the fault, alongside `Succeeded = false` and the `ErrorMessage`. This makes a serialized `AgentRunDiagnostics` replay-complete: an evaluator can consume `InputMessages` + `OutputResponse` directly, without reaching back to the caller for the original prompt or the streamed output.
 
+### Transcript markdown
+
+For snapshot tests, review artifacts, and CI log attachments, render an entire agent run as deterministic Markdown with `ToTranscriptMarkdown()`:
+
+```csharp
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
+
+string transcript = diag.ToTranscriptMarkdown();
+File.WriteAllText("run.md", transcript);
+```
+
+The output is byte-stable across locales — it uses `CultureInfo.InvariantCulture` for numeric formatting and `System.Text.Json` with `WriteIndented = true` for embedded tool arguments and results. Structure:
+
+- H1 header — agent name, execution mode, success/failure, total duration (ms), aggregate token usage.
+- `## Input messages` — only emitted when `InputMessages` is non-empty.
+- `## Timeline` — the ordered view from `GetOrderedTimeline()`, with each entry prefixed by its offset from `StartedAt` in milliseconds. Tool-call entries embed `Arguments` and `Result` as pretty-printed JSON blocks.
+- `## Output response` — only emitted when `OutputResponse` is non-null and carries at least one message.
+- `## Error` — only emitted when `Succeeded` is false.
+
+No new live-path behavior; the renderer is purely a read-side projection over the existing `IAgentRunDiagnostics` surface.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

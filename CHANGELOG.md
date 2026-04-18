@@ -51,6 +51,20 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Transcript markdown rendering (Phase 2.5f)
+
+- **`AgentRunDiagnosticsTranscriptExtensions.ToTranscriptMarkdown(this IAgentRunDiagnostics)`** —
+  new extension that renders a deterministic, human-readable Markdown transcript
+  of an agent run. Includes a header block (agent name, execution mode, outcome,
+  total duration, aggregate tokens), optional `## Input messages` section,
+  `## Timeline` in wall-clock order (with offsets relative to `StartedAt`),
+  optional `## Output response` section, and optional `## Error` section.
+- Designed for snapshot tests, review artifacts, and CI log attachments — uses
+  `CultureInfo.InvariantCulture` and pretty-printed JSON for embedded tool
+  arguments/results so output is byte-stable across locales.
+- No new live-path behavior; purely a read-side rendering over the existing
+  `IAgentRunDiagnostics` surface.
+
 #### Agent Framework — Lossless agent-run boundary capture (Phase 2.5e)
 
 - **`IAgentRunDiagnostics.InputMessages`** — new `IReadOnlyList<ChatMessage>`
