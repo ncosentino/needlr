@@ -77,6 +77,9 @@ WriteColored(
 PrintSection("Demo C — Character counts on captured diagnostics (Phase 2.5c)");
 PrintCharCountsDemo();
 
+PrintSection("Demo D — Ordered diagnostics timeline (Phase 2.5d)");
+PrintOrderedTimelineDemo();
+
 PrintHeader("Done");
 return 0;
 
@@ -141,6 +144,56 @@ static void PrintCharCountsDemo()
         $"args={toolDiag.ArgumentsCharCount}chars, result={toolDiag.ResultCharCount}chars");
     Console.WriteLine(
         "  (Character counts are programmatic truth — computed from serialized payloads, not LLM-reported tokens.)");
+}
+
+static void PrintOrderedTimelineDemo()
+{
+    var t0 = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
+    var tokens = new TokenUsage(10, 20, 30, 0, 0);
+
+    // Interleave: chat -> tool -> chat (LLM -> function call -> LLM observes result).
+    var chat0 = new ChatCompletionDiagnostics(
+        Sequence: 0, Model: "mock-model", Tokens: tokens,
+        InputMessageCount: 1, Duration: TimeSpan.FromMilliseconds(100),
+        Succeeded: true, ErrorMessage: null,
+        StartedAt: t0, CompletedAt: t0.AddMilliseconds(100));
+
+    var tool0 = new ToolCallDiagnostics(
+        Sequence: 0, ToolName: "get_weather", Duration: TimeSpan.FromMilliseconds(50),
+        Succeeded: true, ErrorMessage: null,
+        StartedAt: t0.AddMilliseconds(110), CompletedAt: t0.AddMilliseconds(160),
+        CustomMetrics: null);
+
+    var chat1 = new ChatCompletionDiagnostics(
+        Sequence: 1, Model: "mock-model", Tokens: tokens,
+        InputMessageCount: 2, Duration: TimeSpan.FromMilliseconds(80),
+        Succeeded: true, ErrorMessage: null,
+        StartedAt: t0.AddMilliseconds(170), CompletedAt: t0.AddMilliseconds(250));
+
+    // ChatCompletions and ToolCalls each start Sequence at 0 — so sequence alone
+    // cannot order across kinds. GetOrderedTimeline sorts by wall-clock StartedAt.
+    IAgentRunDiagnostics diag = new TimelineDemoDiagnostics(
+        chats: [chat0, chat1],
+        tools: [tool0]);
+
+    var timeline = diag.GetOrderedTimeline();
+    Console.WriteLine($"  Timeline entries: {timeline.Count}");
+    foreach (var entry in timeline)
+    {
+        var offsetMs = (entry.StartedAt - t0).TotalMilliseconds;
+        var detail = entry.Kind switch
+        {
+            DiagnosticsTimelineEntryKind.ChatCompletion =>
+                $"model={entry.ChatCompletion!.Model}",
+            DiagnosticsTimelineEntryKind.ToolCall =>
+                $"tool={entry.ToolCall!.ToolName}",
+            _ => "?",
+        };
+        Console.WriteLine(
+            $"  [+{offsetMs,4:0}ms] {entry.Kind,-15} seq={entry.Sequence}  {detail}");
+    }
+    Console.WriteLine(
+        "  (Ordered by StartedAt — ties break chat-before-tool, then by Sequence within kind.)");
 }
 
 static IterativeLoopResult BuildSampleLoopResult()
@@ -300,4 +353,28 @@ internal sealed class MockJudgeChatClient : IChatClient
     public void Dispose() { }
 
     public object? GetService(Type serviceType, object? serviceKey = null) => null;
+}
+
+// =============================================================================
+// Stub for the ordered-timeline demo. AgentRunDiagnostics is internal, so the
+// example implements IAgentRunDiagnostics directly with hand-built chat + tool
+// entries interleaved in time.
+// =============================================================================
+
+internal sealed class TimelineDemoDiagnostics(
+    IReadOnlyList<ChatCompletionDiagnostics> chats,
+    IReadOnlyList<ToolCallDiagnostics> tools) : IAgentRunDiagnostics
+{
+    public string AgentName => "timeline-demo";
+    public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(250);
+    public TokenUsage AggregateTokenUsage => new(0, 0, 0, 0, 0);
+    public IReadOnlyList<ChatCompletionDiagnostics> ChatCompletions => chats;
+    public IReadOnlyList<ToolCallDiagnostics> ToolCalls => tools;
+    public int TotalInputMessages => 0;
+    public int TotalOutputMessages => 0;
+    public bool Succeeded => true;
+    public string? ErrorMessage => null;
+    public DateTimeOffset StartedAt => DateTimeOffset.UnixEpoch;
+    public DateTimeOffset CompletedAt => DateTimeOffset.UnixEpoch;
+    public string? ExecutionMode => "demo";
 }

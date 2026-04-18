@@ -111,6 +111,22 @@ Tokens are an LLM-reported abstraction; character counts are a direct measure of
 
 Populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware` on both success and failure paths. `DiagnosticsCharCounter` (in `NexusLabs.Needlr.AgentFramework.Diagnostics`) exposes the same helpers for callers who want to compute counts outside the middlewares. All helpers are null-safe and exception-tolerant — a counter failure never destabilizes the live path; it just yields `0`.
 
+### Ordered timeline
+
+`IAgentRunDiagnostics` exposes `ChatCompletions` and `ToolCalls` as separate collections, each with its own `Sequence`. When you need to see what actually happened in execution order, call the `GetOrderedTimeline()` extension method:
+
+```csharp
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
+
+var timeline = diag.GetOrderedTimeline();
+foreach (var entry in timeline)
+{
+    Console.WriteLine($"[{entry.StartedAt:HH:mm:ss.fff}] {entry.Kind} #{entry.Sequence}");
+}
+```
+
+The returned list merges both collections and sorts them by `StartedAt` (wall-clock). When two entries share the same `StartedAt`, `ChatCompletion` entries sort before `ToolCall` entries (a chat completion is what triggers a tool call, not the reverse); further ties resolve by `Sequence` within kind. Each `DiagnosticsTimelineEntry` carries the original `ChatCompletionDiagnostics` or `ToolCallDiagnostics` reference in the property matching its `Kind`, so no information is lost in the merge — the ordered view is purely additive.
+
 ## Further phases (planned)
 
 - **Phase 3**— Ship a dedicated `NexusLabs.Needlr.AgentFramework.Evaluation` assembly with composite evaluators (`IterativeLoopEvaluator`, `WorkflowEvaluator`, `PipelineEvaluator`) and an opt-in `EvaluationCaptureChatClient` middleware.

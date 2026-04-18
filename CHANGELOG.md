@@ -51,6 +51,27 @@ hook may be introduced before stable.
 
 ### Added
 
+#### Agent Framework — Ordered diagnostics timeline (Phase 2.5d)
+
+- **`DiagnosticsTimelineEntryKind`** — new enum in
+  `NexusLabs.Needlr.AgentFramework.Diagnostics` with values `ChatCompletion`
+  and `ToolCall`.
+- **`DiagnosticsTimelineEntry`** — new `public sealed record` exposing
+  `Kind`, `Sequence`, `StartedAt`, `CompletedAt`, `ChatCompletion?`, and
+  `ToolCall?`. Exactly one of the two nullable properties is populated,
+  matching `Kind`.
+- **`AgentRunDiagnosticsTimelineExtensions.GetOrderedTimeline(this IAgentRunDiagnostics)`**
+  — merges `ChatCompletions` and `ToolCalls` into a single list sorted by
+  `StartedAt` (wall-clock). Ties break by kind (chat before tool — a chat
+  triggers a tool call, not the reverse) then by `Sequence` within kind.
+  `ChatCompletions.Sequence` and `ToolCalls.Sequence` start independently at
+  `0`, so sequence-only ordering is unsafe across kinds; this extension is
+  the correct way to reconstruct execution order.
+- Motivation: BrandGhost agent-assisted debugging needs replay-grade
+  transcripts. Separate `ChatCompletions` and `ToolCalls` collections make
+  chronology ambiguous when a run interleaves them; the ordered timeline
+  resolves that without restructuring the underlying diagnostics shape.
+
 #### Agent Framework — Character counts on diagnostics (Phase 2.5c)
 
 - **`ChatCompletionDiagnostics`** — adds `RequestCharCount : long` and
