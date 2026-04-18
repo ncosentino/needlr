@@ -56,12 +56,12 @@ The returned sequence alternates `FunctionCallContent` (the call) and `FunctionR
 
 ## Example
 
-See [`src/Examples/AgentFramework/EvaluationExampleApp`](https://github.com/ncosentino/needlr/tree/main/src/Examples/AgentFramework/EvaluationExampleApp) for a self-contained example. It builds a sample `IterativeLoopResult`, feeds it to `RelevanceEvaluator`, and prints the trajectory shape — no API keys required (uses a local mock judge `IChatClient`).
+See [`src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation`](https://github.com/ncosentino/needlr/tree/main/src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation) for an end-to-end evaluation demo. It runs a real trip-planner agent via `IterativeTripPlannerApp.Core`, extracts diagnostics, converts them to `EvaluationInputs` via `ToEvaluationInputs()`, and scores the run with both Needlr-native deterministic evaluators and MS MEAI quality evaluators using `CopilotChatClient` as the judge.
 
 Run it:
 
 ```bash
-dotnet run --project src/Examples/AgentFramework/EvaluationExampleApp
+dotnet run --project src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation
 ```
 
 ## Post-hoc replay from diagnostics
@@ -216,15 +216,6 @@ var termination = await new TerminationAppropriatenessEvaluator()
 ```
 
 Each `EvaluationResult` exposes metrics by name — use the `*MetricName` constants on each evaluator type to look them up without string literals at the call site.
-
-## Testing with Copilot as the judge
-
-`NexusLabs.Needlr.AgentFramework.Evaluation.Testing` provides a reusable xUnit fixture and skip attribute for judge-based evaluator tests.
-
-- **`NeedlrEvaluationFixture`** — discovers a judge chat client from the environment (Copilot CLI by default) and exposes it as `Judge : IChatClient?`. When no judge provider is configured the property is `null` and judge-based tests are skipped.
-- **`RequiresEvaluationJudgeFactAttribute`** / **`RequiresEvaluationJudgeTheoryAttribute`** — xUnit attributes that skip the test at discovery time when no judge is available, so unconfigured machines see explicit skips rather than hard failures.
-
-Azure OpenAI is deliberately excluded from automatic discovery. Tests that hit a live model run only through Copilot CLI, which is rate-limited by the user's subscription rather than a metered API.
 
 ### Transcript markdown
 

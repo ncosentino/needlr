@@ -53,6 +53,7 @@ public sealed class TripPlannerRunner
 
         var serviceProvider = new Syringe()
             .UsingReflection()
+            .UsingAdditionalAssemblies([typeof(TripPlannerRunner).Assembly])
             .UsingAgentFramework(af => af
                 .UsingChatClient(_chatClient))
             .BuildServiceProvider(configuration);
