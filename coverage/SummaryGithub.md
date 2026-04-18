@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/17/2026 - 16:21:39 |
-| Coverage date: | 04/17/2026 - 16:20:14 - 04/17/2026 - 16:21:36 |
+| Generated on: | 04/18/2026 - 00:44:08 |
+| Coverage date: | 04/18/2026 - 00:42:42 - 04/18/2026 - 00:44:05 |
 | Parser: | MultiReport (26x Cobertura) |
 | Assemblies: | 24 |
 | Classes: | 410 |
 | Files: | 408 |
-| **Line coverage:** | 81.8% (16122 of 19706) |
-| Covered lines: | 16122 |
-| Uncovered lines: | 3584 |
-| Coverable lines: | 19706 |
-| Total lines: | 48319 |
+| **Line coverage:** | 81.8% (16124 of 19711) |
+| Covered lines: | 16124 |
+| Uncovered lines: | 3587 |
+| Coverable lines: | 19711 |
+| Total lines: | 48325 |
 | **Branch coverage:** | 71.7% (6117 of 8521) |
 | Covered branches: | 6117 |
 | Total branches: | 8521 |
@@ -167,7 +167,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|91.1%|79.6%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|90.5%|79.6%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
@@ -194,12 +194,12 @@
 |NexusLabs.Needlr.AgentFramework.Analyzers.TerminationConditionAnalyzer|98.5%|88%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 89.8%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Generators - 89.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Generators**|**89.8%**|**71.1%**|
-|NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper|84.1%|69.1%|
+|**NexusLabs.Needlr.AgentFramework.Generators**|**89.9%**|**71.1%**|
+|NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper|84.2%|69.1%|
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGe<br/>nerator|97.9%|75%|
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionGroupEntry|100%||
 |NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionMethodInfo|88.8%||
@@ -312,7 +312,7 @@
 |NexusLabs.Needlr.Copilot.CopilotChatClient|74.5%|60.3%|
 |NexusLabs.Needlr.Copilot.CopilotChatClientOptions|100%||
 |NexusLabs.Needlr.Copilot.CopilotJsonContext|74.8%|46.2%|
-|NexusLabs.Needlr.Copilot.CopilotMcpToolClient|11.6%|9%|
+|NexusLabs.Needlr.Copilot.CopilotMcpToolClient|11.3%|9%|
 |NexusLabs.Needlr.Copilot.CopilotTokenProvider|95.8%|75%|
 |NexusLabs.Needlr.Copilot.CopilotTokenResponse|100%||
 |NexusLabs.Needlr.Copilot.CopilotToolSet|100%|75%|

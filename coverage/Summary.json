@@ -1,23 +1,23 @@
 {
   "summary": {
-    "generatedon": "2026-04-17T16:21:39Z",
+    "generatedon": "2026-04-18T00:44:08Z",
     "parser": "MultiReport (26x Cobertura)",
     "assemblies": 24,
     "classes": 410,
     "files": 408,
-    "coveredlines": 16122,
-    "uncoveredlines": 3584,
-    "coverablelines": 19706,
-    "totallines": 48319,
+    "coveredlines": 16124,
+    "uncoveredlines": 3587,
+    "coverablelines": 19711,
+    "totallines": 48325,
     "linecoverage": 81.8,
     "coveredbranches": 6117,
     "totalbranches": 8521,
     "branchcoverage": 71.7,
     "coveredmethods": 2060,
-    "fullcoveredmethods": 1719,
+    "fullcoveredmethods": 1718,
     "totalmethods": 2588,
     "methodcoverage": 79.5,
-    "fullmethodcoverage": 66.4
+    "fullmethodcoverage": 66.3
  },
   "coverage": {
     "assemblies": [
@@ -55,7 +55,7 @@
         { "name": "NexusLabs.Needlr.VerificationOptions", "coverage": 100, "coveredlines": 14, "coverablelines": 14, "totallines": 102, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
         { "name": "NexusLabs.Needlr.VerificationOptionsBuilder", "coverage": 70, "coveredlines": 14, "coverablelines": 20, "totallines": 68, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 71.4, "fullmethodcoverage": 71.4, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 7 },
         { "name": "NexusLabs.Needlr.VerificationResult", "coverage": 75, "coveredlines": 12, "coverablelines": 16, "totallines": 170, "branchcoverage": 62.5, "coveredbranches": 5, "totalbranches": 8, "methodcoverage": 75, "fullmethodcoverage": 50, "coveredmethods": 3, "fullcoveredmethods": 2, "totalmethods": 4 } ] },
-      { "name": "NexusLabs.Needlr.AgentFramework", "classes": 107, "coverage": 84.7, "coveredlines": 2024, "coverablelines": 2388, "totallines": 10768, "branchcoverage": 82, "coveredbranches": 561, "totalbranches": 684, "methodcoverage": 75.2, "fullmethodcoverage": 70.8, "coveredmethods": 499, "fullcoveredmethods": 470, "totalmethods": 663, "classesinassembly": [
+      { "name": "NexusLabs.Needlr.AgentFramework", "classes": 107, "coverage": 84.7, "coveredlines": 2023, "coverablelines": 2388, "totallines": 10768, "branchcoverage": 82, "coveredbranches": 561, "totalbranches": 684, "methodcoverage": 75.2, "fullmethodcoverage": 70.7, "coveredmethods": 499, "fullcoveredmethods": 469, "totalmethods": 663, "classesinassembly": [
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFactory", "coverage": 98.6, "coveredlines": 147, "coverablelines": 149, "totallines": 305, "branchcoverage": 90, "coveredbranches": 72, "totalbranches": 80, "methodcoverage": 100, "fullmethodcoverage": 88.2, "coveredmethods": 17, "fullcoveredmethods": 15, "totalmethods": 17 },
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFactoryOptions", "coverage": 100, "coveredlines": 6, "coverablelines": 6, "totallines": 64, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
         { "name": "NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions", "coverage": 100, "coveredlines": 3, "coverablelines": 3, "totallines": 29, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 3, "fullcoveredmethods": 3, "totalmethods": 3 },
@@ -156,7 +156,7 @@
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolError", "coverage": 100, "coveredlines": 1, "coverablelines": 1, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolResult", "coverage": 100, "coveredlines": 13, "coverablelines": 13, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
         { "name": "NexusLabs.Needlr.AgentFramework.Tools.ToolResult\u00602", "coverage": 100, "coveredlines": 15, "coverablelines": 15, "totallines": 168, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
-        { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "coverage": 91.1, "coveredlines": 144, "coverablelines": 158, "totallines": 302, "branchcoverage": 79.6, "coveredbranches": 43, "totalbranches": 54, "methodcoverage": 93.7, "fullmethodcoverage": 56.2, "coveredmethods": 15, "fullcoveredmethods": 9, "totalmethods": 16 },
+        { "name": "NexusLabs.Needlr.AgentFramework.WorkflowFactory", "coverage": 90.5, "coveredlines": 143, "coverablelines": 158, "totallines": 302, "branchcoverage": 79.6, "coveredbranches": 43, "totalbranches": 54, "methodcoverage": 93.7, "fullmethodcoverage": 50, "coveredmethods": 15, "fullcoveredmethods": 8, "totalmethods": 16 },
         { "name": "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute", "coverage": 0, "coveredlines": 0, "coverablelines": 7, "totallines": 60, "branchcoverage": 0, "coveredbranches": 0, "totalbranches": 2, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 3 },
         { "name": "NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult", "coverage": 100, "coveredlines": 1, "coverablelines": 1, "totallines": 10, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace", "coverage": 100, "coveredlines": 67, "coverablelines": 67, "totallines": 170, "branchcoverage": 95.2, "coveredbranches": 40, "totalbranches": 42, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 12, "fullcoveredmethods": 12, "totalmethods": 12 },
@@ -175,8 +175,8 @@
         { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.AgentTopologyCodeFixProvider", "coverage": 85.3, "coveredlines": 70, "coverablelines": 82, "totallines": 147, "branchcoverage": 58.8, "coveredbranches": 20, "totalbranches": 34, "methodcoverage": 100, "fullmethodcoverage": 25, "coveredmethods": 8, "fullcoveredmethods": 2, "totalmethods": 8 },
         { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.MafDiagnosticDescriptors", "coverage": 100, "coveredlines": 132, "coverablelines": 132, "totallines": 202, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.AgentFramework.Analyzers.TerminationConditionAnalyzer", "coverage": 98.5, "coveredlines": 68, "coverablelines": 69, "totallines": 157, "branchcoverage": 88, "coveredbranches": 44, "totalbranches": 50, "methodcoverage": 100, "fullmethodcoverage": 83.3, "coveredmethods": 6, "fullcoveredmethods": 5, "totalmethods": 6 } ] },
-      { "name": "NexusLabs.Needlr.AgentFramework.Generators", "classes": 21, "coverage": 89.8, "coveredlines": 1529, "coverablelines": 1701, "totallines": 2962, "branchcoverage": 71.1, "coveredbranches": 520, "totalbranches": 731, "methodcoverage": 93.6, "fullmethodcoverage": 73.6, "coveredmethods": 117, "fullcoveredmethods": 92, "totalmethods": 125, "classesinassembly": [
-        { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper", "coverage": 84.1, "coveredlines": 303, "coverablelines": 360, "totallines": 697, "branchcoverage": 69.1, "coveredbranches": 273, "totalbranches": 395, "methodcoverage": 100, "fullmethodcoverage": 25, "coveredmethods": 20, "fullcoveredmethods": 5, "totalmethods": 20 },
+      { "name": "NexusLabs.Needlr.AgentFramework.Generators", "classes": 21, "coverage": 89.9, "coveredlines": 1532, "coverablelines": 1704, "totallines": 2965, "branchcoverage": 71.1, "coveredbranches": 520, "totalbranches": 731, "methodcoverage": 93.6, "fullmethodcoverage": 73.6, "coveredmethods": 117, "fullcoveredmethods": 92, "totalmethods": 125, "classesinassembly": [
+        { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper", "coverage": 84.2, "coveredlines": 306, "coverablelines": 363, "totallines": 700, "branchcoverage": 69.1, "coveredbranches": 273, "totalbranches": 395, "methodcoverage": 100, "fullmethodcoverage": 25, "coveredmethods": 20, "fullcoveredmethods": 5, "totalmethods": 20 },
         { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentFrameworkFunctionRegistryGenerator", "coverage": 97.9, "coveredlines": 146, "coverablelines": 149, "totallines": 252, "branchcoverage": 75, "coveredbranches": 6, "totalbranches": 8, "methodcoverage": 100, "fullmethodcoverage": 50, "coveredmethods": 2, "fullcoveredmethods": 1, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionGroupEntry", "coverage": 100, "coveredlines": 5, "coverablelines": 5, "totallines": 16, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 3, "fullcoveredmethods": 3, "totalmethods": 3 },
         { "name": "NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionMethodInfo", "coverage": 88.8, "coveredlines": 8, "coverablelines": 9, "totallines": 25, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 85.7, "fullmethodcoverage": 85.7, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 7 },
@@ -246,14 +246,14 @@
         { "name": "NexusLabs.Needlr.Carter.Generated.NeedlrSourceGenModuleInitializer", "coverage": 83.3, "coveredlines": 5, "coverablelines": 6, "totallines": 24, "branchcoverage": 100, "coveredbranches": 2, "totalbranches": 2, "methodcoverage": 100, "fullmethodcoverage": 0, "coveredmethods": 1, "fullcoveredmethods": 0, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.Carter.Generated.ServiceCatalog", "coverage": 0, "coveredlines": 0, "coverablelines": 22, "totallines": 53, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 9 },
         { "name": "NexusLabs.Needlr.Carter.Generated.TypeRegistry", "coverage": 76.9, "coveredlines": 10, "coverablelines": 13, "totallines": 58, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 50, "fullmethodcoverage": 50, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 4 } ] },
-      { "name": "NexusLabs.Needlr.Copilot", "classes": 30, "coverage": 57.7, "coveredlines": 1771, "coverablelines": 3065, "totallines": 9441, "branchcoverage": 39.8, "coveredbranches": 330, "totalbranches": 828, "methodcoverage": 52.2, "fullmethodcoverage": 34.2, "coveredmethods": 151, "fullcoveredmethods": 99, "totalmethods": 289, "classesinassembly": [
+      { "name": "NexusLabs.Needlr.Copilot", "classes": 30, "coverage": 57.7, "coveredlines": 1771, "coverablelines": 3067, "totallines": 9444, "branchcoverage": 39.8, "coveredbranches": 330, "totalbranches": 828, "methodcoverage": 52.2, "fullmethodcoverage": 34.2, "coveredmethods": 151, "fullcoveredmethods": 99, "totalmethods": 289, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Copilot.ChatCompletionChunk", "coverage": 83.3, "coveredlines": 5, "coverablelines": 6, "totallines": 210, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 83.3, "fullmethodcoverage": 83.3, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 6 },
         { "name": "NexusLabs.Needlr.Copilot.ChatCompletionRequest", "coverage": 100, "coveredlines": 10, "coverablelines": 10, "totallines": 210, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
         { "name": "NexusLabs.Needlr.Copilot.ChatCompletionResponse", "coverage": 100, "coveredlines": 6, "coverablelines": 6, "totallines": 210, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotChatClient", "coverage": 74.5, "coveredlines": 205, "coverablelines": 275, "totallines": 558, "branchcoverage": 60.3, "coveredbranches": 122, "totalbranches": 202, "methodcoverage": 80, "fullmethodcoverage": 40, "coveredmethods": 12, "fullcoveredmethods": 6, "totalmethods": 15 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotChatClientOptions", "coverage": 100, "coveredlines": 10, "coverablelines": 10, "totallines": 68, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 10, "fullcoveredmethods": 10, "totalmethods": 10 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotJsonContext", "coverage": 74.8, "coveredlines": 1419, "coverablelines": 1897, "totallines": 3676, "branchcoverage": 46.2, "coveredbranches": 173, "totalbranches": 374, "methodcoverage": 52.8, "fullmethodcoverage": 19, "coveredmethods": 64, "fullcoveredmethods": 23, "totalmethods": 121 },
-        { "name": "NexusLabs.Needlr.Copilot.CopilotMcpToolClient", "coverage": 11.6, "coveredlines": 9, "coverablelines": 77, "totallines": 156, "branchcoverage": 9, "coveredbranches": 4, "totalbranches": 44, "methodcoverage": 20, "fullmethodcoverage": 20, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 5 },
+        { "name": "NexusLabs.Needlr.Copilot.CopilotMcpToolClient", "coverage": 11.3, "coveredlines": 9, "coverablelines": 79, "totallines": 159, "branchcoverage": 9, "coveredbranches": 4, "totalbranches": 44, "methodcoverage": 20, "fullmethodcoverage": 20, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 5 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotTokenProvider", "coverage": 95.8, "coveredlines": 46, "coverablelines": 48, "totallines": 118, "branchcoverage": 75, "coveredbranches": 18, "totalbranches": 24, "methodcoverage": 100, "fullmethodcoverage": 60, "coveredmethods": 5, "fullcoveredmethods": 3, "totalmethods": 5 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotTokenResponse", "coverage": 100, "coveredlines": 2, "coverablelines": 2, "totallines": 118, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Copilot.CopilotToolSet", "coverage": 100, "coveredlines": 13, "coverablelines": 13, "totallines": 90, "branchcoverage": 75, "coveredbranches": 3, "totalbranches": 4, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 3, "fullcoveredmethods": 3, "totalmethods": 3 },
