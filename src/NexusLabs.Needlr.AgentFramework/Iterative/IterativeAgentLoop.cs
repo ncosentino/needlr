@@ -178,9 +178,14 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         }
                     }
 
-                    var completionSequence = diagnosticsBuilder.NextChatCompletionSequence();
                     var completionStartedAt = DateTimeOffset.UtcNow;
                     var completionStopwatch = Stopwatch.StartNew();
+                    // Snapshot the chat-completion count so we can detect whether a middleware
+                    // in the chat client pipeline (e.g. DiagnosticsChatClientMiddleware from the
+                    // Workflows package) already recorded a ChatCompletionDiagnostics entry for
+                    // this call. If it did, we skip our own manual AddChatCompletion to avoid
+                    // double-counting tokens and producing duplicate entries.
+                    var completionCountBefore = diagnosticsBuilder.ChatCompletionCount;
                     ChatResponse response;
 
                     try
@@ -195,19 +200,22 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     catch (Exception ex)
                     {
                         completionStopwatch.Stop();
-                        diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
-                            Sequence: completionSequence,
-                            Model: "unknown",
-                            Tokens: new TokenUsage(0, 0, 0, 0, 0),
-                            InputMessageCount: messages.Count,
-                            Duration: completionStopwatch.Elapsed,
-                            Succeeded: false,
-                            ErrorMessage: ex.Message,
-                            StartedAt: completionStartedAt,
-                            CompletedAt: DateTimeOffset.UtcNow)
+                        if (diagnosticsBuilder.ChatCompletionCount == completionCountBefore)
                         {
-                            AgentName = diagnosticsBuilder.AgentName
-                        });
+                            diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
+                                Sequence: diagnosticsBuilder.NextChatCompletionSequence(),
+                                Model: "unknown",
+                                Tokens: new TokenUsage(0, 0, 0, 0, 0),
+                                InputMessageCount: messages.Count,
+                                Duration: completionStopwatch.Elapsed,
+                                Succeeded: false,
+                                ErrorMessage: ex.Message,
+                                StartedAt: completionStartedAt,
+                                CompletedAt: DateTimeOffset.UtcNow)
+                            {
+                                AgentName = diagnosticsBuilder.AgentName
+                            });
+                        }
                         diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                         throw;
                     }
@@ -229,25 +237,29 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                     var responseMessageCount = response.Messages.Count;
 
-                    // Record chat completion diagnostics
-                    diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
-                        Sequence: completionSequence,
-                        Model: response.ModelId ?? "unknown",
-                        Tokens: new TokenUsage(
-                            InputTokens: callInput,
-                            OutputTokens: callOutput,
-                            TotalTokens: callTotal,
-                            CachedInputTokens: 0,
-                            ReasoningTokens: 0),
-                        InputMessageCount: messages.Count,
-                        Duration: completionStopwatch.Elapsed,
-                        Succeeded: true,
-                        ErrorMessage: null,
-                        StartedAt: completionStartedAt,
-                        CompletedAt: DateTimeOffset.UtcNow)
+                    // Record chat completion diagnostics only if no middleware in the chat
+                    // client pipeline already recorded one for this call.
+                    if (diagnosticsBuilder.ChatCompletionCount == completionCountBefore)
                     {
-                        AgentName = diagnosticsBuilder.AgentName
-                    });
+                        diagnosticsBuilder.AddChatCompletion(new ChatCompletionDiagnostics(
+                            Sequence: diagnosticsBuilder.NextChatCompletionSequence(),
+                            Model: response.ModelId ?? "unknown",
+                            Tokens: new TokenUsage(
+                                InputTokens: callInput,
+                                OutputTokens: callOutput,
+                                TotalTokens: callTotal,
+                                CachedInputTokens: 0,
+                                ReasoningTokens: 0),
+                            InputMessageCount: messages.Count,
+                            Duration: completionStopwatch.Elapsed,
+                            Succeeded: true,
+                            ErrorMessage: null,
+                            StartedAt: completionStartedAt,
+                            CompletedAt: DateTimeOffset.UtcNow)
+                        {
+                            AgentName = diagnosticsBuilder.AgentName
+                        });
+                    }
                     diagnosticsBuilder.RecordInputMessageCount(messages.Count);
                     diagnosticsBuilder.RecordOutputMessageCount(responseMessageCount);
 

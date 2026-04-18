@@ -90,6 +90,14 @@ public sealed class AgentRunDiagnosticsBuilder : IDisposable
     public int NextChatCompletionSequence() =>
         Interlocked.Increment(ref _nextChatCompletionSequence) - 1;
 
+    /// <summary>
+    /// Gets the current number of chat completion diagnostics recorded on this builder.
+    /// Callers use this to detect whether a middleware in the chat client pipeline has
+    /// already recorded a completion for a given call, so they can avoid recording a
+    /// duplicate entry.
+    /// </summary>
+    public int ChatCompletionCount => _chatCompletions.Count;
+
     public void AddChatCompletion(ChatCompletionDiagnostics diagnostics)
     {
         _chatCompletions.Enqueue(diagnostics);

@@ -1185,6 +1185,153 @@ public sealed class IterativeAgentLoopTests
         Assert.Equal("unknown", completions[0].Model);
     }
 
+    [Fact]
+    public async Task RunAsync_WhenMiddlewarePreRecordsCompletion_DoesNotDoubleRecord()
+    {
+        // Simulates the Workflows DiagnosticsChatClientMiddleware, which also
+        // records a ChatCompletionDiagnostics entry on the current builder.
+        // The loop must detect that recording already happened and skip its
+        // manual AddChatCompletion, otherwise token usage is doubled.
+        const int MiddlewareInputTokens = 100;
+        const int MiddlewareOutputTokens = 50;
+
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+
+                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
+                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
+                    Sequence: builder.NextChatCompletionSequence(),
+                    Model: "middleware-model",
+                    Tokens: new TokenUsage(
+                        InputTokens: MiddlewareInputTokens,
+                        OutputTokens: MiddlewareOutputTokens,
+                        TotalTokens: MiddlewareInputTokens + MiddlewareOutputTokens,
+                        CachedInputTokens: 0,
+                        ReasoningTokens: 0),
+                    InputMessageCount: 1,
+                    Duration: TimeSpan.FromMilliseconds(42),
+                    Succeeded: true,
+                    ErrorMessage: null,
+                    StartedAt: DateTimeOffset.UtcNow,
+                    CompletedAt: DateTimeOffset.UtcNow));
+
+                var response = new ChatResponse(
+                    [new ChatMessage(ChatRole.Assistant, "done")]);
+                response.Usage = new UsageDetails
+                {
+                    InputTokenCount = MiddlewareInputTokens,
+                    OutputTokenCount = MiddlewareOutputTokens,
+                    TotalTokenCount = MiddlewareInputTokens + MiddlewareOutputTokens,
+                };
+                return response;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions();
+
+        var result = await loop.RunAsync(
+            options,
+            CreateContext(),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, callCount);
+
+        var completions = result.Diagnostics!.ChatCompletions;
+        Assert.Single(completions);
+        Assert.Equal("middleware-model", completions[0].Model);
+        Assert.Equal(MiddlewareInputTokens, completions[0].Tokens.InputTokens);
+        Assert.Equal(MiddlewareOutputTokens, completions[0].Tokens.OutputTokens);
+
+        var aggregate = result.Diagnostics.AggregateTokenUsage;
+        Assert.Equal(MiddlewareInputTokens, aggregate.InputTokens);
+        Assert.Equal(MiddlewareOutputTokens, aggregate.OutputTokens);
+        Assert.Equal(MiddlewareInputTokens + MiddlewareOutputTokens, aggregate.TotalTokens);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenMiddlewarePreRecordsMultipleRounds_AllEntriesRecordedExactlyOnce()
+    {
+        // Multi-round variant of the duplication regression test to mirror the
+        // observed production symptom (identical consecutive pairs in the list).
+        const int MiddlewareInputTokens = 200;
+        const int MiddlewareOutputTokens = 75;
+
+        var tool = CreateTool("ping", () => "pong");
+        var callCount = 0;
+        var mockChat = new Mock<IChatClient>();
+        mockChat
+            .Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+
+                var builder = AgentRunDiagnosticsBuilder.GetCurrent();
+                builder?.AddChatCompletion(new ChatCompletionDiagnostics(
+                    Sequence: builder.NextChatCompletionSequence(),
+                    Model: $"middleware-model-{callCount}",
+                    Tokens: new TokenUsage(
+                        InputTokens: MiddlewareInputTokens,
+                        OutputTokens: MiddlewareOutputTokens,
+                        TotalTokens: MiddlewareInputTokens + MiddlewareOutputTokens,
+                        CachedInputTokens: 0,
+                        ReasoningTokens: 0),
+                    InputMessageCount: callCount,
+                    Duration: TimeSpan.FromMilliseconds(42),
+                    Succeeded: true,
+                    ErrorMessage: null,
+                    StartedAt: DateTimeOffset.UtcNow,
+                    CompletedAt: DateTimeOffset.UtcNow));
+
+                if (callCount == 1)
+                {
+                    return CreateToolCallResponse(("ping", "c1", null));
+                }
+
+                var response = new ChatResponse(
+                    [new ChatMessage(ChatRole.Assistant, "done")]);
+                response.Usage = new UsageDetails
+                {
+                    InputTokenCount = MiddlewareInputTokens,
+                    OutputTokenCount = MiddlewareOutputTokens,
+                    TotalTokenCount = MiddlewareInputTokens + MiddlewareOutputTokens,
+                };
+                return response;
+            });
+
+        var loop = CreateLoop(mockChat);
+        var options = CreateOptions(
+            tools: [tool],
+            toolResultMode: ToolResultMode.OneRoundTrip);
+
+        var result = await loop.RunAsync(
+            options,
+            CreateContext(),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(2, callCount);
+
+        var completions = result.Diagnostics!.ChatCompletions;
+        Assert.Equal(2, completions.Count);
+        Assert.Equal("middleware-model-1", completions[0].Model);
+        Assert.Equal("middleware-model-2", completions[1].Model);
+
+        var aggregate = result.Diagnostics.AggregateTokenUsage;
+        Assert.Equal(2 * MiddlewareInputTokens, aggregate.InputTokens);
+        Assert.Equal(2 * MiddlewareOutputTokens, aggregate.OutputTokens);
+        Assert.Equal(2 * (MiddlewareInputTokens + MiddlewareOutputTokens), aggregate.TotalTokens);
+    }
+
     #endregion
 
     #region Lifecycle Hooks
