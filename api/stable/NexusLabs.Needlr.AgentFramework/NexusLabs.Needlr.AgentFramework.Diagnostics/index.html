@@ -3491,7 +3491,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../AgentRunDiagnosticsBuilder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></td>
-<td style="text-align: left;">Thread-safe accumulator for diagnostics captured during a single agent run. Both Needlr's built-in diagnostics middleware and consumer-provided middleware use this class to record tool calls, chat completions, and message counts as an agent executes.</td>
+<td style="text-align: left;">Thread-safe accumulator for diagnostics captured during a single agent run. Implements <a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a> so writers (middleware, loops) record through a stable interface rather than coupling to the concrete builder.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../AgentRunDiagnosticsTimelineExtensions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsTimelineExtensions">AgentRunDiagnosticsTimelineExtensions</a></td>
@@ -3566,6 +3566,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IChatCompletionCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IChatCompletionCollector">IChatCompletionCollector</a></td>
 <td style="text-align: left;">Provides access to per-LLM-call completion diagnostics captured by the chat client middleware. Used by pipeline run extensions to correlate LLM call timing with agent turns.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a></td>
+<td style="text-align: left;">Accepts diagnostic records produced during an agent run. Writers (middleware, orchestration loops) call these methods to record individual chat completions and tool calls. The sink is responsible for storage and aggregation.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IPipelineRunResult/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult">IPipelineRunResult</a></td>

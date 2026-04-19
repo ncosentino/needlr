@@ -3479,20 +3479,24 @@
 <h3 id="nexuslabsneedlragentframeworkdiagnostics"><a href="../NexusLabs.Needlr.AgentFramework.Diagnostics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics">NexusLabs.Needlr.AgentFramework.Diagnostics</a><a class="headerlink" href="#nexuslabsneedlragentframeworkdiagnostics" title="Permanent link">&para;</a></h3>
 <h2 id="agentrundiagnosticsbuilder-class">AgentRunDiagnosticsBuilder Class<a class="headerlink" href="#agentrundiagnosticsbuilder-class" title="Permanent link">&para;</a></h2>
 <p>Thread-safe accumulator for diagnostics captured during a single agent run.
-Both Needlr's built-in diagnostics middleware and consumer-provided middleware
-use this class to record tool calls, chat completions, and message counts as
-an agent executes.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span>
+Implements <a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a> so writers (middleware, loops) record
+through a stable interface rather than coupling to the concrete builder.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IDiagnosticsSink</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; AgentRunDiagnosticsBuilder</p>
-<p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>
+<p>Implements <a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
-<p>Stored in an <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1" title="System.Threading.AsyncLocal`1">System.Threading.AsyncLocal&lt;&gt;</a> so the agent-run, chat-completion, and
-function-calling middleware all access the same builder instance within an async flow.
-Call <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)">StartNew(string)</a> at the beginning of an agent run and dispose the returned
-builder when the run completes.</p>
-<p>Sequence numbers are reserved BEFORE async work begins (via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked.increment#system-threading-interlocked-increment(system-int32@)" title="System.Threading.Interlocked.Increment(System.Int32@)">System.Threading.Interlocked.Increment(System.Int32@)</a>),
-ensuring parallel tool calls are ordered by invocation time, not completion time.</p>
+<p>Stored in an <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1" title="System.Threading.AsyncLocal`1">System.Threading.AsyncLocal&lt;&gt;</a> so middleware layers access the same
+builder instance within an async flow. Call <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string)">StartNew(string)</a> at the
+beginning of an agent run and dispose the returned builder when the run completes.</p>
+<p>Each event class has a single designated writer. Chat completions are written
+exclusively by <a href="../">NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsChatClientMiddleware</a>. Tool calls are
+written exclusively by the <code>IterativeAgentLoop</code> (MEAI path) or
+<code>DiagnosticsFunctionCallingMiddleware</code> (MAF path). Two writers for the same
+event class is a bug.</p>
+<p>Sequence numbers are reserved BEFORE async work begins (via
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked.increment#system-threading-interlocked-increment(system-int32@)" title="System.Threading.Interlocked.Increment(System.Int32@)">System.Threading.Interlocked.Increment(System.Int32@)</a>), ensuring parallel tool calls are
+ordered by invocation time, not completion time.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.ParentAgentName'></a></p>
 <h2 id="agentrundiagnosticsbuilderparentagentname-property">AgentRunDiagnosticsBuilder.ParentAgentName Property<a class="headerlink" href="#agentrundiagnosticsbuilderparentagentname-property" title="Permanent link">&para;</a></h2>
@@ -3529,6 +3533,7 @@ Otherwise equivalent to <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.
 <p>Reserves a sequence number for a chat completion (thread-safe).</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextChatCompletionSequence</span><span class="p">();</span>
 </span></code></pre></div>
+<p>Implements <a href="../IDiagnosticsSink/#NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink.NextChatCompletionSequence()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink.NextChatCompletionSequence()">NextChatCompletionSequence()</a></p>
 <h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.NextToolCallSequence()'></a></p>
@@ -3536,6 +3541,7 @@ Otherwise equivalent to <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.
 <p>Reserves a sequence number for a tool call (thread-safe).</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">NextToolCallSequence</span><span class="p">();</span>
 </span></code></pre></div>
+<p>Implements <a href="../IDiagnosticsSink/#NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink.NextToolCallSequence()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink.NextToolCallSequence()">NextToolCallSequence()</a></p>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.RecordInputMessages(System.Collections.Generic.IReadOnlyList_Microsoft.Extensions.AI.ChatMessage_)'></a></p>
