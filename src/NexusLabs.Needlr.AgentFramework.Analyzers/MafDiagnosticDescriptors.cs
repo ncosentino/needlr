@@ -199,4 +199,18 @@ public static class MafDiagnosticDescriptors
         isEnabledByDefault: true,
         description: "A type referenced in FunctionTypes must contain at least one method decorated with [AgentFunction]; otherwise the agent silently receives no tools from it. Either add [AgentFunction] to a method on the type, or remove it from FunctionTypes.",
         helpLinkUri: HelpLinkBase + "NDLRMAF014.md");
+
+    /// <summary>
+    /// NDLRMAF015: <c>.ToString()</c> is called on a tool result property that may
+    /// contain a <c>JsonElement</c>. Use <c>ToolResultSerializer.Serialize()</c> instead.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ToolResultToStringCall = new(
+        id: MafDiagnosticIds.ToolResultToStringCall,
+        title: "Do not call ToString() on tool result objects",
+        messageFormat: "'{0}.Result.ToString()' may produce a C# type name instead of JSON. Use ToolResultSerializer.Serialize() to get the correct string representation.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "Tool result objects (ToolCallResult.Result, FunctionResultContent.Result) are typed as object? and may contain a System.Text.Json.JsonElement. Calling ToString() on a JsonElement does not consistently return the JSON text — for arrays and complex objects it produces the C# type name. Use ToolResultSerializer.Serialize() from NexusLabs.Needlr.AgentFramework instead.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF015.md");
 }

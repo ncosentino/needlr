@@ -5,3 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRMAF015 | NexusLabs.Needlr.AgentFramework | Warning | ToolResultToStringAnalyzer, Do not call ToString() on tool result objects

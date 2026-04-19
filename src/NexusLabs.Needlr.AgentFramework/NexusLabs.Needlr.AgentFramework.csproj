@@ -37,6 +37,11 @@
           Pack="true"
           PackagePath="analyzers/dotnet/cs"
           Visible="false" />
+    <!-- Run our own analyzers on the AF project during source-mode development -->
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Analyzers\NexusLabs.Needlr.AgentFramework.Analyzers.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
     <None Include="..\NexusLabs.Needlr.AgentFramework.Generators\bin\$(Configuration)\netstandard2.0\NexusLabs.Needlr.AgentFramework.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"

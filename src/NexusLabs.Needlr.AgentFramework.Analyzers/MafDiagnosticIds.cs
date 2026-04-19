@@ -91,4 +91,11 @@ public static class MafDiagnosticIds
     /// from that type.
     /// </summary>
     public const string AgentFunctionTypesMiswired = "NDLRMAF014";
+
+    /// <summary>
+    /// NDLRMAF015: <c>.ToString()</c> is called on <c>ToolCallResult.Result</c> or
+    /// <c>FunctionResultContent.Result</c>, which are <c>object?</c> and may contain
+    /// a <c>JsonElement</c>. Use <c>ToolResultSerializer.Serialize()</c> instead.
+    /// </summary>
+    public const string ToolResultToStringCall = "NDLRMAF015";
 }
