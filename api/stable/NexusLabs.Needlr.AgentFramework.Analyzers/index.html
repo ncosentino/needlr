@@ -3528,6 +3528,10 @@
 <td style="text-align: left;"><a href="TerminationConditionAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.TerminationConditionAnalyzer">TerminationConditionAnalyzer</a></td>
 <td style="text-align: left;">Analyzer that validates termination condition declarations on agent classes.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><a href="ToolResultToStringAnalyzer/" title="NexusLabs.Needlr.AgentFramework.Analyzers.ToolResultToStringAnalyzer">ToolResultToStringAnalyzer</a></td>
+<td style="text-align: left;">Detects <code>.ToString()</code> invocations on <code>ToolCallResult.Result</code> and <code>FunctionResultContent.Result</code> properties, which are <code>object?</code> and may contain a <code>JsonElement</code> at runtime.</td>
+</tr>
 </tbody>
 </table>
 

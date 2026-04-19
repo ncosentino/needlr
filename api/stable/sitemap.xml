@@ -813,6 +813,10 @@
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/ToolResultSerializer/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/AgentFrameworkConfigureOptions/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
@@ -1362,6 +1366,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Analyzers/AgentGroupChatSingletonAnalyzer/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Analyzers/ToolResultToStringAnalyzer/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
