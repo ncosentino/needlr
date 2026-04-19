@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2-alpha.44]
+
+### Fixed
+
+#### Copilot — Rate-limit errors no longer swallowed as successful results
+
+`CopilotWebSearchFunction` previously caught all exceptions from the MCP
+client and returned them as plain-text "error" strings. Rate-limit responses
+(both HTTP 429 after retry exhaustion and HTTP 200 with rate-limit message
+content) were indistinguishable from successful results, preventing
+`TieredProviderSelector` fallback to alternative providers.
+
+- **`CopilotRateLimitException`** — new public exception thrown when rate
+  limiting is detected. Includes `RetryAfter : TimeSpan?` parsed from the
+  HTTP `Retry-After` header (429 path) or from "Try again in N seconds"
+  text (200 path). `ITieredProvider` implementations should catch this and
+  wrap it as `ProviderUnavailableException` for the selector fallback chain.
+- **`CopilotMcpToolClient`** — throws `CopilotRateLimitException` (not
+  `HttpRequestException`) when HTTP 429 retries are exhausted. `RetryAfter`
+  is populated from the response header.
+- **`CopilotWebSearchFunction.InvokeCoreAsync`** — re-throws
+  `CopilotRateLimitException` instead of swallowing it. Detection for the
+  HTTP 200 path requires text starting with "Rate limit exceeded" or
+  "Too many requests" AND empty citations/queries to avoid false positives
+  on legitimate search results that discuss rate limiting.
+
+### Added
+
+#### Copilot — Structured web search results with citations
+
+`CopilotWebSearchFunction` now returns `WebSearchResult` instead of a
+plain string, exposing the full MCP response structure that was
+previously discarded.
+
+- **`WebSearchResult`** — top-level result with `Text`, `Citations`,
+  and `SearchQueries`. `ToString()` returns `Text` for backward
+  compatibility with agent tool flows that stringify results.
+- **`WebSearchCitation`** — a source citation with `Title`, `Url`,
+  `StartIndex`, and `EndIndex` (character offsets into `Text`
+  corresponding to `【3:N†source】` markers).
+- **`WebSearchQuery`** — a Bing search query that was performed, with
+  `Text` and `Url`.
+- All three types have internal constructors (only the library creates
+  them) for additive versioning safety.
+
 ### Changed (Breaking — Alpha)
 
 #### Agent Framework — Evaluation assembly with native evaluators (Phase 4)
