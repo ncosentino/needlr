@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260412-041330</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.WebApplicationBuildBenchmarks-20260419-041455</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -15,9 +15,9 @@
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
 AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.201
-  [Host]   : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
+.NET SDK 10.0.202
+  [Host]   : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  InvocationCount=1  IterationCount=5  
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
@@ -26,10 +26,10 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 <table>
 <thead><tr><th>Method                        </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_BuildWebApp</td><td>2.806 ms</td><td>0.1741 ms</td><td>0.0452 ms</td><td>1.00</td><td>0.02</td><td>1</td><td>518.63 KB</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_BuildWebApp</td><td>8.655 ms</td><td>0.2593 ms</td><td>0.0673 ms</td><td>3.09</td><td>0.05</td><td>2</td><td>1775.64 KB</td><td>3.42</td>
-</tr><tr><td>Needlr_SourceGen_BuildWebApp</td><td>3.537 ms</td><td>0.1415 ms</td><td>0.0367 ms</td><td>1.26</td><td>0.02</td><td>1</td><td>811.58 KB</td><td>1.56</td>
-</tr><tr><td>Needlr_SourceGenExplicit_BuildWebApp</td><td>3.460 ms</td><td>0.0702 ms</td><td>0.0109 ms</td><td>1.23</td><td>0.02</td><td>1</td><td>733.52 KB</td><td>1.41</td>
+</thead><tbody><tr><td>ManualDI_BuildWebApp</td><td>2.700 ms</td><td>0.0747 ms</td><td>0.0194 ms</td><td>1.00</td><td>0.01</td><td>1</td><td>518.63 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_BuildWebApp</td><td>8.552 ms</td><td>0.1209 ms</td><td>0.0314 ms</td><td>3.17</td><td>0.02</td><td>3</td><td>1774.98 KB</td><td>3.42</td>
+</tr><tr><td>Needlr_SourceGen_BuildWebApp</td><td>3.494 ms</td><td>0.1401 ms</td><td>0.0364 ms</td><td>1.29</td><td>0.01</td><td>2</td><td>811.58 KB</td><td>1.56</td>
+</tr><tr><td>Needlr_SourceGenExplicit_BuildWebApp</td><td>3.448 ms</td><td>0.1637 ms</td><td>0.0425 ms</td><td>1.28</td><td>0.02</td><td>2</td><td>733.52 KB</td><td>1.41</td>
 </tr></tbody></table>
 </body>
 </html>

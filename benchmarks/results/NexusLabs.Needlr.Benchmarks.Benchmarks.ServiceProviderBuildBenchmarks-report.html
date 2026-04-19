@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-20260412-041202</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ServiceProviderBuildBenchmarks-20260419-041332</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -15,9 +15,9 @@
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
 AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.201
-  [Host]   : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
+.NET SDK 10.0.202
+  [Host]   : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,10 +26,10 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                                 </th><th>Mean  </th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_BuildServiceProvider</td><td>1.180 &mu;s</td><td>0.0172 &mu;s</td><td>0.0027 &mu;s</td><td>1.00</td><td>0.00</td><td>1</td><td>0.2785</td><td>0.0916</td><td>4.56 KB</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_BuildServiceProvider</td><td>2,199.245 &mu;s</td><td>577.1906 &mu;s</td><td>149.8946 &mu;s</td><td>1,863.07</td><td>116.59</td><td>4</td><td>54.6875</td><td>7.8125</td><td>923.35 KB</td><td>202.38</td>
-</tr><tr><td>Needlr_SourceGenExplicit_BuildServiceProvider</td><td>77.110 &mu;s</td><td>3.8096 &mu;s</td><td>0.9893 &mu;s</td><td>65.32</td><td>0.78</td><td>2</td><td>6.3477</td><td>0.4883</td><td>109.7 KB</td><td>24.04</td>
-</tr><tr><td>Needlr_SourceGenImplicit_BuildServiceProvider</td><td>101.944 &mu;s</td><td>11.4119 &mu;s</td><td>2.9636 &mu;s</td><td>86.36</td><td>2.31</td><td>3</td><td>11.3525</td><td>1.8311</td><td>186.7 KB</td><td>40.92</td>
+</thead><tbody><tr><td>ManualDI_BuildServiceProvider</td><td>1.300 &mu;s</td><td>0.0253 &mu;s</td><td>0.0039 &mu;s</td><td>1.00</td><td>0.00</td><td>1</td><td>0.2785</td><td>0.0916</td><td>4.56 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_BuildServiceProvider</td><td>2,202.034 &mu;s</td><td>580.7134 &mu;s</td><td>150.8094 &mu;s</td><td>1,694.49</td><td>106.59</td><td>4</td><td>54.6875</td><td>7.8125</td><td>923.16 KB</td><td>202.34</td>
+</tr><tr><td>Needlr_SourceGenExplicit_BuildServiceProvider</td><td>73.950 &mu;s</td><td>3.8803 &mu;s</td><td>1.0077 &mu;s</td><td>56.91</td><td>0.73</td><td>2</td><td>6.3477</td><td>0.4883</td><td>109.7 KB</td><td>24.04</td>
+</tr><tr><td>Needlr_SourceGenImplicit_BuildServiceProvider</td><td>97.283 &mu;s</td><td>2.0323 &mu;s</td><td>0.3145 &mu;s</td><td>74.86</td><td>0.30</td><td>3</td><td>10.7422</td><td>0.9766</td><td>183.41 KB</td><td>40.20</td>
 </tr></tbody></table>
 </body>
 </html>

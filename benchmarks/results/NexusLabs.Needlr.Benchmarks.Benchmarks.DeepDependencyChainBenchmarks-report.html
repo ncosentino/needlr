@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260412-040549</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260419-040719</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -15,9 +15,9 @@
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
 AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.201
-  [Host]   : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
+.NET SDK 10.0.202
+  [Host]   : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>15.79 ns</td><td>0.151 ns</td><td>0.023 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>15.58 ns</td><td>0.288 ns</td><td>0.075 ns</td><td>0.99</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>20.22 ns</td><td>0.092 ns</td><td>0.014 ns</td><td>1.28</td><td>2</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>16.19 ns</td><td>0.096 ns</td><td>0.015 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>19.39 ns</td><td>0.512 ns</td><td>0.133 ns</td><td>1.20</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>19.43 ns</td><td>0.251 ns</td><td>0.065 ns</td><td>1.20</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>
