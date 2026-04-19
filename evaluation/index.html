@@ -1338,23 +1338,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#testing-with-copilot-as-the-judge" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing with Copilot as the judge
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Testing with Copilot as the judge">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#transcript-markdown" class="md-nav__link">
     <span class="md-ellipsis">
@@ -3904,9 +3887,9 @@
 </span></code></pre></div>
 <p>The returned sequence alternates <code>FunctionCallContent</code> (the call) and <code>FunctionResultContent</code> (the result) in call order — the exact shape MEAI.Evaluation tool-call evaluators consume.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
-<p>See <a href="https://github.com/ncosentino/needlr/tree/main/src/Examples/AgentFramework/EvaluationExampleApp"><code>src/Examples/AgentFramework/EvaluationExampleApp</code></a> for a self-contained example. It builds a sample <code>IterativeLoopResult</code>, feeds it to <code>RelevanceEvaluator</code>, and prints the trajectory shape — no API keys required (uses a local mock judge <code>IChatClient</code>).</p>
+<p>See <a href="https://github.com/ncosentino/needlr/tree/main/src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation"><code>src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation</code></a> for an end-to-end evaluation demo. It runs a real trip-planner agent via <code>IterativeTripPlannerApp.Core</code>, extracts diagnostics, converts them to <code>EvaluationInputs</code> via <code>ToEvaluationInputs()</code>, and scores the run with both Needlr-native deterministic evaluators and MS MEAI quality evaluators using <code>CopilotChatClient</code> as the judge.</p>
 <p>Run it:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/EvaluationExampleApp
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/IterativeTripPlannerApp.Evaluation
 </span></code></pre></div>
 <h2 id="post-hoc-replay-from-diagnostics">Post-hoc replay from diagnostics<a class="headerlink" href="#post-hoc-replay-from-diagnostics" title="Permanent link">&para;</a></h2>
 <p>A serialized <code>AgentRunDiagnostics</code> is sufficient for offline replay and evaluation — no need to re-invoke the agent or the underlying model.</p>
@@ -4052,13 +4035,6 @@
 </span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">        </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="n">additionalContext</span><span class="p">);</span>
 </span></code></pre></div>
 <p>Each <code>EvaluationResult</code> exposes metrics by name — use the <code>*MetricName</code> constants on each evaluator type to look them up without string literals at the call site.</p>
-<h2 id="testing-with-copilot-as-the-judge">Testing with Copilot as the judge<a class="headerlink" href="#testing-with-copilot-as-the-judge" title="Permanent link">&para;</a></h2>
-<p><code>NexusLabs.Needlr.AgentFramework.Evaluation.Testing</code> provides a reusable xUnit fixture and skip attribute for judge-based evaluator tests.</p>
-<ul>
-<li><strong><code>NeedlrEvaluationFixture</code></strong> — discovers a judge chat client from the environment (Copilot CLI by default) and exposes it as <code>Judge : IChatClient?</code>. When no judge provider is configured the property is <code>null</code> and judge-based tests are skipped.</li>
-<li><strong><code>RequiresEvaluationJudgeFactAttribute</code></strong> / <strong><code>RequiresEvaluationJudgeTheoryAttribute</code></strong> — xUnit attributes that skip the test at discovery time when no judge is available, so unconfigured machines see explicit skips rather than hard failures.</li>
-</ul>
-<p>Azure OpenAI is deliberately excluded from automatic discovery. Tests that hit a live model run only through Copilot CLI, which is rate-limited by the user's subscription rather than a metered API.</p>
 <h3 id="transcript-markdown">Transcript markdown<a class="headerlink" href="#transcript-markdown" title="Permanent link">&para;</a></h3>
 <p>For snapshot tests, review artifacts, and CI log attachments, render an entire agent run as deterministic Markdown with <code>ToTranscriptMarkdown()</code>:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Diagnostics</span><span class="p">;</span>
