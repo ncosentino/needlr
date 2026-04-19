@@ -33,7 +33,7 @@ public async Task SomeTest() { }
 
 ## Helper types belong in separate files
 
-When a test file contains private helper types (fake implementations, test doubles, builder helpers), extract them into a dedicated `*TestHelpers.cs` file in the same directory. Do NOT use section-divider comments to group them inside the test file.
+When a test file contains private helper types (fake implementations, test doubles, builder helpers), extract them into separate classes in separate files in the same directory. Do NOT use section-divider comments to group them inside the test file.
 
 ```csharp
 // ❌ WRONG — helpers embedded in the test file with divider comments
@@ -43,9 +43,11 @@ When a test file contains private helper types (fake implementations, test doubl
 private sealed class FakeSink : IDiagnosticsSink { ... }
 private sealed class ThrowingSink : IDiagnosticsSink { ... }
 
-// ✅ CORRECT — helpers extracted to a separate file
-// FooTestHelpers.cs
+// ✅ CORRECT — helpers extracted to separate files in the same directory
+// FakeSink.cs
 internal sealed class FakeSink : IDiagnosticsSink { ... }
+
+// ThrowingSink.cs
 internal sealed class ThrowingSink : IDiagnosticsSink { ... }
 ```
 
