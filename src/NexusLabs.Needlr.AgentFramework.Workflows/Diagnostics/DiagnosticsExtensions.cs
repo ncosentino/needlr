@@ -47,11 +47,7 @@ public static class DiagnosticsExtensions
                 var innerClient = existingFactory?.Invoke(sp)
                     ?? sp.GetRequiredService<IChatClient>();
 
-                return innerClient
-                    .AsBuilder()
-                    .Use(getResponseFunc: chatMiddleware.HandleAsync,
-                        getStreamingResponseFunc: chatMiddleware.HandleStreamingAsync)
-                    .Build();
+                return new DiagnosticsRecordingChatClient(innerClient, chatMiddleware);
             };
         });
 

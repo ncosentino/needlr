@@ -70,14 +70,19 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             chatClient = loopClientFactory(chatClient);
         }
 
-        // Wrap with the diagnostics recording middleware so chat completions
-        // are captured by a single writer. Metrics and progress are optional.
-        var chatMiddleware = new DiagnosticsChatClientMiddleware(_metrics, _progressReporterAccessor);
-        chatClient = chatClient
-            .AsBuilder()
-            .Use(getResponseFunc: chatMiddleware.HandleAsync,
-                getStreamingResponseFunc: chatMiddleware.HandleStreamingAsync)
-            .Build();
+        // Install diagnostics recording middleware only when the pipeline does
+        // not already contain one. UsingDiagnostics(), a per-loop factory, or
+        // manual wiring may have already installed a DiagnosticsRecordingChatClient.
+        // Installing a second instance would cause every ChatCompletion to be
+        // recorded twice, inflating token counts by 2×.
+        //
+        // Detection uses MEAI's GetService<T>() which walks the DelegatingChatClient
+        // chain, so it works regardless of where the middleware was installed.
+        if (chatClient.GetService<DiagnosticsRecordingChatClient>() is null)
+        {
+            var chatMiddleware = new DiagnosticsChatClientMiddleware(_metrics, _progressReporterAccessor);
+            chatClient = new DiagnosticsRecordingChatClient(chatClient, chatMiddleware);
+        }
 
         var iterations = new List<IterationRecord>();
         ChatResponse? finalResponse = null;
