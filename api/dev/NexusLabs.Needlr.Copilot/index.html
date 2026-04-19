@@ -3493,6 +3493,10 @@
 <td style="text-align: left;">Configuration options for <a href="CopilotChatClient/" title="NexusLabs.Needlr.Copilot.CopilotChatClient">CopilotChatClient</a> and related Copilot API types.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="CopilotRateLimitException/" title="NexusLabs.Needlr.Copilot.CopilotRateLimitException">CopilotRateLimitException</a></td>
+<td style="text-align: left;">Thrown when a Copilot web search request is rejected due to rate limiting. This can occur either via an HTTP 429 response after retry exhaustion or when the MCP tool returns a rate-limit error message as its content.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="CopilotToolSet/" title="NexusLabs.Needlr.Copilot.CopilotToolSet">CopilotToolSet</a></td>
 <td style="text-align: left;">Factory for creating Copilot-backed <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> instances. Use with Needlr's agent framework tool sets or pass directly to <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatoptions.tools" title="Microsoft.Extensions.AI.ChatOptions.Tools">Microsoft.Extensions.AI.ChatOptions.Tools</a>.</td>
 </tr>
@@ -3502,7 +3506,19 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="CopilotWebSearchFunction/" title="NexusLabs.Needlr.Copilot.CopilotWebSearchFunction">CopilotWebSearchFunction</a></td>
-<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> that calls the Copilot MCP server's <code>web_search</code> tool.             Register this with Needlr's agent framework tool set to give agents access to             Copilot's AI-powered web search.</td>
+<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> that calls the Copilot MCP server's <code>web_search</code> tool.             Returns a <a href="WebSearchResult/" title="NexusLabs.Needlr.Copilot.WebSearchResult">WebSearchResult</a> containing the answer text, source             citations, and the search queries that were performed.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="WebSearchCitation/" title="NexusLabs.Needlr.Copilot.WebSearchCitation">WebSearchCitation</a></td>
+<td style="text-align: left;">Represents a citation from a Copilot web search result, linking a span of the answer text to a source URL.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="WebSearchQuery/" title="NexusLabs.Needlr.Copilot.WebSearchQuery">WebSearchQuery</a></td>
+<td style="text-align: left;">Represents a Bing search query that the Copilot web search tool performed while answering the user's question.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="WebSearchResult/" title="NexusLabs.Needlr.Copilot.WebSearchResult">WebSearchResult</a></td>
+<td style="text-align: left;">The structured result of a Copilot web search, including the answer text, source citations, and the search queries that were performed.</td>
 </tr>
 </tbody>
 </table>
