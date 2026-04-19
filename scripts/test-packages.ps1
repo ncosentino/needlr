@@ -387,29 +387,57 @@ Write-Host "  (Sync guarantee: if Directory.Build.targets drifts from the NuGet 
 $examplesRoot = Join-Path $repoRoot 'src/Examples'
 $allExampleProjects = Get-ChildItem -Path $examplesRoot -Recurse -Filter "*.csproj" | Sort-Object FullName
 
-foreach ($proj in $allExampleProjects) {
-    Write-Host -NoNewline "  Building $($proj.Name)..."
-    $buildOut = & dotnet build $proj.FullName -c Debug 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host " FAIL" -ForegroundColor Red
-        Write-Host ($buildOut | Select-Object -Last 20 | Out-String)
-        $failed = $true
-    } else {
-        Write-Host " OK" -ForegroundColor Green
-    }
+# Build all example projects in a single MSBuild invocation via a temporary
+# traversal project. MSBuild constructs one dependency graph, builds each unique
+# project exactly once (even shared deps like Generators), and parallelizes
+# across CPU cores. The previous per-project foreach loop spawned 48 separate
+# MSBuild processes that each independently rebuilt shared dependencies.
+$projItems = $allExampleProjects | ForEach-Object {
+    "    <ProjectReference Include=`"$($_.FullName.Replace('\', '/'))`" />"
 }
+$traversalContent = @"
+<Project>
+  <ItemGroup>
+$($projItems -join "`n")
+  </ItemGroup>
+  <Target Name="Build">
+    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true" Properties="Configuration=Debug" />
+  </Target>
+</Project>
+"@
+$traversalPath = Join-Path ([System.IO.Path]::GetTempPath()) "needlr-examples-$([System.IO.Path]::GetRandomFileName()).proj"
+Set-Content -Path $traversalPath -Value $traversalContent -Encoding UTF8
+
+Write-Host "  Building $($allExampleProjects.Count) example projects (parallel)..."
+$buildOut = & dotnet msbuild $traversalPath -t:Build -v:q -nologo 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  Example builds FAILED" -ForegroundColor Red
+    $buildOut | Where-Object { $_ -match ':\s*error\s' } | ForEach-Object {
+        Write-Host "    $_" -ForegroundColor Red
+    }
+    $failed = $true
+} else {
+    Write-Host "  All $($allExampleProjects.Count) example projects built OK" -ForegroundColor Green
+}
+
+Remove-Item $traversalPath -ErrorAction SilentlyContinue
 
 $testProjects = $allExampleProjects | Where-Object { $_.Name -like '*Tests.csproj' }
 
-foreach ($proj in $testProjects) {
-    Write-Host -NoNewline "  Running $($proj.Name)..."
-    $testOut = & dotnet test $proj.FullName -c Debug --no-build 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host " FAIL" -ForegroundColor Red
-        Write-Host ($testOut | Select-Object -Last 20 | Out-String)
-        $failed = $true
-    } else {
-        Write-Host " OK" -ForegroundColor Green
+if ($testProjects.Count -gt 0) {
+    # Test projects run sequentially because dotnet test does not accept multiple
+    # project arguments. However the builds are already done (--no-build), so each
+    # invocation is fast (test execution only).
+    foreach ($proj in $testProjects) {
+        Write-Host -NoNewline "  Running $($proj.Name)..."
+        $testOut = & dotnet test $proj.FullName -c Debug --no-build 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host " FAIL" -ForegroundColor Red
+            Write-Host ($testOut | Select-Object -Last 20 | Out-String)
+            $failed = $true
+        } else {
+            Write-Host " OK" -ForegroundColor Green
+        }
     }
 }
 
