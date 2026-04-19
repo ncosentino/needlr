@@ -407,6 +407,9 @@ $traversalContent = @"
   <ItemGroup>
 $($projItems -join "`n")
   </ItemGroup>
+  <Target Name="Restore">
+    <MSBuild Projects="@(ProjectReference)" Targets="Restore" BuildInParallel="true" />
+  </Target>
   <Target Name="Build">
     <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true" Properties="Configuration=Debug" />
   </Target>
@@ -415,7 +418,16 @@ $($projItems -join "`n")
 $traversalPath = Join-Path ([System.IO.Path]::GetTempPath()) "needlr-examples-$([System.IO.Path]::GetRandomFileName()).proj"
 Set-Content -Path $traversalPath -Value $traversalContent -Encoding UTF8
 
-Write-Host "  Building $($allExampleProjects.Count) example projects (parallel)..."
+Write-Host "  Building $($allExampleProjects.Count) example projects (parallel, with restore)..."
+$buildOut = & dotnet msbuild $traversalPath -t:Restore -v:q -nologo 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  Example restore FAILED" -ForegroundColor Red
+    $buildOut | Where-Object { $_ -match ':\s*error\s' } | ForEach-Object {
+        Write-Host "    $_" -ForegroundColor Red
+    }
+    $failed = $true
+}
+
 $buildOut = & dotnet msbuild $traversalPath -t:Build -v:q -nologo 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  Example builds FAILED" -ForegroundColor Red
