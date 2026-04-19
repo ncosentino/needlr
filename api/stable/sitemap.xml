@@ -193,11 +193,27 @@
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/WebSearchQuery/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/ICopilotTokenProvider/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/CopilotChatClientOptions/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/WebSearchResult/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/WebSearchCitation/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.Copilot/CopilotRateLimitException/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
