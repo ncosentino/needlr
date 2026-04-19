@@ -1,5 +1,7 @@
 using Microsoft.Extensions.AI;
 
+using NexusLabs.Needlr.AgentFramework;
+
 using NexusLabs.Needlr.AgentFramework.Progress;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Budget;
@@ -177,7 +179,7 @@ public sealed class ContextWindowGuardMiddleware : DelegatingChatClient
                 }
                 else if (content is FunctionResultContent fr)
                 {
-                    totalChars += fr.Result?.ToString()?.Length ?? 0;
+                    totalChars += ToolResultSerializer.Serialize(fr.Result).Length;
                 }
             }
         }
@@ -210,7 +212,7 @@ public sealed class ContextWindowGuardMiddleware : DelegatingChatClient
                     }
                 }
                 else if (content is FunctionResultContent fr)
-                    removedTokens += (fr.Result?.ToString()?.Length ?? 0) / CharsPerToken;
+                    removedTokens += ToolResultSerializer.Serialize(fr.Result).Length / CharsPerToken;
             }
 
             messages.RemoveAt(idx);

@@ -46,7 +46,9 @@ public static class IterationRecordEvaluationExtensions
 
             var resultContent = new FunctionResultContent(
                 callId: callId,
-                result: call.Succeeded ? call.Result : call.ErrorMessage);
+                result: call.Succeeded
+                    ? ToolResultSerializer.Serialize(call.Result)
+                    : call.ErrorMessage);
             messages.Add(new ChatMessage(ChatRole.Tool, [resultContent]));
         }
 

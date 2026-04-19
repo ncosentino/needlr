@@ -246,7 +246,7 @@ public sealed class CopilotChatClient : IChatClient
                     result.Add(new RequestMessage
                     {
                         Role = role,
-                        Content = fr.Result?.ToString() ?? "",
+                        Content = SerializeToolResult(fr.Result),
                         ToolCallId = fr.CallId ?? "",
                     });
                 }
@@ -555,4 +555,36 @@ public sealed class CopilotChatClient : IChatClient
         null => null,
         _ => new ChatFinishReason(reason),
     };
+
+    /// <summary>
+    /// Serializes a tool result for inclusion in a chat message to the API.
+    /// <see cref="JsonElement"/> values are rendered to raw JSON text. Strings
+    /// are returned as-is. All other types are JSON-serialized.
+    /// </summary>
+    private static string SerializeToolResult(object? result)
+    {
+        if (result is null)
+        {
+            return "";
+        }
+
+        if (result is JsonElement jsonElement)
+        {
+            return jsonElement.GetRawText();
+        }
+
+        if (result is string s)
+        {
+            return s;
+        }
+
+        try
+        {
+            return JsonSerializer.Serialize(result, result.GetType());
+        }
+        catch (JsonException)
+        {
+            return result.ToString() ?? "";
+        }
+    }
 }

@@ -293,7 +293,7 @@ public sealed class TripPlannerRunner
     internal static void AutoPersistWebSearch(IWorkspace workspace, ToolCallResult toolCallResult)
     {
         var name = toolCallResult.FunctionName;
-        var resultStr = toolCallResult.Result?.ToString() ?? "(null)";
+        var resultStr = NexusLabs.Needlr.AgentFramework.ToolResultSerializer.Serialize(toolCallResult.Result);
 
         if (name != "web_search" || resultStr.Length <= 0)
         {

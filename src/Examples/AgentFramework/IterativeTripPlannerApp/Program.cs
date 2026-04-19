@@ -84,7 +84,7 @@ var hooks = new TripPlannerHooks
     OnToolCall = (iteration, toolCallResult) =>
     {
         var name = toolCallResult.FunctionName;
-        var resultStr = toolCallResult.Result?.ToString() ?? "(null)";
+        var resultStr = NexusLabs.Needlr.AgentFramework.ToolResultSerializer.Serialize(toolCallResult.Result);
 
         var summary = name switch
         {
@@ -217,7 +217,7 @@ foreach (var iter in result.Iterations)
         Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.Write("      Result: ");
         Console.ResetColor();
-        var resultStr = tc.Result?.ToString() ?? "(null)";
+        var resultStr = NexusLabs.Needlr.AgentFramework.ToolResultSerializer.Serialize(tc.Result);
         if (resultStr.Length > 120)
         {
             Console.WriteLine(resultStr[..117] + "...");

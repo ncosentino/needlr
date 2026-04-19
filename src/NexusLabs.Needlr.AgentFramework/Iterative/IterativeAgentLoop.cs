@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 
@@ -302,7 +303,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     foreach (var (fc, result) in functionCalls.Zip(roundResults))
                     {
                         var resultContent = result.Succeeded
-                            ? result.Result?.ToString() ?? ""
+                            ? ToolResultSerializer.Serialize(result.Result)
                             : $"Error: {result.ErrorMessage}";
 
                         messages.Add(new ChatMessage(ChatRole.Tool,
@@ -705,4 +706,6 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             : arguments is not null
                 ? new Dictionary<string, object?>(arguments)
                 : new Dictionary<string, object?>();
+
+
 }
