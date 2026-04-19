@@ -3,30 +3,30 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/19/2026 - 00:39:10 |
-| Coverage date: | 04/19/2026 - 00:37:43 - 04/19/2026 - 00:39:07 |
+| Generated on: | 04/19/2026 - 03:02:11 |
+| Coverage date: | 04/19/2026 - 03:00:36 - 04/19/2026 - 03:02:07 |
 | Parser: | MultiReport (27x Cobertura) |
 | Assemblies: | 25 |
-| Classes: | 425 |
-| Files: | 422 |
-| **Line coverage:** | 82.3% (16789 of 20396) |
-| Covered lines: | 16789 |
-| Uncovered lines: | 3607 |
-| Coverable lines: | 20396 |
-| Total lines: | 50058 |
-| **Branch coverage:** | 72.1% (6408 of 8885) |
-| Covered branches: | 6408 |
-| Total branches: | 8885 |
+| Classes: | 429 |
+| Files: | 426 |
+| **Line coverage:** | 82.5% (16983 of 20569) |
+| Covered lines: | 16983 |
+| Uncovered lines: | 3586 |
+| Coverable lines: | 20569 |
+| Total lines: | 50571 |
+| **Branch coverage:** | 72.4% (6519 of 8997) |
+| Covered branches: | 6519 |
+| Total branches: | 8997 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>NexusLabs.Needlr - 83.8%</summary>
+<details><summary>NexusLabs.Needlr - 84%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr**|**83.8%**|**86%**|
+|**NexusLabs.Needlr**|**84%**|**86.7%**|
 |NexusLabs.Needlr.Catalog.ConstructorParameterEntry|40%||
 |NexusLabs.Needlr.Catalog.DecoratorCatalogEntry|85.7%||
 |NexusLabs.Needlr.Catalog.HostedServiceCatalogEntry|83.3%||
@@ -44,7 +44,7 @@
 |NexusLabs.Needlr.InterceptAttribute`1|100%||
 |NexusLabs.Needlr.KeyedAttribute|75%|50%|
 |NexusLabs.Needlr.LifetimeMismatch|100%|50%|
-|NexusLabs.Needlr.LifetimeMismatchExtensions|95.1%|90.9%|
+|NexusLabs.Needlr.LifetimeMismatchExtensions|97.5%|95.4%|
 |NexusLabs.Needlr.MethodInvocation|100%|91.6%|
 |NexusLabs.Needlr.PluginOrderAttribute|100%||
 |NexusLabs.Needlr.PostBuildServiceCollectionPluginOptions|80%||
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 87%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 88.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**87%**|**80.5%**|
+|**NexusLabs.Needlr.AgentFramework**|**88.4%**|**81.7%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|90%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -95,22 +95,26 @@
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentMetrics|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnostics|86.6%||
-|NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder|98.2%|100%|
+|NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsTimelineExte<br/>nsions|97.1%|80%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsTranscriptEx<br/>tensions|96.1%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.AgentStageResult|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionCollectorHolder|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsCharCounter|96.2%|88.8%|
-|NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsChatClientMiddleware|100%|71.8%|
+|NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsChatClientMiddleware|100%|76.7%|
+|NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsFunctionInvocationEx<br/>tensions|100%||
+|NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsFunctionInvokingChat<br/>Client|97%|55.8%|
+|NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsRecordingChatClient|91.6%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsTimelineEntry|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor|0%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult|0%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.NullChatCompletionCollector|50%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.NullToolCallCollector|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineRunResult|97.5%|100%|
+|NexusLabs.Needlr.AgentFramework.Diagnostics.TeeDiagnosticsSink|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage|100%||
-|NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallCollectorHolder|100%||
+|NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallCollectorHolder|83.3%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallDiagnostics|100%||
 |NexusLabs.Needlr.AgentFramework.Diagnostics.ToolMetricsAccessor|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Diagnostics.WorkflowRunOptions|100%||
@@ -129,10 +133,10 @@
 |NexusLabs.Needlr.AgentFramework.Generated.NeedlrSourceGenModuleInitializer|83.3%|100%|
 |NexusLabs.Needlr.AgentFramework.Generated.ServiceCatalog|0%||
 |NexusLabs.Needlr.AgentFramework.Generated.TypeRegistry|0%||
-|NexusLabs.Needlr.AgentFramework.Iterative.ChatClientAccessor|0%|0%|
+|NexusLabs.Needlr.AgentFramework.Iterative.ChatClientAccessor|100%|66.6%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecordEvaluationExtensio<br/>ns|100%|91.6%|
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.3%|85.6%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.6%|92.7%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeContext|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|96%|62.5%|
@@ -159,16 +163,16 @@
 |NexusLabs.Needlr.AgentFramework.Progress.ProgressSequenceProvider|100%||
 |NexusLabs.Needlr.AgentFramework.Progress.SuperStepCompletedProgressEvent|25%||
 |NexusLabs.Needlr.AgentFramework.Progress.SuperStepStartedProgressEvent|25%||
-|NexusLabs.Needlr.AgentFramework.Progress.ToolCallCompletedEvent|0%||
+|NexusLabs.Needlr.AgentFramework.Progress.ToolCallCompletedEvent|20%||
 |NexusLabs.Needlr.AgentFramework.Progress.ToolCallFailedEvent|0%||
-|NexusLabs.Needlr.AgentFramework.Progress.ToolCallStartedEvent|0%||
+|NexusLabs.Needlr.AgentFramework.Progress.ToolCallStartedEvent|25%||
 |NexusLabs.Needlr.AgentFramework.Progress.WorkflowCompletedEvent|20%||
 |NexusLabs.Needlr.AgentFramework.Progress.WorkflowStartedEvent|71.4%||
 |NexusLabs.Needlr.AgentFramework.ProgressSinksAttribute|0%||
 |NexusLabs.Needlr.AgentFramework.Providers.AlwaysGrantQuotaGate|100%||
 |NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException|75%||
 |NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector`2|100%|100%|
-|NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework|97.9%|88.4%|
+|NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework|100%|92.3%|
 |NexusLabs.Needlr.AgentFramework.TerminationContext|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
@@ -255,18 +259,18 @@
 |NexusLabs.Needlr.AgentFramework.Testing.ScenarioVerificationException|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 75.6%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 75.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**75.6%**|**68.4%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**75.5%**|**69.9%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddlewa<br/>re|89.2%|60.2%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|78.5%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions|100%|60%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddlew<br/>are|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.AgentDiagnosticsPlugi<br/>n|100%||
-|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|95.8%|66.6%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|95.8%|75.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsExtensions|100%|66.6%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsFunctionCa<br/>llingMiddleware|26%|0%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.PipelineRunExtensions|73.4%|63.7%|
@@ -457,17 +461,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.2%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**38.5%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|50%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|

@@ -3484,7 +3484,8 @@ and tool calls. The sink is responsible for storage and aggregation.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IDiagnosticsSink</span>
 </span></code></pre></div>
 <p>Derived<br />
-&#8627; <a href="../AgentRunDiagnosticsBuilder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></p>
+&#8627; <a href="../AgentRunDiagnosticsBuilder/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a><br />
+&#8627; <a href="../TeeDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TeeDiagnosticsSink">TeeDiagnosticsSink</a></p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>Each event class (chat completion, tool call) should have exactly one writer.
 Two writers recording the same logical event is a bug — the sink does not

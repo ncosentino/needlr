@@ -793,6 +793,10 @@
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsFunctionInvokingChatClient/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/TieredProviderSelector_TQuery,TResult_/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
@@ -1037,6 +1041,10 @@
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/TeeDiagnosticsSink/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/GeneratedAgentFunctionScanner/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
@@ -1069,11 +1077,19 @@
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsFunctionInvocationExtensions/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IterationRecordEvaluationExtensions/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/IterationRecord/</loc>
+    <lastmod>2026-04-19</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework/DiagnosticsRecordingChatClient/</loc>
     <lastmod>2026-04-19</lastmod>
   </url>
   <url>
