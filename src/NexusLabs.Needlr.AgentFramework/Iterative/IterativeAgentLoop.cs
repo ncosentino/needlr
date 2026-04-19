@@ -503,6 +503,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             var startedAt = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
 
+            using var activity = metrics?.ActivitySource.StartActivity($"agent.tool {fc.Name}", ActivityKind.Internal);
+            activity?.SetTag("agent.tool.name", fc.Name);
+            activity?.SetTag("agent.tool.sequence", sequence);
+            activity?.SetTag("gen_ai.agent.name", diagnosticsBuilder.AgentName);
+
             reporter?.Report(new ToolCallStartedEvent(
                 Timestamp: startedAt,
                 WorkflowId: reporter.WorkflowId,
@@ -538,6 +543,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
                 metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: false, agentName: diagnosticsBuilder.AgentName);
+                activity?.SetStatus(ActivityStatusCode.Error, errorResult.ErrorMessage);
+                activity?.SetTag("status", "failed");
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -585,6 +592,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ResultCharCount = DiagnosticsCharCounter.JsonLength(result),
                 });
                 metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: true, agentName: diagnosticsBuilder.AgentName);
+                activity?.SetTag("status", "success");
 
                 reporter?.Report(new ToolCallCompletedEvent(
                     Timestamp: DateTimeOffset.UtcNow,
@@ -629,6 +637,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     ArgumentsCharCount = DiagnosticsCharCounter.JsonLength(fc.Arguments),
                 });
                 metrics?.RecordToolCall(fc.Name, stopwatch.Elapsed, succeeded: false, agentName: diagnosticsBuilder.AgentName);
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.SetTag("status", "failed");
 
                 reporter?.Report(new ToolCallFailedEvent(
                     Timestamp: DateTimeOffset.UtcNow,

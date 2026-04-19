@@ -13,7 +13,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// <remarks>
 /// <para>
 /// Stored in an <see cref="AsyncLocal{T}"/> so middleware layers access the same
-/// builder instance within an async flow. Call <see cref="StartNew"/> at the
+/// builder instance within an async flow. Call <see cref="StartNew(string)"/> at the
 /// beginning of an agent run and dispose the returned builder when the run completes.
 /// </para>
 /// <para>
@@ -36,6 +36,7 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _chatCompletions = new();
     private readonly ConcurrentQueue<ToolCallDiagnostics> _toolCalls = new();
     private readonly AgentRunDiagnosticsBuilder? _previousBuilder;
+    private readonly IReadOnlyList<IDiagnosticsSink>? _secondarySinks;
 
     private int _nextChatCompletionSequence;
     private int _nextToolCallSequence;
@@ -65,11 +66,15 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
 
     public DateTimeOffset StartedAt { get; }
 
-    private AgentRunDiagnosticsBuilder(string agentName, AgentRunDiagnosticsBuilder? previous)
+    private AgentRunDiagnosticsBuilder(
+        string agentName,
+        AgentRunDiagnosticsBuilder? previous,
+        IReadOnlyList<IDiagnosticsSink>? secondarySinks)
     {
         AgentName = agentName;
         StartedAt = DateTimeOffset.UtcNow;
         _previousBuilder = previous;
+        _secondarySinks = secondarySinks;
     }
 
     /// <summary>
@@ -80,7 +85,25 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
     public static AgentRunDiagnosticsBuilder StartNew(string agentName)
     {
         var previous = CurrentBuilder.Value;
-        var builder = new AgentRunDiagnosticsBuilder(agentName, previous);
+        var builder = new AgentRunDiagnosticsBuilder(agentName, previous, secondarySinks: null);
+        CurrentBuilder.Value = builder;
+        return builder;
+    }
+
+    /// <summary>
+    /// Creates a new builder with secondary sinks that receive forwarded diagnostic
+    /// records. The builder remains the primary accumulator; secondary sinks receive
+    /// copies of each <see cref="AddChatCompletion"/> and <see cref="AddToolCall"/>
+    /// call on a best-effort basis (sink failures are swallowed).
+    /// </summary>
+    /// <param name="agentName">The name of the agent being traced.</param>
+    /// <param name="secondarySinks">Additional sinks to fan out to, or <see langword="null"/>.</param>
+    public static AgentRunDiagnosticsBuilder StartNew(
+        string agentName,
+        IReadOnlyList<IDiagnosticsSink>? secondarySinks)
+    {
+        var previous = CurrentBuilder.Value;
+        var builder = new AgentRunDiagnosticsBuilder(agentName, previous, secondarySinks);
         CurrentBuilder.Value = builder;
         return builder;
     }
@@ -105,10 +128,15 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
         Interlocked.Add(ref _totalTokens, diagnostics.Tokens.TotalTokens);
         Interlocked.Add(ref _cachedInputTokens, diagnostics.Tokens.CachedInputTokens);
         Interlocked.Add(ref _reasoningTokens, diagnostics.Tokens.ReasoningTokens);
+
+        ForwardToSecondarySinks(diagnostics);
     }
 
-    public void AddToolCall(ToolCallDiagnostics diagnostics) =>
+    public void AddToolCall(ToolCallDiagnostics diagnostics)
+    {
         _toolCalls.Enqueue(diagnostics);
+        ForwardToSecondarySinks(diagnostics);
+    }
 
     public void RecordInputMessageCount(int count) =>
         Interlocked.Add(ref _totalInputMessages, count);
@@ -178,4 +206,44 @@ public sealed class AgentRunDiagnosticsBuilder : IDiagnosticsSink, IDisposable
     /// Otherwise equivalent to <see cref="ClearCurrent"/>.
     /// </summary>
     public void Dispose() => CurrentBuilder.Value = _previousBuilder;
+
+    private void ForwardToSecondarySinks(ChatCompletionDiagnostics diagnostics)
+    {
+        if (_secondarySinks is not { Count: > 0 })
+        {
+            return;
+        }
+
+        for (var i = 0; i < _secondarySinks.Count; i++)
+        {
+            try
+            {
+                _secondarySinks[i].AddChatCompletion(diagnostics);
+            }
+            catch
+            {
+                // Best-effort: secondary sink failures must not break agent execution.
+            }
+        }
+    }
+
+    private void ForwardToSecondarySinks(ToolCallDiagnostics diagnostics)
+    {
+        if (_secondarySinks is not { Count: > 0 })
+        {
+            return;
+        }
+
+        for (var i = 0; i < _secondarySinks.Count; i++)
+        {
+            try
+            {
+                _secondarySinks[i].AddToolCall(diagnostics);
+            }
+            catch
+            {
+                // Best-effort: secondary sink failures must not break agent execution.
+            }
+        }
+    }
 }
