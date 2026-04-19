@@ -1,13 +1,18 @@
 // ============================================================================
 // Copilot Comparison Example
 //
-// Demonstrates the same research query executed two ways:
-//   1. Needlr Copilot — CopilotChatClient + CopilotWebSearchFunction
-//      (direct HTTP, structured WebSearchResult with citations)
-//   2. GitHub Copilot SDK — CopilotClient session with built-in web_search
-//      (full agent loop via CLI process)
+// Demonstrates the SAME research query executed through TWO approaches, both
+// using Needlr's Syringe DI container and agent framework:
 //
-// Both use the same Copilot subscription and hit the same backend.
+//   Approach 1: Needlr Copilot — CopilotChatClient as IChatClient, web_search
+//               exposed as an AIFunction tool, iterative agent loop runs the
+//               query. Your code gets structured WebSearchResult with citations.
+//
+//   Approach 2: GitHub Copilot SDK — CopilotClient session with the CLI's
+//               built-in tools. The agent decides which tools to use. Your code
+//               gets the final text response and tool execution events.
+//
+// Both approaches use the same Copilot subscription and hit the same backend.
 // The difference is what your APPLICATION CODE can observe.
 //
 // Requirements:
@@ -15,172 +20,172 @@
 //   - No API keys needed
 // ============================================================================
 
+using System.Text.Json;
+
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
+using NexusLabs.Needlr.AgentFramework;
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Iterative;
+using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Copilot;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
-var query = "What is the latest LTS version of Node.js?";
+var query = "What is the latest LTS version of Node.js and where can I download it?";
+
 Console.WriteLine($"Query: \"{query}\"");
 Console.WriteLine(new string('═', 70));
 
 // ════════════════════════════════════════════════════════════════════════
-// APPROACH 1: Needlr Copilot
-//
-// - CopilotChatClient: lightweight IChatClient, direct HTTP to Copilot API
-// - CopilotWebSearchFunction: calls the MCP web_search tool directly
-// - You get back a WebSearchResult with structured Citations and SearchQueries
-// - Your code can programmatically inspect source URLs
+// APPROACH 1: Needlr Copilot + Syringe + Iterative Agent Loop
 // ════════════════════════════════════════════════════════════════════════
 
 Console.WriteLine();
 Console.WriteLine("╔══════════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║  APPROACH 1: Needlr Copilot (direct HTTP, structured results)   ║");
+Console.WriteLine("║  APPROACH 1: Needlr Syringe + CopilotChatClient + web_search   ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════════╝");
 Console.WriteLine();
 
-var tools = CopilotToolSet.Create(opts => opts.EnableWebSearch = true);
-var webSearch = tools.First(t => t.Name == "web_search");
+var configuration = new ConfigurationBuilder().Build();
+var copilotOptions = new CopilotChatClientOptions { DefaultModel = "claude-sonnet-4" };
+IChatClient chatClient = new CopilotChatClient(copilotOptions);
+var copilotTools = CopilotToolSet.Create(t => t.EnableWebSearch = true);
 
-var funcArgs = new AIFunctionArguments(
-    new Dictionary<string, object?> { ["query"] = query });
+// Wire everything through Syringe — the same DI setup a real app would use
+var serviceProvider = new Syringe()
+    .UsingReflection()
+    .UsingAgentFramework(af => af
+        .UsingChatClient(chatClient))
+    .BuildServiceProvider(configuration);
 
-var needlrResult = await webSearch.InvokeAsync(funcArgs);
+var iterativeLoop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 
-if (needlrResult is WebSearchResult searchResult)
+var loopOptions = new IterativeLoopOptions
 {
-    Console.WriteLine($"  Runtime type: WebSearchResult ✅");
-    Console.WriteLine($"  Text length:  {searchResult.Text.Length} chars");
-    Console.WriteLine($"  Citations:    {searchResult.Citations.Count}");
-    Console.WriteLine($"  Bing queries: {searchResult.SearchQueries.Count}");
-    Console.WriteLine();
-
-    if (searchResult.Citations.Count > 0)
+    Instructions = "You are a research assistant. Use the web_search tool to find current information. " +
+                   "Always include source URLs from your search results in your answer.",
+    PromptFactory = _ => query,
+    Tools = copilotTools,
+    MaxIterations = 1,
+    ToolResultMode = ToolResultMode.OneRoundTrip,
+    LoopName = "needlr-copilot-research",
+    OnToolCall = (_, toolCall) =>
     {
-        Console.WriteLine("  Source URLs (from structured Citations):");
-        foreach (var citation in searchResult.Citations)
+        Console.WriteLine($"  🔧 Tool: {toolCall.FunctionName}");
+        var resultStr = ToolResultSerializer.Serialize(toolCall.Result);
+        Console.WriteLine($"     Result: {resultStr.Length} chars");
+
+        // Demonstrate structured access — this is what the SDK CAN'T do
+        if (toolCall.Result is WebSearchResult wsr)
         {
-            Console.WriteLine($"    [{citation.Title}]");
-            Console.WriteLine($"    {citation.Url}");
-            Console.WriteLine($"    (chars {citation.StartIndex}-{citation.EndIndex})");
-            Console.WriteLine();
+            Console.WriteLine($"     Runtime type: WebSearchResult ✅");
+            Console.WriteLine($"     Citations: {wsr.Citations.Count}");
+            foreach (var c in wsr.Citations)
+                Console.WriteLine($"       [{c.Title}] → {c.Url}");
+            Console.WriteLine($"     Bing queries: {wsr.SearchQueries.Count}");
         }
-    }
-    else
-    {
-        Console.WriteLine("  ⚠ No citations — LLM answered from training data, not web search.");
-        Console.WriteLine("  The text may still be accurate, but URLs are not verifiable.");
-    }
 
-    Console.WriteLine("  Answer (first 200 chars):");
-    Console.WriteLine($"  {searchResult.Text[..Math.Min(200, searchResult.Text.Length)]}...");
-}
-else
+        return Task.CompletedTask;
+    },
+};
+
+using var diagnosticsScope = diagnosticsAccessor.BeginCapture();
+
+var context = new IterativeContext { Workspace = new InMemoryWorkspace() };
+var result = await iterativeLoop.RunAsync(loopOptions, context, CancellationToken.None);
+
+var finalText = result.FinalResponse?.Text ?? "(no response)";
+Console.WriteLine();
+Console.WriteLine($"  ─── Agent Response ───");
+Console.WriteLine($"  {finalText[..Math.Min(300, finalText.Length)]}...");
+
+// Show diagnostics — prove the LLM saw the tool result
+var diagnostics = diagnosticsAccessor.LastRunDiagnostics;
+if (diagnostics is not null)
 {
-    Console.WriteLine($"  Result type: {needlrResult?.GetType().Name ?? "null"}");
-    Console.WriteLine($"  Value: {needlrResult}");
+    Console.WriteLine();
+    Console.WriteLine($"  ─── Diagnostics ───");
+    Console.WriteLine($"  Chat completions: {diagnostics.ChatCompletions.Count}");
+    Console.WriteLine($"  Tool calls: {diagnostics.ToolCalls.Count}");
+    foreach (var tc in diagnostics.ToolCalls)
+    {
+        Console.WriteLine($"    {tc.ToolName}: {(tc.Succeeded ? "✅" : "❌")} " +
+                          $"({tc.ResultCharCount} chars result)");
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// APPROACH 2: GitHub Copilot SDK
-//
-// - CopilotClient spawns the Copilot CLI as a child process (JSON-RPC)
-// - The agent decides which tools to call (web_search, web_fetch, etc.)
-// - You get back the agent's final text response
-// - The agent SAW the citations internally, but your code only gets text
-// - The agent can chain tools (search → fetch → synthesize)
-//
-// NOTE: The SDK is in public preview and the API surface is evolving.
-// The code below shows the documented pattern. If your installed SDK
-// version differs, consult https://github.com/github/copilot-sdk/tree/main/dotnet
+// APPROACH 2: GitHub Copilot SDK — Same Query via CLI Agent Loop
 // ════════════════════════════════════════════════════════════════════════
 
 Console.WriteLine();
 Console.WriteLine("╔══════════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║  APPROACH 2: GitHub Copilot SDK (full agent loop via CLI)        ║");
+Console.WriteLine("║  APPROACH 2: GitHub Copilot SDK (full CLI agent loop)            ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════════╝");
 Console.WriteLine();
 
 try
 {
-    await using var copilotClient = new GitHub.Copilot.SDK.CopilotClient();
-    await using var session = await copilotClient.CreateSessionAsync(
+    await using var sdkClient = new GitHub.Copilot.SDK.CopilotClient();
+    await using var session = await sdkClient.CreateSessionAsync(
         new GitHub.Copilot.SDK.SessionConfig
         {
             Model = "claude-sonnet-4",
             OnPermissionRequest = GitHub.Copilot.SDK.PermissionHandler.ApproveAll,
         });
 
-    var toolLog = new List<string>();
-
-    // Log full tool call diagnostics — arguments on start, results on complete
     using var _ = session.On(e =>
     {
         if (e is GitHub.Copilot.SDK.ToolExecutionStartEvent start)
         {
             var argsJson = start.Data.Arguments is { } args
-                ? System.Text.Json.JsonSerializer.Serialize(args,
-                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true })
+                ? JsonSerializer.Serialize(args, new JsonSerializerOptions { WriteIndented = false })
                 : "(none)";
-            var entry = $"  🔧 TOOL START: {start.Data.ToolName}\n" +
-                        $"     Arguments: {argsJson}";
-            Console.WriteLine(entry);
-            toolLog.Add(entry);
+            Console.WriteLine($"  🔧 Tool: {start.Data.ToolName}");
+            Console.WriteLine($"     Args: {argsJson}");
         }
         else if (e is GitHub.Copilot.SDK.ToolExecutionCompleteEvent complete)
         {
-            var resultText = "(none)";
+            var resultJson = "(none)";
             try
             {
-                if (complete.Data.Result is { } result)
+                if (complete.Data.Result is { } r)
                 {
-                    resultText = System.Text.Json.JsonSerializer.Serialize(result,
-                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                    if (resultText.Length > 500)
-                        resultText = resultText[..500] + "... (truncated)";
+                    resultJson = JsonSerializer.Serialize(r,
+                        new JsonSerializerOptions { WriteIndented = false });
+                    if (resultJson.Length > 200)
+                        resultJson = resultJson[..200] + "... (truncated)";
                 }
             }
             catch
             {
-                resultText = complete.Data.Result?.ToString() ?? "(none)";
+                resultJson = complete.Data.Result?.ToString() ?? "(none)";
             }
 
-            var errorText = complete.Data.Error is { } err
-                ? System.Text.Json.JsonSerializer.Serialize(err)
-                : null;
-
-            var entry = $"  ✅ TOOL DONE:  {complete.Data.ToolCallId}\n" +
-                        $"     Success: {complete.Data.Success}" +
-                        (errorText != null ? $"\n     Error: {errorText}" : "") +
-                        $"\n     Result: {resultText}";
-            Console.WriteLine(entry);
-            toolLog.Add(entry);
+            Console.WriteLine($"  ✅ Done:  {complete.Data.ToolCallId}");
+            Console.WriteLine($"     Success: {complete.Data.Success}");
+            Console.WriteLine($"     Result: {resultJson}");
         }
     });
-
-    Console.WriteLine("  Sending query to SDK agent...");
-    Console.WriteLine();
 
     var reply = await session.SendAndWaitAsync(
         new GitHub.Copilot.SDK.MessageOptions
         {
-            Prompt = $"Search the web and answer: {query}. " +
-                     "Include source URLs in your response.",
+            Prompt = query + " Use the web to find current information. Include source URLs.",
         });
 
     var sdkText = reply?.Data?.Content ?? "(no response)";
     Console.WriteLine();
-    Console.WriteLine($"  ─── SDK RESPONSE ───");
-    Console.WriteLine($"  Length: {sdkText.Length} chars");
-    Console.WriteLine($"  Tool calls observed: {toolLog.Count / 2}");
-    Console.WriteLine();
-    Console.WriteLine($"  Full answer:");
-    Console.WriteLine($"  {sdkText}");
+    Console.WriteLine($"  ─── Agent Response ───");
+    Console.WriteLine($"  {sdkText[..Math.Min(300, sdkText.Length)]}...");
 }
 catch (Exception ex)
 {
     Console.WriteLine($"  SDK error: {ex.GetType().Name}: {ex.Message}");
-    Console.WriteLine("  (The SDK requires the Copilot CLI and the API surface may differ");
-    Console.WriteLine("   between preview versions. See the SDK README for your version.)");
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -192,17 +197,21 @@ Console.WriteLine(new string('═', 70));
 Console.WriteLine("COMPARISON SUMMARY");
 Console.WriteLine(new string('═', 70));
 Console.WriteLine();
-Console.WriteLine("Needlr Copilot:");
-Console.WriteLine("  ✅ Structured WebSearchResult with Citations, URLs, offsets");
-Console.WriteLine("  ✅ Lightweight — no CLI process, pure HTTP");
-Console.WriteLine("  ✅ CopilotRateLimitException for provider fallback");
-Console.WriteLine("  ❌ Only web_search — no file editing, code search, web_fetch");
-Console.WriteLine("  ❌ LLM decides whether to actually search (no guarantee)");
+Console.WriteLine("Both approaches used the same Copilot subscription, same query,");
+Console.WriteLine("same model. The key differences:");
 Console.WriteLine();
-Console.WriteLine("GitHub Copilot SDK:");
-Console.WriteLine("  ✅ Full agent loop — web_search, web_fetch, file ops, bash, etc.");
-Console.WriteLine("  ✅ Agent can chain tools (search → fetch page → synthesize)");
-Console.WriteLine("  ✅ Officially supported, MAF integration, session persistence");
+Console.WriteLine("Needlr Copilot (Approach 1):");
+Console.WriteLine("  ✅ Syringe DI → IIterativeAgentLoop → CopilotChatClient");
+Console.WriteLine("  ✅ web_search exposed as AIFunction tool");
+Console.WriteLine("  ✅ Structured WebSearchResult with Citations, URLs, offsets");
+Console.WriteLine("  ✅ Diagnostics middleware captures tool call details");
+Console.WriteLine("  ✅ Lightweight — no CLI process, pure HTTP");
+Console.WriteLine("  ❌ Only the tools you explicitly provide");
+Console.WriteLine();
+Console.WriteLine("GitHub Copilot SDK (Approach 2):");
+Console.WriteLine("  ✅ Full CLI agent loop with ALL built-in tools");
+Console.WriteLine("  ✅ Agent can chain tools (web_search → web_fetch → synthesize)");
+Console.WriteLine("  ✅ Tool events visible via session.On()");
 Console.WriteLine("  ❌ No structured citation access from your code");
+Console.WriteLine("  ❌ Not wired through Syringe — standalone SDK client");
 Console.WriteLine("  ❌ ~100MB CLI binary bundled in NuGet package");
-Console.WriteLine("  ❌ Same LLM-mediated search (no guaranteed web grounding)");

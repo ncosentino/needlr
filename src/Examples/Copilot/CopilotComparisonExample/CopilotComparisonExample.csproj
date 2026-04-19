@@ -14,10 +14,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Needlr Copilot: lightweight HTTP-only IChatClient + web search -->
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Copilot\NexusLabs.Needlr.Copilot.csproj" />
-    <!-- Official GitHub Copilot SDK: full agent loop via bundled CLI -->
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
     <PackageReference Include="GitHub.Copilot.SDK" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
 </Project>
