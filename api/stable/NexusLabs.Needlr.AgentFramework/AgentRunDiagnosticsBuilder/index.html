@@ -3583,6 +3583,23 @@ and restored when this builder is disposed.</p>
 <p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink_)'></a></p>
+<h2 id="agentrundiagnosticsbuilderstartnewstring-ireadonlylistidiagnosticssink-method">AgentRunDiagnosticsBuilder.StartNew(string, IReadOnlyList&lt;IDiagnosticsSink&gt;) Method<a class="headerlink" href="#agentrundiagnosticsbuilderstartnewstring-ireadonlylistidiagnosticssink-method" title="Permanent link">&para;</a></h2>
+<p>Creates a new builder with secondary sinks that receive forwarded diagnostic
+records. The builder remains the primary accumulator; secondary sinks receive
+copies of each <a href="../">NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.AddChatCompletion(NexusLabs.Needlr.AgentFramework.Diagnostics.ChatCompletionDiagnostics)</a> and <a href="../">NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.AddToolCall(NexusLabs.Needlr.AgentFramework.Diagnostics.ToolCallDiagnostics)</a>
+call on a best-effort basis (sink failures are swallowed).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">AgentRunDiagnosticsBuilder</span><span class="w"> </span><span class="n">StartNew</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">agentName</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IDiagnosticsSink</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">secondarySinks</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink_).agentName'></a></p>
+<p><code>agentName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The name of the agent being traced.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder.StartNew(string,System.Collections.Generic.IReadOnlyList_NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink_).secondarySinks'></a></p>
+<p><code>secondarySinks</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">System.Collections.Generic.IReadOnlyList&lt;</a><a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlylist-1" title="System.Collections.Generic.IReadOnlyList`1">&gt;</a></p>
+<p>Additional sinks to fan out to, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentRunDiagnosticsBuilder">AgentRunDiagnosticsBuilder</a></p>
 
 
 

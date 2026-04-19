@@ -3514,8 +3514,24 @@
 <td style="text-align: left;">Computes character counts of chat messages, responses, tool arguments, and tool results for diagnostics capture. Character counts are a direct programmatic measure of payload size — distinct from the LLM-provider-reported <a href="../TokenUsage/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a> — and are useful for detecting chat-reducer drift, prompt bloat, and unexpectedly large tool responses during evaluation.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../DiagnosticsFunctionInvocationExtensions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsFunctionInvocationExtensions">DiagnosticsFunctionInvocationExtensions</a></td>
+<td style="text-align: left;">Extension methods for wiring <a href="../DiagnosticsFunctionInvokingChatClient/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsFunctionInvokingChatClient">DiagnosticsFunctionInvokingChatClient</a> into an MEAI chat client pipeline.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../DiagnosticsFunctionInvokingChatClient/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsFunctionInvokingChatClient">DiagnosticsFunctionInvokingChatClient</a></td>
+<td style="text-align: left;">A <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.functioninvokingchatclient" title="Microsoft.Extensions.AI.FunctionInvokingChatClient">Microsoft.Extensions.AI.FunctionInvokingChatClient</a> that records per-tool-call diagnostics, OTel metrics, and Activity spans for every function invocation. This is the MEAI-native equivalent of the MAF <code>DiagnosticsFunctionCallingMiddleware</code> in Workflows.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../DiagnosticsRecordingChatClient/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsRecordingChatClient">DiagnosticsRecordingChatClient</a></td>
+<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that routes calls through a             <a href="../">NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsChatClientMiddleware</a> and is detectable via             <code>GetService</code>. Because this extends             <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a>, MEAI's <code>GetService</code> walks the             delegation chain and returns this instance when queried by type — enabling             idempotent middleware installation.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../DiagnosticsTimelineEntry/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.DiagnosticsTimelineEntry">DiagnosticsTimelineEntry</a></td>
 <td style="text-align: left;">A single entry in an agent run's ordered timeline of chat completions and tool calls.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TeeDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TeeDiagnosticsSink">TeeDiagnosticsSink</a></td>
+<td style="text-align: left;">An <a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a> that dispatches every record to N inner sinks. Owns its own sequence counters so all sinks see consistent sequence numbers.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TokenUsage/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TokenUsage">TokenUsage</a></td>
