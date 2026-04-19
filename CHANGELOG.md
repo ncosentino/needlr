@@ -431,6 +431,74 @@ hook may be introduced before stable.
   auto-discovery, per-orchestration sinks, `[DoNotAutoRegister]` opt-out,
   `[ProgressSinks]` attribute, `IProgressReporterAccessor`, and error handling.
 
+
+## [0.0.2-alpha.43] - 2026-04-18
+
+### Added
+
+#### Agent Framework — Multi-sink diagnostics (tee-sink)
+
+- **`TeeDiagnosticsSink`** — dispatches diagnostic records to N inner sinks
+  with best-effort failure semantics (secondary sink errors are swallowed).
+  Owns its own sequence counters for consistency across sinks.
+- **`AgentRunDiagnosticsBuilder.StartNew(agentName, secondarySinks)`** —
+  overload that forwards `AddChatCompletion` / `AddToolCall` to secondary
+  sinks on a best-effort basis.
+
+#### Agent Framework — MEAI-native function-calling diagnostics
+
+- **`DiagnosticsFunctionInvokingChatClient`** — extends
+  `FunctionInvokingChatClient` to record `ToolCallDiagnostics`, OTel metrics,
+  and `Activity` spans per tool invocation. MEAI-pipeline equivalent of the
+  MAF `DiagnosticsFunctionCallingMiddleware`.
+- **`UseDiagnosticsFunctionInvocation()`** — `ChatClientBuilder` extension
+  method for pipeline wiring.
+
+#### Agent Framework — Tool call Activity spans in IterativeAgentLoop
+
+- `IterativeAgentLoop.ExecuteToolCallsAsync` now emits `Activity` spans
+  (`agent.tool {name}`) for all three tool call paths (success, unknown tool,
+  exception), achieving parity with the MAF middleware. Tags:
+  `agent.tool.name`, `agent.tool.sequence`, `gen_ai.agent.name`, `status`.
+
+#### Agent Framework — DiagnosticsRecordingChatClient
+
+- **`DiagnosticsRecordingChatClient`** — `DelegatingChatClient` subclass
+  that routes calls through `DiagnosticsChatClientMiddleware` and is
+  detectable via `GetService<T>()`. Construction-time idempotency: if the
+  inner chain already contains a `DiagnosticsRecordingChatClient`, the new
+  instance becomes a passthrough. Used by both `UsingDiagnostics()` and
+  `IterativeAgentLoop` to prevent duplicate middleware installation.
+
+#### Agent Framework — IterativeLoopDiagnosticsApp example
+
+- New example app demonstrating `IIterativeAgentLoop` + `UsingDiagnostics()`
+  with mock chat client. Acts as a living canary for the ChatCompletion
+  duplication bug — prints completion counts and exits non-zero on regression.
+
+### Fixed
+
+#### Agent Framework — ChatCompletion duplication in IterativeAgentLoop
+
+`UsingDiagnostics()` wrapped the factory chat client with
+`DiagnosticsChatClientMiddleware`, then `IterativeAgentLoop.RunAsync()`
+unconditionally wrapped it again. Both wrote to the same
+`AgentRunDiagnosticsBuilder`, producing 2× `ChatCompletionDiagnostics`
+entries and inflating `AggregateTokenUsage` by 2×.
+
+The loop now checks `chatClient.GetService<DiagnosticsRecordingChatClient>()`
+before wrapping — if one already exists in the pipeline, it skips
+installation. Both `UsingDiagnostics()` and the loop use
+`DiagnosticsRecordingChatClient` instead of anonymous delegates, making
+detection structural.
+
+#### Agent Framework — IAgentMetrics not injected into IterativeAgentLoop
+
+The DI registration for `IIterativeAgentLoop` did not pass `IAgentMetrics`
+to the constructor (6th parameter defaulted to null). Tool call `Activity`
+spans and OTel metrics from within the loop were dead code in the DI path.
+Fixed by adding `sp.GetService<IAgentMetrics>()` to the registration.
+
 ## [0.0.2-alpha.34] - 2026-04-13
 
 Group chat ordering and structured tool-call termination.
