@@ -71,5 +71,7 @@
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <!-- Benchmarking packages -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
+    <!-- GitHub Copilot SDK (used only by CopilotComparisonExample, excluded from CI) -->
+    <PackageVersion Include="GitHub.Copilot.SDK" Version="0.2.2" />
   </ItemGroup>
 </Project>

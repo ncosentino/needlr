@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      Excluded from CI validation (test-packages.ps1) because
+      GitHub.Copilot.SDK bundles the Copilot CLI binary (~100MB+)
+      and this example is for manual side-by-side comparison only.
+    -->
+    <NeedlrExcludeFromValidation>true</NeedlrExcludeFromValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Needlr Copilot: lightweight HTTP-only IChatClient + web search -->
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Copilot\NexusLabs.Needlr.Copilot.csproj" />
+    <!-- Official GitHub Copilot SDK: full agent loop via bundled CLI -->
+    <PackageReference Include="GitHub.Copilot.SDK" />
+  </ItemGroup>
+
+</Project>

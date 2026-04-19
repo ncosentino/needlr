@@ -385,7 +385,14 @@ Write-Host "=== Example projects (source-mode simulation of NexusLabs.Needlr.Bui
 Write-Host "  (Sync guarantee: if Directory.Build.targets drifts from the NuGet package, these fail)"
 
 $examplesRoot = Join-Path $repoRoot 'src/Examples'
-$allExampleProjects = Get-ChildItem -Path $examplesRoot -Recurse -Filter "*.csproj" | Sort-Object FullName
+$allExampleProjects = Get-ChildItem -Path $examplesRoot -Recurse -Filter "*.csproj" |
+    Where-Object {
+        # Skip projects that opt out of CI validation (e.g., SDK examples
+        # with large bundled binaries that aren't in the solution).
+        $content = Get-Content $_.FullName -Raw
+        $content -notmatch '<NeedlrExcludeFromValidation>true</NeedlrExcludeFromValidation>'
+    } |
+    Sort-Object FullName
 
 # Build all example projects in a single MSBuild invocation via a temporary
 # traversal project. MSBuild constructs one dependency graph, builds each unique
