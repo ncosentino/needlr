@@ -1171,6 +1171,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#needlr-copilot-vs-github-copilot-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Needlr Copilot vs GitHub Copilot SDK
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Needlr Copilot vs GitHub Copilot SDK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-needlr-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use Needlr Copilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-the-github-copilot-sdk-instead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use the GitHub Copilot SDK instead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web-search-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Search Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3868,6 +3918,139 @@
 <li>Gives up after <code>MaxRetries</code> attempts</li>
 </ul>
 <p>Other HTTP errors (401, 500, etc.) are thrown immediately.</p>
+<hr />
+<h2 id="needlr-copilot-vs-github-copilot-sdk">Needlr Copilot vs GitHub Copilot SDK<a class="headerlink" href="#needlr-copilot-vs-github-copilot-sdk" title="Permanent link">&para;</a></h2>
+<p>The official <a href="https://github.com/github/copilot-sdk">GitHub Copilot SDK</a> (<code>GitHub.Copilot.SDK</code> on NuGet) provides a superset of what <code>NexusLabs.Needlr.Copilot</code> offers. Before choosing Needlr Copilot, understand the overlap:</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Needlr Copilot</th>
+<th>GitHub Copilot SDK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IChatClient</code> for Copilot models</td>
+<td>✅ <code>CopilotChatClient</code> (direct HTTP)</td>
+<td>✅ <code>CopilotClient</code> → <code>AsAIAgent()</code> (via CLI process)</td>
+</tr>
+<tr>
+<td>Token discovery (apps.json, env vars)</td>
+<td>✅ Manual implementation</td>
+<td>✅ Built-in, plus OAuth App and BYOK</td>
+</tr>
+<tr>
+<td>Streaming responses</td>
+<td>✅ SSE parsing</td>
+<td>✅ Full event stream with deltas</td>
+</tr>
+<tr>
+<td>Web search</td>
+<td>✅ <code>CopilotWebSearchFunction</code> (MCP endpoint)</td>
+<td>✅ Built-in CLI tool (same backend)</td>
+</tr>
+<tr>
+<td>Structured search results (citations, URLs)</td>
+<td>✅ <code>WebSearchResult</code> with <code>Citations</code> and <code>SearchQueries</code></td>
+<td>❌ Consumed inside the agent loop, not exposed to your code</td>
+</tr>
+<tr>
+<td>Full agent loop (file edits, code search, bash)</td>
+<td>❌</td>
+<td>✅ Full CLI tool set</td>
+</tr>
+<tr>
+<td>Multi-agent orchestration (MAF)</td>
+<td>❌</td>
+<td>✅ <code>AsAIAgent()</code> with sequential/concurrent orchestrators</td>
+</tr>
+<tr>
+<td>Session persistence &amp; resume</td>
+<td>❌</td>
+<td>✅ Built-in</td>
+</tr>
+<tr>
+<td>Custom agents &amp; skills</td>
+<td>Via Needlr Agent Framework</td>
+<td>✅ Built-in</td>
+</tr>
+<tr>
+<td>Binary size</td>
+<td>~0 (HTTP-only, no CLI bundled)</td>
+<td>~100MB+ (bundles the Copilot CLI)</td>
+</tr>
+<tr>
+<td>Rate limits</td>
+<td>Same (20 MCP req/min, premium request quota)</td>
+<td>Same</td>
+</tr>
+</tbody>
+</table>
+<h3 id="when-to-use-needlr-copilot">When to use Needlr Copilot<a class="headerlink" href="#when-to-use-needlr-copilot" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>You need structured web search results.</strong> <code>WebSearchResult.Citations</code> gives your application code programmatic access to source URLs, titles, and character offsets — the SDK's agent loop consumes this data internally and only returns the agent's final text.</li>
+<li><strong>You need a tiered provider fallback.</strong> <code>CopilotRateLimitException</code> integrates with <code>ITieredProviderSelector</code> so rate-limited queries fall through to alternative search providers (DuckDuckGo, Bing API). The SDK doesn't expose rate-limit exceptions for provider-level routing.</li>
+<li><strong>You want a lightweight <code>IChatClient</code>.</strong> <code>CopilotChatClient</code> is a pure HTTP client (~0 binary overhead). The SDK bundles the entire Copilot CLI binary.</li>
+<li><strong>You're already using Needlr's agent framework.</strong> <code>CopilotToolSet</code> produces <code>AIFunction</code> instances that plug directly into <code>IterativeLoopOptions.AdditionalTools</code>.</li>
+</ul>
+<h3 id="when-to-use-the-github-copilot-sdk-instead">When to use the GitHub Copilot SDK instead<a class="headerlink" href="#when-to-use-the-github-copilot-sdk-instead" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>You want the full agent experience.</strong> The SDK runs the same agent loop as the Copilot CLI — file editing, code search, <code>web_fetch</code> (actual HTTP GET), bash/PowerShell, and more.</li>
+<li><strong>You need multi-agent orchestration.</strong> The SDK integrates with Microsoft Agent Framework for sequential, concurrent, and handoff workflows.</li>
+<li><strong>You want session persistence.</strong> The SDK persists conversation state to disk and supports resuming sessions.</li>
+<li><strong>You want officially supported auth.</strong> The SDK handles token management, OAuth app flows, and BYOK (bring your own API keys from OpenAI, Anthropic, etc.).</li>
+<li><strong>You don't need programmatic access to search citations.</strong> If the agent just needs to produce grounded research text, the SDK's built-in <code>web_search</code> tool gives the model the same citation data — you just can't inspect it from your code.</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Both use the same backend</p>
+<p>Whether you call <code>web_search</code> via Needlr Copilot or the SDK, you're hitting the same GitHub Copilot MCP endpoint. The LLM decides whether to perform a Bing search — see the next section.</p>
+</div>
+<hr />
+<h2 id="web-search-limitations">Web Search Limitations<a class="headerlink" href="#web-search-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">web_search is not a search engine</p>
+<p>The Copilot <code>web_search</code> tool is <strong>not a reliable web search provider</strong>. It is an LLM-mediated endpoint that may or may not trigger a Bing search depending on the query.</p>
+</div>
+<p><strong>How it actually works:</strong></p>
+<ol>
+<li>Your query is sent to the Copilot MCP server</li>
+<li>An LLM on the server side evaluates the query</li>
+<li>The LLM <strong>decides</strong> whether it needs web data or can answer from training knowledge</li>
+<li>If it searches, the response includes structured <code>annotations</code> (citations with URLs) and <code>bing_searches</code> (the queries it ran)</li>
+<li>If it doesn't search, the response is training-data-sourced text with no citations</li>
+</ol>
+<p><strong>What this means in practice:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Query type</th>
+<th>LLM behaviour</th>
+<th>Citations?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time-sensitive, specific, factual</td>
+<td>Triggers Bing search</td>
+<td>✅ Real URLs with titles</td>
+</tr>
+<tr>
+<td>General knowledge ("what is dependency injection?")</td>
+<td>Answers from training data</td>
+<td>❌ None</td>
+</tr>
+<tr>
+<td>General but LLM feels helpful</td>
+<td>Answers from training data, may embed inline URLs from memory</td>
+<td>❌ No structured citations (inline URLs may be hallucinated)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>There is no way to force a web search.</strong> The LLM decides. Phrasing queries with time-sensitive language ("in 2026", "latest", "current") increases the likelihood of triggering a search, but it's never guaranteed.</p>
+<p><strong>Implications for tiered providers:</strong></p>
+<p>If your use case requires <strong>guaranteed web search with verifiable sources</strong>, use a real search API (Bing Web Search API, DuckDuckGo, Google Custom Search) as your primary provider. Copilot's <code>web_search</code> is better suited as a synthesis/fallback provider that sometimes includes grounded citations.</p>
+<p><code>WebSearchResult.Citations.Count == 0</code> does not mean the search failed — it means the LLM answered from training data. The <code>Text</code> may still be accurate; it's just not verifiable from a source URL.</p>
 
 
 
