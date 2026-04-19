@@ -11,8 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Agent Framework — Evaluation assembly with native evaluators (Phase 4)
 
-Ships `NexusLabs.Needlr.AgentFramework.Evaluation` and
-`NexusLabs.Needlr.AgentFramework.Evaluation.Testing` so Needlr agent runs can
+Ships `NexusLabs.Needlr.AgentFramework.Evaluation` so Needlr agent runs can
 be evaluated directly against captured diagnostics.
 
 - **`AgentRunDiagnosticsContext : EvaluationContext`** — bridge type that
@@ -31,15 +30,6 @@ be evaluated directly against captured diagnostics.
 - **`TerminationAppropriatenessEvaluator`** — deterministic evaluator that
   emits `Run Succeeded`, `Termination Consistent`, and `Execution Mode`
   (with an `Unknown` fallback when the diagnostics did not record one).
-- **`NeedlrEvaluationFixture`** — xUnit fixture in the `.Testing` assembly
-  that discovers a judge chat client from the environment (Copilot CLI by
-  default) and exposes it as `Judge : IChatClient?`. Azure OpenAI is
-  deliberately excluded from automatic discovery so test runs cannot incur
-  metered API costs.
-- **`RequiresEvaluationJudgeFactAttribute`** /
-  **`RequiresEvaluationJudgeTheoryAttribute`** — xUnit attributes that skip
-  judge-based tests at discovery time when no judge provider is configured,
-  so unconfigured environments see explicit skips instead of failures.
 
 #### Agent Framework — Lossless live-path retypes for Microsoft.Extensions.AI.Evaluation
 
@@ -220,24 +210,25 @@ hook may be introduced before stable.
 
 #### Agent Framework — Evaluation support (Phase 1)
 
+- **`IterativeTripPlannerApp.Core`** — new class library factoring the
+  reusable trip planner scenario (runner, config, hooks, functions) out of
+  the console exe. Consumed by both the main `IterativeTripPlannerApp` and
+  the new `IterativeTripPlannerApp.Evaluation` demo.
+- **`IterativeTripPlannerApp.Evaluation`** — new console app demonstrating
+  end-to-end evaluation of a real agent run. Runs the trip planner via Core,
+  extracts diagnostics, converts via `ToEvaluationInputs()`, and scores with
+  both Needlr-native deterministic evaluators and MS MEAI quality evaluators
+  using `CopilotChatClient` as the judge.
 - **`IterationRecordEvaluationExtensions.ToToolCallTrajectory()`** — materializes
   a MEAI tool-call trajectory from an `IterationRecord.ToolCalls` sequence,
   ready to feed trajectory-based evaluators.
-- **`EvaluationExampleApp`** — new example under
-  `src/Examples/AgentFramework/` demonstrating `RelevanceEvaluator` on an
-  `IterativeLoopResult.FinalResponse`, plus the trajectory-adapter shape for
-  future tool-call evaluators.
 - **`Microsoft.Extensions.AI.Evaluation` + `.Evaluation.Quality` + `.Evaluation.Reporting`**
   pinned in `Directory.Packages.props` at `10.5.0`. The Quality package version
   unlocks `ToolCallAccuracyEvaluator`, which is flagged `[Experimental("AIEVAL001")]`
   and must be suppressed at the call site.
-- **`EvaluationExampleApp` — Demo B** now wires `ToolCallAccuracyEvaluator`
-  end-to-end against the tool-call trajectory, demonstrating how to split a
-  trajectory into `messages` + `ChatResponse` and pass tool definitions via
-  `ToolCallAccuracyEvaluatorContext`.
-- **`docs/evaluation.md`** — new documentation page covering the retype
-  surface, wiring, trajectory adapter, and the phased roadmap (Phases 2–4:
-  diagnostics capture, dedicated `.Evaluation` assembly, xUnit harness).
+- **`docs/evaluation.md`** — documentation page covering the retype
+  surface, wiring, trajectory adapter, native evaluators, capture middleware,
+  and the evaluation demo app.
 
 
 
