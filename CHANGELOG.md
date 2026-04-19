@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2-alpha.45]
+
+### Fixed
+
+#### Agent Framework — Tool results now JSON-serialized for the LLM
+
+`IterativeAgentLoop` called `ToString()` on tool result objects when
+building `FunctionResultContent` for the LLM's next turn. For non-string
+returns (records, arrays, complex objects), this produced the C# type
+name (e.g. `BatchSearchResult[]`) instead of the JSON data. The LLM
+never saw actual tool results.
+
+- **`ToolResultSerializer`** — new public utility in
+  `NexusLabs.Needlr.AgentFramework` that handles `JsonElement`
+  (via `GetRawText()`), strings (pass-through), nulls, and arbitrary
+  objects (via `JsonSerializer.Serialize` fallback).
+- All six call sites fixed: `IterativeAgentLoop`,
+  `IterationRecordEvaluationExtensions`, `ContextWindowGuardMiddleware`
+  (2 sites), `CopilotChatClient`, and example apps (2 sites).
+
+### Added
+
+#### Analyzers — NDLRMAF015: Prevent `ToString()` on tool results
+
+New Roslyn analyzer that detects `ToString()` calls on
+`ToolCallResult.Result` and `FunctionResultContent.Result`. These are
+`object?` properties that may contain a `JsonElement` at runtime —
+`ToString()` produces a C# type name instead of JSON.
+
+- Fires as **Warning** severity; projects with `TreatWarningsAsErrors`
+  (all Needlr projects) get a compile error.
+- Handles both direct (`result.Result.ToString()`) and null-conditional
+  (`result.Result?.ToString()`) patterns.
+- The `NexusLabs.Needlr.AgentFramework` project now self-references
+  its own analyzer, so the bug cannot recur in Needlr's own code.
+
+#### Copilot — Structured web search results with citations
+
+`CopilotWebSearchFunction` now returns `WebSearchResult` instead of a
+plain string, exposing the full MCP response structure.
+
+- **`WebSearchResult`** — `Text`, `Citations`, `SearchQueries`.
+  `ToString()` returns `Text` for backward compatibility.
+- **`WebSearchCitation`** — `Title`, `Url`, `StartIndex`, `EndIndex`.
+- **`WebSearchQuery`** — `Text`, `Url` for Bing queries performed.
+
+#### Copilot — Rate-limit detection
+
+`CopilotRateLimitException` thrown when rate limiting is detected (HTTP
+429 after retry exhaustion, or HTTP 200 with rate-limit error text).
+`ITieredProvider` implementations catch this and wrap as
+`ProviderUnavailableException` for fallback.
+
+#### Copilot — SDK comparison documentation
+
+- New sections in `docs/copilot.md`: "Needlr Copilot vs GitHub Copilot
+  SDK" comparison table and "Web Search Limitations" explaining that
+  `web_search` is LLM-mediated with no guaranteed web grounding.
+- `CopilotComparisonExample` — side-by-side example using Syringe DI
+  with both Needlr Copilot (iterative loop + structured citations) and
+  the GitHub Copilot SDK (full CLI agent loop).
+
+### Changed
+
+#### Build — Parallel example project builds
+
+`test-packages.ps1` now builds all example projects in a single MSBuild
+invocation via a temporary traversal project instead of 48 sequential
+`dotnet build` calls. Measured: 254s → 28s (9× faster).
+
 ## [0.0.2-alpha.44]
 
 ### Fixed

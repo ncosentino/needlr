@@ -21,3 +21,4 @@ NDLRMAF011 | NexusLabs.Needlr.AgentFramework | Info | Prefer [AgentTerminationCo
 NDLRMAF012 | NexusLabs.Needlr.AgentFramework | Warning | [AgentFunction] method is missing a [Description] attribute
 NDLRMAF013 | NexusLabs.Needlr.AgentFramework | Warning | [AgentFunction] method parameter is missing a [Description] attribute
 NDLRMAF014 | NexusLabs.Needlr.AgentFramework | Warning | FunctionTypes entry has no [AgentFunction] methods
+NDLRMAF015 | NexusLabs.Needlr.AgentFramework | Warning | ToolResultToStringAnalyzer, Do not call ToString() on tool result objects
