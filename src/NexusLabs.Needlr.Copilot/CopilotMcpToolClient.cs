@@ -83,10 +83,20 @@ internal sealed class CopilotMcpToolClient : IDisposable
                 continue;
             }
 
-            var errorBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken)
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                var retryAfter = GetRetryAfterFromHeaders(httpResponse);
+                var errorBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                throw new CopilotRateLimitException(
+                    $"Copilot web search rate limited after {_options.MaxRetries} retries: {errorBody}",
+                    retryAfter);
+            }
+
+            var errorContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
             throw new HttpRequestException(
-                $"MCP tool call failed ({httpResponse.StatusCode}): {errorBody}");
+                $"MCP tool call failed ({httpResponse.StatusCode}): {errorContent}");
         }
     }
 
@@ -104,6 +114,21 @@ internal sealed class CopilotMcpToolClient : IDisposable
 
         var ms = _options.RetryBaseDelayMs * (1 << attempt);
         return TimeSpan.FromMilliseconds(ms);
+    }
+
+    private static TimeSpan? GetRetryAfterFromHeaders(HttpResponseMessage response)
+    {
+        if (response.Headers.RetryAfter?.Delta is { } delta)
+            return delta;
+
+        if (response.Headers.RetryAfter?.Date is { } date)
+        {
+            var wait = date - DateTimeOffset.UtcNow;
+            if (wait > TimeSpan.Zero)
+                return wait;
+        }
+
+        return null;
     }
 
     private static string ParseSseResponse(string sseText)
