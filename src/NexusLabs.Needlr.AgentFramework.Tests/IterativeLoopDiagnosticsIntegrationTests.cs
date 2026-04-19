@@ -13,6 +13,8 @@ using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
+using static NexusLabs.Needlr.AgentFramework.Tests.IterativeLoopDiagnosticsIntegrationTestsHelpers;
+
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 /// <summary>
@@ -211,117 +213,4 @@ public sealed class IterativeLoopDiagnosticsIntegrationTests
             result2.Diagnostics!.AggregateTokenUsage.TotalTokens);
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private static IterativeContext CreateContext() =>
-        new() { Workspace = new InMemoryWorkspace() };
-
-    private static IterativeLoopOptions CreateOptions(IReadOnlyList<AITool> tools) =>
-        new()
-        {
-            Instructions = "Test assistant",
-            PromptFactory = _ => "Do the thing",
-            Tools = tools,
-            MaxIterations = 5,
-            IsComplete = _ => true,
-            LoopName = "integration-dedup-test",
-        };
-
-    private static IServiceProvider BuildServiceProvider(
-        Mock<IChatClient> mockChat,
-        bool useDiagnostics)
-    {
-        var config = new ConfigurationBuilder().Build();
-
-        return new Syringe()
-            .UsingReflection()
-            .UsingAgentFramework(af =>
-            {
-                af = af.Configure(opts => opts.ChatClientFactory = _ => mockChat.Object);
-                if (useDiagnostics)
-                {
-                    af = af.UsingDiagnostics();
-                }
-
-                return af;
-            })
-            .BuildServiceProvider(config);
-    }
-
-    private static Mock<IChatClient> CreateMockChat(string text)
-    {
-        var mock = new Mock<IChatClient>();
-        mock
-            .Setup(c => c.GetResponseAsync(
-                It.IsAny<IEnumerable<ChatMessage>>(),
-                It.IsAny<ChatOptions>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, text)])
-            {
-                ModelId = "test-model",
-                Usage = new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
-            });
-        return mock;
-    }
-
-    private static Mock<IChatClient> CreateToolCallThenDoneChat(
-        string toolName, int inputTokens = 100, int outputTokens = 50)
-    {
-        var callCount = 0;
-        var mock = new Mock<IChatClient>();
-        mock
-            .Setup(c => c.GetResponseAsync(
-                It.IsAny<IEnumerable<ChatMessage>>(),
-                It.IsAny<ChatOptions>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() =>
-            {
-                var n = Interlocked.Increment(ref callCount);
-                if (n == 1)
-                {
-                    return CreateToolCallResponse(toolName, $"call-{n}", inputTokens, outputTokens);
-                }
-
-                return CreateTextResponse("done", inputTokens, outputTokens);
-            });
-        return mock;
-    }
-
-    private static ChatResponse CreateToolCallResponse(
-        string toolName, string callId, int inputTokens, int outputTokens)
-    {
-        return new ChatResponse(
-        [
-            new ChatMessage(ChatRole.Assistant,
-            [
-                new FunctionCallContent(callId, toolName,
-                    new Dictionary<string, object?> { ["arg"] = "val" })
-            ])
-        ])
-        {
-            ModelId = "test-model",
-            Usage = new UsageDetails
-            {
-                InputTokenCount = inputTokens,
-                OutputTokenCount = outputTokens,
-                TotalTokenCount = inputTokens + outputTokens,
-            },
-        };
-    }
-
-    private static ChatResponse CreateTextResponse(string text, int inputTokens, int outputTokens)
-    {
-        return new ChatResponse([new ChatMessage(ChatRole.Assistant, text)])
-        {
-            ModelId = "test-model",
-            Usage = new UsageDetails
-            {
-                InputTokenCount = inputTokens,
-                OutputTokenCount = outputTokens,
-                TotalTokenCount = inputTokens + outputTokens,
-            },
-        };
-    }
 }

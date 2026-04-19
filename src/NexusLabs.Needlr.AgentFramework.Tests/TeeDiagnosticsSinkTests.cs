@@ -1,5 +1,7 @@
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
+using static NexusLabs.Needlr.AgentFramework.Tests.TeeDiagnosticsSinkTestsHelpers;
+
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 public class TeeDiagnosticsSinkTests
@@ -154,59 +156,4 @@ public class TeeDiagnosticsSinkTests
         Assert.Equal(100, sequences.Distinct().Count());
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private static ChatCompletionDiagnostics MakeCompletion(int sequence) =>
-        new(Sequence: sequence,
-            Model: "test-model",
-            Tokens: new TokenUsage(0, 0, 0, 0, 0),
-            InputMessageCount: 1,
-            Duration: TimeSpan.FromMilliseconds(10),
-            Succeeded: true,
-            ErrorMessage: null,
-            StartedAt: DateTimeOffset.UtcNow,
-            CompletedAt: DateTimeOffset.UtcNow);
-
-    private static ToolCallDiagnostics MakeToolCall(int sequence) =>
-        new(Sequence: sequence,
-            ToolName: "test-tool",
-            Duration: TimeSpan.FromMilliseconds(5),
-            Succeeded: true,
-            ErrorMessage: null,
-            StartedAt: DateTimeOffset.UtcNow,
-            CompletedAt: DateTimeOffset.UtcNow,
-            CustomMetrics: null);
-
-    private sealed class FakeSink : IDiagnosticsSink
-    {
-        private int _chatSeq;
-        private int _toolSeq;
-
-        public List<ChatCompletionDiagnostics> ChatCompletions { get; } = [];
-        public List<ToolCallDiagnostics> ToolCalls { get; } = [];
-        public string? AgentName => "Fake";
-
-        public int NextChatCompletionSequence() =>
-            Interlocked.Increment(ref _chatSeq) - 1;
-
-        public int NextToolCallSequence() =>
-            Interlocked.Increment(ref _toolSeq) - 1;
-
-        public void AddChatCompletion(ChatCompletionDiagnostics diagnostics) =>
-            ChatCompletions.Add(diagnostics);
-
-        public void AddToolCall(ToolCallDiagnostics diagnostics) =>
-            ToolCalls.Add(diagnostics);
-    }
-
-    private sealed class ThrowingSink : IDiagnosticsSink
-    {
-        public string? AgentName => "Throwing";
-        public int NextChatCompletionSequence() => 0;
-        public int NextToolCallSequence() => 0;
-        public void AddChatCompletion(ChatCompletionDiagnostics _) => throw new InvalidOperationException("Sink failure");
-        public void AddToolCall(ToolCallDiagnostics _) => throw new InvalidOperationException("Sink failure");
-    }
 }

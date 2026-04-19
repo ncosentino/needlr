@@ -12,7 +12,6 @@ public sealed class DiagnosticsRecordingChatClientTests
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
-    // A1
     [Fact]
     public void GetService_ReturnsSelf_WhenQueriedByType()
     {
@@ -26,7 +25,6 @@ public sealed class DiagnosticsRecordingChatClientTests
         Assert.Same(client, result);
     }
 
-    // A2
     [Fact]
     public void GetService_ReturnsSelf_ThroughDelegationChain()
     {
@@ -47,7 +45,6 @@ public sealed class DiagnosticsRecordingChatClientTests
         Assert.Same(recording, result);
     }
 
-    // A3
     [Fact]
     public async Task GetResponseAsync_DelegatesToMiddleware()
     {
@@ -69,7 +66,6 @@ public sealed class DiagnosticsRecordingChatClientTests
         Assert.Single(diag.ChatCompletions);
     }
 
-    // A4
     [Fact]
     public async Task GetStreamingResponseAsync_DelegatesToMiddleware()
     {
@@ -95,58 +91,4 @@ public sealed class DiagnosticsRecordingChatClientTests
         Assert.Single(diag.ChatCompletions);
     }
 
-    // -------------------------------------------------------------------------
-    // Test infrastructure
-    // -------------------------------------------------------------------------
-
-    private sealed class FakeInnerChatClient : IChatClient
-    {
-        private readonly bool _streaming;
-
-        internal FakeInnerChatClient(bool streaming = false)
-        {
-            _streaming = streaming;
-        }
-
-        public Task<ChatResponse> GetResponseAsync(
-            IEnumerable<ChatMessage> messages,
-            ChatOptions? options = null,
-            CancellationToken cancellationToken = default)
-        {
-            var response = new ChatResponse(
-                [new ChatMessage(ChatRole.Assistant, "Response")])
-            {
-                ModelId = "test-model",
-                Usage = new UsageDetails
-                {
-                    InputTokenCount = 10,
-                    OutputTokenCount = 20,
-                    TotalTokenCount = 30,
-                },
-            };
-            return Task.FromResult(response);
-        }
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-            IEnumerable<ChatMessage> messages,
-            ChatOptions? options = null,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            yield return new ChatResponseUpdate
-            {
-                Role = ChatRole.Assistant,
-                Contents = [new TextContent("Streamed")],
-                ModelId = "test-model",
-            };
-            await Task.CompletedTask;
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey = null) => null;
-        public void Dispose() { }
-    }
-
-    private sealed class PassthroughDelegatingChatClient : DelegatingChatClient
-    {
-        internal PassthroughDelegatingChatClient(IChatClient inner) : base(inner) { }
-    }
 }

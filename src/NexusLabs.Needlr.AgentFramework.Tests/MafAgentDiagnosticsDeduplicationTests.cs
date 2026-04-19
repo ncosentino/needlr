@@ -9,6 +9,8 @@ using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
+using static NexusLabs.Needlr.AgentFramework.Tests.MafAgentDiagnosticsDeduplicationTestsHelpers;
+
 namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 /// <summary>
@@ -305,66 +307,4 @@ public sealed class MafAgentDiagnosticsDeduplicationTests
             diag2.AggregateTokenUsage.TotalTokens);
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private static IServiceProvider BuildServiceProvider(
-        Mock<IChatClient> mockChat,
-        bool useDiagnostics)
-    {
-        var config = new ConfigurationBuilder().Build();
-
-        return new Syringe()
-            .UsingReflection()
-            .UsingAgentFramework(af =>
-            {
-                af = af.Configure(opts => opts.ChatClientFactory = _ => mockChat.Object);
-                if (useDiagnostics)
-                {
-                    af = af.UsingDiagnostics();
-                }
-
-                return af;
-            })
-            .BuildServiceProvider(config);
-    }
-
-    private static Mock<IChatClient> CreateMockChatWithTokens(
-        string text, int inputTokens, int outputTokens)
-    {
-        var mock = new Mock<IChatClient>();
-        mock
-            .Setup(c => c.GetResponseAsync(
-                It.IsAny<IEnumerable<ChatMessage>>(),
-                It.IsAny<ChatOptions>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, text)])
-            {
-                ModelId = "test-model",
-                Usage = new UsageDetails
-                {
-                    InputTokenCount = inputTokens,
-                    OutputTokenCount = outputTokens,
-                    TotalTokenCount = inputTokens + outputTokens,
-                },
-            });
-        return mock;
-    }
-
-    private static IAsyncEnumerable<ChatResponseUpdate> CreateStreamingResponse(string text)
-    {
-        return CreateStreamingResponseAsync(text);
-
-        static async IAsyncEnumerable<ChatResponseUpdate> CreateStreamingResponseAsync(string text)
-        {
-            yield return new ChatResponseUpdate
-            {
-                Role = ChatRole.Assistant,
-                Contents = [new TextContent(text)],
-                ModelId = "test-model",
-            };
-            await Task.CompletedTask;
-        }
-    }
 }

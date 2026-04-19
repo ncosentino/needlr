@@ -10,6 +10,7 @@ These rules apply to **all** test files. Some tests will also match other instru
 
 - `#region` directives are FORBIDDEN in all test files.
 - Comment separators are FORBIDDEN in all test files.
+- Inline test-ID labels (e.g., `// A1`, `// B3`, `// F1`) are FORBIDDEN. These are ephemeral planning artifacts with no meaning outside the conversation that produced them. If a test needs a description, use an `<summary>` XML doc comment on the method.
 
 ```csharp
 // ❌ WRONG — region usage
@@ -18,6 +19,34 @@ These rules apply to **all** test files. Some tests will also match other instru
 
 // ❌ WRONG — comment separator
 // --- Tests for thing A --------
+
+// ❌ WRONG — inline test-ID label
+// B3
+[Fact]
+public async Task SomeTest() { }
+
+// ❌ WRONG — section divider comments for helpers
+// -------------------------------------------------------------------------
+// Helpers
+// -------------------------------------------------------------------------
+```
+
+## Helper types belong in separate files
+
+When a test file contains private helper types (fake implementations, test doubles, builder helpers), extract them into a dedicated `*TestHelpers.cs` file in the same directory. Do NOT use section-divider comments to group them inside the test file.
+
+```csharp
+// ❌ WRONG — helpers embedded in the test file with divider comments
+// -------------------------------------------------------------------------
+// Test infrastructure
+// -------------------------------------------------------------------------
+private sealed class FakeSink : IDiagnosticsSink { ... }
+private sealed class ThrowingSink : IDiagnosticsSink { ... }
+
+// ✅ CORRECT — helpers extracted to a separate file
+// FooTestHelpers.cs
+internal sealed class FakeSink : IDiagnosticsSink { ... }
+internal sealed class ThrowingSink : IDiagnosticsSink { ... }
 ```
 
 ## No arrange/act/assert comments
