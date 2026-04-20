@@ -318,8 +318,6 @@ public sealed class IterativeAgentLoopBudgetTests
         }
     }
 
-    #region Helpers
-
     private static IterativeAgentLoop CreateLoop(
         Mock<IChatClient> mockChat,
         ITokenBudgetTracker? budgetTracker = null)
@@ -364,5 +362,4 @@ public sealed class IterativeAgentLoopBudgetTests
         return mock;
     }
 
-    #endregion
 }
