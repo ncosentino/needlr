@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2-alpha.46] - 2026-04-20
+
+### Added
+
+#### Agent Framework — Early completion after tool calls
+
+New `CheckCompletionAfterToolCalls` property on `IterativeLoopOptions`
+enables the `IsComplete` predicate to fire mid-iteration — after tool
+calls — instead of only between iterations. This avoids a wasted
+`ChatCompletion` API call when a tool call already satisfies the goal.
+
+- **`ToolCompletionCheckMode`** enum with three modes:
+  - `None` — default, preserves existing behavior.
+  - `AfterToolRounds` — checks after each round's batch of tool calls
+    completes. All requested tool calls still execute; only the next
+    `ChatCompletion` call is skipped.
+  - `AfterEachToolCall` — checks after every individual tool call.
+    Remaining tool calls in the batch are skipped AND the next
+    `ChatCompletion` call is avoided (most aggressive savings).
+- **`TerminationReason.CompletedEarlyAfterToolCall`** — new success
+  termination reason distinguishing early exit from the standard
+  between-iteration `Completed`.
+- Completion wins over `MaxTotalToolCalls` when both fire on the same
+  tool call (success takes priority over a budget limit).
+- `OnIterationEnd` hook fires on early completion so callers always
+  get the final iteration record.
+- EarlyCompletionApp example demonstrating all three modes with
+  side-by-side comparison of `ChatCompletion` call counts and token
+  usage.
+
+### Changed
+
+#### Tests — Split `IterativeAgentLoopTests` into focused files
+
+Split the monolithic 2700-line `IterativeAgentLoopTests.cs` into 10
+focused partial class files organized by concern (termination, tool
+calls, context, tool result modes, diagnostics, hooks, execution
+context, tool filters, early completion). All 72 tests preserved;
+`#region` directives removed.
+
 ## [0.0.2-alpha.45]
 
 ### Fixed
