@@ -190,4 +190,100 @@ public sealed class EvaluationCaptureChatClientTests
 
         Assert.NotEqual(keyA, keyB);
     }
+
+    [Fact]
+    public void ComputeKey_DifferentFunctionCallContent_ProducesDifferentHashes()
+    {
+        var messagesA = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new FunctionCallContent("call-1", "search", new Dictionary<string, object?> { ["q"] = "cats" })]),
+        };
+        var messagesB = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new FunctionCallContent("call-1", "search", new Dictionary<string, object?> { ["q"] = "dogs" })]),
+        };
+
+        var keyA = EvaluationCaptureChatClient.ComputeKey(messagesA, options: null);
+        var keyB = EvaluationCaptureChatClient.ComputeKey(messagesB, options: null);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_RoundTripsFunctionCallContent()
+    {
+        var functionCall = new FunctionCallContent(
+            "call-1", "search", new Dictionary<string, object?> { ["query"] = "test" });
+        var expected = new ChatResponse(
+            new ChatMessage(ChatRole.Assistant, [functionCall]))
+        {
+            ResponseId = "resp-fc",
+            ModelId = "model-fc",
+        };
+        using var inner = new RecordingChatClient(expected);
+        var store = new InMemoryEvaluationCaptureStore();
+        using var client = new EvaluationCaptureChatClient(inner, store);
+
+        var messages = new[] { new ChatMessage(ChatRole.User, "search for something") };
+        await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        var replayed = await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        Assert.Equal(1, inner.CallCount);
+        var content = Assert.Single(replayed.Messages[0].Contents.OfType<FunctionCallContent>());
+        Assert.Equal("call-1", content.CallId);
+        Assert.Equal("search", content.Name);
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_RoundTripsFunctionResultContent()
+    {
+        var functionResult = new FunctionResultContent("call-1", "search result data");
+        var expected = new ChatResponse(
+            new ChatMessage(ChatRole.Tool, [functionResult]))
+        {
+            ResponseId = "resp-fr",
+        };
+        using var inner = new RecordingChatClient(expected);
+        var store = new InMemoryEvaluationCaptureStore();
+        using var client = new EvaluationCaptureChatClient(inner, store);
+
+        var messages = new[] { new ChatMessage(ChatRole.User, "go") };
+        await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        var replayed = await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        Assert.Equal(1, inner.CallCount);
+        var content = Assert.Single(replayed.Messages[0].Contents.OfType<FunctionResultContent>());
+        Assert.Equal("call-1", content.CallId);
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_RoundTripsMixedTextAndFunctionCalls()
+    {
+        var textContent = new TextContent("Here's what I found:");
+        var functionCall = new FunctionCallContent(
+            "call-2", "write", new Dictionary<string, object?> { ["path"] = "out.txt" });
+        var expected = new ChatResponse(
+            new ChatMessage(ChatRole.Assistant, [textContent, functionCall]))
+        {
+            ResponseId = "resp-mixed",
+        };
+        using var inner = new RecordingChatClient(expected);
+        var store = new InMemoryEvaluationCaptureStore();
+        using var client = new EvaluationCaptureChatClient(inner, store);
+
+        var messages = new[] { new ChatMessage(ChatRole.User, "do it") };
+        await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        var replayed = await client.GetResponseAsync(messages, cancellationToken: _ct);
+
+        Assert.Equal(1, inner.CallCount);
+        var msg = replayed.Messages[0];
+        Assert.Equal(2, msg.Contents.Count);
+        Assert.IsType<TextContent>(msg.Contents[0]);
+        Assert.IsType<FunctionCallContent>(msg.Contents[1]);
+    }
 }

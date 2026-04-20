@@ -113,6 +113,34 @@ public sealed class EvaluationCaptureChatClient : DelegatingChatClient
             sb.Append(message.Role.Value);
             sb.Append(':');
             sb.Append(message.Text);
+
+            foreach (var content in message.Contents)
+            {
+                switch (content)
+                {
+                    case FunctionCallContent fc:
+                        sb.Append("|fc:");
+                        sb.Append(fc.CallId);
+                        sb.Append(':');
+                        sb.Append(fc.Name);
+                        if (fc.Arguments is not null)
+                        {
+                            sb.Append(':');
+                            foreach (var kvp in fc.Arguments.OrderBy(k => k.Key, StringComparer.Ordinal))
+                            {
+                                sb.Append(kvp.Key).Append('=').Append(kvp.Value).Append(';');
+                            }
+                        }
+                        break;
+                    case FunctionResultContent fr:
+                        sb.Append("|fr:");
+                        sb.Append(fr.CallId);
+                        sb.Append(':');
+                        sb.Append(fr.Result);
+                        break;
+                }
+            }
+
             sb.Append('\n');
         }
 
@@ -136,11 +164,25 @@ public sealed class EvaluationCaptureChatClient : DelegatingChatClient
     {
         foreach (var message in response.Messages)
         {
-            yield return new ChatResponseUpdate(message.Role, message.Text)
+            if (message.Contents.Count > 0)
             {
-                ResponseId = response.ResponseId,
-                ModelId = response.ModelId,
-            };
+                foreach (var content in message.Contents)
+                {
+                    yield return new ChatResponseUpdate(message.Role, [content])
+                    {
+                        ResponseId = response.ResponseId,
+                        ModelId = response.ModelId,
+                    };
+                }
+            }
+            else
+            {
+                yield return new ChatResponseUpdate(message.Role, message.Text)
+                {
+                    ResponseId = response.ResponseId,
+                    ModelId = response.ModelId,
+                };
+            }
         }
     }
 }

@@ -102,6 +102,217 @@ public sealed class IterationCoherenceEvaluatorTests
         AssertBoolean(result, IterationCoherenceEvaluator.TerminatedCoherentlyMetricName, false);
     }
 
+    [Fact]
+    public async Task EvaluateAsync_AllIterationsWithOutput_EfficiencyRatioIsOne()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 50),
+                MakeCompletion(1, responseCharCount: 75),
+                MakeCompletion(2, responseCharCount: 30),
+            ]);
+
+        var result = await RunAsync(diagnostics);
+
+        AssertNumeric(result, IterationCoherenceEvaluator.EfficiencyRatioMetricName, 1.0);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_OneEmptyIteration_EfficiencyRatioReflectsIt()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 50),
+                MakeCompletion(1, responseCharCount: 0),
+                MakeCompletion(2, responseCharCount: 30),
+            ]);
+
+        var result = await RunAsync(diagnostics);
+
+        var metric = Assert.IsType<NumericMetric>(
+            result.Metrics[IterationCoherenceEvaluator.EfficiencyRatioMetricName]);
+        Assert.True(
+            Math.Abs(metric.Value!.Value - (2.0 / 3.0)) < 0.001,
+            $"Expected efficiency ~0.667, got {metric.Value}");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ToolCallOnlyIteration_CountsAsUseful()
+    {
+        var toolCallResponse = new ChatResponse(
+            new ChatMessage(ChatRole.Assistant,
+                [new FunctionCallContent("call-1", "search", new Dictionary<string, object?> { ["q"] = "test" })]));
+        var completionWithToolCalls = MakeCompletion(0, responseCharCount: 0);
+        completionWithToolCalls = completionWithToolCalls with { Response = toolCallResponse };
+
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [completionWithToolCalls]);
+
+        var result = await RunAsync(diagnostics);
+
+        AssertNumeric(result, IterationCoherenceEvaluator.EfficiencyRatioMetricName, 1.0);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ZeroIterations_EfficiencyRatioIsZero()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: Array.Empty<ChatCompletionDiagnostics>());
+
+        var result = await RunAsync(diagnostics);
+
+        AssertNumeric(result, IterationCoherenceEvaluator.EfficiencyRatioMetricName, 0);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ConsecutiveIdenticalText_DegenerateLoopDetected()
+    {
+        var response1 = new ChatResponse(new ChatMessage(ChatRole.Assistant, "same output"));
+        var response2 = new ChatResponse(new ChatMessage(ChatRole.Assistant, "same output"));
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 11) with { Response = response1 },
+                MakeCompletion(1, responseCharCount: 11) with { Response = response2 },
+            ]);
+
+        var result = await RunAsync(diagnostics);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.DegenerateLoopMetricName, true);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_DifferentText_NoDegenerateLoop()
+    {
+        var response1 = new ChatResponse(new ChatMessage(ChatRole.Assistant, "output A"));
+        var response2 = new ChatResponse(new ChatMessage(ChatRole.Assistant, "output B"));
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 8) with { Response = response1 },
+                MakeCompletion(1, responseCharCount: 8) with { Response = response2 },
+            ]);
+
+        var result = await RunAsync(diagnostics);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.DegenerateLoopMetricName, false);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NoResponseCapture_DegenerateLoopIsFalse()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 11),
+                MakeCompletion(1, responseCharCount: 11),
+            ]);
+
+        var result = await RunAsync(diagnostics);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.DegenerateLoopMetricName, false);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MaxIterationsHit_ReturnsTrue()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 10),
+                MakeCompletion(1, responseCharCount: 10),
+                MakeCompletion(2, responseCharCount: 10),
+                MakeCompletion(3, responseCharCount: 10),
+                MakeCompletion(4, responseCharCount: 10),
+            ]);
+
+        var evaluator = new IterationCoherenceEvaluator(maxIterations: 5);
+        var result = await evaluator.EvaluateAsync(
+            messages: Array.Empty<ChatMessage>(),
+            modelResponse: new ChatResponse(),
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            cancellationToken: _ct);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.MaxIterationsHitMetricName, true);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MaxIterationsNotHit_ReturnsFalse()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 10),
+                MakeCompletion(1, responseCharCount: 10),
+                MakeCompletion(2, responseCharCount: 10),
+            ]);
+
+        var evaluator = new IterationCoherenceEvaluator(maxIterations: 5);
+        var result = await evaluator.EvaluateAsync(
+            messages: Array.Empty<ChatMessage>(),
+            modelResponse: new ChatResponse(),
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            cancellationToken: _ct);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.MaxIterationsHitMetricName, false);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MaxIterationsExceeded_ReturnsTrue()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [
+                MakeCompletion(0, responseCharCount: 10),
+                MakeCompletion(1, responseCharCount: 10),
+                MakeCompletion(2, responseCharCount: 10),
+                MakeCompletion(3, responseCharCount: 10),
+                MakeCompletion(4, responseCharCount: 10),
+                MakeCompletion(5, responseCharCount: 10),
+            ]);
+
+        var evaluator = new IterationCoherenceEvaluator(maxIterations: 5);
+        var result = await evaluator.EvaluateAsync(
+            messages: Array.Empty<ChatMessage>(),
+            modelResponse: new ChatResponse(),
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            cancellationToken: _ct);
+
+        AssertBoolean(result, IterationCoherenceEvaluator.MaxIterationsHitMetricName, true);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MaxIterationsNull_MetricNotInResult()
+    {
+        var diagnostics = Build(
+            executionMode: IterationCoherenceEvaluator.IterativeLoopExecutionMode,
+            succeeded: true,
+            completions: [MakeCompletion(0, responseCharCount: 10)]);
+
+        var result = await RunAsync(diagnostics);
+
+        Assert.False(
+            result.Metrics.ContainsKey(IterationCoherenceEvaluator.MaxIterationsHitMetricName),
+            "MaxIterationsHit metric should not be present when maxIterations is null");
+    }
+
     private async Task<EvaluationResult> RunAsync(IAgentRunDiagnostics? context)
     {
         var evaluator = new IterationCoherenceEvaluator();
