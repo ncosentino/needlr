@@ -41,7 +41,7 @@
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="7">7</td>
+<td class="limit-width right" title="8">8</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="7">7</td>
+<td class="limit-width right" title="8">8</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="21">21</td>
+<td class="limit-width right" title="23">23</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="7 of 7">100%</td>
+<td class="limit-width right" title="8 of 8">100%</td>
 </tr>
 </table>
 </div>
@@ -107,13 +107,14 @@
 </colgroup>
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String)"><a href="#file0_line15" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ToolResultMode()"><a href="#file0_line16" class="navigatetohash">get_ToolResultMode()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_MaxIterations()"><a href="#file0_line17" class="navigatetohash">get_MaxIterations()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_MaxToolRoundsPerIteration()"><a href="#file0_line18" class="navigatetohash">get_MaxToolRoundsPerIteration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_MaxTotalToolCalls()"><a href="#file0_line19" class="navigatetohash">get_MaxTotalToolCalls()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_BudgetPressureThreshold()"><a href="#file0_line20" class="navigatetohash">get_BudgetPressureThreshold()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_LoopName()"><a href="#file0_line21" class="navigatetohash">get_LoopName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title=".ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode)"><a href="#file0_line16" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ToolResultMode()"><a href="#file0_line17" class="navigatetohash">get_ToolResultMode()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_MaxIterations()"><a href="#file0_line18" class="navigatetohash">get_MaxIterations()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_MaxToolRoundsPerIteration()"><a href="#file0_line19" class="navigatetohash">get_MaxToolRoundsPerIteration()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_MaxTotalToolCalls()"><a href="#file0_line20" class="navigatetohash">get_MaxTotalToolCalls()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_BudgetPressureThreshold()"><a href="#file0_line21" class="navigatetohash">get_BudgetPressureThreshold()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_LoopName()"><a href="#file0_line22" class="navigatetohash">get_LoopName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_CheckCompletionAfterToolCalls()"><a href="#file0_line23" class="navigatetohash">get_CheckCompletionAfterToolCalls()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -137,27 +138,30 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line12"></a><code>12</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;MaxTotalToolCalls&quot;&gt;Cumulative&nbsp;tool&nbsp;call&nbsp;limit,&nbsp;or&nbsp;&lt;see&nbsp;langword=&quot;null&quot;/&gt;&nbsp;if&nbsp;unlimited.&lt;/param&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line13"></a><code>13</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;BudgetPressureThreshold&quot;&gt;Token&nbsp;budget&nbsp;pressure&nbsp;threshold,&nbsp;or&nbsp;&lt;see&nbsp;langword=&quot;null&quot;/&gt;&nbsp;if&nbsp;disabled.&lt;/param</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line14"></a><code>14</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;LoopName&quot;&gt;Human-readable&nbsp;name&nbsp;used&nbsp;in&nbsp;diagnostics&nbsp;and&nbsp;progress&nbsp;events.&lt;/param&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (103 visits)" data-coverage="{'AllTestMethods': {'VC': '103', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">103</td><td class="rightmargin right"><a id="file0_line15"></a><code>15</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterativeLoopConfiguration(</code></td></tr>
-<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line16"></a><code>16</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;ToolResultMode&nbsp;ToolResultMode,</code></td></tr>
-<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line17"></a><code>17</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;MaxIterations,</code></td></tr>
-<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line18"></a><code>18</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;MaxToolRoundsPerIteration,</code></td></tr>
-<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line19"></a><code>19</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int?&nbsp;MaxTotalToolCalls,</code></td></tr>
-<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line20"></a><code>20</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;double?&nbsp;BudgetPressureThreshold,</code></td></tr>
-<tr class="coverableline" title="Covered (105 visits)" data-coverage="{'AllTestMethods': {'VC': '105', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">105</td><td class="rightmargin right"><a id="file0_line21"></a><code>21</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;LoopName);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line15"></a><code>15</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;param&nbsp;name=&quot;CheckCompletionAfterToolCalls&quot;&gt;When&nbsp;the&nbsp;&lt;see&nbsp;cref=&quot;IterativeLoopOptions.IsComplete&quot;/&gt;&nbsp;predicate&nbsp;was&nbsp;che</code></td></tr>
+<tr class="coverableline" title="Covered (117 visits)" data-coverage="{'AllTestMethods': {'VC': '117', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">117</td><td class="rightmargin right"><a id="file0_line16"></a><code>16</code></td><td></td><td class="lightgreen"><code>public&nbsp;sealed&nbsp;record&nbsp;IterativeLoopConfiguration(</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line17"></a><code>17</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;ToolResultMode&nbsp;ToolResultMode,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line18"></a><code>18</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;MaxIterations,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line19"></a><code>19</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;MaxToolRoundsPerIteration,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line20"></a><code>20</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;int?&nbsp;MaxTotalToolCalls,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line21"></a><code>21</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;double?&nbsp;BudgetPressureThreshold,</code></td></tr>
+<tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line22"></a><code>22</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;LoopName,</code></td></tr>
+<tr class="coverableline" title="Covered (118 visits)" data-coverage="{'AllTestMethods': {'VC': '118', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">118</td><td class="rightmargin right"><a id="file0_line23"></a><code>23</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;ToolCompletionCheckMode&nbsp;CheckCompletionAfterToolCalls);</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/19/2026 - 16:52:46<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/20/2026 - 03:27:58<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
-<a href="#file0_line15" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String)"><i class="icon-cube"></i>.ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String)</a><br />
-<a href="#file0_line16" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ToolResultMode()"><i class="icon-wrench"></i>get_ToolResultMode()</a><br />
-<a href="#file0_line17" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxIterations()"><i class="icon-wrench"></i>get_MaxIterations()</a><br />
-<a href="#file0_line18" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxToolRoundsPerIteration()"><i class="icon-wrench"></i>get_MaxToolRoundsPerIteration()</a><br />
-<a href="#file0_line19" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxTotalToolCalls()"><i class="icon-wrench"></i>get_MaxTotalToolCalls()</a><br />
-<a href="#file0_line20" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_BudgetPressureThreshold()"><i class="icon-wrench"></i>get_BudgetPressureThreshold()</a><br />
-<a href="#file0_line21" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_LoopName()"><i class="icon-wrench"></i>get_LoopName()</a><br />
+<a href="#file0_line16" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode)"><i class="icon-cube"></i>.ctor(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,System.Int32,System.Int32,System.Nullable`1&lt;System.Int32&gt;,System.Nullable`1&lt;System.Double&gt;,System.String,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode)</a><br />
+<a href="#file0_line17" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ToolResultMode()"><i class="icon-wrench"></i>get_ToolResultMode()</a><br />
+<a href="#file0_line18" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxIterations()"><i class="icon-wrench"></i>get_MaxIterations()</a><br />
+<a href="#file0_line19" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxToolRoundsPerIteration()"><i class="icon-wrench"></i>get_MaxToolRoundsPerIteration()</a><br />
+<a href="#file0_line20" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxTotalToolCalls()"><i class="icon-wrench"></i>get_MaxTotalToolCalls()</a><br />
+<a href="#file0_line21" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_BudgetPressureThreshold()"><i class="icon-wrench"></i>get_BudgetPressureThreshold()</a><br />
+<a href="#file0_line22" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_LoopName()"><i class="icon-wrench"></i>get_LoopName()</a><br />
+<a href="#file0_line23" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_CheckCompletionAfterToolCalls()"><i class="icon-wrench"></i>get_CheckCompletionAfterToolCalls()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

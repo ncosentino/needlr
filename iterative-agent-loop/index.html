@@ -1172,6 +1172,56 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#checkcompletionaftertoolcalls-toolcompletioncheckmode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CheckCompletionAfterToolCalls (ToolCompletionCheckMode)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CheckCompletionAfterToolCalls (ToolCompletionCheckMode)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precedence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3979,7 +4029,7 @@
 </span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">            </span><span class="n">Continue</span><span class="w"> </span><span class="n">working</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">article</span><span class="p">.</span>
 </span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">            </span><span class="s">&quot;&quot;&quot;;</span>
 </span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">    </span><span class="n">MaxIterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">    </span><span class="n">MaxIterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
 </span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="w">    </span><span class="n">IsComplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="s">&quot;done.txt&quot;</span><span class="p">),</span>
 </span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="p">};</span>
 </span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>
@@ -4100,6 +4150,12 @@
 <td>Safety valve for <code>MultiRound</code> mode</td>
 </tr>
 <tr>
+<td><code>CheckCompletionAfterToolCalls</code></td>
+<td><code>ToolCompletionCheckMode</code></td>
+<td><code>None</code></td>
+<td>When to check <code>IsComplete</code> relative to tool calls (see below)</td>
+</tr>
+<tr>
 <td><code>OnIterationStart</code></td>
 <td><code>Func&lt;int, IterativeContext, Task&gt;?</code></td>
 <td><code>null</code></td>
@@ -4152,6 +4208,48 @@
 </tr>
 </tbody>
 </table>
+<h3 id="checkcompletionaftertoolcalls-toolcompletioncheckmode">CheckCompletionAfterToolCalls (ToolCompletionCheckMode)<a class="headerlink" href="#checkcompletionaftertoolcalls-toolcompletioncheckmode" title="Permanent link">&para;</a></h3>
+<p>Controls when <code>IsComplete</code> is evaluated relative to tool calls within an iteration. By default (<code>None</code>), <code>IsComplete</code> only runs between iterations — after the round loop finishes. This means a tool call that satisfies the completion condition (e.g., writing a file to the workspace) still triggers one more <code>ChatCompletion</code> call before the loop notices.</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>None</code></td>
+<td>Default. <code>IsComplete</code> checked only between iterations. Preserves backward-compatible behavior.</td>
+</tr>
+<tr>
+<td><code>AfterToolRounds</code></td>
+<td><code>IsComplete</code> checked after each round's batch of tool calls completes. All tool calls in the round execute, but the next <code>ChatCompletion</code> call is avoided. Terminates with <code>CompletedEarlyAfterToolCall</code>.</td>
+</tr>
+<tr>
+<td><code>AfterEachToolCall</code></td>
+<td><code>IsComplete</code> checked after each individual tool call. Remaining tool calls in the batch are skipped if the predicate returns <code>true</code>. Terminates with <code>CompletedEarlyAfterToolCall</code>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>AfterToolRounds</code></strong> — Best for most scenarios. Captures ~100% of the wasted <code>ChatCompletion</code> cost (input tokens saved) with minimal behavioral change. All tool calls the model requested still execute.</li>
+<li><strong><code>AfterEachToolCall</code></strong> — Use when tool execution itself is expensive (e.g., web requests, database writes) and you want to skip unnecessary tool calls once the goal is met.</li>
+</ul>
+<h4 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h4>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterativeLoopOptions</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">Instructions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Generate a research brief...&quot;</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">Tools</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">readTool</span><span class="p">,</span><span class="w"> </span><span class="n">writeTool</span><span class="p">],</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">PromptFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">BuildPrompt</span><span class="p">(</span><span class="n">ctx</span><span class="p">),</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="n">IsComplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="s">&quot;research/brief.md&quot;</span><span class="p">),</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="n">ToolResultMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ToolResultMode</span><span class="p">.</span><span class="n">MultiRound</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="n">CheckCompletionAfterToolCalls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ToolCompletionCheckMode</span><span class="p">.</span><span class="n">AfterToolRounds</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">};</span>
+</span></code></pre></div>
+<h4 id="precedence">Precedence<a class="headerlink" href="#precedence" title="Permanent link">&para;</a></h4>
+<p>When <code>CheckCompletionAfterToolCalls</code> is active and a tool call simultaneously satisfies both <code>IsComplete</code> and <code>MaxTotalToolCalls</code>, <strong>completion wins</strong> (<code>CompletedEarlyAfterToolCall</code> rather than <code>MaxToolCallsReached</code>). The agent achieved its goal — the budget guard is secondary.</p>
 <hr />
 <h2 id="the-prompt-factory">The Prompt Factory<a class="headerlink" href="#the-prompt-factory" title="Permanent link">&para;</a></h2>
 <p>The prompt factory is the core extensibility point. It receives an <code>IterativeContext</code> with:</p>
@@ -4169,59 +4267,59 @@
 <li><strong>Cap unbounded content</strong> — if research notes grow, show only the last N entries.</li>
 </ol>
 <h3 id="example-phase-aware-prompt">Example: phase-aware prompt<a class="headerlink" href="#example-phase-aware-prompt" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">PromptFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="p">{</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">sb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StringBuilder</span><span class="p">();</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonSerializer</span><span class="p">.</span><span class="n">Deserialize</span><span class="o">&lt;</span><span class="n">Status</span><span class="o">&gt;</span><span class="p">(</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="s">&quot;status.json&quot;</span><span class="p">));</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;## Current State ({status.Phase} phase)&quot;</span><span class="p">);</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;Budget remaining: ${status.BudgetRemaining}&quot;</span><span class="p">);</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="s">&quot;itinerary.json&quot;</span><span class="p">))</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;Itinerary: {ctx.Workspace.ReadFile(&quot;</span><span class="n">itinerary</span><span class="p">.</span><span class="n">json</span><span class="s">&quot;)}&quot;</span><span class="p">);</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="c1">// Phase-specific nudges</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Phase</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;research&quot;</span><span class="p">)</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; Search for options before committing. &lt;&lt;&lt;&quot;</span><span class="p">);</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="nf">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Phase</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;fix&quot;</span><span class="p">)</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; Validation failed. Fix the issues above. &lt;&lt;&lt;&quot;</span><span class="p">);</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">sb</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">PromptFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">sb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StringBuilder</span><span class="p">();</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonSerializer</span><span class="p">.</span><span class="n">Deserialize</span><span class="o">&lt;</span><span class="n">Status</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="s">&quot;status.json&quot;</span><span class="p">));</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;## Current State ({status.Phase} phase)&quot;</span><span class="p">);</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;Budget remaining: ${status.BudgetRemaining}&quot;</span><span class="p">);</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="s">&quot;itinerary.json&quot;</span><span class="p">))</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">$&quot;Itinerary: {ctx.Workspace.ReadFile(&quot;</span><span class="n">itinerary</span><span class="p">.</span><span class="n">json</span><span class="s">&quot;)}&quot;</span><span class="p">);</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="c1">// Phase-specific nudges</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Phase</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;research&quot;</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; Search for options before committing. &lt;&lt;&lt;&quot;</span><span class="p">);</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="nf">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Phase</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;fix&quot;</span><span class="p">)</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="n">sb</span><span class="p">.</span><span class="n">AppendLine</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; Validation failed. Fix the issues above. &lt;&lt;&lt;&quot;</span><span class="p">);</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">sb</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
 <h2 id="lifecycle-hooks">Lifecycle Hooks<a class="headerlink" href="#lifecycle-hooks" title="Permanent link">&para;</a></h2>
 <p>The iterative loop provides async lifecycle hooks for real-time progress reporting. These are essential for scenarios like sending updates over SignalR or updating a UI.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterativeLoopOptions</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">{</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="c1">// ... other options ...</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">OnIterationStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;IterationStarted&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">iteration</span><span class="p">);</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">OnToolCall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span><span class="w"> </span><span class="n">toolResult</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;ToolExecuted&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">            </span><span class="n">Iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iteration</span><span class="p">,</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">            </span><span class="n">Tool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">toolResult</span><span class="p">.</span><span class="n">FunctionName</span><span class="p">,</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">            </span><span class="n">Succeeded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">toolResult</span><span class="p">.</span><span class="n">Succeeded</span><span class="p">,</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="p">});</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">    </span><span class="n">OnIterationEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;IterationCompleted&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">            </span><span class="n">record</span><span class="p">.</span><span class="n">Iteration</span><span class="p">,</span>
-</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">            </span><span class="n">ToolCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">.</span><span class="n">Count</span><span class="p">,</span>
-</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">            </span><span class="n">record</span><span class="p">.</span><span class="n">Duration</span><span class="p">,</span>
-</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">        </span><span class="p">});</span>
-</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="p">};</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterativeLoopOptions</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="c1">// ... other options ...</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="n">OnIterationStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;IterationStarted&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">iteration</span><span class="p">);</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="n">OnToolCall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span><span class="w"> </span><span class="n">toolResult</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;ToolExecuted&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">            </span><span class="n">Iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iteration</span><span class="p">,</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">            </span><span class="n">Tool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">toolResult</span><span class="p">.</span><span class="n">FunctionName</span><span class="p">,</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">            </span><span class="n">Succeeded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">toolResult</span><span class="p">.</span><span class="n">Succeeded</span><span class="p">,</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="p">});</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="n">OnIterationEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="k">record</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;IterationCompleted&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span>
+</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">            </span><span class="k">record</span><span class="p">.</span><span class="n">Iteration</span><span class="p">,</span>
+</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">            </span><span class="n">ToolCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">record</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">.</span><span class="n">Count</span><span class="p">,</span>
+</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">            </span><span class="k">record</span><span class="p">.</span><span class="n">Duration</span><span class="p">,</span>
+</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">        </span><span class="p">});</span>
+</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="p">};</span>
 </span></code></pre></div>
 <h3 id="hook-behavior">Hook behavior<a class="headerlink" href="#hook-behavior" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4235,19 +4333,19 @@
 <p>The loop automatically publishes diagnostics to <code>IAgentDiagnosticsAccessor</code> when the service is registered. This eliminates the need to inspect <code>IterationRecord.Tokens</code> directly.</p>
 <h3 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h3>
 <p>Call <code>BeginCapture()</code> before running the loop so the diagnostics are visible to the caller after the run completes:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">services</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">IAgentDiagnosticsAccessor</span><span class="o">&gt;</span><span class="p">();</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1">// Create a capture scope — diagnostics written inside RunAsync will be</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">// visible via LastRunDiagnostics after the run completes.</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="p">.</span><span class="n">BeginCapture</span><span class="p">();</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">loop</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1">// Read diagnostics from the accessor (same data as result.Diagnostics)</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="kt">var</span><span class="w"> </span><span class="n">diag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="p">.</span><span class="n">LastRunDiagnostics</span><span class="o">!</span><span class="p">;</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;LLM calls: {diag.ChatCompletions.Count}&quot;</span><span class="p">);</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Tool calls: {diag.ToolCalls.Count}&quot;</span><span class="p">);</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Tokens: {diag.AggregateTokenUsage.TotalTokens}&quot;</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">services</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">IAgentDiagnosticsAccessor</span><span class="o">&gt;</span><span class="p">();</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1">// Create a capture scope — diagnostics written inside RunAsync will be</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">// visible via LastRunDiagnostics after the run completes.</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="p">.</span><span class="n">BeginCapture</span><span class="p">();</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">loop</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1">// Read diagnostics from the accessor (same data as result.Diagnostics)</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="kt">var</span><span class="w"> </span><span class="n">diag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diagnosticsAccessor</span><span class="p">.</span><span class="n">LastRunDiagnostics</span><span class="o">!</span><span class="p">;</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;LLM calls: {diag.ChatCompletions.Count}&quot;</span><span class="p">);</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Tool calls: {diag.ToolCalls.Count}&quot;</span><span class="p">);</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Tokens: {diag.AggregateTokenUsage.TotalTokens}&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">BeginCapture is required</p>
@@ -4264,62 +4362,62 @@
 <li>Disposes the scope after the loop completes</li>
 </ol>
 <h3 id="di-resolved-tool-example">DI-resolved tool example<a class="headerlink" href="#di-resolved-tool-example" title="Permanent link">&para;</a></h3>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="na">[AgentFunctionGroup(&quot;my-tools&quot;)]</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTools</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">{</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">readonly</span><span class="w"> </span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">_contextAccessor</span><span class="p">;</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">MyTools</span><span class="p">(</span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">contextAccessor</span><span class="p">)</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="n">_contextAccessor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contextAccessor</span><span class="p">;</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="na">[AgentFunction]</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ReadConfig</span><span class="p">()</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">workspace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_contextAccessor</span><span class="p">.</span><span class="n">Current</span><span class="o">!</span><span class="p">.</span><span class="n">GetRequiredWorkspace</span><span class="p">();</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">workspace</span><span class="p">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="s">&quot;config.json&quot;</span><span class="p">);</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="na">[AgentFunctionGroup(&quot;my-tools&quot;)]</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTools</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">{</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">readonly</span><span class="w"> </span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">_contextAccessor</span><span class="p">;</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">MyTools</span><span class="p">(</span><span class="n">IAgentExecutionContextAccessor</span><span class="w"> </span><span class="n">contextAccessor</span><span class="p">)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">        </span><span class="n">_contextAccessor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contextAccessor</span><span class="p">;</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="na">[AgentFunction]</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ReadConfig</span><span class="p">()</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">workspace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_contextAccessor</span><span class="p">.</span><span class="n">Current</span><span class="o">!</span><span class="p">.</span><span class="n">GetRequiredWorkspace</span><span class="p">();</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">workspace</span><span class="p">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="s">&quot;config.json&quot;</span><span class="p">);</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="explicit-context">Explicit context<a class="headerlink" href="#explicit-context" title="Permanent link">&para;</a></h3>
 <p>If you need custom <code>UserId</code> or <code>OrchestrationId</code> values, provide an explicit execution context:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterativeLoopOptions</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="p">{</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="c1">// ... other options ...</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">ExecutionContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentExecutionContext</span><span class="p">(</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="n">UserId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;user-123&quot;</span><span class="p">,</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">        </span><span class="n">OrchestrationId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;trip-planner-run-42&quot;</span><span class="p">,</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="n">Workspace</span><span class="p">:</span><span class="w"> </span><span class="n">workspace</span><span class="p">),</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">};</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterativeLoopOptions</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="p">{</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="c1">// ... other options ...</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="n">ExecutionContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentExecutionContext</span><span class="p">(</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="n">UserId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;user-123&quot;</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">        </span><span class="n">OrchestrationId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;trip-planner-run-42&quot;</span><span class="p">,</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="n">Workspace</span><span class="p">:</span><span class="w"> </span><span class="n">workspace</span><span class="p">),</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">};</span>
 </span></code></pre></div>
 <hr />
 <h2 id="results-and-diagnostics">Results and Diagnostics<a class="headerlink" href="#results-and-diagnostics" title="Permanent link">&para;</a></h2>
 <p><code>IterativeLoopResult</code> provides full introspection:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">loop</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1">// Overall status</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Success: {result.Succeeded}&quot;</span><span class="p">);</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Error: {result.ErrorMessage}&quot;</span><span class="p">);</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1">// Per-iteration detail</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Iterations</span><span class="p">)</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">{</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Iteration {iter.Iteration}: &quot;</span><span class="w"> </span><span class="o">+</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="s">$&quot;{iter.ToolCalls.Count} tools, &quot;</span><span class="w"> </span><span class="o">+</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">        </span><span class="s">$&quot;{iter.Tokens.InputTokenCount} in / {iter.Tokens.OutputTokenCount} out, &quot;</span><span class="w"> </span><span class="o">+</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="s">$&quot;{iter.Duration.TotalSeconds:F1}s&quot;</span><span class="p">);</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">    </span><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">tool</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">iter</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">)</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tool</span><span class="p">.</span><span class="n">Succeeded</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;✓&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;✗&quot;</span><span class="p">;</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">        </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;  {status} {tool.FunctionName} ({tool.Duration.TotalMilliseconds:F0}ms)&quot;</span><span class="p">);</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="p">}</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="c1">// Aggregate diagnostics</span>
-</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="kt">var</span><span class="w"> </span><span class="n">diag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">;</span>
-</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Total tokens: {diag?.AggregateTokenUsage.TotalTokens}&quot;</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">loop</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1">// Overall status</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Success: {result.Succeeded}&quot;</span><span class="p">);</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Error: {result.ErrorMessage}&quot;</span><span class="p">);</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1">// Per-iteration detail</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Iterations</span><span class="p">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">{</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Iteration {iter.Iteration}: &quot;</span><span class="w"> </span><span class="o">+</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">        </span><span class="s">$&quot;{iter.ToolCalls.Count} tools, &quot;</span><span class="w"> </span><span class="o">+</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">        </span><span class="s">$&quot;{iter.Tokens.InputTokenCount} in / {iter.Tokens.OutputTokenCount} out, &quot;</span><span class="w"> </span><span class="o">+</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">        </span><span class="s">$&quot;{iter.Duration.TotalSeconds:F1}s&quot;</span><span class="p">);</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">    </span><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">tool</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">iter</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">)</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tool</span><span class="p">.</span><span class="n">Succeeded</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;✓&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;✗&quot;</span><span class="p">;</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">        </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;  {status} {tool.FunctionName} ({tool.Duration.TotalMilliseconds:F0}ms)&quot;</span><span class="p">);</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="p">}</span>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="c1">// Aggregate diagnostics</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="kt">var</span><span class="w"> </span><span class="n">diag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">;</span>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Total tokens: {diag?.AggregateTokenUsage.TotalTokens}&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 <h3 id="iterationrecord-fields">IterationRecord fields<a class="headerlink" href="#iterationrecord-fields" title="Permanent link">&para;</a></h3>
 <table>
@@ -4423,7 +4521,7 @@
 <hr />
 <h2 id="example-trip-planner">Example: Trip Planner<a class="headerlink" href="#example-trip-planner" title="Permanent link">&para;</a></h2>
 <p>The <code>IterativeTripPlannerApp</code> example in <code>src/Examples/AgentFramework/</code> demonstrates the full pattern — matching the architecture of production consumers like BrandGhost:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>dotnet run --project src/Examples/AgentFramework/IterativeTripPlannerApp
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>dotnet run --project src/Examples/AgentFramework/IterativeTripPlannerApp
 </span></code></pre></div>
 <p>This example plans a multi-stop trip from New York to Tokyo on a tight budget with constraints (3.5★ minimum hotel rating, 2+ intermediate stops). It demonstrates:</p>
 <ul>
@@ -4438,14 +4536,14 @@
 <li><strong>Full diagnostics</strong> — per-iteration token counts, tool call logs, and O(n²) comparison</li>
 </ul>
 <p>Configure via <code>appsettings.json</code>:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;TripPlanner&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">&quot;Origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;New York&quot;</span><span class="p">,</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">&quot;Destination&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Tokyo&quot;</span><span class="p">,</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">&quot;Budget&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1600&quot;</span><span class="p">,</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">&quot;MaxStops&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;TripPlanner&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">&quot;Origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;New York&quot;</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">&quot;Destination&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Tokyo&quot;</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">&quot;Budget&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1600&quot;</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">&quot;MaxStops&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Set <code>UseMockClient</code> to <code>false</code> and provide Azure OpenAI credentials in <code>appsettings.Development.json</code> for real LLM execution.</p>
 <hr />

@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/19/2026 - 16:52:47 |
-| Coverage date: | 04/19/2026 - 16:51:19 - 04/19/2026 - 16:52:43 |
+| Generated on: | 04/20/2026 - 03:27:59 |
+| Coverage date: | 04/20/2026 - 03:26:26 - 04/20/2026 - 03:27:54 |
 | Parser: | MultiReport (27x Cobertura) |
 | Assemblies: | 25 |
 | Classes: | 437 |
 | Files: | 433 |
-| **Line coverage:** | 85% (17768 of 20881) |
-| Covered lines: | 17768 |
-| Uncovered lines: | 3113 |
-| Coverable lines: | 20881 |
-| Total lines: | 51177 |
-| **Branch coverage:** | 73.6% (6753 of 9175) |
-| Covered branches: | 6753 |
-| Total branches: | 9175 |
+| **Line coverage:** | 85.1% (17809 of 20920) |
+| Covered lines: | 17809 |
+| Uncovered lines: | 3111 |
+| Coverable lines: | 20920 |
+| Total lines: | 51269 |
+| **Branch coverage:** | 73.6% (6778 of 9201) |
+| Covered branches: | 6778 |
+| Total branches: | 9201 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 88.4%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 88.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**88.4%**|**81.7%**|
+|**NexusLabs.Needlr.AgentFramework**|**88.6%**|**82%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|90%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -136,10 +136,10 @@
 |NexusLabs.Needlr.AgentFramework.Iterative.ChatClientAccessor|100%|66.6%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecordEvaluationExtensio<br/>ns|100%|91.6%|
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.6%|93.8%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.6%|93.6%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeContext|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration|100%||
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|96%|62.5%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|96.1%|62.5%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions|83.3%|50%|
 |NexusLabs.Needlr.AgentFramework.Iterative.ToolCallResult|85.7%||
@@ -178,7 +178,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|90.4%|80.7%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|91.7%|80.7%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
@@ -469,17 +469,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.2%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
