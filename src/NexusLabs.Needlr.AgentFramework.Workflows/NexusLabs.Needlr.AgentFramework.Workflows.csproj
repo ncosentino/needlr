@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <!-- MAF 1.1.0 marked handoff/workflow builder APIs as experimental (MAAIW001).
+         Needlr intentionally wraps these in workflow extension methods. Monitor MAF
+         releases for stable replacements. -->
+    <NoWarn>$(NoWarn);MAAIW001</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI.Workflows" />
     <PackageReference Include="Microsoft.Extensions.Resilience" />

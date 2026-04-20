@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <PackageDescription>NexusLabs.Needlr integration for Microsoft Agent Framework (MAF). Provides AgentFactory, WorkflowFactory, and topology declarations for multi-agent orchestrations.</PackageDescription>
+    <!-- MAF 1.1.0 marked handoff/workflow builder APIs as experimental (MAAIW001).
+         Needlr intentionally wraps these in WorkflowFactory. Monitor MAF releases
+         for stable replacements. -->
+    <NoWarn>$(NoWarn);MAAIW001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
