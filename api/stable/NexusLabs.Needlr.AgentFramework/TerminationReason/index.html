@@ -3516,6 +3516,17 @@ iteration before terminating.</p>
 token usage, indicating the LLM is repeating the same work without
 making progress. Controlled by
 <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.StallDetection" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.StallDetection">StallDetection</a>.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.TerminationReason.CompletedEarlyAfterToolCall'></a></p>
+<p><code>CompletedEarlyAfterToolCall</code> 8</p>
+<p>The <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate returned
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> after a tool call completed within an iteration,
+rather than at the standard between-iteration check point. This is a
+\&lt;strong&gt;success\&lt;/strong&gt; termination — the agent achieved its goal and
+the loop exited early to avoid a wasted <code>ChatCompletion</code> call.</p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>Only fires when <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.CheckCompletionAfterToolCalls" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.CheckCompletionAfterToolCalls">CheckCompletionAfterToolCalls</a>
+is set to <a href="../ToolCompletionCheckMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode.AfterToolRounds" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode.AfterToolRounds">AfterToolRounds</a> or
+<a href="../ToolCompletionCheckMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode.AfterEachToolCall" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode.AfterEachToolCall">AfterEachToolCall</a>.</p>
 
 
 
