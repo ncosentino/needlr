@@ -284,6 +284,28 @@ public sealed class IterativeLoopOptions
         "Do not start new research or tool-heavy operations.";
 
     /// <summary>
+    /// Gets or sets when to check <see cref="IsComplete"/> relative to tool call
+    /// execution within an iteration. Defaults to
+    /// <see cref="ToolCompletionCheckMode.None"/> (check only between iterations).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set to <see cref="ToolCompletionCheckMode.AfterToolRounds"/>, the loop
+    /// checks <see cref="IsComplete"/> after each round's batch of tool calls
+    /// completes. When set to <see cref="ToolCompletionCheckMode.AfterEachToolCall"/>,
+    /// the check runs after each individual tool call, and remaining tool calls in
+    /// the batch are skipped if the predicate returns <see langword="true"/>.
+    /// </para>
+    /// <para>
+    /// Both modes terminate the loop with
+    /// <see cref="TerminationReason.CompletedEarlyAfterToolCall"/> when the check
+    /// fires, allowing callers to distinguish early completion from the standard
+    /// between-iteration completion (<see cref="TerminationReason.Completed"/>).
+    /// </para>
+    /// </remarks>
+    public ToolCompletionCheckMode CheckCompletionAfterToolCalls { get; set; }
+
+    /// <summary>
     /// Optional factory that wraps the <see cref="Microsoft.Extensions.AI.IChatClient"/>
     /// used for LLM calls within this loop run. Use this to inject per-loop middleware
     /// such as <c>ReducingChatClient</c> to cap within-iteration conversation growth.

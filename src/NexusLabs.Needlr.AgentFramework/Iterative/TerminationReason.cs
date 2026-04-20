@@ -54,4 +54,18 @@ public enum TerminationReason
     /// <see cref="IterativeLoopOptions.StallDetection"/>.
     /// </summary>
     StallDetected,
+
+    /// <summary>
+    /// The <see cref="IterativeLoopOptions.IsComplete"/> predicate returned
+    /// <see langword="true"/> after a tool call completed within an iteration,
+    /// rather than at the standard between-iteration check point. This is a
+    /// <strong>success</strong> termination — the agent achieved its goal and
+    /// the loop exited early to avoid a wasted <c>ChatCompletion</c> call.
+    /// </summary>
+    /// <remarks>
+    /// Only fires when <see cref="IterativeLoopOptions.CheckCompletionAfterToolCalls"/>
+    /// is set to <see cref="ToolCompletionCheckMode.AfterToolRounds"/> or
+    /// <see cref="ToolCompletionCheckMode.AfterEachToolCall"/>.
+    /// </remarks>
+    CompletedEarlyAfterToolCall,
 }

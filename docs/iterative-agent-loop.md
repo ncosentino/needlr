@@ -161,6 +161,7 @@ This resolves tool classes through DI, so constructor-injected services (like `I
 | `IsComplete` | `Func<IterativeContext, bool>?` | `null` | Domain-specific termination predicate |
 | `ToolResultMode` | `ToolResultMode` | `OneRoundTrip` | How tool results feed back within an iteration |
 | `MaxToolRoundsPerIteration` | `int` | `5` | Safety valve for `MultiRound` mode |
+| `CheckCompletionAfterToolCalls` | `ToolCompletionCheckMode` | `None` | When to check `IsComplete` relative to tool calls (see below) |
 | `OnIterationStart` | `Func<int, IterativeContext, Task>?` | `null` | Async callback fired before each iteration's prompt factory |
 | `OnToolCall` | `Func<int, ToolCallResult, Task>?` | `null` | Async callback fired after each tool executes (includes iteration number) |
 | `OnIterationEnd` | `Func<IterationRecord, Task>?` | `null` | Async callback fired after each iteration completes |
@@ -173,6 +174,39 @@ This resolves tool classes through DI, so constructor-injected services (like `I
 | `SingleCall` | 1 | Tool results are NOT sent back. Stored in `LastToolResults` for the next iteration's prompt factory. Maximum cost control. |
 | `OneRoundTrip` | ≤ 2 | Tool results sent back once. Model gets one follow-up chance. **Recommended default.** |
 | `MultiRound` | ≤ `MaxToolRoundsPerIteration + 1` | Tool results sent back repeatedly until model stops requesting tools. Bounded by `MaxToolRoundsPerIteration`. |
+
+### CheckCompletionAfterToolCalls (ToolCompletionCheckMode)
+
+Controls when `IsComplete` is evaluated relative to tool calls within an iteration. By default (`None`), `IsComplete` only runs between iterations — after the round loop finishes. This means a tool call that satisfies the completion condition (e.g., writing a file to the workspace) still triggers one more `ChatCompletion` call before the loop notices.
+
+| Mode | Description |
+|------|-------------|
+| `None` | Default. `IsComplete` checked only between iterations. Preserves backward-compatible behavior. |
+| `AfterToolRounds` | `IsComplete` checked after each round's batch of tool calls completes. All tool calls in the round execute, but the next `ChatCompletion` call is avoided. Terminates with `CompletedEarlyAfterToolCall`. |
+| `AfterEachToolCall` | `IsComplete` checked after each individual tool call. Remaining tool calls in the batch are skipped if the predicate returns `true`. Terminates with `CompletedEarlyAfterToolCall`. |
+
+#### When to use
+
+- **`AfterToolRounds`** — Best for most scenarios. Captures ~100% of the wasted `ChatCompletion` cost (input tokens saved) with minimal behavioral change. All tool calls the model requested still execute.
+- **`AfterEachToolCall`** — Use when tool execution itself is expensive (e.g., web requests, database writes) and you want to skip unnecessary tool calls once the goal is met.
+
+#### Example
+
+```csharp
+var options = new IterativeLoopOptions
+{
+    Instructions = "Generate a research brief...",
+    Tools = [readTool, writeTool],
+    PromptFactory = ctx => BuildPrompt(ctx),
+    IsComplete = ctx => ctx.Workspace.FileExists("research/brief.md"),
+    ToolResultMode = ToolResultMode.MultiRound,
+    CheckCompletionAfterToolCalls = ToolCompletionCheckMode.AfterToolRounds,
+};
+```
+
+#### Precedence
+
+When `CheckCompletionAfterToolCalls` is active and a tool call simultaneously satisfies both `IsComplete` and `MaxTotalToolCalls`, **completion wins** (`CompletedEarlyAfterToolCall` rather than `MaxToolCallsReached`). The agent achieved its goal — the budget guard is secondary.
 
 ---
 

@@ -269,13 +269,46 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         ? functionCalls.Take(remainingAllowance.Value).ToList()
                         : functionCalls;
 
-                    var roundResults = await ExecuteToolCallsAsync(
+                    // Build per-call early exit check for AfterEachToolCall mode
+                    Func<List<ToolCallResult>, bool>? perCallEarlyExitCheck = null;
+                    if (options.CheckCompletionAfterToolCalls == ToolCompletionCheckMode.AfterEachToolCall
+                        && options.IsComplete is { } perCallIsComplete)
+                    {
+                        perCallEarlyExitCheck = partialResults =>
+                        {
+                            context.LastToolResults = partialResults;
+                            return perCallIsComplete(context);
+                        };
+                    }
+
+                    var (roundResults, earlyExitFromToolCall) = await ExecuteToolCallsAsync(
                         callsToExecute, options.Tools, diagnosticsBuilder,
                         i, options.OnToolCall, _progressReporterAccessor,
-                        _metrics, cancellationToken)
+                        _metrics, perCallEarlyExitCheck, cancellationToken)
                         .ConfigureAwait(false);
                     iterationToolCalls.AddRange(roundResults);
                     totalToolCalls += roundResults.Count;
+
+                    // Early completion check (fires before MaxTotalToolCalls so completion wins)
+                    if (earlyExitFromToolCall)
+                    {
+                        termination = TerminationReason.CompletedEarlyAfterToolCall;
+                        break;
+                    }
+
+                    if (options.CheckCompletionAfterToolCalls == ToolCompletionCheckMode.AfterToolRounds
+                        || options.CheckCompletionAfterToolCalls == ToolCompletionCheckMode.AfterEachToolCall)
+                    {
+                        if (options.IsComplete is { } earlyCheck)
+                        {
+                            context.LastToolResults = iterationToolCalls;
+                            if (earlyCheck(context))
+                            {
+                                termination = TerminationReason.CompletedEarlyAfterToolCall;
+                                break;
+                            }
+                        }
+                    }
 
                     // Check MaxTotalToolCalls guard
                     if (options.MaxTotalToolCalls is { } maxCalls && totalToolCalls >= maxCalls)
@@ -329,6 +362,28 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         LlmCallCount: llmCallCount,
                         ToolCallCount: iterationToolCalls.Count));
                     context.LastToolResults = iterationToolCalls;
+                    break;
+                }
+
+                // Early completion after tool call — record iteration, fire hooks, then exit
+                if (termination == TerminationReason.CompletedEarlyAfterToolCall)
+                {
+                    iterationStopwatch.Stop();
+                    iterations.Add(new IterationRecord(
+                        Iteration: i,
+                        ToolCalls: iterationToolCalls,
+                        FinalResponse: iterationResponse,
+                        Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
+                        Duration: iterationStopwatch.Elapsed,
+                        LlmCallCount: llmCallCount,
+                        ToolCallCount: iterationToolCalls.Count));
+                    context.LastToolResults = iterationToolCalls;
+
+                    if (options.OnIterationEnd != null)
+                    {
+                        await InvokeHookAsync(options.OnIterationEnd, iterations[^1]).ConfigureAwait(false);
+                    }
+
                     break;
                 }
 
@@ -475,7 +530,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             MaxToolRoundsPerIteration: options.MaxToolRoundsPerIteration,
             MaxTotalToolCalls: options.MaxTotalToolCalls,
             BudgetPressureThreshold: options.BudgetPressureThreshold,
-            LoopName: options.LoopName);
+            LoopName: options.LoopName,
+            CheckCompletionAfterToolCalls: options.CheckCompletionAfterToolCalls);
 
         return new IterativeLoopResult(
             Iterations: iterations,
@@ -487,7 +543,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             Configuration: configuration);
     }
 
-    private static async Task<List<ToolCallResult>> ExecuteToolCallsAsync(
+    private static async Task<(List<ToolCallResult> Results, bool EarlyExit)> ExecuteToolCallsAsync(
         List<FunctionCallContent> functionCalls,
         IReadOnlyList<AITool> tools,
         AgentRunDiagnosticsBuilder diagnosticsBuilder,
@@ -495,6 +551,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         Func<int, ToolCallResult, Task>? onToolCall,
         IProgressReporterAccessor? progressAccessor,
         IAgentMetrics? metrics,
+        Func<List<ToolCallResult>, bool>? earlyExitCheck,
         CancellationToken cancellationToken)
     {
         var toolMap = tools.OfType<AIFunction>()
@@ -568,6 +625,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 if (onToolCall != null)
                 {
                     await InvokeHookAsync(onToolCall, iteration, errorResult).ConfigureAwait(false);
+                }
+
+                if (earlyExitCheck != null && earlyExitCheck(results))
+                {
+                    return (results, EarlyExit: true);
                 }
 
                 continue;
@@ -670,9 +732,15 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     await InvokeHookAsync(onToolCall, iteration, results[^1]).ConfigureAwait(false);
                 }
             }
+
+            // Per-call early exit check
+            if (earlyExitCheck != null && earlyExitCheck(results))
+            {
+                return (results, EarlyExit: true);
+            }
         }
 
-        return results;
+        return (results, EarlyExit: false);
     }
 
     private static async Task InvokeHookAsync<T>(Func<T, Task> hook, T arg)

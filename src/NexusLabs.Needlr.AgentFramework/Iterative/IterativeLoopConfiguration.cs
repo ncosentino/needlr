@@ -12,10 +12,12 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// <param name="MaxTotalToolCalls">Cumulative tool call limit, or <see langword="null"/> if unlimited.</param>
 /// <param name="BudgetPressureThreshold">Token budget pressure threshold, or <see langword="null"/> if disabled.</param>
 /// <param name="LoopName">Human-readable name used in diagnostics and progress events.</param>
+/// <param name="CheckCompletionAfterToolCalls">When the <see cref="IterativeLoopOptions.IsComplete"/> predicate was checked relative to tool calls.</param>
 public sealed record IterativeLoopConfiguration(
     ToolResultMode ToolResultMode,
     int MaxIterations,
     int MaxToolRoundsPerIteration,
     int? MaxTotalToolCalls,
     double? BudgetPressureThreshold,
-    string LoopName);
+    string LoopName,
+    ToolCompletionCheckMode CheckCompletionAfterToolCalls);
