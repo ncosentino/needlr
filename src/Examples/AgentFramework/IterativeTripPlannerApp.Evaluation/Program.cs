@@ -137,6 +137,30 @@ var efficiencyResult = await efficiencyEval.EvaluateAsync(
     additionalContext: [diagContext]);
 PrintMetrics("EfficiencyEvaluator", efficiencyResult);
 
+// ── Quality gate — CI regression detection ──────────────────────────────
+PrintSection("Quality gate (CI regression detection)");
+
+var gate = new EvaluationQualityGate()
+    .RequireBoolean(ToolCallTrajectoryEvaluator.AllSucceededMetricName, expected: true)
+    .RequireBoolean(IterationCoherenceEvaluator.TerminatedCoherentlyMetricName, expected: true)
+    .RequireNumericMax(EfficiencyEvaluator.TotalTokensMetricName, max: 200_000)
+    .RequireBoolean(EfficiencyEvaluator.UnderBudgetMetricName, expected: true)
+    .RequireNumericMin(IterationCoherenceEvaluator.EfficiencyRatioMetricName, min: 0.5);
+
+try
+{
+    gate.Assert(trajectoryResult, terminationResult, coherenceResult, efficiencyResult);
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("  [PASS] All quality gate thresholds met.");
+    Console.ResetColor();
+}
+catch (QualityGateFailedException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"  [FAIL] {ex.Message}");
+    Console.ResetColor();
+}
+
 // ── Run MS MEAI quality evaluator (requires LLM judge) ──────────────────
 PrintSection("MS MEAI evaluators (LLM-judged via CopilotChatClient)");
 
@@ -176,7 +200,8 @@ Console.WriteLine("       efficiency ratio, degenerate loop detection, max itera
 Console.WriteLine("     - TerminationAppropriatenessEvaluator: success, consistency, mode");
 Console.WriteLine("     - EfficiencyEvaluator: total tokens, input ratio, tokens/tool-call,");
 Console.WriteLine("       cache hit ratio, under-budget check");
-Console.WriteLine("  4. Scoring with MS MEAI quality evaluators using Copilot as judge");
+Console.WriteLine("  4. Asserting quality gates for CI regression detection");
+Console.WriteLine("  5. Scoring with MS MEAI quality evaluators using Copilot as judge");
 Console.WriteLine();
 
 return 0;

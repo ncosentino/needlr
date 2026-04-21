@@ -236,6 +236,30 @@ var termination = await new TerminationAppropriatenessEvaluator()
 
 Each `EvaluationResult` exposes metrics by name — use the `*MetricName` constants on each evaluator type to look them up without string literals at the call site.
 
+### Quality gate for CI
+
+`EvaluationQualityGate` defines configurable thresholds that throw `QualityGateFailedException` when evaluation metrics regress. Use it in CI pipelines or xUnit tests to gate deployments on agent quality.
+
+```csharp
+var gate = new EvaluationQualityGate()
+    .RequireBoolean(ToolCallTrajectoryEvaluator.AllSucceededMetricName, expected: true)
+    .RequireBoolean(IterationCoherenceEvaluator.TerminatedCoherentlyMetricName, expected: true)
+    .RequireNumericMax(EfficiencyEvaluator.TotalTokensMetricName, max: 50_000)
+    .RequireBoolean(EfficiencyEvaluator.UnderBudgetMetricName, expected: true)
+    .RequireNumericMin(IterationCoherenceEvaluator.EfficiencyRatioMetricName, min: 0.5);
+
+// Throws QualityGateFailedException listing all violations.
+gate.Assert(trajectoryResult, coherenceResult, efficiencyResult);
+```
+
+Threshold types:
+
+- **`RequireNumericMax(name, max)`** — metric value must be ≤ max.
+- **`RequireNumericMin(name, min)`** — metric value must be ≥ min.
+- **`RequireBoolean(name, expected)`** — metric value must equal expected.
+
+Missing metrics are silently skipped — this allows a single gate definition to work with evaluators that conditionally emit metrics.
+
 ### Transcript markdown
 
 For snapshot tests, review artifacts, and CI log attachments, render an entire agent run as deterministic Markdown with `ToTranscriptMarkdown()`:
