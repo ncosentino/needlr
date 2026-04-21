@@ -31,7 +31,8 @@ internal static class TopologyGraphCodeGenerator
     public static string GenerateMermaidDiagram(
         Dictionary<(string InitialAgentTypeName, string InitialAgentClassName), List<(string TargetAgentTypeName, string? HandoffReason)>> handoffByInitialAgent,
         Dictionary<string, List<string>> groupChatByGroupName,
-        Dictionary<string, List<string>> sequenceByPipelineName)
+        Dictionary<string, List<string>> sequenceByPipelineName,
+        Dictionary<string, GraphData>? graphDataByName = null)
     {
         var sb = new StringBuilder();
         sb.AppendLine("graph TD");
@@ -75,6 +76,28 @@ internal static class TopologyGraphCodeGenerator
                 }
             }
             sb.AppendLine("    end");
+        }
+
+        if (graphDataByName != null)
+        {
+            foreach (var kvp in graphDataByName.OrderBy(k => k.Key))
+            {
+                var graphName = kvp.Key;
+                var graphData = kvp.Value;
+                sb.AppendLine($"    subgraph Graph_{SanitizeMermaidId(graphName)}");
+
+                foreach (var edge in graphData.Edges)
+                {
+                    var source = edge.SourceAgentClassName;
+                    var target = AgentDiscoveryHelper.GetShortName(edge.TargetAgentTypeName);
+                    if (string.IsNullOrWhiteSpace(edge.Condition))
+                        sb.AppendLine($"        {source} --> {target}");
+                    else
+                        sb.AppendLine($"        {source} -->|\"{EscapeMermaidLabel(edge.Condition!)}\"| {target}");
+                }
+
+                sb.AppendLine("    end");
+            }
         }
 
         return sb.ToString();

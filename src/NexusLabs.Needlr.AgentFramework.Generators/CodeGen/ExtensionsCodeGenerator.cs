@@ -15,6 +15,7 @@ internal static class ExtensionsCodeGenerator
         Dictionary<string, List<string>> groupChatByGroupName,
         Dictionary<string, List<string>> sequenceByPipelineName,
         Dictionary<string, List<TerminationConditionEntry>> conditionsByAgentTypeName,
+        Dictionary<string, GraphData> graphDataByName,
         string safeAssemblyName)
     {
         var sb = new StringBuilder();
@@ -230,6 +231,36 @@ internal static class ExtensionsCodeGenerator
                 sb.AppendLine($"    }}");
                 sb.AppendLine();
             }
+        }
+
+        foreach (var kvp in graphDataByName.OrderBy(k => k.Key))
+        {
+            var graphName = kvp.Key;
+            var graphData = kvp.Value;
+            var methodSuffix = AgentDiscoveryHelper.GroupNameToPascalCase(graphName);
+            var methodName = $"Create{methodSuffix}GraphWorkflow";
+            var escapedGraphName = graphName.Replace("\"", "\\\"");
+
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Creates a DAG graph workflow for the \"{escapedGraphName}\" graph.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    /// <remarks>");
+            sb.AppendLine($"    /// Topology declared via <see cref=\"global::NexusLabs.Needlr.AgentFramework.AgentGraphEdgeAttribute\"/>:");
+            sb.AppendLine($"    /// <list type=\"bullet\">");
+            foreach (var edge in graphData.Edges)
+            {
+                var sourceCref = AgentDiscoveryHelper.GetShortName(edge.SourceAgentTypeName);
+                var targetCref = AgentDiscoveryHelper.GetShortName(edge.TargetAgentTypeName);
+                if (string.IsNullOrEmpty(edge.Condition))
+                    sb.AppendLine($"    /// <item><description>{sourceCref} -> {targetCref}</description></item>");
+                else
+                    sb.AppendLine($"    /// <item><description>{sourceCref} -> {targetCref} (condition: {edge.Condition})</description></item>");
+            }
+            sb.AppendLine($"    /// </list>");
+            sb.AppendLine($"    /// </remarks>");
+            sb.AppendLine($"    public static global::Microsoft.Agents.AI.Workflows.Workflow {methodName}(this global::NexusLabs.Needlr.AgentFramework.IWorkflowFactory workflowFactory)");
+            sb.AppendLine($"        => workflowFactory.CreateGraphWorkflow(\"{escapedGraphName}\");");
+            sb.AppendLine();
         }
 
         sb.AppendLine("}");

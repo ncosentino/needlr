@@ -31,6 +31,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string AgentSequenceMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute";
     private const string WorkflowRunTerminationConditionAttributeName = "NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute";
     private const string ProgressSinksAttributeName = "NexusLabs.Needlr.AgentFramework.ProgressSinksAttribute";
+    private const string AgentGraphEdgeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEdgeAttribute";
+    private const string AgentGraphEntryAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEntryAttribute";
+    private const string AgentGraphNodeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphNodeAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -96,7 +99,31 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => AgentDiscoveryHelper.GetProgressSinksEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Unified output: all eight pipelines combined with compilation metadata and build config.
+        // [AgentGraphEdge] annotations → graph edge topology
+        var graphEdgeEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentGraphEdgeAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GraphDiscoveryHelper.GetGraphEdgeEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // [AgentGraphEntry] annotations → graph entry points
+        var graphEntryPointEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentGraphEntryAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GraphDiscoveryHelper.GetGraphEntryPointEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // [AgentGraphNode] annotations → graph node join modes
+        var graphNodeEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentGraphNodeAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GraphDiscoveryHelper.GetGraphNodeEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all eleven pipelines combined with compilation metadata and build config.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
@@ -106,14 +133,17 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .Combine(sequenceEntries.Collect())
             .Combine(terminationConditionEntries.Collect())
             .Combine(progressSinksEntries.Collect())
+            .Combine(graphEdgeEntries.Collect())
+            .Combine(graphEntryPointEntries.Collect())
+            .Combine(graphNodeEntries.Collect())
             .Combine(context.CompilationProvider)
             .Combine(context.AnalyzerConfigOptionsProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var (((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), progressSinksData), compilation), configOptions) = data;
-                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, progressSinksData, compilation, configOptions, spc);
+                var ((((((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), progressSinksData), graphEdgeData), graphEntryData), graphNodeData), compilation), configOptions) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, progressSinksData, graphEdgeData, graphEntryData, graphNodeData, compilation, configOptions, spc);
             });
     }
 
@@ -126,6 +156,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<ImmutableArray<SequenceEntry>> sequenceData,
         ImmutableArray<ImmutableArray<TerminationConditionEntry>> terminationData,
         ImmutableArray<ImmutableArray<ProgressSinksEntry>> progressSinksData,
+        ImmutableArray<ImmutableArray<GraphEdgeEntry>> graphEdgeData,
+        ImmutableArray<ImmutableArray<GraphEntryPointEntry>> graphEntryData,
+        ImmutableArray<ImmutableArray<GraphNodeEntry>> graphNodeData,
         Compilation compilation,
         Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions,
         SourceProductionContext spc)
@@ -182,6 +215,12 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .SelectMany(a => a)
             .ToDictionary(e => e.AgentClassName, e => e.SinkTypeFQNs);
 
+        var allGraphEdges = graphEdgeData.SelectMany(a => a).ToList();
+        var allGraphEntryPoints = graphEntryData.SelectMany(a => a).ToList();
+        var allGraphNodes = graphNodeData.SelectMany(a => a).ToList();
+
+        var graphDataByName = BuildGraphDataByName(allGraphEdges, allGraphEntryPoints, allGraphNodes);
+
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
             SourceText.From(RegistryCodeGenerator.GenerateRegistrySource(validFunctionTypes, safeAssemblyName), Encoding.UTF8));
@@ -207,7 +246,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         spc.AddSource("WorkflowFactoryExtensions.g.cs",
             SourceText.From(ExtensionsCodeGenerator.GenerateWorkflowFactoryExtensionsSource(
                 handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName,
-                conditionsByAgentTypeName, safeAssemblyName), Encoding.UTF8));
+                conditionsByAgentTypeName, graphDataByName, safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("AgentFactoryExtensions.g.cs",
             SourceText.From(ExtensionsCodeGenerator.GenerateAgentFactoryExtensionsSource(validAgentTypes, progressSinksByAgent, safeAssemblyName), Encoding.UTF8));
@@ -230,7 +269,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         configOptions.GlobalOptions.TryGetValue("build_property.NeedlrDiagnostics", out var diagValue);
         if (string.Equals(diagValue, "true", StringComparison.OrdinalIgnoreCase))
         {
-            var mermaid = TopologyGraphCodeGenerator.GenerateMermaidDiagram(handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName);
+            var mermaid = TopologyGraphCodeGenerator.GenerateMermaidDiagram(handoffByInitialAgent, groupChatByGroupName, sequenceByPipelineName, graphDataByName);
 
             spc.AddSource("AgentTopologyGraph.g.cs",
                 SourceText.From(TopologyGraphCodeGenerator.GenerateTopologyGraphSource(mermaid, safeAssemblyName), Encoding.UTF8));
@@ -249,4 +288,43 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 SourceText.From(BootstrapCodeGenerator.GeneratePartialCompanionSource(agentType, groupedByName), Encoding.UTF8));
         }
     }
+
+    private static Dictionary<string, GraphData> BuildGraphDataByName(
+        List<GraphEdgeEntry> allEdges,
+        List<GraphEntryPointEntry> allEntryPoints,
+        List<GraphNodeEntry> allNodes)
+    {
+        var graphNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var e in allEdges) graphNames.Add(e.GraphName);
+        foreach (var e in allEntryPoints) graphNames.Add(e.GraphName);
+        foreach (var e in allNodes) graphNames.Add(e.GraphName);
+
+        var result = new Dictionary<string, GraphData>(StringComparer.Ordinal);
+        foreach (var name in graphNames)
+        {
+            result[name] = new GraphData(
+                allEdges.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList(),
+                allEntryPoints.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList(),
+                allNodes.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList());
+        }
+
+        return result;
+    }
+}
+
+internal sealed class GraphData
+{
+    public GraphData(
+        List<GraphEdgeEntry> edges,
+        List<GraphEntryPointEntry> entryPoints,
+        List<GraphNodeEntry> nodes)
+    {
+        Edges = edges;
+        EntryPoints = entryPoints;
+        Nodes = nodes;
+    }
+
+    public List<GraphEdgeEntry> Edges { get; }
+    public List<GraphEntryPointEntry> EntryPoints { get; }
+    public List<GraphNodeEntry> Nodes { get; }
 }

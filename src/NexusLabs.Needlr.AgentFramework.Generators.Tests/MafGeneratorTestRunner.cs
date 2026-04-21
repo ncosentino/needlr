@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -14,10 +15,17 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.Tests;
 internal sealed class MafGeneratorTestRunner
 {
     private readonly List<string> _sources = [];
+    private bool _enableDiagnostics;
 
     public MafGeneratorTestRunner WithSource(string source)
     {
         _sources.Add(source);
+        return this;
+    }
+
+    public MafGeneratorTestRunner WithDiagnostics(bool enabled = true)
+    {
+        _enableDiagnostics = enabled;
         return this;
     }
 
@@ -37,7 +45,20 @@ internal sealed class MafGeneratorTestRunner
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var generator = new AgentFrameworkFunctionRegistryGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver driver;
+
+        if (_enableDiagnostics)
+        {
+            var optionsProvider = new TestAnalyzerConfigOptionsProvider(
+                new Dictionary<string, string> { ["build_property.NeedlrDiagnostics"] = "true" });
+            driver = CSharpGeneratorDriver.Create(
+                generators: [generator.AsSourceGenerator()],
+                optionsProvider: optionsProvider);
+        }
+        else
+        {
+            driver = CSharpGeneratorDriver.Create(generator);
+        }
 
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
             compilation,
@@ -127,6 +148,45 @@ internal sealed class MafGeneratorTestRunner
                 public System.Type[] SinkTypes { get; }
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class AgentGraphEdgeAttribute : System.Attribute
+            {
+                public AgentGraphEdgeAttribute(string graphName, System.Type targetAgentType)
+                {
+                    GraphName = graphName;
+                    TargetAgentType = targetAgentType;
+                }
+                public string GraphName { get; }
+                public System.Type TargetAgentType { get; }
+                public string Condition { get; set; }
+                public bool IsRequired { get; set; } = true;
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class AgentGraphEntryAttribute : System.Attribute
+            {
+                public AgentGraphEntryAttribute(string graphName) { GraphName = graphName; }
+                public string GraphName { get; }
+                public int MaxSupersteps { get; set; } = 20;
+                public int RoutingMode { get; set; } = 0;
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class AgentGraphNodeAttribute : System.Attribute
+            {
+                public AgentGraphNodeAttribute(string graphName) { GraphName = graphName; }
+                public string GraphName { get; }
+                public int JoinMode { get; set; } = 0;
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class AgentGraphReducerAttribute : System.Attribute
+            {
+                public AgentGraphReducerAttribute(string graphName) { GraphName = graphName; }
+                public string GraphName { get; }
+                public string ReducerMethod { get; set; }
+            }
+
             public interface IWorkflowTerminationCondition { }
 
             public static class AgentFrameworkGeneratedBootstrap
@@ -141,7 +201,10 @@ internal sealed class MafGeneratorTestRunner
                 { }
             }
 
-            public interface IWorkflowFactory { }
+            public interface IWorkflowFactory
+            {
+                Microsoft.Agents.AI.Workflows.Workflow CreateGraphWorkflow(string graphName);
+            }
 
             [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("")]
             [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("")]
@@ -186,3 +249,48 @@ internal sealed class MafGeneratorTestRunner
 
 /// <summary>A generated file path and its source text content.</summary>
 internal sealed record GeneratedFile(string FilePath, string Content);
+
+/// <summary>
+/// Provides build property values for tests that need analyzer config options
+/// (e.g. <c>NeedlrDiagnostics=true</c>).
+/// </summary>
+internal sealed class TestAnalyzerConfigOptionsProvider : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
+{
+    private readonly TestGlobalOptions _globalOptions;
+
+    public TestAnalyzerConfigOptionsProvider(Dictionary<string, string> globalOptions)
+    {
+        _globalOptions = new TestGlobalOptions(globalOptions);
+    }
+
+    public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GlobalOptions => _globalOptions;
+
+    public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(SyntaxTree tree) =>
+        TestGlobalOptions.Empty;
+
+    public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(AdditionalText textFile) =>
+        TestGlobalOptions.Empty;
+
+    private sealed class TestGlobalOptions : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions
+    {
+        public static readonly TestGlobalOptions Empty = new(new Dictionary<string, string>());
+        private readonly Dictionary<string, string> _values;
+
+        public TestGlobalOptions(Dictionary<string, string> values)
+        {
+            _values = values;
+        }
+
+        public override bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+        {
+            if (_values.TryGetValue(key, out var v))
+            {
+                value = v;
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+    }
+}

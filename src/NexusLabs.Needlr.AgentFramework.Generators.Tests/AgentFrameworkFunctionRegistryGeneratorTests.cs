@@ -1571,4 +1571,143 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
             }
         }
         """;
+
+    // -------------------------------------------------------------------------
+    // Pipeline I — AgentGraphEdge / AgentGraphEntry / AgentGraphNode
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphEdgeAndEntry_GeneratesGraphWorkflowExtensionMethod()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WebResearchAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class SummarizerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WebResearchAgent), Condition = "NeedsWebData")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(SummarizerAgent))]
+                public class AnalyzerAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("CreateResearchGraphWorkflow", output);
+        Assert.Contains("CreateGraphWorkflow", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphExtensionMethod_DocListsEdges()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WebAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class SummaryAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Pipeline")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Pipeline", typeof(WebAgent), Condition = "needs-web")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Pipeline", typeof(SummaryAgent))]
+                public class StartAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("WebAgent", output);
+        Assert.Contains("SummaryAgent", output);
+        Assert.Contains("needs-web", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphEdgeDiscovery_ReadsConditionAndIsRequired()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class OptionalAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("TestGraph")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("TestGraph", typeof(OptionalAgent), Condition = "maybe", IsRequired = false)]
+                public class RootAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("CreateTestGraphGraphWorkflow", output);
+        Assert.Contains("maybe", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphNode_EmitsWithoutError()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphNode("Research", JoinMode = 0)]
+                public class JoinerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(JoinerAgent))]
+                public class StartAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("CreateResearchGraphWorkflow", output);
+    }
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_IncludesGraphSubgraph()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WebAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class SummaryAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research", MaxSupersteps = 15)]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WebAgent))]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(SummaryAgent), Condition = "needs-summary")]
+                public class AnalyzerAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .GetFile("AgentTopologyGraph.g.cs");
+
+        Assert.Contains("subgraph Graph_Research", output);
+        Assert.Contains("AnalyzerAgent --> WebAgent", output);
+        Assert.Contains("needs-summary", output);
+    }
 }
