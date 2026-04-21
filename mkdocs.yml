@@ -151,6 +151,8 @@ nav:
     - Stable: api/stable/index.md
   - Coverage: coverage.md
   - Video Tutorials: video-tutorials.md
+  - Architecture Decisions:
+    - ADR-0001 DAG Workflow Support: adr/adr-0001-dag-graph-workflow-support.md
 
 plugins:
   - search
