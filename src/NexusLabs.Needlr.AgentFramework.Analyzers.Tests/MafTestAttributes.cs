@@ -93,4 +93,48 @@ namespace NexusLabs.Needlr.AgentFramework
     }
 }
 ";
+
+    /// <summary>
+    /// DAG/graph-specific attributes: AgentGraphEdge, AgentGraphEntry, AgentGraphNode.
+    /// </summary>
+    public const string GraphAttributes = @"
+namespace NexusLabs.Needlr.AgentFramework
+{
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentGraphEdgeAttribute : System.Attribute
+    {
+        public AgentGraphEdgeAttribute(string graphName, System.Type targetAgentType)
+        {
+            GraphName = graphName;
+            TargetAgentType = targetAgentType;
+        }
+        public string GraphName { get; }
+        public System.Type TargetAgentType { get; }
+        public string? Condition { get; set; }
+        public bool IsRequired { get; set; } = true;
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentGraphEntryAttribute : System.Attribute
+    {
+        public AgentGraphEntryAttribute(string graphName)
+        {
+            GraphName = graphName;
+        }
+        public string GraphName { get; }
+        public int MaxSupersteps { get; set; } = 100;
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentGraphNodeAttribute : System.Attribute
+    {
+        public AgentGraphNodeAttribute(string graphName)
+        {
+            GraphName = graphName;
+        }
+        public string GraphName { get; }
+        public bool IsTerminal { get; set; }
+    }
+}
+";
 }

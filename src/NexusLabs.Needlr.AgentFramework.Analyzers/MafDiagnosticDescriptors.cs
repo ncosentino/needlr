@@ -213,4 +213,140 @@ public static class MafDiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Tool result objects (ToolCallResult.Result, FunctionResultContent.Result) are typed as object? and may contain a System.Text.Json.JsonElement. Calling ToString() on a JsonElement does not consistently return the JSON text — for arrays and complex objects it produces the C# type name. Use ToolResultSerializer.Serialize() from NexusLabs.Needlr.AgentFramework instead.",
         helpLinkUri: HelpLinkBase + "NDLRMAF015.md");
+
+    /// <summary>
+    /// NDLRMAF016: A cycle was detected in an agent graph.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphCycleDetected = new(
+        id: MafDiagnosticIds.GraphCycleDetected,
+        title: "Cycle detected in agent graph",
+        messageFormat: "Graph '{0}' contains a cycle: {1}. Agent graphs must be directed acyclic graphs (DAGs).",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Agent graph workflows use superstep-based BSP execution which requires a directed acyclic graph (DAG). A cycle in the graph will cause infinite execution. Review the [AgentGraphEdge] declarations and break the cycle.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF016.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF017: A named agent graph has no entry point.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphNoEntryPoint = new(
+        id: MafDiagnosticIds.GraphNoEntryPoint,
+        title: "Graph has no entry point",
+        messageFormat: "Graph '{0}' has [AgentGraphEdge] declarations but no [AgentGraphEntry]. Every graph must have exactly one entry point.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A named agent graph requires exactly one [AgentGraphEntry] declaration to identify the starting agent. Without an entry point, the source generator cannot emit a factory method. Add [AgentGraphEntry] to the agent that should be the starting point.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF017.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF018: A named agent graph has multiple entry points.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphMultipleEntryPoints = new(
+        id: MafDiagnosticIds.GraphMultipleEntryPoints,
+        title: "Graph has multiple entry points",
+        messageFormat: "Graph '{0}' has multiple [AgentGraphEntry] declarations: {1}. A graph must have exactly one entry point.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Each named agent graph must have exactly one [AgentGraphEntry]. Multiple entry points create ambiguity about where execution begins. Remove the extra [AgentGraphEntry] attributes so only one remains for this graph name.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF018.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF019: An <c>[AgentGraphEdge]</c> references a target that is not a declared agent.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphEdgeTargetNotAgent = new(
+        id: MafDiagnosticIds.GraphEdgeTargetNotAgent,
+        title: "Graph edge target is not a declared agent",
+        messageFormat: "'{0}' is referenced as a graph edge target but is not decorated with [NeedlrAiAgent]. Graph edge targets must be registered agent types.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Types used as targets in [AgentGraphEdge] must be decorated with [NeedlrAiAgent] so Needlr can register and resolve them. Add [NeedlrAiAgent] to the target type, or remove it from [AgentGraphEdge].",
+        helpLinkUri: HelpLinkBase + "NDLRMAF019.md");
+
+    /// <summary>
+    /// NDLRMAF020: A class has <c>[AgentGraphEdge]</c> but is not a declared agent.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphEdgeSourceNotAgent = new(
+        id: MafDiagnosticIds.GraphEdgeSourceNotAgent,
+        title: "Graph edge source is not a declared agent",
+        messageFormat: "'{0}' has [AgentGraphEdge] but is not decorated with [NeedlrAiAgent]. The source of a graph edge must be a declared agent.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The class that carries [AgentGraphEdge] is a node in the agent graph and must be registered with Needlr via [NeedlrAiAgent]. Add [NeedlrAiAgent] to the class, or remove [AgentGraphEdge] if it was added by mistake.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF020.md");
+
+    /// <summary>
+    /// NDLRMAF021: A class has <c>[AgentGraphEntry]</c> but is not a declared agent.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphEntryPointNotAgent = new(
+        id: MafDiagnosticIds.GraphEntryPointNotAgent,
+        title: "Graph entry point is not a declared agent",
+        messageFormat: "'{0}' has [AgentGraphEntry] but is not decorated with [NeedlrAiAgent]. The graph entry point must be a declared agent.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The class that carries [AgentGraphEntry] is the starting node of the graph workflow and must be registered with Needlr via [NeedlrAiAgent]. Add [NeedlrAiAgent] to the class, or remove [AgentGraphEntry] if it was added by mistake.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF021.md");
+
+    /// <summary>
+    /// NDLRMAF022: An agent graph contains unreachable agents.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphUnreachableAgent = new(
+        id: MafDiagnosticIds.GraphUnreachableAgent,
+        title: "Graph contains unreachable agents",
+        messageFormat: "'{0}' declares edges in graph '{1}' but is not reachable from the entry point. It will never be executed.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "An agent that declares [AgentGraphEdge] for a named graph is not reachable from that graph's [AgentGraphEntry] point via any path. This usually means the agent was added to the wrong graph or a connecting edge is missing.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF022.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF023: MaxSupersteps value is invalid (≤ 0).
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphInvalidMaxSupersteps = new(
+        id: MafDiagnosticIds.GraphInvalidMaxSupersteps,
+        title: "MaxSupersteps value is invalid",
+        messageFormat: "MaxSupersteps on [AgentGraphEntry] for graph '{0}' is {1}, which is invalid. MaxSupersteps must be greater than zero.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The MaxSupersteps property on [AgentGraphEntry] controls the maximum number of BSP supersteps the graph executor will run. A value of zero or negative means the graph can never make progress. Set MaxSupersteps to a positive integer.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF023.md");
+
+    /// <summary>
+    /// NDLRMAF024: All edges from a fan-out node are optional.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphAllEdgesOptional = new(
+        id: MafDiagnosticIds.GraphAllEdgesOptional,
+        title: "All edges from fan-out node are optional",
+        messageFormat: "All {0} outgoing edges from '{1}' in graph '{2}' have IsRequired = false. If all optional branches fail, the graph produces empty results.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "A fan-out node (a node with multiple outgoing edges) has all edges marked as optional (IsRequired = false). If every optional branch fails at runtime, the downstream nodes receive no input and the graph may produce empty or unexpected results. Consider making at least one edge required.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF024.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF027: A terminal node has outgoing edges.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphTerminalNodeHasOutgoingEdges = new(
+        id: MafDiagnosticIds.GraphTerminalNodeHasOutgoingEdges,
+        title: "Terminal node has outgoing edges",
+        messageFormat: "'{0}' is marked as a terminal node via [AgentGraphNode(IsTerminal = true)] in graph '{1}' but also has outgoing [AgentGraphEdge] declarations. Terminal nodes must not have outgoing edges.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A node marked with IsTerminal = true on [AgentGraphNode] is expected to be a leaf node with no outgoing edges. Having both IsTerminal = true and [AgentGraphEdge] declarations is contradictory. Either remove IsTerminal = true or remove the outgoing edges.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF027.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }

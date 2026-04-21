@@ -5,3 +5,13 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+NDLRMAF016 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphCycleAnalyzer, Cycle detected in agent graph
+NDLRMAF017 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphEntryPointAnalyzer, Graph has no entry point
+NDLRMAF018 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphEntryPointAnalyzer, Graph has multiple entry points
+NDLRMAF019 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphTopologyAnalyzer, Graph edge target is not a declared agent
+NDLRMAF020 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphTopologyAnalyzer, Graph edge source is not a declared agent
+NDLRMAF021 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphTopologyAnalyzer, Graph entry point is not a declared agent
+NDLRMAF022 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphReachabilityAnalyzer, Graph contains unreachable agents
+NDLRMAF023 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphSuperstepAnalyzer, MaxSupersteps value is invalid
+NDLRMAF024 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphOptionalFanOutAnalyzer, All edges from fan-out node are optional
+NDLRMAF027 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphTerminalNodeAnalyzer, Terminal node has outgoing edges

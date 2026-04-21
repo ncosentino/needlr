@@ -98,4 +98,62 @@ public static class MafDiagnosticIds
     /// a <c>JsonElement</c>. Use <c>ToolResultSerializer.Serialize()</c> instead.
     /// </summary>
     public const string ToolResultToStringCall = "NDLRMAF015";
+
+    /// <summary>
+    /// NDLRMAF016: A cycle was detected in a named agent graph declared via
+    /// <c>[AgentGraphEdge]</c> attributes.
+    /// </summary>
+    public const string GraphCycleDetected = "NDLRMAF016";
+
+    /// <summary>
+    /// NDLRMAF017: A named agent graph has no <c>[AgentGraphEntry]</c> declaration.
+    /// </summary>
+    public const string GraphNoEntryPoint = "NDLRMAF017";
+
+    /// <summary>
+    /// NDLRMAF018: A named agent graph has multiple <c>[AgentGraphEntry]</c> declarations.
+    /// </summary>
+    public const string GraphMultipleEntryPoints = "NDLRMAF018";
+
+    /// <summary>
+    /// NDLRMAF019: An <c>[AgentGraphEdge]</c> references a target type that is not
+    /// decorated with <c>[NeedlrAiAgent]</c>.
+    /// </summary>
+    public const string GraphEdgeTargetNotAgent = "NDLRMAF019";
+
+    /// <summary>
+    /// NDLRMAF020: A class has <c>[AgentGraphEdge]</c> but is not itself decorated
+    /// with <c>[NeedlrAiAgent]</c>.
+    /// </summary>
+    public const string GraphEdgeSourceNotAgent = "NDLRMAF020";
+
+    /// <summary>
+    /// NDLRMAF021: A class has <c>[AgentGraphEntry]</c> but is not itself decorated
+    /// with <c>[NeedlrAiAgent]</c>.
+    /// </summary>
+    public const string GraphEntryPointNotAgent = "NDLRMAF021";
+
+    /// <summary>
+    /// NDLRMAF022: A named agent graph contains agents that are not reachable from
+    /// the entry point.
+    /// </summary>
+    public const string GraphUnreachableAgent = "NDLRMAF022";
+
+    /// <summary>
+    /// NDLRMAF023: The <c>MaxSupersteps</c> value on <c>[AgentGraphEntry]</c> is invalid (≤ 0).
+    /// </summary>
+    public const string GraphInvalidMaxSupersteps = "NDLRMAF023";
+
+    /// <summary>
+    /// NDLRMAF024: All outgoing edges from a fan-out node have
+    /// <c>IsRequired = false</c>, meaning the graph could produce empty results if all
+    /// optional branches fail.
+    /// </summary>
+    public const string GraphAllEdgesOptional = "NDLRMAF024";
+
+    /// <summary>
+    /// NDLRMAF027: A terminal node (a node that should have no outgoing edges) has
+    /// outgoing <c>[AgentGraphEdge]</c> declarations.
+    /// </summary>
+    public const string GraphTerminalNodeHasOutgoingEdges = "NDLRMAF027";
 }
