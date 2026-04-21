@@ -165,6 +165,28 @@ Reports on token usage and cost efficiency.
 
 When no `AgentRunDiagnosticsContext` is present, the evaluator returns an empty result. The optional `tokenBudget` constructor parameter controls whether the budget metric is emitted.
 
+### TaskCompletionEvaluator (LLM-judged)
+
+Assesses whether the agent actually accomplished the task it was given. Unlike MEAI's `TaskAdherenceEvaluator` (which checks instruction following), this evaluator checks *task success*: did the agent produce output that satisfies the original request?
+
+- **`Task Completed`** — boolean. True when the judge determines the agent accomplished the requested task.
+- **`Task Completion Score`** — numeric (1–5). How completely and correctly the agent fulfilled the request. 5 = fully complete, 1 = not started or completely wrong. The completion threshold is 3.
+- **`Task Completion Reasoning`** — string. The judge's explanation for the score.
+
+This evaluator requires a `ChatConfiguration` with a judge `IChatClient`. When no judge is configured, the evaluator returns an empty result. When `AgentRunDiagnosticsContext` is provided, tool-call counts and success status are included in the judge prompt for richer assessment.
+
+```csharp
+var taskCompletion = await new TaskCompletionEvaluator()
+    .EvaluateAsync(
+        messages: [new ChatMessage(ChatRole.User, "Plan a 7-day trip to Japan")],
+        modelResponse: agentResponse,
+        chatConfiguration: new ChatConfiguration(judgeChatClient),
+        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)]);
+
+var completed = ((BooleanMetric)taskCompletion.Metrics["Task Completed"]).Value;
+var score = ((NumericMetric)taskCompletion.Metrics["Task Completion Score"]).Value;
+```
+
 ### ToolCallTrajectoryEvaluator
 
 Reports on the sequence of tool calls across a run.

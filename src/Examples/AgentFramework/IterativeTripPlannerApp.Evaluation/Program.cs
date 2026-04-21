@@ -186,6 +186,29 @@ catch (Exception ex)
     Console.ResetColor();
 }
 
+// ── Run Needlr LLM-judged evaluator ─────────────────────────────────────
+PrintSection("Needlr LLM-judged evaluator (TaskCompletionEvaluator)");
+
+var taskCompletionEval = new TaskCompletionEvaluator();
+try
+{
+    var taskResult = await taskCompletionEval.EvaluateAsync(
+        evalInputs.Messages.Count > 0
+            ? evalInputs.Messages
+            : [new ChatMessage(ChatRole.User, $"Plan a trip from {config.Origin} to {config.Destination} with {config.MinStops}-{config.MaxStops} stops on a ${config.Budget} budget.")],
+        evalInputs.ModelResponse,
+        chatConfiguration,
+        additionalContext: [diagContext],
+        cancellationToken: CancellationToken.None);
+    PrintMetrics("TaskCompletionEvaluator", taskResult);
+}
+catch (Exception ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"  [FAILED] TaskCompletionEvaluator: {ex.GetType().Name}: {ex.Message}");
+    Console.ResetColor();
+}
+
 // ── Summary ─────────────────────────────────────────────────────────────
 PrintHeader("Done");
 Console.WriteLine();
@@ -202,6 +225,7 @@ Console.WriteLine("     - EfficiencyEvaluator: total tokens, input ratio, tokens
 Console.WriteLine("       cache hit ratio, under-budget check");
 Console.WriteLine("  4. Asserting quality gates for CI regression detection");
 Console.WriteLine("  5. Scoring with MS MEAI quality evaluators using Copilot as judge");
+Console.WriteLine("  6. Scoring with Needlr LLM-judged TaskCompletionEvaluator");
 Console.WriteLine();
 
 return 0;
