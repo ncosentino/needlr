@@ -34,15 +34,18 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
     private readonly IAgentMetrics? _metrics;
     private readonly IProgressReporterAccessor? _progressAccessor;
+    private readonly ChatCompletionActivityMode _activityMode;
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
     private int _sequenceCounter;
 
     internal DiagnosticsChatClientMiddleware(
         IAgentMetrics? metrics = null,
-        IProgressReporterAccessor? progressAccessor = null)
+        IProgressReporterAccessor? progressAccessor = null,
+        ChatCompletionActivityMode activityMode = ChatCompletionActivityMode.Always)
     {
         _metrics = metrics;
         _progressAccessor = progressAccessor;
+        _activityMode = activityMode;
     }
 
     /// <summary>
@@ -70,7 +73,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = _metrics?.ActivitySource.StartActivity("agent.chat", ActivityKind.Client);
+        using var activity = StartChatActivity("agent.chat");
 
         if (_progressAccessor is not null)
         {
@@ -212,7 +215,7 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = _metrics?.ActivitySource.StartActivity("agent.chat.stream", ActivityKind.Client);
+        using var activity = StartChatActivity("agent.chat.stream");
 
         if (_progressAccessor is not null)
         {
@@ -368,5 +371,31 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             throw failure;
         }
+    }
+
+    /// <summary>
+    /// Creates a chat completion activity respecting <see cref="_activityMode"/>.
+    /// When <see cref="ChatCompletionActivityMode.EnrichParent"/> is active and a
+    /// parent <c>gen_ai.*</c> activity exists, returns <see langword="null"/> (the
+    /// caller enriches <see cref="Activity.Current"/> directly via <c>activity?.SetTag</c>
+    /// null-checks). When no parent exists, creates a new activity as normal.
+    /// </summary>
+    private Activity? StartChatActivity(string operationName)
+    {
+        if (_metrics is null)
+        {
+            return null;
+        }
+
+        if (_activityMode == ChatCompletionActivityMode.EnrichParent)
+        {
+            var parent = Activity.Current;
+            if (parent?.OperationName.StartsWith("gen_ai.", StringComparison.Ordinal) == true)
+            {
+                return null;
+            }
+        }
+
+        return _metrics.ActivitySource.StartActivity(operationName, ActivityKind.Client);
     }
 }

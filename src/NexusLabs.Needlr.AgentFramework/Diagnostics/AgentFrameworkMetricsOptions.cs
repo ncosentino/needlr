@@ -33,5 +33,26 @@ public sealed class AgentFrameworkMetricsOptions
     /// </summary>
     public string? ActivitySourceName { get; set; }
 
+    /// <summary>
+    /// Controls how Needlr's diagnostics middleware creates
+    /// <see cref="System.Diagnostics.Activity"/> spans for chat completion calls.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When MEAI's <c>UseOpenTelemetry()</c> or MAF's <c>WithOpenTelemetry()</c> is
+    /// also active, both Needlr and the upstream middleware create spans for the same
+    /// chat completion call. Set this to
+    /// <see cref="ChatCompletionActivityMode.EnrichParent"/> to avoid duplicate spans —
+    /// Needlr will add its tags (sequence number, char counts, agent name) to the
+    /// existing parent <c>gen_ai.*</c> activity instead of creating a new one.
+    /// </para>
+    /// <para>
+    /// Tool call activities (<c>agent.tool</c>) are not affected by this setting —
+    /// they are always created because neither MEAI nor MAF produces per-tool-call spans.
+    /// </para>
+    /// </remarks>
+    public ChatCompletionActivityMode ChatCompletionActivityMode { get; set; } =
+        ChatCompletionActivityMode.Always;
+
     internal string ResolvedActivitySourceName => ActivitySourceName ?? MeterName;
 }

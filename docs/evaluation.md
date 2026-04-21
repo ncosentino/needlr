@@ -112,6 +112,27 @@ Tokens are an LLM-reported abstraction; character counts are a direct measure of
 
 Populated automatically by `DiagnosticsChatClientMiddleware` and `DiagnosticsFunctionCallingMiddleware` on both success and failure paths. `DiagnosticsCharCounter` (in `NexusLabs.Needlr.AgentFramework.Diagnostics`) exposes the same helpers for callers who want to compute counts outside the middlewares. All helpers are null-safe and exception-tolerant — a counter failure never destabilizes the live path; it just yields `0`.
 
+### OpenTelemetry interop
+
+When MEAI's `UseOpenTelemetry()` or MAF's `WithOpenTelemetry()` is also active, both the upstream middleware and Needlr's `DiagnosticsChatClientMiddleware` create `Activity` spans for the same chat completion call. To avoid duplicate spans, set `ChatCompletionActivityMode` to `EnrichParent`:
+
+```csharp
+.UsingAgentFramework(af => af
+    .ConfigureMetrics(o =>
+        o.ChatCompletionActivityMode = ChatCompletionActivityMode.EnrichParent))
+```
+
+In `EnrichParent` mode, when a parent `gen_ai.*` activity exists (from MEAI or MAF), Needlr skips creating its own activity and instead adds Needlr-specific tags (sequence number, char counts, agent name) to the existing parent span. When no parent exists, Needlr creates its own activity as normal.
+
+Tool call activities (`agent.tool`) are not affected — neither MEAI nor MAF produces per-tool-call spans, so Needlr's tool tracing is always the sole source.
+
+| Mode | When to use |
+|------|-------------|
+| `Always` (default) | Needlr is the only OTel instrumentation layer |
+| `EnrichParent` | Both Needlr and upstream (MEAI/MAF) OTel middleware are active |
+
+Metrics (counters, histograms) and in-process diagnostics recording are unaffected by this setting — only `Activity` span creation is suppressed.
+
 ### Ordered timeline
 
 `IAgentRunDiagnostics` exposes `ChatCompletions` and `ToolCalls` as separate collections, each with its own `Sequence`. When you need to see what actually happened in execution order, call the `GetOrderedTimeline()` extension method:

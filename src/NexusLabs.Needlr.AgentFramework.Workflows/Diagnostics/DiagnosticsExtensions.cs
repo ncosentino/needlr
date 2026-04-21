@@ -30,7 +30,10 @@ public static class DiagnosticsExtensions
         {
             var metrics = opts.ServiceProvider.GetRequiredService<IAgentMetrics>();
             var progressAccessor = opts.ServiceProvider.GetRequiredService<IProgressReporterAccessor>();
-            var chatMiddleware = new DiagnosticsChatClientMiddleware(metrics, progressAccessor);
+            var metricsOptions = opts.ServiceProvider.GetService<AgentFrameworkMetricsOptions>();
+            var chatMiddleware = new DiagnosticsChatClientMiddleware(
+                metrics, progressAccessor,
+                metricsOptions?.ChatCompletionActivityMode ?? ChatCompletionActivityMode.Always);
 
             // Register the real collector via the DI-managed holder — NOT a static field.
             var holder = opts.ServiceProvider.GetRequiredService<ChatCompletionCollectorHolder>();
