@@ -23,6 +23,13 @@ using NexusLabs.Needlr.Copilot;
 // This app demonstrates code reuse: the same TripPlannerRunner is used by
 // the main console app (IterativeTripPlannerApp) and by this evaluation app.
 //
+// Evaluator features showcased:
+//   - ToolCallTrajectoryEvaluator: total/failed/gaps/all-succeeded (original)
+//     PLUS consecutive same-tool calls, per-tool failure rate, latency P50/P95
+//   - IterationCoherenceEvaluator: count/empty/coherent (original)
+//     PLUS efficiency ratio, degenerate loop detection, max iterations hit
+//   - TerminationAppropriatenessEvaluator: success/consistency/mode
+//
 // Requirements:
 //   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
 // =============================================================================
@@ -116,7 +123,7 @@ var terminationResult = await terminationEval.EvaluateAsync(
     additionalContext: [diagContext]);
 PrintMetrics("TerminationAppropriatenessEvaluator", terminationResult);
 
-var coherenceEval = new IterationCoherenceEvaluator();
+var coherenceEval = new IterationCoherenceEvaluator(maxIterations: 20);
 var coherenceResult = await coherenceEval.EvaluateAsync(
     evalInputs.Messages,
     evalInputs.ModelResponse,
@@ -154,7 +161,12 @@ Console.WriteLine();
 Console.WriteLine("  This demo showed:");
 Console.WriteLine("  1. Running a real agent scenario via IterativeTripPlannerApp.Core");
 Console.WriteLine("  2. Extracting diagnostics → EvaluationInputs via ToEvaluationInputs()");
-Console.WriteLine("  3. Scoring with deterministic Needlr-native evaluators");
+Console.WriteLine("  3. Scoring with deterministic Needlr-native evaluators:");
+Console.WriteLine("     - ToolCallTrajectoryEvaluator: total, failed, gaps, all-succeeded,");
+Console.WriteLine("       consecutive same-tool, per-tool failure rate, latency P50/P95");
+Console.WriteLine("     - IterationCoherenceEvaluator: count, empty outputs, coherent,");
+Console.WriteLine("       efficiency ratio, degenerate loop detection, max iterations hit");
+Console.WriteLine("     - TerminationAppropriatenessEvaluator: success, consistency, mode");
 Console.WriteLine("  4. Scoring with MS MEAI quality evaluators using Copilot as judge");
 Console.WriteLine();
 
@@ -172,9 +184,16 @@ static void PrintMetrics(string evaluatorName, EvaluationResult result)
         {
             NumericMetric nm => nm.Value?.ToString("F2") ?? "n/a",
             BooleanMetric bm => bm.Value?.ToString() ?? "n/a",
+            StringMetric sm => sm.Value?.Length > 60 ? sm.Value[..57] + "..." : sm.Value ?? "n/a",
             _ => metric.Interpretation?.Rating.ToString() ?? "n/a",
         };
         Console.WriteLine($"    • {metric.Name} = {value}");
+        if (metric.Reason is not null)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"      └─ {metric.Reason}");
+            Console.ResetColor();
+        }
     }
 }
 
