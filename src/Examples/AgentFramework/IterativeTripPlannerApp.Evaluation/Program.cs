@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI.Evaluation.Quality;
 
 using IterativeTripPlannerApp.Core;
 
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Evaluation;
 using NexusLabs.Needlr.Copilot;
 
@@ -48,6 +49,12 @@ PrintSection("Configuration");
 Console.WriteLine($"  Chat client:  CopilotChatClient (model: {copilotOptions.DefaultModel})");
 Console.WriteLine($"  Tools:        {copilotTools.Count} (web_search)");
 Console.WriteLine($"  Judge:        CopilotChatClient (same provider)");
+Console.WriteLine($"  OTel mode:    {ChatCompletionActivityMode.EnrichParent} (suppresses duplicate spans)");
+Console.WriteLine();
+Console.WriteLine("  When MEAI's UseOpenTelemetry() is active alongside Needlr diagnostics,");
+Console.WriteLine("  EnrichParent mode prevents duplicate chat completion spans by deferring");
+Console.WriteLine("  to the parent gen_ai.* activity. Tool call spans are always created since");
+Console.WriteLine("  neither MEAI nor MAF produces per-tool-call spans.");
 
 // ── Run the trip planner via Core library ───────────────────────────────
 var config = new TripPlannerConfig(
