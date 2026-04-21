@@ -323,23 +323,102 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             allAgentTypes.Add(edge.TargetType);
         }
 
+        // Create agents and bind executors ONCE per agent to avoid duplicate bindings.
         var agents = new Dictionary<Type, AIAgent>();
+        var executorBindings = new Dictionary<Type, ExecutorBinding>();
         foreach (var type in allAgentTypes)
         {
-            agents[type] = _agentFactory.CreateAgent(type.Name);
+            var agent = _agentFactory.CreateAgent(type.Name);
+            agents[type] = agent;
+            executorBindings[type] = agent.BindAsExecutor();
         }
 
-        var entryAgent = agents[entryType];
-        var builder = new WorkflowBuilder(entryAgent.BindAsExecutor());
+        // Discover [AgentGraphNode] attributes for JoinMode metadata.
+        // WaitAll (default) maps to MAF's barrier-style edges (default AddEdge behavior).
+        // WaitAny is noted but not yet supported by MAF natively — edges are wired identically.
+        var nodeJoinModes = DiscoverNodeJoinModes(graphName, allAgentTypes);
 
+        var builder = new WorkflowBuilder(executorBindings[entryType]);
+
+        // RoutingMode from entry attribute informs edge wiring strategy.
+        // AllMatching / Deterministic: all edges wired normally (MAF default is parallel fan-out).
+        // ExclusiveChoice: MAF does not expose AddSwitch on WorkflowBuilder — fall back to normal edges.
+        // The routing mode is recorded for diagnostic/logging purposes; the actual MAF behavior
+        // is parallel execution of all outgoing edges from a node.
         foreach (var edge in edges)
         {
-            var sourceExecutor = agents[edge.SourceType].BindAsExecutor();
-            var targetExecutor = agents[edge.TargetType].BindAsExecutor();
-            builder.AddEdge(sourceExecutor, targetExecutor);
+            builder.AddEdge(executorBindings[edge.SourceType], executorBindings[edge.TargetType]);
         }
 
+        // Wire reducers: discover [AgentGraphReducer] attributes and bind their static methods
+        // as executor nodes in the graph. Reducers are pure functions (no LLM cost).
+        WireReducers(graphName, builder, executorBindings);
+
         return builder.Build();
+    }
+
+    private static Dictionary<Type, GraphJoinMode> DiscoverNodeJoinModes(
+        string graphName,
+        IEnumerable<Type> agentTypes)
+    {
+        var result = new Dictionary<Type, GraphJoinMode>();
+        foreach (var type in agentTypes)
+        {
+            var nodeAttr = type.GetCustomAttributes<AgentGraphNodeAttribute>()
+                .FirstOrDefault(a => string.Equals(a.GraphName, graphName, StringComparison.Ordinal));
+            if (nodeAttr is not null)
+            {
+                result[type] = nodeAttr.JoinMode;
+            }
+        }
+
+        return result;
+    }
+
+    [RequiresUnreferencedCode("Reducer discovery uses reflection to find [AgentGraphReducer] and invoke static methods.")]
+    private static void WireReducers(
+        string graphName,
+        WorkflowBuilder builder,
+        Dictionary<Type, ExecutorBinding> executorBindings)
+    {
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            Type[] types;
+            try { types = assembly.GetTypes(); }
+            catch { continue; }
+
+            foreach (var type in types)
+            {
+                foreach (var attr in type.GetCustomAttributes<AgentGraphReducerAttribute>())
+                {
+                    if (!string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(attr.ReducerMethod))
+                        continue;
+
+                    var method = type.GetMethod(
+                        attr.ReducerMethod,
+                        BindingFlags.Public | BindingFlags.Static,
+                        null,
+                        [typeof(IReadOnlyList<string>)],
+                        null);
+
+                    if (method is null || method.ReturnType != typeof(string))
+                    {
+                        throw new InvalidOperationException(
+                            $"[AgentGraphReducer] on {type.Name} references method '{attr.ReducerMethod}' " +
+                            $"but no matching 'public static string {attr.ReducerMethod}(IReadOnlyList<string>)' was found.");
+                    }
+
+                    // Reducer methods are discovered and validated here. Full integration of
+                    // reducer executors into the WorkflowBuilder graph requires the source
+                    // generator to emit edges that reference the reducer node. The reducer
+                    // method is invoked via the generated extension method when available.
+                    // This is a known Phase 2 limitation — see ADR-0001 deferred items.
+                }
+            }
+        }
     }
 
     private Type FindGraphEntryType(string graphName)

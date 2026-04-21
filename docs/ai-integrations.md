@@ -377,7 +377,9 @@ public class DatabaseAgent { }
 public class SummarizerAgent { }
 ```
 
-Runtime: `factory.CreateGraphWorkflow("research")` (source-generated extension method in Phase 2).
+Runtime: `factory.CreateGraphWorkflow("research")` (source-generated extension method).
+
+A runnable end-to-end example lives in `src/Examples/AgentFramework/GraphWorkflowApp/`. It uses `CopilotChatClient` (no Azure credentials required) to run a four-agent research pipeline DAG with fan-out from an analyzer to parallel web/database research branches that converge at a summarizer.
 
 Key attributes:
 
