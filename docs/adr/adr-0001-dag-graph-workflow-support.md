@@ -78,7 +78,7 @@ Routing mode enum (`GraphRoutingMode`):
 | `FirstMatching` | First edge whose condition is true is followed (priority order) | **Needlr abstraction** — MAF has no ordered-priority routing; generator emits a composite condition wrapper |
 | `ExclusiveChoice` | Exactly one edge must match | Maps to MAF's `AddSwitch` + `AddCase` |
 
-`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default, with optional per-node override via a `RoutingMode` property on the first `[AgentGraphEdge]` from a given source node.
+`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default. Per-node routing overrides (via `RoutingMode` on `[AgentGraphEdge]`) are a Phase 2 feature enabled by the source generator's edge-grouping logic.
 
 **Rationale**: DAG edges encode orchestration rules. Making control flow nondeterministic by default undermines testability, replayability, and determinism. LLM routing is powerful but should be a conscious architectural choice.
 
@@ -189,8 +189,8 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 
 | Phase | Scope | Deliverables |
 |---|---|---|
-| 1 | Attributes + Runtime Factory + Minimal Reducer | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `AgentGraphReducerAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
-| 2 | Source Generator + Mermaid Diagrams | `GraphEdgeEntry`/`GraphEntryEntry`/`GraphNodeEntry` models, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
+| 1 | Attributes + Runtime Factory | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
+| 2 | Source Generator + Reducer + Mermaid Diagrams | `AgentGraphReducerAttribute`, per-node `RoutingMode` override, `GraphEdgeEntry`/`GraphEntryEntry`/`GraphNodeEntry` models, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
 | 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF024`, `NDLRMAF027`, analyzer tests, XML doc comments, README updates |
 | 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `Examples/` project demonstrating a research pipeline |
 

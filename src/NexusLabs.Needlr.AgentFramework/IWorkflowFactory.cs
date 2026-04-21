@@ -102,4 +102,23 @@ public interface IWorkflowFactory
     /// Thrown when <paramref name="pipelineName"/> has no registered members.
     /// </exception>
     Workflow CreateSequentialWorkflow(string pipelineName);
+
+    /// <summary>
+    /// Creates a graph/DAG <see cref="Workflow"/> from topology declared via
+    /// <see cref="AgentGraphEdgeAttribute"/> and <see cref="AgentGraphEntryAttribute"/>.
+    /// Agents are assembled from the attributes on all registered agent types that
+    /// participate in the named graph.
+    /// </summary>
+    /// <param name="graphName">
+    /// The graph name. Must match the <see cref="AgentGraphEdgeAttribute.GraphName"/> and
+    /// <see cref="AgentGraphEntryAttribute.GraphName"/> values (case-sensitive) on at
+    /// least one agent type. Prefer using a generated extension method
+    /// (e.g. <c>CreateResearchPipelineGraphWorkflow()</c>) to avoid referencing this
+    /// string directly.
+    /// </param>
+    /// <returns>A built <see cref="Workflow"/> ready to run via MAF's execution environment.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="graphName"/> has no registered entry point or no edges.
+    /// </exception>
+    Workflow CreateGraphWorkflow(string graphName);
 }

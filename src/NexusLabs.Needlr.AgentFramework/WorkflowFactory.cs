@@ -298,4 +298,100 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             return ValueTask.FromResult(false);
         };
     }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("Graph workflow discovery uses reflection when source-generated bootstrap data is unavailable.")]
+    public Workflow CreateGraphWorkflow(string graphName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(graphName);
+
+        var entryType = FindGraphEntryType(graphName);
+        var entryAttr = entryType.GetCustomAttributes<AgentGraphEntryAttribute>()
+            .First(a => string.Equals(a.GraphName, graphName, StringComparison.Ordinal));
+
+        var edges = DiscoverGraphEdges(graphName);
+        if (edges.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Cannot build graph workflow '{graphName}': no edges found.");
+        }
+
+        var allAgentTypes = new HashSet<Type> { entryType };
+        foreach (var edge in edges)
+        {
+            allAgentTypes.Add(edge.SourceType);
+            allAgentTypes.Add(edge.TargetType);
+        }
+
+        var agents = new Dictionary<Type, AIAgent>();
+        foreach (var type in allAgentTypes)
+        {
+            agents[type] = _agentFactory.CreateAgent(type.Name);
+        }
+
+        var entryAgent = agents[entryType];
+        var builder = new WorkflowBuilder(entryAgent.BindAsExecutor());
+
+        foreach (var edge in edges)
+        {
+            var sourceExecutor = agents[edge.SourceType].BindAsExecutor();
+            var targetExecutor = agents[edge.TargetType].BindAsExecutor();
+            builder.AddEdge(sourceExecutor, targetExecutor);
+        }
+
+        return builder.Build();
+    }
+
+    private Type FindGraphEntryType(string graphName)
+    {
+        var registeredTypes = _agentFactory.ResolveTools(_ => { });
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            Type[] types;
+            try { types = assembly.GetTypes(); }
+            catch { continue; }
+
+            foreach (var type in types)
+            {
+                var entry = type.GetCustomAttributes<AgentGraphEntryAttribute>()
+                    .FirstOrDefault(a => string.Equals(a.GraphName, graphName, StringComparison.Ordinal));
+                if (entry is not null)
+                {
+                    return type;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot build graph workflow '{graphName}': no entry point found. " +
+            $"Ensure exactly one agent class has [AgentGraphEntry(\"{graphName}\")].");
+    }
+
+    private static List<GraphEdgeInfo> DiscoverGraphEdges(string graphName)
+    {
+        var edges = new List<GraphEdgeInfo>();
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            Type[] types;
+            try { types = assembly.GetTypes(); }
+            catch { continue; }
+
+            foreach (var type in types)
+            {
+                foreach (var attr in type.GetCustomAttributes<AgentGraphEdgeAttribute>())
+                {
+                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
+                    {
+                        edges.Add(new GraphEdgeInfo(type, attr.TargetAgentType, attr.Condition, attr.IsRequired));
+                    }
+                }
+            }
+        }
+
+        return edges;
+    }
+
+    private sealed record GraphEdgeInfo(Type SourceType, Type TargetType, string? Condition, bool IsRequired);
 }

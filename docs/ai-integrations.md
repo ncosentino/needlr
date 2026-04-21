@@ -299,7 +299,7 @@ Scoping rules:
 
 ### Topology types
 
-Needlr supports three topology patterns. Each is declared with attributes; the source generator emits a corresponding typed factory method on `IWorkflowFactory`.
+Needlr supports four topology patterns. Each is declared with attributes; the source generator emits a corresponding typed factory method on `IWorkflowFactory`.
 
 #### Handoff
 
@@ -351,6 +351,43 @@ public class ContentPublisherAgent { }
 ```
 
 Generator emits: `factory.CreateContentPipelineSequentialWorkflow()`
+
+#### Graph / DAG (Phase 1)
+
+Agents form a directed acyclic graph with conditional routing, fan-out, and fan-in convergence. Edges are declared on source agents; the graph name groups them.
+
+```csharp
+[NeedlrAiAgent(Instructions = "Analyze the request and route to research paths.")]
+[AgentGraphEntry("research", MaxSupersteps = 15, RoutingMode = GraphRoutingMode.AllMatching)]
+[AgentGraphEdge("research", typeof(WebResearchAgent), Condition = "NeedsWebData")]
+[AgentGraphEdge("research", typeof(DatabaseAgent), Condition = "NeedsDbLookup")]
+[AgentGraphEdge("research", typeof(SummarizerAgent))]
+public class AnalyzerAgent { }
+
+[NeedlrAiAgent(Instructions = "Search the web for data.")]
+[AgentGraphEdge("research", typeof(SummarizerAgent))]
+public class WebResearchAgent { }
+
+[NeedlrAiAgent(Instructions = "Query internal databases.")]
+[AgentGraphEdge("research", typeof(SummarizerAgent))]
+public class DatabaseAgent { }
+
+[NeedlrAiAgent(Instructions = "Synthesize findings into a report.")]
+[AgentGraphNode("research", JoinMode = GraphJoinMode.WaitAll)]
+public class SummarizerAgent { }
+```
+
+Runtime: `factory.CreateGraphWorkflow("research")` (source-generated extension method in Phase 2).
+
+Key attributes:
+
+| Attribute | Purpose |
+|-----------|---------|
+| `[AgentGraphEntry]` | Marks the entry point; sets `MaxSupersteps` and `RoutingMode` |
+| `[AgentGraphEdge]` | Declares a directed edge with optional `Condition` and `IsRequired` |
+| `[AgentGraphNode]` | Per-node join semantics (`WaitAll` / `WaitAny`) |
+
+See [ADR-0001](adr/adr-0001-dag-graph-workflow-support.md) for the full design rationale.
 
 ### Running workflows
 
