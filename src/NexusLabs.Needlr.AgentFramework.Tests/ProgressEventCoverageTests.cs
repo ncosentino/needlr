@@ -64,6 +64,7 @@ public class ProgressEventCoverageTests
             nameof(BudgetExceededEvent),
             nameof(SuperStepStartedProgressEvent),
             nameof(SuperStepCompletedProgressEvent),
+            nameof(ReducerNodeInvokedEvent),
         };
 
         var actual = GetConcreteProgressEventTypes().Select(t => t.Name).ToHashSet();

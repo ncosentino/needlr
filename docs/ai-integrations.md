@@ -387,6 +387,45 @@ Key attributes:
 | `[AgentGraphEdge]` | Declares a directed edge with optional `Condition` and `IsRequired` |
 | `[AgentGraphNode]` | Per-node join semantics (`WaitAll` / `WaitAny`) |
 
+##### DAG Diagnostics
+
+After running a DAG workflow, cast the result to `IDagRunResult` for per-node diagnostics:
+
+```csharp
+var result = (IDagRunResult)await InProcessExecution.RunAsync(workflow, input, ct);
+
+Console.WriteLine($"DAG {(result.Succeeded ? "succeeded" : "failed")} " +
+    $"in {result.TotalDuration.TotalSeconds:F1}s, " +
+    $"nodes: {result.NodeResults.Count}");
+
+foreach (var (nodeId, nodeResult) in result.NodeResults)
+{
+    Console.WriteLine($"  {nodeId}: {nodeResult.Kind}, " +
+        $"{nodeResult.Duration.TotalMilliseconds}ms");
+}
+
+foreach (var (branchId, stages) in result.BranchResults)
+{
+    Console.WriteLine($"  Branch {branchId}: {stages.Count} stages");
+}
+```
+
+`IDagRunResult` extends `IPipelineRunResult`, so existing code that consumes the flat `Stages` list continues to work unchanged. The `NodeResults` dictionary provides the richer graph-aware view with edge connectivity, timing offsets, and the `NodeKind` discriminator (`Agent` vs `Reducer`).
+
+##### DAG Progress Events
+
+DAG workflows emit the standard progress events (`AgentInvokedEvent`, `SuperStepStartedProgressEvent`, etc.) with optional DAG-specific metadata:
+
+| Field | Type | Event | Purpose |
+|-------|------|-------|---------|
+| `GraphName` | `string?` | `AgentInvokedEvent` | Identifies which named graph is executing |
+| `NodeId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the node within the graph |
+| `BranchId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the parallel branch |
+| `IncomingEdgeLabel` | `string?` | `AgentInvokedEvent` | The condition label of the activating edge |
+| `ParallelBranchCount` | `int?` | `SuperStepStartedProgressEvent` | Active parallel branches in this superstep |
+
+Reducer nodes (deterministic aggregation functions) emit `ReducerNodeInvokedEvent` instead of `AgentInvokedEvent`, carrying `InputBranchCount` and `Duration` without LLM-specific metadata.
+
 See [ADR-0001](adr/adr-0001-dag-graph-workflow-support.md) for the full design rationale.
 
 ### Running workflows

@@ -62,7 +62,11 @@ public sealed record AgentInvokedEvent(
     string? ParentAgentId,
     int Depth,
     long SequenceNumber,
-    string AgentName) : IProgressEvent;
+    string AgentName,
+    string? GraphName = null,
+    string? NodeId = null,
+    string? BranchId = null,
+    string? IncomingEdgeLabel = null) : IProgressEvent;
 
 /// <summary>An agent has completed its turn.</summary>
 public sealed record AgentCompletedEvent(
@@ -225,7 +229,8 @@ public sealed record SuperStepStartedProgressEvent(
     string? ParentAgentId,
     int Depth,
     long SequenceNumber,
-    int StepNumber) : IProgressEvent;
+    int StepNumber,
+    int? ParallelBranchCount = null) : IProgressEvent;
 
 /// <summary>A workflow control-flow step (SuperStep) has completed.</summary>
 public sealed record SuperStepCompletedProgressEvent(
