@@ -10,7 +10,24 @@ superseded_by: ""
 
 ## Status
 
-Proposed — validated by expert consultation (MAF, Source Generator, Roslyn Analyzer, MEAI agents) and rubber duck critique. Expert adjustments incorporated: `FirstMatching` documented as Needlr abstraction, `[AgentGraphNode]` added for join semantics, reducer diagnostics discriminator specified, progress metadata enumerated, NDLRMAF024/027 added to analyzer set.
+Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review, rubber duck critique, and expert consultation.
+
+### Implementation Status
+
+| Phase | Status | Notes |
+|---|---|---|
+| 1 | ✅ Complete | Attributes, enums, `IWorkflowFactory.CreateGraphWorkflow`, reflection-based factory |
+| 2 | ✅ Complete | Source generator discovers graph attributes, emits `Create{Name}GraphWorkflow()` extensions, Mermaid subgraph. `AgentGraphReducerAttribute` defined; reducer runtime wiring deferred. |
+| 3 | ✅ Complete | 10 diagnostics (NDLRMAF016–024, NDLRMAF027) across 7 analyzer classes. 37 analyzer tests. Release tracking entries. |
+| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. 14 diagnostics tests. Docs updated. |
+
+### Known Deferred Items
+
+- **Reducer runtime wiring**: `AgentGraphReducerAttribute` is defined and discovered by the source generator, but the `WorkflowFactory` does not yet invoke reducer methods at fan-in points. Requires MAF `FunctionExecutor<T>` integration.
+- **JoinMode wiring**: `GraphJoinMode.WaitAll`/`WaitAny` is declared via `[AgentGraphNode]` and discovered by the generator, but `WorkflowFactory.CreateGraphWorkflow` does not yet emit `FanInEdgeData` vs fire-on-any semantics. The reflection-based factory wires edges as simple `AddEdge` calls.
+- **Per-node RoutingMode override**: Declared in the ADR as Phase 2 work. The generator collects `RoutingMode` from `[AgentGraphEntry]` but per-node overrides via edge attributes are not yet implemented.
+- **Example app**: Deferred — a runnable DAG example requires the runtime factory to honor join/routing semantics end-to-end.
+- **Analyzer docs pages**: `docs/analyzers/NDLRMAFXXX.md` pages for the 10 new diagnostics are not yet created. The analyzers are functional and tracked in `AnalyzerReleases.Unshipped.md`.
 
 ## Context
 
@@ -166,7 +183,7 @@ Completed branch outputs are always preserved in `IDagRunResult.NodeResults` —
 
 ### Analyzers
 
-Ten new analyzers extending the existing `NDLRMAF` series:
+Ten new diagnostics across seven analyzer classes, extending the existing `NDLRMAF` series:
 
 | ID | Title | Severity |
 |---|---|---|
