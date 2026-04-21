@@ -10,7 +10,7 @@ superseded_by: ""
 
 ## Status
 
-Proposed
+Proposed — validated by expert consultation (MAF, Source Generator, Roslyn Analyzer, MEAI agents) and rubber duck critique. Expert adjustments incorporated: `FirstMatching` documented as Needlr abstraction, `[AgentGraphNode]` added for join semantics, reducer diagnostics discriminator specified, progress metadata enumerated, NDLRMAF024/027 added to analyzer set.
 
 ## Context
 
@@ -70,12 +70,15 @@ LLM-driven routing is an explicit opt-in via `RoutingMode = GraphRoutingMode.Llm
 
 Routing mode enum (`GraphRoutingMode`):
 
-| Mode | Behavior |
-|---|---|
-| `Deterministic` (default) | Condition methods evaluated as boolean predicates |
-| `LlmChoice` | Condition strings as tool descriptions; model selects |
-| `AllMatching` | All edges whose condition is true are followed (parallel fan-out) |
-| `FirstMatching` | First edge whose condition is true is followed (priority order) |
+| Mode | Behavior | MAF Mapping |
+|---|---|---|
+| `Deterministic` (default) | Condition methods evaluated as boolean predicates | Individual `AddEdge` with `Func<object?, bool>` |
+| `LlmChoice` | Condition strings as tool descriptions; model selects | Handoff-style tool mapping |
+| `AllMatching` | All edges whose condition is true are followed (parallel fan-out) | MAF's default behavior when multiple edge conditions pass |
+| `FirstMatching` | First edge whose condition is true is followed (priority order) | **Needlr abstraction** — MAF has no ordered-priority routing; generator emits a composite condition wrapper |
+| `ExclusiveChoice` | Exactly one edge must match | Maps to MAF's `AddSwitch` + `AddCase` |
+
+`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default, with optional per-node override via a `RoutingMode` property on the first `[AgentGraphEdge]` from a given source node.
 
 **Rationale**: DAG edges encode orchestration rules. Making control flow nondeterministic by default undermines testability, replayability, and determinism. LLM routing is powerful but should be a conscious architectural choice.
 
@@ -90,10 +93,18 @@ Source-side routing (on `[AgentGraphEntry]` or per-node):
 - `ExclusiveChoice` — exactly one edge must match (analyzer error if ambiguous at compile time)
 - `LlmChoice` — LLM selects
 
-Target-side join (on `[AgentGraphEdge]` or per-node):
+Target-side join is declared via `[AgentGraphNode]` on the target agent:
+
+```csharp
+[NeedlrAiAgent(Instructions = "Synthesize all findings.")]
+[AgentGraphNode("ResearchPipeline", JoinMode = GraphJoinMode.WaitAll)]
+public class SummarizerAgent { }
+```
 
 - `WaitAll` (default) — barrier; wait for all incoming edges before proceeding
 - `WaitAny` — proceed when any incoming edge completes
+
+`[AgentGraphNode]` is a lightweight per-node attribute separate from `[AgentGraphEdge]` to avoid overloading edge attributes with target-side semantics.
 
 **Rationale**: Three conditional outgoing edges could mean fan-out, switch-case, or priority routing. The topology says "3 edges" but not what they mean. Explicit semantics prevent runtime ambiguity without requiring users to understand MAF's `FanOutEdgeData` vs `DirectEdgeData` distinction.
 
@@ -107,16 +118,31 @@ public static class ResearchReducer
 {
     public static string MergeResults(IReadOnlyList<string> branchOutputs)
         => string.Join("\n---\n", branchOutputs);
+
+    // Extended overload when workflow state access is needed:
+    // public static string MergeResults(IReadOnlyList<string> branchOutputs, IWorkflowContext context)
 }
 ```
 
-The reducer covers the most common fan-in pattern (aggregation of branch outputs) without requiring a full function-executor attribute model.
+The reducer covers the most common fan-in pattern (aggregation of branch outputs) without requiring a full function-executor attribute model. The source generator detects whether the reducer method accepts an optional `IWorkflowContext` second parameter and wires it accordingly.
+
+**Diagnostics**: Reducer nodes do NOT go through `IChatClient` pipelines (no LLM calls, no token usage). `IDagNodeResult` carries a `NodeKind` discriminator (`Agent` vs `Reducer`) so downstream tooling can distinguish agent nodes from pure-function nodes. A dedicated `ReducerNodeInvokedEvent` progress event carries `NodeId`, `InputBranchCount`, and `Duration` without the LLM-specific metadata of `AgentInvokedEvent`.
 
 ### Streaming: Terminal Content, Full Progress
 
 Content streaming is terminal-node only by default. Intermediate node output is internal processing — not user-facing.
 
-Progress and observability use the existing `IProgressReporter` infrastructure, which already supports `AgentInvokedEvent`, `LlmCallStartedEvent`, `ToolCallCompletedEvent`, and `SuperStepStartedProgressEvent`. DAG-specific metadata (branch ID, node ID, edge traversal) is added to existing progress events rather than introducing a parallel observation API.
+Progress and observability use the existing `IProgressReporter` infrastructure, which already supports `AgentInvokedEvent`, `LlmCallStartedEvent`, `ToolCallCompletedEvent`, and `SuperStepStartedProgressEvent`. DAG-specific metadata is added as nullable properties to existing event types for backward compatibility:
+
+| Field | Type | Added To | Purpose |
+|---|---|---|---|
+| `GraphName` | `string?` | All DAG progress events | Identifies which named graph is executing |
+| `NodeId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the node within the graph |
+| `BranchId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the parallel branch |
+| `IncomingEdgeLabel` | `string?` | `AgentInvokedEvent` | The condition label of the activating edge |
+| `ParallelBranchCount` | `int?` | `SuperStepStartedProgressEvent` | Active parallel branches in this superstep |
+
+One new event type: `ReducerNodeInvokedEvent` for non-LLM reducer nodes (carries `NodeId`, `BranchId`, `InputBranchCount`, `Duration` without LLM-specific fields).
 
 **Rationale**: Users need progress visibility for long-running DAGs, but that is a progress concern, not a streaming concern. The existing `IProgressReporter` and `IProgressSink` pipeline is extensible and already consumed by downstream tooling.
 
@@ -140,7 +166,7 @@ Completed branch outputs are always preserved in `IDagRunResult.NodeResults` —
 
 ### Analyzers
 
-Eight new analyzers extending the existing `NDLRMAF` series:
+Ten new analyzers extending the existing `NDLRMAF` series:
 
 | ID | Title | Severity |
 |---|---|---|
@@ -152,6 +178,10 @@ Eight new analyzers extending the existing `NDLRMAF` series:
 | NDLRMAF021 | Graph entry point is not a declared agent | Warning |
 | NDLRMAF022 | Graph contains unreachable agents | Warning |
 | NDLRMAF023 | MaxSupersteps value is invalid (≤ 0) | Error |
+| NDLRMAF024 | All edges from fan-out node are optional | Warning |
+| NDLRMAF027 | Terminal node has outgoing edges | Error |
+
+NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF027 catches topology errors where a node without outgoing edges is treated as terminal but still has edges declared.
 
 These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescriptors`, extending the ID range from the current ceiling of `NDLRMAF015`.
 
@@ -159,10 +189,10 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 
 | Phase | Scope | Deliverables |
 |---|---|---|
-| 1 | Attributes + Runtime Factory + Minimal Reducer | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphReducerAttribute`, `GraphRoutingMode` enum, `WorkflowFactory` graph support |
-| 2 | Source Generator + Mermaid Diagrams | `GraphEntry` model, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
-| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF023`, analyzer tests, XML doc comments, README updates |
-| 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, DAG-specific progress event metadata, `Examples/` project demonstrating a research pipeline |
+| 1 | Attributes + Runtime Factory + Minimal Reducer | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `AgentGraphReducerAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
+| 2 | Source Generator + Mermaid Diagrams | `GraphEdgeEntry`/`GraphEntryEntry`/`GraphNodeEntry` models, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
+| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF024`, `NDLRMAF027`, analyzer tests, XML doc comments, README updates |
+| 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `Examples/` project demonstrating a research pipeline |
 
 ## Consequences
 
