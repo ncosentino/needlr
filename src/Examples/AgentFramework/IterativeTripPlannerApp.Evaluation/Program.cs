@@ -130,6 +130,13 @@ var coherenceResult = await coherenceEval.EvaluateAsync(
     additionalContext: [diagContext]);
 PrintMetrics("IterationCoherenceEvaluator", coherenceResult);
 
+var efficiencyEval = new EfficiencyEvaluator(tokenBudget: 200_000);
+var efficiencyResult = await efficiencyEval.EvaluateAsync(
+    evalInputs.Messages,
+    evalInputs.ModelResponse,
+    additionalContext: [diagContext]);
+PrintMetrics("EfficiencyEvaluator", efficiencyResult);
+
 // ── Run MS MEAI quality evaluator (requires LLM judge) ──────────────────
 PrintSection("MS MEAI evaluators (LLM-judged via CopilotChatClient)");
 
@@ -167,6 +174,8 @@ Console.WriteLine("       consecutive same-tool, per-tool failure rate, latency 
 Console.WriteLine("     - IterationCoherenceEvaluator: count, empty outputs, coherent,");
 Console.WriteLine("       efficiency ratio, degenerate loop detection, max iterations hit");
 Console.WriteLine("     - TerminationAppropriatenessEvaluator: success, consistency, mode");
+Console.WriteLine("     - EfficiencyEvaluator: total tokens, input ratio, tokens/tool-call,");
+Console.WriteLine("       cache hit ratio, under-budget check");
 Console.WriteLine("  4. Scoring with MS MEAI quality evaluators using Copilot as judge");
 Console.WriteLine();
 

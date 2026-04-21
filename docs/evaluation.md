@@ -153,6 +153,18 @@ All three evaluators consume the same bridge type:
 
 Evaluators downcast the context to `AgentRunDiagnosticsContext` to reach the full `Diagnostics` surface.
 
+### EfficiencyEvaluator
+
+Reports on token usage and cost efficiency.
+
+- **`Total Tokens`** — aggregate token count across all LLM calls.
+- **`Input Token Ratio`** — input tokens / total tokens. High values suggest verbose prompts; low values suggest verbose outputs.
+- **`Tokens Per Tool Call`** — total tokens / tool call count. Measures the token cost of each tool invocation. Zero when no tool calls occurred.
+- **`Cache Hit Ratio`** — cached input tokens / input tokens. Higher values mean more prompt-cache reuse.
+- **`Under Budget`** — boolean, only emitted when `tokenBudget` is provided to the constructor. True when total tokens is strictly below the budget.
+
+When no `AgentRunDiagnosticsContext` is present, the evaluator returns an empty result. The optional `tokenBudget` constructor parameter controls whether the budget metric is emitted.
+
 ### ToolCallTrajectoryEvaluator
 
 Reports on the sequence of tool calls across a run.
@@ -194,6 +206,13 @@ var additionalContext = new[] { context };
 var chatConfiguration = new ChatConfiguration(judgeChatClient);
 
 var trajectory = await new ToolCallTrajectoryEvaluator()
+    .EvaluateAsync(
+        messages: Array.Empty<ChatMessage>(),
+        modelResponse: new ChatResponse(),
+        chatConfiguration: null,
+        additionalContext: additionalContext);
+
+var efficiency = await new EfficiencyEvaluator(tokenBudget: 10_000)
     .EvaluateAsync(
         messages: Array.Empty<ChatMessage>(),
         modelResponse: new ChatResponse(),
