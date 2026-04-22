@@ -29,6 +29,7 @@ using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
 
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 // Generated extension methods: CreateResearchPipelineGraphWorkflow() on IWorkflowFactory.
 // These are emitted by the source generator in GraphWorkflowApp.Agents based on
@@ -82,22 +83,36 @@ const string question = "What are the key trends in AI agent frameworks for 2025
 AnsiConsole.MarkupLine($"[bold yellow]Q:[/] {Markup.Escape(question)}");
 AnsiConsole.WriteLine();
 
-// Create a progress reporter with a simple status sink.
-var statusSink = new StatusProgressSink();
+// Create a progress reporter with a live dashboard sink.
+var dashboardSink = new DagDashboardSink();
 var reporter = progressFactory.Create(
     $"dag-{Guid.NewGuid():N}",
-    [statusSink]);
+    [dashboardSink]);
 
 IDagRunResult? result = null;
-await AnsiConsole.Status()
-    .Spinner(Spinner.Known.Dots)
-    .StartAsync("Starting DAG workflow...", async ctx =>
+await AnsiConsole.Live(dashboardSink.Render())
+    .AutoClear(false)
+    .Overflow(VerticalOverflow.Ellipsis)
+    .StartAsync(async ctx =>
     {
-        statusSink.SetStatusContext(ctx);
+        dashboardSink.SetContext(ctx);
+
+        using var tickCts = new CancellationTokenSource();
+        var ticker = Task.Run(async () =>
+        {
+            while (!tickCts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(200, tickCts.Token).ConfigureAwait(false);
+                dashboardSink.Refresh();
+            }
+        }, tickCts.Token);
+
         result = await workflowFactory.RunGraphAsync(
             "research-pipeline", question, reporter, diagnosticsAccessor);
 
-        ctx.Status("Complete");
+        tickCts.Cancel();
+        try { await ticker; } catch (OperationCanceledException) { }
+        dashboardSink.Refresh();
     });
 
 if (result is null)
@@ -176,62 +191,129 @@ static string ShortName(string id)
 }
 
 // ---------------------------------------------------------------------------
-// Minimal progress sink that updates Spectre.Console Status text.
+// Live dashboard sink showing per-agent streaming output in real time.
 // ---------------------------------------------------------------------------
-sealed class StatusProgressSink : IProgressSink
+sealed class DagDashboardSink : IProgressSink
 {
-    private StatusContext? _ctx;
-    private readonly List<string> _activeNodes = [];
+    private LiveDisplayContext? _ctx;
+    private readonly DateTime _start = DateTime.Now;
+    private readonly Dictionary<string, AgentPanel> _agents = new();
+    private static readonly string[] _spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    private int _spinnerIndex;
+    private bool _complete;
 
-    internal void SetStatusContext(StatusContext ctx) => _ctx = ctx;
+    internal void SetContext(LiveDisplayContext ctx) => _ctx = ctx;
+
+    internal void Refresh()
+    {
+        _spinnerIndex = (_spinnerIndex + 1) % _spinnerFrames.Length;
+        _ctx?.UpdateTarget(Render());
+    }
+
+    internal IRenderable Render()
+    {
+        var elapsed = (DateTime.Now - _start).TotalSeconds;
+        var table = new Table()
+            .Border(TableBorder.Heavy)
+            .Title("[bold cyan]DAG Workflow — Live[/]")
+            .AddColumn(new TableColumn("").NoWrap().Width(90));
+
+        var spinner = _complete ? "[green]✓[/]" : $"[yellow]{_spinnerFrames[_spinnerIndex]}[/]";
+        table.AddRow(new Markup($"  {spinner} Elapsed: [bold]{elapsed:F1}s[/]  |  Agents: [bold]{_agents.Count}[/]"));
+        table.AddEmptyRow();
+
+        if (_agents.Count == 0)
+        {
+            table.AddRow(new Markup("  [dim]Waiting for agents...[/]"));
+        }
+        else
+        {
+            foreach (var (_, agent) in _agents)
+            {
+                var statusIcon = agent.Done
+                    ? "[green]✓[/]"
+                    : agent.Failed
+                        ? "[red]✗[/]"
+                        : $"[yellow]{_spinnerFrames[_spinnerIndex]}[/]";
+                var preview = agent.Text.Length > 120
+                    ? agent.Text[^120..].Replace("\n", " ")
+                    : agent.Text.Replace("\n", " ");
+                table.AddRow(new Markup($"  {statusIcon} [bold]{Markup.Escape(agent.ShortName)}[/]"));
+                if (!string.IsNullOrEmpty(preview))
+                {
+                    table.AddRow(new Markup($"    [dim]{Markup.Escape(preview.Trim())}[/]"));
+                }
+                else if (!agent.Done && !agent.Failed)
+                {
+                    table.AddRow(new Markup("    [dim italic]generating...[/]"));
+                }
+            }
+        }
+
+        return table;
+    }
 
     public ValueTask OnEventAsync(IProgressEvent evt, CancellationToken ct)
     {
         switch (evt)
         {
             case AgentInvokedEvent ai:
-                var shortName = ShortName(ai.AgentName);
-                if (!_activeNodes.Contains(shortName))
+                var name = ShortName(ai.AgentName);
+                if (!_agents.ContainsKey(name))
                 {
-                    _activeNodes.Add(shortName);
+                    _agents[name] = new AgentPanel(name);
                 }
-                UpdateStatus();
+                break;
+
+            case AgentResponseChunkEvent chunk:
+                var chunkName = ShortName(chunk.AgentName);
+                if (!_agents.TryGetValue(chunkName, out var panel))
+                {
+                    _agents[chunkName] = panel = new AgentPanel(chunkName);
+                }
+                panel.Text += chunk.Text;
+                Refresh();
                 break;
 
             case AgentCompletedEvent ac:
-                _activeNodes.Remove(ShortName(ac.AgentName));
-                UpdateStatus();
+                var doneName = ShortName(ac.AgentName);
+                if (_agents.TryGetValue(doneName, out var donePanel))
+                {
+                    donePanel.Done = true;
+                }
+                Refresh();
                 break;
 
             case AgentFailedEvent af:
-                _activeNodes.Remove(ShortName(af.AgentName));
-                _ctx?.Status($"[red]✗ {Markup.Escape(ShortName(af.AgentName))} failed[/]");
+                var failName = ShortName(af.AgentName);
+                if (_agents.TryGetValue(failName, out var failPanel))
+                {
+                    failPanel.Failed = true;
+                    failPanel.Text += $" [ERROR: {af.ErrorMessage}]";
+                }
+                Refresh();
                 break;
 
             case WorkflowCompletedEvent:
-                _activeNodes.Clear();
-                _ctx?.Status("[green]✓ All nodes complete[/]");
+                _complete = true;
+                Refresh();
                 break;
         }
 
         return ValueTask.CompletedTask;
     }
 
-    private void UpdateStatus()
-    {
-        if (_ctx is null || _activeNodes.Count == 0)
-        {
-            _ctx?.Status("[dim]Waiting...[/]");
-            return;
-        }
-
-        var names = string.Join(" + ", _activeNodes.Select(Markup.Escape));
-        _ctx.Status($"Running [yellow]{names}[/]...");
-    }
-
     private static string ShortName(string id)
     {
         var idx = id.IndexOf('_');
         return idx > 0 ? id[..idx] : id;
+    }
+
+    private sealed class AgentPanel(string shortName)
+    {
+        public string ShortName { get; } = shortName;
+        public string Text { get; set; } = "";
+        public bool Done { get; set; }
+        public bool Failed { get; set; }
     }
 }

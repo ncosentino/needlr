@@ -210,6 +210,16 @@ public static class GraphWorkflowRunExtensions
                     }
 
                     sb.Append(text);
+
+                    progress?.Report(new ProgressEvents.AgentResponseChunkEvent(
+                        DateTimeOffset.UtcNow,
+                        progress.WorkflowId,
+                        update.ExecutorId,
+                        null,
+                        progress.Depth + 1,
+                        progress.NextSequence(),
+                        AgentName: update.ExecutorId,
+                        Text: text));
                 }
             }
             finally

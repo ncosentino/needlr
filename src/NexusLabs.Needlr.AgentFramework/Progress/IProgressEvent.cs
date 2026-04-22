@@ -95,6 +95,17 @@ public sealed record AgentFailedEvent(
     string AgentName,
     string ErrorMessage) : IProgressEvent;
 
+/// <summary>A chunk of streaming response text from an agent.</summary>
+public sealed record AgentResponseChunkEvent(
+    DateTimeOffset Timestamp,
+    string WorkflowId,
+    string? AgentId,
+    string? ParentAgentId,
+    int Depth,
+    long SequenceNumber,
+    string AgentName,
+    string Text) : IProgressEvent;
+
 /// <summary>An agent handed off to another agent.</summary>
 public sealed record AgentHandoffEvent(
     DateTimeOffset Timestamp,
