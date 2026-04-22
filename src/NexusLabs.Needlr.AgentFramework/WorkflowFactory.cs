@@ -335,18 +335,18 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
         // Discover [AgentGraphNode] attributes for JoinMode metadata.
         // WaitAll (default) maps to MAF's barrier-style edges (default AddEdge behavior).
-        // WaitAny throws NotSupportedException — MAF's BSP model has no fire-on-any primitive.
+        // WaitAny is supported via RunGraphAsync which uses Needlr's own executor.
+        // CreateGraphWorkflow only supports WaitAll since it returns a MAF Workflow.
         var nodeJoinModes = DiscoverNodeJoinModes(graphName, allAgentTypes);
         foreach (var (type, joinMode) in nodeJoinModes)
         {
             if (joinMode == GraphJoinMode.WaitAny)
             {
                 throw new NotSupportedException(
-                    $"GraphJoinMode.WaitAny on '{type.Name}' in graph '{graphName}' is not yet supported. " +
-                    $"MAF's BSP execution model requires all incoming branches to complete before a node " +
-                    $"executes (WaitAll). WaitAny requires a custom execution layer outside MAF's " +
-                    $"InProcessExecution, which is planned for a future release. " +
-                    $"Use GraphJoinMode.WaitAll (the default) or remove the [AgentGraphNode] attribute.");
+                    $"GraphJoinMode.WaitAny on '{type.Name}' in graph '{graphName}' is not compatible " +
+                    $"with CreateGraphWorkflow (which returns a MAF Workflow using BSP execution). " +
+                    $"Use RunGraphAsync(\"{graphName}\", input) instead — it handles WaitAny via " +
+                    $"Needlr's own graph executor.");
             }
         }
 

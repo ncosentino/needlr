@@ -23,7 +23,7 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 
 ### Known Limitations
 
-- **MAF WaitAny**: `GraphJoinMode.WaitAny` is declared in the API and accepted by analyzers, but **throws `NotSupportedException` at runtime**. MAF's BSP execution model uses mandatory synchronization barriers — every superstep waits for ALL active nodes. There is no MAF primitive for "proceed when any source emits." Implementing WaitAny requires a custom execution layer outside MAF's `InProcessExecution`. This is planned for a future release. Use `GraphJoinMode.WaitAll` (the default) until then.
+- **WaitAny requires `RunGraphAsync`**: `GraphJoinMode.WaitAny` is fully implemented via the `RunGraphAsync` extension method in `NexusLabs.Needlr.AgentFramework.Workflows`. However, it is **not compatible** with `CreateGraphWorkflow` (which returns a MAF `Workflow` using BSP execution). `CreateGraphWorkflow` throws `NotSupportedException` when WaitAny nodes are detected, directing users to `RunGraphAsync`. This is because MAF's BSP model has mandatory synchronization barriers — Needlr's own executor bypasses this using `Task.WhenAny` for fan-in points.
 
 ## Context
 

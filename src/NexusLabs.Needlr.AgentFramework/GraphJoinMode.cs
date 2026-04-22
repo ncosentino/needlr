@@ -14,22 +14,18 @@ public enum GraphJoinMode
     /// <summary>
     /// The target node proceeds when ANY incoming edge completes. The first
     /// branch to finish triggers execution of the target; results from
-    /// later-completing branches are available in <c>IDagRunResult</c> if they
+    /// later-completing branches are available in the result dictionary if they
     /// finish before the graph terminates.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Not yet implemented.</b> MAF's graph execution engine uses Bulk
-    /// Synchronous Parallel (BSP) with mandatory synchronization barriers.
-    /// Every superstep waits for ALL active nodes to complete — there is no
-    /// primitive for "proceed when any source emits." Implementing WaitAny
-    /// requires a custom execution layer outside MAF's <c>InProcessExecution</c>,
-    /// which is planned for a future release.
-    /// </para>
-    /// <para>
-    /// Declaring <c>WaitAny</c> today is accepted by the compiler and
-    /// analyzers, but <see cref="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGraphWorkflow(string)"/>
-    /// will throw <see cref="System.NotSupportedException"/> at runtime.
+    /// MAF's BSP execution model uses mandatory synchronization barriers,
+    /// so WaitAny is <b>not compatible</b> with
+    /// <see cref="IWorkflowFactory.CreateGraphWorkflow(string)"/> (which returns
+    /// a MAF <c>Workflow</c>). Use the <c>RunGraphAsync</c> extension method
+    /// from <c>NexusLabs.Needlr.AgentFramework.Workflows</c> instead — it detects
+    /// WaitAny nodes and uses Needlr's own graph executor with
+    /// <see cref="System.Threading.Tasks.Task.WhenAny(System.Threading.Tasks.Task[])"/>.
     /// </para>
     /// </remarks>
     WaitAny = 1,

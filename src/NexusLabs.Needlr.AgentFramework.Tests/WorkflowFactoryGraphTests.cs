@@ -119,8 +119,7 @@ public sealed class WorkflowFactoryGraphTests
             () => factory.CreateGraphWorkflow("wf-waitany-test"));
 
         Assert.Contains("WaitAny", ex.Message);
-        Assert.Contains("not yet supported", ex.Message);
-        Assert.Contains("BSP", ex.Message);
+        Assert.Contains("RunGraphAsync", ex.Message);
     }
 
     [Fact]
