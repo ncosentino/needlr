@@ -377,7 +377,16 @@ public class DatabaseAgent { }
 public class SummarizerAgent { }
 ```
 
-Runtime: `factory.CreateGraphWorkflow("research")` (source-generated extension method).
+Runtime: Use `RunGraphAsync` for execution — it auto-selects the optimal executor:
+
+```csharp
+// RunGraphAsync handles both WaitAll and WaitAny graphs automatically:
+// - WaitAll-only graphs → MAF's native BSP executor
+// - Graphs with WaitAny nodes → Needlr's own executor using Task.WhenAny
+var results = await factory.RunGraphAsync("research", question);
+```
+
+Alternatively, `factory.CreateGraphWorkflow("research")` returns the raw MAF `Workflow` object for direct integration with MAF tooling — but this only supports `WaitAll`. If you use `CreateGraphWorkflow` on a graph with `WaitAny` nodes, analyzer [NDLRMAF025](analyzers/NDLRMAF025.md) reports a compile-time error directing you to `RunGraphAsync`.
 
 A runnable end-to-end example lives in `src/Examples/AgentFramework/GraphWorkflowApp/`. It uses `CopilotChatClient` (no Azure credentials required) to run a four-agent research pipeline DAG with fan-out from an analyzer to parallel web/database research branches that converge at a summarizer.
 

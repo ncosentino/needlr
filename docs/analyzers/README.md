@@ -55,6 +55,7 @@ These analyzers validate DAG graph topologies declared via `[AgentGraphEntry]`, 
 | [NDLRMAF022](NDLRMAF022.md) | Warning | Graph contains unreachable agents |
 | [NDLRMAF023](NDLRMAF023.md) | Error | MaxSupersteps value is invalid |
 | [NDLRMAF024](NDLRMAF024.md) | Warning | All edges from fan-out node are optional |
+| [NDLRMAF025](NDLRMAF025.md) | Error | CreateGraphWorkflow incompatible with GraphJoinMode.WaitAny |
 | [NDLRMAF027](NDLRMAF027.md) | Error | Terminal node has outgoing edges |
 
 ## SignalR Analyzers(NexusLabs.Needlr.SignalR.Analyzers)

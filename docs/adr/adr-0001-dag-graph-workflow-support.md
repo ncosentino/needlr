@@ -23,7 +23,7 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 
 ### Known Limitations
 
-- **WaitAny requires `RunGraphAsync`**: `GraphJoinMode.WaitAny` is fully implemented via the `RunGraphAsync` extension method in `NexusLabs.Needlr.AgentFramework.Workflows`. However, it is **not compatible** with `CreateGraphWorkflow` (which returns a MAF `Workflow` using BSP execution). `CreateGraphWorkflow` throws `NotSupportedException` when WaitAny nodes are detected, directing users to `RunGraphAsync`. This is because MAF's BSP model has mandatory synchronization barriers — Needlr's own executor bypasses this using `Task.WhenAny` for fan-in points.
+- **WaitAny requires `RunGraphAsync`**: `GraphJoinMode.WaitAny` is fully implemented via the `RunGraphAsync` extension method in `NexusLabs.Needlr.AgentFramework.Workflows`. However, it is **not compatible** with `CreateGraphWorkflow` (which returns a MAF `Workflow` using BSP execution). `CreateGraphWorkflow` throws `NotSupportedException` when WaitAny nodes are detected, directing users to `RunGraphAsync`. Analyzer **NDLRMAF025** catches this at compile time — users see an error in their IDE before they ever run the code.
 
 ## Context
 
@@ -192,9 +192,10 @@ Ten new diagnostics across seven analyzer classes, extending the existing `NDLRM
 | NDLRMAF022 | Graph contains unreachable agents | Warning |
 | NDLRMAF023 | MaxSupersteps value is invalid (≤ 0) | Error |
 | NDLRMAF024 | All edges from fan-out node are optional | Warning |
+| NDLRMAF025 | CreateGraphWorkflow incompatible with WaitAny | Error |
 | NDLRMAF027 | Terminal node has outgoing edges | Error |
 
-NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF027 catches topology errors where a node without outgoing edges is treated as terminal but still has edges declared.
+NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF025 catches calls to `CreateGraphWorkflow` on graphs that contain `WaitAny` nodes — `CreateGraphWorkflow` returns a MAF `Workflow` using BSP execution which only supports `WaitAll`; the fix is to use `RunGraphAsync` instead. NDLRMAF027 catches topology errors where a terminal node still has outgoing edges.
 
 These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescriptors`, extending the ID range from the current ceiling of `NDLRMAF015`.
 
@@ -204,8 +205,8 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 |---|---|---|
 | 1 | Attributes + Runtime Factory | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
 | 2 | Source Generator + Reducer + Mermaid Diagrams | `AgentGraphReducerAttribute`, per-node `RoutingMode` override, `GraphEdgeEntry`/`GraphEntryEntry`/`GraphNodeEntry` models, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
-| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF024`, `NDLRMAF027`, analyzer tests, XML doc comments, README updates |
-| 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `Examples/` project demonstrating a research pipeline |
+| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF025`, `NDLRMAF027`, analyzer tests, XML doc comments, README updates |
+| 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `RunGraphAsync` extension (WaitAny via Needlr-native executor), `Examples/` project demonstrating a research pipeline |
 
 ## Consequences
 
