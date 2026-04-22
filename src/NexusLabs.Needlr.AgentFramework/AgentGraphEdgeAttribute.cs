@@ -63,4 +63,14 @@ public sealed class AgentGraphEdgeAttribute : Attribute
     /// marked degraded but parallel branches continue.
     /// </summary>
     public bool IsRequired { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a per-node routing mode override for the source node of this
+    /// edge. When set on any edge from a given source node, this overrides the
+    /// graph-wide <see cref="AgentGraphEntryAttribute.RoutingMode"/> for that
+    /// node's outgoing edges. Only needs to be set on one edge per source node
+    /// (the generator reads the first non-null value).
+    /// When <see langword="null"/> (default), the graph-wide routing mode is used.
+    /// </summary>
+    public GraphRoutingMode? NodeRoutingMode { get; set; }
 }

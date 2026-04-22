@@ -16,5 +16,10 @@ public enum GraphJoinMode
     /// branches continue in the background; their results are available if they
     /// finish before the graph terminates.
     /// </summary>
+    /// <remarks>
+    /// MAF's <c>FanInEdgeData</c> implements barrier-only (WaitAll) semantics natively.
+    /// WaitAny is implemented at the Needlr orchestration layer using
+    /// <see cref="System.Threading.Tasks.Task.WhenAny(System.Threading.Tasks.Task[])"/>.
+    /// </remarks>
     WaitAny = 1,
 }

@@ -40,7 +40,24 @@ These analyzers are included with the `NexusLabs.Needlr.AgentFramework.Analyzers
 | [NDLRMAF010](NDLRMAF010.md) | Error | Termination condition type does not implement IWorkflowTerminationCondition |
 | [NDLRMAF011](NDLRMAF011.md) | Info | Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members |
 
-## SignalR Analyzers (NexusLabs.Needlr.SignalR.Analyzers)
+## Graph Workflow Analyzers (NexusLabs.Needlr.AgentFramework.Analyzers)
+
+These analyzers validate DAG graph topologies declared via `[AgentGraphEntry]`, `[AgentGraphEdge]`, and `[AgentGraphNode]` attributes.
+
+| Rule ID | Severity | Description |
+|---------|----------|-------------|
+| [NDLRMAF016](NDLRMAF016.md) | Error | Cycle detected in agent graph |
+| [NDLRMAF017](NDLRMAF017.md) | Error | Graph has no entry point |
+| [NDLRMAF018](NDLRMAF018.md) | Error | Graph has multiple entry points |
+| [NDLRMAF019](NDLRMAF019.md) | Error | Graph edge target is not a declared agent |
+| [NDLRMAF020](NDLRMAF020.md) | Warning | Graph edge source is not a declared agent |
+| [NDLRMAF021](NDLRMAF021.md) | Warning | Graph entry point is not a declared agent |
+| [NDLRMAF022](NDLRMAF022.md) | Warning | Graph contains unreachable agents |
+| [NDLRMAF023](NDLRMAF023.md) | Error | MaxSupersteps value is invalid |
+| [NDLRMAF024](NDLRMAF024.md) | Warning | All edges from fan-out node are optional |
+| [NDLRMAF027](NDLRMAF027.md) | Error | Terminal node has outgoing edges |
+
+## SignalR Analyzers(NexusLabs.Needlr.SignalR.Analyzers)
 
 These analyzers are included with the `NexusLabs.Needlr.SignalR` package.
 

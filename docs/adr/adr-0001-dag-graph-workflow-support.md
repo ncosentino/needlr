@@ -19,13 +19,11 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 | 1 | ✅ Complete | Attributes, enums, `IWorkflowFactory.CreateGraphWorkflow`, reflection-based factory |
 | 2 | ✅ Complete | Source generator discovers graph attributes, emits `Create{Name}GraphWorkflow()` extensions, Mermaid subgraph. `AgentGraphReducerAttribute` defined. |
 | 3 | ✅ Complete | 10 diagnostics (NDLRMAF016–024, NDLRMAF027) across 7 analyzer classes. 37 analyzer tests. Release tracking entries. |
-| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. 14 diagnostics tests. Docs updated. Runtime wiring for RoutingMode, JoinMode, reducers. End-to-end example app (`GraphWorkflowApp`). |
+| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. 14 diagnostics tests. Docs updated. Runtime wiring for RoutingMode, JoinMode, reducers. End-to-end example app (`GraphWorkflowApp`). Per-node `NodeRoutingMode` override on `AgentGraphEdgeAttribute`. 10 analyzer doc pages. |
 
-### Known Deferred Items
+### Known Limitations
 
-- **Per-node RoutingMode override**: Declared in the ADR as Phase 2 work. The generator collects `RoutingMode` from `[AgentGraphEntry]` but per-node overrides via edge attributes are not yet implemented.
-- **MAF `FanInEdgeData` wiring**: `GraphJoinMode.WaitAll` is the default MAF behavior for nodes with multiple inbound edges. `WaitAny` is declared but MAF has no native fire-on-any primitive — documented as a limitation.
-- **Analyzer docs pages**: `docs/analyzers/NDLRMAFXXX.md` pages for the 10 new diagnostics are not yet created. The analyzers are functional and tracked in `AnalyzerReleases.Unshipped.md`.
+- **MAF WaitAny**: `GraphJoinMode.WaitAny` is declared and documented but MAF's `FanInEdgeData` only supports barrier (WaitAll) natively. WaitAny is implemented at the Needlr orchestration layer using `Task.WhenAny`.
 
 ## Context
 

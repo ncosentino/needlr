@@ -29,6 +29,26 @@ public sealed class GraphWorkflowAttributeTests
 
         Assert.Equal("NeedsData", attr.Condition);
         Assert.False(attr.IsRequired);
+        Assert.Null(attr.NodeRoutingMode);
+    }
+
+    [Fact]
+    public void AgentGraphEdgeAttribute_NodeRoutingModeOverride()
+    {
+        var attr = new AgentGraphEdgeAttribute("Pipeline", typeof(int))
+        {
+            NodeRoutingMode = GraphRoutingMode.ExclusiveChoice,
+        };
+
+        Assert.Equal(GraphRoutingMode.ExclusiveChoice, attr.NodeRoutingMode);
+    }
+
+    [Fact]
+    public void AgentGraphEdgeAttribute_NodeRoutingModeDefaultsToNull()
+    {
+        var attr = new AgentGraphEdgeAttribute("Pipeline", typeof(int));
+
+        Assert.Null(attr.NodeRoutingMode);
     }
 
     [Fact]
