@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 
 using Microsoft.Agents.AI;
@@ -16,170 +15,76 @@ using ProgressEvents = NexusLabs.Needlr.AgentFramework.Progress;
 namespace NexusLabs.Needlr.AgentFramework.Workflows;
 
 /// <summary>
-/// Extension methods for running DAG graph workflows with support for both
-/// <see cref="GraphJoinMode.WaitAll"/> (MAF-native BSP) and
-/// <see cref="GraphJoinMode.WaitAny"/> (Needlr-native executor).
+/// Executes DAG/graph workflows using either MAF's native BSP engine or the
+/// Needlr-native executor, depending on declared topology.
 /// </summary>
-public static class GraphWorkflowRunExtensions
+/// <remarks>
+/// All dependencies are resolved via DI — no reflection into private fields.
+/// </remarks>
+internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
 {
-    /// <summary>
-    /// Executes a graph/DAG workflow, choosing the execution strategy based on
-    /// the declared <see cref="GraphJoinMode"/> values. Graphs with only WaitAll
-    /// nodes use MAF's native BSP executor. Graphs containing any WaitAny node
-    /// use Needlr's own executor with <see cref="Task.WhenAny(Task[])"/>.
-    /// </summary>
-    /// <param name="factory">The workflow factory.</param>
-    /// <param name="graphName">The graph name (case-sensitive).</param>
-    /// <param name="input">The input message to send to the entry node.</param>
-    /// <param name="progress">
-    /// Optional progress reporter for real-time execution events. When provided,
-    /// emits <see cref="ProgressEvents.AgentInvokedEvent"/> and
-    /// <see cref="ProgressEvents.AgentCompletedEvent"/> for each node, plus
-    /// <see cref="ProgressEvents.WorkflowStartedEvent"/> and
-    /// <see cref="ProgressEvents.WorkflowCompletedEvent"/> at workflow boundaries.
-    /// </param>
-    /// <param name="diagnosticsAccessor">
-    /// Optional diagnostics accessor for capturing per-node token usage and LLM
-    /// call details. Required for the WaitAll (MAF BSP) path to produce non-null
-    /// <see cref="IDagNodeResult.Diagnostics"/>. The WaitAny path captures
-    /// diagnostics via <see cref="AgentRunDiagnosticsBuilder"/> regardless.
-    /// </param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>
-    /// An <see cref="IDagRunResult"/> containing per-node diagnostics, edge metadata,
-    /// timing offsets, aggregate token usage, and backward-compatible
-    /// <see cref="IPipelineRunResult.Stages"/>.
-    /// </returns>
-    public static async Task<IDagRunResult> RunGraphAsync(
-        this IWorkflowFactory factory,
+    private readonly IWorkflowFactory _workflowFactory;
+    private readonly IAgentFactory _agentFactory;
+    private readonly IChatClientAccessor _chatClientAccessor;
+    private readonly IAgentDiagnosticsAccessor? _diagnosticsAccessor;
+    private readonly GraphTopologyProvider _topologyProvider;
+    private readonly GraphEdgeRouter _edgeRouter;
+
+    public GraphWorkflowRunner(
+        IWorkflowFactory workflowFactory,
+        IAgentFactory agentFactory,
+        IChatClientAccessor chatClientAccessor,
+        GraphTopologyProvider topologyProvider,
+        GraphEdgeRouter edgeRouter,
+        IAgentDiagnosticsAccessor? diagnosticsAccessor = null)
+    {
+        _workflowFactory = workflowFactory;
+        _agentFactory = agentFactory;
+        _chatClientAccessor = chatClientAccessor;
+        _topologyProvider = topologyProvider;
+        _edgeRouter = edgeRouter;
+        _diagnosticsAccessor = diagnosticsAccessor;
+    }
+
+    public async Task<IDagRunResult> RunGraphAsync(
         string graphName,
         string input,
         ProgressEvents.IProgressReporter? progress = null,
-        IAgentDiagnosticsAccessor? diagnosticsAccessor = null,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(factory);
         ArgumentException.ThrowIfNullOrWhiteSpace(graphName);
         ArgumentException.ThrowIfNullOrWhiteSpace(input);
 
-        var hasWaitAny = HasWaitAnyNodes(graphName);
-        var requiresNeedlrExecutor = hasWaitAny || RequiresNeedlrExecutor(graphName);
+        var topology = _topologyProvider.GetTopology(graphName);
 
-        if (!requiresNeedlrExecutor)
+        if (!topology.RequiresNeedlrExecutor)
         {
             return await RunWaitAllWithDiagnosticsAsync(
-                factory, graphName, input, progress, diagnosticsAccessor, cancellationToken);
+                topology, graphName, input, progress, cancellationToken);
         }
 
-        return await RunWithWaitAnyAsync(
-            factory, graphName, input, progress, cancellationToken);
+        return await RunWithNeedlrExecutorAsync(
+            topology, graphName, input, progress, cancellationToken);
     }
 
-    private static bool HasWaitAnyNodes(string graphName)
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            Type[] types;
-            try { types = assembly.GetTypes(); }
-            catch { continue; }
-
-            foreach (var type in types)
-            {
-                foreach (var attr in type.GetCustomAttributes<AgentGraphNodeAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal) &&
-                        attr.JoinMode == GraphJoinMode.WaitAny)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Returns true when the graph uses routing modes that require the Needlr-native
-    /// executor because MAF's BSP engine cannot handle them (e.g. LlmChoice).
-    /// </summary>
-    private static bool RequiresNeedlrExecutor(string graphName)
-    {
-        var graphMode = GetGraphRoutingMode(graphName);
-        if (graphMode == GraphRoutingMode.LlmChoice)
-        {
-            return true;
-        }
-
-        // Check for per-node LlmChoice overrides
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            Type[] types;
-            try { types = assembly.GetTypes(); }
-            catch { continue; }
-
-            foreach (var type in types)
-            {
-                foreach (var attr in type.GetCustomAttributes<AgentGraphEdgeAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal) &&
-                        attr.HasNodeRoutingMode &&
-                        attr.NodeRoutingMode == GraphRoutingMode.LlmChoice)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static GraphRoutingMode GetGraphRoutingMode(string graphName)
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            Type[] types;
-            try { types = assembly.GetTypes(); }
-            catch { continue; }
-
-            foreach (var type in types)
-            {
-                foreach (var attr in type.GetCustomAttributes<AgentGraphEntryAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
-                    {
-                        return attr.RoutingMode;
-                    }
-                }
-            }
-        }
-
-        return GraphRoutingMode.Deterministic;
-    }
-
-    private static async Task<IDagRunResult> RunWaitAllWithDiagnosticsAsync(
-        IWorkflowFactory factory,
+    private async Task<IDagRunResult> RunWaitAllWithDiagnosticsAsync(
+        GraphTopology topology,
         string graphName,
         string input,
         ProgressEvents.IProgressReporter? progress,
-        IAgentDiagnosticsAccessor? diagnosticsAccessor,
         CancellationToken cancellationToken)
     {
-        var workflow = factory.CreateGraphWorkflow(graphName);
-        var topology = DiscoverTopology(graphName);
+        var workflow = _workflowFactory.CreateGraphWorkflow(graphName);
         var dagStart = Stopwatch.GetTimestamp();
 
-        // Per-agent state accumulated from the MAF event stream.
         var responses = new Dictionary<string, StringBuilder>();
         var invocationTimestamps = new List<(string ExecutorId, DateTimeOffset At)>();
         bool succeeded = true;
         string? errorMessage = null;
         Exception? caughtException = null;
 
-        // Drain stale diagnostics from previous runs.
-        var collector = diagnosticsAccessor?.CompletionCollector;
-        var toolCollector = diagnosticsAccessor?.ToolCallCollector;
+        var collector = _diagnosticsAccessor?.CompletionCollector;
+        var toolCollector = _diagnosticsAccessor?.ToolCallCollector;
         collector?.DrainCompletions();
         toolCollector?.DrainToolCalls();
 
@@ -193,7 +98,7 @@ public static class GraphWorkflowRunExtensions
 
         try
         {
-            IDisposable? captureScope = diagnosticsAccessor?.BeginCapture();
+            IDisposable? captureScope = _diagnosticsAccessor?.BeginCapture();
             try
             {
                 await using var run = await InProcessExecution.RunStreamingAsync(
@@ -299,7 +204,6 @@ public static class GraphWorkflowRunExtensions
 
         var totalDuration = Stopwatch.GetElapsedTime(dagStart);
 
-        // Drain completions and tool calls captured by middleware during BSP execution.
         var allCompletions = collector?.DrainCompletions()
             ?.OrderBy(c => c.StartedAt).ToList()
             ?? [];
@@ -307,13 +211,10 @@ public static class GraphWorkflowRunExtensions
             ?.OrderBy(t => t.StartedAt).ToList()
             ?? [];
 
-        // Include agents that were invoked OR produced response text.
         var invokedIds = invocationTimestamps.Select(inv => inv.ExecutorId).ToHashSet();
         var respondedIds = responses.Keys.ToHashSet();
         var agentIds = invokedIds.Union(respondedIds).Distinct().ToList();
 
-        // Partition completions by agent name, matching on the AgentName field
-        // that the diagnostics middleware stamps onto each ChatCompletionDiagnostics.
         var completionsByAgent = new Dictionary<string, List<ChatCompletionDiagnostics>>();
         var toolCallsByAgent = new Dictionary<string, List<ToolCallDiagnostics>>();
         foreach (var id in agentIds)
@@ -346,7 +247,6 @@ public static class GraphWorkflowRunExtensions
             }
         }
 
-        // Build per-node results.
         var nodeResults = new Dictionary<string, IDagNodeResult>();
         var stages = new List<IAgentStageResult>();
         var branchResults = new Dictionary<string, IReadOnlyList<IAgentStageResult>>();
@@ -364,7 +264,6 @@ public static class GraphWorkflowRunExtensions
             var agentCompletions = completionsByAgent.GetValueOrDefault(agentId, []);
             var agentToolCalls = toolCallsByAgent.GetValueOrDefault(agentId, []);
 
-            // Compute per-node timing from completion timestamps when available.
             TimeSpan nodeDuration;
             DateTimeOffset nodeStartedAt;
             if (agentCompletions.Count > 0)
@@ -374,7 +273,6 @@ public static class GraphWorkflowRunExtensions
             }
             else
             {
-                // Fallback: use invocation event timestamp + aggregate duration estimate.
                 var invTs = invocationTimestamps
                     .FirstOrDefault(x => x.ExecutorId == agentId).At;
                 nodeStartedAt = invTs != default ? invTs : DateTimeOffset.UtcNow;
@@ -439,7 +337,6 @@ public static class GraphWorkflowRunExtensions
                 OutputTokens: tokenUsage.OutputTokens));
         }
 
-        // Group parallel branches: nodes sharing the same inbound edge source.
         var branchIndex = 0;
         var nodesByInbound = stages
             .Where(s => nodeResults.ContainsKey(s.AgentName))
@@ -471,27 +368,23 @@ public static class GraphWorkflowRunExtensions
             exception: caughtException);
     }
 
-    private static async Task<IDagRunResult> RunWithWaitAnyAsync(
-        IWorkflowFactory factory,
+    private async Task<IDagRunResult> RunWithNeedlrExecutorAsync(
+        GraphTopology topology,
         string graphName,
         string input,
         ProgressEvents.IProgressReporter? progress,
         CancellationToken cancellationToken)
     {
-        var topology = DiscoverTopology(graphName);
-
         if (topology.EntryType is null)
         {
             throw new InvalidOperationException(
                 $"Cannot run graph workflow '{graphName}': no entry point found.");
         }
 
-        var agentFactory = GetAgentFactory(factory);
-
         var agents = new Dictionary<Type, AIAgent>();
         foreach (var type in topology.AllTypes)
         {
-            agents[type] = agentFactory.CreateAgent(type.Name);
+            agents[type] = _agentFactory.CreateAgent(type.Name);
         }
 
         var completionSources = new Dictionary<Type, TaskCompletionSource<string>>();
@@ -500,10 +393,7 @@ public static class GraphWorkflowRunExtensions
             completionSources[type] = new TaskCompletionSource<string>();
         }
 
-        // Track which nodes were skipped by condition routing so they don't
-        // block downstream WaitAll joins.
         var skippedNodes = new ConcurrentDictionary<Type, bool>();
-
         var dagStart = Stopwatch.GetTimestamp();
         var nodeTimings = new ConcurrentDictionary<Type, (TimeSpan StartOffset, TimeSpan Duration)>();
         var nodeDiagnostics = new ConcurrentDictionary<Type, IAgentRunDiagnostics?>();
@@ -517,6 +407,7 @@ public static class GraphWorkflowRunExtensions
             progress?.Depth ?? 0,
             progress?.NextSequence() ?? 0));
 
+        var routingChatClient = _chatClientAccessor.ChatClient;
         var nodeTasks = new List<Task>();
 
         foreach (var type in topology.AllTypes)
@@ -529,9 +420,6 @@ public static class GraphWorkflowRunExtensions
             {
                 try
                 {
-                    // Wait for this node to become "ready" — either because it's the entry,
-                    // or because its upstream deps complete. During this wait, another task
-                    // may mark this node as skipped (condition routing).
                     string nodeInput;
                     if (nodeType == topology.EntryType)
                     {
@@ -543,12 +431,8 @@ public static class GraphWorkflowRunExtensions
                     }
                     else
                     {
-                        // Wait for upstream dependencies based on join mode.
-
                         if (joinMode == GraphJoinMode.WaitAny)
                         {
-                            // WaitAny: proceed when the first non-skipped dependency completes
-                            // with a non-empty result.
                             var taskToDepType = new Dictionary<Task<string>, Type>();
                             foreach (var dep in deps)
                             {
@@ -575,7 +459,6 @@ public static class GraphWorkflowRunExtensions
                         }
                         else
                         {
-                            // WaitAll: wait for all non-skipped dependencies.
                             var pendingResults = new List<string>();
                             foreach (var dep in deps)
                             {
@@ -590,12 +473,10 @@ public static class GraphWorkflowRunExtensions
                                 }
                                 catch when (IsOptionalEdge(dep, nodeType, topology))
                                 {
-                                    // Optional upstream failed — treat as degraded, continue.
+                                    // Optional upstream failed — treat as degraded.
                                 }
                             }
 
-                            // If a reducer is registered and this is a fan-in point,
-                            // invoke it instead of concatenating.
                             if (pendingResults.Count >= 2 && topology.ReducerFunc is not null)
                             {
                                 var reducerStart = Stopwatch.GetTimestamp();
@@ -626,8 +507,6 @@ public static class GraphWorkflowRunExtensions
                         }
                     }
 
-                    // After dependencies resolve, re-check if this node was skipped
-                    // by upstream condition routing.
                     if (skippedNodes.ContainsKey(nodeType))
                     {
                         return;
@@ -661,15 +540,11 @@ public static class GraphWorkflowRunExtensions
                         .Where(m => !string.IsNullOrEmpty(m.Text))
                         .Select(m => m.Text));
 
-                    // Evaluate conditions on outgoing edges. Use the agent's output
-                    // text when available; fall back to the node's input if the agent
-                    // produced no text output (common with mocked chat clients).
                     if (topology.OutgoingEdgesBySource.TryGetValue(nodeType, out var outEdges) && outEdges.Count > 0)
                     {
                         var conditionInput = !string.IsNullOrWhiteSpace(text) ? text : nodeInput;
-                        var chatClient = GetChatClient(agentFactory);
-                        var resolvedEdges = await ResolveOutgoingEdgesAsync(
-                            nodeType, conditionInput, topology, chatClient, cancellationToken);
+                        var resolvedEdges = await _edgeRouter.ResolveOutgoingEdgesAsync(
+                            nodeType, conditionInput, topology, routingChatClient, cancellationToken);
                         var resolvedTargets = resolvedEdges.Select(e => e.Target).ToHashSet();
 
                         foreach (var edge in outEdges)
@@ -716,15 +591,12 @@ public static class GraphWorkflowRunExtensions
                         AgentName: agentName,
                         ErrorMessage: ex.Message));
 
-                    // IsRequired check: if all edges leading to this node are optional,
-                    // mark as degraded but don't propagate the exception to downstream nodes.
                     if (IsNodeRequiredByAllIncomingEdges(nodeType, topology))
                     {
                         completionSources[nodeType].TrySetException(ex);
                     }
                     else
                     {
-                        // Optional node failed — set empty result so downstream can continue.
                         completionSources[nodeType].TrySetResult(string.Empty);
                     }
                 }
@@ -739,7 +611,6 @@ public static class GraphWorkflowRunExtensions
         {
             await Task.WhenAll(nodeTasks).WaitAsync(cancellationToken);
 
-            // Filter out exceptions from optional (non-required) nodes.
             var requiredFailures = nodeExceptions
                 .Where(kv => IsNodeRequiredByAllIncomingEdges(kv.Key, topology))
                 .ToList();
@@ -761,7 +632,6 @@ public static class GraphWorkflowRunExtensions
 
         var totalDuration = Stopwatch.GetElapsedTime(dagStart);
 
-        // Build per-node results.
         var nodeResultsDict = new Dictionary<string, IDagNodeResult>();
         var stagesList = new List<IAgentStageResult>();
 
@@ -773,7 +643,7 @@ public static class GraphWorkflowRunExtensions
             var agentName = agents.TryGetValue(type, out var ag)
                 ? ag.Name ?? type.Name
                 : type.Name;
-            var (startOffset, duration) = nodeTimings.GetValueOrDefault(type, (TimeSpan.Zero, TimeSpan.Zero));
+            var (startOffsetVal, duration) = nodeTimings.GetValueOrDefault(type, (TimeSpan.Zero, TimeSpan.Zero));
             var diag = nodeDiagnostics.GetValueOrDefault(type);
 
             ChatResponse? finalResponse = null;
@@ -794,14 +664,13 @@ public static class GraphWorkflowRunExtensions
                 finalResponse: finalResponse,
                 inboundEdges: topology.InboundEdges.GetValueOrDefault(agentName, []),
                 outboundEdges: topology.OutboundEdges.GetValueOrDefault(agentName, []),
-                startOffset: startOffset,
+                startOffset: startOffsetVal,
                 duration: duration);
 
             nodeResultsDict[type.Name] = nodeResult;
             stagesList.Add(new AgentStageResult(agentName, finalResponse, diag));
         }
 
-        // Group parallel branches: nodes sharing the same set of inbound edges.
         var branchResults = new Dictionary<string, IReadOnlyList<IAgentStageResult>>();
         var branchIndex = 0;
         var nodesByInbound = stagesList
@@ -839,16 +708,11 @@ public static class GraphWorkflowRunExtensions
             exception: dagException);
     }
 
-    /// <summary>
-    /// Determines if a node is required by checking all incoming edges. If ALL
-    /// edges leading to this node are <c>IsRequired = true</c>, the node is required.
-    /// If any edge is optional, the node is considered optional.
-    /// </summary>
     private static bool IsNodeRequiredByAllIncomingEdges(Type nodeType, GraphTopology topology)
     {
         var incomingDeps = topology.IncomingTypes.GetValueOrDefault(nodeType, []);
         if (incomingDeps.Count == 0)
-            return true; // Entry node or root — always required.
+            return true;
 
         foreach (var dep in incomingDeps)
         {
@@ -859,372 +723,10 @@ public static class GraphWorkflowRunExtensions
         return true;
     }
 
-    /// <summary>
-    /// Checks if the edge from <paramref name="sourceType"/> to <paramref name="targetType"/>
-    /// is optional (IsRequired = false).
-    /// </summary>
     private static bool IsOptionalEdge(Type sourceType, Type targetType, GraphTopology topology)
     {
         if (topology.EdgeIsRequired.TryGetValue((sourceType, targetType), out var isReq))
             return !isReq;
         return false;
     }
-
-    private static GraphTopology DiscoverTopology(string graphName)
-    {
-        Type? entryType = null;
-        GraphRoutingMode graphRoutingMode = GraphRoutingMode.Deterministic;
-        var edgeDetails = new List<EdgeDetail>();
-        var joinModes = new Dictionary<Type, GraphJoinMode>();
-        var allTypes = new HashSet<Type>();
-        Func<IReadOnlyList<string>, string>? reducerFunc = null;
-        Type? reducerType = null;
-
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            Type[] types;
-            try { types = assembly.GetTypes(); }
-            catch { continue; }
-
-            foreach (var type in types)
-            {
-                foreach (var attr in type.GetCustomAttributes<AgentGraphEntryAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
-                    {
-                        entryType = type;
-                        graphRoutingMode = attr.RoutingMode;
-                        allTypes.Add(type);
-                    }
-                }
-
-                foreach (var attr in type.GetCustomAttributes<AgentGraphEdgeAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
-                    {
-                        edgeDetails.Add(new EdgeDetail(
-                            type,
-                            attr.TargetAgentType,
-                            attr.Condition,
-                            attr.IsRequired,
-                            attr.HasNodeRoutingMode ? attr.NodeRoutingMode : null));
-                        allTypes.Add(type);
-                        allTypes.Add(attr.TargetAgentType);
-                    }
-                }
-
-                foreach (var attr in type.GetCustomAttributes<AgentGraphNodeAttribute>())
-                {
-                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
-                    {
-                        joinModes[type] = attr.JoinMode;
-                    }
-                }
-
-                foreach (var attr in type.GetCustomAttributes<AgentGraphReducerAttribute>())
-                {
-                    if (!string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
-                        continue;
-                    if (string.IsNullOrWhiteSpace(attr.ReducerMethod))
-                        continue;
-
-                    var method = type.GetMethod(
-                        attr.ReducerMethod,
-                        BindingFlags.Public | BindingFlags.Static,
-                        null,
-                        [typeof(IReadOnlyList<string>)],
-                        null);
-
-                    if (method is not null && method.ReturnType == typeof(string))
-                    {
-                        reducerType = type;
-                        var captured = method;
-                        reducerFunc = inputs => (string)captured.Invoke(null, [inputs])!;
-                    }
-                }
-            }
-        }
-
-        // Build edge maps keyed by agent name (Type.Name).
-        var incomingTypes = new Dictionary<Type, List<Type>>();
-        var inboundEdges = new Dictionary<string, List<string>>();
-        var outboundEdges = new Dictionary<string, List<string>>();
-
-        foreach (var type in allTypes)
-        {
-            incomingTypes[type] = [];
-            inboundEdges[type.Name] = [];
-            outboundEdges[type.Name] = [];
-        }
-
-        foreach (var edge in edgeDetails)
-        {
-            incomingTypes[edge.Target].Add(edge.Source);
-            inboundEdges[edge.Target.Name].Add(edge.Source.Name);
-            outboundEdges[edge.Source.Name].Add(edge.Target.Name);
-        }
-
-        // Build per-source outgoing edge details for routing decisions.
-        var outgoingEdgesBySource = new Dictionary<Type, List<EdgeDetail>>();
-        foreach (var edge in edgeDetails)
-        {
-            if (!outgoingEdgesBySource.TryGetValue(edge.Source, out var list))
-            {
-                list = [];
-                outgoingEdgesBySource[edge.Source] = list;
-            }
-
-            list.Add(edge);
-        }
-
-        // Determine per-node effective routing mode (node override > graph-wide).
-        var effectiveRoutingModes = new Dictionary<Type, GraphRoutingMode>();
-        foreach (var (sourceType, sourceEdges) in outgoingEdgesBySource)
-        {
-            var nodeOverride = sourceEdges
-                .Select(e => e.NodeRoutingModeOverride)
-                .FirstOrDefault(m => m is not null);
-            effectiveRoutingModes[sourceType] = nodeOverride ?? graphRoutingMode;
-        }
-
-        // Build IsRequired lookup per edge (source → target).
-        var edgeIsRequired = new Dictionary<(Type Source, Type Target), bool>();
-        foreach (var edge in edgeDetails)
-        {
-            edgeIsRequired[(edge.Source, edge.Target)] = edge.IsRequired;
-        }
-
-        return new GraphTopology(
-            entryType,
-            allTypes,
-            joinModes,
-            incomingTypes,
-            inboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value),
-            outboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value),
-            graphRoutingMode,
-            outgoingEdgesBySource,
-            effectiveRoutingModes,
-            edgeIsRequired,
-            reducerFunc,
-            reducerType);
-    }
-
-    /// <summary>
-    /// Evaluates which outgoing edges from a source node should be followed,
-    /// based on the effective routing mode and edge conditions.
-    /// </summary>
-    private static async Task<List<EdgeDetail>> ResolveOutgoingEdgesAsync(
-        Type sourceType,
-        object? upstreamOutput,
-        GraphTopology topology,
-        IChatClient? chatClient,
-        CancellationToken cancellationToken)
-    {
-        if (!topology.OutgoingEdgesBySource.TryGetValue(sourceType, out var edges) || edges.Count == 0)
-            return [];
-
-        var routingMode = topology.EffectiveRoutingModes.GetValueOrDefault(sourceType, topology.GraphRoutingMode);
-
-        if (routingMode == GraphRoutingMode.LlmChoice)
-        {
-            return await ResolveLlmChoiceAsync(sourceType, edges, upstreamOutput, chatClient, cancellationToken);
-        }
-
-        var matchingEdges = new List<EdgeDetail>();
-        foreach (var edge in edges)
-        {
-            if (edge.Condition is null)
-            {
-                matchingEdges.Add(edge);
-                continue;
-            }
-
-            if (EvaluateCondition(sourceType, edge.Condition, upstreamOutput))
-            {
-                matchingEdges.Add(edge);
-            }
-        }
-
-        switch (routingMode)
-        {
-            case GraphRoutingMode.Deterministic:
-            case GraphRoutingMode.AllMatching:
-                return matchingEdges;
-
-            case GraphRoutingMode.FirstMatching:
-                return matchingEdges.Count > 0 ? [matchingEdges[0]] : [];
-
-            case GraphRoutingMode.ExclusiveChoice:
-                if (matchingEdges.Count == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"ExclusiveChoice routing on '{sourceType.Name}': no edge condition matched. " +
-                        $"Exactly one must match.");
-                }
-
-                if (matchingEdges.Count > 1)
-                {
-                    var names = string.Join(", ", matchingEdges.Select(e => e.Target.Name));
-                    throw new InvalidOperationException(
-                        $"ExclusiveChoice routing on '{sourceType.Name}': {matchingEdges.Count} edges matched " +
-                        $"({names}). Exactly one must match.");
-                }
-
-                return matchingEdges;
-
-            default:
-                return matchingEdges;
-        }
-    }
-
-    /// <summary>
-    /// LLM-driven routing: sends the upstream output and edge condition strings
-    /// to the LLM as a routing prompt. The LLM picks which edge(s) to follow
-    /// by naming the condition string in its response.
-    /// </summary>
-    private static async Task<List<EdgeDetail>> ResolveLlmChoiceAsync(
-        Type sourceType,
-        List<EdgeDetail> edges,
-        object? upstreamOutput,
-        IChatClient? chatClient,
-        CancellationToken cancellationToken)
-    {
-        if (chatClient is null)
-        {
-            throw new InvalidOperationException(
-                $"LlmChoice routing on '{sourceType.Name}' requires an IChatClient, " +
-                $"but none is available. Ensure the agent framework is configured with a chat client.");
-        }
-
-        var conditionalEdges = edges.Where(e => e.Condition is not null).ToList();
-        if (conditionalEdges.Count == 0)
-        {
-            return edges.ToList();
-        }
-
-        var options = string.Join("\n", conditionalEdges.Select(
-            (e, i) => $"  {i + 1}. {e.Condition} → {e.Target.Name}"));
-
-        var routingPrompt = $"""
-            You are a routing agent. Based on the input below, choose which route to take.
-
-            Input:
-            {upstreamOutput}
-
-            Available routes:
-            {options}
-
-            Respond with ONLY the exact condition text of the route you choose. Nothing else.
-            """;
-
-        var response = await chatClient.GetResponseAsync(
-            [new ChatMessage(ChatRole.User, routingPrompt)],
-            cancellationToken: cancellationToken);
-
-        var chosenText = response.Text?.Trim() ?? string.Empty;
-
-        var chosen = conditionalEdges
-            .Where(e => chosenText.Contains(e.Condition!, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        if (chosen.Count == 0)
-        {
-            var unconditional = edges.Where(e => e.Condition is null).ToList();
-            return unconditional.Count > 0 ? unconditional : [conditionalEdges[0]];
-        }
-
-        var result = new List<EdgeDetail>(chosen);
-        result.AddRange(edges.Where(e => e.Condition is null));
-        return result;
-    }
-
-    /// <summary>
-    /// Evaluates a condition string by looking up a static method on the source
-    /// agent type that accepts <c>object?</c> and returns <c>bool</c>.
-    /// </summary>
-    private static bool EvaluateCondition(Type sourceType, string conditionMethodName, object? upstreamOutput)
-    {
-        // Try to find the method with object parameter first, then try with no specific type.
-        var method = sourceType.GetMethod(
-            conditionMethodName,
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic,
-            null,
-            [typeof(object)],
-            null);
-
-        if (method is null)
-        {
-            // Try finding any static method with the given name that takes one parameter.
-            method = sourceType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
-                .FirstOrDefault(m => m.Name == conditionMethodName && m.GetParameters().Length == 1);
-        }
-
-        if (method is null || method.ReturnType != typeof(bool))
-        {
-            throw new InvalidOperationException(
-                $"Condition '{conditionMethodName}' on '{sourceType.Name}' must be a static method " +
-                $"with signature 'static bool {conditionMethodName}(object? upstreamOutput)'.");
-        }
-
-        return (bool)method.Invoke(null, [upstreamOutput])!;
-    }
-
-    private static IAgentFactory GetAgentFactory(IWorkflowFactory factory)
-    {
-        var field = factory.GetType().GetField(
-            "_agentFactory",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        if (field?.GetValue(factory) is IAgentFactory agentFactory)
-        {
-            return agentFactory;
-        }
-
-        throw new InvalidOperationException(
-            "Cannot resolve IAgentFactory from the workflow factory. " +
-            "RunGraphAsync with WaitAny requires a WorkflowFactory backed by an IAgentFactory.");
-    }
-
-    private static IChatClient? GetChatClient(IAgentFactory agentFactory)
-    {
-        // AgentFactory stores its configured options in _lazyConfiguredOptions.
-        // We access it via reflection to extract the ChatClientFactory.
-        var lazyField = agentFactory.GetType().GetField(
-            "_lazyConfiguredOptions",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        if (lazyField?.GetValue(agentFactory) is Lazy<AgentFrameworkConfigureOptions> lazy)
-        {
-            var opts = lazy.Value;
-            if (opts.ChatClientFactory is { } factory)
-            {
-                var spField = agentFactory.GetType().GetField(
-                    "_serviceProvider",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-                var sp = spField?.GetValue(agentFactory) as IServiceProvider;
-                return sp is not null ? factory(sp) : null;
-            }
-        }
-
-        return null;
-    }
-
-    private sealed record EdgeDetail(
-        Type Source,
-        Type Target,
-        string? Condition,
-        bool IsRequired,
-        GraphRoutingMode? NodeRoutingModeOverride);
-
-    private sealed record GraphTopology(
-        Type? EntryType,
-        HashSet<Type> AllTypes,
-        Dictionary<Type, GraphJoinMode> JoinModes,
-        Dictionary<Type, List<Type>> IncomingTypes,
-        Dictionary<string, IReadOnlyList<string>> InboundEdges,
-        Dictionary<string, IReadOnlyList<string>> OutboundEdges,
-        GraphRoutingMode GraphRoutingMode,
-        Dictionary<Type, List<EdgeDetail>> OutgoingEdgesBySource,
-        Dictionary<Type, GraphRoutingMode> EffectiveRoutingModes,
-        Dictionary<(Type Source, Type Target), bool> EdgeIsRequired,
-        Func<IReadOnlyList<string>, string>? ReducerFunc,
-        Type? ReducerType);
 }

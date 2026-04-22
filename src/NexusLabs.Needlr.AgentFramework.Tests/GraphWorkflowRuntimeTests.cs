@@ -34,9 +34,9 @@ public sealed class GraphWorkflowRuntimeTests
     {
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildCondRoutingFactory();
+        var runner = BuildCondRoutingFactory();
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "cond-routing-graph",
             "input that does NOT match",
             progress: reporter,
@@ -57,9 +57,9 @@ public sealed class GraphWorkflowRuntimeTests
     {
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildCondRoutingFactory();
+        var runner = BuildCondRoutingFactory();
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "cond-routing-graph",
             "input that does NOT match",
             progress: reporter,
@@ -81,11 +81,11 @@ public sealed class GraphWorkflowRuntimeTests
     [Fact]
     public async Task RunGraphAsync_RequiredEdgeFails_GraphFails()
     {
-        var factory = BuildFailingFactory(
+        var runner = BuildFailingFactory(
             failAgentName: "ReqFailWorkerAgent",
             failingIsRequired: true);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "req-fail-graph",
             "test input",
             cancellationToken: _ct);
@@ -103,9 +103,9 @@ public sealed class GraphWorkflowRuntimeTests
         var invokedAgents = new List<string>();
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildOptionalFailFactory(invokedAgents);
+        var runner = BuildOptionalFailFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "opt-fail-graph",
             "test input",
             progress: reporter,
@@ -125,11 +125,11 @@ public sealed class GraphWorkflowRuntimeTests
     [Fact]
     public async Task RunGraphAsync_MixedEdges_RequiredFailureKillsGraph()
     {
-        var factory = BuildFailingFactory(
+        var runner = BuildFailingFactory(
             failAgentName: "MixReqFailWorkerAgent",
             failingIsRequired: true);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "mix-fail-graph",
             "test input",
             cancellationToken: _ct);
@@ -151,9 +151,9 @@ public sealed class GraphWorkflowRuntimeTests
         TestReducer.CallCount = 0;
         TestReducer.ReceivedInputs = null;
         var invokedAgents = new List<string>();
-        var factory = BuildReducerFactory(invokedAgents);
+        var runner = BuildReducerFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "reducer-graph",
             "test input",
             cancellationToken: _ct);
@@ -177,9 +177,9 @@ public sealed class GraphWorkflowRuntimeTests
         var invokedAgents = new List<string>();
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildReducerFactory(invokedAgents);
+        var runner = BuildReducerFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "reducer-graph",
             "test input",
             progress: reporter,
@@ -200,9 +200,9 @@ public sealed class GraphWorkflowRuntimeTests
     [Fact]
     public async Task RunGraphAsync_WithoutReducer_OutputsConcatenated()
     {
-        var factory = BuildCondRoutingFactory();
+        var runner = BuildCondRoutingFactory();
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "cond-routing-graph",
             "GATE_OPEN",
             cancellationToken: _ct);
@@ -223,9 +223,9 @@ public sealed class GraphWorkflowRuntimeTests
     {
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildWaitAnyTimingFactory(new Dictionary<string, DateTimeOffset>());
+        var runner = BuildWaitAnyTimingFactory(new Dictionary<string, DateTimeOffset>());
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "waitany-timing-graph",
             "test input",
             progress: reporter,
@@ -259,9 +259,9 @@ public sealed class GraphWorkflowRuntimeTests
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
         var invokedAgents = new List<string>();
-        var factory = BuildWaitAnyFactory(invokedAgents);
+        var runner = BuildWaitAnyFactory(invokedAgents);
 
-        await factory.RunGraphAsync(
+        await runner.RunGraphAsync(
             "waitany-events-graph",
             "test input",
             progress: reporter,
@@ -282,9 +282,9 @@ public sealed class GraphWorkflowRuntimeTests
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
         var invokedAgents = new List<string>();
-        var factory = BuildWaitAnyFactory(invokedAgents);
+        var runner = BuildWaitAnyFactory(invokedAgents);
 
-        await factory.RunGraphAsync(
+        await runner.RunGraphAsync(
             "waitany-events-graph",
             "test input",
             progress: reporter,
@@ -307,9 +307,9 @@ public sealed class GraphWorkflowRuntimeTests
         var invokedAgents = new List<string>();
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildFirstMatchingFactory(invokedAgents);
+        var runner = BuildFirstMatchingFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "first-matching-graph",
             "MATCH_ALL",
             progress: reporter,
@@ -329,9 +329,9 @@ public sealed class GraphWorkflowRuntimeTests
     public async Task RunGraphAsync_ExclusiveChoice_ZeroMatches_GraphFails()
     {
         var invokedAgents = new List<string>();
-        var factory = BuildExclusiveChoiceFactory(invokedAgents);
+        var runner = BuildExclusiveChoiceFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "exclusive-choice-graph",
             "NO_MATCH_ANYWHERE",
             cancellationToken: _ct);
@@ -348,9 +348,9 @@ public sealed class GraphWorkflowRuntimeTests
     public async Task RunGraphAsync_ExclusiveChoice_MultipleMatches_GraphFails()
     {
         var invokedAgents = new List<string>();
-        var factory = BuildExclusiveChoiceFactory(invokedAgents);
+        var runner = BuildExclusiveChoiceFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "exclusive-choice-graph",
             "MATCH_BOTH",
             cancellationToken: _ct);
@@ -367,9 +367,9 @@ public sealed class GraphWorkflowRuntimeTests
     public async Task RunGraphAsync_LlmChoice_LlmPicksRoute()
     {
         var invokedAgents = new List<string>();
-        var factory = BuildLlmChoiceFactory(invokedAgents);
+        var runner = BuildLlmChoiceFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "llm-choice-graph",
             "test input about searching the web",
             cancellationToken: _ct);
@@ -392,9 +392,9 @@ public sealed class GraphWorkflowRuntimeTests
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
         var invokedAgents = new List<string>();
-        var factory = BuildLlmChoiceFactory(invokedAgents);
+        var runner = BuildLlmChoiceFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "llm-choice-graph",
             "test input about searching the web",
             progress: reporter,
@@ -413,9 +413,9 @@ public sealed class GraphWorkflowRuntimeTests
     [Fact]
     public async Task RunGraphAsync_LlmChoice_NoMatchFallsBackToFirst()
     {
-        var factory = BuildLlmChoiceNoMatchFactory();
+        var runner = BuildLlmChoiceNoMatchFactory();
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "llm-choice-graph",
             "test input with no matching route",
             cancellationToken: _ct);
@@ -442,9 +442,9 @@ public sealed class GraphWorkflowRuntimeTests
         var invokedAgents = new List<string>();
         var events = new List<IProgressEvent>();
         var reporter = new TestProgressReporter(events);
-        var factory = BuildNodeOverrideFactory(invokedAgents);
+        var runner = BuildNodeOverrideFactory(invokedAgents);
 
-        var result = await factory.RunGraphAsync(
+        var result = await runner.RunGraphAsync(
             "node-override-graph",
             "MATCH_ALL",
             progress: reporter,
@@ -461,7 +461,7 @@ public sealed class GraphWorkflowRuntimeTests
     // Factory builders
     // -----------------------------------------------------------------------
 
-    private static IWorkflowFactory BuildCondRoutingFactory()
+    private static IGraphWorkflowRunner BuildCondRoutingFactory()
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -487,11 +487,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<CondGatedWorkerAgent>()
                 .AddAgent<CondAlwaysWorkerAgent>()
                 .AddAgent<CondSinkAgent>())
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildFailingFactory(
+    private static IGraphWorkflowRunner BuildFailingFactory(
         string failAgentName,
         bool failingIsRequired)
     {
@@ -527,11 +528,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<MixReqFailSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildOptionalFailFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildOptionalFailFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -560,11 +562,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<OptFailSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildReducerFactory(
+    private static IGraphWorkflowRunner BuildReducerFactory(
         List<string> invokedAgents,
         Dictionary<string, string>? captureInputs = null)
     {
@@ -587,11 +590,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<ReducerTerminalAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildWaitAnyTimingFactory(
+    private static IGraphWorkflowRunner BuildWaitAnyTimingFactory(
         Dictionary<string, DateTimeOffset> nodeStartTimes)
     {
         var config = new ConfigurationBuilder().Build();
@@ -621,11 +625,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<WaitAnySinkTimingAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildWaitAnyFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildWaitAnyFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -644,11 +649,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<WaitAnyEventsSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildFirstMatchingFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildFirstMatchingFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -668,11 +674,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<FirstMatchSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildExclusiveChoiceFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildExclusiveChoiceFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -692,11 +699,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<ExclusiveSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildLlmChoiceFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildLlmChoiceFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -726,11 +734,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<LlmChoiceWorkerBAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildLlmChoiceNoMatchFactory()
+    private static IGraphWorkflowRunner BuildLlmChoiceNoMatchFactory()
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -761,11 +770,12 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<LlmChoiceWorkerBAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
-    private static IWorkflowFactory BuildNodeOverrideFactory(List<string> invokedAgents)
+    private static IGraphWorkflowRunner BuildNodeOverrideFactory(List<string> invokedAgents)
     {
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<IChatClient>();
@@ -785,8 +795,9 @@ public sealed class GraphWorkflowRuntimeTests
                 .AddAgent<NodeOverrideSinkAgent>());
 
         return builder
+            .UsingGraphWorkflows()
             .BuildServiceProvider(config)
-            .GetRequiredService<IWorkflowFactory>();
+            .GetRequiredService<IGraphWorkflowRunner>();
     }
 
 }

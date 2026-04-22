@@ -60,11 +60,11 @@ var serviceProvider = new Syringe()
     .UsingAgentFramework(af => af
         .UsingChatClient(chatClient)
         .UsingDiagnostics())
+    .UsingGraphWorkflows()
     .BuildServiceProvider(configuration);
 
-var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
+var graphRunner = serviceProvider.GetRequiredService<IGraphWorkflowRunner>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
-var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 
 AnsiConsole.Write(new Rule("[bold cyan]Needlr DAG Graph Workflow[/]").RuleStyle("grey"));
 AnsiConsole.MarkupLine($"  [dim]LLM:[/]       Copilot ([green]{copilotOptions.DefaultModel}[/])");
@@ -107,8 +107,8 @@ await AnsiConsole.Live(dashboardSink.Render())
             }
         }, tickCts.Token);
 
-        result = await workflowFactory.RunGraphAsync(
-            "research-pipeline", question, reporter, diagnosticsAccessor);
+        result = await graphRunner.RunGraphAsync(
+            "research-pipeline", question, reporter);
 
         tickCts.Cancel();
         try { await ticker; } catch (OperationCanceledException) { }
