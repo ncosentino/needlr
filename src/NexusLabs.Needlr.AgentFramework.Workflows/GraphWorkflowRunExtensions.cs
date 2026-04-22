@@ -9,6 +9,7 @@ using Microsoft.Extensions.AI;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
+using NexusLabs.Needlr.AgentFramework.Iterative;
 
 using ProgressEvents = NexusLabs.Needlr.AgentFramework.Progress;
 
@@ -61,18 +62,10 @@ public static class GraphWorkflowRunExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(graphName);
         ArgumentException.ThrowIfNullOrWhiteSpace(input);
 
-        // Check for unsupported LlmChoice routing mode before doing any work.
-        var routingMode = GetGraphRoutingMode(graphName);
-        if (routingMode == GraphRoutingMode.LlmChoice)
-        {
-            throw new NotSupportedException(
-                $"GraphRoutingMode.LlmChoice is not supported in the current implementation. " +
-                $"Use Deterministic, AllMatching, FirstMatching, or ExclusiveChoice instead.");
-        }
-
         var hasWaitAny = HasWaitAnyNodes(graphName);
+        var requiresNeedlrExecutor = hasWaitAny || RequiresNeedlrExecutor(graphName);
 
-        if (!hasWaitAny)
+        if (!requiresNeedlrExecutor)
         {
             return await RunWaitAllWithDiagnosticsAsync(
                 factory, graphName, input, progress, diagnosticsAccessor, cancellationToken);
@@ -96,6 +89,42 @@ public static class GraphWorkflowRunExtensions
                 {
                     if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal) &&
                         attr.JoinMode == GraphJoinMode.WaitAny)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true when the graph uses routing modes that require the Needlr-native
+    /// executor because MAF's BSP engine cannot handle them (e.g. LlmChoice).
+    /// </summary>
+    private static bool RequiresNeedlrExecutor(string graphName)
+    {
+        var graphMode = GetGraphRoutingMode(graphName);
+        if (graphMode == GraphRoutingMode.LlmChoice)
+        {
+            return true;
+        }
+
+        // Check for per-node LlmChoice overrides
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            Type[] types;
+            try { types = assembly.GetTypes(); }
+            catch { continue; }
+
+            foreach (var type in types)
+            {
+                foreach (var attr in type.GetCustomAttributes<AgentGraphEdgeAttribute>())
+                {
+                    if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal) &&
+                        attr.HasNodeRoutingMode &&
+                        attr.NodeRoutingMode == GraphRoutingMode.LlmChoice)
                     {
                         return true;
                     }
@@ -457,15 +486,6 @@ public static class GraphWorkflowRunExtensions
                 $"Cannot run graph workflow '{graphName}': no entry point found.");
         }
 
-        // Early check: if the graph-wide routing mode is LlmChoice and no node
-        // overrides it, throw before doing any work.
-        if (topology.GraphRoutingMode == GraphRoutingMode.LlmChoice)
-        {
-            throw new NotSupportedException(
-                $"GraphRoutingMode.LlmChoice is not supported in the current implementation. " +
-                $"Use Deterministic, AllMatching, FirstMatching, or ExclusiveChoice instead.");
-        }
-
         var agentFactory = GetAgentFactory(factory);
 
         var agents = new Dictionary<Type, AIAgent>();
@@ -647,7 +667,9 @@ public static class GraphWorkflowRunExtensions
                     if (topology.OutgoingEdgesBySource.TryGetValue(nodeType, out var outEdges) && outEdges.Count > 0)
                     {
                         var conditionInput = !string.IsNullOrWhiteSpace(text) ? text : nodeInput;
-                        var resolvedEdges = ResolveOutgoingEdges(nodeType, conditionInput, topology);
+                        var chatClient = GetChatClient(agentFactory);
+                        var resolvedEdges = await ResolveOutgoingEdgesAsync(
+                            nodeType, conditionInput, topology, chatClient, cancellationToken);
                         var resolvedTargets = resolvedEdges.Select(e => e.Target).ToHashSet();
 
                         foreach (var edge in outEdges)
@@ -991,10 +1013,12 @@ public static class GraphWorkflowRunExtensions
     /// Evaluates which outgoing edges from a source node should be followed,
     /// based on the effective routing mode and edge conditions.
     /// </summary>
-    private static List<EdgeDetail> ResolveOutgoingEdges(
+    private static async Task<List<EdgeDetail>> ResolveOutgoingEdgesAsync(
         Type sourceType,
         object? upstreamOutput,
-        GraphTopology topology)
+        GraphTopology topology,
+        IChatClient? chatClient,
+        CancellationToken cancellationToken)
     {
         if (!topology.OutgoingEdgesBySource.TryGetValue(sourceType, out var edges) || edges.Count == 0)
             return [];
@@ -1003,9 +1027,7 @@ public static class GraphWorkflowRunExtensions
 
         if (routingMode == GraphRoutingMode.LlmChoice)
         {
-            throw new NotSupportedException(
-                $"GraphRoutingMode.LlmChoice is not supported in the current implementation. " +
-                $"Use Deterministic, AllMatching, FirstMatching, or ExclusiveChoice instead.");
+            return await ResolveLlmChoiceAsync(sourceType, edges, upstreamOutput, chatClient, cancellationToken);
         }
 
         var matchingEdges = new List<EdgeDetail>();
@@ -1056,6 +1078,67 @@ public static class GraphWorkflowRunExtensions
     }
 
     /// <summary>
+    /// LLM-driven routing: sends the upstream output and edge condition strings
+    /// to the LLM as a routing prompt. The LLM picks which edge(s) to follow
+    /// by naming the condition string in its response.
+    /// </summary>
+    private static async Task<List<EdgeDetail>> ResolveLlmChoiceAsync(
+        Type sourceType,
+        List<EdgeDetail> edges,
+        object? upstreamOutput,
+        IChatClient? chatClient,
+        CancellationToken cancellationToken)
+    {
+        if (chatClient is null)
+        {
+            throw new InvalidOperationException(
+                $"LlmChoice routing on '{sourceType.Name}' requires an IChatClient, " +
+                $"but none is available. Ensure the agent framework is configured with a chat client.");
+        }
+
+        var conditionalEdges = edges.Where(e => e.Condition is not null).ToList();
+        if (conditionalEdges.Count == 0)
+        {
+            return edges.ToList();
+        }
+
+        var options = string.Join("\n", conditionalEdges.Select(
+            (e, i) => $"  {i + 1}. {e.Condition} → {e.Target.Name}"));
+
+        var routingPrompt = $"""
+            You are a routing agent. Based on the input below, choose which route to take.
+
+            Input:
+            {upstreamOutput}
+
+            Available routes:
+            {options}
+
+            Respond with ONLY the exact condition text of the route you choose. Nothing else.
+            """;
+
+        var response = await chatClient.GetResponseAsync(
+            [new ChatMessage(ChatRole.User, routingPrompt)],
+            cancellationToken: cancellationToken);
+
+        var chosenText = response.Text?.Trim() ?? string.Empty;
+
+        var chosen = conditionalEdges
+            .Where(e => chosenText.Contains(e.Condition!, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (chosen.Count == 0)
+        {
+            var unconditional = edges.Where(e => e.Condition is null).ToList();
+            return unconditional.Count > 0 ? unconditional : [conditionalEdges[0]];
+        }
+
+        var result = new List<EdgeDetail>(chosen);
+        result.AddRange(edges.Where(e => e.Condition is null));
+        return result;
+    }
+
+    /// <summary>
     /// Evaluates a condition string by looking up a static method on the source
     /// agent type that accepts <c>object?</c> and returns <c>bool</c>.
     /// </summary>
@@ -1099,6 +1182,29 @@ public static class GraphWorkflowRunExtensions
         throw new InvalidOperationException(
             "Cannot resolve IAgentFactory from the workflow factory. " +
             "RunGraphAsync with WaitAny requires a WorkflowFactory backed by an IAgentFactory.");
+    }
+
+    private static IChatClient? GetChatClient(IAgentFactory agentFactory)
+    {
+        // AgentFactory stores its configured options in _lazyConfiguredOptions.
+        // We access it via reflection to extract the ChatClientFactory.
+        var lazyField = agentFactory.GetType().GetField(
+            "_lazyConfiguredOptions",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        if (lazyField?.GetValue(agentFactory) is Lazy<AgentFrameworkConfigureOptions> lazy)
+        {
+            var opts = lazy.Value;
+            if (opts.ChatClientFactory is { } factory)
+            {
+                var spField = agentFactory.GetType().GetField(
+                    "_serviceProvider",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+                var sp = spField?.GetValue(agentFactory) as IServiceProvider;
+                return sp is not null ? factory(sp) : null;
+            }
+        }
+
+        return null;
     }
 
     private sealed record EdgeDetail(

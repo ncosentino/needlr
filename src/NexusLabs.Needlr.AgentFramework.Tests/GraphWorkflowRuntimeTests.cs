@@ -361,19 +361,71 @@ public sealed class GraphWorkflowRuntimeTests
     }
 
     /// <summary>
-    /// LlmChoice is not supported in this pass and should throw NotSupportedException.
+    /// LlmChoice: the LLM picks which edge to follow by returning the condition text.
     /// </summary>
     [Fact]
-    public async Task RunGraphAsync_LlmChoice_ThrowsNotSupported()
+    public async Task RunGraphAsync_LlmChoice_LlmPicksRoute()
     {
         var invokedAgents = new List<string>();
         var factory = BuildLlmChoiceFactory(invokedAgents);
 
-        await Assert.ThrowsAsync<NotSupportedException>(
-            async () => await factory.RunGraphAsync(
-                "llm-choice-graph",
-                "any input",
-                cancellationToken: _ct));
+        var result = await factory.RunGraphAsync(
+            "llm-choice-graph",
+            "test input about searching the web",
+            cancellationToken: _ct);
+
+        Assert.True(result.Succeeded, $"LlmChoice graph should succeed. Error: {result.ErrorMessage}");
+
+        var completedNodes = result.NodeResults.Keys.ToList();
+        Assert.True(
+            completedNodes.Any(n => n.Contains("LlmChoiceWorkerA", StringComparison.OrdinalIgnoreCase)),
+            $"LlmChoice should route to WorkerA (web search). Completed: {string.Join(", ", completedNodes)}");
+    }
+
+    /// <summary>
+    /// LlmChoice routing skips the unchosen branch — only the LLM-selected
+    /// target should execute.
+    /// </summary>
+    [Fact]
+    public async Task RunGraphAsync_LlmChoice_UnchosenBranchSkipped()
+    {
+        var events = new List<IProgressEvent>();
+        var reporter = new TestProgressReporter(events);
+        var invokedAgents = new List<string>();
+        var factory = BuildLlmChoiceFactory(invokedAgents);
+
+        var result = await factory.RunGraphAsync(
+            "llm-choice-graph",
+            "test input about searching the web",
+            progress: reporter,
+            cancellationToken: _ct);
+
+        Assert.True(result.Succeeded, $"LlmChoice graph should succeed. Error: {result.ErrorMessage}");
+
+        var invokedNodes = events.OfType<AgentInvokedEvent>().Select(e => e.NodeId).ToList();
+        Assert.DoesNotContain("LlmChoiceWorkerBAgent", invokedNodes);
+    }
+
+    /// <summary>
+    /// LlmChoice fallback: when the LLM response does not match any condition,
+    /// the first conditional edge is selected as a fallback.
+    /// </summary>
+    [Fact]
+    public async Task RunGraphAsync_LlmChoice_NoMatchFallsBackToFirst()
+    {
+        var factory = BuildLlmChoiceNoMatchFactory();
+
+        var result = await factory.RunGraphAsync(
+            "llm-choice-graph",
+            "test input with no matching route",
+            cancellationToken: _ct);
+
+        Assert.True(result.Succeeded, $"LlmChoice fallback should succeed. Error: {result.ErrorMessage}");
+
+        var completedNodes = result.NodeResults.Keys.ToList();
+        Assert.True(
+            completedNodes.Any(n => n.Contains("LlmChoiceWorkerA", StringComparison.OrdinalIgnoreCase)),
+            $"LlmChoice should fall back to first edge (WorkerA). Completed: {string.Join(", ", completedNodes)}");
     }
 
     // -----------------------------------------------------------------------
@@ -652,7 +704,53 @@ public sealed class GraphWorkflowRuntimeTests
                 It.IsAny<IEnumerable<ChatMessage>>(),
                 It.IsAny<ChatOptions?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")));
+            .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>((messages, _, _) =>
+            {
+                var userText = messages.FirstOrDefault(m => m.Role == ChatRole.User)?.Text ?? "";
+                if (userText.Contains("Available routes:", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, "Do web search")));
+                }
+
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(ChatRole.Assistant, "response")));
+            });
+
+        var builder = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
+                .AddAgent<LlmChoiceEntryAgent>()
+                .AddAgent<LlmChoiceWorkerAAgent>()
+                .AddAgent<LlmChoiceWorkerBAgent>());
+
+        return builder
+            .BuildServiceProvider(config)
+            .GetRequiredService<IWorkflowFactory>();
+    }
+
+    private static IWorkflowFactory BuildLlmChoiceNoMatchFactory()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+        mockChatClient.Setup(c => c.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken>((messages, _, _) =>
+            {
+                var userText = messages.FirstOrDefault(m => m.Role == ChatRole.User)?.Text ?? "";
+                if (userText.Contains("Available routes:", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Return a response that doesn't match any condition string
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, "I'm not sure what to do")));
+                }
+
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(ChatRole.Assistant, "response")));
+            });
 
         var builder = new Syringe()
             .UsingReflection()
