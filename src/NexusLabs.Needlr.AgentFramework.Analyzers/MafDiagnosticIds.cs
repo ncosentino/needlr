@@ -156,4 +156,12 @@ public static class MafDiagnosticIds
     /// outgoing <c>[AgentGraphEdge]</c> declarations.
     /// </summary>
     public const string GraphTerminalNodeHasOutgoingEdges = "NDLRMAF027";
+
+    /// <summary>
+    /// NDLRMAF025: <c>CreateGraphWorkflow</c> is called on a graph that contains a
+    /// <c>[AgentGraphNode(JoinMode = GraphJoinMode.WaitAny)]</c> declaration.
+    /// <c>CreateGraphWorkflow</c> returns a MAF <c>Workflow</c> that uses BSP execution,
+    /// which does not support WaitAny. Use <c>RunGraphAsync</c> instead.
+    /// </summary>
+    public const string WaitAnyIncompatibleWithCreateGraphWorkflow = "NDLRMAF025";
 }

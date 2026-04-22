@@ -144,6 +144,7 @@ nav:
       - NDLRMAF022: analyzers/NDLRMAF022.md
       - NDLRMAF023: analyzers/NDLRMAF023.md
       - NDLRMAF024: analyzers/NDLRMAF024.md
+      - NDLRMAF025: analyzers/NDLRMAF025.md
       - NDLRMAF027: analyzers/NDLRMAF027.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md

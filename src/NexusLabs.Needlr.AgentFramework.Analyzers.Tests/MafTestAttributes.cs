@@ -134,6 +134,13 @@ namespace NexusLabs.Needlr.AgentFramework
         }
         public string GraphName { get; }
         public bool IsTerminal { get; set; }
+        public GraphJoinMode JoinMode { get; set; }
+    }
+
+    public enum GraphJoinMode
+    {
+        WaitAll = 0,
+        WaitAny = 1,
     }
 }
 ";

@@ -349,4 +349,18 @@ public static class MafDiagnosticDescriptors
         description: "A node marked with IsTerminal = true on [AgentGraphNode] is expected to be a leaf node with no outgoing edges. Having both IsTerminal = true and [AgentGraphEdge] declarations is contradictory. Either remove IsTerminal = true or remove the outgoing edges.",
         helpLinkUri: HelpLinkBase + "NDLRMAF027.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF025: CreateGraphWorkflow called on a graph that has WaitAny nodes.
+    /// </summary>
+    public static readonly DiagnosticDescriptor WaitAnyIncompatibleWithCreateGraphWorkflow = new(
+        id: MafDiagnosticIds.WaitAnyIncompatibleWithCreateGraphWorkflow,
+        title: "CreateGraphWorkflow is incompatible with GraphJoinMode.WaitAny",
+        messageFormat: "Graph '{0}' contains a WaitAny node but CreateGraphWorkflow returns a MAF Workflow that uses BSP execution (WaitAll only). Use RunGraphAsync(\"{0}\", input) instead.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "CreateGraphWorkflow returns a MAF Workflow object that uses Bulk Synchronous Parallel (BSP) execution with mandatory synchronization barriers. BSP always waits for all upstream nodes (WaitAll). Graphs that declare GraphJoinMode.WaitAny on any node must use RunGraphAsync, which uses Needlr's own executor with Task.WhenAny for WaitAny fan-in points.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF025.md",
+        customTags: WellKnownDiagnosticTags.CompilationEnd);
 }
