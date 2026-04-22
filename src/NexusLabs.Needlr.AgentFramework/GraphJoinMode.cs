@@ -12,14 +12,25 @@ public enum GraphJoinMode
     WaitAll = 0,
 
     /// <summary>
-    /// The target node proceeds when ANY incoming edge completes. Other incoming
-    /// branches continue in the background; their results are available if they
+    /// The target node proceeds when ANY incoming edge completes. The first
+    /// branch to finish triggers execution of the target; results from
+    /// later-completing branches are available in <c>IDagRunResult</c> if they
     /// finish before the graph terminates.
     /// </summary>
     /// <remarks>
-    /// MAF's <c>FanInEdgeData</c> implements barrier-only (WaitAll) semantics natively.
-    /// WaitAny is implemented at the Needlr orchestration layer using
-    /// <see cref="System.Threading.Tasks.Task.WhenAny(System.Threading.Tasks.Task[])"/>.
+    /// <para>
+    /// <b>Not yet implemented.</b> MAF's graph execution engine uses Bulk
+    /// Synchronous Parallel (BSP) with mandatory synchronization barriers.
+    /// Every superstep waits for ALL active nodes to complete — there is no
+    /// primitive for "proceed when any source emits." Implementing WaitAny
+    /// requires a custom execution layer outside MAF's <c>InProcessExecution</c>,
+    /// which is planned for a future release.
+    /// </para>
+    /// <para>
+    /// Declaring <c>WaitAny</c> today is accepted by the compiler and
+    /// analyzers, but <see cref="NexusLabs.Needlr.AgentFramework.IWorkflowFactory.CreateGraphWorkflow(string)"/>
+    /// will throw <see cref="System.NotSupportedException"/> at runtime.
+    /// </para>
     /// </remarks>
     WaitAny = 1,
 }

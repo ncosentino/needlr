@@ -335,8 +335,20 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
         // Discover [AgentGraphNode] attributes for JoinMode metadata.
         // WaitAll (default) maps to MAF's barrier-style edges (default AddEdge behavior).
-        // WaitAny is noted but not yet supported by MAF natively — edges are wired identically.
+        // WaitAny throws NotSupportedException — MAF's BSP model has no fire-on-any primitive.
         var nodeJoinModes = DiscoverNodeJoinModes(graphName, allAgentTypes);
+        foreach (var (type, joinMode) in nodeJoinModes)
+        {
+            if (joinMode == GraphJoinMode.WaitAny)
+            {
+                throw new NotSupportedException(
+                    $"GraphJoinMode.WaitAny on '{type.Name}' in graph '{graphName}' is not yet supported. " +
+                    $"MAF's BSP execution model requires all incoming branches to complete before a node " +
+                    $"executes (WaitAll). WaitAny requires a custom execution layer outside MAF's " +
+                    $"InProcessExecution, which is planned for a future release. " +
+                    $"Use GraphJoinMode.WaitAll (the default) or remove the [AgentGraphNode] attribute.");
+            }
+        }
 
         var builder = new WorkflowBuilder(executorBindings[entryType]);
 

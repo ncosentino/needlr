@@ -99,6 +99,39 @@ public sealed class WorkflowFactoryGraphTests
         Assert.ThrowsAny<ArgumentException>(
             () => factory.CreateGraphWorkflow(""));
     }
+
+    [Fact]
+    public void CreateGraphWorkflow_WaitAnyJoinMode_ThrowsNotSupported()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+        var factory = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
+                .AddAgent<WaitAnyEntryAgent>()
+                .AddAgent<WaitAnyWorkerAgent>()
+                .AddAgent<WaitAnySinkAgent>())
+            .BuildServiceProvider(config)
+            .GetRequiredService<IWorkflowFactory>();
+
+        var ex = Assert.Throws<NotSupportedException>(
+            () => factory.CreateGraphWorkflow("wf-waitany-test"));
+
+        Assert.Contains("WaitAny", ex.Message);
+        Assert.Contains("not yet supported", ex.Message);
+        Assert.Contains("BSP", ex.Message);
+    }
+
+    [Fact]
+    public void CreateGraphWorkflow_WaitAllJoinMode_Succeeds()
+    {
+        var factory = BuildGraphWorkflowFactory();
+
+        var workflow = factory.CreateGraphWorkflow("wf-test-graph");
+
+        Assert.NotNull(workflow);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -126,3 +159,16 @@ internal sealed class GraphSinkWfAgent { }
 [NeedlrAiAgent(Instructions = "Entry with no edges — triggers error path.")]
 [AgentGraphEntry("wf-no-edges-graph")]
 internal sealed class NoEdgesEntryWfAgent { }
+
+[NeedlrAiAgent(Instructions = "Entry for WaitAny test graph.")]
+[AgentGraphEntry("wf-waitany-test")]
+[AgentGraphEdge("wf-waitany-test", typeof(WaitAnyWorkerAgent))]
+internal sealed class WaitAnyEntryAgent { }
+
+[NeedlrAiAgent(Instructions = "Worker in WaitAny test graph.")]
+[AgentGraphEdge("wf-waitany-test", typeof(WaitAnySinkAgent))]
+internal sealed class WaitAnyWorkerAgent { }
+
+[NeedlrAiAgent(Instructions = "Sink with WaitAny join mode — should throw.")]
+[AgentGraphNode("wf-waitany-test", JoinMode = GraphJoinMode.WaitAny)]
+internal sealed class WaitAnySinkAgent { }

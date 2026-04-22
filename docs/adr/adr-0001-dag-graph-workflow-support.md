@@ -23,7 +23,7 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 
 ### Known Limitations
 
-- **MAF WaitAny**: `GraphJoinMode.WaitAny` is declared and documented but MAF's `FanInEdgeData` only supports barrier (WaitAll) natively. WaitAny is implemented at the Needlr orchestration layer using `Task.WhenAny`.
+- **MAF WaitAny**: `GraphJoinMode.WaitAny` is declared in the API and accepted by analyzers, but **throws `NotSupportedException` at runtime**. MAF's BSP execution model uses mandatory synchronization barriers — every superstep waits for ALL active nodes. There is no MAF primitive for "proceed when any source emits." Implementing WaitAny requires a custom execution layer outside MAF's `InProcessExecution`. This is planned for a future release. Use `GraphJoinMode.WaitAll` (the default) until then.
 
 ## Context
 
