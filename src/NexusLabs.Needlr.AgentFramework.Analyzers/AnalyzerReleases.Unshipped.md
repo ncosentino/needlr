@@ -15,3 +15,5 @@ NDLRMAF022 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphReachabilityA
 NDLRMAF024 | NexusLabs.Needlr.AgentFramework | Warning | AgentGraphOptionalFanOutAnalyzer, All edges from fan-out node are optional
 NDLRMAF027 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphTerminalNodeAnalyzer, Terminal node has outgoing edges
 NDLRMAF025 | NexusLabs.Needlr.AgentFramework | Error | WaitAnyCreateGraphAnalyzer, CreateGraphWorkflow is incompatible with GraphJoinMode.WaitAny
+NDLRMAF028 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphConditionMethodAnalyzer, Condition method not found or has wrong signature
+NDLRMAF029 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphReducerMethodAnalyzer, Reducer method not found or has wrong signature

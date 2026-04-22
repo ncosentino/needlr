@@ -136,6 +136,17 @@ namespace NexusLabs.Needlr.AgentFramework
         public GraphJoinMode JoinMode { get; set; }
     }
 
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class AgentGraphReducerAttribute : System.Attribute
+    {
+        public AgentGraphReducerAttribute(string graphName)
+        {
+            GraphName = graphName;
+        }
+        public string GraphName { get; }
+        public string? ReducerMethod { get; set; }
+    }
+
     public enum GraphJoinMode
     {
         WaitAll = 0,

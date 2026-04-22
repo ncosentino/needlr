@@ -56,6 +56,8 @@ These analyzers validate DAG graph topologies declared via `[AgentGraphEntry]`, 
 | [NDLRMAF024](NDLRMAF024.md) | Warning | All edges from fan-out node are optional |
 | [NDLRMAF025](NDLRMAF025.md) | Error | CreateGraphWorkflow incompatible with GraphJoinMode.WaitAny |
 | [NDLRMAF027](NDLRMAF027.md) | Error | Terminal node has outgoing edges |
+| [NDLRMAF028](NDLRMAF028.md) | Error | Condition method not found or has wrong signature |
+| [NDLRMAF029](NDLRMAF029.md) | Error | Reducer method not found or has wrong signature |
 
 ## SignalR Analyzers(NexusLabs.Needlr.SignalR.Analyzers)
 

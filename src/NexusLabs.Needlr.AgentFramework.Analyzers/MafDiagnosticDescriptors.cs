@@ -353,4 +353,28 @@ public static class MafDiagnosticDescriptors
         description: "CreateGraphWorkflow returns a MAF Workflow object that uses Bulk Synchronous Parallel (BSP) execution with mandatory synchronization barriers. BSP always waits for all upstream nodes (WaitAll). Graphs that declare GraphJoinMode.WaitAny on any node must use RunGraphAsync, which uses Needlr's own executor with Task.WhenAny for WaitAny fan-in points.",
         helpLinkUri: HelpLinkBase + "NDLRMAF025.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
+
+    /// <summary>
+    /// NDLRMAF028: Condition method not found or invalid signature.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphConditionMethodInvalid = new(
+        id: MafDiagnosticIds.GraphConditionMethodInvalid,
+        title: "Condition method not found or has wrong signature",
+        messageFormat: "Condition '{0}' on [AgentGraphEdge] for '{1}' must be a public static method with signature 'static bool {0}(object?)' on the declaring class",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The Condition property on [AgentGraphEdge] references a static method on the decorated class that determines whether this edge should be followed at runtime. The method must be public, static, accept a single object? parameter, and return bool.");
+
+    /// <summary>
+    /// NDLRMAF029: Reducer method not found or invalid signature.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GraphReducerMethodInvalid = new(
+        id: MafDiagnosticIds.GraphReducerMethodInvalid,
+        title: "Reducer method not found or has wrong signature",
+        messageFormat: "ReducerMethod '{0}' on [AgentGraphReducer] for '{1}' must be a public static method with signature 'static string {0}(IReadOnlyList<string>)' on the declaring class",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The ReducerMethod property on [AgentGraphReducer] references a static method that aggregates multiple branch outputs into a single string. The method must be public, static, accept IReadOnlyList<string>, and return string.");
 }

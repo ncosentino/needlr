@@ -163,4 +163,19 @@ public static class MafDiagnosticIds
     /// which does not support WaitAny. Use <c>RunGraphAsync</c> instead.
     /// </summary>
     public const string WaitAnyIncompatibleWithCreateGraphWorkflow = "NDLRMAF025";
+
+    /// <summary>
+    /// NDLRMAF028: The <c>Condition</c> property on <c>[AgentGraphEdge]</c> references
+    /// a method that does not exist on the source agent, is not static, or has the
+    /// wrong signature. The method must be <c>static bool MethodName(object?)</c>.
+    /// </summary>
+    public const string GraphConditionMethodInvalid = "NDLRMAF028";
+
+    /// <summary>
+    /// NDLRMAF029: The <c>ReducerMethod</c> property on <c>[AgentGraphReducer]</c>
+    /// references a method that does not exist on the decorated type, is not static,
+    /// or has the wrong signature. The method must be
+    /// <c>static string MethodName(IReadOnlyList&lt;string&gt;)</c>.
+    /// </summary>
+    public const string GraphReducerMethodInvalid = "NDLRMAF029";
 }
