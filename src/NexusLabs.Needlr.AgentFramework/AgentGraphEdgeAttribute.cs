@@ -70,7 +70,23 @@ public sealed class AgentGraphEdgeAttribute : Attribute
     /// graph-wide <see cref="AgentGraphEntryAttribute.RoutingMode"/> for that
     /// node's outgoing edges. Only needs to be set on one edge per source node
     /// (the generator reads the first non-null value).
-    /// When <see langword="null"/> (default), the graph-wide routing mode is used.
+    /// Use <see cref="HasNodeRoutingMode"/> to check if a value was explicitly set.
     /// </summary>
-    public GraphRoutingMode? NodeRoutingMode { get; set; }
+    public GraphRoutingMode NodeRoutingMode
+    {
+        get => _nodeRoutingMode;
+        set
+        {
+            _nodeRoutingMode = value;
+            HasNodeRoutingMode = true;
+        }
+    }
+
+    /// <summary>
+    /// Gets whether <see cref="NodeRoutingMode"/> was explicitly set on this edge.
+    /// When <see langword="false"/>, the graph-wide routing mode is used.
+    /// </summary>
+    public bool HasNodeRoutingMode { get; private set; }
+
+    private GraphRoutingMode _nodeRoutingMode;
 }

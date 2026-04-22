@@ -24,6 +24,21 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 ### Known Limitations
 
 - **WaitAny requires `RunGraphAsync`**: `GraphJoinMode.WaitAny` is fully implemented via the `RunGraphAsync` extension method in `NexusLabs.Needlr.AgentFramework.Workflows`. However, it is **not compatible** with `CreateGraphWorkflow` (which returns a MAF `Workflow` using BSP execution). `CreateGraphWorkflow` throws `NotSupportedException` when WaitAny nodes are detected, directing users to `RunGraphAsync`. Analyzer **NDLRMAF025** catches this at compile time — users see an error in their IDE before they ever run the code.
+- **`GraphRoutingMode.LlmChoice`**: Throws `NotSupportedException` at runtime. LLM-driven routing requires agent tool-calling integration that is architecturally complex. All other routing modes (`Deterministic`, `AllMatching`, `FirstMatching`, `ExclusiveChoice`) are fully implemented and tested.
+
+### Runtime Feature Coverage
+
+All attribute properties are wired at runtime in the Needlr-native executor (`RunGraphAsync`) with test coverage:
+
+| Feature | Status | Tests |
+|---|---|---|
+| Condition-based routing | ✅ Implemented | Conditional edge skips branch, unconditional always fires, mixed behavior |
+| IsRequired failure propagation | ✅ Implemented | Required failure kills graph, optional failure continues, mixed scenario |
+| Reducer invocation | ✅ Implemented | Reducer called with branch outputs, return value passed downstream |
+| WaitAny join mode | ✅ Implemented | Proceeds on first-to-complete, verified by timing |
+| RoutingMode enforcement | ✅ Implemented | FirstMatching fires only first, ExclusiveChoice rejects zero/multiple matches |
+| NodeRoutingMode override | ✅ Implemented | Per-node override takes precedence over graph-wide mode |
+| Progress events | ✅ Implemented | AgentInvokedEvent, WorkflowStarted/CompletedEvent emitted during execution |
 
 ## Context
 

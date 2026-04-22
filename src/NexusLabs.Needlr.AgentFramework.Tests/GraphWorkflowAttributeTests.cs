@@ -29,7 +29,7 @@ public sealed class GraphWorkflowAttributeTests
 
         Assert.Equal("NeedsData", attr.Condition);
         Assert.False(attr.IsRequired);
-        Assert.Null(attr.NodeRoutingMode);
+        Assert.False(attr.HasNodeRoutingMode, "NodeRoutingMode should not be set by default");
     }
 
     [Fact]
@@ -40,15 +40,16 @@ public sealed class GraphWorkflowAttributeTests
             NodeRoutingMode = GraphRoutingMode.ExclusiveChoice,
         };
 
+        Assert.True(attr.HasNodeRoutingMode, "NodeRoutingMode should be set after assignment");
         Assert.Equal(GraphRoutingMode.ExclusiveChoice, attr.NodeRoutingMode);
     }
 
     [Fact]
-    public void AgentGraphEdgeAttribute_NodeRoutingModeDefaultsToNull()
+    public void AgentGraphEdgeAttribute_NodeRoutingModeDefaultsToUnset()
     {
         var attr = new AgentGraphEdgeAttribute("Pipeline", typeof(int));
 
-        Assert.Null(attr.NodeRoutingMode);
+        Assert.False(attr.HasNodeRoutingMode, "NodeRoutingMode should not be set by default");
     }
 
     [Fact]
