@@ -72,7 +72,6 @@ public sealed class GraphWorkflowAttributeTests
         var attr = new AgentGraphEntryAttribute("Research");
 
         Assert.Equal("Research", attr.GraphName);
-        Assert.Equal(20, attr.MaxSupersteps);
         Assert.Equal(GraphRoutingMode.Deterministic, attr.RoutingMode);
     }
 
@@ -81,11 +80,9 @@ public sealed class GraphWorkflowAttributeTests
     {
         var attr = new AgentGraphEntryAttribute("Research")
         {
-            MaxSupersteps = 10,
             RoutingMode = GraphRoutingMode.LlmChoice,
         };
 
-        Assert.Equal(10, attr.MaxSupersteps);
         Assert.Equal(GraphRoutingMode.LlmChoice, attr.RoutingMode);
     }
 

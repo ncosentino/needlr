@@ -17,7 +17,7 @@ namespace GraphWorkflowApp.Agents;
         Be concise and structured in your analysis.
         """,
     FunctionTypes = new Type[0])]
-[AgentGraphEntry("research-pipeline", MaxSupersteps = 15, RoutingMode = GraphRoutingMode.AllMatching)]
+[AgentGraphEntry("research-pipeline", RoutingMode = GraphRoutingMode.AllMatching)]
 [AgentGraphEdge("research-pipeline", typeof(WebResearchAgent))]
 [AgentGraphEdge("research-pipeline", typeof(DatabaseAgent))]
 public partial class AnalyzerAgent { }

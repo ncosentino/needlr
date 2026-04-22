@@ -83,16 +83,11 @@ internal static class GraphDiscoveryHelper
             if (string.IsNullOrWhiteSpace(graphName))
                 continue;
 
-            var maxSupersteps = 20;
             var routingMode = 0;
 
             foreach (var named in attr.NamedArguments)
             {
-                if (named.Key == "MaxSupersteps" && named.Value.Value is int maxVal)
-                {
-                    maxSupersteps = maxVal;
-                }
-                else if (named.Key == "RoutingMode" && named.Value.Value is int routeVal)
+                if (named.Key == "RoutingMode" && named.Value.Value is int routeVal)
                 {
                     routingMode = routeVal;
                 }
@@ -102,7 +97,6 @@ internal static class GraphDiscoveryHelper
                 agentTypeName,
                 typeSymbol.Name,
                 graphName!,
-                maxSupersteps,
                 routingMode));
         }
 

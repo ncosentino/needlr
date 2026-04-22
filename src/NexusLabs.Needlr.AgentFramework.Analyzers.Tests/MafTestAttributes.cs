@@ -122,7 +122,6 @@ namespace NexusLabs.Needlr.AgentFramework
             GraphName = graphName;
         }
         public string GraphName { get; }
-        public int MaxSupersteps { get; set; } = 100;
     }
 
     [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]

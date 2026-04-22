@@ -358,7 +358,7 @@ Agents form a directed acyclic graph with conditional routing, fan-out, and fan-
 
 ```csharp
 [NeedlrAiAgent(Instructions = "Analyze the request and route to research paths.")]
-[AgentGraphEntry("research", MaxSupersteps = 15, RoutingMode = GraphRoutingMode.AllMatching)]
+[AgentGraphEntry("research", RoutingMode = GraphRoutingMode.AllMatching)]
 [AgentGraphEdge("research", typeof(WebResearchAgent), Condition = "NeedsWebData")]
 [AgentGraphEdge("research", typeof(DatabaseAgent), Condition = "NeedsDbLookup")]
 [AgentGraphEdge("research", typeof(SummarizerAgent))]
@@ -394,7 +394,7 @@ Key attributes:
 
 | Attribute | Purpose |
 |-----------|---------|
-| `[AgentGraphEntry]` | Marks the entry point; sets `MaxSupersteps` and `RoutingMode` |
+| `[AgentGraphEntry]` | Marks the entry point; sets `RoutingMode` |
 | `[AgentGraphEdge]` | Declares a directed edge with optional `Condition` and `IsRequired` |
 | `[AgentGraphNode]` | Per-node join semantics (`WaitAll` / `WaitAny`) |
 

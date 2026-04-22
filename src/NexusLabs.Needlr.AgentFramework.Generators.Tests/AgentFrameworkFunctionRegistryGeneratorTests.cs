@@ -1694,7 +1694,7 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
                 public class SummaryAgent { }
 
                 [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
-                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research", MaxSupersteps = 15)]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
                 [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WebAgent))]
                 [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(SummaryAgent), Condition = "needs-summary")]
                 public class AnalyzerAgent { }

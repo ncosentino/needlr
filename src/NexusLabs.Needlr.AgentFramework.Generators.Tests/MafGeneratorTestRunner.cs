@@ -167,7 +167,6 @@ internal sealed class MafGeneratorTestRunner
             {
                 public AgentGraphEntryAttribute(string graphName) { GraphName = graphName; }
                 public string GraphName { get; }
-                public int MaxSupersteps { get; set; } = 20;
                 public int RoutingMode { get; set; } = 0;
             }
 

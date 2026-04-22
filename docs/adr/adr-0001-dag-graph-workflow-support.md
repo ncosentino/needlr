@@ -74,14 +74,14 @@ Existing infrastructure that this decision builds on:
 
 ## Decision
 
-Add a 4th workflow type — DAG/graph workflows — via `[AgentGraphEdge]` and `[AgentGraphEntry]` attributes, a `[AgentGraphReducer]` attribute for fan-in aggregation, source-generated `Create{Name}GraphWorkflow()` factory methods, and 8 new Roslyn analyzers (`NDLRMAF016`–`NDLRMAF023`).
+Add a 4th workflow type — DAG/graph workflows — via `[AgentGraphEdge]` and `[AgentGraphEntry]` attributes, a `[AgentGraphReducer]` attribute for fan-in aggregation, source-generated `Create{Name}GraphWorkflow()` factory methods, and Roslyn analyzers (`NDLRMAF016`–`NDLRMAF022`, `NDLRMAF024`–`NDLRMAF025`, `NDLRMAF027`).
 
 ### Core Attribute Design
 
 Edges are declared on the source node (edge-on-source), consistent with `[AgentHandoffsTo]`:
 
 ```csharp
-[AgentGraphEntry("ResearchPipeline", MaxSupersteps = 15)]
+[AgentGraphEntry("ResearchPipeline")]
 [AgentGraphEdge("ResearchPipeline", typeof(WebResearchAgent), Condition = "needs-web")]
 [AgentGraphEdge("ResearchPipeline", typeof(SummarizerAgent))]
 public class AnalyzerAgent { }
@@ -206,7 +206,7 @@ Ten new diagnostics across seven analyzer classes, extending the existing `NDLRM
 | NDLRMAF020 | Graph edge source is not a declared agent | Warning |
 | NDLRMAF021 | Graph entry point is not a declared agent | Warning |
 | NDLRMAF022 | Graph contains unreachable agents | Warning |
-| NDLRMAF023 | MaxSupersteps value is invalid (≤ 0) | Error |
+| ~~NDLRMAF023~~ | ~~MaxSupersteps value is invalid~~ | Retired — property removed |
 | NDLRMAF024 | All edges from fan-out node are optional | Warning |
 | NDLRMAF025 | CreateGraphWorkflow incompatible with WaitAny | Error |
 | NDLRMAF027 | Terminal node has outgoing edges | Error |

@@ -309,18 +309,8 @@ public static class MafDiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRMAF022.md",
         customTags: WellKnownDiagnosticTags.CompilationEnd);
 
-    /// <summary>
-    /// NDLRMAF023: MaxSupersteps value is invalid (≤ 0).
-    /// </summary>
-    public static readonly DiagnosticDescriptor GraphInvalidMaxSupersteps = new(
-        id: MafDiagnosticIds.GraphInvalidMaxSupersteps,
-        title: "MaxSupersteps value is invalid",
-        messageFormat: "MaxSupersteps on [AgentGraphEntry] for graph '{0}' is {1}, which is invalid. MaxSupersteps must be greater than zero.",
-        category: Category,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        description: "The MaxSupersteps property on [AgentGraphEntry] controls the maximum number of BSP supersteps the graph executor will run. A value of zero or negative means the graph can never make progress. Set MaxSupersteps to a positive integer.",
-        helpLinkUri: HelpLinkBase + "NDLRMAF023.md");
+    // NDLRMAF023 (GraphInvalidMaxSupersteps) removed — MaxSupersteps property
+    // was removed from AgentGraphEntryAttribute.
 
     /// <summary>
     /// NDLRMAF024: All edges from a fan-out node are optional.

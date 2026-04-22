@@ -21,7 +21,7 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <example>
 /// <code>
 /// [NeedlrAiAgent(Instructions = "Analyze the request.")]
-/// [AgentGraphEntry("Research", MaxSupersteps = 15)]
+/// [AgentGraphEntry("Research")]
 /// [AgentGraphEdge("Research", typeof(WebAgent), Condition = "NeedsWebData")]
 /// [AgentGraphEdge("Research", typeof(SummaryAgent))]
 /// public class AnalyzerAgent { }

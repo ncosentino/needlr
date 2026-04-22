@@ -139,10 +139,9 @@ public static class MafDiagnosticIds
     /// </summary>
     public const string GraphUnreachableAgent = "NDLRMAF022";
 
-    /// <summary>
-    /// NDLRMAF023: The <c>MaxSupersteps</c> value on <c>[AgentGraphEntry]</c> is invalid (≤ 0).
-    /// </summary>
-    public const string GraphInvalidMaxSupersteps = "NDLRMAF023";
+    // NDLRMAF023 was previously used for MaxSupersteps validation.
+    // The MaxSupersteps property was removed from AgentGraphEntryAttribute.
+    // ID is retired — do not reuse.
 
     /// <summary>
     /// NDLRMAF024: All outgoing edges from a fan-out node have

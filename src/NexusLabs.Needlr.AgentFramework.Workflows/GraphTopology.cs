@@ -25,11 +25,33 @@ internal sealed record GraphTopology(
         JoinModes.Values.Any(m => m == GraphJoinMode.WaitAny);
 
     /// <summary>
-    /// Whether this graph requires the Needlr-native executor (WaitAny or
-    /// LlmChoice routing) instead of the MAF BSP engine.
+    /// Whether this graph requires the Needlr-native executor instead of the
+    /// MAF BSP engine. The MAF BSP path only supports unconditional WaitAll
+    /// graphs with Deterministic/AllMatching routing and no reducers. Any
+    /// advanced feature forces the Needlr-native executor.
     /// </summary>
     public bool RequiresNeedlrExecutor =>
         HasWaitAnyNodes ||
-        GraphRoutingMode == GraphRoutingMode.LlmChoice ||
-        EffectiveRoutingModes.Values.Any(m => m == GraphRoutingMode.LlmChoice);
+        HasConditions ||
+        HasOptionalEdges ||
+        HasReducer ||
+        HasNonTrivialRouting;
+
+    private bool HasConditions =>
+        OutgoingEdgesBySource.Values
+            .SelectMany(edges => edges)
+            .Any(e => e.Condition is not null);
+
+    private bool HasOptionalEdges =>
+        EdgeIsRequired.Values.Any(isReq => !isReq);
+
+    private bool HasReducer =>
+        ReducerFunc is not null;
+
+    private bool HasNonTrivialRouting =>
+        GraphRoutingMode != GraphRoutingMode.Deterministic &&
+        GraphRoutingMode != GraphRoutingMode.AllMatching ||
+        EffectiveRoutingModes.Values.Any(m =>
+            m != GraphRoutingMode.Deterministic &&
+            m != GraphRoutingMode.AllMatching);
 }
