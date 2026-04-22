@@ -34,6 +34,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private const string AgentGraphEdgeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEdgeAttribute";
     private const string AgentGraphEntryAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEntryAttribute";
     private const string AgentGraphNodeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphNodeAttribute";
+    private const string AgentGraphReducerAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphReducerAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -123,7 +124,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
                 transform: static (ctx, ct) => GraphDiscoveryHelper.GetGraphNodeEntries(ctx, ct))
             .Where(static arr => arr.Length > 0);
 
-        // Unified output: all eleven pipelines combined with compilation metadata and build config.
+        // [AgentGraphReducer] annotations → graph reducer metadata
+        var graphReducerEntries = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AgentGraphReducerAttributeName,
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
+                transform: static (ctx, ct) => GraphDiscoveryHelper.GetGraphReducerEntries(ctx, ct))
+            .Where(static arr => arr.Length > 0);
+
+        // Unified output: all pipelines combined with compilation metadata and build config.
         // Always emits all registries + [ModuleInitializer] bootstrap, even when empty.
         var combined = functionClasses.Collect()
             .Combine(groupClasses.Collect())
@@ -136,14 +145,15 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             .Combine(graphEdgeEntries.Collect())
             .Combine(graphEntryPointEntries.Collect())
             .Combine(graphNodeEntries.Collect())
+            .Combine(graphReducerEntries.Collect())
             .Combine(context.CompilationProvider)
             .Combine(context.AnalyzerConfigOptionsProvider);
 
         context.RegisterSourceOutput(combined,
             static (spc, data) =>
             {
-                var ((((((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), progressSinksData), graphEdgeData), graphEntryData), graphNodeData), compilation), configOptions) = data;
-                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, progressSinksData, graphEdgeData, graphEntryData, graphNodeData, compilation, configOptions, spc);
+                var (((((((((((((functionData, groupData), agentData), handoffData), groupChatData), sequenceData), terminationData), progressSinksData), graphEdgeData), graphEntryData), graphNodeData), graphReducerData), compilation), configOptions) = data;
+                ExecuteAll(functionData, groupData, agentData, handoffData, groupChatData, sequenceData, terminationData, progressSinksData, graphEdgeData, graphEntryData, graphNodeData, graphReducerData, compilation, configOptions, spc);
             });
     }
 
@@ -159,6 +169,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         ImmutableArray<ImmutableArray<GraphEdgeEntry>> graphEdgeData,
         ImmutableArray<ImmutableArray<GraphEntryPointEntry>> graphEntryData,
         ImmutableArray<ImmutableArray<GraphNodeEntry>> graphNodeData,
+        ImmutableArray<ImmutableArray<GraphReducerEntry>> graphReducerData,
         Compilation compilation,
         Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions,
         SourceProductionContext spc)
@@ -218,8 +229,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         var allGraphEdges = graphEdgeData.SelectMany(a => a).ToList();
         var allGraphEntryPoints = graphEntryData.SelectMany(a => a).ToList();
         var allGraphNodes = graphNodeData.SelectMany(a => a).ToList();
+        var allGraphReducers = graphReducerData.SelectMany(a => a).ToList();
 
-        var graphDataByName = BuildGraphDataByName(allGraphEdges, allGraphEntryPoints, allGraphNodes);
+        var graphDataByName = BuildGraphDataByName(allGraphEdges, allGraphEntryPoints, allGraphNodes, allGraphReducers);
 
         // Always emit all registries (may be empty) and the bootstrap
         spc.AddSource("AgentFrameworkFunctions.g.cs",
@@ -292,12 +304,14 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
     private static Dictionary<string, GraphData> BuildGraphDataByName(
         List<GraphEdgeEntry> allEdges,
         List<GraphEntryPointEntry> allEntryPoints,
-        List<GraphNodeEntry> allNodes)
+        List<GraphNodeEntry> allNodes,
+        List<GraphReducerEntry> allReducers)
     {
         var graphNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var e in allEdges) graphNames.Add(e.GraphName);
         foreach (var e in allEntryPoints) graphNames.Add(e.GraphName);
         foreach (var e in allNodes) graphNames.Add(e.GraphName);
+        foreach (var e in allReducers) graphNames.Add(e.GraphName);
 
         var result = new Dictionary<string, GraphData>(StringComparer.Ordinal);
         foreach (var name in graphNames)
@@ -305,7 +319,8 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             result[name] = new GraphData(
                 allEdges.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList(),
                 allEntryPoints.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList(),
-                allNodes.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList());
+                allNodes.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList(),
+                allReducers.Where(e => string.Equals(e.GraphName, name, StringComparison.Ordinal)).ToList());
         }
 
         return result;
@@ -317,14 +332,17 @@ internal sealed class GraphData
     public GraphData(
         List<GraphEdgeEntry> edges,
         List<GraphEntryPointEntry> entryPoints,
-        List<GraphNodeEntry> nodes)
+        List<GraphNodeEntry> nodes,
+        List<GraphReducerEntry> reducers)
     {
         Edges = edges;
         EntryPoints = entryPoints;
         Nodes = nodes;
+        Reducers = reducers;
     }
 
     public List<GraphEdgeEntry> Edges { get; }
     public List<GraphEntryPointEntry> EntryPoints { get; }
     public List<GraphNodeEntry> Nodes { get; }
+    public List<GraphReducerEntry> Reducers { get; }
 }
