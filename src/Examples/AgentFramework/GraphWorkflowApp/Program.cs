@@ -63,6 +63,7 @@ var serviceProvider = new Syringe()
 
 var workflowFactory = serviceProvider.GetRequiredService<IWorkflowFactory>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
+var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 
 AnsiConsole.Write(new Rule("[bold cyan]Needlr DAG Graph Workflow[/]").RuleStyle("grey"));
 AnsiConsole.MarkupLine($"  [dim]LLM:[/]       Copilot ([green]{copilotOptions.DefaultModel}[/])");
@@ -94,7 +95,7 @@ await AnsiConsole.Status()
     {
         statusSink.SetStatusContext(ctx);
         result = await workflowFactory.RunGraphAsync(
-            "research-pipeline", question, reporter);
+            "research-pipeline", question, reporter, diagnosticsAccessor);
 
         ctx.Status("Complete");
     });
@@ -122,7 +123,7 @@ foreach (var (nodeId, nodeResult) in result.NodeResults)
 {
     var tokens = nodeResult.Diagnostics?.AggregateTokenUsage;
     var llmCalls = nodeResult.Diagnostics?.ChatCompletions.Count ?? 0;
-    var status = nodeResult.Diagnostics?.Succeeded == true
+    var status = nodeResult.FinalResponse is not null
         ? "[green]✓[/]"
         : "[red]✗[/]";
 
