@@ -22,7 +22,7 @@ using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Workflows;
 using NexusLabs.Needlr.Copilot;
 using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.Injection.SourceGen;
 
 // Generated extension methods: CreateResearchPipelineGraphWorkflow() on IWorkflowFactory.
 // These are emitted by the source generator in GraphWorkflowApp.Agents based on
@@ -46,9 +46,10 @@ IChatClient chatClient = new CopilotChatClient(copilotOptions);
 // fires on assembly load and registers all [NeedlrAiAgent] types and their
 // [AgentGraphEntry]/[AgentGraphEdge] topology with AgentFrameworkGeneratedBootstrap.
 var serviceProvider = new Syringe()
-    .UsingReflection()
-    .UsingAssemblyProvider(b => b.MatchingAssemblies(path =>
-        path.Contains("GraphWorkflowApp", StringComparison.OrdinalIgnoreCase)).Build())
+    .UsingSourceGen()
+    .UsingGeneratedComponents(
+        GraphWorkflowApp.Generated.TypeRegistry.GetInjectableTypes,
+        GraphWorkflowApp.Generated.TypeRegistry.GetPluginTypes)
     .UsingAgentFramework(af => af.UsingChatClient(chatClient))
     .BuildServiceProvider(configuration);
 
