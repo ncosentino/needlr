@@ -236,12 +236,10 @@ public static class GraphWorkflowRunExtensions
             ?.OrderBy(t => t.StartedAt).ToList()
             ?? [];
 
-        // Only agents that produced response text are real nodes (skip MAF internals).
-        var agentIds = invocationTimestamps
-            .Where(inv => responses.ContainsKey(inv.ExecutorId))
-            .Select(inv => inv.ExecutorId)
-            .Distinct()
-            .ToList();
+        // Include agents that were invoked OR produced response text.
+        var invokedIds = invocationTimestamps.Select(inv => inv.ExecutorId).ToHashSet();
+        var respondedIds = responses.Keys.ToHashSet();
+        var agentIds = invokedIds.Union(respondedIds).Distinct().ToList();
 
         // Partition completions by agent name, matching on the AgentName field
         // that the diagnostics middleware stamps onto each ChatCompletionDiagnostics.

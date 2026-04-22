@@ -121,6 +121,7 @@ var table = new Table()
 
 foreach (var (nodeId, nodeResult) in result.NodeResults)
 {
+    var shortId = ShortName(nodeId);
     var tokens = nodeResult.Diagnostics?.AggregateTokenUsage;
     var llmCalls = nodeResult.Diagnostics?.ChatCompletions.Count ?? 0;
     var status = nodeResult.FinalResponse is not null
@@ -128,7 +129,7 @@ foreach (var (nodeId, nodeResult) in result.NodeResults)
         : "[red]✗[/]";
 
     table.AddRow(
-        $"[bold]{Markup.Escape(nodeId)}[/]",
+        $"[bold]{Markup.Escape(shortId)}[/]",
         $"{nodeResult.Duration.TotalMilliseconds:F0}ms",
         $"{tokens?.TotalTokens ?? 0}",
         $"{llmCalls}",
@@ -159,7 +160,7 @@ foreach (var stage in result.Stages)
         continue;
     }
 
-    AnsiConsole.MarkupLine($"\n[bold green]{Markup.Escape(stage.AgentName)}[/]");
+    AnsiConsole.MarkupLine($"\n[bold green]{Markup.Escape(ShortName(stage.AgentName))}[/]");
     AnsiConsole.WriteLine(responseText.Length > 500
         ? responseText[..500] + "..."
         : responseText);
@@ -167,6 +168,12 @@ foreach (var stage in result.Stages)
 
 AnsiConsole.WriteLine();
 AnsiConsole.MarkupLine("[bold green]✓ Done[/]");
+
+static string ShortName(string id)
+{
+    var idx = id.IndexOf('_');
+    return idx > 0 ? id[..idx] : id;
+}
 
 // ---------------------------------------------------------------------------
 // Minimal progress sink that updates Spectre.Console Status text.
@@ -183,21 +190,26 @@ sealed class StatusProgressSink : IProgressSink
         switch (evt)
         {
             case AgentInvokedEvent ai:
-                _activeNodes.Add(ai.AgentName);
+                var shortName = ShortName(ai.AgentName);
+                if (!_activeNodes.Contains(shortName))
+                {
+                    _activeNodes.Add(shortName);
+                }
                 UpdateStatus();
                 break;
 
             case AgentCompletedEvent ac:
-                _activeNodes.Remove(ac.AgentName);
+                _activeNodes.Remove(ShortName(ac.AgentName));
                 UpdateStatus();
                 break;
 
             case AgentFailedEvent af:
-                _activeNodes.Remove(af.AgentName);
-                _ctx?.Status($"[red]✗ {af.AgentName} failed[/]");
+                _activeNodes.Remove(ShortName(af.AgentName));
+                _ctx?.Status($"[red]✗ {Markup.Escape(ShortName(af.AgentName))} failed[/]");
                 break;
 
             case WorkflowCompletedEvent:
+                _activeNodes.Clear();
                 _ctx?.Status("[green]✓ All nodes complete[/]");
                 break;
         }
@@ -209,10 +221,17 @@ sealed class StatusProgressSink : IProgressSink
     {
         if (_ctx is null || _activeNodes.Count == 0)
         {
+            _ctx?.Status("[dim]Waiting...[/]");
             return;
         }
 
-        var names = string.Join(" + ", _activeNodes);
+        var names = string.Join(" + ", _activeNodes.Select(Markup.Escape));
         _ctx.Status($"Running [yellow]{names}[/]...");
+    }
+
+    private static string ShortName(string id)
+    {
+        var idx = id.IndexOf('_');
+        return idx > 0 ? id[..idx] : id;
     }
 }
