@@ -261,7 +261,17 @@ sealed class DagDashboardSink : IProgressSink
                 var name = ShortName(ai.AgentName);
                 if (!_agents.ContainsKey(name))
                 {
+                    // A new agent starting means any agent that was streaming
+                    // and isn't this one has finished.
+                    foreach (var (_, prev) in _agents)
+                    {
+                        if (!prev.Done && !prev.Failed && prev.Text.Length > 0)
+                        {
+                            prev.Done = true;
+                        }
+                    }
                     _agents[name] = new AgentPanel(name);
+                    Refresh();
                 }
                 break;
 
