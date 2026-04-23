@@ -38,6 +38,7 @@ internal static class GraphDiscoveryHelper
 
             string? condition = null;
             var isRequired = true;
+            int? nodeRoutingMode = null;
 
             foreach (var named in attr.NamedArguments)
             {
@@ -49,6 +50,12 @@ internal static class GraphDiscoveryHelper
                 {
                     isRequired = isReqValue;
                 }
+                else if (named.Key == "NodeRoutingMode" && named.Value.Value is int routeVal)
+                {
+                    // Presence in NamedArguments means the user explicitly set it,
+                    // equivalent to HasNodeRoutingMode = true at runtime.
+                    nodeRoutingMode = routeVal;
+                }
             }
 
             entries.Add(new GraphEdgeEntry(
@@ -57,7 +64,8 @@ internal static class GraphDiscoveryHelper
                 graphName!,
                 targetTypeName,
                 condition,
-                isRequired));
+                isRequired,
+                nodeRoutingMode));
         }
 
         return entries.ToImmutable();
@@ -163,24 +171,22 @@ internal static class GraphDiscoveryHelper
             if (string.IsNullOrWhiteSpace(graphName))
                 continue;
 
-            string? reducerMethod = null;
+            string reducerMethod = "Reduce";
 
             foreach (var named in attr.NamedArguments)
             {
-                if (named.Key == "ReducerMethod" && named.Value.Value is string methodVal)
+                if (named.Key == "ReducerMethod" && named.Value.Value is string methodVal
+                    && !string.IsNullOrWhiteSpace(methodVal))
                 {
                     reducerMethod = methodVal;
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(reducerMethod))
-            {
-                entries.Add(new GraphReducerEntry(
-                    agentTypeName,
-                    typeSymbol.Name,
-                    graphName!,
-                    reducerMethod!));
-            }
+            entries.Add(new GraphReducerEntry(
+                agentTypeName,
+                typeSymbol.Name,
+                graphName!,
+                reducerMethod));
         }
 
         return entries.ToImmutable();

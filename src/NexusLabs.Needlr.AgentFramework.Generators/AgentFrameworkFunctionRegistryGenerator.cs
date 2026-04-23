@@ -252,6 +252,9 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
         spc.AddSource("AgentSequentialTopologyRegistry.g.cs",
             SourceText.From(RegistryCodeGenerator.GenerateSequentialTopologyRegistrySource(sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
 
+        spc.AddSource("AgentGraphTopologyRegistry.g.cs",
+            SourceText.From(RegistryCodeGenerator.GenerateGraphTopologyRegistrySource(graphDataByName, safeAssemblyName), Encoding.UTF8));
+
         spc.AddSource("NeedlrAgentFrameworkBootstrap.g.cs",
             SourceText.From(BootstrapCodeGenerator.GenerateBootstrapSource(safeAssemblyName), Encoding.UTF8));
 
@@ -264,7 +267,7 @@ public class AgentFrameworkFunctionRegistryGenerator : IIncrementalGenerator
             SourceText.From(ExtensionsCodeGenerator.GenerateAgentFactoryExtensionsSource(validAgentTypes, progressSinksByAgent, safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("AgentTopologyConstants.g.cs",
-            SourceText.From(ExtensionsCodeGenerator.GenerateAgentTopologyConstantsSource(validAgentTypes, allGroupEntries, sequenceByPipelineName, safeAssemblyName), Encoding.UTF8));
+            SourceText.From(ExtensionsCodeGenerator.GenerateAgentTopologyConstantsSource(validAgentTypes, allGroupEntries, sequenceByPipelineName, graphDataByName.Keys, safeAssemblyName), Encoding.UTF8));
 
         spc.AddSource("AgentFrameworkSyringeExtensions.g.cs",
             SourceText.From(ExtensionsCodeGenerator.GenerateSyringeExtensionsSource(allGroupEntries, safeAssemblyName), Encoding.UTF8));

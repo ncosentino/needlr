@@ -86,14 +86,58 @@ internal static class TopologyGraphCodeGenerator
                 var graphData = kvp.Value;
                 sb.AppendLine($"    subgraph Graph_{SanitizeMermaidId(graphName)}");
 
+                // Collect entry point class names for stadium shape rendering
+                var entryPointClassNames = new HashSet<string>();
+                foreach (var ep in graphData.EntryPoints)
+                    entryPointClassNames.Add(ep.AgentClassName);
+
+                // Collect reducer class names for hexagon shape rendering
+                var reducerClassNames = new HashSet<string>();
+                foreach (var r in graphData.Reducers)
+                    reducerClassNames.Add(r.AgentClassName);
+
+                // Collect node join modes for labeling
+                var joinModeByClassName = new Dictionary<string, int>();
+                foreach (var node in graphData.Nodes)
+                {
+                    if (node.JoinMode != 0)
+                        joinModeByClassName[node.AgentClassName] = node.JoinMode;
+                }
+
+                // Emit entry point node declarations with stadium shape
+                foreach (var epClassName in entryPointClassNames)
+                    sb.AppendLine($"        {epClassName}([{epClassName}])");
+
+                // Emit reducer node declarations with hexagon shape
+                foreach (var reducerClassName in reducerClassNames)
+                {
+                    if (!entryPointClassNames.Contains(reducerClassName))
+                        sb.AppendLine($"        {reducerClassName}{{{{{reducerClassName}}}}}");
+                }
+
                 foreach (var edge in graphData.Edges)
                 {
                     var source = edge.SourceAgentClassName;
                     var target = AgentDiscoveryHelper.GetShortName(edge.TargetAgentTypeName);
-                    if (string.IsNullOrWhiteSpace(edge.Condition))
-                        sb.AppendLine($"        {source} --> {target}");
+
+                    var arrow = edge.IsRequired ? "-->" : "-.->";
+
+                    // Build label parts
+                    string? label = null;
+                    if (!string.IsNullOrWhiteSpace(edge.Condition))
+                        label = EscapeMermaidLabel(edge.Condition!);
+
+                    // Add JoinMode annotation on edges targeting nodes with non-default join mode
+                    if (joinModeByClassName.TryGetValue(target, out var joinMode))
+                    {
+                        var joinLabel = joinMode == 1 ? "WaitAny" : $"JoinMode{joinMode}";
+                        label = label != null ? $"{label}, {joinLabel}" : joinLabel;
+                    }
+
+                    if (label != null)
+                        sb.AppendLine($"        {source} {arrow}|\"{label}\"| {target}");
                     else
-                        sb.AppendLine($"        {source} -->|\"{EscapeMermaidLabel(edge.Condition!)}\"| {target}");
+                        sb.AppendLine($"        {source} {arrow} {target}");
                 }
 
                 sb.AppendLine("    end");

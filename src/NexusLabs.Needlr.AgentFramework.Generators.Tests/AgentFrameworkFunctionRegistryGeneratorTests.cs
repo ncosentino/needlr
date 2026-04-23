@@ -1710,4 +1710,424 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("AnalyzerAgent --> WebAgent", output);
         Assert.Contains("needs-summary", output);
     }
+
+    // -------------------------------------------------------------------------
+    // Pipeline I — AgentGraphTopologyRegistry emission
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphEdgeAndEntry_EmitsGraphTopologyRegistry()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WebResearchAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class SummarizerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WebResearchAgent), Condition = "NeedsWebData")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(SummarizerAgent))]
+                public class AnalyzerAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        Assert.Contains("AgentGraphTopologyRegistry", output);
+        Assert.Contains("AllGraphs", output);
+        Assert.Contains("GraphTopologyRegistration", output);
+        Assert.Contains("\"Research\"", output);
+        Assert.Contains("AnalyzerAgent", output);
+        Assert.Contains("WebResearchAgent", output);
+        Assert.Contains("SummarizerAgent", output);
+        Assert.Contains("NeedsWebData", output);
+    }
+
+    [Fact]
+    public void PipelineI_EmptyGraph_StillEmitsGraphTopologyRegistry()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        Assert.Contains("AgentGraphTopologyRegistry", output);
+        Assert.Contains("AllGraphs", output);
+    }
+
+    [Fact]
+    public void PipelineI_Bootstrap_IncludesRegisterGraphTopologyCall()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("NeedlrAgentFrameworkBootstrap.g.cs");
+
+        Assert.Contains("RegisterGraphTopology", output);
+        Assert.Contains("AgentGraphTopologyRegistry.AllGraphs", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // Pipeline I — NodeRoutingMode on edges (P0 fix)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphEdge_NodeRoutingMode_EmittedInRegistry()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TargetAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Routing")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Routing", typeof(TargetAgent), NodeRoutingMode = 2)]
+                public class SourceAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        // The emitted edge tuple must include the NodeRoutingMode value (2 = FirstMatching)
+        Assert.Contains("(int?)2", output);
+        // Verify the 5-element edge tuple shape is present
+        Assert.Contains("int?", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphEdge_NoNodeRoutingMode_EmitsNull()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class TargetAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("NoRoute")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("NoRoute", typeof(TargetAgent))]
+                public class SourceAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        // When NodeRoutingMode is not set, the 5th element should be null
+        Assert.Contains("(int?)null", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // Pipeline I — coverage: edge cases
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphEntryWithNoEdges_EmitsRegistryWithEmptyEdges()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Lonely")]
+                public class LonelyAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        Assert.Contains("\"Lonely\"", output);
+        Assert.Contains("LonelyAgent", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphEntryWithNoAgentAttribute_StillEmitsGraph()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Plain")]
+                public class PlainAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        // Graph entry should still appear even without [NeedlrAiAgent]
+        Assert.Contains("\"Plain\"", output);
+    }
+
+    [Fact]
+    public void PipelineI_MultipleGraphsInSameAssembly_BothAppearInRegistry()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class Worker1 { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class Worker2 { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Alpha")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Alpha", typeof(Worker1))]
+                public class AlphaEntry { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Beta")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Beta", typeof(Worker2))]
+                public class BetaEntry { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        Assert.Contains("\"Alpha\"", output);
+        Assert.Contains("\"Beta\"", output);
+        Assert.Contains("AlphaEntry", output);
+        Assert.Contains("BetaEntry", output);
+        Assert.Contains("Worker1", output);
+        Assert.Contains("Worker2", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // Issue #2 — Silent reducer drop when ReducerMethod is omitted
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphReducer_NoReducerMethod_DefaultsToReduce()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("G")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("G", typeof(WorkerAgent))]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphReducer("G")]
+                public class OrchestratorAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        // The reducer entry should exist with default method name "Reduce"
+        Assert.Contains("\"Reduce\"", output);
+        Assert.Contains("OrchestratorAgent", output);
+    }
+
+    [Fact]
+    public void PipelineI_GraphReducer_ExplicitReducerMethod_UsesProvidedName()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("G")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("G", typeof(WorkerAgent))]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphReducer("G", ReducerMethod = "MergeResults")]
+                public class OrchestratorAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentGraphTopologyRegistry.g.cs");
+
+        Assert.Contains("\"MergeResults\"", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // Issue #6 — Mermaid diagram enhancements for graphs
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_EntryPoint_UsesStadiumShape()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Flow")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Flow", typeof(WorkerAgent))]
+                public class EntryAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .GetFile("AgentTopologyGraph.g.cs");
+
+        // Entry point should use stadium shape ([name])
+        Assert.Contains("([EntryAgent])", output);
+    }
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_OptionalEdge_UsesDashedArrow()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class OptionalTarget { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Flow")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Flow", typeof(OptionalTarget), IsRequired = false)]
+                public class SourceAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .GetFile("AgentTopologyGraph.g.cs");
+
+        // Optional edges should use dashed arrow
+        Assert.Contains("-.->", output);
+    }
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_ReducerNode_UsesHexagonShape()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphReducer("Flow", ReducerMethod = "Merge")]
+                public class ReducerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Flow")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Flow", typeof(WorkerAgent))]
+                public class EntryAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .GetFile("AgentTopologyGraph.g.cs");
+
+        // Reducer should use hexagon shape
+        Assert.Contains("{{ReducerAgent}}", output);
+    }
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_JoinModeNonDefault_ShowsLabel()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphNode("Flow", JoinMode = 1)]
+                public class JoinAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Flow")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Flow", typeof(JoinAgent))]
+                public class SourceAgent { }
+            }
+            """;
+
+        var files = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .RunGenerator();
+
+        var graphFile = files.FirstOrDefault(f => f.FilePath.Contains("AgentTopologyGraph"));
+        Assert.NotNull(graphFile);
+        var output = graphFile.Content;
+
+        // JoinMode=1 (WaitAny) should show a label (quotes are doubled for verbatim string embedding)
+        Assert.Contains("WaitAny", output);
+    }
+
+    [Fact]
+    public void PipelineI_MermaidDiagram_ConditionOnEdge_ShowsLabel()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WebAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Flow")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Flow", typeof(WebAgent), Condition = "needs-web")]
+                public class RouterAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .WithDiagnostics()
+            .GetFile("AgentTopologyGraph.g.cs");
+
+        // Condition text should appear on the edge
+        Assert.Contains("needs-web", output);
+    }
+
+    // -------------------------------------------------------------------------
+    // Issue #7 — GraphNames constants class
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Constants_GraphNames_EmittedPerGraph()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WorkerAgent))]
+                public class ResearchEntry { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class GraphNames", output);
+        Assert.Contains("\"Research\"", output);
+    }
+
+    [Fact]
+    public void Constants_NoGraphs_EmitsEmptyGraphNamesClass()
+    {
+        var output = MafGeneratorTestRunner.Create()
+            .GetFile("AgentTopologyConstants.g.cs");
+
+        Assert.Contains("class GraphNames", output);
+    }
 }

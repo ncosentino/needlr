@@ -433,6 +433,7 @@ internal static class ExtensionsCodeGenerator
         List<NeedlrAiAgentTypeInfo> agents,
         List<AgentFunctionGroupEntry> groupEntries,
         Dictionary<string, List<string>> sequenceByPipelineName,
+        IEnumerable<string> graphNames,
         string safeAssemblyName)
     {
         var sb = new StringBuilder();
@@ -479,6 +480,20 @@ internal static class ExtensionsCodeGenerator
             var propName = AgentDiscoveryHelper.GroupNameToPascalCase(pn);
             var escaped = pn.Replace("\"", "\\\"");
             sb.AppendLine($"    /// <summary>The pipeline name <c>\"{escaped}\"</c>.</summary>");
+            sb.AppendLine($"    public const string {propName} = \"{escaped}\";");
+        }
+        sb.AppendLine("}");
+        sb.AppendLine();
+
+        sb.AppendLine("/// <summary>String constants for graph names discovered at compile time.</summary>");
+        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"NexusLabs.Needlr.AgentFramework.Generators\", \"1.0.0\")]");
+        sb.AppendLine("public static class GraphNames");
+        sb.AppendLine("{");
+        foreach (var gn in graphNames.OrderBy(k => k))
+        {
+            var propName = AgentDiscoveryHelper.GroupNameToPascalCase(gn);
+            var escaped = gn.Replace("\"", "\\\"");
+            sb.AppendLine($"    /// <summary>The graph name <c>\"{escaped}\"</c>.</summary>");
             sb.AppendLine($"    public const string {propName} = \"{escaped}\";");
         }
         sb.AppendLine("}");
