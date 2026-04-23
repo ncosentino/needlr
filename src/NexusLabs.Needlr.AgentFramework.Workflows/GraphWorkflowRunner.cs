@@ -215,6 +215,20 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
         var respondedIds = responses.Keys.ToHashSet();
         var agentIds = invokedIds.Union(respondedIds).Distinct().ToList();
 
+        // Build a mapping from agent IDs (executor IDs from MAF) to their
+        // corresponding Type for namespace-safe edge lookups.
+        var agentIdToType = new Dictionary<string, Type>(StringComparer.Ordinal);
+        foreach (var id in agentIds)
+        {
+            var matchedType = topology.AllTypes.FirstOrDefault(t =>
+                id.Equals(t.Name, StringComparison.Ordinal) ||
+                id.StartsWith(t.Name + "_", StringComparison.Ordinal));
+            if (matchedType is not null)
+            {
+                agentIdToType[id] = matchedType;
+            }
+        }
+
         var completionsByAgent = new Dictionary<string, List<ChatCompletionDiagnostics>>();
         var toolCallsByAgent = new Dictionary<string, List<ToolCallDiagnostics>>();
         foreach (var id in agentIds)
@@ -308,14 +322,25 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                 StartedAt: nodeStartedAt,
                 CompletedAt: nodeStartedAt + nodeDuration);
 
+            // Resolve Type-based edges to FullName strings for the public interface.
+            var resolvedType = agentIdToType.GetValueOrDefault(agentId);
+            var inEdges = resolvedType is not null
+                ? topology.InboundEdges.GetValueOrDefault(resolvedType, [])
+                    .Select(t => t.FullName ?? t.Name).ToList()
+                : (IReadOnlyList<string>)[];
+            var outEdges = resolvedType is not null
+                ? topology.OutboundEdges.GetValueOrDefault(resolvedType, [])
+                    .Select(t => t.FullName ?? t.Name).ToList()
+                : (IReadOnlyList<string>)[];
+
             var nodeResult = new DagNodeResult(
                 nodeId: agentId,
                 agentName: agentId,
                 kind: NodeKind.Agent,
                 diagnostics: diag,
                 finalResponse: finalResponse,
-                inboundEdges: topology.InboundEdges.GetValueOrDefault(agentId, []),
-                outboundEdges: topology.OutboundEdges.GetValueOrDefault(agentId, []),
+                inboundEdges: inEdges,
+                outboundEdges: outEdges,
                 startOffset: startOffset,
                 duration: nodeDuration);
             nodeResults[agentId] = nodeResult;
@@ -410,6 +435,37 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
         var routingChatClient = _chatClientAccessor.ChatClient;
         var nodeTasks = new List<Task>();
 
+        // Create a linked CTS for each WaitAny join node so that remaining
+        // branches can be cancelled once the first valid result arrives.
+        var waitAnyCtsMap = new ConcurrentDictionary<Type, CancellationTokenSource>();
+        foreach (var type in topology.AllTypes)
+        {
+            if (topology.JoinModes.GetValueOrDefault(type, GraphJoinMode.WaitAll) == GraphJoinMode.WaitAny)
+            {
+                waitAnyCtsMap[type] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            }
+        }
+
+        // Pre-compute the effective cancellation token for each node.
+        // Nodes that are dependencies of a WaitAny join use the linked token
+        // so they can be cancelled when the winning branch completes.
+        var nodeEffectiveTokens = new Dictionary<Type, CancellationToken>();
+        foreach (var type in topology.AllTypes)
+        {
+            CancellationToken effectiveToken = cancellationToken;
+            foreach (var (waitAnyType, cts) in waitAnyCtsMap)
+            {
+                var waitAnyDeps = topology.IncomingTypes.GetValueOrDefault(waitAnyType, []);
+                if (waitAnyDeps.Contains(type))
+                {
+                    effectiveToken = cts.Token;
+                    break;
+                }
+            }
+
+            nodeEffectiveTokens[type] = effectiveToken;
+        }
+
         foreach (var type in topology.AllTypes)
         {
             var nodeType = type;
@@ -453,6 +509,13 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                                 if (!skippedNodes.ContainsKey(depType) && !string.IsNullOrWhiteSpace(result))
                                 {
                                     nodeInput = result;
+
+                                    // Cancel remaining branches for this WaitAny scope.
+                                    if (waitAnyCtsMap.TryGetValue(nodeType, out var waitAnyCts))
+                                    {
+                                        waitAnyCts.Cancel();
+                                    }
+
                                     break;
                                 }
                             }
@@ -490,7 +553,7 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                                     null,
                                     progress.Depth + 1,
                                     progress.NextSequence(),
-                                    NodeId: topology.ReducerType?.Name ?? "reducer",
+                                    NodeId: topology.ReducerType?.FullName ?? topology.ReducerType?.Name ?? "reducer",
                                     GraphName: graphName,
                                     BranchId: null,
                                     InputBranchCount: pendingResults.Count,
@@ -524,11 +587,12 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                         progress.NextSequence(),
                         AgentName: agentName,
                         GraphName: graphName,
-                        NodeId: nodeType.Name));
+                        NodeId: nodeType.FullName ?? nodeType.Name));
 
                     var nodeStart = Stopwatch.GetTimestamp();
                     using var diagnosticsBuilder = AgentRunDiagnosticsBuilder.StartNew(agentName);
-                    var response = await agent.RunAsync(nodeInput, cancellationToken: cancellationToken);
+                    var nodeToken = nodeEffectiveTokens[nodeType];
+                    var response = await agent.RunAsync(nodeInput, cancellationToken: nodeToken);
                     var nodeElapsed = Stopwatch.GetElapsedTime(nodeStart);
                     var startOffset = Stopwatch.GetElapsedTime(dagStart, nodeStart);
 
@@ -544,7 +608,7 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                     {
                         var conditionInput = !string.IsNullOrWhiteSpace(text) ? text : nodeInput;
                         var resolvedEdges = await _edgeRouter.ResolveOutgoingEdgesAsync(
-                            nodeType, conditionInput, topology, routingChatClient, cancellationToken);
+                            nodeType, conditionInput, topology, routingChatClient, nodeToken);
                         var resolvedTargets = resolvedEdges.Select(e => e.Target).ToHashSet();
 
                         foreach (var edge in outEdges)
@@ -572,6 +636,12 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
                         OutputTokens: diag.AggregateTokenUsage.OutputTokens));
 
                     completionSources[nodeType].TrySetResult(text);
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // Graceful cancellation from a WaitAny scope — treat as skip.
+                    skippedNodes[nodeType] = true;
+                    completionSources[nodeType].TrySetResult(string.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -629,6 +699,13 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
             errorMessage = ex.Message;
             dagException = ex;
         }
+        finally
+        {
+            foreach (var cts in waitAnyCtsMap.Values)
+            {
+                cts.Dispose();
+            }
+        }
 
         var totalDuration = Stopwatch.GetElapsedTime(dagStart);
 
@@ -657,34 +734,45 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
             }
 
             var nodeResult = new DagNodeResult(
-                nodeId: type.Name,
+                nodeId: type.FullName ?? type.Name,
                 agentName: agentName,
                 kind: NodeKind.Agent,
                 diagnostics: diag,
                 finalResponse: finalResponse,
-                inboundEdges: topology.InboundEdges.GetValueOrDefault(agentName, []),
-                outboundEdges: topology.OutboundEdges.GetValueOrDefault(agentName, []),
+                inboundEdges: topology.InboundEdges.GetValueOrDefault(type, [])
+                    .Select(t => t.FullName ?? t.Name).ToList(),
+                outboundEdges: topology.OutboundEdges.GetValueOrDefault(type, [])
+                    .Select(t => t.FullName ?? t.Name).ToList(),
                 startOffset: startOffsetVal,
                 duration: duration);
 
-            nodeResultsDict[type.Name] = nodeResult;
+            nodeResultsDict[type.FullName ?? type.Name] = nodeResult;
             stagesList.Add(new AgentStageResult(agentName, finalResponse, diag));
         }
 
         var branchResults = new Dictionary<string, IReadOnlyList<IAgentStageResult>>();
         var branchIndex = 0;
-        var nodesByInbound = stagesList
-            .GroupBy(s => string.Join(",",
-                (nodeResultsDict.TryGetValue(
-                    topology.AllTypes.FirstOrDefault(t =>
-                        (agents.TryGetValue(t, out var a2) ? a2.Name ?? t.Name : t.Name) == s.AgentName)?.Name ?? s.AgentName,
-                    out var nr)
-                    ? nr.InboundEdges
-                    : Array.Empty<string>())))
+        var nodesByInbound = topology.AllTypes
+            .Where(t => !skippedNodes.ContainsKey(t) &&
+                        topology.InboundEdges.ContainsKey(t) &&
+                        topology.InboundEdges[t].Count > 0)
+            .GroupBy(t => string.Join(",",
+                topology.InboundEdges[t]
+                    .Select(dep => dep.FullName ?? dep.Name)
+                    .OrderBy(n => n)))
             .Where(g => g.Count() > 1);
         foreach (var group in nodesByInbound)
         {
-            branchResults[$"branch-{branchIndex++}"] = group.ToList();
+            var groupStages = group
+                .Select(t => stagesList.FirstOrDefault(s =>
+                    s.AgentName == (agents.TryGetValue(t, out var a)
+                        ? a.Name ?? t.Name
+                        : t.Name)))
+                .Where(s => s is not null)
+                .Cast<IAgentStageResult>()
+                .ToList();
+            if (groupStages.Count > 1)
+                branchResults[$"branch-{branchIndex++}"] = groupStages;
         }
 
         progress?.Report(new ProgressEvents.WorkflowCompletedEvent(

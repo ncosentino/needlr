@@ -34,7 +34,8 @@ internal sealed class GraphTopologyProvider
         {
             Type[] types;
             try { types = assembly.GetTypes(); }
-            catch { continue; }
+            catch (ReflectionTypeLoadException) { continue; }
+            catch (FileNotFoundException) { continue; }
 
             foreach (var type in types)
             {
@@ -96,21 +97,21 @@ internal sealed class GraphTopologyProvider
         }
 
         var incomingTypes = new Dictionary<Type, List<Type>>();
-        var inboundEdges = new Dictionary<string, List<string>>();
-        var outboundEdges = new Dictionary<string, List<string>>();
+        var inboundEdges = new Dictionary<Type, List<Type>>();
+        var outboundEdges = new Dictionary<Type, List<Type>>();
 
         foreach (var type in allTypes)
         {
             incomingTypes[type] = [];
-            inboundEdges[type.Name] = [];
-            outboundEdges[type.Name] = [];
+            inboundEdges[type] = [];
+            outboundEdges[type] = [];
         }
 
         foreach (var edge in edgeDetails)
         {
             incomingTypes[edge.Target].Add(edge.Source);
-            inboundEdges[edge.Target.Name].Add(edge.Source.Name);
-            outboundEdges[edge.Source.Name].Add(edge.Target.Name);
+            inboundEdges[edge.Target].Add(edge.Source);
+            outboundEdges[edge.Source].Add(edge.Target);
         }
 
         var outgoingEdgesBySource = new Dictionary<Type, List<GraphEdgeDetail>>();
@@ -145,8 +146,8 @@ internal sealed class GraphTopologyProvider
             allTypes,
             joinModes,
             incomingTypes,
-            inboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value),
-            outboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value),
+            inboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Type>)kv.Value),
+            outboundEdges.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Type>)kv.Value),
             graphRoutingMode,
             outgoingEdgesBySource,
             effectiveRoutingModes,
