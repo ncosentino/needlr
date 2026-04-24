@@ -101,7 +101,9 @@ internal static class AIFunctionProviderCodeGenerator
 
         if (!string.IsNullOrEmpty(method.ReturnJsonSchemaType))
         {
-            var returnSchemaJson = $"{{\"type\":\"{method.ReturnJsonSchemaType}\"}}";
+            var returnSchemaJson = !string.IsNullOrEmpty(method.ReturnObjectSchemaJson)
+                ? method.ReturnObjectSchemaJson
+                : $"{{\"type\":\"{method.ReturnJsonSchemaType}\"}}";
             sb.AppendLine("        private static readonly global::System.Text.Json.JsonElement _returnSchema =");
             sb.AppendLine($"            global::System.Text.Json.JsonDocument.Parse(\"\"\"{returnSchemaJson}\"\"\").RootElement.Clone();");
         }

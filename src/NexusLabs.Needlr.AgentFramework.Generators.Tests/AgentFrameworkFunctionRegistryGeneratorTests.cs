@@ -2161,4 +2161,176 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("RunGraphAsync", output);
         Assert.Contains("IProgressReporter", output);
     }
+
+    // -------------------------------------------------------------------------
+    // ReturnJsonSchema emission
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GeneratedProvider_StringReturn_EmitsReturnJsonSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string Search(string query) => "result";
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("_returnSchema", output);
+        Assert.Contains("ReturnJsonSchema => _returnSchema", output);
+        Assert.Contains("\"type\":\"string\"", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_IntReturn_EmitsIntegerReturnSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public int Count(string input) => input.Length;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("ReturnJsonSchema => _returnSchema", output);
+        Assert.Contains("\"type\":\"integer\"", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_VoidReturn_DoesNotEmitReturnSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public static class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public static void DoWork() { }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.DoesNotContain("ReturnJsonSchema", output);
+        Assert.DoesNotContain("_returnSchema", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_TaskReturn_DoesNotEmitReturnSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public async System.Threading.Tasks.Task DoWorkAsync()
+                        => await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.DoesNotContain("ReturnJsonSchema", output);
+        Assert.DoesNotContain("_returnSchema", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_TaskOfStringReturn_EmitsReturnSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public async System.Threading.Tasks.Task<string> FetchAsync()
+                        => await System.Threading.Tasks.Task.FromResult("data");
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("ReturnJsonSchema => _returnSchema", output);
+        Assert.Contains("\"type\":\"string\"", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_ComplexObjectReturn_EmitsPropertyLevelSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class SearchResult
+                {
+                    public string Title { get; set; } = "";
+                    public int Score { get; set; }
+                    public bool IsRelevant { get; set; }
+                }
+
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public SearchResult Search(string query) => new();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("ReturnJsonSchema => _returnSchema", output);
+        Assert.Contains("\"type\":\"object\"", output);
+        Assert.Contains("\"properties\"", output);
+        Assert.Contains("\"title\"", output);
+        Assert.Contains("\"score\"", output);
+        Assert.Contains("\"isRelevant\"", output);
+    }
+
+    [Fact]
+    public void GeneratedProvider_BoolReturn_EmitsReturnSchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public class Tools
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public bool Validate(string input) => true;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("ReturnJsonSchema => _returnSchema", output);
+        Assert.Contains("\"type\":\"boolean\"", output);
+    }
 }

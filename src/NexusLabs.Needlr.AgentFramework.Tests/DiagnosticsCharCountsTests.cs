@@ -164,6 +164,42 @@ public class DiagnosticsCharCountsTests
         Assert.Equal(0, diag.ResultCharCount);
     }
 
+    [Fact]
+    public void ChatMessagesLength_CountsTextReasoningContent()
+    {
+        var message = new ChatMessage(ChatRole.Assistant,
+            [new TextReasoningContent("Let me think about this step by step...")]);
+
+        var count = DiagnosticsCharCounter.ChatMessagesLength(new[] { message });
+
+        Assert.Equal("Let me think about this step by step...".Length, count);
+    }
+
+    [Fact]
+    public void ChatMessagesLength_SumsMixedTextAndReasoningContent()
+    {
+        var message = new ChatMessage(ChatRole.Assistant,
+        [
+            new TextContent("Hello!"),
+            new TextReasoningContent("Reasoning trace here"),
+        ]);
+
+        var count = DiagnosticsCharCounter.ChatMessagesLength(new[] { message });
+
+        Assert.Equal("Hello!".Length + "Reasoning trace here".Length, count);
+    }
+
+    [Fact]
+    public void ChatMessagesLength_NullReasoningTextReturnsZero()
+    {
+        var message = new ChatMessage(ChatRole.Assistant,
+            [new TextReasoningContent(null!)]);
+
+        var count = DiagnosticsCharCounter.ChatMessagesLength(new[] { message });
+
+        Assert.Equal(0, count);
+    }
+
     private sealed class UnserializableThing
     {
         public UnserializableThing Self => this;

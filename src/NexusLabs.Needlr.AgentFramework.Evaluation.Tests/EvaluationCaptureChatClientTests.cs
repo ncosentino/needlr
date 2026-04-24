@@ -286,4 +286,73 @@ public sealed class EvaluationCaptureChatClientTests
         Assert.IsType<TextContent>(msg.Contents[0]);
         Assert.IsType<FunctionCallContent>(msg.Contents[1]);
     }
+
+    [Fact]
+    public void ComputeKey_DifferentReasoningContent_ProducesDifferentHashes()
+    {
+        var messagesA = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new TextReasoningContent("reasoning path A")]),
+        };
+        var messagesB = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new TextReasoningContent("reasoning path B")]),
+        };
+
+        var keyA = EvaluationCaptureChatClient.ComputeKey(messagesA, options: null);
+        var keyB = EvaluationCaptureChatClient.ComputeKey(messagesB, options: null);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+
+    [Fact]
+    public void ComputeKey_WithVsWithoutReasoningContent_ProducesDifferentHashes()
+    {
+        var withReasoning = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new TextContent("answer"), new TextReasoningContent("thinking...")]),
+        };
+        var withoutReasoning = new[]
+        {
+            new ChatMessage(ChatRole.Assistant,
+                [new TextContent("answer")]),
+        };
+
+        var keyA = EvaluationCaptureChatClient.ComputeKey(withReasoning, options: null);
+        var keyB = EvaluationCaptureChatClient.ComputeKey(withoutReasoning, options: null);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+
+#pragma warning disable MEAI001
+    [Fact]
+    public void ComputeKey_DifferentWebSearchQueries_ProducesDifferentHashes()
+    {
+        var wsA = new WebSearchToolCallContent("ws-1");
+        var wsB = new WebSearchToolCallContent("ws-2");
+
+        // Queries may be null by default — construct via reflection-safe approach
+        var queriesA = new List<string> { "cats" };
+        var queriesB = new List<string> { "dogs" };
+        typeof(WebSearchToolCallContent).GetProperty("Queries")!.SetValue(wsA, queriesA);
+        typeof(WebSearchToolCallContent).GetProperty("Queries")!.SetValue(wsB, queriesB);
+
+        var messagesA = new[]
+        {
+            new ChatMessage(ChatRole.Assistant, [wsA]),
+        };
+        var messagesB = new[]
+        {
+            new ChatMessage(ChatRole.Assistant, [wsB]),
+        };
+
+        var keyA = EvaluationCaptureChatClient.ComputeKey(messagesA, options: null);
+        var keyB = EvaluationCaptureChatClient.ComputeKey(messagesB, options: null);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+#pragma warning restore MEAI001
 }

@@ -10,11 +10,13 @@ internal readonly struct AgentFunctionMethodInfo
     public AgentFunctionMethodInfo(
         string methodName, bool isAsync, bool isVoidLike,
         string? returnValueTypeFQN, string? returnJsonSchemaType,
+        string? returnObjectSchemaJson,
         ImmutableArray<AgentFunctionParameterInfo> parameters,
         string description)
     {
         MethodName = methodName; IsAsync = isAsync; IsVoidLike = isVoidLike;
         ReturnValueTypeFQN = returnValueTypeFQN; ReturnJsonSchemaType = returnJsonSchemaType;
+        ReturnObjectSchemaJson = returnObjectSchemaJson;
         Parameters = parameters; Description = description;
     }
 
@@ -23,6 +25,7 @@ internal readonly struct AgentFunctionMethodInfo
     public bool IsVoidLike { get; }
     public string? ReturnValueTypeFQN { get; }
     public string? ReturnJsonSchemaType { get; }
+    public string? ReturnObjectSchemaJson { get; }
     public ImmutableArray<AgentFunctionParameterInfo> Parameters { get; }
     public string Description { get; }
 }
