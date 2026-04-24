@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Write generated files to disk so the [ModuleInitializer] bootstrap is visible -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+    <NeedlrDiagnostics>true</NeedlrDiagnostics>
+    <!-- Output diagnostics to the exe entry point's bin folder, not this library's bin -->
+    <NeedlrDiagnosticsPath>$(MSBuildProjectDirectory)\..\DagRoutingApp\bin\$(Configuration)\$(TargetFramework)\NeedlrDiagnostics</NeedlrDiagnosticsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DagRoutingApp</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.props" />
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.targets" />
+
+</Project>
