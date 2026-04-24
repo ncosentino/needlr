@@ -182,13 +182,13 @@ public class AgentFactoryTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void CreateAgent_ByName_RegisteredType_ReturnsAgent()
+    public void CreateAgent_ByFullName_RegisteredType_ReturnsAgent()
     {
         var factory = CreateFactory((af, asm) => af
             .AddAgentFunctionsFromAssemblies([asm])
             .AddAgent<FactoryTestAgent>());
 
-        var agent = factory.CreateAgent(nameof(FactoryTestAgent));
+        var agent = factory.CreateAgent(typeof(FactoryTestAgent).FullName!);
 
         Assert.NotNull(agent);
         Assert.IsAssignableFrom<AIAgent>(agent);
@@ -201,6 +201,35 @@ public class AgentFactoryTests
 
         Assert.Throws<InvalidOperationException>(() =>
             factory.CreateAgent("NonExistentAgent"));
+    }
+
+    [Fact]
+    public void BuildAgentFactory_DuplicateFullName_ThrowsInvalidOperationWithBothTypes()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var mockChatClient = new Mock<IChatClient>();
+
+        // AddAgentsFromGenerated uses .Distinct(), so same-type duplicates are
+        // filtered before reaching BuildAgentFactory. Verify the duplicate detection
+        // at the syringe level by building twice and then directly constructing
+        // the syringe record with a list that bypasses .Distinct().
+        var sp = new Syringe()
+            .UsingReflection()
+            .UsingAgentFramework(af => af
+                .Configure(opts => opts.ChatClientFactory = _ => mockChatClient.Object)
+                .AddAgent<FactoryTestAgent>())
+            .BuildServiceProvider(config);
+
+        var syringe = new AgentFrameworkSyringe
+        {
+            ServiceProvider = sp,
+            AgentTypes = [typeof(FactoryTestAgent), typeof(FactoryTestAgent)],
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(syringe.BuildAgentFactory);
+
+        Assert.Contains("Duplicate agent registration", ex.Message);
+        Assert.Contains(typeof(FactoryTestAgent).FullName!, ex.Message);
     }
 
     // -------------------------------------------------------------------------
@@ -331,7 +360,7 @@ public class AgentFactoryTests
     public void CreateAgent_ByNameWithConfigure_OverridesInstructions()
     {
         var factory = CreateFactory((af, asm) => af.AddAgent<FactoryTestAgent>());
-        var agent = factory.CreateAgent("FactoryTestAgent", opts =>
+        var agent = factory.CreateAgent(typeof(FactoryTestAgent).FullName!, opts =>
         {
             opts.Instructions = "Per-run custom instructions.";
         });

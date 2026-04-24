@@ -71,8 +71,8 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         var agents = memberTypes.Select(t =>
         {
             if (configureAgent is not null)
-                return _agentFactory.CreateAgent(t.Name, opts => configureAgent(t, opts));
-            return _agentFactory.CreateAgent(t.Name);
+                return _agentFactory.CreateAgent(t.FullName ?? t.Name, opts => configureAgent(t, opts));
+            return _agentFactory.CreateAgent(t.FullName ?? t.Name);
         }).ToList();
 
         var conditions = BuildTerminationConditions(memberTypes);
@@ -104,7 +104,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(pipelineName);
 
         var memberTypes = ResolveSequentialMembers(pipelineName);
-        var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.Name)).ToArray();
+        var agents = memberTypes.Select(t => _agentFactory.CreateAgent(t.FullName ?? t.Name)).ToArray();
         return AgentWorkflowBuilder.BuildSequential(agents);
     }
 
@@ -227,7 +227,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         }
 
         var targetPairs = targets
-            .Select(t => (_agentFactory.CreateAgent(t.TargetType.Name), t.HandoffReason))
+            .Select(t => (_agentFactory.CreateAgent(t.TargetType.FullName ?? t.TargetType.Name), t.HandoffReason))
             .ToArray();
 
         var builder = AgentWorkflowBuilder.CreateHandoffBuilderWith(initialAgent);
@@ -328,7 +328,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         var executorBindings = new Dictionary<Type, ExecutorBinding>();
         foreach (var type in allAgentTypes)
         {
-            var agent = _agentFactory.CreateAgent(type.Name);
+            var agent = _agentFactory.CreateAgent(type.FullName ?? type.Name);
             agents[type] = agent;
             executorBindings[type] = agent.BindAsExecutor();
         }

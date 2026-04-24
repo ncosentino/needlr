@@ -72,7 +72,7 @@ public class NeedlrAiAgentDeclarationTests
         var factory = BuildFactory(af => af.AddAgent<TriageTestAgent>());
 
         var byType = factory.CreateAgent<TriageTestAgent>();
-        var byName = factory.CreateAgent(nameof(TriageTestAgent));
+        var byName = factory.CreateAgent(typeof(TriageTestAgent).FullName!);
 
         Assert.Equal(byType.Name, byName.Name);
     }
@@ -114,8 +114,8 @@ public class NeedlrAiAgentDeclarationTests
         var triagePerType = perTypeFactory.CreateAgent<TriageTestAgent>();
         var triageFromGenerated = fromGeneratedFactory.CreateAgent<TriageTestAgent>();
 
-        var billingPerType = perTypeFactory.CreateAgent(nameof(BillingTestAgent));
-        var billingFromGenerated = fromGeneratedFactory.CreateAgent(nameof(BillingTestAgent));
+        var billingPerType = perTypeFactory.CreateAgent(typeof(BillingTestAgent).FullName!);
+        var billingFromGenerated = fromGeneratedFactory.CreateAgent(typeof(BillingTestAgent).FullName!);
 
         Assert.Equal(triagePerType.Name, triageFromGenerated.Name);
         Assert.Equal(billingPerType.Name, billingFromGenerated.Name);

@@ -409,7 +409,7 @@ internal sealed class GraphWorkflowRunner : IGraphWorkflowRunner
         var agents = new Dictionary<Type, AIAgent>();
         foreach (var type in topology.AllTypes)
         {
-            agents[type] = _agentFactory.CreateAgent(type.Name);
+            agents[type] = _agentFactory.CreateAgent(type.FullName ?? type.Name);
         }
 
         var completionSources = new Dictionary<Type, TaskCompletionSource<string>>();

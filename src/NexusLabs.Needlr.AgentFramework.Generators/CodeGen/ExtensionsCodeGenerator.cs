@@ -450,8 +450,12 @@ internal static class ExtensionsCodeGenerator
         sb.AppendLine("{");
         foreach (var agent in agents.OrderBy(a => a.ClassName))
         {
-            sb.AppendLine($"    /// <summary>The name of <see cref=\"{agent.TypeName.Replace("global::", "")}\"/>.</summary>");
-            sb.AppendLine($"    public const string {agent.ClassName} = \"{agent.ClassName}\";");
+            var fullName = agent.NamespaceName is not null
+                ? $"{agent.NamespaceName}.{agent.ClassName}"
+                : agent.ClassName;
+            var escapedFullName = fullName.Replace("\"", "\\\"");
+            sb.AppendLine($"    /// <summary>The fully-qualified name of <see cref=\"{agent.TypeName.Replace("global::", "")}\"/>.</summary>");
+            sb.AppendLine($"    public const string {agent.ClassName} = \"{escapedFullName}\";");
         }
         sb.AppendLine("}");
         sb.AppendLine();

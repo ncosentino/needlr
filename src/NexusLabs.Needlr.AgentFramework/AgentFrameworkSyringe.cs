@@ -83,8 +83,18 @@ public sealed record AgentFrameworkSyringe
             .Distinct()
             .ToList();
 
-        var agentTypeMap = (AgentTypes ?? [])
-            .ToDictionary(t => t.Name, t => t);
+        var agentTypeMap = new Dictionary<string, Type>(StringComparer.Ordinal);
+        foreach (var t in AgentTypes ?? [])
+        {
+            var key = t.FullName ?? t.Name;
+            if (!agentTypeMap.TryAdd(key, t))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate agent registration: '{key}' is already registered as " +
+                    $"'{agentTypeMap[key].AssemblyQualifiedName}'. Cannot also register " +
+                    $"'{t.AssemblyQualifiedName}'. Ensure each [NeedlrAiAgent] class has a unique fully-qualified name.");
+            }
+        }
 
         AgentFrameworkGeneratedBootstrap.TryGetAIFunctionProvider(out var generatedProvider);
 
