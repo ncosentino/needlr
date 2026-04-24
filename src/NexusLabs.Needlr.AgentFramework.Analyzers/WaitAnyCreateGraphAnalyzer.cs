@@ -80,6 +80,15 @@ public sealed class WaitAnyCreateGraphAnalyzer : DiagnosticAnalyzer
                 if (methodName != CreateGraphWorkflowMethodName)
                     return;
 
+                var symbolInfo = syntaxContext.SemanticModel.GetSymbolInfo(invocation, syntaxContext.CancellationToken);
+                if (symbolInfo.Symbol is not IMethodSymbol methodSymbol)
+                    return;
+
+                var containingType = methodSymbol.ContainingType;
+                if (containingType?.Name != "IWorkflowFactory" &&
+                    containingType?.ToDisplayString() != "NexusLabs.Needlr.AgentFramework.IWorkflowFactory")
+                    return;
+
                 if (invocation.ArgumentList.Arguments.Count < 1)
                     return;
 

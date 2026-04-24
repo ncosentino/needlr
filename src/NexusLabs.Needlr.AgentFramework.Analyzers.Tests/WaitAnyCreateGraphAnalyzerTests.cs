@@ -118,6 +118,41 @@ public class Runner
     }
 
     [Fact]
+    public async Task NoDiagnostic_WhenCreateGraphWorkflowOnUserDefinedType()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent(Instructions = ""Entry."")]
+[AgentGraphEntry(""my-graph"")]
+[AgentGraphEdge(""my-graph"", typeof(SinkAgent))]
+public class EntryAgent { }
+
+[NeedlrAiAgent(Instructions = ""Sink."")]
+[AgentGraphNode(""my-graph"", JoinMode = GraphJoinMode.WaitAny)]
+public class SinkAgent { }
+
+public class MyCustomFactory
+{
+    public object CreateGraphWorkflow(string graphName) => new object();
+}
+
+public class Runner
+{
+    public void Run(MyCustomFactory factory)
+    {
+        var workflow = factory.CreateGraphWorkflow(""my-graph"");
+    }
+}
+" + AllStubs;
+
+        await new CSharpAnalyzerTest<WaitAnyCreateGraphAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+        }.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task NoDiagnostic_WhenDifferentGraphName()
     {
         var code = @"
