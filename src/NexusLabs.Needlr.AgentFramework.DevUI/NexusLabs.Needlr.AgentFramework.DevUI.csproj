@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageDescription>NexusLabs.Needlr integration for Microsoft Agent Framework DevUI. Bridges [NeedlrAiAgent]-declared agents into MAF DevUI's entity discovery so they appear in the /devui web debugging interface.</PackageDescription>
+    <!-- DevUI and Hosting packages are preview-only. This package isolates
+         the preview dependency so it does not pollute the stable AgentFramework packages. -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" />
+  </ItemGroup>
+
+</Project>
