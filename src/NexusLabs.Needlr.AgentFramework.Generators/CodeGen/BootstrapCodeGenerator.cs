@@ -36,6 +36,8 @@ internal static class NeedlrAgentFrameworkModuleInitializer
             () => AgentHandoffTopologyRegistry.AllHandoffs,
             () => AgentGroupChatRegistry.AllGroups,
             () => AgentSequentialTopologyRegistry.AllPipelines);
+        global::NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap.RegisterGraphTopology(
+            () => AgentGraphTopologyRegistry.AllGraphs);
         global::NexusLabs.Needlr.AgentFramework.AgentFrameworkGeneratedBootstrap.RegisterAIFunctionProvider(
             new global::{safeAssemblyName}.Generated.GeneratedAIFunctionProvider());
     }}

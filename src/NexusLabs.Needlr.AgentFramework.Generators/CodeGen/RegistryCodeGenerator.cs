@@ -308,7 +308,9 @@ internal static class RegistryCodeGenerator
             var escapedName = kvp.Key.Replace("\"", "\\\"");
             var graphData = kvp.Value;
 
-            // Entry point
+            // The AgentGraphEntryPointAnalyzer (NDLRMAF017/018) enforces exactly one
+            // entry point per graph. We take FirstOrDefault here because the analyzer
+            // guarantees the constraint; the generator doesn't need to re-validate.
             var entryPoint = graphData.EntryPoints.FirstOrDefault();
             var entryTypeExpr = entryPoint.AgentTypeName is not null
                 ? $"typeof({entryPoint.AgentTypeName})"
@@ -341,7 +343,9 @@ internal static class RegistryCodeGenerator
             }
             sb.AppendLine("                },");
 
-            // Reducer
+            // The AgentGraphEntryPointAnalyzer (NDLRMAF017/018) enforces at most one
+            // reducer per graph. We take FirstOrDefault here because the analyzer
+            // guarantees the constraint; the generator doesn't need to re-validate.
             var reducer = graphData.Reducers.FirstOrDefault();
             if (reducer.AgentTypeName is not null)
             {

@@ -45,6 +45,9 @@ public static class AgentFrameworkGeneratedBootstrap
     private static readonly AsyncLocal<Registration?> _asyncLocalOverride = new();
     private static IAIFunctionProvider? _aiFunctionProvider;
     private static readonly AsyncLocal<IAIFunctionProvider?> _asyncLocalProviderOverride = new();
+    private static readonly List<Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>> _graphTopologyRegistrations = [];
+    private static readonly AsyncLocal<Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>?> _asyncLocalGraphTopologyOverride = new();
+    private static Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>? _cachedCombinedGraphTopology;
 
     private static (
         Func<IReadOnlyList<Type>> Functions,
@@ -78,6 +81,48 @@ public static class AgentFrameworkGeneratedBootstrap
 
         provider = _aiFunctionProvider;
         return provider is not null;
+    }
+
+    /// <summary>
+    /// Registers compile-time graph topology data for this assembly.
+    /// Called automatically by the generator-emitted <c>[ModuleInitializer]</c>.
+    /// </summary>
+    public static void RegisterGraphTopology(
+        Func<IReadOnlyDictionary<string, GraphTopologyRegistration>> graphTopology)
+    {
+        ArgumentNullException.ThrowIfNull(graphTopology);
+        lock (_gate)
+        {
+            _graphTopologyRegistrations.Add(graphTopology);
+            _cachedCombinedGraphTopology = null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the combined graph topology provider from all registered assemblies.
+    /// </summary>
+    public static bool TryGetGraphTopology(
+        [NotNullWhen(true)] out Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>? provider)
+    {
+        var local = _asyncLocalGraphTopologyOverride.Value;
+        if (local is not null)
+        {
+            provider = local;
+            return true;
+        }
+
+        lock (_gate)
+        {
+            if (_graphTopologyRegistrations.Count == 0)
+            {
+                provider = null;
+                return false;
+            }
+
+            EnsureCombinedGraphTopology();
+            provider = _cachedCombinedGraphTopology;
+            return provider is not null;
+        }
     }
 
     /// <summary>
@@ -283,9 +328,11 @@ public static class AgentFrameworkGeneratedBootstrap
         sequentialTopology ??= static () => new Dictionary<string, IReadOnlyList<Type>>();
         var prior = _asyncLocalOverride.Value;
         var priorProvider = _asyncLocalProviderOverride.Value;
+        var priorGraphTopology = _asyncLocalGraphTopologyOverride.Value;
         _asyncLocalOverride.Value = new Registration(functionTypes, groupTypes, agentTypes, handoffTopology, groupChatGroups, sequentialTopology);
         _asyncLocalProviderOverride.Value = aiFunctionProvider;
-        return new Scope(prior, priorProvider);
+        _asyncLocalGraphTopologyOverride.Value = null;
+        return new Scope(prior, priorProvider, priorGraphTopology);
     }
 
     private static void EnsureCombined()
@@ -393,21 +440,43 @@ public static class AgentFrameworkGeneratedBootstrap
         _cachedCombined = (combinedFunctions, combinedGroups, combinedAgents, combinedTopology, combinedGroupChatGroups, combinedSequentialTopology);
     }
 
+    private static void EnsureCombinedGraphTopology()
+    {
+        if (_cachedCombinedGraphTopology is not null)
+            return;
+
+        var providers = _graphTopologyRegistrations.ToArray();
+        _cachedCombinedGraphTopology = () =>
+        {
+            var merged = new Dictionary<string, GraphTopologyRegistration>(StringComparer.Ordinal);
+            foreach (var p in providers)
+                foreach (var (name, reg) in p())
+                    merged[name] = reg;
+            return merged;
+        };
+    }
+
     private sealed class Scope : IDisposable
     {
         private readonly Registration? _prior;
         private readonly IAIFunctionProvider? _priorProvider;
+        private readonly Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>? _priorGraphTopology;
 
-        public Scope(Registration? prior, IAIFunctionProvider? priorProvider)
+        public Scope(
+            Registration? prior,
+            IAIFunctionProvider? priorProvider,
+            Func<IReadOnlyDictionary<string, GraphTopologyRegistration>>? priorGraphTopology)
         {
             _prior = prior;
             _priorProvider = priorProvider;
+            _priorGraphTopology = priorGraphTopology;
         }
 
         public void Dispose()
         {
             _asyncLocalOverride.Value = _prior;
             _asyncLocalProviderOverride.Value = _priorProvider;
+            _asyncLocalGraphTopologyOverride.Value = _priorGraphTopology;
         }
     }
 }
