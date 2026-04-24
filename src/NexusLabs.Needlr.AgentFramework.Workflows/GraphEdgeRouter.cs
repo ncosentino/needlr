@@ -113,7 +113,7 @@ internal sealed class GraphEdgeRouter
             Available routes:
             {options}
 
-            Respond with ONLY the exact condition text of the route you choose. Nothing else.
+            Respond with ONLY the number of the route you choose (e.g., "1" or "2"). Nothing else.
             """;
 
         var response = await chatClient.GetResponseAsync(
@@ -122,17 +122,27 @@ internal sealed class GraphEdgeRouter
 
         var chosenText = response.Text?.Trim() ?? string.Empty;
 
-        var chosen = conditionalEdges
-            .Where(e => chosenText.Contains(e.Condition!, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        GraphEdgeDetail? chosen = null;
 
-        if (chosen.Count == 0)
+        if (int.TryParse(chosenText, out var choiceIndex)
+            && choiceIndex >= 1
+            && choiceIndex <= conditionalEdges.Count)
+        {
+            chosen = conditionalEdges[choiceIndex - 1];
+        }
+        else
+        {
+            chosen = conditionalEdges
+                .FirstOrDefault(e => string.Equals(e.Condition!, chosenText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (chosen is null)
         {
             var unconditional = edges.Where(e => e.Condition is null).ToList();
             return unconditional.Count > 0 ? unconditional : [conditionalEdges[0]];
         }
 
-        var result = new List<GraphEdgeDetail>(chosen);
+        var result = new List<GraphEdgeDetail> { chosen };
         result.AddRange(edges.Where(e => e.Condition is null));
         return result;
     }

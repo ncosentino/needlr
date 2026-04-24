@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Agents.AI;
@@ -343,7 +344,7 @@ internal sealed class WorkflowFactory : IWorkflowFactory
             if (joinMode == GraphJoinMode.WaitAny)
             {
                 throw new NotSupportedException(
-                    $"GraphJoinMode.WaitAny on '{type.Name}' in graph '{graphName}' is not compatible " +
+                    $"GraphJoinMode.WaitAny on '{type.FullName ?? type.Name}' in graph '{graphName}' is not compatible " +
                     $"with CreateGraphWorkflow (which returns a MAF Workflow using BSP execution). " +
                     $"Use RunGraphAsync(\"{graphName}\", input) instead — it handles WaitAny via " +
                     $"Needlr's own graph executor.");
@@ -352,19 +353,93 @@ internal sealed class WorkflowFactory : IWorkflowFactory
 
         var builder = new WorkflowBuilder(executorBindings[entryType]);
 
-        // RoutingMode from entry attribute informs edge wiring strategy.
-        // AllMatching / Deterministic: all edges wired normally (MAF default is parallel fan-out).
-        // ExclusiveChoice: MAF does not expose AddSwitch on WorkflowBuilder — fall back to normal edges.
-        // The routing mode is recorded for diagnostic/logging purposes; the actual MAF behavior
-        // is parallel execution of all outgoing edges from a node.
+        // Discover reducer bindings before wiring edges so fan-in edges can be
+        // routed through the reducer FunctionExecutor node.
+        var reducerBinding = DiscoverReducerBinding(graphName);
+
+        // Identify fan-in targets (agent types with two or more incoming edges)
+        // so their inbound edges can be redirected through the reducer.
+        var fanInSources = new Dictionary<Type, List<Type>>();
         foreach (var edge in edges)
         {
-            builder.AddEdge(executorBindings[edge.SourceType], executorBindings[edge.TargetType]);
+            if (!fanInSources.TryGetValue(edge.TargetType, out var sources))
+            {
+                sources = [];
+                fanInSources[edge.TargetType] = sources;
+            }
+
+            sources.Add(edge.SourceType);
         }
 
-        // Wire reducers: discover [AgentGraphReducer] attributes and bind their static methods
-        // as executor nodes in the graph. Reducers are pure functions (no LLM cost).
-        WireReducers(graphName, builder, executorBindings);
+        var fanInTargets = reducerBinding is not null
+            ? fanInSources
+                .Where(kv => kv.Value.Count >= 2)
+                .Select(kv => kv.Key)
+                .ToHashSet()
+            : [];
+
+        // Compute effective routing mode per source node: per-node override wins,
+        // then graph-wide default from the entry attribute.
+        var graphRoutingMode = entryAttr.RoutingMode;
+        var edgesBySource = edges.GroupBy(e => e.SourceType).ToDictionary(g => g.Key, g => g.ToList());
+        var effectiveRoutingModes = new Dictionary<Type, GraphRoutingMode>();
+        foreach (var (sourceType, sourceEdges) in edgesBySource)
+        {
+            var nodeOverride = sourceEdges
+                .Select(e => e.NodeRoutingModeOverride)
+                .FirstOrDefault(m => m is not null);
+            effectiveRoutingModes[sourceType] = nodeOverride ?? graphRoutingMode;
+        }
+
+        // Validate: LlmChoice is not supported in the BSP path — it requires
+        // async LLM calls that CreateGraphWorkflow (synchronous build) cannot provide.
+        foreach (var (sourceType, routingMode) in effectiveRoutingModes)
+        {
+            if (routingMode == GraphRoutingMode.LlmChoice)
+            {
+                throw new NotSupportedException(
+                    $"GraphRoutingMode.LlmChoice on '{sourceType.FullName ?? sourceType.Name}' in graph '{graphName}' is not compatible " +
+                    $"with CreateGraphWorkflow (which returns a MAF Workflow using BSP execution). " +
+                    $"Use RunGraphAsync(\"{graphName}\", input) instead — it handles LlmChoice via " +
+                    $"Needlr's own graph executor with an IChatClient.");
+            }
+        }
+
+        if (reducerBinding is not null && fanInTargets.Count > 0)
+        {
+            builder.BindExecutor(reducerBinding);
+            var wiredFanInTargets = new HashSet<Type>();
+
+            foreach (var edge in edges)
+            {
+                if (fanInTargets.Contains(edge.TargetType))
+                {
+                    // Redirect fan-in edges through the reducer function node:
+                    // source → reducer (instead of source → fan-in agent)
+                    AddRoutedEdge(builder, executorBindings[edge.SourceType], reducerBinding,
+                        edge, effectiveRoutingModes, edgesBySource);
+
+                    // reducer → original fan-in agent (wired once per target)
+                    if (wiredFanInTargets.Add(edge.TargetType))
+                    {
+                        builder.AddEdge(reducerBinding, executorBindings[edge.TargetType]);
+                    }
+                }
+                else
+                {
+                    AddRoutedEdge(builder, executorBindings[edge.SourceType], executorBindings[edge.TargetType],
+                        edge, effectiveRoutingModes, edgesBySource);
+                }
+            }
+        }
+        else
+        {
+            foreach (var edge in edges)
+            {
+                AddRoutedEdge(builder, executorBindings[edge.SourceType], executorBindings[edge.TargetType],
+                    edge, effectiveRoutingModes, edgesBySource);
+            }
+        }
 
         return builder.Build();
     }
@@ -387,11 +462,18 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         return result;
     }
 
+    /// <summary>
+    /// Discovers a single <see cref="AgentGraphReducerAttribute"/> for the graph and
+    /// creates a <see cref="FunctionExecutor{TInput, TOutput}"/> wrapped in an
+    /// <see cref="ExecutorBinding"/> so it can participate as a node in the
+    /// <see cref="WorkflowBuilder"/> DAG.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="ExecutorBinding"/> for the reducer, or <c>null</c> if no reducer
+    /// is declared for this graph.
+    /// </returns>
     [RequiresUnreferencedCode("Reducer discovery uses reflection to find [AgentGraphReducer] and invoke static methods.")]
-    private static void WireReducers(
-        string graphName,
-        WorkflowBuilder builder,
-        Dictionary<Type, ExecutorBinding> executorBindings)
+    private static ExecutorBinding? DiscoverReducerBinding(string graphName)
     {
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -419,24 +501,47 @@ internal sealed class WorkflowFactory : IWorkflowFactory
                     if (method is null || method.ReturnType != typeof(string))
                     {
                         throw new InvalidOperationException(
-                            $"[AgentGraphReducer] on {type.Name} references method '{attr.ReducerMethod}' " +
+                            $"[AgentGraphReducer] on {type.FullName ?? type.Name} references method '{attr.ReducerMethod}' " +
                             $"but no matching 'public static string {attr.ReducerMethod}(IReadOnlyList<string>)' was found.");
                     }
 
-                    // Reducer methods are discovered and validated here. Full integration of
-                    // reducer executors into the WorkflowBuilder graph requires the source
-                    // generator to emit edges that reference the reducer node. The reducer
-                    // method is invoked via the generated extension method when available.
-                    // This is a known Phase 2 limitation — see ADR-0001 deferred items.
+                    return CreateReducerExecutorBinding(type, method);
                 }
             }
         }
+
+        return null;
+    }
+
+    private static ExecutorBinding CreateReducerExecutorBinding(Type reducerType, MethodInfo reducerMethod)
+    {
+        var reducerId = $"reducer:{reducerType.FullName ?? reducerType.Name}";
+
+        // The FunctionExecutor receives a string input per invocation. In the
+        // BSP model each superstep delivers one message. The reducer is invoked
+        // with a single-element list per call — the downstream agent sees the
+        // reduced output from each branch independently. No shared mutable
+        // state is needed because each invocation is self-contained.
+        var executor = new FunctionExecutor<string, string>(
+            reducerId,
+            (input, _, _) =>
+            {
+                var inputs = new List<string> { input };
+                var result = (string)reducerMethod.Invoke(
+                    null,
+                    [inputs.AsReadOnly()])!;
+                return new ValueTask<string>(result);
+            },
+            options: null,
+            sentMessageTypes: null,
+            outputTypes: null,
+            declareCrossRunShareable: false);
+
+        return new ExecutorInstanceBinding(executor);
     }
 
     private Type FindGraphEntryType(string graphName)
     {
-        var registeredTypes = _agentFactory.ResolveTools(_ => { });
-
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             Type[] types;
@@ -475,7 +580,12 @@ internal sealed class WorkflowFactory : IWorkflowFactory
                 {
                     if (string.Equals(attr.GraphName, graphName, StringComparison.Ordinal))
                     {
-                        edges.Add(new GraphEdgeInfo(type, attr.TargetAgentType, attr.Condition, attr.IsRequired));
+                        edges.Add(new GraphEdgeInfo(
+                            type,
+                            attr.TargetAgentType,
+                            attr.Condition,
+                            attr.IsRequired,
+                            attr.HasNodeRoutingMode ? attr.NodeRoutingMode : null));
                     }
                 }
             }
@@ -484,5 +594,148 @@ internal sealed class WorkflowFactory : IWorkflowFactory
         return edges;
     }
 
-    private sealed record GraphEdgeInfo(Type SourceType, Type TargetType, string? Condition, bool IsRequired);
+    /// <summary>
+    /// Wires a single edge into the <see cref="WorkflowBuilder"/>, applying
+    /// condition functions according to the effective routing mode for the
+    /// source node.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="GraphEdgeInfo.IsRequired"/> is intentionally NOT wired in the BSP path.
+    /// MAF's <see cref="WorkflowBuilder.AddEdge(ExecutorBinding, ExecutorBinding)"/> API
+    /// has no concept of optional vs. required edges — all edges are implicitly required.
+    /// The <c>IsRequired</c> semantic is a Needlr-native-executor-only feature handled by
+    /// <c>RunGraphAsync</c>, which uses Needlr's own graph executor.
+    /// </para>
+    /// </remarks>
+    private static void AddRoutedEdge(
+        WorkflowBuilder builder,
+        ExecutorBinding source,
+        ExecutorBinding target,
+        GraphEdgeInfo edge,
+        Dictionary<Type, GraphRoutingMode> effectiveRoutingModes,
+        Dictionary<Type, List<GraphEdgeInfo>> edgesBySource)
+    {
+        var routingMode = effectiveRoutingModes.GetValueOrDefault(edge.SourceType, GraphRoutingMode.Deterministic);
+
+        if (edge.Condition is null)
+        {
+            builder.AddEdge(source, target);
+            return;
+        }
+
+        switch (routingMode)
+        {
+            case GraphRoutingMode.Deterministic:
+            case GraphRoutingMode.AllMatching:
+                builder.AddEdge<object>(source, target,
+                    input => EvaluateEdgeCondition(edge.SourceType, edge.Condition, input));
+                break;
+
+            case GraphRoutingMode.FirstMatching:
+            {
+                var sourceEdges = edgesBySource[edge.SourceType];
+                var edgeIndex = sourceEdges.IndexOf(edge);
+                var precedingConditionalEdges = sourceEdges
+                    .Take(edgeIndex)
+                    .Where(e => e.Condition is not null)
+                    .ToList();
+
+                builder.AddEdge<object>(source, target, input =>
+                {
+                    // Only follow this edge if its condition passes AND
+                    // no earlier conditional edge's condition passed.
+                    if (!EvaluateEdgeCondition(edge.SourceType, edge.Condition, input))
+                        return false;
+
+                    foreach (var earlier in precedingConditionalEdges)
+                    {
+                        if (EvaluateEdgeCondition(edge.SourceType, earlier.Condition!, input))
+                            return false;
+                    }
+
+                    return true;
+                });
+                break;
+            }
+
+            case GraphRoutingMode.ExclusiveChoice:
+            {
+                var sourceEdges = edgesBySource[edge.SourceType];
+                builder.AddEdge<object>(source, target, input =>
+                {
+                    var matchCount = 0;
+                    var thisMatches = false;
+
+                    foreach (var e in sourceEdges)
+                    {
+                        if (e.Condition is null)
+                            continue;
+                        if (EvaluateEdgeCondition(edge.SourceType, e.Condition, input))
+                        {
+                            matchCount++;
+                            if (ReferenceEquals(e, edge))
+                                thisMatches = true;
+                        }
+                    }
+
+                    if (matchCount == 0)
+                    {
+                        throw new InvalidOperationException(
+                            $"ExclusiveChoice routing on '{edge.SourceType.Name}': no edge condition matched. " +
+                            $"Exactly one must match.");
+                    }
+
+                    if (matchCount > 1)
+                    {
+                        var names = string.Join(", ", sourceEdges
+                            .Where(e => e.Condition is not null && EvaluateEdgeCondition(edge.SourceType, e.Condition, input))
+                            .Select(e => e.TargetType.Name));
+                        throw new InvalidOperationException(
+                            $"ExclusiveChoice routing on '{edge.SourceType.Name}': {matchCount} edges matched " +
+                            $"({names}). Exactly one must match.");
+                    }
+
+                    return thisMatches;
+                });
+                break;
+            }
+
+            default:
+                builder.AddEdge(source, target);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Evaluates a condition string by looking up a static method on the source
+    /// agent type that accepts <c>object?</c> and returns <c>bool</c>.
+    /// </summary>
+    [RequiresUnreferencedCode("Condition evaluation uses reflection to invoke static predicate methods on agent types.")]
+    private static bool EvaluateEdgeCondition(Type sourceType, string conditionMethodName, object? upstreamOutput)
+    {
+        var method = sourceType.GetMethod(
+            conditionMethodName,
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic,
+            null,
+            [typeof(object)],
+            null);
+
+        if (method is null)
+        {
+            method = sourceType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
+                .FirstOrDefault(m => m.Name == conditionMethodName && m.GetParameters().Length == 1);
+        }
+
+        if (method is null || method.ReturnType != typeof(bool))
+        {
+            throw new InvalidOperationException(
+                $"Condition '{conditionMethodName}' on '{sourceType.Name}' must be a static method " +
+                $"with signature 'static bool {conditionMethodName}(object? upstreamOutput)'.");
+        }
+
+        return (bool)method.Invoke(null, [upstreamOutput])!;
+    }
+
+    private sealed record GraphEdgeInfo(Type SourceType, Type TargetType, string? Condition, bool IsRequired, GraphRoutingMode? NodeRoutingModeOverride);
 }
