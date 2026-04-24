@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Write generated files to disk so both generators' output is visible -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+    <NeedlrDiagnostics>true</NeedlrDiagnostics>
+    <!-- Suppress MAF experimental workflow warnings (used by Needlr's WorkflowFactory) -->
+    <NoWarn>$(NoWarn);MAAIW001</NoWarn>
+    <!-- OpenTelemetry.Api 1.15.0 (transitive via MAF) has a known advisory; we don't
+         control the version. The same dep exists in other AgentFramework example apps. -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Needlr AgentFramework + generators (project references for dev) -->
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+
+    <!-- MAF Workflows.Generators — the whole point: BOTH generators in one project -->
+    <PackageReference Include="Microsoft.Agents.AI.Workflows.Generators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.props" />
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.targets" />
+  <Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
+
+</Project>
