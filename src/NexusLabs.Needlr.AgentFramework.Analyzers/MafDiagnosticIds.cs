@@ -164,6 +164,8 @@ public static class MafDiagnosticIds
     /// </summary>
     public const string WaitAnyIncompatibleWithCreateGraphWorkflow = "NDLRMAF025";
 
+    // NDLRMAF026 — reserved (unused, do not reuse without deliberate assignment)
+
     /// <summary>
     /// NDLRMAF028: The <c>Condition</c> property on <c>[AgentGraphEdge]</c> references
     /// a method that does not exist on the source agent, is not static, or has the

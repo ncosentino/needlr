@@ -21,6 +21,10 @@ public sealed class AgentOrphanAnalyzer : DiagnosticAnalyzer
     private const string AgentHandoffsToAttributeName = "NexusLabs.Needlr.AgentFramework.AgentHandoffsToAttribute";
     private const string AgentGroupChatMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGroupChatMemberAttribute";
     private const string AgentSequenceMemberAttributeName = "NexusLabs.Needlr.AgentFramework.AgentSequenceMemberAttribute";
+    private const string AgentGraphEdgeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEdgeAttribute";
+    private const string AgentGraphEntryAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphEntryAttribute";
+    private const string AgentGraphNodeAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphNodeAttribute";
+    private const string AgentGraphReducerAttributeName = "NexusLabs.Needlr.AgentFramework.AgentGraphReducerAttribute";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(MafDiagnosticDescriptors.OrphanAgent);
@@ -54,8 +58,26 @@ public sealed class AgentOrphanAnalyzer : DiagnosticAnalyzer
                             : typeSymbol.Locations[0];
                     }
 
-                    if (attrName == AgentGroupChatMemberAttributeName || attrName == AgentSequenceMemberAttributeName)
+                    if (attrName == AgentGroupChatMemberAttributeName ||
+                        attrName == AgentSequenceMemberAttributeName ||
+                        attrName == AgentGraphEntryAttributeName ||
+                        attrName == AgentGraphNodeAttributeName ||
+                        attrName == AgentGraphReducerAttributeName)
                         inTopology = true;
+
+                    if (attrName == AgentGraphEdgeAttributeName)
+                    {
+                        inTopology = true;
+
+                        // The edge target is also a topology participant
+                        if (attr.ConstructorArguments.Length >= 2
+                            && attr.ConstructorArguments[1].Kind == TypedConstantKind.Type
+                            && attr.ConstructorArguments[1].Value is INamedTypeSymbol edgeTargetType)
+                        {
+                            topologyParticipants.Add(
+                                edgeTargetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                        }
+                    }
 
                     if (attrName == AgentHandoffsToAttributeName)
                     {

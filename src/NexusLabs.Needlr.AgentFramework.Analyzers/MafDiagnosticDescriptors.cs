@@ -364,7 +364,8 @@ public static class MafDiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "The Condition property on [AgentGraphEdge] references a static method on the decorated class that determines whether this edge should be followed at runtime. The method must be public, static, accept a single object? parameter, and return bool.");
+        description: "The Condition property on [AgentGraphEdge] references a static method on the decorated class that determines whether this edge should be followed at runtime. The method must be public, static, accept a single object? parameter, and return bool.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF028.md");
 
     /// <summary>
     /// NDLRMAF029: Reducer method not found or invalid signature.
@@ -376,5 +377,6 @@ public static class MafDiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "The ReducerMethod property on [AgentGraphReducer] references a static method that aggregates multiple branch outputs into a single string. The method must be public, static, accept IReadOnlyList<string>, and return string.");
+        description: "The ReducerMethod property on [AgentGraphReducer] references a static method that aggregates multiple branch outputs into a single string. The method must be public, static, accept IReadOnlyList<string>, and return string.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF029.md");
 }

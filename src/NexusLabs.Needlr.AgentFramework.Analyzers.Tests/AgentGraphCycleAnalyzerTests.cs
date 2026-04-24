@@ -128,4 +128,54 @@ public class AgentB { }
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
+
+    [Fact]
+    public async Task Error_NDLRMAF016_SelfLoop()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[{|NDLRMAF016:AgentGraphEdge(""Pipeline"", typeof(SelfLoopAgent))|}]
+public class SelfLoopAgent { }
+" + Attributes;
+
+        var test = new CSharpAnalyzerTest<AgentGraphCycleAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_DiamondDag()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphEdge(""Pipeline"", typeof(AgentB))]
+[AgentGraphEdge(""Pipeline"", typeof(AgentC))]
+public class AgentA { }
+
+[NeedlrAiAgent]
+[AgentGraphEdge(""Pipeline"", typeof(AgentD))]
+public class AgentB { }
+
+[NeedlrAiAgent]
+[AgentGraphEdge(""Pipeline"", typeof(AgentD))]
+public class AgentC { }
+
+[NeedlrAiAgent]
+public class AgentD { }
+" + Attributes;
+
+        var test = new CSharpAnalyzerTest<AgentGraphCycleAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
 }

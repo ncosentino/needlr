@@ -182,4 +182,83 @@ public class SomeClass { }
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
+
+    [Fact]
+    public async Task NoInfo_WhenAgentHasOnlyGraphEdgeAttribute()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphEdge(""Pipeline"", typeof(AgentB))]
+public class AgentA { }
+
+[NeedlrAiAgent]
+public class AgentB { }
+" + Attributes + MafTestAttributes.GraphAttributes;
+
+        var test = new CSharpAnalyzerTest<AgentOrphanAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoInfo_WhenAgentHasOnlyGraphEntryAttribute()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphEntry(""Pipeline"")]
+public class AgentA { }
+" + Attributes + MafTestAttributes.GraphAttributes;
+
+        var test = new CSharpAnalyzerTest<AgentOrphanAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoInfo_WhenAgentHasOnlyGraphNodeAttribute()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphNode(""Pipeline"")]
+public class AgentA { }
+" + Attributes + MafTestAttributes.GraphAttributes;
+
+        var test = new CSharpAnalyzerTest<AgentOrphanAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoInfo_WhenAgentHasOnlyGraphReducerAttribute()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphReducer(""Pipeline"")]
+public class AgentA { }
+" + Attributes + MafTestAttributes.GraphAttributes;
+
+        var test = new CSharpAnalyzerTest<AgentOrphanAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
 }
