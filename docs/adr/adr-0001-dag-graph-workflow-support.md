@@ -107,7 +107,7 @@ Routing mode enum (`GraphRoutingMode`):
 | `FirstMatching` | First edge whose condition is true is followed (priority order) | **Needlr abstraction** — MAF has no ordered-priority routing; generator emits a composite condition wrapper |
 | `ExclusiveChoice` | Exactly one edge must match | **Needlr abstraction** — composite condition validates exactly one match at runtime |
 
-`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default. Per-node routing overrides (via `RoutingMode` on `[AgentGraphEdge]`) are a Phase 2 feature enabled by the source generator's edge-grouping logic.
+`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default. Per-node routing overrides (via `NodeRoutingMode` on `[AgentGraphEdge]`) are enabled by the source generator's edge-grouping logic and the runtime's per-node effective routing mode computation.
 
 **Rationale**: DAG edges encode orchestration rules. Making control flow nondeterministic by default undermines testability, replayability, and determinism. LLM routing is powerful but should be a conscious architectural choice.
 
@@ -274,7 +274,7 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 - **IMP-002**: The source generator requires new model types (`GraphEdgeEntry`, `GraphEntryPointEntry`, `GraphNodeEntry`, `GraphReducerEntry`) in `Generators/Models/` and Mermaid emission in `TopologyGraphCodeGenerator` in `Generators/CodeGen/`, following the existing `HandoffEntry`/`GroupChatEntry`/`SequenceEntry` pattern. The registry emitter (`RegistryCodeGenerator.GenerateGraphTopologyRegistrySource`) produces `AgentGraphTopologyRegistry` which is registered in the bootstrap `ModuleInitializer`.
 - **IMP-003**: Analyzer IDs `NDLRMAF016`–`NDLRMAF029` (with `023` retired and `026` reserved) must be registered in `MafDiagnosticIds.cs` and `MafDiagnosticDescriptors.cs`. Cycle detection (`NDLRMAF016`) requires a topological sort or DFS-based algorithm operating on the Roslyn syntax/semantic model. Condition method validation (`NDLRMAF028`) and reducer method validation (`NDLRMAF029`) walk the type hierarchy for inherited method resolution.
 - **IMP-004**: The `WorkflowFactory` needs a new code path for graph construction that maps `[AgentGraphEdge]` topology to MAF's `WorkflowBuilder` API, translating routing modes to the appropriate edge data types (`DirectEdgeData`, `FanOutEdgeData`, `FanInEdgeData`).
-- **IMP-005**: Success criteria — the feature is correct when: (a) a DAG declared entirely via attributes compiles, runs, and produces the expected output; (b) all 8 analyzers fire on invalid topologies with no false positives on valid ones; (c) `IDagRunResult` captures per-node diagnostics with timing and token usage; (d) existing workflow types are unaffected (no regressions in handoff, group chat, or sequential tests).
+- **IMP-005**: Success criteria — the feature is correct when: (a) a DAG declared entirely via attributes compiles, runs, and produces the expected output; (b) all 9 analyzer classes (12 diagnostics) fire on invalid topologies with no false positives on valid ones; (c) `IDagRunResult` captures per-node diagnostics with timing and token usage; (d) existing workflow types are unaffected (no regressions in handoff, group chat, or sequential tests).
 
 ## References
 
