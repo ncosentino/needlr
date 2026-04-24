@@ -134,4 +134,84 @@ public class AgentB { }
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
+
+    [Fact]
+    public async Task Error_NDLRMAF028_WhenConditionMethodWrongParameterType()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphEntry(""Pipeline"")]
+[{|NDLRMAF028:AgentGraphEdge(""Pipeline"", typeof(AgentB), Condition = ""ShouldRoute"")|}]
+public class AgentA
+{
+    public static bool ShouldRoute(int x) => true;
+}
+
+[NeedlrAiAgent]
+public class AgentB { }
+" + Attributes;
+
+        var test = new CSharpAnalyzerTest<AgentGraphConditionMethodAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Error_NDLRMAF028_WhenConditionMethodNotPublic()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+[NeedlrAiAgent]
+[AgentGraphEntry(""Pipeline"")]
+[{|NDLRMAF028:AgentGraphEdge(""Pipeline"", typeof(AgentB), Condition = ""ShouldRoute"")|}]
+public class AgentA
+{
+    private static bool ShouldRoute(object? x) => true;
+}
+
+[NeedlrAiAgent]
+public class AgentB { }
+" + Attributes;
+
+        var test = new CSharpAnalyzerTest<AgentGraphConditionMethodAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenConditionMethodDefinedOnBaseClass()
+    {
+        var code = @"
+using NexusLabs.Needlr.AgentFramework;
+
+public class BaseAgent
+{
+    public static bool ShouldRoute(object? input) => true;
+}
+
+[NeedlrAiAgent]
+[AgentGraphEntry(""Pipeline"")]
+[AgentGraphEdge(""Pipeline"", typeof(AgentB), Condition = ""ShouldRoute"")]
+public class AgentA : BaseAgent { }
+
+[NeedlrAiAgent]
+public class AgentB { }
+" + Attributes;
+
+        var test = new CSharpAnalyzerTest<AgentGraphConditionMethodAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
 }

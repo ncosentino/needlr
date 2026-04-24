@@ -50,16 +50,25 @@ public sealed class AgentGraphConditionMethodAnalyzer : DiagnosticAnalyzer
             }
 
             var isValid = false;
-            foreach (var member in typeSymbol.GetMembers(conditionName!))
+            var current = typeSymbol;
+            while (current != null)
             {
-                if (member is IMethodSymbol method &&
-                    method.IsStatic &&
-                    method.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                    method.Parameters.Length == 1)
+                foreach (var member in current.GetMembers(conditionName!))
                 {
-                    isValid = true;
-                    break;
+                    if (member is IMethodSymbol method &&
+                        method.DeclaredAccessibility == Accessibility.Public &&
+                        method.IsStatic &&
+                        method.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                        method.Parameters.Length == 1 &&
+                        method.Parameters[0].Type.SpecialType == SpecialType.System_Object)
+                    {
+                        isValid = true;
+                        break;
+                    }
                 }
+
+                if (isValid) break;
+                current = current.BaseType;
             }
 
             if (!isValid)

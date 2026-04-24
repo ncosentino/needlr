@@ -50,17 +50,25 @@ public sealed class AgentGraphReducerMethodAnalyzer : DiagnosticAnalyzer
             }
 
             var isValid = false;
-            foreach (var member in typeSymbol.GetMembers(reducerMethodName!))
+            var current = typeSymbol;
+            while (current != null)
             {
-                if (member is IMethodSymbol method &&
-                    method.IsStatic &&
-                    method.ReturnType.SpecialType == SpecialType.System_String &&
-                    method.Parameters.Length == 1 &&
-                    IsReadOnlyListOfString(method.Parameters[0].Type))
+                foreach (var member in current.GetMembers(reducerMethodName!))
                 {
-                    isValid = true;
-                    break;
+                    if (member is IMethodSymbol method &&
+                        method.DeclaredAccessibility == Accessibility.Public &&
+                        method.IsStatic &&
+                        method.ReturnType.SpecialType == SpecialType.System_String &&
+                        method.Parameters.Length == 1 &&
+                        IsReadOnlyListOfString(method.Parameters[0].Type))
+                    {
+                        isValid = true;
+                        break;
+                    }
                 }
+
+                if (isValid) break;
+                current = current.BaseType;
             }
 
             if (!isValid)
@@ -87,6 +95,11 @@ public sealed class AgentGraphReducerMethodAnalyzer : DiagnosticAnalyzer
 
         var constructedFrom = namedType.ConstructedFrom;
         if (constructedFrom.Name != "IReadOnlyList" || constructedFrom.Arity != 1)
+        {
+            return false;
+        }
+
+        if (constructedFrom.ContainingNamespace?.ToDisplayString() != "System.Collections.Generic")
         {
             return false;
         }
