@@ -261,6 +261,25 @@ internal static class ExtensionsCodeGenerator
             sb.AppendLine($"    public static global::Microsoft.Agents.AI.Workflows.Workflow {methodName}(this global::NexusLabs.Needlr.AgentFramework.IWorkflowFactory workflowFactory)");
             sb.AppendLine($"        => workflowFactory.CreateGraphWorkflow(\"{escapedGraphName}\");");
             sb.AppendLine();
+
+            // Run helper — thin convenience wrapper that bakes in the graph name at compile time
+            var runMethodName = $"Run{methodSuffix}GraphWorkflowAsync";
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Runs the \"{escapedGraphName}\" graph workflow via <see cref=\"global::NexusLabs.Needlr.AgentFramework.IGraphWorkflowRunner\"/>.");
+            sb.AppendLine($"    /// The graph name is baked in at compile time — no magic strings required.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    /// <param name=\"runner\">The graph workflow runner.</param>");
+            sb.AppendLine($"    /// <param name=\"input\">The input message to send to the entry node.</param>");
+            sb.AppendLine($"    /// <param name=\"progress\">Optional progress reporter for real-time execution events.</param>");
+            sb.AppendLine($"    /// <param name=\"cancellationToken\">Cancellation token.</param>");
+            sb.AppendLine($"    /// <returns>An <see cref=\"global::NexusLabs.Needlr.AgentFramework.Diagnostics.IDagRunResult\"/> containing per-node diagnostics and timing.</returns>");
+            sb.AppendLine($"    public static async global::System.Threading.Tasks.Task<global::NexusLabs.Needlr.AgentFramework.Diagnostics.IDagRunResult> {runMethodName}(");
+            sb.AppendLine($"        this global::NexusLabs.Needlr.AgentFramework.IGraphWorkflowRunner runner,");
+            sb.AppendLine($"        string input,");
+            sb.AppendLine($"        global::NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter? progress = null,");
+            sb.AppendLine($"        global::System.Threading.CancellationToken cancellationToken = default)");
+            sb.AppendLine($"        => await runner.RunGraphAsync(\"{escapedGraphName}\", input, progress, cancellationToken).ConfigureAwait(false);");
+            sb.AppendLine();
         }
 
         sb.AppendLine("}");

@@ -2130,4 +2130,35 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
 
         Assert.Contains("class GraphNames", output);
     }
+
+    // -------------------------------------------------------------------------
+    // Pipeline I — Run{Name}GraphWorkflowAsync helper emission
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PipelineI_GraphWorkflow_EmitsRunGraphWorkflowAsyncHelper()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                public class WorkerAgent { }
+
+                [NexusLabs.Needlr.AgentFramework.NeedlrAiAgent]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEntry("Research")]
+                [NexusLabs.Needlr.AgentFramework.AgentGraphEdge("Research", typeof(WorkerAgent))]
+                public class AnalyzerAgent { }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("WorkflowFactoryExtensions.g.cs");
+
+        Assert.Contains("RunResearchGraphWorkflowAsync", output);
+        Assert.Contains("IGraphWorkflowRunner", output);
+        Assert.Contains("IDagRunResult", output);
+        Assert.Contains("RunGraphAsync", output);
+        Assert.Contains("IProgressReporter", output);
+    }
 }

@@ -160,6 +160,13 @@ internal sealed class MafGeneratorTestRunner
                 public System.Type TargetAgentType { get; }
                 public string Condition { get; set; }
                 public bool IsRequired { get; set; } = true;
+                private int _nodeRoutingMode;
+                public int NodeRoutingMode
+                {
+                    get => _nodeRoutingMode;
+                    set { _nodeRoutingMode = value; HasNodeRoutingMode = true; }
+                }
+                public bool HasNodeRoutingMode { get; private set; }
             }
 
             [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -198,11 +205,38 @@ internal sealed class MafGeneratorTestRunner
                     System.Func<System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<System.Type>>> groupChatTopology = null,
                     System.Func<System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<System.Type>>> sequentialTopology = null)
                 { }
+
+                public static void RegisterGraphTopology(
+                    System.Func<System.Collections.Generic.IReadOnlyDictionary<string, GraphTopologyRegistration>> graphTopology)
+                { }
+
+                public static void RegisterAIFunctionProvider(object provider)
+                { }
+            }
+
+            public sealed class GraphTopologyRegistration
+            {
+                public GraphTopologyRegistration(
+                    System.Type entryType,
+                    int routingMode,
+                    System.Collections.Generic.IReadOnlyList<(System.Type Source, System.Type Target, string Condition, bool IsRequired, int? NodeRoutingMode)> edges,
+                    System.Collections.Generic.IReadOnlyList<(System.Type NodeType, int JoinMode)> nodes,
+                    (System.Type ReducerType, string ReducerMethod)? reducer)
+                { }
             }
 
             public interface IWorkflowFactory
             {
                 Microsoft.Agents.AI.Workflows.Workflow CreateGraphWorkflow(string graphName);
+            }
+
+            public interface IGraphWorkflowRunner
+            {
+                System.Threading.Tasks.Task<NexusLabs.Needlr.AgentFramework.Diagnostics.IDagRunResult> RunGraphAsync(
+                    string graphName,
+                    string input,
+                    NexusLabs.Needlr.AgentFramework.Progress.IProgressReporter progress = null,
+                    System.Threading.CancellationToken cancellationToken = default);
             }
 
             [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("")]
@@ -220,6 +254,17 @@ internal sealed class MafGeneratorTestRunner
         namespace Microsoft.Agents.AI.Workflows
         {
             public sealed class Workflow { }
+        }
+
+        namespace NexusLabs.Needlr.AgentFramework.Diagnostics
+        {
+            public interface IPipelineRunResult { }
+            public interface IDagRunResult : IPipelineRunResult { }
+        }
+
+        namespace NexusLabs.Needlr.AgentFramework.Progress
+        {
+            public interface IProgressReporter { }
         }
 
         namespace NexusLabs.Needlr.AgentFramework.Workflows

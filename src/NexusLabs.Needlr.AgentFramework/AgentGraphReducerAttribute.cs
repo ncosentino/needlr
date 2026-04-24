@@ -44,5 +44,10 @@ public sealed class AgentGraphReducerAttribute : Attribute
     /// <see cref="System.Collections.Generic.IReadOnlyList{T}"/> of
     /// <see cref="string"/> and return <see cref="string"/>.
     /// </summary>
+    /// <remarks>
+    /// If not specified, defaults to <c>"Reduce"</c> by convention. The source
+    /// generator will look for a <c>public static string Reduce(IReadOnlyList&lt;string&gt;)</c>
+    /// method on the decorated class.
+    /// </remarks>
     public string? ReducerMethod { get; set; }
 }
