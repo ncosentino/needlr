@@ -10,8 +10,10 @@ namespace DagRoutingApp.Agents;
 [NeedlrAiAgent(
     Description = "Classifies requests into exactly one category.",
     Instructions = """
-        You are a request classifier. Determine whether the request is
-        technical or creative in nature and provide your classification.
+        You are a request classifier. Read the incoming message and respond
+        with ONLY ONE of these exact words on a single line — nothing else:
+        TECHNICAL
+        CREATIVE
         """,
     FunctionTypes = new Type[0])]
 [AgentGraphEntry("exclusive-routing", RoutingMode = GraphRoutingMode.ExclusiveChoice)]
@@ -19,11 +21,11 @@ namespace DagRoutingApp.Agents;
 [AgentGraphEdge("exclusive-routing", typeof(CreativeAgent), Condition = nameof(IsCreative))]
 public partial class ClassifierAgent
 {
-    /// <summary>Returns <see langword="true"/> when the input contains "technical".</summary>
+    /// <summary>Returns <see langword="true"/> when the upstream output contains "TECHNICAL".</summary>
     public static bool IsTechnical(object? input) =>
-        input?.ToString()?.Contains("technical", StringComparison.OrdinalIgnoreCase) == true;
+        input?.ToString()?.Contains("TECHNICAL", StringComparison.OrdinalIgnoreCase) == true;
 
-    /// <summary>Returns <see langword="true"/> when the input contains "creative".</summary>
+    /// <summary>Returns <see langword="true"/> when the upstream output contains "CREATIVE".</summary>
     public static bool IsCreative(object? input) =>
-        input?.ToString()?.Contains("creative", StringComparison.OrdinalIgnoreCase) == true;
+        input?.ToString()?.Contains("CREATIVE", StringComparison.OrdinalIgnoreCase) == true;
 }
