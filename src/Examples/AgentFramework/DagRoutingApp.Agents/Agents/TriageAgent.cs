@@ -10,11 +10,8 @@ namespace DagRoutingApp.Agents;
 [NeedlrAiAgent(
     Description = "Triages incoming requests by urgency level.",
     Instructions = """
-        You are a triage classifier. Read the incoming message and respond
-        with ONLY ONE of these exact words on a single line — nothing else:
-        URGENT
-        ROUTINE
-        GENERAL
+        You are a triage coordinator. Analyze the incoming request and
+        provide a brief urgency assessment in one or two sentences.
         """,
     FunctionTypes = new Type[0])]
 [AgentGraphEntry("priority-routing", RoutingMode = GraphRoutingMode.FirstMatching)]
@@ -23,11 +20,23 @@ namespace DagRoutingApp.Agents;
 [AgentGraphEdge("priority-routing", typeof(FallbackHandler))]
 public partial class TriageAgent
 {
-    /// <summary>Returns <see langword="true"/> when the upstream output contains "URGENT".</summary>
-    public static bool IsUrgent(object? input) =>
-        input?.ToString()?.Contains("URGENT", StringComparison.OrdinalIgnoreCase) == true;
+    /// <summary>Returns <see langword="true"/> when the upstream output signals urgency.</summary>
+    public static bool IsUrgent(object? input)
+    {
+        var text = input?.ToString() ?? "";
+        return text.Contains("URGENT", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("critical", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("emergency", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("server is down", StringComparison.OrdinalIgnoreCase);
+    }
 
-    /// <summary>Returns <see langword="true"/> when the upstream output contains "ROUTINE".</summary>
-    public static bool IsRoutine(object? input) =>
-        input?.ToString()?.Contains("ROUTINE", StringComparison.OrdinalIgnoreCase) == true;
+    /// <summary>Returns <see langword="true"/> when the upstream output signals routine work.</summary>
+    public static bool IsRoutine(object? input)
+    {
+        var text = input?.ToString() ?? "";
+        return text.Contains("ROUTINE", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("weekly", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("status update", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("regular", StringComparison.OrdinalIgnoreCase);
+    }
 }

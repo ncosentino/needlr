@@ -79,14 +79,14 @@ AnsiConsole.MarkupLine("""
   An unconditional edge (no Condition) acts as a fallback if placed last.[/]
 """);
 
-await RunScenario(graphRunner, "priority-routing", "urgent: server is down!",
-    "Input contains 'urgent' → expect UrgentHandler");
+await RunScenario(graphRunner, "priority-routing", "URGENT: server is down, customers cannot access the platform!",
+    "Input tagged URGENT → expect UrgentHandler");
 
-await RunScenario(graphRunner, "priority-routing", "routine: weekly status update",
-    "Input contains 'routine' → expect RoutineHandler");
+await RunScenario(graphRunner, "priority-routing", "ROUTINE: please send the weekly status update to the team",
+    "Input tagged ROUTINE → expect RoutineHandler");
 
-await RunScenario(graphRunner, "priority-routing", "hello, can you help me?",
-    "No keyword match → expect FallbackHandler (unconditional edge)");
+await RunScenario(graphRunner, "priority-routing", "hello, can you help me with something?",
+    "No tag match → expect FallbackHandler (unconditional edge)");
 
 // ============================================================================
 // Scenario 2: ExclusiveChoice Routing
@@ -98,11 +98,11 @@ AnsiConsole.MarkupLine("""
   the router throws an error. This enforces strict one-of-N classification.[/]
 """);
 
-await RunScenario(graphRunner, "exclusive-routing", "technical: optimize the database queries",
-    "Input contains 'technical' → expect TechnicalAgent");
+await RunScenario(graphRunner, "exclusive-routing", "TECHNICAL: optimize the database queries for better throughput",
+    "Input tagged TECHNICAL → expect TechnicalAgent");
 
-await RunScenario(graphRunner, "exclusive-routing", "creative: design a new logo concept",
-    "Input contains 'creative' → expect CreativeAgent");
+await RunScenario(graphRunner, "exclusive-routing", "CREATIVE: design a new logo concept for the brand refresh",
+    "Input tagged CREATIVE → expect CreativeAgent");
 
 // ============================================================================
 // Scenario 3: WaitAny Join
