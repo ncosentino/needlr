@@ -1,6 +1,6 @@
 ---
 title: "ADR-0001: DAG/Graph Workflow Support"
-status: "Proposed"
+status: "Accepted"
 date: "2025-07-18"
 authors: "Nick Cosentino"
 tags: ["architecture", "decision", "agent-framework", "workflows", "dag", "maf"]
@@ -18,8 +18,8 @@ Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review
 |---|---|---|
 | 1 | ✅ Complete | Attributes, enums, `IWorkflowFactory.CreateGraphWorkflow`, reflection-based factory |
 | 2 | ✅ Complete | Source generator discovers graph attributes, emits `Create{Name}GraphWorkflow()` extensions, Mermaid subgraph. `AgentGraphReducerAttribute` defined. |
-| 3 | ✅ Complete | 10 diagnostics (NDLRMAF016–024, NDLRMAF027) across 7 analyzer classes. 37 analyzer tests. Release tracking entries. |
-| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. 14 diagnostics tests. Docs updated. Runtime wiring for RoutingMode, JoinMode, reducers. End-to-end example app (`GraphWorkflowApp`). Per-node `NodeRoutingMode` override on `AgentGraphEdgeAttribute`. 10 analyzer doc pages. |
+| 3 | ✅ Complete | 12 diagnostics (NDLRMAF016–022, NDLRMAF024–025, NDLRMAF027–029) across 9 analyzer classes. 137 analyzer tests. Release tracking entries. |
+| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. Docs updated. Runtime wiring for RoutingMode, JoinMode, reducers. End-to-end example app (`GraphWorkflowApp`). Per-node `NodeRoutingMode` override on `AgentGraphEdgeAttribute`. 12 analyzer doc pages. `GraphTopologyRegistration` DTO + `AgentGraphTopologyRegistry` source-gen emission + bootstrap registration for AOT-safe topology discovery. `Run{Name}GraphWorkflowAsync` generated extension method on `IGraphWorkflowRunner`. `GraphNames` constants class. |
 
 ### Known Limitations
 
@@ -93,7 +93,7 @@ public class AnalyzerAgent { }
 
 ### Routing: Deterministic Default, LLM Opt-In
 
-Deterministic routing is the default. Condition strings on `[AgentGraphEdge]` reference a named predicate method on the agent class by convention. The source generator validates the method exists and emits the `Func<object?, bool>` binding for MAF's `DirectEdgeData.Condition`.
+Deterministic routing is the default. Condition strings on `[AgentGraphEdge]` reference a named predicate method on the agent class by convention. The Roslyn analyzer (`NDLRMAF028`) validates the method exists with the correct signature at compile time. At runtime, the `GraphEdgeRouter` binds the method via reflection and evaluates it as a `Func<object?, bool>` predicate.
 
 LLM-driven routing is an explicit opt-in via `RoutingMode = GraphRoutingMode.LlmChoice` on the entry point attribute. When active, condition strings become handoff-style tool descriptions — the agent's LLM selects which edge to follow. The routing decision is recorded in diagnostics for auditability.
 
@@ -105,7 +105,7 @@ Routing mode enum (`GraphRoutingMode`):
 | `LlmChoice` | Condition strings as tool descriptions; model selects | Handoff-style tool mapping |
 | `AllMatching` | All edges whose condition is true are followed (parallel fan-out) | MAF's default behavior when multiple edge conditions pass |
 | `FirstMatching` | First edge whose condition is true is followed (priority order) | **Needlr abstraction** — MAF has no ordered-priority routing; generator emits a composite condition wrapper |
-| `ExclusiveChoice` | Exactly one edge must match | Maps to MAF's `AddSwitch` + `AddCase` |
+| `ExclusiveChoice` | Exactly one edge must match | **Needlr abstraction** — composite condition validates exactly one match at runtime |
 
 `RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default. Per-node routing overrides (via `RoutingMode` on `[AgentGraphEdge]`) are a Phase 2 feature enabled by the source generator's edge-grouping logic.
 
@@ -147,13 +147,10 @@ public static class ResearchReducer
 {
     public static string MergeResults(IReadOnlyList<string> branchOutputs)
         => string.Join("\n---\n", branchOutputs);
-
-    // Extended overload when workflow state access is needed:
-    // public static string MergeResults(IReadOnlyList<string> branchOutputs, IWorkflowContext context)
 }
 ```
 
-The reducer covers the most common fan-in pattern (aggregation of branch outputs) without requiring a full function-executor attribute model. The source generator detects whether the reducer method accepts an optional `IWorkflowContext` second parameter and wires it accordingly.
+The reducer covers the most common fan-in pattern (aggregation of branch outputs) without requiring a full function-executor attribute model. If `ReducerMethod` is not specified, the convention default `"Reduce"` is used — the source generator and runtime will look for a `public static string Reduce(IReadOnlyList<string>)` method on the decorated class.
 
 **Diagnostics**: Reducer nodes do NOT go through `IChatClient` pipelines (no LLM calls, no token usage). `IDagNodeResult` carries a `NodeKind` discriminator (`Agent` vs `Reducer`) so downstream tooling can distinguish agent nodes from pure-function nodes. A dedicated `ReducerNodeInvokedEvent` progress event carries `NodeId`, `InputBranchCount`, and `Duration` without the LLM-specific metadata of `AgentInvokedEvent`.
 
@@ -195,7 +192,7 @@ Completed branch outputs are always preserved in `IDagRunResult.NodeResults` —
 
 ### Analyzers
 
-Ten new diagnostics across seven analyzer classes, extending the existing `NDLRMAF` series:
+Twelve new diagnostics across nine analyzer classes, extending the existing `NDLRMAF` series:
 
 | ID | Title | Severity |
 |---|---|---|
@@ -209,9 +206,12 @@ Ten new diagnostics across seven analyzer classes, extending the existing `NDLRM
 | ~~NDLRMAF023~~ | ~~MaxSupersteps value is invalid~~ | Retired — property removed |
 | NDLRMAF024 | All edges from fan-out node are optional | Warning |
 | NDLRMAF025 | CreateGraphWorkflow incompatible with WaitAny | Error |
+| ~~NDLRMAF026~~ | *(reserved — do not reuse)* | Reserved |
 | NDLRMAF027 | Terminal node has outgoing edges | Error |
+| NDLRMAF028 | Condition method has invalid signature | Error |
+| NDLRMAF029 | Reducer method has invalid signature | Error |
 
-NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF025 catches calls to `CreateGraphWorkflow` on graphs that contain `WaitAny` nodes — `CreateGraphWorkflow` returns a MAF `Workflow` using BSP execution which only supports `WaitAll`; the fix is to use `RunGraphAsync` instead. NDLRMAF027 catches topology errors where a terminal node still has outgoing edges.
+NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF025 catches calls to `CreateGraphWorkflow` on graphs that contain `WaitAny` nodes — `CreateGraphWorkflow` returns a MAF `Workflow` using BSP execution which only supports `WaitAll`; the fix is to use `RunGraphAsync` instead. NDLRMAF027 catches topology errors where a terminal node still has outgoing edges. NDLRMAF028 validates that `Condition` references on `[AgentGraphEdge]` point to a `public static bool Method(object?)` method. NDLRMAF029 validates that `ReducerMethod` references on `[AgentGraphReducer]` point to a `public static string Method(IReadOnlyList<string>)` method.
 
 These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescriptors`, extending the ID range from the current ceiling of `NDLRMAF015`.
 
@@ -220,8 +220,8 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 | Phase | Scope | Deliverables |
 |---|---|---|
 | 1 | Attributes + Runtime Factory | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
-| 2 | Source Generator + Reducer + Mermaid Diagrams | `AgentGraphReducerAttribute`, per-node `RoutingMode` override, `GraphEdgeEntry`/`GraphEntryEntry`/`GraphNodeEntry` models, `GraphCodeGenerator`, `TopologyGraphCodeGenerator` Mermaid output, `BootstrapCodeGenerator` graph registration |
-| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF025`, `NDLRMAF027`, analyzer tests, XML doc comments, README updates |
+| 2 | Source Generator + Reducer + Mermaid Diagrams | `AgentGraphReducerAttribute`, per-node `RoutingMode` override, `GraphEdgeEntry`/`GraphEntryPointEntry`/`GraphNodeEntry`/`GraphReducerEntry` models, `TopologyGraphCodeGenerator` Mermaid output, `RegistryCodeGenerator.GenerateGraphTopologyRegistrySource`, `BootstrapCodeGenerator` graph registration, `GraphTopologyRegistration` DTO, `Run{Name}GraphWorkflowAsync` extension, `GraphNames` constants |
+| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF025`, `NDLRMAF027`–`NDLRMAF029`, analyzer tests, XML doc comments, README updates |
 | 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `RunGraphAsync` extension (WaitAny via Needlr-native executor), `Examples/` project demonstrating a research pipeline |
 
 ## Consequences
@@ -230,13 +230,13 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 
 - **POS-001**: Needlr covers all four MAF workflow patterns (Handoff, Group Chat, Sequential, DAG), eliminating the need for users to drop to raw MAF APIs for non-linear orchestration.
 - **POS-002**: Deterministic-first routing gives users testable, replayable, and debuggable orchestration by default. LLM-driven routing is available when intelligence-based decisions are genuinely needed.
-- **POS-003**: Compile-time validation via 8 new analyzers catches topology errors (cycles, missing entry points, unreachable nodes) before runtime, consistent with the existing analyzer experience for other workflow types.
+- **POS-003**: Compile-time validation via 9 new analyzer classes (12 diagnostics) catches topology errors (cycles, missing entry points, unreachable nodes) and method signature errors (condition/reducer methods) before runtime, consistent with the existing analyzer experience for other workflow types.
 - **POS-004**: Per-edge failure semantics (`IsRequired`) preserve expensive parallel work when optional branches fail, avoiding the all-or-nothing tradeoff of graph-wide failure modes.
 - **POS-005**: The attribute model insulates users from MAF's graph API surface (`WorkflowBuilder`, `Edge`, `DirectEdgeData`, `FanOutEdgeData`, etc.), providing a stable abstraction layer if MAF's API evolves.
 
 ### Negative
 
-- **NEG-001**: Significant implementation surface across 4 phases: 3 new attributes, 1 enum, factory method updates, 8 analyzers, generator updates, a new diagnostics interface, and progress event extensions.
+- **NEG-001**: Significant implementation surface across 4 phases: 4 new attributes, 2 enums, factory method updates, 9 analyzer classes (12 diagnostics), generator updates, a new diagnostics interface, progress event extensions, and a compile-time topology registry.
 - **NEG-002**: Routing mode (`Deterministic`, `LlmChoice`, `AllMatching`, `FirstMatching`) and join mode (`WaitAll`, `WaitAny`) add cognitive overhead compared to the simpler "just declare edges" model. Users must understand when each mode applies.
 - **NEG-003**: The phase-1 reducer (`[AgentGraphReducer]`) is a narrow solution covering only the aggregation pattern. Full `FunctionExecutor<T>` support is still needed for arbitrary non-agent computation nodes.
 - **NEG-004**: MAF's graph execution model uses superstep-based BSP, which may surprise users expecting event-driven or streaming DAG execution. Documentation must set clear expectations.
@@ -271,8 +271,8 @@ These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescri
 ## Implementation Notes
 
 - **IMP-001**: New attributes (`AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphReducerAttribute`) should follow the established pattern: `[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]`, placed in `src/NexusLabs.Needlr.AgentFramework/`.
-- **IMP-002**: The source generator requires new model types (`GraphEdgeEntry`, `GraphEntryEntry`) in `Generators/Models/` and a new emitter (`GraphCodeGenerator`) in `Generators/CodeGen/`, following the existing `HandoffEntry`/`GroupChatEntry`/`SequenceEntry` pattern.
-- **IMP-003**: Analyzer IDs `NDLRMAF016`–`NDLRMAF023` must be registered in `MafDiagnosticIds.cs` and `MafDiagnosticDescriptors.cs`. Cycle detection (`NDLRMAF016`) requires a topological sort or DFS-based algorithm operating on the Roslyn syntax/semantic model.
+- **IMP-002**: The source generator requires new model types (`GraphEdgeEntry`, `GraphEntryPointEntry`, `GraphNodeEntry`, `GraphReducerEntry`) in `Generators/Models/` and Mermaid emission in `TopologyGraphCodeGenerator` in `Generators/CodeGen/`, following the existing `HandoffEntry`/`GroupChatEntry`/`SequenceEntry` pattern. The registry emitter (`RegistryCodeGenerator.GenerateGraphTopologyRegistrySource`) produces `AgentGraphTopologyRegistry` which is registered in the bootstrap `ModuleInitializer`.
+- **IMP-003**: Analyzer IDs `NDLRMAF016`–`NDLRMAF029` (with `023` retired and `026` reserved) must be registered in `MafDiagnosticIds.cs` and `MafDiagnosticDescriptors.cs`. Cycle detection (`NDLRMAF016`) requires a topological sort or DFS-based algorithm operating on the Roslyn syntax/semantic model. Condition method validation (`NDLRMAF028`) and reducer method validation (`NDLRMAF029`) walk the type hierarchy for inherited method resolution.
 - **IMP-004**: The `WorkflowFactory` needs a new code path for graph construction that maps `[AgentGraphEdge]` topology to MAF's `WorkflowBuilder` API, translating routing modes to the appropriate edge data types (`DirectEdgeData`, `FanOutEdgeData`, `FanInEdgeData`).
 - **IMP-005**: Success criteria — the feature is correct when: (a) a DAG declared entirely via attributes compiles, runs, and produces the expected output; (b) all 8 analyzers fire on invalid topologies with no false positives on valid ones; (c) `IDagRunResult` captures per-node diagnostics with timing and token usage; (d) existing workflow types are unaffected (no regressions in handoff, group chat, or sequential tests).
 
