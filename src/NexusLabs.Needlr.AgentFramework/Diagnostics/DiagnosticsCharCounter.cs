@@ -94,6 +94,10 @@ public static class DiagnosticsCharCounter
             {
                 total += text.Text.Length;
             }
+            else if (content is TextReasoningContent reasoning && reasoning.Text is not null)
+            {
+                total += reasoning.Text.Length;
+            }
         }
         return total;
     }

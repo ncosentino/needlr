@@ -98,6 +98,14 @@ internal static class AIFunctionProviderCodeGenerator
         var schemaJson = BuildJsonSchema(method.Parameters);
         sb.AppendLine("        private static readonly global::System.Text.Json.JsonElement _schema =");
         sb.AppendLine($"            global::System.Text.Json.JsonDocument.Parse(\"\"\"{schemaJson}\"\"\").RootElement.Clone();");
+
+        if (!string.IsNullOrEmpty(method.ReturnJsonSchemaType))
+        {
+            var returnSchemaJson = $"{{\"type\":\"{method.ReturnJsonSchemaType}\"}}";
+            sb.AppendLine("        private static readonly global::System.Text.Json.JsonElement _returnSchema =");
+            sb.AppendLine($"            global::System.Text.Json.JsonDocument.Parse(\"\"\"{returnSchemaJson}\"\"\").RootElement.Clone();");
+        }
+
         sb.AppendLine();
 
         if (!type.IsStatic)
@@ -112,6 +120,12 @@ internal static class AIFunctionProviderCodeGenerator
         sb.AppendLine($"        public override string Name => \"{escapedName}\";");
         sb.AppendLine($"        public override string Description => \"{escapedDesc}\";");
         sb.AppendLine("        public override global::System.Text.Json.JsonElement JsonSchema => _schema;");
+
+        if (!string.IsNullOrEmpty(method.ReturnJsonSchemaType))
+        {
+            sb.AppendLine("        public override global::System.Text.Json.JsonElement? ReturnJsonSchema => _returnSchema;");
+        }
+
         sb.AppendLine();
 
         if (method.IsAsync)

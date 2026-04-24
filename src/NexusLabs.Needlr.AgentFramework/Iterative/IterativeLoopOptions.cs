@@ -312,6 +312,10 @@ public sealed class IterativeLoopOptions
     /// When <see langword="null"/>, the global chat client from
     /// <see cref="IChatClientAccessor"/> is used unmodified.
     /// </summary>
+    /// <remarks>
+    /// When both <see cref="ChatReducer"/> and <see cref="ChatClientFactory"/> are set,
+    /// the reducer is applied first (innermost) and the factory wraps the result.
+    /// </remarks>
     /// <example>
     /// <code>
     /// var loopOptions = new IterativeLoopOptions
@@ -323,4 +327,32 @@ public sealed class IterativeLoopOptions
     /// </code>
     /// </example>
     public Func<Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.IChatClient>? ChatClientFactory { get; set; }
+
+    /// <summary>
+    /// Optional <see cref="Microsoft.Extensions.AI.IChatReducer"/> that automatically
+    /// wraps the per-loop <see cref="Microsoft.Extensions.AI.IChatClient"/> with a
+    /// <c>ReducingChatClient</c>. This is a convenience alternative to composing a
+    /// <see cref="ChatClientFactory"/> manually.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set, the loop wraps the chat client with a <c>ReducingChatClient</c> using
+    /// this reducer. If <see cref="ChatClientFactory"/> is also set, the reducer is
+    /// applied first (innermost) and the factory wraps the result.
+    /// </para>
+    /// <para>
+    /// Typical usage is to set this to a <c>MessageCountingChatReducer</c> or
+    /// <c>SummarizingChatReducer</c> to prevent context window exhaustion during
+    /// long-running iterative loops.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var loopOptions = new IterativeLoopOptions
+    /// {
+    ///     ChatReducer = new MessageCountingChatReducer(maxNonSystemMessages: 30),
+    /// };
+    /// </code>
+    /// </example>
+    public Microsoft.Extensions.AI.IChatReducer? ChatReducer { get; set; }
 }

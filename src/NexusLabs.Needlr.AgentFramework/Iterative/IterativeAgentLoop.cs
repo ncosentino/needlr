@@ -68,7 +68,15 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
         var chatClient = _chatClientAccessor.ChatClient;
 
-        // Apply per-loop middleware if configured
+        // Apply chat reducer if configured (innermost middleware)
+#pragma warning disable MEAI001 // ReducingChatClient is experimental
+        if (options.ChatReducer is { } reducer)
+        {
+            chatClient = new ReducingChatClient(chatClient, reducer);
+        }
+#pragma warning restore MEAI001
+
+        // Apply per-loop middleware if configured (wraps the reducer if both are set)
         if (options.ChatClientFactory is { } loopClientFactory)
         {
             chatClient = loopClientFactory(chatClient);

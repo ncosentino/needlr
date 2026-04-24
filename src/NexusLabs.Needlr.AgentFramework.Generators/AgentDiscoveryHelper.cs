@@ -109,6 +109,15 @@ internal static class AgentDiscoveryHelper
                 ? GetFullyQualifiedName(((INamedTypeSymbol)returnType).TypeArguments[0])
                 : GetFullyQualifiedName(returnType);
 
+            string? returnJsonSchemaType = null;
+            if (!isVoidLike)
+            {
+                var unwrappedReturnType = isTaskOfT
+                    ? ((INamedTypeSymbol)returnType).TypeArguments[0]
+                    : returnType;
+                returnJsonSchemaType = GetJsonSchemaType(unwrappedReturnType, out _);
+            }
+
             string? methodDesc = GetDescriptionFromAttributes(method.GetAttributes());
 
             var parameters = ImmutableArray.CreateBuilder<AgentFunctionParameterInfo>();
@@ -148,7 +157,7 @@ internal static class AgentDiscoveryHelper
 
             methodInfos.Add(new AgentFunctionMethodInfo(
                 method.Name, isAsync, isVoidLike, returnValueTypeFQN,
-                parameters.ToImmutable(), methodDesc ?? ""));
+                returnJsonSchemaType, parameters.ToImmutable(), methodDesc ?? ""));
         }
 
         return new AgentFunctionTypeInfo(

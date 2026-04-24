@@ -138,6 +138,22 @@ public sealed class EvaluationCaptureChatClient : DelegatingChatClient
                         sb.Append(':');
                         sb.Append(fr.Result);
                         break;
+                    case TextReasoningContent reasoning:
+                        sb.Append("|reason:");
+                        sb.Append(reasoning.Text);
+                        break;
+#pragma warning disable MEAI001 // WebSearchToolCallContent is experimental
+                    case WebSearchToolCallContent ws:
+                        sb.Append("|ws:");
+                        if (ws.Queries is not null)
+                        {
+                            foreach (var query in ws.Queries)
+                            {
+                                sb.Append(query).Append(';');
+                            }
+                        }
+                        break;
+#pragma warning restore MEAI001
                 }
             }
 
