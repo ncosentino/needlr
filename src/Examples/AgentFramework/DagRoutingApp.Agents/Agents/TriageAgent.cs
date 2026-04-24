@@ -7,6 +7,20 @@ namespace DagRoutingApp.Agents;
 /// <see cref="GraphRoutingMode.FirstMatching"/> to evaluate conditions in
 /// declaration order and follow only the first matching edge.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Condition methods (<see cref="IsUrgent"/> and <see cref="IsRoutine"/>)
+/// receive the upstream agent's LLM response text as input — not the
+/// original user message. Because LLM output is non-deterministic, keyword
+/// matching is broad to tolerate variation. An unconditional fallback edge
+/// to <see cref="FallbackHandler"/> ensures the graph never dead-ends.
+/// </para>
+/// <para>
+/// For deterministic routing on structured data (JSON, enums), condition
+/// methods can use exact matching. For LLM-driven route selection, consider
+/// <see cref="GraphRoutingMode.LlmChoice"/> instead of condition predicates.
+/// </para>
+/// </remarks>
 [NeedlrAiAgent(
     Description = "Triages incoming requests by urgency level.",
     Instructions = """

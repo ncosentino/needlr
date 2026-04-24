@@ -16,6 +16,24 @@
 //   fires as soon as the first upstream worker completes, cancelling the rest.
 //   Graph: DispatchAgent → FastWorker + SlowWorker → ResultAgent (WaitAny)
 //
+// IMPORTANT — How condition routing works with LLMs:
+//
+//   Condition methods receive the UPSTREAM AGENT'S OUTPUT as their input, not
+//   the original user message. This means routing decisions are based on what
+//   the LLM said, which is inherently non-deterministic. The same input may
+//   produce different routes across runs because the LLM's response varies.
+//
+//   Strategies for reliable condition-based routing:
+//   - Use broad keyword matching (as this example does) to tolerate variation
+//   - Use an unconditional fallback edge to catch unmatched cases
+//   - Prefer FirstMatching over ExclusiveChoice when routing on LLM output
+//     (FirstMatching gracefully picks the first match; ExclusiveChoice throws
+//     if zero or multiple match, which is fragile with free-text)
+//   - For truly deterministic routing, use conditions on structured data
+//     (JSON fields, enum values) rather than free-text LLM output
+//   - For LLM-driven routing decisions, consider GraphRoutingMode.LlmChoice
+//     which lets the model explicitly pick a route via structured selection
+//
 // Requirements:
 //   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
 //   - No API keys needed — auth flows through your GitHub OAuth token
@@ -77,6 +95,10 @@ AnsiConsole.MarkupLine("""
   [dim]Edges are evaluated in declaration order. Only the FIRST edge whose
   condition returns true is followed. Remaining edges are skipped entirely.
   An unconditional edge (no Condition) acts as a fallback if placed last.[/]
+
+  [yellow]⚠ Note:[/] [dim]Conditions evaluate on the upstream agent's LLM output, not the
+  original input. Results may vary between runs because LLM responses are
+  non-deterministic. The unconditional fallback edge catches unmatched cases.[/]
 """);
 
 await RunScenario(graphRunner, "priority-routing", "URGENT: server is down, customers cannot access the platform!",
@@ -96,6 +118,11 @@ AnsiConsole.Write(new Rule("[bold yellow]Scenario 2: ExclusiveChoice Routing[/]"
 AnsiConsole.MarkupLine("""
   [dim]Exactly ONE edge condition must match. If zero or more than one match,
   the router throws an error. This enforces strict one-of-N classification.[/]
+
+  [yellow]⚠ Note:[/] [dim]ExclusiveChoice is fragile with LLM output because the model's
+  free-text response may contain keywords that match multiple conditions (or
+  none). This mode works best with structured data or deterministic predicates.
+  For LLM-driven routing, prefer GraphRoutingMode.LlmChoice instead.[/]
 """);
 
 await RunScenario(graphRunner, "exclusive-routing", "TECHNICAL: optimize the database queries for better throughput",

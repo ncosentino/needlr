@@ -7,6 +7,21 @@ namespace DagRoutingApp.Agents;
 /// <see cref="GraphRoutingMode.ExclusiveChoice"/> to enforce that exactly
 /// one condition matches. Zero or multiple matches cause a runtime error.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>ExclusiveChoice is fragile with LLM output.</b> Because condition
+/// methods receive the agent's free-text response, keywords from multiple
+/// categories may appear in the same response (e.g., a response about
+/// "designing a technical architecture" matches both IsTechnical and
+/// IsCreative). When this happens, ExclusiveChoice correctly throws.
+/// </para>
+/// <para>
+/// This mode works best with structured/deterministic data where conditions
+/// are guaranteed to be mutually exclusive. For LLM-driven routing, use
+/// <see cref="GraphRoutingMode.LlmChoice"/> which lets the model explicitly
+/// pick one route via structured selection.
+/// </para>
+/// </remarks>
 [NeedlrAiAgent(
     Description = "Classifies requests into exactly one category.",
     Instructions = """
