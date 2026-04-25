@@ -56,6 +56,8 @@
     <Project Path="Examples/AgentFramework/GraphWorkflowApp.Agents/GraphWorkflowApp.Agents.csproj" />
     <Project Path="Examples/AgentFramework/DagRoutingApp/DagRoutingApp.csproj" />
     <Project Path="Examples/AgentFramework/DagRoutingApp.Agents/DagRoutingApp.Agents.csproj" />
+    <Project Path="Examples/AgentFramework/RfcPipelineApp/RfcPipelineApp.csproj" />
+    <Project Path="Examples/AgentFramework/RfcPipelineApp.Core/RfcPipelineApp.Core.csproj" />
   </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
