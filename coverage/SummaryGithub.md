@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 04/25/2026 - 07:17:56 |
-| Coverage date: | 04/25/2026 - 07:16:28 - 04/25/2026 - 07:17:52 |
+| Generated on: | 04/25/2026 - 07:47:23 |
+| Coverage date: | 04/25/2026 - 07:45:42 - 04/25/2026 - 07:47:18 |
 | Parser: | MultiReport (27x Cobertura) |
 | Assemblies: | 25 |
 | Classes: | 477 |
 | Files: | 468 |
-| **Line coverage:** | 85.9% (20852 of 24252) |
-| Covered lines: | 20852 |
-| Uncovered lines: | 3400 |
+| **Line coverage:** | 85.9% (20851 of 24252) |
+| Covered lines: | 20851 |
+| Uncovered lines: | 3401 |
 | Coverable lines: | 24252 |
 | Total lines: | 56902 |
-| **Branch coverage:** | 74.5% (8044 of 10787) |
-| Covered branches: | 8044 |
+| **Branch coverage:** | 74.5% (8043 of 10787) |
+| Covered branches: | 8043 |
 | Total branches: | 10787 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -294,11 +294,11 @@
 |NexusLabs.Needlr.AgentFramework.Testing.ScenarioVerificationException|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 83.2%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 83.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.2%**|**72.3%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.1%**|**72.1%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddlewa<br/>re|89.2%|68.3%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|78.5%|
@@ -314,7 +314,7 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeRouter|97.4%|85.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopology|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|97.6%|100%|
-|NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.4%|68.1%|
+|NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.3%|67.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowServiceExtensions|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition|100%|80%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Middleware.AgentResiliencePlugin|100%||
