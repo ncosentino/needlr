@@ -12,26 +12,22 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 /// Tests for <see cref="ChatCompletionActivityMode"/> dedup behavior in
 /// <see cref="DiagnosticsChatClientMiddleware"/>.
 /// </summary>
-public sealed class ChatCompletionActivityModeTests : IDisposable
+public sealed class ChatCompletionActivityModeTests
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
-    private readonly Activity? _priorActivity;
 
-    public ChatCompletionActivityModeTests()
+    private static AgentMetrics CreateIsolatedMetrics([System.Runtime.CompilerServices.CallerMemberName] string? caller = null)
     {
-        _priorActivity = Activity.Current;
-
-    }
-
-    public void Dispose()
-    {
-        Activity.Current = _priorActivity;
+        return new AgentMetrics(new AgentFrameworkMetricsOptions
+        {
+            ActivitySourceName = $"Needlr.Test.{caller}.{Guid.NewGuid():N}",
+        });
     }
 
     [Fact]
     public async Task AlwaysMode_NoParentActivity_CreatesActivity()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.Always);
         var mockInner = new Mock<IChatClient>();
@@ -53,7 +49,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     [Fact]
     public async Task AlwaysMode_WithParentGenAiActivity_StillCreatesOwnActivity()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.Always);
         var mockInner = new Mock<IChatClient>();
@@ -62,7 +58,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
         var activities = new List<Activity>();
         using var needlrListener = CreateListener(metrics.ActivitySource.Name, activities);
 
-        using var parentSource = new ActivitySource("MEAI.Always.Test");
+        using var parentSource = new ActivitySource($"MEAI.Always.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -81,7 +77,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     [Fact]
     public async Task EnrichParentMode_NoParentActivity_CreatesActivity()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
@@ -105,7 +101,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     {
 
 
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
@@ -114,7 +110,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
         var activities = new List<Activity>();
         using var needlrListener = CreateListener(metrics.ActivitySource.Name, activities);
 
-        using var parentSource = new ActivitySource("MEAI.Enrich.Test");
+        using var parentSource = new ActivitySource($"MEAI.Enrich.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -134,13 +130,13 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     {
 
 
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
         SetupSimpleResponse(mockInner);
 
-        using var parentSource = new ActivitySource("MEAI.EnrichVerify.Test");
+        using var parentSource = new ActivitySource($"MEAI.EnrichVerify.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -161,7 +157,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     [Fact]
     public async Task EnrichParentMode_WithNonGenAiParent_CreatesActivity()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
@@ -170,7 +166,7 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
         var activities = new List<Activity>();
         using var needlrListener = CreateListener(metrics.ActivitySource.Name, activities);
 
-        using var parentSource = new ActivitySource("MyApp.NonGenAi.Test");
+        using var parentSource = new ActivitySource($"MyApp.NonGenAi.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("my_app.operation");
@@ -189,13 +185,13 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     [Fact]
     public async Task EnrichParentMode_SuppressedActivity_StillRecordsDiagnostics()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
         SetupSimpleResponse(mockInner);
 
-        using var parentSource = new ActivitySource("MEAI.DiagCheck.Test");
+        using var parentSource = new ActivitySource($"MEAI.DiagCheck.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -217,13 +213,13 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     [Fact]
     public async Task EnrichParentMode_SuppressedActivity_StillRecordsMetrics()
     {
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
         var mockInner = new Mock<IChatClient>();
         SetupSimpleResponse(mockInner);
 
-        using var parentSource = new ActivitySource("MEAI.MetricCheck.Test");
+        using var parentSource = new ActivitySource($"MEAI.MetricCheck.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -244,14 +240,14 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
     {
 
 
-        var metrics = new AgentMetrics();
+        using var metrics = CreateIsolatedMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
 
         var streamActivities = new List<Activity>();
         using var needlrListener = CreateListener(metrics.ActivitySource.Name, streamActivities);
 
-        using var parentSource = new ActivitySource("MEAI.Stream.Test");
+        using var parentSource = new ActivitySource($"MEAI.Stream.Test.{Guid.NewGuid():N}");
         using var parentListener = CreateListener(parentSource.Name);
 
         using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
@@ -329,3 +325,4 @@ public sealed class ChatCompletionActivityModeTests : IDisposable
         await Task.CompletedTask;
     }
 }
+

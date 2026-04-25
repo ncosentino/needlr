@@ -82,9 +82,22 @@ public static class NeedlrDevUIServiceCollectionExtensions
             }
 
             var agentName = agentType.Name;
-            var instructions = attribute.Instructions ?? attribute.Description ?? $"Agent: {agentName}";
+            var agentFullName = agentType.FullName ?? agentName;
 
-            services.AddAIAgent(agentName, instructions);
+            services.AddAIAgent(agentName, (sp, key) =>
+            {
+                var factory = sp.GetService<IAgentFactory>();
+                if (factory is not null)
+                {
+                    return factory.CreateAgent(agentFullName);
+                }
+
+                // Fallback: create a bare ChatClientAgent without tools
+                var chatClient = sp.GetRequiredService<Microsoft.Extensions.AI.IChatClient>();
+                var instructions = attribute.Instructions ?? attribute.Description ?? $"Agent: {agentName}";
+                return new Microsoft.Agents.AI.ChatClientAgent(
+                    chatClient, agentName, instructions);
+            });
         }
 
         return services;

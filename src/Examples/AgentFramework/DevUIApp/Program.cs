@@ -2,25 +2,44 @@
 //
 // Run this app and navigate to http://localhost:5250/devui to see the
 // [NeedlrAiAgent]-declared agents (DataAssistant, SummaryAgent) listed
-// in the DevUI web interface. The /v1/entities API returns them as
-// discoverable keyed AIAgent services.
+// in the DevUI web interface and chat with them via Copilot.
 //
-// NOTE: This example does not connect to a real LLM — it demonstrates
-// the DevUI discovery and hosting infrastructure only.
+// Requirements:
+//   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
+//   - No API keys needed — auth flows through your GitHub OAuth token
 
 using Microsoft.Agents.AI.DevUI;
 using Microsoft.Extensions.AI;
 
+using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.DevUI;
+using NexusLabs.Needlr.Copilot;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:5250");
 
-// Register a no-op IChatClient for DevUI discovery. In production, this
-// would be a real provider (e.g., OpenAI, Azure OpenAI).
-builder.Services.AddSingleton<IChatClient>(new DevUIPlaceholderChatClient());
+var copilotSection = builder.Configuration.GetSection("Copilot");
+var copilotOptions = new CopilotChatClientOptions
+{
+    DefaultModel = copilotSection["Model"] ?? "gpt-4.1",
+};
+IChatClient chatClient = new CopilotChatClient(copilotOptions);
 
-// Bridge Needlr agents → DevUI keyed AIAgent registrations
+// Full Needlr setup with agent framework — provides IAgentFactory with tools
+var needlrServices = new Syringe()
+    .UsingReflection()
+    .UsingAgentFramework(af => af.UsingChatClient(chatClient))
+    .BuildServiceProvider();
+
+// Bridge the IAgentFactory from Needlr's service provider into the web host
+var agentFactory = needlrServices.GetRequiredService<IAgentFactory>();
+
+builder.Services.AddSingleton(agentFactory);
+builder.Services.AddSingleton(chatClient);
+
+// Bridge Needlr agents → DevUI (uses IAgentFactory for full tool wiring)
 builder.Services.AddNeedlrDevUI();
 
 // MAF OpenAI hosting + DevUI infrastructure
@@ -51,46 +70,8 @@ app.MapGet("/", () =>
 
 Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
 Console.WriteLine("║  Needlr DevUI Example                                       ║");
+Console.WriteLine($"║  LLM: Copilot ({copilotOptions.DefaultModel})                               ║");
 Console.WriteLine("║  Open http://localhost:5250/devui in your browser            ║");
-Console.WriteLine("║  Or curl http://localhost:5250/v1/entities for JSON          ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
 
 app.Run();
-
-/// <summary>
-/// Placeholder <see cref="IChatClient"/> for DevUI discovery. Returns a canned
-/// response explaining it's not connected to a real LLM. In production, replace
-/// with a real provider registration.
-/// </summary>
-internal sealed class DevUIPlaceholderChatClient : IChatClient
-{
-    public Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(new ChatResponse(
-            new ChatMessage(ChatRole.Assistant,
-                "This is a DevUI discovery placeholder. No LLM is connected."))
-        {
-            ModelId = "placeholder",
-        });
-    }
-
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            Contents = [new TextContent("This is a DevUI discovery placeholder.")],
-        };
-        await Task.CompletedTask;
-    }
-
-    public object? GetService(Type serviceType, object? serviceKey = null) => null;
-
-    public void Dispose() { }
-}
