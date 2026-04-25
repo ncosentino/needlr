@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
-    <!-- Exclude from CI test runs — requires LLM provider -->
-    <ExcludeFromSolutionTests Condition="'$(CI)' == 'true'">true</ExcludeFromSolutionTests>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>

@@ -49,6 +49,10 @@ var serviceProvider = new Syringe()
         .UsingChatClient(chatClient)
         .UsingDiagnostics()
         .UsingTokenBudget())
+    .UsingPostPluginRegistrationCallback(services =>
+    {
+        services.AddLogging(builder => builder.AddConsole());
+    })
     .BuildServiceProvider(configuration);
 
 var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();

@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
+
 namespace RfcPipelineApp.Core.Prompts;
 
 /// <summary>
@@ -9,10 +11,12 @@ internal static class ResearchPrompts
     /// Builds the prompt for the initial research stage. The agent explores
     /// the problem space, prior art, and existing solutions.
     /// </summary>
-    internal static string BuildResearch(RfcAssignment assignment)
+    internal static string BuildResearch(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
         var constraints = string.Join("\n- ", assignment.Constraints);
-        var context = string.Join("\n- ", assignment.ExistingContext);
+        var existingContext = string.Join("\n- ", assignment.ExistingContext);
 
         return $"""
             You are a senior technical researcher preparing background material for an RFC.
@@ -25,7 +29,7 @@ internal static class ResearchPrompts
             - {constraints}
 
             ## Existing Context
-            - {context}
+            - {existingContext}
 
             ## Your Task
             Conduct thorough research on this problem space. You must cover:
@@ -39,26 +43,31 @@ internal static class ResearchPrompts
             5. **Key terminology** — Define domain-specific terms the RFC audience needs.
 
             ## Output Format
-            Write your findings as a structured markdown document to the workspace file
-            `{assignment.ResearchPath}`. Use H2 headers for each section above.
+            Produce your findings as a structured markdown document in your response.
+            Use H2 headers for each section above.
             Be specific — cite project names, version numbers, and concrete examples.
             Aim for 800–1500 words of substantive research, not vague summaries.
-
-            Write the file now.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for synthesizing raw research into a concise brief.
     /// </summary>
-    internal static string BuildResearchBrief(RfcAssignment assignment)
+    internal static string BuildResearchBrief(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var researchNotes = PromptHelpers.ReadWorkspaceFile(context, "research-notes.md");
+
         return $"""
             You are a technical writer distilling research into an actionable brief.
 
+            ## Research Notes
+            {researchNotes}
+
             ## Instructions
-            Read the research document at `{assignment.ResearchPath}` in the workspace.
-            Synthesize it into a focused research brief that will guide the RFC drafting stages.
+            Synthesize the research notes above into a focused research brief that will
+            guide the RFC drafting stages.
 
             ## Required Sections
             1. **Problem Summary** — 2-3 sentences defining the core problem.
@@ -69,10 +78,8 @@ internal static class ResearchPrompts
             5. **References** — Links or citations to the most important sources.
 
             ## Output
-            Overwrite `{assignment.ResearchPath}` with the synthesized brief. The brief should
-            be 400-800 words — dense and actionable, not a rehash of raw notes.
-
-            Read the file and write the updated version now.
+            Produce the synthesized brief as your response. The brief should be 400-800
+            words — dense and actionable, not a rehash of raw notes.
             """;
     }
 }

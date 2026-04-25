@@ -36,55 +36,55 @@ public static class RfcPipelineBuilder
         var researchAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "Researcher";
-            o.Instructions = "You are a thorough technical researcher. You read and write workspace files to conduct research.";
+            o.Instructions = "You are a thorough technical researcher. You produce comprehensive research as structured markdown.";
         });
 
         var briefAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "BriefWriter";
-            o.Instructions = "You synthesize research into concise, actionable briefs. You read and write workspace files.";
+            o.Instructions = "You synthesize research into concise, actionable briefs.";
         });
 
         var outlineAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "Architect";
-            o.Instructions = "You are a senior architect who designs document structures. You read and write workspace files.";
+            o.Instructions = "You are a senior architect who designs document structures.";
         });
 
         var draftAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "DraftWriter";
-            o.Instructions = "You are an RFC author who writes clear, technical prose. You read and write workspace files. Always read existing content before appending.";
+            o.Instructions = "You are an RFC author who writes clear, technical prose.";
         });
 
         var metadataAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "MetadataExtractor";
-            o.Instructions = "You extract structured metadata from documents. You read workspace files and write JSON.";
+            o.Instructions = "You extract structured metadata from documents and produce JSON.";
         });
 
         var reviewAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "TechnicalReviewer";
-            o.Instructions = "You are a principal engineer conducting rigorous technical reviews. You read workspace files and write review findings.";
+            o.Instructions = "You are a principal engineer conducting rigorous technical reviews.";
         });
 
         var feedbackAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "FeedbackApplicator";
-            o.Instructions = "You incorporate review feedback into documents. You read review findings and the draft, then write an improved draft.";
+            o.Instructions = "You incorporate review feedback into documents, producing improved drafts.";
         });
 
         var criticAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "ColdReader";
-            o.Instructions = "You evaluate documents with fresh eyes, as if reading them for the first time. You read workspace files.";
+            o.Instructions = "You evaluate documents with fresh eyes, as if reading them for the first time.";
         });
 
         var reviserAgent = agentFactory.CreateAgent(o =>
         {
             o.Name = "FinalReviser";
-            o.Instructions = "You make targeted revisions based on editorial feedback. You read and write workspace files.";
+            o.Instructions = "You make targeted revisions based on editorial feedback, producing complete revised documents.";
         });
 
         return
@@ -97,16 +97,21 @@ public static class RfcPipelineBuilder
             // Stage 2: Research the problem space
             new PipelineStage(
                 "Research",
-                new AgentStageExecutor(
-                    researchAgent,
-                    _ => ResearchPrompts.BuildResearch(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        researchAgent,
+                        ctx => ResearchPrompts.BuildResearch(assignment, ctx)),
+                    "research-notes.md")),
 
             // Stage 3: Synthesize research into a brief
             new PipelineStage(
                 "ResearchBrief",
-                new AgentStageExecutor(
-                    briefAgent,
-                    _ => ResearchPrompts.BuildResearchBrief(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        briefAgent,
+                        ctx => ResearchPrompts.BuildResearchBrief(assignment, ctx)),
+                    assignment.ResearchPath,
+                    overwrite: true)),
 
             // Stage 4: Gate — verify research brief exists and has content
             new PipelineStage(
@@ -116,9 +121,12 @@ public static class RfcPipelineBuilder
             // Stage 5: Propose RFC outline
             new PipelineStage(
                 "Outline",
-                new AgentStageExecutor(
-                    outlineAgent,
-                    _ => DraftPrompts.BuildOutline(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        outlineAgent,
+                        ctx => DraftPrompts.BuildOutline(assignment, ctx)),
+                    assignment.OutlinePath,
+                    overwrite: true)),
 
             // Stage 6: Gate — verify outline exists
             new PipelineStage(
@@ -128,37 +136,49 @@ public static class RfcPipelineBuilder
             // Stage 7: Draft Problem Statement + Background
             new PipelineStage(
                 "DraftProblemStatement",
-                new AgentStageExecutor(
-                    draftAgent,
-                    _ => DraftPrompts.BuildProblemStatement(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        draftAgent,
+                        ctx => DraftPrompts.BuildProblemStatement(assignment, ctx)),
+                    assignment.DraftPath,
+                    overwrite: true)),
 
             // Stage 8: Draft Proposed Solution + Technical Design
             new PipelineStage(
                 "DraftProposedSolution",
-                new AgentStageExecutor(
-                    draftAgent,
-                    _ => DraftPrompts.BuildProposedSolution(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        draftAgent,
+                        ctx => DraftPrompts.BuildProposedSolution(assignment, ctx)),
+                    assignment.DraftPath)),
 
             // Stage 9: Draft Alternatives + Trade-offs
             new PipelineStage(
                 "DraftAlternatives",
-                new AgentStageExecutor(
-                    draftAgent,
-                    _ => DraftPrompts.BuildAlternatives(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        draftAgent,
+                        ctx => DraftPrompts.BuildAlternatives(assignment, ctx)),
+                    assignment.DraftPath)),
 
             // Stage 10: Draft Migration Plan + Rollback Strategy
             new PipelineStage(
                 "DraftMigration",
-                new AgentStageExecutor(
-                    draftAgent,
-                    _ => DraftPrompts.BuildMigration(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        draftAgent,
+                        ctx => DraftPrompts.BuildMigration(assignment, ctx)),
+                    assignment.DraftPath)),
 
             // Stage 11: Extract metadata from draft
             new PipelineStage(
                 "DraftMetadata",
-                new AgentStageExecutor(
-                    metadataAgent,
-                    _ => DraftPrompts.BuildMetadata(assignment))),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        metadataAgent,
+                        ctx => DraftPrompts.BuildMetadata(assignment, ctx)),
+                    "metadata.json",
+                    overwrite: true)),
 
             // Stage 12: Validate structure — required sections + word count
             new PipelineStage(
@@ -169,9 +189,12 @@ public static class RfcPipelineBuilder
             new PipelineStage(
                 "TechnicalReview",
                 new ContinueOnFailureExecutor(
-                    new AgentStageExecutor(
-                        reviewAgent,
-                        _ => ReviewPrompts.BuildTechnicalReview(assignment)),
+                    new WriteToWorkspaceExecutor(
+                        new AgentStageExecutor(
+                            reviewAgent,
+                            ctx => ReviewPrompts.BuildTechnicalReview(assignment, ctx)),
+                        "review-findings.md",
+                        overwrite: true),
                     onFailure: ex => logger.LogWarning(
                         ex,
                         "Technical review stage failed (advisory) — continuing pipeline"))),
@@ -179,9 +202,12 @@ public static class RfcPipelineBuilder
             // Stage 14: Apply review feedback
             new PipelineStage(
                 "ApplyFeedback",
-                new AgentStageExecutor(
-                    feedbackAgent,
-                    _ => ReviewPrompts.BuildApplyFeedback(assignment)),
+                new WriteToWorkspaceExecutor(
+                    new AgentStageExecutor(
+                        feedbackAgent,
+                        ctx => ReviewPrompts.BuildApplyFeedback(assignment, ctx)),
+                    assignment.DraftPath,
+                    overwrite: true),
                 new StageExecutionPolicy
                 {
                     ShouldSkip = ctx =>
@@ -192,13 +218,17 @@ public static class RfcPipelineBuilder
                 }),
 
             // Stage 15: Cold reader critique → revise loop (max 2 retries)
+            // NOTE: The reviser's response is not persisted to workspace by
+            // CritiqueAndReviseExecutor. The cold reader stage is advisory —
+            // its feedback is captured in the result but the draft is not
+            // modified. A future improvement could capture reviser output.
             new PipelineStage(
                 "ColdReader",
                 new CritiqueAndReviseExecutor(
                     criticAgent,
                     reviserAgent,
-                    criticPromptFactory: _ => ColdReaderPrompts.BuildCritic(assignment),
-                    reviserPromptFactory: (_, feedback) => ColdReaderPrompts.BuildReviser(assignment, feedback),
+                    criticPromptFactory: ctx => ColdReaderPrompts.BuildCritic(assignment, ctx),
+                    reviserPromptFactory: (ctx, feedback) => ColdReaderPrompts.BuildReviser(assignment, ctx, feedback),
                     passCheck: (_, feedback) =>
                         feedback is not null &&
                         (feedback.Contains("APPROVED", StringComparison.OrdinalIgnoreCase) ||

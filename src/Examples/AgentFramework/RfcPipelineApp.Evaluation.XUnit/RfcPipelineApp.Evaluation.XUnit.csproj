@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
-    <!-- Exclude from CI test runs — requires LLM provider -->
-    <ExcludeFromSolutionTests Condition="'$(CI)' == 'true'">true</ExcludeFromSolutionTests>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 

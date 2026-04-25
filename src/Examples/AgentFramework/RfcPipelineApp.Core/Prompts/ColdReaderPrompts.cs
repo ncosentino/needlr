@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
+
 namespace RfcPipelineApp.Core.Prompts;
 
 /// <summary>
@@ -9,14 +11,18 @@ internal static class ColdReaderPrompts
     /// Builds the critic prompt for a fresh-eyes evaluation of the RFC.
     /// The critic has not seen any prior stages — it evaluates the document cold.
     /// </summary>
-    internal static string BuildCritic(RfcAssignment assignment)
+    internal static string BuildCritic(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+
         return $"""
             You are a senior engineer reading this RFC for the first time — a "cold reader"
             who has no prior context about the discussions that led to this document.
 
-            ## Context
-            Read the RFC draft at `{assignment.DraftPath}`.
+            ## RFC Draft
+            {currentDraft}
 
             ## Your Task
             Evaluate the RFC purely on what is written. You are checking whether a reader
@@ -57,25 +63,28 @@ internal static class ColdReaderPrompts
             - [Concrete suggestion]
             ```
 
-            Read the draft and provide your evaluation now.
+            Produce your evaluation as your response.
             """;
     }
 
     /// <summary>
     /// Builds the reviser prompt incorporating cold-reader feedback.
     /// </summary>
-    internal static string BuildReviser(RfcAssignment assignment, string feedback)
+    internal static string BuildReviser(
+        RfcAssignment assignment,
+        StageExecutionContext context,
+        string feedback)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+
         return $"""
             You are an RFC author making final revisions based on cold-reader feedback.
 
-            ## Context
-            - Read the current draft at `{assignment.DraftPath}`
-            - The cold reader provided this feedback:
+            ## Current Draft
+            {currentDraft}
 
-            ---
+            ## Cold Reader Feedback
             {feedback}
-            ---
 
             ## Your Task
             Revise the RFC to address the cold reader's feedback. Focus on:
@@ -85,12 +94,10 @@ internal static class ColdReaderPrompts
             4. Filling any gaps identified
 
             ## Rules
-            - Write the complete updated document to `{assignment.DraftPath}`
+            - Produce the complete updated document as your response
             - Preserve the overall structure
             - Do not add defensive caveats — fix the underlying issue instead
             - Every change should make the document more self-contained and actionable
-
-            Read the draft and write the revised version now.
             """;
     }
 }

@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
+
 namespace RfcPipelineApp.Core.Prompts;
 
 /// <summary>
@@ -8,13 +10,19 @@ internal static class DraftPrompts
     /// <summary>
     /// Builds the prompt for proposing the RFC document outline.
     /// </summary>
-    internal static string BuildOutline(RfcAssignment assignment)
+    internal static string BuildOutline(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var researchBrief = PromptHelpers.ReadWorkspaceFile(context, assignment.ResearchPath);
+
         return $"""
             You are a senior architect designing the structure of an RFC document.
 
+            ## Research Brief
+            {researchBrief}
+
             ## Context
-            Read the research brief at `{assignment.ResearchPath}` for background.
             The RFC is for: **{assignment.FeatureTitle}**
             Target audience: **{assignment.TargetAudience}**
 
@@ -36,25 +44,29 @@ internal static class DraftPrompts
             Add sub-sections where the topic is complex enough to warrant them.
 
             ## Output
-            Write the outline to `{assignment.OutlinePath}` as a markdown document with
-            H2 headers for each section and bullet points for sub-topics.
-
-            Read the research brief and write the outline now.
+            Produce the outline as your response — a markdown document with H2 headers for
+            each section and bullet points for sub-topics.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for drafting the Problem Statement and Background sections.
     /// </summary>
-    internal static string BuildProblemStatement(RfcAssignment assignment)
+    internal static string BuildProblemStatement(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var researchBrief = PromptHelpers.ReadWorkspaceFile(context, assignment.ResearchPath);
+        var outline = PromptHelpers.ReadWorkspaceFile(context, assignment.OutlinePath);
+
         return $"""
             You are an RFC author writing the foundational sections of a design document.
 
-            ## Context
-            - Read the research brief at `{assignment.ResearchPath}`
-            - Read the outline at `{assignment.OutlinePath}`
-            - The RFC draft will be written to `{assignment.DraftPath}`
+            ## Research Brief
+            {researchBrief}
+
+            ## Outline
+            {outline}
 
             ## Your Task
             Write the **Problem Statement** and **Background** sections of the RFC.
@@ -72,7 +84,7 @@ internal static class DraftPrompts
             - Explain the current state of the system and why it's insufficient
 
             ## Output Format
-            Write a markdown document to `{assignment.DraftPath}` starting with:
+            Produce a markdown document as your response starting with:
             ```
             # RFC: {assignment.FeatureTitle}
 
@@ -85,32 +97,39 @@ internal static class DraftPrompts
 
             Be specific, use concrete examples, and write for the {assignment.TargetAudience}.
             Aim for 500-800 words across both sections.
-
-            Read the research and outline, then write the draft now.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for drafting the Proposed Solution and Technical Design sections.
     /// </summary>
-    internal static string BuildProposedSolution(RfcAssignment assignment)
+    internal static string BuildProposedSolution(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
         var constraints = string.Join("\n- ", assignment.Constraints);
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+        var researchBrief = PromptHelpers.ReadWorkspaceFile(context, assignment.ResearchPath);
+        var outline = PromptHelpers.ReadWorkspaceFile(context, assignment.OutlinePath);
 
         return $"""
             You are an RFC author writing the core technical proposal.
 
-            ## Context
-            - Read the current draft at `{assignment.DraftPath}`
-            - Read the research brief at `{assignment.ResearchPath}`
-            - Read the outline at `{assignment.OutlinePath}`
+            ## Current Draft
+            {currentDraft}
+
+            ## Research Brief
+            {researchBrief}
+
+            ## Outline
+            {outline}
 
             ## Constraints That Must Be Satisfied
             - {constraints}
 
             ## Your Task
-            Append the **Proposed Solution** and **Technical Design** sections to the
-            existing draft at `{assignment.DraftPath}`.
+            Write the **Proposed Solution** and **Technical Design** sections to append
+            to the existing draft above.
 
             ### Proposed Solution Guidelines
             - Present the recommended approach in 3-5 paragraphs
@@ -126,28 +145,34 @@ internal static class DraftPrompts
             - Estimate complexity for each component (Low/Medium/High)
 
             ## Output
-            Read the current draft, then append these two sections to it. Preserve all
-            existing content — append only. Aim for 600-1000 words across both sections.
-
-            Read the files and write the updated draft now.
+            Produce ONLY the two new sections (Proposed Solution and Technical Design) as
+            your response. Do NOT repeat the existing draft content — only output the new
+            sections to be appended. Aim for 600-1000 words across both sections.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for drafting the Alternatives and Trade-offs sections.
     /// </summary>
-    internal static string BuildAlternatives(RfcAssignment assignment)
+    internal static string BuildAlternatives(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+        var researchBrief = PromptHelpers.ReadWorkspaceFile(context, assignment.ResearchPath);
+
         return $"""
             You are an RFC author providing a balanced analysis of alternatives.
 
-            ## Context
-            - Read the current draft at `{assignment.DraftPath}`
-            - Read the research brief at `{assignment.ResearchPath}`
+            ## Current Draft
+            {currentDraft}
+
+            ## Research Brief
+            {researchBrief}
 
             ## Your Task
-            Append the **Alternatives Considered** and **Trade-offs** sections to the
-            existing draft at `{assignment.DraftPath}`.
+            Write the **Alternatives Considered** and **Trade-offs** sections to append
+            to the existing draft above.
 
             ### Alternatives Considered Guidelines
             - Present at least 3 alternative approaches that were evaluated
@@ -164,27 +189,30 @@ internal static class DraftPrompts
             - Explain what you're deliberately trading away and why it's acceptable
 
             ## Output
-            Read the current draft, then append these two sections. Preserve all existing
-            content. Aim for 400-700 words across both sections.
-
-            Read the draft and write the updated version now.
+            Produce ONLY the two new sections (Alternatives Considered and Trade-offs) as
+            your response. Do NOT repeat the existing draft content — only output the new
+            sections to be appended. Aim for 400-700 words across both sections.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for drafting the Migration Plan and Rollback Strategy sections.
     /// </summary>
-    internal static string BuildMigration(RfcAssignment assignment)
+    internal static string BuildMigration(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+
         return $"""
             You are an RFC author writing the operational sections of the design document.
 
-            ## Context
-            - Read the current draft at `{assignment.DraftPath}`
+            ## Current Draft
+            {currentDraft}
 
             ## Your Task
-            Append the **Migration Plan** and **Rollback Strategy** sections to the
-            existing draft at `{assignment.DraftPath}`.
+            Write the **Migration Plan** and **Rollback Strategy** sections to append
+            to the existing draft above.
 
             ### Migration Plan Guidelines
             - Define a phased rollout (Phase 1, 2, 3 at minimum)
@@ -201,27 +229,29 @@ internal static class DraftPrompts
             - Address data rollback separately from code rollback
 
             ## Output
-            Read the current draft, then append these two sections. Preserve all existing
-            content. Aim for 400-600 words across both sections.
-
-            Read the draft and write the updated version now.
+            Produce ONLY the two new sections (Migration Plan and Rollback Strategy) as
+            your response. Do NOT repeat the existing draft content — only output the new
+            sections to be appended. Aim for 400-600 words across both sections.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for extracting metadata from the completed draft.
     /// </summary>
-    internal static string BuildMetadata(RfcAssignment assignment)
+    internal static string BuildMetadata(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+
         return $$"""
             You are an RFC editor extracting metadata from a completed draft.
 
-            ## Context
-            Read the current draft at `{{assignment.DraftPath}}`.
+            ## Draft Content
+            {{currentDraft}}
 
             ## Your Task
-            Based on the draft content, produce a JSON metadata block and write it to
-            `metadata.json` in the workspace.
+            Based on the draft content above, produce a JSON metadata block as your response.
 
             The JSON must have this exact structure:
             ```json
@@ -236,7 +266,7 @@ internal static class DraftPrompts
             The title should be descriptive and specific (not just the feature name).
             The summary should capture the problem AND proposed solution in brief.
 
-            Read the draft and write `metadata.json` now.
+            Produce ONLY the JSON as your response — no surrounding text or markdown fences.
             """;
     }
 }

@@ -1,3 +1,5 @@
+using NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
+
 namespace RfcPipelineApp.Core.Prompts;
 
 /// <summary>
@@ -9,13 +11,17 @@ internal static class ReviewPrompts
     /// Builds the prompt for the technical review agent. This stage is wrapped
     /// in a <c>ContinueOnFailureExecutor</c> so failures are advisory, not fatal.
     /// </summary>
-    internal static string BuildTechnicalReview(RfcAssignment assignment)
+    internal static string BuildTechnicalReview(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+
         return $"""
             You are a principal engineer conducting a rigorous technical review of an RFC.
 
-            ## Context
-            Read the RFC draft at `{assignment.DraftPath}`.
+            ## RFC Draft
+            {currentDraft}
 
             ## Review Checklist
             Evaluate the RFC against each of these criteria:
@@ -30,7 +36,7 @@ internal static class ReviewPrompts
             6. **Clarity** — Could the {assignment.TargetAudience} implement this based on the RFC alone?
 
             ## Output
-            Write your review findings to `review-findings.md` in the workspace.
+            Produce your review findings as your response.
 
             Structure your review as:
             ```
@@ -51,22 +57,27 @@ internal static class ReviewPrompts
 
             Be specific — reference section names and quote problematic text.
             If the RFC is solid, say so. Don't manufacture issues that don't exist.
-
-            Read the draft and write your review now.
             """;
     }
 
     /// <summary>
     /// Builds the prompt for applying review feedback to the RFC draft.
     /// </summary>
-    internal static string BuildApplyFeedback(RfcAssignment assignment)
+    internal static string BuildApplyFeedback(
+        RfcAssignment assignment,
+        StageExecutionContext context)
     {
+        var currentDraft = PromptHelpers.ReadWorkspaceFile(context, assignment.DraftPath);
+        var reviewFindings = PromptHelpers.ReadWorkspaceFile(context, "review-findings.md");
+
         return $"""
             You are an RFC author incorporating technical review feedback.
 
-            ## Context
-            - Read the current draft at `{assignment.DraftPath}`
-            - Read the review findings at `review-findings.md`
+            ## Current Draft
+            {currentDraft}
+
+            ## Review Findings
+            {reviewFindings}
 
             ## Your Task
             Apply the feedback from the technical review to improve the RFC draft.
@@ -82,10 +93,8 @@ internal static class ReviewPrompts
                capturing any unresolved items from the review
 
             ## Output
-            Read both files, then write the updated draft to `{assignment.DraftPath}`.
-            The updated draft should be a complete document — not a diff or patch.
-
-            Read the files and write the updated draft now.
+            Produce the complete updated draft as your response. The updated draft should
+            be a complete document — not a diff or patch.
             """;
     }
 }
