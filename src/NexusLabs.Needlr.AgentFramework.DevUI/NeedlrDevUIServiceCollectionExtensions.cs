@@ -92,7 +92,6 @@ public static class NeedlrDevUIServiceCollectionExtensions
                     return factory.CreateAgent(agentFullName);
                 }
 
-                // Fallback: create a bare ChatClientAgent without tools
                 var chatClient = sp.GetRequiredService<Microsoft.Extensions.AI.IChatClient>();
                 var instructions = attribute.Instructions ?? attribute.Description ?? $"Agent: {agentName}";
                 return new Microsoft.Agents.AI.ChatClientAgent(

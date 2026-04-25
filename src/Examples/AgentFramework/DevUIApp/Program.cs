@@ -39,12 +39,13 @@ var agentFactory = needlrServices.GetRequiredService<IAgentFactory>();
 builder.Services.AddSingleton(agentFactory);
 builder.Services.AddSingleton(chatClient);
 
-// Bridge Needlr agents → DevUI (uses IAgentFactory for full tool wiring)
+// Bridge Needlr agents → DevUI (uses IAgentFactory for full tool wiring + OTel)
 builder.Services.AddNeedlrDevUI();
 
 // MAF OpenAI hosting + DevUI infrastructure
-builder.Services.AddOpenAIResponses();
-builder.Services.AddOpenAIConversations();
+builder.AddOpenAIResponses();
+builder.AddOpenAIConversations();
+builder.AddDevUI();
 
 var app = builder.Build();
 
