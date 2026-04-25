@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,13 +12,21 @@ namespace NexusLabs.Needlr.AspNet.Tests;
 
 public sealed class HostedServiceRuntimeTests
 {
-    [Fact]
-    public async Task HostedService_ExecutesOnWebApplicationStart()
+    private static WebApplication BuildTestApp()
     {
         var app = new Syringe()
             .UsingReflection()
             .ForWebApplication()
+            .UsingConfigurationCallback((builder, _) =>
+                builder.WebHost.UseUrls("http://127.0.0.1:0"))
             .BuildWebApplication();
+        return app;
+    }
+
+    [Fact]
+    public async Task HostedService_ExecutesOnWebApplicationStart()
+    {
+        var app = BuildTestApp();
 
         var workerService = app.Services.GetRequiredService<TestBackgroundWorker>();
         Assert.False(workerService.ExecuteCalled, "ExecuteAsync should not be called before app starts");
@@ -33,10 +42,7 @@ public sealed class HostedServiceRuntimeTests
     [Fact]
     public async Task HostedService_StopsOnWebApplicationStop()
     {
-        var app = new Syringe()
-            .UsingReflection()
-            .ForWebApplication()
-            .BuildWebApplication();
+        var app = BuildTestApp();
 
         var workerService = app.Services.GetRequiredService<TestBackgroundWorker>();
 
@@ -53,10 +59,7 @@ public sealed class HostedServiceRuntimeTests
     [Fact]
     public async Task HostedService_MultipleServicesAllExecute()
     {
-        var app = new Syringe()
-            .UsingReflection()
-            .ForWebApplication()
-            .BuildWebApplication();
+        var app = BuildTestApp();
 
         var worker1 = app.Services.GetRequiredService<TestBackgroundWorker>();
         var worker2 = app.Services.GetRequiredService<AnotherBackgroundWorker>();
@@ -79,10 +82,7 @@ public sealed class HostedServiceRuntimeTests
     [Fact]
     public async Task HostedService_ResolvedViaIHostedService_ExecutesCorrectly()
     {
-        var app = new Syringe()
-            .UsingReflection()
-            .ForWebApplication()
-            .BuildWebApplication();
+        var app = BuildTestApp();
 
         var hostedServices = app.Services.GetServices<IHostedService>().ToList();
         
@@ -107,10 +107,7 @@ public sealed class HostedServiceRuntimeTests
     [Fact]
     public async Task HostedService_WithDoNotAutoRegister_DoesNotExecute()
     {
-        var app = new Syringe()
-            .UsingReflection()
-            .ForWebApplication()
-            .BuildWebApplication();
+        var app = BuildTestApp();
 
         var excluded = app.Services.GetService<ExcludedBackgroundWorker>();
         Assert.Null(excluded);
