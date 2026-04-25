@@ -179,6 +179,183 @@ public class AsyncLocalScopedGeneratorTests
     }
 
     // -------------------------------------------------------------------------
+    // Property proxies — mutable variant with read/write properties
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void MutableVariant_GeneratesPropertyProxiesForReadWriteProperties()
+    {
+        var source = """
+            using NexusLabs.Needlr.AgentFramework;
+            namespace TestApp
+            {
+                public class RunContext
+                {
+                    public string? Title { get; set; }
+                    public int Count { get; set; }
+                }
+
+                [AsyncLocalScoped(Mutable = true)]
+                public interface IRunAccessor
+                {
+                    RunContext? Current { get; }
+                    System.IDisposable BeginScope(RunContext value);
+                    string? Title { get; set; }
+                    int Count { get; set; }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Getter proxies
+        Assert.Contains("get => _current.Value?.Value?.Title;", generated);
+        Assert.Contains("get => _current.Value?.Value?.Count ?? default;", generated);
+
+        // Setter proxies — use partial match to avoid fully-qualified type issues
+        Assert.Contains("h.Title = value;", generated);
+        Assert.Contains("h.Count = value;", generated);
+    }
+
+    // -------------------------------------------------------------------------
+    // Property proxies — mutable variant with read-only properties
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void MutableVariant_GeneratesGetterOnlyForReadOnlyProperties()
+    {
+        var source = """
+            using NexusLabs.Needlr.AgentFramework;
+            namespace TestApp
+            {
+                public class RunInfo
+                {
+                    public string? Id { get; }
+                }
+
+                [AsyncLocalScoped(Mutable = true)]
+                public interface IRunInfoAccessor
+                {
+                    RunInfo? Current { get; }
+                    System.IDisposable BeginScope(RunInfo value);
+                    string? Id { get; }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        Assert.Contains("Id => _current.Value?.Value?.Id;", generated);
+        // Should NOT contain a setter block for read-only properties
+        Assert.DoesNotContain("h.Id = value;", generated);
+    }
+
+    // -------------------------------------------------------------------------
+    // Property proxies — simple variant
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void SimpleVariant_GeneratesPropertyProxies()
+    {
+        var source = """
+            using NexusLabs.Needlr.AgentFramework;
+            namespace TestApp
+            {
+                public class SimpleCtx
+                {
+                    public string? Name { get; set; }
+                    public bool IsReady { get; }
+                }
+
+                [AsyncLocalScoped]
+                public interface ISimpleCtxAccessor
+                {
+                    SimpleCtx? Current { get; }
+                    System.IDisposable BeginScope(SimpleCtx value);
+                    string? Name { get; set; }
+                    bool IsReady { get; }
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Read/write proxy
+        Assert.Contains("get => _current.Value?.Name;", generated);
+        Assert.Contains("h.Name = value;", generated);
+
+        // Read-only proxy (value type gets ?? default)
+        Assert.Contains("IsReady => _current.Value?.IsReady ?? default;", generated);
+        Assert.DoesNotContain("h.IsReady = value;", generated);
+    }
+
+    // -------------------------------------------------------------------------
+    // No proxy properties — no extra output
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void NoExtraProperties_NoProxiesGenerated()
+    {
+        var source = """
+            using NexusLabs.Needlr.AgentFramework;
+            namespace TestApp
+            {
+                [AsyncLocalScoped(Mutable = true)]
+                public interface IMinimalAccessor
+                {
+                    int? Current { get; }
+                    System.IDisposable BeginCapture();
+                }
+            }
+            """;
+
+        var generated = RunGenerator(source);
+
+        // Should have Current but no extra property proxies
+        Assert.Contains("Current => _current.Value?.Value", generated);
+        // The generated code has no proxy properties beyond Current, the scope method,
+        // Set, the Scope constructor, and the Holder field — verify no proxy getters/setters
+        Assert.DoesNotContain("get =>", generated);
+        Assert.DoesNotContain("set {", generated);
+    }
+
+    // -------------------------------------------------------------------------
+    // Property proxies — generated code compiles cleanly
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PropertyProxies_GeneratedCodeCompiles()
+    {
+        var source = """
+            using NexusLabs.Needlr.AgentFramework;
+            namespace TestApp
+            {
+                public class PipelineRun
+                {
+                    public string? Title { get; set; }
+                    public int Priority { get; set; }
+                    public bool IsComplete { get; }
+                }
+
+                [AsyncLocalScoped(Mutable = true)]
+                public interface IPipelineRunAccessor
+                {
+                    PipelineRun? Current { get; }
+                    System.IDisposable BeginScope(PipelineRun value);
+                    string? Title { get; set; }
+                    int Priority { get; set; }
+                    bool IsComplete { get; }
+                }
+            }
+            """;
+
+        var diagnostics = RunGeneratorAndGetDiagnostics(source);
+
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+        Assert.Empty(errors);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -216,5 +393,30 @@ public class AsyncLocalScopedGeneratorTests
             .Where(t => t.FilePath.EndsWith(".g.cs"))
             .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
             .ToArray();
+    }
+
+    private static Diagnostic[] RunGeneratorAndGetDiagnostics(string source)
+    {
+        var syntaxTrees = new[]
+        {
+            CSharpSyntaxTree.ParseText(AttributeStub),
+            CSharpSyntaxTree.ParseText(source),
+        };
+
+        var references = Basic.Reference.Assemblies.Net100.References.All;
+
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            syntaxTrees,
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new AsyncLocalScopedGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation, out var outputCompilation, out _);
+
+        return outputCompilation.GetDiagnostics().ToArray();
     }
 }

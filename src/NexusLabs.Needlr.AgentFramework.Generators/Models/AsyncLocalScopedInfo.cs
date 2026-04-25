@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 
 namespace NexusLabs.Needlr.AgentFramework.Generators.Models
 {
@@ -15,7 +16,8 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.Models
             string scopeMethodName,
             bool hasScopeParameter,
             string scopeParameterTypeFullName,
-            bool isMutable)
+            bool isMutable,
+            ImmutableArray<AsyncLocalScopedPropertyInfo> proxyProperties)
         {
             InterfaceFullName = interfaceFullName;
             InterfaceName = interfaceName;
@@ -25,6 +27,7 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.Models
             HasScopeParameter = hasScopeParameter;
             ScopeParameterTypeFullName = scopeParameterTypeFullName;
             IsMutable = isMutable;
+            ProxyProperties = proxyProperties;
         }
 
         public string InterfaceFullName { get; }
@@ -35,6 +38,13 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.Models
         public bool HasScopeParameter { get; }
         public string ScopeParameterTypeFullName { get; }
         public bool IsMutable { get; }
+
+        /// <summary>
+        /// Properties on the accessor interface (beyond <c>Current</c>) that
+        /// should be proxied through to <c>Current?.PropertyName</c>.
+        /// Empty when the interface declares no extra properties.
+        /// </summary>
+        public ImmutableArray<AsyncLocalScopedPropertyInfo> ProxyProperties { get; }
 
         public string GeneratedClassName
         {

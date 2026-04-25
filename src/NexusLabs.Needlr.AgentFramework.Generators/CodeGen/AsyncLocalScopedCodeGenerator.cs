@@ -53,6 +53,8 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.CodeGen
             sb.AppendLine("    public " + valueType + "? Current => _current.Value;");
             sb.AppendLine();
 
+            GeneratePropertyProxies(sb, info, "_current.Value");
+
             if (info.HasScopeParameter)
             {
                 sb.AppendLine("    public global::System.IDisposable " + info.ScopeMethodName + "(" + info.ScopeParameterTypeFullName + " value)");
@@ -99,6 +101,8 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.CodeGen
             sb.AppendLine();
             sb.AppendLine("    public " + valueType + "? Current => _current.Value?.Value;");
             sb.AppendLine();
+
+            GeneratePropertyProxies(sb, info, "_current.Value?.Value");
 
             if (info.HasScopeParameter)
             {
@@ -154,6 +158,39 @@ namespace NexusLabs.Needlr.AgentFramework.Generators.CodeGen
             sb.AppendLine("            _current.Value = _previous;");
             sb.AppendLine("        }");
             sb.AppendLine("    }");
+        }
+
+        private static void GeneratePropertyProxies(
+            StringBuilder sb,
+            AsyncLocalScopedInfo info,
+            string currentExpression)
+        {
+            if (info.ProxyProperties.Length == 0)
+                return;
+
+            foreach (var prop in info.ProxyProperties)
+            {
+                var getExpr = currentExpression + "?." + prop.Name;
+                if (prop.IsNonNullableValueType)
+                {
+                    getExpr += " ?? default";
+                }
+
+                if (prop.HasSetter)
+                {
+                    sb.AppendLine("    public " + prop.TypeFullName + " " + prop.Name);
+                    sb.AppendLine("    {");
+                    sb.AppendLine("        get => " + getExpr + ";");
+                    sb.AppendLine("        set { if (" + currentExpression + " is { } h) h." + prop.Name + " = value; }");
+                    sb.AppendLine("    }");
+                }
+                else
+                {
+                    sb.AppendLine("    public " + prop.TypeFullName + " " + prop.Name + " => " + getExpr + ";");
+                }
+
+                sb.AppendLine();
+            }
         }
     }
 }

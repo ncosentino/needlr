@@ -115,6 +115,36 @@ namespace NexusLabs.Needlr.AgentFramework.Generators
                 ? ""
                 : typeSymbol.ContainingNamespace?.ToDisplayString() ?? "";
 
+            // Discover additional properties on the interface (beyond "Current")
+            // that should be proxied through to Current?.PropertyName.
+            var proxyProps = ImmutableArray.CreateBuilder<Models.AsyncLocalScopedPropertyInfo>();
+            foreach (var member in typeSymbol.GetMembers())
+            {
+                if (member is IPropertySymbol prop &&
+                    prop.Name != "Current" &&
+                    !prop.IsStatic &&
+                    !prop.IsIndexer)
+                {
+                    var propTypeFullName = prop.Type.ToDisplayString(
+                        SymbolDisplayFormat.FullyQualifiedFormat
+                            .WithMiscellaneousOptions(
+                                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier));
+
+                    bool hasSetter = prop.SetMethod != null;
+
+                    bool isNonNullableValueType = prop.Type.IsValueType &&
+                        prop.Type.NullableAnnotation != NullableAnnotation.Annotated &&
+                        !(prop.Type is INamedTypeSymbol nt &&
+                          nt.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
+
+                    proxyProps.Add(new Models.AsyncLocalScopedPropertyInfo(
+                        name: prop.Name,
+                        typeFullName: propTypeFullName,
+                        hasSetter: hasSetter,
+                        isNonNullableValueType: isNonNullableValueType));
+                }
+            }
+
             return new AsyncLocalScopedInfo(
                 interfaceFullName: interfaceFullName,
                 interfaceName: typeSymbol.Name,
@@ -123,7 +153,8 @@ namespace NexusLabs.Needlr.AgentFramework.Generators
                 scopeMethodName: scopeMethod.Name,
                 hasScopeParameter: hasScopeParameter,
                 scopeParameterTypeFullName: scopeParameterTypeFullName,
-                isMutable: isMutable);
+                isMutable: isMutable,
+                proxyProperties: proxyProps.ToImmutable());
         }
     }
 }
