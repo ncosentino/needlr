@@ -36,12 +36,12 @@
 <div class="card">
 <div class="card-header">Line coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar11">88%</div>
+<div class="large cardpercentagebar cardpercentagebar8">92%</div>
 <div class="table">
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="8">8</td>
+<td class="limit-width right" title="12">12</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="9">9</td>
+<td class="limit-width right" title="13">13</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="25">25</td>
+<td class="limit-width right" title="31">31</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="8 of 9">88.8%</td>
+<td class="limit-width right" title="12 of 13">92.3%</td>
 </tr>
 </table>
 </div>
@@ -107,13 +107,15 @@
 </colgroup>
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(System.String,System.Boolean,System.Boolean,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)"><a href="#file0_line15" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_MethodName()"><a href="#file0_line19" class="navigatetohash">get_MethodName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_IsAsync()"><a href="#file0_line20" class="navigatetohash">get_IsAsync()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_IsVoidLike()"><a href="#file0_line21" class="navigatetohash">get_IsVoidLike()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ReturnValueTypeFQN()"><a href="#file0_line22" class="navigatetohash">get_ReturnValueTypeFQN()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
-<tr><td title="get_Parameters()"><a href="#file0_line23" class="navigatetohash">get_Parameters()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_Description()"><a href="#file0_line24" class="navigatetohash">get_Description()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title=".ctor(System.String,System.Boolean,System.Boolean,System.String,System.String,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)"><a href="#file0_line17" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_MethodName()"><a href="#file0_line23" class="navigatetohash">get_MethodName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_IsAsync()"><a href="#file0_line24" class="navigatetohash">get_IsAsync()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_IsVoidLike()"><a href="#file0_line25" class="navigatetohash">get_IsVoidLike()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ReturnValueTypeFQN()"><a href="#file0_line26" class="navigatetohash">get_ReturnValueTypeFQN()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="get_ReturnJsonSchemaType()"><a href="#file0_line27" class="navigatetohash">get_ReturnJsonSchemaType()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_ReturnObjectSchemaJson()"><a href="#file0_line28" class="navigatetohash">get_ReturnObjectSchemaJson()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Parameters()"><a href="#file0_line29" class="navigatetohash">get_Parameters()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Description()"><a href="#file0_line30" class="navigatetohash">get_Description()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -134,34 +136,42 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line9"></a><code>9</code></td><td></td><td class="lightgray"><code>{</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line10"></a><code>10</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;AgentFunctionMethodInfo(</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line11"></a><code>11</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;methodName,&nbsp;bool&nbsp;isAsync,&nbsp;bool&nbsp;isVoidLike,</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line12"></a><code>12</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;returnValueTypeFQN,&nbsp;ImmutableArray&lt;AgentFunctionParameterInfo&gt;&nbsp;parameters,</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line13"></a><code>13</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;description)</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line14"></a><code>14</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (39 visits)" data-coverage="{'AllTestMethods': {'VC': '39', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">39</td><td class="rightmargin right"><a id="file0_line15"></a><code>15</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MethodName&nbsp;=&nbsp;methodName;&nbsp;IsAsync&nbsp;=&nbsp;isAsync;&nbsp;IsVoidLike&nbsp;=&nbsp;isVoidLike;</code></td></tr>
-<tr class="coverableline" title="Covered (39 visits)" data-coverage="{'AllTestMethods': {'VC': '39', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">39</td><td class="rightmargin right"><a id="file0_line16"></a><code>16</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReturnValueTypeFQN&nbsp;=&nbsp;returnValueTypeFQN;&nbsp;Parameters&nbsp;=&nbsp;parameters;&nbsp;Description&nbsp;=&nbsp;description;</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line17"></a><code>17</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line18"></a><code>18</code></td><td></td><td class="lightgray"><code></code></td></tr>
-<tr class="coverableline" title="Covered (52 visits)" data-coverage="{'AllTestMethods': {'VC': '52', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">52</td><td class="rightmargin right"><a id="file0_line19"></a><code>19</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;MethodName&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (26 visits)" data-coverage="{'AllTestMethods': {'VC': '26', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">26</td><td class="rightmargin right"><a id="file0_line20"></a><code>20</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;bool&nbsp;IsAsync&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line21"></a><code>21</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;bool&nbsp;IsVoidLike&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line22"></a><code>22</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ReturnValueTypeFQN&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (39 visits)" data-coverage="{'AllTestMethods': {'VC': '39', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">39</td><td class="rightmargin right"><a id="file0_line23"></a><code>23</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;ImmutableArray&lt;AgentFunctionParameterInfo&gt;&nbsp;Parameters&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line24"></a><code>24</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;Description&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line25"></a><code>25</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line12"></a><code>12</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;returnValueTypeFQN,&nbsp;string?&nbsp;returnJsonSchemaType,</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line13"></a><code>13</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string?&nbsp;returnObjectSchemaJson,</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line14"></a><code>14</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ImmutableArray&lt;AgentFunctionParameterInfo&gt;&nbsp;parameters,</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line15"></a><code>15</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;description)</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line16"></a><code>16</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Covered (60 visits)" data-coverage="{'AllTestMethods': {'VC': '60', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">60</td><td class="rightmargin right"><a id="file0_line17"></a><code>17</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MethodName&nbsp;=&nbsp;methodName;&nbsp;IsAsync&nbsp;=&nbsp;isAsync;&nbsp;IsVoidLike&nbsp;=&nbsp;isVoidLike;</code></td></tr>
+<tr class="coverableline" title="Covered (40 visits)" data-coverage="{'AllTestMethods': {'VC': '40', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">40</td><td class="rightmargin right"><a id="file0_line18"></a><code>18</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReturnValueTypeFQN&nbsp;=&nbsp;returnValueTypeFQN;&nbsp;ReturnJsonSchemaType&nbsp;=&nbsp;returnJsonSchemaType;</code></td></tr>
+<tr class="coverableline" title="Covered (20 visits)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line19"></a><code>19</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReturnObjectSchemaJson&nbsp;=&nbsp;returnObjectSchemaJson;</code></td></tr>
+<tr class="coverableline" title="Covered (40 visits)" data-coverage="{'AllTestMethods': {'VC': '40', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">40</td><td class="rightmargin right"><a id="file0_line20"></a><code>20</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters&nbsp;=&nbsp;parameters;&nbsp;Description&nbsp;=&nbsp;description;</code></td></tr>
+<tr class="coverableline" title="Covered (20 visits)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line21"></a><code>21</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line22"></a><code>22</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Covered (80 visits)" data-coverage="{'AllTestMethods': {'VC': '80', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">80</td><td class="rightmargin right"><a id="file0_line23"></a><code>23</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;MethodName&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (40 visits)" data-coverage="{'AllTestMethods': {'VC': '40', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">40</td><td class="rightmargin right"><a id="file0_line24"></a><code>24</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;bool&nbsp;IsAsync&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (20 visits)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line25"></a><code>25</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;bool&nbsp;IsVoidLike&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line26"></a><code>26</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ReturnValueTypeFQN&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (55 visits)" data-coverage="{'AllTestMethods': {'VC': '55', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">55</td><td class="rightmargin right"><a id="file0_line27"></a><code>27</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ReturnJsonSchemaType&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (17 visits)" data-coverage="{'AllTestMethods': {'VC': '17', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">17</td><td class="rightmargin right"><a id="file0_line28"></a><code>28</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ReturnObjectSchemaJson&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (60 visits)" data-coverage="{'AllTestMethods': {'VC': '60', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">60</td><td class="rightmargin right"><a id="file0_line29"></a><code>29</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;ImmutableArray&lt;AgentFunctionParameterInfo&gt;&nbsp;Parameters&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (20 visits)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line30"></a><code>30</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;Description&nbsp;{&nbsp;get;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line31"></a><code>31</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/20/2026 - 16:28:52<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.6.0<br />04/25/2026 - 05:18:07<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
-<a href="#file0_line15" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.String,System.Boolean,System.Boolean,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)"><i class="icon-cube"></i>.ctor(System.String,System.Boolean,System.Boolean,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)</a><br />
-<a href="#file0_line19" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MethodName()"><i class="icon-wrench"></i>get_MethodName()</a><br />
-<a href="#file0_line20" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_IsAsync()"><i class="icon-wrench"></i>get_IsAsync()</a><br />
-<a href="#file0_line21" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_IsVoidLike()"><i class="icon-wrench"></i>get_IsVoidLike()</a><br />
-<a href="#file0_line22" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_ReturnValueTypeFQN()"><i class="icon-wrench"></i>get_ReturnValueTypeFQN()</a><br />
-<a href="#file0_line23" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Parameters()"><i class="icon-wrench"></i>get_Parameters()</a><br />
-<a href="#file0_line24" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Description()"><i class="icon-wrench"></i>get_Description()</a><br />
+<a href="#file0_line17" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.String,System.Boolean,System.Boolean,System.String,System.String,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)"><i class="icon-cube"></i>.ctor(System.String,System.Boolean,System.Boolean,System.String,System.String,System.String,System.Collections.Immutable.ImmutableArray`1&lt;NexusLabs.Needlr.AgentFramework.Generators.AgentFunctionParameterInfo&gt;,System.String)</a><br />
+<a href="#file0_line23" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MethodName()"><i class="icon-wrench"></i>get_MethodName()</a><br />
+<a href="#file0_line24" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_IsAsync()"><i class="icon-wrench"></i>get_IsAsync()</a><br />
+<a href="#file0_line25" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_IsVoidLike()"><i class="icon-wrench"></i>get_IsVoidLike()</a><br />
+<a href="#file0_line26" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_ReturnValueTypeFQN()"><i class="icon-wrench"></i>get_ReturnValueTypeFQN()</a><br />
+<a href="#file0_line27" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ReturnJsonSchemaType()"><i class="icon-wrench"></i>get_ReturnJsonSchemaType()</a><br />
+<a href="#file0_line28" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ReturnObjectSchemaJson()"><i class="icon-wrench"></i>get_ReturnObjectSchemaJson()</a><br />
+<a href="#file0_line29" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Parameters()"><i class="icon-wrench"></i>get_Parameters()</a><br />
+<a href="#file0_line30" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Description()"><i class="icon-wrench"></i>get_Description()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

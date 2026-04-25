@@ -36,7 +36,7 @@
 <div class="card">
 <div class="card-header">Line coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar0">100%</div>
+<div class="large cardpercentagebar cardpercentagebar25">75%</div>
 <div class="table">
 <table>
 <tr>
@@ -45,19 +45,19 @@
 </tr>
 <tr>
 <th>Uncovered lines:</th>
-<td class="limit-width right" title="0">0</td>
+<td class="limit-width right" title="1">1</td>
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="3">3</td>
+<td class="limit-width right" title="4">4</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="37">37</td>
+<td class="limit-width right" title="58">58</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="3 of 3">100%</td>
+<td class="limit-width right" title="3 of 4">75%</td>
 </tr>
 </table>
 </div>
@@ -109,7 +109,8 @@
 <tbody>
 <tr><td title="get_MeterName()"><a href="#file0_line27" class="navigatetohash">get_MeterName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_ActivitySourceName()"><a href="#file0_line34" class="navigatetohash">get_ActivitySourceName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
-<tr><td title="get_ResolvedActivitySourceName()"><a href="#file0_line36" class="navigatetohash">get_ResolvedActivitySourceName()</a></td><td>100%</td><td>2</td><td>2</td><td>100%</td></tr>
+<tr><td title="get_ChatCompletionActivityMode()"><a href="#file0_line54" class="navigatetohash">get_ChatCompletionActivityMode()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="get_ResolvedActivitySourceName()"><a href="#file0_line57" class="navigatetohash">get_ResolvedActivitySourceName()</a></td><td>100%</td><td>2</td><td>2</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -145,27 +146,49 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line24"></a><code>24</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;The&nbsp;name&nbsp;used&nbsp;for&nbsp;the&nbsp;&lt;see&nbsp;cref=&quot;System.Diagnostics.Metrics.Meter&quot;/&gt;&nbsp;that&nbsp;emits</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line25"></a><code>25</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;counters&nbsp;and&nbsp;histograms.&nbsp;Defaults&nbsp;to&nbsp;&lt;c&gt;&quot;NexusLabs.Needlr.AgentFramework&quot;&lt;/c&gt;.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line26"></a><code>26</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (232 visits)" data-coverage="{'AllTestMethods': {'VC': '232', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">232</td><td class="rightmargin right"><a id="file0_line27"></a><code>27</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;MeterName&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}&nbsp;=&nbsp;&quot;NexusLabs.Needlr.AgentFramework&quot;;</code></td></tr>
+<tr class="coverableline" title="Covered (249 visits)" data-coverage="{'AllTestMethods': {'VC': '249', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">249</td><td class="rightmargin right"><a id="file0_line27"></a><code>27</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string&nbsp;MeterName&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}&nbsp;=&nbsp;&quot;NexusLabs.Needlr.AgentFramework&quot;;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line28"></a><code>28</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line29"></a><code>29</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line30"></a><code>30</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;The&nbsp;name&nbsp;used&nbsp;for&nbsp;the&nbsp;&lt;see&nbsp;cref=&quot;System.Diagnostics.ActivitySource&quot;/&gt;&nbsp;that&nbsp;emits</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line31"></a><code>31</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;distributed&nbsp;tracing&nbsp;spans.&nbsp;Defaults&nbsp;to&nbsp;&lt;see&nbsp;cref=&quot;MeterName&quot;/&gt;&nbsp;when</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line32"></a><code>32</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;see&nbsp;langword=&quot;null&quot;/&gt;.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (76 visits)" data-coverage="{'AllTestMethods': {'VC': '76', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">76</td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ActivitySourceName&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}</code></td></tr>
+<tr class="coverableline" title="Covered (95 visits)" data-coverage="{'AllTestMethods': {'VC': '95', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">95</td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;string?&nbsp;ActivitySourceName&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code></code></td></tr>
-<tr class="coverableline" title="Covered (75 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '75', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">75</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;internal&nbsp;string&nbsp;ResolvedActivitySourceName&nbsp;=&gt;&nbsp;ActivitySourceName&nbsp;??&nbsp;MeterName;</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;Controls&nbsp;how&nbsp;Needlr&#39;s&nbsp;diagnostics&nbsp;middleware&nbsp;creates</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;see&nbsp;cref=&quot;System.Diagnostics.Activity&quot;/&gt;&nbsp;spans&nbsp;for&nbsp;chat&nbsp;completion&nbsp;calls.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;remarks&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;para&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;When&nbsp;MEAI&#39;s&nbsp;&lt;c&gt;UseOpenTelemetry()&lt;/c&gt;&nbsp;or&nbsp;MAF&#39;s&nbsp;&lt;c&gt;WithOpenTelemetry()&lt;/c&gt;&nbsp;is</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;also&nbsp;active,&nbsp;both&nbsp;Needlr&nbsp;and&nbsp;the&nbsp;upstream&nbsp;middleware&nbsp;create&nbsp;spans&nbsp;for&nbsp;the&nbsp;same</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line44"></a><code>44</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;chat&nbsp;completion&nbsp;call.&nbsp;Set&nbsp;this&nbsp;to</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line45"></a><code>45</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;see&nbsp;cref=&quot;ChatCompletionActivityMode.EnrichParent&quot;/&gt;&nbsp;to&nbsp;avoid&nbsp;duplicate&nbsp;spans&nbsp;—</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line46"></a><code>46</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;Needlr&nbsp;will&nbsp;add&nbsp;its&nbsp;tags&nbsp;(sequence&nbsp;number,&nbsp;char&nbsp;counts,&nbsp;agent&nbsp;name)&nbsp;to&nbsp;the</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line47"></a><code>47</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;existing&nbsp;parent&nbsp;&lt;c&gt;gen_ai.*&lt;/c&gt;&nbsp;activity&nbsp;instead&nbsp;of&nbsp;creating&nbsp;a&nbsp;new&nbsp;one.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line48"></a><code>48</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/para&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line49"></a><code>49</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;para&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line50"></a><code>50</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;Tool&nbsp;call&nbsp;activities&nbsp;(&lt;c&gt;agent.tool&lt;/c&gt;)&nbsp;are&nbsp;not&nbsp;affected&nbsp;by&nbsp;this&nbsp;setting&nbsp;—</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line51"></a><code>51</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;they&nbsp;are&nbsp;always&nbsp;created&nbsp;because&nbsp;neither&nbsp;MEAI&nbsp;nor&nbsp;MAF&nbsp;produces&nbsp;per-tool-call&nbsp;spans.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line52"></a><code>52</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/para&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line53"></a><code>53</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/remarks&gt;</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line54"></a><code>54</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;ChatCompletionActivityMode&nbsp;ChatCompletionActivityMode&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}&nbsp;=</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line55"></a><code>55</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ChatCompletionActivityMode.Always;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line56"></a><code>56</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Covered (84 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '84', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">84</td><td class="rightmargin right"><a id="file0_line57"></a><code>57</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;internal&nbsp;string&nbsp;ResolvedActivitySourceName&nbsp;=&gt;&nbsp;ActivitySourceName&nbsp;??&nbsp;MeterName;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line58"></a><code>58</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />04/20/2026 - 16:28:52<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.6.0<br />04/25/2026 - 05:18:07<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
 <a href="#file0_line27" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MeterName()"><i class="icon-wrench"></i>get_MeterName()</a><br />
 <a href="#file0_line34" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ActivitySourceName()"><i class="icon-wrench"></i>get_ActivitySourceName()</a><br />
-<a href="#file0_line36" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ResolvedActivitySourceName()"><i class="icon-wrench"></i>get_ResolvedActivitySourceName()</a><br />
+<a href="#file0_line54" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_ChatCompletionActivityMode()"><i class="icon-wrench"></i>get_ChatCompletionActivityMode()</a><br />
+<a href="#file0_line57" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_ResolvedActivitySourceName()"><i class="icon-wrench"></i>get_ResolvedActivitySourceName()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

@@ -97,6 +97,18 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [NDLRMAF009](https://github.devleader.ca/needlr/analyzers/NDLRMAF009/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRMAF010](https://github.devleader.ca/needlr/analyzers/NDLRMAF010/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRMAF011](https://github.devleader.ca/needlr/analyzers/NDLRMAF011/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF016](https://github.devleader.ca/needlr/analyzers/NDLRMAF016/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF017](https://github.devleader.ca/needlr/analyzers/NDLRMAF017/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF018](https://github.devleader.ca/needlr/analyzers/NDLRMAF018/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF019](https://github.devleader.ca/needlr/analyzers/NDLRMAF019/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF020](https://github.devleader.ca/needlr/analyzers/NDLRMAF020/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF021](https://github.devleader.ca/needlr/analyzers/NDLRMAF021/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF022](https://github.devleader.ca/needlr/analyzers/NDLRMAF022/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF024](https://github.devleader.ca/needlr/analyzers/NDLRMAF024/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF025](https://github.devleader.ca/needlr/analyzers/NDLRMAF025/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF027](https://github.devleader.ca/needlr/analyzers/NDLRMAF027/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF028](https://github.devleader.ca/needlr/analyzers/NDLRMAF028/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRMAF029](https://github.devleader.ca/needlr/analyzers/NDLRMAF029/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## SignalR Analyzers
 
@@ -119,3 +131,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Stable](https://github.devleader.ca/needlr/api/stable/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Coverage](https://github.devleader.ca/needlr/coverage/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Video Tutorials](https://github.devleader.ca/needlr/video-tutorials/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## Architecture Decisions
+
+- [ADR-0001 DAG Workflow Support](https://github.devleader.ca/needlr/adr/adr-0001-dag-graph-workflow-support/) -- Opinionated fluent dependency injection for .NET with source generation
