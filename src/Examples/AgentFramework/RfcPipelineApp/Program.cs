@@ -90,7 +90,8 @@ var assignment = new RfcAssignment(
 
 // ── Build pipeline stages ───────────────────────────────────────────────
 var metadata = new RfcMetadata();
-var stages = RfcPipelineBuilder.Build(assignment, agentFactory, metadata, logger);
+var state = new RfcPipelineState(metadata);
+var stages = RfcPipelineBuilder.Build(assignment, agentFactory, state, logger);
 
 // ── Create workspace ────────────────────────────────────────────────────
 var workspace = new InMemoryWorkspace();
@@ -129,7 +130,7 @@ Console.WriteLine("Starting pipeline execution...");
 Console.WriteLine();
 
 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-var result = await runner.RunAsync(workspace, stages, options: null, CancellationToken.None);
+var result = await runner.RunAsync(workspace, stages, state, options: null, CancellationToken.None);
 stopwatch.Stop();
 
 // ── Print per-stage diagnostics ─────────────────────────────────────────
@@ -166,6 +167,15 @@ Console.WriteLine($"Pipeline result: {(result.Succeeded ? "SUCCESS" : $"FAILED: 
 Console.ResetColor();
 Console.WriteLine($"Total duration: {stopwatch.Elapsed.TotalSeconds:F1}s");
 Console.WriteLine($"Stages completed: {result.Stages.Count}");
+Console.WriteLine();
+
+// ── Print pipeline state summary (typed state) ─────────────────────────
+Console.WriteLine("═══ Pipeline State Summary ═══");
+Console.WriteLine($"  Structure validation: {(state.StructureValidationPassed ? "PASS" : "FAIL")}");
+Console.WriteLine($"  Technical review: {(state.TechnicalReviewPassed ? "PASS" : "FAIL/SKIPPED")}");
+Console.WriteLine($"  Cold reader: {(state.ColdReaderPassed ? "PASS" : "FAIL")} ({state.ColdReaderAttempts} attempts)");
+Console.WriteLine($"  Review findings: {state.ReviewFindings.Count}");
+Console.WriteLine($"  Applied fixes: {state.AppliedFixes.Count}");
 Console.WriteLine();
 
 // ── Print metadata ──────────────────────────────────────────────────────

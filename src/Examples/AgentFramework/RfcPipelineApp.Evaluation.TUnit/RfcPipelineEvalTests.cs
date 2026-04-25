@@ -90,10 +90,11 @@ public class RfcPipelineEvalTests
                 TargetAudience: "engineering team");
 
             var metadata = new RfcMetadata();
+            var state = new RfcPipelineState(metadata);
             var stages = RfcPipelineBuilder.Build(
                 assignment,
                 agentFactory,
-                metadata,
+                state,
                 loggerFactory.CreateLogger("RfcEval"));
 
             _workspaceField = new InMemoryWorkspace();
@@ -105,6 +106,7 @@ public class RfcPipelineEvalTests
             _pipelineResultField = await runner.RunAsync(
                 _workspaceField,
                 stages,
+                state,
                 options: null,
                 CancellationToken.None);
         }

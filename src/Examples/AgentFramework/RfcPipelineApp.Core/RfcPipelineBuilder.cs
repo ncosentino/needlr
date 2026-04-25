@@ -22,13 +22,13 @@ public static class RfcPipelineBuilder
     /// </summary>
     /// <param name="assignment">The feature request to convert into an RFC.</param>
     /// <param name="agentFactory">Factory for creating AI agents.</param>
-    /// <param name="metadata">Mutable metadata populated by the metadata stage.</param>
+    /// <param name="state">Typed pipeline state shared across all stages.</param>
     /// <param name="logger">Logger for advisory stage warnings.</param>
     /// <returns>An ordered list of 16 pipeline stages ready for <see cref="SequentialPipelineRunner"/>.</returns>
     public static IReadOnlyList<PipelineStage> Build(
         RfcAssignment assignment,
         IAgentFactory agentFactory,
-        RfcMetadata metadata,
+        RfcPipelineState state,
         ILogger logger)
     {
         // Create dedicated agents for each responsibility.
@@ -181,11 +181,22 @@ public static class RfcPipelineBuilder
                     overwrite: true)),
 
             // Stage 12: Validate structure — required sections + word count
+            // AfterExecution records pass/fail in typed pipeline state
             new PipelineStage(
                 "ValidateStructure",
-                new DelegateStageExecutor(ValidateStructure(assignment))),
+                new DelegateStageExecutor(ValidateStructure(assignment)),
+                new StageExecutionPolicy
+                {
+                    AfterExecution = (result, ctx) =>
+                    {
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        s.StructureValidationPassed = result.Succeeded;
+                        return Task.CompletedTask;
+                    },
+                }),
 
-            // Stage 13: Technical review (advisory — failures don't halt pipeline)
+            // Stage 13: Technical review (advisory — ContinueOnFailureExecutor
+            // returns ContinueAdvisory disposition so pipeline continues)
             new PipelineStage(
                 "TechnicalReview",
                 new ContinueOnFailureExecutor(
@@ -197,9 +208,18 @@ public static class RfcPipelineBuilder
                         overwrite: true),
                     onFailure: ex => logger.LogWarning(
                         ex,
-                        "Technical review stage failed (advisory) — continuing pipeline"))),
+                        "Technical review stage failed (advisory) — continuing pipeline")),
+                new StageExecutionPolicy
+                {
+                    AfterExecution = (result, ctx) =>
+                    {
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        s.TechnicalReviewPassed = result.Succeeded;
+                        return Task.CompletedTask;
+                    },
+                }),
 
-            // Stage 14: Apply review feedback
+            // Stage 14: Apply review feedback (skipped if no findings)
             new PipelineStage(
                 "ApplyFeedback",
                 new WriteToWorkspaceExecutor(
@@ -215,13 +235,17 @@ public static class RfcPipelineBuilder
                         // Skip if there are no review findings to apply
                         return !ctx.Workspace.FileExists("review-findings.md");
                     },
+                    AfterExecution = (result, ctx) =>
+                    {
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        s.AppliedFixes.Add("Applied technical review feedback");
+                        return Task.CompletedTask;
+                    },
                 }),
 
             // Stage 15: Cold reader critique → revise loop (max 2 retries)
-            // NOTE: The reviser's response is not persisted to workspace by
-            // CritiqueAndReviseExecutor. The cold reader stage is advisory —
-            // its feedback is captured in the result but the draft is not
-            // modified. A future improvement could capture reviser output.
+            // Uses postPassCheck to verify no [TODO] placeholders remain,
+            // and onRevisionCompleted to persist reviser output to workspace.
             new PipelineStage(
                 "ColdReader",
                 new CritiqueAndReviseExecutor(
@@ -233,12 +257,45 @@ public static class RfcPipelineBuilder
                         feedback is not null &&
                         (feedback.Contains("APPROVED", StringComparison.OrdinalIgnoreCase) ||
                          feedback.Contains("PassArticle", StringComparison.OrdinalIgnoreCase)),
-                    maxRetries: 2)),
+                    maxRetries: 2,
+                    postPassCheck: (ctx, feedback) =>
+                    {
+                        // Post-pass verification: reject if draft still has placeholder text
+                        var content = ctx.Workspace.TryReadFile(assignment.DraftPath);
+                        if (!content.Success)
+                        {
+                            return false;
+                        }
+
+                        return !content.Value.Content.Contains("[TODO]", StringComparison.OrdinalIgnoreCase);
+                    },
+                    onRevisionCompleted: (ctx, reviserOutput) =>
+                    {
+                        // Persist reviser output back to workspace
+                        if (!string.IsNullOrWhiteSpace(reviserOutput))
+                        {
+                            ctx.Workspace.TryWriteFile(assignment.DraftPath, reviserOutput);
+                        }
+
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        s.ColdReaderAttempts++;
+                        return Task.CompletedTask;
+                    }),
+                new StageExecutionPolicy
+                {
+                    AfterExecution = (result, ctx) =>
+                    {
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        s.ColdReaderPassed = result.Succeeded;
+                        return Task.CompletedTask;
+                    },
+                }),
 
             // Stage 16: Final verification — structure + completeness, set metadata status
+            // Reads accumulated pipeline state for final decisions
             new PipelineStage(
                 "FinalVerification",
-                new DelegateStageExecutor(FinalVerification(assignment, metadata))),
+                new DelegateStageExecutor(FinalVerification(assignment))),
         ];
     }
 
@@ -325,11 +382,13 @@ public static class RfcPipelineBuilder
     }
 
     private static Func<StageExecutionContext, CancellationToken, Task> FinalVerification(
-        RfcAssignment assignment,
-        RfcMetadata metadata)
+        RfcAssignment assignment)
     {
         return (ctx, _) =>
         {
+            var state = ctx.GetRequiredState<RfcPipelineState>();
+            var metadata = state.Metadata;
+
             var draftResult = ctx.Workspace.TryReadFile(assignment.DraftPath);
             if (!draftResult.Success)
             {

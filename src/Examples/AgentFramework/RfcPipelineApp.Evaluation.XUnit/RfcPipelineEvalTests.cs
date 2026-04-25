@@ -72,10 +72,11 @@ public class RfcPipelineEvalTests : IAsyncLifetime
             TargetAudience: "engineering team");
 
         var metadata = new RfcMetadata();
+        var state = new RfcPipelineState(metadata);
         var stages = RfcPipelineBuilder.Build(
             assignment,
             agentFactory,
-            metadata,
+            state,
             loggerFactory.CreateLogger("RfcEval"));
 
         _workspace = new InMemoryWorkspace();
@@ -87,6 +88,7 @@ public class RfcPipelineEvalTests : IAsyncLifetime
         _pipelineResult = await runner.RunAsync(
             _workspace,
             stages,
+            state,
             options: null,
             TestContext.Current.CancellationToken);
     }

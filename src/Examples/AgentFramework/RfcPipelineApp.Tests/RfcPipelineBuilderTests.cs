@@ -30,9 +30,10 @@ public sealed class RfcPipelineBuilderTests
             .Returns(stubAgent);
 
         var metadata = new RfcMetadata();
+        var state = new RfcPipelineState(metadata);
         var logger = Mock.Of<ILogger>();
 
-        return RfcPipelineBuilder.Build(assignment, agentFactory.Object, metadata, logger);
+        return RfcPipelineBuilder.Build(assignment, agentFactory.Object, state, logger);
     }
 
     [Fact]
