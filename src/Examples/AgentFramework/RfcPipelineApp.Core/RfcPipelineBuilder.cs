@@ -95,13 +95,27 @@ public static class RfcPipelineBuilder
                 new DelegateStageExecutor(SeedWorkspace(assignment))),
 
             // Stage 2: Research the problem space
+            // Wrapped in TimeoutExecutor to cap LLM research time,
+            // with FallbackExecutor providing a minimal brief if research times out.
             new PipelineStage(
                 "Research",
-                new WriteToWorkspaceExecutor(
-                    new AgentStageExecutor(
-                        researchAgent,
-                        ctx => ResearchPrompts.BuildResearch(assignment, ctx)),
-                    "research-notes.md")),
+                new FallbackExecutor(
+                    primary: new TimeoutExecutor(
+                        new WriteToWorkspaceExecutor(
+                            new AgentStageExecutor(
+                                researchAgent,
+                                ctx => ResearchPrompts.BuildResearch(assignment, ctx)),
+                            "research-notes.md"),
+                        timeout: TimeSpan.FromMinutes(3)),
+                    fallback: new DelegateStageExecutor((ctx, _) =>
+                    {
+                        // Fallback: write minimal research notes so pipeline can continue
+                        ctx.Workspace.TryWriteFile("research-notes.md",
+                            $"# Research Notes (fallback)\n\nResearch timed out. " +
+                            $"Proceeding with assignment context only.\n\n" +
+                            $"## Feature: {assignment.FeatureTitle}\n\n{assignment.Description}");
+                        return Task.CompletedTask;
+                    }))),
 
             // Stage 3: Synthesize research into a brief
             new PipelineStage(
@@ -232,8 +246,11 @@ public static class RfcPipelineBuilder
                 {
                     ShouldSkip = ctx =>
                     {
-                        // Skip if there are no review findings to apply
-                        return !ctx.Workspace.FileExists("review-findings.md");
+                        // Skip if technical review didn't pass (no findings to apply)
+                        // OR if review findings file doesn't exist
+                        var s = ctx.GetRequiredState<RfcPipelineState>();
+                        return !s.TechnicalReviewPassed ||
+                            !ctx.Workspace.FileExists("review-findings.md");
                     },
                     AfterExecution = (result, ctx) =>
                     {
