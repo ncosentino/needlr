@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -120,5 +122,6 @@ public interface IWorkflowFactory
     /// <exception cref="InvalidOperationException">
     /// Thrown when <paramref name="graphName"/> has no registered entry point or no edges.
     /// </exception>
+    [RequiresUnreferencedCode("Graph workflow discovery uses reflection when source-generated bootstrap data is unavailable.")]
     Workflow CreateGraphWorkflow(string graphName);
 }
