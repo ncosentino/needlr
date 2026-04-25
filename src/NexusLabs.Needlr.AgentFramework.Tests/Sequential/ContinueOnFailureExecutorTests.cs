@@ -1,3 +1,7 @@
+// Tests intentionally pass CancellationToken.None to verify the distinction between
+// caller cancellation and internal/timeout cancellation. This is the behavior under test.
+#pragma warning disable xUnit1051
+
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
@@ -75,7 +79,7 @@ public class ContinueOnFailureExecutorTests
             .ThrowsAsync(new OperationCanceledException());
 
         var executor = new ContinueOnFailureExecutor(inner.Object);
-        var context = CreateContext("Stage");
+        var context = CreateContext("Stage", callerToken: cts.Token);
 
         await Assert.ThrowsAsync<OperationCanceledException>(
             () => executor.ExecuteAsync(context, cts.Token));
@@ -101,7 +105,31 @@ public class ContinueOnFailureExecutorTests
         Assert.NotNull(captured);
     }
 
-    private static StageExecutionContext CreateContext(string stageName)
+    [Fact]
+    public async Task ExecuteAsync_TimeoutViaLinkedToken_ReturnsFailed()
+    {
+        // TimeoutExecutor creates a linked CTS — its token is cancelled but the
+        // caller's token is NOT. The decorator should treat this as a failure, not rethrow.
+        using var timeoutCts = new CancellationTokenSource();
+        timeoutCts.Cancel(); // simulates TimeoutExecutor's linked CTS firing
+
+        var inner = new Mock<IStageExecutor>();
+        inner
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException(timeoutCts.Token));
+
+        var executor = new ContinueOnFailureExecutor(inner.Object);
+        // CallerCancellationToken is NOT cancelled — only the linked one is
+        var context = CreateContext("Stage", callerToken: CancellationToken.None);
+
+        var result = await executor.ExecuteAsync(context, timeoutCts.Token);
+
+        Assert.False(result.Succeeded);
+    }
+
+    private static StageExecutionContext CreateContext(
+        string stageName,
+        CancellationToken callerToken = default)
     {
         var diagAccessor = new Mock<IAgentDiagnosticsAccessor>();
         diagAccessor.Setup(x => x.BeginCapture()).Returns(Mock.Of<IDisposable>());
@@ -112,6 +140,7 @@ public class ContinueOnFailureExecutorTests
             ProgressReporter: null,
             StageIndex: 0,
             TotalStages: 1,
-            StageName: stageName);
+            StageName: stageName,
+            CallerCancellationToken: callerToken);
     }
 }

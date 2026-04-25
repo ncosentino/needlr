@@ -1,3 +1,7 @@
+// Tests intentionally pass CancellationToken.None to verify the distinction between
+// caller cancellation and internal/timeout cancellation. This is the behavior under test.
+#pragma warning disable xUnit1051
+
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
@@ -68,7 +72,7 @@ public class FallbackExecutorTests
         var fallback = new Mock<IStageExecutor>();
 
         var executor = new FallbackExecutor(primary.Object, fallback.Object);
-        var context = CreateContext("Stage");
+        var context = CreateContext("Stage", callerToken: cts.Token);
 
         await Assert.ThrowsAsync<OperationCanceledException>(
             () => executor.ExecuteAsync(context, cts.Token));
@@ -101,7 +105,9 @@ public class FallbackExecutorTests
         Assert.Equal("fallback", result.ResponseText);
     }
 
-    private static StageExecutionContext CreateContext(string stageName)
+    private static StageExecutionContext CreateContext(
+        string stageName,
+        CancellationToken callerToken = default)
     {
         var diagAccessor = new Mock<IAgentDiagnosticsAccessor>();
         diagAccessor.Setup(x => x.BeginCapture()).Returns(Mock.Of<IDisposable>());
@@ -112,6 +118,7 @@ public class FallbackExecutorTests
             ProgressReporter: null,
             StageIndex: 0,
             TotalStages: 1,
-            StageName: stageName);
+            StageName: stageName,
+            CallerCancellationToken: callerToken);
     }
 }

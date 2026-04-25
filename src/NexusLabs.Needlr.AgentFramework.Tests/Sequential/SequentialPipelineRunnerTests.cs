@@ -112,7 +112,9 @@ public class SequentialPipelineRunnerTests
         Assert.False(result.Succeeded);
         Assert.Equal("boom", result.ErrorMessage);
         Assert.Same(boom, result.Exception);
-        Assert.Single(result.Stages); // only "A" completed
+        Assert.Equal(2, result.Stages.Count); // "A" completed + "B" recorded as failed
+        Assert.Equal("A", result.Stages[0].AgentName);
+        Assert.Equal("B", result.Stages[1].AgentName);
     }
 
     // -------------------------------------------------------------------------
@@ -441,7 +443,7 @@ public class SequentialPipelineRunnerTests
         Assert.False(result.Succeeded);
         Assert.Contains("timed out", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(result.Exception);
-        Assert.Single(result.Stages); // only "A" completed
+        Assert.Equal(2, result.Stages.Count); // "A" completed + "B" recorded as failed
     }
 
     [Fact]

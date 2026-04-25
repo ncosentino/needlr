@@ -103,7 +103,8 @@ public sealed class SequentialPipelineRunner
                     reporter,
                     StageIndex: i,
                     TotalStages: stages.Count,
-                    StageName: stage.Name);
+                    StageName: stage.Name,
+                    CallerCancellationToken: cancellationToken);
 
                 // Evaluate ShouldSkip
                 if (policy?.ShouldSkip?.Invoke(context) == true)
@@ -160,6 +161,28 @@ public sealed class SequentialPipelineRunner
                             break;
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    // Always record the failed stage so it appears in diagnostics.
+                    // Capture any partial diagnostics the stage may have produced.
+                    var partialDiag = _diagnosticsAccessor.LastRunDiagnostics;
+                    stageResults.Add(new AgentStageResult(
+                        stage.Name,
+                        FinalResponse: null,
+                        Diagnostics: partialDiag));
+
+                    reporter.Report(new AgentFailedEvent(
+                        DateTimeOffset.UtcNow,
+                        reporter.WorkflowId,
+                        stage.Name,
+                        ParentAgentId: null,
+                        reporter.Depth,
+                        reporter.NextSequence(),
+                        AgentName: stage.Name,
+                        ErrorMessage: ex.Message));
+
+                    throw;
                 }
                 finally
                 {

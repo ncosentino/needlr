@@ -31,7 +31,7 @@ public sealed class ContinueOnFailureExecutor(
         {
             return await inner.ExecuteAsync(context, cancellationToken);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (context.CallerCancellationToken.IsCancellationRequested)
         {
             throw;
         }

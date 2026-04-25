@@ -13,6 +13,11 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// <param name="StageIndex">Zero-based index of the current stage in the pipeline.</param>
 /// <param name="TotalStages">Total number of stages in the pipeline.</param>
 /// <param name="StageName">Human-readable name of the current stage.</param>
+/// <param name="CallerCancellationToken">
+/// The original caller's cancellation token. Decorators that create linked tokens
+/// (e.g. <see cref="TimeoutExecutor"/>) should check this to distinguish user
+/// cancellation from internal timeouts.
+/// </param>
 /// <example>
 /// <code>
 /// public async Task&lt;StageExecutionResult&gt; ExecuteAsync(
@@ -30,4 +35,5 @@ public sealed record StageExecutionContext(
     IProgressReporter? ProgressReporter,
     int StageIndex,
     int TotalStages,
-    string StageName);
+    string StageName,
+    CancellationToken CallerCancellationToken = default);
