@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Copilot\NexusLabs.Needlr.Copilot.csproj" />
     <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
