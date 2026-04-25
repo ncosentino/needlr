@@ -1,12 +1,18 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 using IterativeTripPlannerApp.Core;
 
+using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Evaluation;
+using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.Copilot;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 
 // =============================================================================
 // IterativeTripPlannerApp.Evaluation
@@ -18,7 +24,7 @@ using NexusLabs.Needlr.Copilot;
 //   1. Run the trip planner via IterativeTripPlannerApp.Core
 //   2. Extract diagnostics → ToEvaluationInputs() adapter
 //   3. Run deterministic Needlr-native evaluators (no LLM needed)
-//   4. Run MS MEAI quality evaluators (RelevanceEvaluator) with CopilotChatClient as judge
+//   4. Run MS MEAI quality evaluators (RelevanceEvaluator) with LLM judge
 //   5. Print all metrics
 //
 // This app demonstrates code reuse: the same TripPlannerRunner is used by
@@ -31,24 +37,45 @@ using NexusLabs.Needlr.Copilot;
 //     PLUS efficiency ratio, degenerate loop detection, max iterations hit
 //   - TerminationAppropriatenessEvaluator: success/consistency/mode
 //
+// The LLM provider is configured via appsettings.json. Change the Copilot
+// section to swap models without code changes.
+//
 // Requirements:
 //   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
 // =============================================================================
 
 PrintHeader("Needlr Agent Framework — Evaluation Demo");
 
-// ── Configure LLM and tools ────────────────────────────────────────────
-var copilotOptions = new CopilotChatClientOptions
-{
-    DefaultModel = "claude-sonnet-4",
-};
-IChatClient chatClient = new CopilotChatClient(copilotOptions);
+// ── Configuration + DI ─────────────────────────────────────────────────
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+var serviceProvider = new Syringe()
+    .UsingReflection()
+    .UsingAgentFramework(af => af
+        .UsingChatClient(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var copilotSection = config.GetSection("Copilot");
+            return new CopilotChatClient(new CopilotChatClientOptions
+            {
+                DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4",
+            });
+        }))
+    .BuildServiceProvider(configuration);
+
+IChatClient chatClient = serviceProvider
+    .GetRequiredService<IChatClientAccessor>()
+    .ChatClient;
 var copilotTools = CopilotToolSet.Create(t => t.EnableWebSearch = true);
 
 PrintSection("Configuration");
-Console.WriteLine($"  Chat client:  CopilotChatClient (model: {copilotOptions.DefaultModel})");
+Console.WriteLine($"  Chat client:  Resolved from DI (configured via appsettings.json)");
 Console.WriteLine($"  Tools:        {copilotTools.Count} (web_search)");
-Console.WriteLine($"  Judge:        CopilotChatClient (same provider)");
+Console.WriteLine($"  Judge:        Same IChatClient from DI");
 Console.WriteLine($"  OTel mode:    {ChatCompletionActivityMode.EnrichParent} (suppresses duplicate spans)");
 Console.WriteLine();
 Console.WriteLine("  When MEAI's UseOpenTelemetry() is active alongside Needlr diagnostics,");
@@ -169,12 +196,9 @@ catch (QualityGateFailedException ex)
 }
 
 // ── Run MS MEAI quality evaluator (requires LLM judge) ──────────────────
-PrintSection("MS MEAI evaluators (LLM-judged via CopilotChatClient)");
+PrintSection("MS MEAI evaluators (LLM-judged via DI-resolved IChatClient)");
 
-IChatClient judge = new CopilotChatClient(new CopilotChatClientOptions
-{
-    DefaultModel = "claude-sonnet-4",
-});
+IChatClient judge = chatClient;
 var chatConfiguration = new ChatConfiguration(judge);
 
 var relevanceEval = new RelevanceEvaluator();
@@ -231,7 +255,7 @@ Console.WriteLine("     - TerminationAppropriatenessEvaluator: success, consiste
 Console.WriteLine("     - EfficiencyEvaluator: total tokens, input ratio, tokens/tool-call,");
 Console.WriteLine("       cache hit ratio, under-budget check");
 Console.WriteLine("  4. Asserting quality gates for CI regression detection");
-Console.WriteLine("  5. Scoring with MS MEAI quality evaluators using Copilot as judge");
+Console.WriteLine("  5. Scoring with MS MEAI quality evaluators using DI-resolved IChatClient as judge");
 Console.WriteLine("  6. Scoring with Needlr LLM-judged TaskCompletionEvaluator");
 Console.WriteLine();
 
