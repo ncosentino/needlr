@@ -255,7 +255,9 @@ public sealed class CopilotChatClient : IChatClient
             }
 
             // Handle assistant messages with tool calls
-            var functionCalls = msg.Contents.OfType<FunctionCallContent>().ToList();
+            var functionCalls = msg.Contents.OfType<FunctionCallContent>()
+                .Where(fc => !string.IsNullOrEmpty(fc.Name))
+                .ToList();
             if (functionCalls.Count > 0)
             {
                 var textContent = string.Join("", msg.Contents
