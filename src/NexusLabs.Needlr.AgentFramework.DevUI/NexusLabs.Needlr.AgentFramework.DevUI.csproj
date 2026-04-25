@@ -3,11 +3,8 @@
   <PropertyGroup>
     <PackageDescription>NexusLabs.Needlr integration for Microsoft Agent Framework DevUI. Bridges [NeedlrAiAgent]-declared agents into MAF DevUI's entity discovery so they appear in the /devui web debugging interface.</PackageDescription>
     <!-- DevUI and Hosting packages are preview-only. This package isolates
-         the preview dependency so it does not pollute the stable AgentFramework packages.
-         NU5104 is suppressed because this package intentionally depends on preview MAF
-         packages and Needlr itself ships as prerelease (alpha). -->
+         the preview dependency so it does not pollute the stable AgentFramework packages. -->
     <NuGetAudit>false</NuGetAudit>
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

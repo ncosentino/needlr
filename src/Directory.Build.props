@@ -21,6 +21,9 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- NU5104: prerelease dependencies are expected — Needlr is alpha and
+         some upstream packages (Azure.AI.OpenAI, MAF DevUI/Hosting) are preview. -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
