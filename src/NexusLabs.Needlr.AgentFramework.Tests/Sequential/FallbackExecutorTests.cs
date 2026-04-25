@@ -105,6 +105,53 @@ public class FallbackExecutorTests
         Assert.Equal("fallback", result.ResponseText);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_PredicateRejects_ExceptionPropagates()
+    {
+        var primary = new Mock<IStageExecutor>();
+        primary
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("bug"));
+
+        var fallback = new Mock<IStageExecutor>();
+
+        // Predicate only allows TimeoutException — InvalidOperationException should propagate
+        var executor = new FallbackExecutor(primary.Object, fallback.Object,
+            shouldFallback: ex => ex is TimeoutException);
+        var context = CreateContext("Stage");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => executor.ExecuteAsync(context, CancellationToken.None));
+
+        fallback.Verify(
+            x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PredicateAccepts_UsesFallback()
+    {
+        var primary = new Mock<IStageExecutor>();
+        primary
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("slow"));
+
+        var fallbackResult = StageExecutionResult.Success("Stage", diagnostics: null, responseText: "recovered");
+        var fallback = new Mock<IStageExecutor>();
+        fallback
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fallbackResult);
+
+        var executor = new FallbackExecutor(primary.Object, fallback.Object,
+            shouldFallback: ex => ex is TimeoutException);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("recovered", result.ResponseText);
+    }
+
     private static StageExecutionContext CreateContext(
         string stageName,
         CancellationToken callerToken = default)

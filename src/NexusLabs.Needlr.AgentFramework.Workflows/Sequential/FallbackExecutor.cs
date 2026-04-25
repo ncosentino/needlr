@@ -2,23 +2,30 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 
 /// <summary>
 /// Tries a primary executor and, on failure, falls back to a secondary executor.
-/// Cancellation is never swallowed.
+/// User cancellation is never swallowed.
 /// </summary>
 /// <param name="primary">The preferred executor to try first.</param>
 /// <param name="fallback">The executor to use if the primary throws.</param>
+/// <param name="shouldFallback">
+/// Optional predicate controlling which exceptions trigger fallback. When <see langword="null"/>
+/// (the default), any non-cancellation exception triggers fallback. When provided, only exceptions
+/// where the predicate returns <see langword="true"/> trigger fallback; others propagate.
+/// </param>
 /// <example>
 /// <code>
-/// var executor = new FallbackExecutor(
-///     new AgentStageExecutor(gpt4Agent, promptFactory),
-///     new AgentStageExecutor(gpt35Agent, promptFactory));
+/// // Default — falls back on any failure
+/// var executor = new FallbackExecutor(primaryExecutor, fallbackExecutor);
 ///
-/// var result = await executor.ExecuteAsync(context, cancellationToken);
+/// // Narrow — only fall back on timeouts
+/// var executor = new FallbackExecutor(primaryExecutor, fallbackExecutor,
+///     shouldFallback: ex =&gt; ex is TaskCanceledException or HttpRequestException);
 /// </code>
 /// </example>
 [DoNotAutoRegister]
 public sealed class FallbackExecutor(
     IStageExecutor primary,
-    IStageExecutor fallback) : IStageExecutor
+    IStageExecutor fallback,
+    Func<Exception, bool>? shouldFallback = null) : IStageExecutor
 {
     /// <inheritdoc />
     public async Task<StageExecutionResult> ExecuteAsync(
@@ -33,7 +40,7 @@ public sealed class FallbackExecutor(
         {
             throw;
         }
-        catch
+        catch (Exception ex) when (shouldFallback is null || shouldFallback(ex))
         {
             return await fallback.ExecuteAsync(context, cancellationToken);
         }
