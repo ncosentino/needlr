@@ -111,6 +111,14 @@ public sealed class CopilotChatClient : IChatClient
         using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var reader = new StreamReader(stream, Encoding.UTF8);
 
+        // Accumulate streaming tool call chunks by index. The OpenAI streaming
+        // protocol sends tool calls incrementally: the first chunk for an index
+        // carries the id and function name, subsequent chunks append argument
+        // fragments. We buffer these and emit complete FunctionCallContent items
+        // only on the final chunk (when finish_reason is "tool_calls" or the
+        // stream ends).
+        var pendingToolCalls = new Dictionary<int, (string Id, string Name, StringBuilder Args)>();
+
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -154,10 +162,78 @@ public sealed class CopilotChatClient : IChatClient
                 continue;
             }
 
-            var update = MapToStreamingUpdate(chunk);
-            if (update is not null)
+            // Accumulate tool call fragments
+            var choice = chunk.Choices.FirstOrDefault();
+            if (choice?.Delta?.ToolCalls is { Count: > 0 })
             {
+                foreach (var tc in choice.Delta.ToolCalls)
+                {
+                    if (tc.Function is null) continue;
+
+                    if (!pendingToolCalls.TryGetValue(tc.Index, out var pending))
+                    {
+                        pending = (tc.Id ?? "", tc.Function.Name ?? "", new StringBuilder());
+                        pendingToolCalls[tc.Index] = pending;
+                    }
+
+                    if (!string.IsNullOrEmpty(tc.Function.Arguments))
+                    {
+                        pending.Args.Append(tc.Function.Arguments);
+                    }
+
+                    // Update with id/name if this chunk carries them
+                    if (!string.IsNullOrEmpty(tc.Id))
+                    {
+                        pendingToolCalls[tc.Index] = pending with { Id = tc.Id };
+                    }
+                    if (!string.IsNullOrEmpty(tc.Function.Name))
+                    {
+                        pendingToolCalls[tc.Index] = pending with { Name = tc.Function.Name };
+                    }
+                }
+            }
+
+            // Emit completed tool calls when finish_reason signals completion
+            if (choice?.FinishReason == "tool_calls" && pendingToolCalls.Count > 0)
+            {
+                var update = new ChatResponseUpdate
+                {
+                    ModelId = chunk.Model,
+                    CreatedAt = chunk.Created > 0 ? DateTimeOffset.FromUnixTimeSeconds(chunk.Created) : null,
+                    FinishReason = ChatFinishReason.ToolCalls,
+                    Role = ChatRole.Assistant,
+                };
+
+                foreach (var (_, tc) in pendingToolCalls.OrderBy(kvp => kvp.Key))
+                {
+                    IDictionary<string, object?>? args = null;
+                    var argsJson = tc.Args.ToString();
+                    if (!string.IsNullOrEmpty(argsJson))
+                    {
+                        try
+                        {
+                            args = JsonSerializer.Deserialize<Dictionary<string, object?>>(
+                                argsJson, CopilotJsonContext.Default.Options);
+                        }
+                        catch (JsonException)
+                        {
+                            args = new Dictionary<string, object?> { ["_raw"] = argsJson };
+                        }
+                    }
+
+                    update.Contents.Add(new FunctionCallContent(tc.Id, tc.Name, args));
+                }
+
+                pendingToolCalls.Clear();
                 yield return update;
+                continue;
+            }
+
+            // Emit non-tool-call updates normally (text content, usage, etc.)
+            var normalUpdate = MapToStreamingUpdate(chunk, skipToolCalls: true);
+            if (normalUpdate is not null)
+            {
+                yield return normalUpdate;
             }
         }
     }
@@ -255,9 +331,7 @@ public sealed class CopilotChatClient : IChatClient
             }
 
             // Handle assistant messages with tool calls
-            var functionCalls = msg.Contents.OfType<FunctionCallContent>()
-                .Where(fc => !string.IsNullOrEmpty(fc.Name))
-                .ToList();
+            var functionCalls = msg.Contents.OfType<FunctionCallContent>().ToList();
             if (functionCalls.Count > 0)
             {
                 var textContent = string.Join("", msg.Contents
@@ -274,7 +348,7 @@ public sealed class CopilotChatClient : IChatClient
                         Type = "function",
                         Function = new RequestToolCallFunction
                         {
-                            Name = fc.Name ?? "",
+                            Name = string.IsNullOrEmpty(fc.Name) ? "_unknown" : fc.Name,
                             Arguments = fc.Arguments is not null
                                 ? JsonSerializer.Serialize(fc.Arguments, CopilotJsonContext.Default.Options)
                                 : "{}",
@@ -478,7 +552,7 @@ public sealed class CopilotChatClient : IChatClient
         return chatResponse;
     }
 
-    private static ChatResponseUpdate? MapToStreamingUpdate(ChatCompletionChunk chunk)
+    private static ChatResponseUpdate? MapToStreamingUpdate(ChatCompletionChunk chunk, bool skipToolCalls = false)
     {
         var choice = chunk.Choices.FirstOrDefault();
         var delta = choice?.Delta;
@@ -507,7 +581,7 @@ public sealed class CopilotChatClient : IChatClient
             update.Contents.Add(new TextContent(delta!.Content));
         }
 
-        if (delta?.ToolCalls is { Count: > 0 })
+        if (!skipToolCalls && delta?.ToolCalls is { Count: > 0 })
         {
             foreach (var tc in delta.ToolCalls)
             {
