@@ -47,6 +47,7 @@
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp/IterativeTripPlannerApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Core/IterativeTripPlannerApp.Core.csproj" />
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Evaluation/IterativeTripPlannerApp.Evaluation.csproj" />
+    <Project Path="Examples/AgentFramework/DevUIApp/DevUIApp.csproj" />
     <Project Path="Examples/AgentFramework/DiagnosticAttributionApp/DiagnosticAttributionApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeLoopDiagnosticsApp/IterativeLoopDiagnosticsApp.csproj" />
     <Project Path="Examples/AgentFramework/EarlyCompletionApp/EarlyCompletionApp.csproj" />

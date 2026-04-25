@@ -12,9 +12,21 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 /// Tests for <see cref="ChatCompletionActivityMode"/> dedup behavior in
 /// <see cref="DiagnosticsChatClientMiddleware"/>.
 /// </summary>
-public sealed class ChatCompletionActivityModeTests
+public sealed class ChatCompletionActivityModeTests : IDisposable
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
+    private readonly Activity? _priorActivity;
+
+    public ChatCompletionActivityModeTests()
+    {
+        _priorActivity = Activity.Current;
+
+    }
+
+    public void Dispose()
+    {
+        Activity.Current = _priorActivity;
+    }
 
     [Fact]
     public async Task AlwaysMode_NoParentActivity_CreatesActivity()
@@ -91,7 +103,7 @@ public sealed class ChatCompletionActivityModeTests
     [Fact]
     public async Task EnrichParentMode_WithParentGenAiActivity_SuppressesOwnActivity()
     {
-        Activity.Current = null;
+
 
         var metrics = new AgentMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
@@ -120,7 +132,7 @@ public sealed class ChatCompletionActivityModeTests
     [Fact]
     public async Task EnrichParentMode_WithParentGenAiActivity_EnrichesParentSpan()
     {
-        Activity.Current = null;
+
 
         var metrics = new AgentMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
@@ -230,7 +242,7 @@ public sealed class ChatCompletionActivityModeTests
     [Fact]
     public async Task EnrichParentMode_Streaming_WithParentGenAi_SuppressesActivity()
     {
-        Activity.Current = null;
+
 
         var metrics = new AgentMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(

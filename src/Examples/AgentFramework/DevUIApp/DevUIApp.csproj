@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj\Generated</CompilerGeneratedFilesOutputPath>
+    <NeedlrDiagnostics>true</NeedlrDiagnostics>
+    <NoWarn>$(NoWarn);MAAIW001</NoWarn>
+    <!-- DevUI and Hosting packages are preview — suppress NuGet audit for this example -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.DevUI\NexusLabs.Needlr.AgentFramework.DevUI.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\NexusLabs.Needlr.AgentFramework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" />
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.props" />
+  <Import Project="..\..\..\NexusLabs.Needlr.AgentFramework.Generators\build\NexusLabs.Needlr.AgentFramework.Generators.targets" />
+  <Import Project="..\..\..\NexusLabs.Needlr.Generators\build\NexusLabs.Needlr.Generators.targets" />
+
+</Project>
