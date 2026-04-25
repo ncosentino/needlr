@@ -91,6 +91,8 @@ public sealed class ChatCompletionActivityModeTests
     [Fact]
     public async Task EnrichParentMode_WithParentGenAiActivity_SuppressesOwnActivity()
     {
+        Activity.Current = null;
+
         var metrics = new AgentMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
@@ -113,6 +115,35 @@ public sealed class ChatCompletionActivityModeTests
             _ct);
 
         Assert.Empty(activities);
+    }
+
+    [Fact]
+    public async Task EnrichParentMode_WithParentGenAiActivity_EnrichesParentSpan()
+    {
+        Activity.Current = null;
+
+        var metrics = new AgentMetrics();
+        var middleware = new DiagnosticsChatClientMiddleware(
+            metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);
+        var mockInner = new Mock<IChatClient>();
+        SetupSimpleResponse(mockInner);
+
+        using var parentSource = new ActivitySource("MEAI.EnrichVerify.Test");
+        using var parentListener = CreateListener(parentSource.Name);
+
+        using var parent = parentSource.StartActivity("gen_ai.chat.completions.request");
+        Assert.NotNull(parent);
+
+        await middleware.HandleAsync(
+            [new ChatMessage(ChatRole.User, "hi")],
+            options: null,
+            mockInner.Object,
+            _ct);
+
+        var model = parent.Tags.FirstOrDefault(t => t.Key == "gen_ai.response.model").Value;
+        var status = parent.Tags.FirstOrDefault(t => t.Key == "status").Value;
+        Assert.Equal("test-model", model);
+        Assert.Equal("success", status);
     }
 
     [Fact]
@@ -199,6 +230,8 @@ public sealed class ChatCompletionActivityModeTests
     [Fact]
     public async Task EnrichParentMode_Streaming_WithParentGenAi_SuppressesActivity()
     {
+        Activity.Current = null;
+
         var metrics = new AgentMetrics();
         var middleware = new DiagnosticsChatClientMiddleware(
             metrics, progressAccessor: null, ChatCompletionActivityMode.EnrichParent);

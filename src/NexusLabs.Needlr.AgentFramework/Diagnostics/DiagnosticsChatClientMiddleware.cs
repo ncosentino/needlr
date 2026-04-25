@@ -73,7 +73,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = StartChatActivity("agent.chat");
+        var (ownedActivity, targetActivity) = StartChatActivity("agent.chat");
+        using var _ = ownedActivity;
 
         if (_progressAccessor is not null)
         {
@@ -96,9 +97,9 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             var model = response.ModelId ?? "unknown";
 
-            activity?.SetTag("gen_ai.response.model", model);
-            activity?.SetTag("agent.chat.sequence", sequence);
-            activity?.SetTag("status", "success");
+            targetActivity?.SetTag("gen_ai.response.model", model);
+            targetActivity?.SetTag("agent.chat.sequence", sequence);
+            targetActivity?.SetTag("status", "success");
 
             _metrics?.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
 
@@ -110,8 +111,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
                 ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
 
-            activity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
-            activity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
+            targetActivity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
+            targetActivity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
@@ -159,8 +160,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         {
             stopwatch.Stop();
 
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.SetTag("status", "failed");
+            targetActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            targetActivity?.SetTag("status", "failed");
 
             _metrics?.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
@@ -215,7 +216,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
-        using var activity = StartChatActivity("agent.chat.stream");
+        var (ownedStreamActivity, targetActivity) = StartChatActivity("agent.chat.stream");
+        using var _s = ownedStreamActivity;
 
         if (_progressAccessor is not null)
         {
@@ -272,9 +274,9 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         {
             var model = aggregated.ModelId ?? "unknown";
 
-            activity?.SetTag("gen_ai.response.model", model);
-            activity?.SetTag("agent.chat.sequence", sequence);
-            activity?.SetTag("status", "success");
+            targetActivity?.SetTag("gen_ai.response.model", model);
+            targetActivity?.SetTag("agent.chat.sequence", sequence);
+            targetActivity?.SetTag("status", "success");
 
             _metrics?.RecordChatCompletion(model, stopwatch.Elapsed, succeeded: true, agentName: builder?.AgentName);
 
@@ -286,8 +288,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
                 ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
 
-            activity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
-            activity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
+            targetActivity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
+            targetActivity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
 
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
@@ -329,8 +331,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
         }
         else
         {
-            activity?.SetStatus(ActivityStatusCode.Error, failure.Message);
-            activity?.SetTag("status", "failed");
+            targetActivity?.SetStatus(ActivityStatusCode.Error, failure.Message);
+            targetActivity?.SetTag("status", "failed");
 
             _metrics?.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
@@ -376,15 +378,15 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
     /// <summary>
     /// Creates a chat completion activity respecting <see cref="_activityMode"/>.
     /// When <see cref="ChatCompletionActivityMode.EnrichParent"/> is active and a
-    /// parent <c>gen_ai.*</c> activity exists, returns <see langword="null"/> (the
-    /// caller enriches <see cref="Activity.Current"/> directly via <c>activity?.SetTag</c>
-    /// null-checks). When no parent exists, creates a new activity as normal.
+    /// parent <c>gen_ai.*</c> activity exists, returns <c>created = null</c> and
+    /// <c>target = parent</c> so callers enrich the parent span without creating a
+    /// duplicate child. The caller must only dispose <c>created</c>, never <c>target</c>.
     /// </summary>
-    private Activity? StartChatActivity(string operationName)
+    private (Activity? Created, Activity? Target) StartChatActivity(string operationName)
     {
         if (_metrics is null)
         {
-            return null;
+            return (null, null);
         }
 
         if (_activityMode == ChatCompletionActivityMode.EnrichParent)
@@ -392,10 +394,11 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             var parent = Activity.Current;
             if (parent?.OperationName.StartsWith("gen_ai.", StringComparison.Ordinal) == true)
             {
-                return null;
+                return (Created: null, Target: parent);
             }
         }
 
-        return _metrics.ActivitySource.StartActivity(operationName, ActivityKind.Client);
+        var created = _metrics.ActivitySource.StartActivity(operationName, ActivityKind.Client);
+        return (Created: created, Target: created);
     }
 }

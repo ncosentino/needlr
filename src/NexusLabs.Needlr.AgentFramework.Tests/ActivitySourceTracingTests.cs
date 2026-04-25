@@ -68,7 +68,8 @@ public class ActivitySourceTracingTests
     [Fact]
     public void ActivitySource_WithoutListener_ReturnsNullActivity()
     {
-        using var metrics = new AgentMetrics();
+        var options = new AgentFrameworkMetricsOptions { ActivitySourceName = "test.no-listener.isolated" };
+        using var metrics = new AgentMetrics(options);
         var activity = metrics.ActivitySource.StartActivity("unlistened.op");
         Assert.Null(activity);
     }
