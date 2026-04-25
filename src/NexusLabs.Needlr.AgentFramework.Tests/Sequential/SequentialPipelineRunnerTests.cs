@@ -94,6 +94,7 @@ public class SequentialPipelineRunnerTests
         Assert.True(result.Succeeded);
         Assert.Null(result.ErrorMessage);
         Assert.Equal(3, result.Stages.Count);
+        Assert.Equal(3, result.PlannedStageCount);
     }
 
     // -------------------------------------------------------------------------
@@ -113,6 +114,7 @@ public class SequentialPipelineRunnerTests
         Assert.Equal("boom", result.ErrorMessage);
         Assert.Same(boom, result.Exception);
         Assert.Equal(2, result.Stages.Count); // "A" completed + "B" recorded as failed
+        Assert.Equal(3, result.PlannedStageCount); // all 3 stages were planned
         Assert.Equal("A", result.Stages[0].AgentName);
         Assert.Equal("B", result.Stages[1].AgentName);
     }

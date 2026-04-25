@@ -44,10 +44,12 @@ public sealed class PipelineStageEvaluatorTests
             succeeded: true,
             durationMs: 1000,
             errorMessage: null,
-            MakeCompletedStage("agent-a"),
-            MakeSkippedStage("agent-b"),
-            MakeCompletedStage("agent-c"),
-            MakeSkippedStage("agent-d"));
+            stages: [
+                MakeCompletedStage("agent-a"),
+                MakeSkippedStage("agent-b"),
+                MakeCompletedStage("agent-c"),
+                MakeSkippedStage("agent-d"),
+            ]);
 
         var result = await RunAsync(pipeline);
 
@@ -82,6 +84,23 @@ public sealed class PipelineStageEvaluatorTests
             cancellationToken: _ct);
 
         Assert.Empty(result.Metrics);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_PartialRun_TotalStagesReflectsPlannedCount()
+    {
+        var pipeline = BuildPipeline(
+            succeeded: false,
+            durationMs: 500,
+            errorMessage: "Stage 'agent-c' threw an exception.",
+            plannedStageCount: 5,
+            MakeCompletedStage("agent-a"),
+            MakeCompletedStage("agent-b"));
+
+        var result = await RunAsync(pipeline);
+
+        AssertNumeric(result, PipelineStageEvaluator.TotalStagesMetricName, 5);
+        AssertNumeric(result, PipelineStageEvaluator.CompletedStagesMetricName, 2);
     }
 
     private async Task<EvaluationResult> RunAsync(FakePipelineRunResult pipeline)
@@ -119,11 +138,13 @@ public sealed class PipelineStageEvaluatorTests
         bool succeeded,
         double durationMs,
         string? errorMessage = null,
+        int? plannedStageCount = null,
         params FakeAgentStageResult[] stages)
     {
         return new FakePipelineRunResult
         {
             Stages = stages,
+            PlannedStageCount = plannedStageCount ?? stages.Length,
             FinalResponses = new Dictionary<string, ChatResponse?>(),
             TotalDuration = TimeSpan.FromMilliseconds(durationMs),
             AggregateTokenUsage = null,

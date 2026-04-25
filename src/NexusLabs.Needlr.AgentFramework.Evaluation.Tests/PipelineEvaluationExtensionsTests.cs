@@ -107,6 +107,7 @@ public sealed class PipelineEvaluationExtensionsTests
         return new FakePipelineRunResult
         {
             Stages = stageList,
+            PlannedStageCount = stageList.Count,
             FinalResponses = new Dictionary<string, ChatResponse?>(),
             TotalDuration = TimeSpan.FromMilliseconds(100),
             AggregateTokenUsage = new TokenUsage(0, 0, 42, 0, 0),

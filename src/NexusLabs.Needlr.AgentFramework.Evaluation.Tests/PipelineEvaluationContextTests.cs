@@ -116,6 +116,7 @@ public sealed class PipelineEvaluationContextTests
         return new FakePipelineRunResult
         {
             Stages = stages,
+            PlannedStageCount = stages.Count,
             FinalResponses = new Dictionary<string, ChatResponse?>(),
             TotalDuration = TimeSpan.FromMilliseconds(durationMs),
             AggregateTokenUsage = new TokenUsage(0, 0, totalTokens, 0, 0),

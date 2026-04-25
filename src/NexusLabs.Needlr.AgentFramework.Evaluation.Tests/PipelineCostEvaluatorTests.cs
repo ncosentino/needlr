@@ -140,6 +140,7 @@ public sealed class PipelineCostEvaluatorTests
         return new FakePipelineRunResult
         {
             Stages = stages,
+            PlannedStageCount = stages.Length,
             FinalResponses = new Dictionary<string, ChatResponse?>(),
             TotalDuration = TimeSpan.FromMilliseconds(500),
             AggregateTokenUsage = null,

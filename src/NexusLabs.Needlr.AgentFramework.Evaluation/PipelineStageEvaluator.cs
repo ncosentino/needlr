@@ -79,7 +79,7 @@ public sealed class PipelineStageEvaluator : IEvaluator
         }
 
         var stages = pipelineResult.Stages;
-        var totalStages = stages.Count;
+        var totalStages = pipelineResult.PlannedStageCount;
         var completedStages = 0;
         var skippedStages = 0;
 

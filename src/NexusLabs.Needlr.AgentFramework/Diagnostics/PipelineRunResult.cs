@@ -16,9 +16,11 @@ internal sealed class PipelineRunResult : IPipelineRunResult
         TimeSpan totalDuration,
         bool succeeded,
         string? errorMessage,
-        Exception? exception = null)
+        Exception? exception = null,
+        int? plannedStageCount = null)
     {
         Stages = stages;
+        PlannedStageCount = plannedStageCount ?? stages.Count;
         TotalDuration = totalDuration;
         Succeeded = succeeded;
         ErrorMessage = errorMessage;
@@ -51,6 +53,8 @@ internal sealed class PipelineRunResult : IPipelineRunResult
     }
 
     public IReadOnlyList<IAgentStageResult> Stages { get; }
+
+    public int PlannedStageCount { get; }
 
     public IReadOnlyDictionary<string, ChatResponse?> FinalResponses => _lazyResponses.Value;
 

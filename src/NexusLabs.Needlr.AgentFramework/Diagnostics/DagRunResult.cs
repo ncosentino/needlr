@@ -18,9 +18,11 @@ internal sealed class DagRunResult : IDagRunResult
         TimeSpan totalDuration,
         bool succeeded,
         string? errorMessage,
-        Exception? exception = null)
+        Exception? exception = null,
+        int? plannedStageCount = null)
     {
         Stages = stages;
+        PlannedStageCount = plannedStageCount ?? stages.Count;
         NodeResults = nodeResults;
         BranchResults = branchResults;
         TotalDuration = totalDuration;
@@ -52,6 +54,8 @@ internal sealed class DagRunResult : IDagRunResult
     }
 
     public IReadOnlyList<IAgentStageResult> Stages { get; }
+
+    public int PlannedStageCount { get; }
 
     public IReadOnlyDictionary<string, ChatResponse?> FinalResponses => _lazyResponses.Value;
 

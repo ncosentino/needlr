@@ -147,6 +147,38 @@ public class PipelineRunResultTests
     }
 
     // -------------------------------------------------------------------------
+    // PlannedStageCount
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void PlannedStageCount_DefaultsToStagesCount()
+    {
+        var stages = new IAgentStageResult[]
+        {
+            new AgentStageResult("A", Resp("text"), null),
+            new AgentStageResult("B", Resp("text"), null),
+        };
+
+        var result = CreateResult(stages);
+
+        Assert.Equal(2, result.PlannedStageCount);
+    }
+
+    [Fact]
+    public void PlannedStageCount_ExplicitValue_IsPreserved()
+    {
+        var stages = new IAgentStageResult[]
+        {
+            new AgentStageResult("A", Resp("text"), null),
+        };
+
+        var result = CreateResult(stages, plannedStageCount: 5);
+
+        Assert.Equal(5, result.PlannedStageCount);
+        Assert.Single(result.Stages);
+    }
+
+    // -------------------------------------------------------------------------
     // Empty pipeline
     // -------------------------------------------------------------------------
 
@@ -171,12 +203,14 @@ public class PipelineRunResultTests
         IAgentStageResult[] stages,
         TimeSpan? totalDuration = null,
         bool succeeded = true,
-        string? errorMessage = null) =>
+        string? errorMessage = null,
+        int? plannedStageCount = null) =>
         new PipelineRunResult(
             stages: stages,
             totalDuration: totalDuration ?? TimeSpan.FromSeconds(1),
             succeeded: succeeded,
-            errorMessage: errorMessage);
+            errorMessage: errorMessage,
+            plannedStageCount: plannedStageCount);
 
     private static IAgentRunDiagnostics CreateDiagnostics(
         string agentName,

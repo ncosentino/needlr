@@ -49,6 +49,9 @@ public interface IPipelineRunResult
     /// </summary>
     TokenUsage? AggregateTokenUsage { get; }
 
+    /// <summary>Gets the total number of stages planned for this pipeline.</summary>
+    int PlannedStageCount { get; }
+
     /// <summary>Gets whether all stages completed successfully.</summary>
     bool Succeeded { get; }
 

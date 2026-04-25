@@ -221,7 +221,8 @@ public sealed class SequentialPipelineRunner
                 stageResults,
                 stopwatch.Elapsed,
                 succeeded: true,
-                errorMessage: null);
+                errorMessage: null,
+                plannedStageCount: stages.Count);
 
             if (options?.CompletionGate is { } gate)
             {
@@ -232,7 +233,8 @@ public sealed class SequentialPipelineRunner
                         stageResults,
                         stopwatch.Elapsed,
                         succeeded: false,
-                        errorMessage: gateError);
+                        errorMessage: gateError,
+                        plannedStageCount: stages.Count);
 
                     ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, gateError);
                     return failedResult;
@@ -251,7 +253,8 @@ public sealed class SequentialPipelineRunner
                 stopwatch.Elapsed,
                 succeeded: false,
                 errorMessage: budgetEx.Message,
-                exception: budgetEx);
+                exception: budgetEx,
+                plannedStageCount: stages.Count);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -274,7 +277,8 @@ public sealed class SequentialPipelineRunner
                 stopwatch.Elapsed,
                 succeeded: false,
                 errorMessage: message,
-                exception: ex);
+                exception: ex,
+                plannedStageCount: stages.Count);
         }
         catch (Exception ex)
         {
@@ -285,7 +289,8 @@ public sealed class SequentialPipelineRunner
                 stopwatch.Elapsed,
                 succeeded: false,
                 errorMessage: ex.Message,
-                exception: ex);
+                exception: ex,
+                plannedStageCount: stages.Count);
         }
         finally
         {
