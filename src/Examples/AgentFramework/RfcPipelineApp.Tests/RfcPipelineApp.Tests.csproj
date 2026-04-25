@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RfcPipelineApp.Core\RfcPipelineApp.Core.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Testing\NexusLabs.Needlr.AgentFramework.Testing.csproj" />
+  </ItemGroup>
+
+</Project>
