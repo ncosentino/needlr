@@ -52,6 +52,10 @@ public class RfcPipelineEvalTests : IAsyncLifetime
                 .UsingChatClient(chatClient)
                 .UsingDiagnostics()
                 .UsingTokenBudget())
+            .UsingPostPluginRegistrationCallback(services =>
+            {
+                services.AddLogging();
+            })
             .BuildServiceProvider(configuration);
 
         var agentFactory = _services.GetRequiredService<IAgentFactory>();
