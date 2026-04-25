@@ -314,7 +314,9 @@ public sealed class CopilotChatClient : IChatClient
             // MAF may pack multiple tool results into a single ChatMessage when the model
             // made parallel tool calls. The Copilot API (OpenAI format) requires a separate
             // "tool" message for each tool_call_id.
-            var functionResults = msg.Contents.OfType<FunctionResultContent>().ToList();
+            var functionResults = msg.Contents.OfType<FunctionResultContent>()
+                .Where(fr => !string.IsNullOrEmpty(fr.CallId))
+                .ToList();
             if (functionResults.Count > 0)
             {
                 foreach (var fr in functionResults)
@@ -331,7 +333,9 @@ public sealed class CopilotChatClient : IChatClient
             }
 
             // Handle assistant messages with tool calls
-            var functionCalls = msg.Contents.OfType<FunctionCallContent>().ToList();
+            var functionCalls = msg.Contents.OfType<FunctionCallContent>()
+                .Where(fc => !string.IsNullOrEmpty(fc.Name))
+                .ToList();
             if (functionCalls.Count > 0)
             {
                 var textContent = string.Join("", msg.Contents
@@ -348,7 +352,7 @@ public sealed class CopilotChatClient : IChatClient
                         Type = "function",
                         Function = new RequestToolCallFunction
                         {
-                            Name = string.IsNullOrEmpty(fc.Name) ? "_unknown" : fc.Name,
+                            Name = fc.Name,
                             Arguments = fc.Arguments is not null
                                 ? JsonSerializer.Serialize(fc.Arguments, CopilotJsonContext.Default.Options)
                                 : "{}",

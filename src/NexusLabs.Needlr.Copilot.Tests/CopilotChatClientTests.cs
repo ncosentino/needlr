@@ -383,6 +383,223 @@ public class CopilotChatClientTests
         Assert.Equal("result 3", toolMessages[2].GetProperty("content").GetString());
     }
 
+    [Fact]
+    public async Task GetStreamingResponseAsync_AccumulatesToolCallChunksByIndex()
+    {
+        // Simulates the real SSE stream for a tool call with arguments:
+        // Chunk 1: id + name, no args yet
+        // Chunk 2-4: argument fragments (id/name null)
+        // Chunk 5: finish_reason=tool_calls
+        var sseData = new StringBuilder();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_abc","type":"function","function":{"name":"LookupCapital","arguments":""}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"coun"}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"try\":\""}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"france\"}"}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("data: [DONE]");
+
+        using var client = CreateClient(req =>
+        {
+            if (req.RequestUri!.PathAndQuery.Contains("copilot_internal"))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(TokenExchangeResponse, Encoding.UTF8, "application/json"),
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(sseData.ToString(), Encoding.UTF8, "text/event-stream"),
+            });
+        });
+
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in client.GetStreamingResponseAsync(
+            [new(ChatRole.User, "capital of france")],
+            cancellationToken: TestContext.Current.CancellationToken))
+        {
+            updates.Add(update);
+        }
+
+        var toolCalls = updates
+            .SelectMany(u => u.Contents.OfType<FunctionCallContent>())
+            .ToList();
+
+        Assert.Single(toolCalls);
+        Assert.Equal("call_abc", toolCalls[0].CallId);
+        Assert.Equal("LookupCapital", toolCalls[0].Name);
+        Assert.NotNull(toolCalls[0].Arguments);
+        Assert.Equal("france", toolCalls[0].Arguments!["country"]?.ToString());
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_NoGhostToolCalls()
+    {
+        // Same scenario as above — verifies zero FunctionCallContent items
+        // with empty name or callId (the bug that existed before the fix)
+        var sseData = new StringBuilder();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_xyz","type":"function","function":{"name":"GetTime","arguments":""}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{}"}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("data: [DONE]");
+
+        using var client = CreateClient(req =>
+        {
+            if (req.RequestUri!.PathAndQuery.Contains("copilot_internal"))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(TokenExchangeResponse, Encoding.UTF8, "application/json"),
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(sseData.ToString(), Encoding.UTF8, "text/event-stream"),
+            });
+        });
+
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in client.GetStreamingResponseAsync(
+            [new(ChatRole.User, "what time")],
+            cancellationToken: TestContext.Current.CancellationToken))
+        {
+            updates.Add(update);
+        }
+
+        var allFunctionCalls = updates
+            .SelectMany(u => u.Contents.OfType<FunctionCallContent>())
+            .ToList();
+
+        // Every function call must have a non-empty name and callId
+        Assert.All(allFunctionCalls, fc =>
+        {
+            Assert.False(string.IsNullOrEmpty(fc.Name), $"FunctionCallContent.Name was empty (callId={fc.CallId})");
+            Assert.False(string.IsNullOrEmpty(fc.CallId), $"FunctionCallContent.CallId was empty (name={fc.Name})");
+        });
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_MultipleParallelToolCalls_AccumulatedCorrectly()
+    {
+        // Two tool calls streamed in parallel (index 0 and 1)
+        var sseData = new StringBuilder();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"GetTime","arguments":""}},{"index":1,"id":"call_2","type":"function","function":{"name":"GetWeather","arguments":""}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":1,"function":{"arguments":"{\"loc"}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{}"}},{"index":1,"function":{"arguments":"ation\":\"NYC\"}"}}]},"finish_reason":null}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("""data: {"id":"s1","created":0,"model":"m","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}""");
+        sseData.AppendLine();
+        sseData.AppendLine("data: [DONE]");
+
+        using var client = CreateClient(req =>
+        {
+            if (req.RequestUri!.PathAndQuery.Contains("copilot_internal"))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(TokenExchangeResponse, Encoding.UTF8, "application/json"),
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(sseData.ToString(), Encoding.UTF8, "text/event-stream"),
+            });
+        });
+
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in client.GetStreamingResponseAsync(
+            [new(ChatRole.User, "time and weather")],
+            cancellationToken: TestContext.Current.CancellationToken))
+        {
+            updates.Add(update);
+        }
+
+        var toolCalls = updates
+            .SelectMany(u => u.Contents.OfType<FunctionCallContent>())
+            .OrderBy(tc => tc.CallId)
+            .ToList();
+
+        Assert.Equal(2, toolCalls.Count);
+        Assert.Equal("call_1", toolCalls[0].CallId);
+        Assert.Equal("GetTime", toolCalls[0].Name);
+        Assert.Equal("call_2", toolCalls[1].CallId);
+        Assert.Equal("GetWeather", toolCalls[1].Name);
+        Assert.Equal("NYC", toolCalls[1].Arguments!["location"]?.ToString());
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_EmptyNameFunctionCalls_FilteredFromOutgoingMessages()
+    {
+        string? capturedBody = null;
+
+        using var client = CreateClient(async req =>
+        {
+            if (req.RequestUri!.PathAndQuery.Contains("copilot_internal"))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(TokenExchangeResponse, Encoding.UTF8, "application/json"),
+                };
+            }
+
+            capturedBody = await req.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"id":"t","created":0,"model":"m","choices":[{"index":0,"message":{"role":"assistant","content":"Done."},"finish_reason":"stop"}]}""",
+                    Encoding.UTF8,
+                    "application/json"),
+            };
+        });
+
+        // Simulate conversation history with a valid tool call AND ghost
+        // empty-name tool calls (the kind produced by the old streaming bug)
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "capital of france"),
+            new(ChatRole.Assistant,
+            [
+                new FunctionCallContent("call_1", "LookupCapital", new Dictionary<string, object?> { ["country"] = "france" }),
+                new FunctionCallContent("", "", new Dictionary<string, object?> { ["_raw"] = "{\"coun" }),
+                new FunctionCallContent("", "", new Dictionary<string, object?> { ["_raw"] = "try" }),
+            ]),
+            new(ChatRole.Tool,
+            [
+                new FunctionResultContent("call_1", "Paris"),
+            ]),
+        };
+
+        await client.GetResponseAsync(messages, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.NotNull(capturedBody);
+        using var doc = JsonDocument.Parse(capturedBody);
+        var msgs = doc.RootElement.GetProperty("messages");
+
+        // Find the assistant message with tool_calls
+        var assistantMsg = msgs.EnumerateArray()
+            .First(m => m.GetProperty("role").GetString() == "assistant"
+                     && m.TryGetProperty("tool_calls", out _));
+
+        var toolCalls = assistantMsg.GetProperty("tool_calls").EnumerateArray().ToList();
+
+        // Should only have the valid tool call, not the ghosts
+        Assert.Single(toolCalls);
+        Assert.Equal("LookupCapital", toolCalls[0].GetProperty("function").GetProperty("name").GetString());
+    }
+
     private static CopilotChatClient CreateClient(
         Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
     {
