@@ -9,4 +9,5 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 internal sealed record AgentStageResult(
     string AgentName,
     ChatResponse? FinalResponse,
-    IAgentRunDiagnostics? Diagnostics) : IAgentStageResult;
+    IAgentRunDiagnostics? Diagnostics,
+    StageOutcome Outcome = StageOutcome.Succeeded) : IAgentStageResult;

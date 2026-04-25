@@ -378,6 +378,145 @@ public class SequentialPipelineRunnerTests
     }
 
     // -------------------------------------------------------------------------
+    // Part A: AfterExecution hook tests
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_AfterExecution_CalledForSuccessfulStage()
+    {
+        var runner = CreateRunner();
+        bool called = false;
+        var policy = new StageExecutionPolicy
+        {
+            AfterExecution = (result, ctx) => { called = true; return Task.CompletedTask; },
+        };
+        var stages = new[] { DelegateStage("A", policy: policy) };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+        Assert.True(called);
+    }
+
+    [Fact]
+    public async Task RunAsync_AfterExecution_CalledForFailedStage()
+    {
+        var runner = CreateRunner();
+        bool called = false;
+        StageExecutionResult? capturedResult = null;
+        var policy = new StageExecutionPolicy
+        {
+            AfterExecution = (result, ctx) =>
+            {
+                called = true;
+                capturedResult = result;
+                return Task.CompletedTask;
+            },
+        };
+
+        var boom = new InvalidOperationException("boom");
+        var executor = new FailingExecutorWithPolicy(boom);
+        var stages = new[] { new PipelineStage("A", executor, policy) };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.True(called);
+        Assert.NotNull(capturedResult);
+        Assert.False(capturedResult!.Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_AfterExecution_NotCalledForSkippedStage()
+    {
+        var runner = CreateRunner();
+        bool called = false;
+        var policy = new StageExecutionPolicy
+        {
+            ShouldSkip = _ => true,
+            AfterExecution = (result, ctx) => { called = true; return Task.CompletedTask; },
+        };
+        var stages = new[] { DelegateStage("A", policy: policy) };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+        Assert.False(called);
+    }
+
+    [Fact]
+    public async Task RunAsync_AfterExecution_CanReadWorkspace()
+    {
+        var runner = CreateRunner();
+        var workspace = CreateWorkspace();
+        workspace.TryWriteFile("test.txt", "hello");
+
+        string? readContent = null;
+        var policy = new StageExecutionPolicy
+        {
+            AfterExecution = (result, ctx) =>
+            {
+                var wsResult = ctx.Workspace.TryReadFile("test.txt");
+                readContent = wsResult.Value?.Content;
+                return Task.CompletedTask;
+            },
+        };
+        var stages = new[] { DelegateStage("A", policy: policy) };
+
+        await runner.RunAsync(workspace, stages, options: null, CancellationToken.None);
+        Assert.Equal("hello", readContent);
+    }
+
+    // -------------------------------------------------------------------------
+    // Part B: Typed Pipeline State tests
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_WithState_StageCanReadState()
+    {
+        var runner = CreateRunner();
+        var state = new TestPipelineState { Counter = 0 };
+        var stages = new[]
+        {
+            DelegateStage("Increment", (ctx, ct) =>
+            {
+                var s = ctx.GetRequiredState<TestPipelineState>();
+                s.Counter++;
+                return Task.CompletedTask;
+            }),
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, state, options: null, CancellationToken.None);
+        Assert.Equal(1, state.Counter);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithState_StateSharedAcrossStages()
+    {
+        var runner = CreateRunner();
+        var state = new TestPipelineState { Counter = 0 };
+        var stages = new[]
+        {
+            DelegateStage("First", (ctx, ct) => { ctx.GetRequiredState<TestPipelineState>().Counter++; return Task.CompletedTask; }),
+            DelegateStage("Second", (ctx, ct) => { ctx.GetRequiredState<TestPipelineState>().Counter++; return Task.CompletedTask; }),
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, state, options: null, CancellationToken.None);
+        Assert.Equal(2, state.Counter);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithoutState_GetRequiredStateThrows()
+    {
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            DelegateStage("A", (ctx, ct) =>
+            {
+                Assert.Throws<InvalidOperationException>(() => ctx.GetRequiredState<TestPipelineState>());
+                return Task.CompletedTask;
+            }),
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+    }
+
+    // -------------------------------------------------------------------------
     // Test helpers (co-located per house style)
     // -------------------------------------------------------------------------
 
@@ -422,6 +561,174 @@ public class SequentialPipelineRunnerTests
             return Task.FromResult(StageExecutionResult.Success(
                 context.StageName, diagnostics: null, responseText: null));
         }
+    }
+
+    private sealed class FailingExecutorWithPolicy(Exception exception) : IStageExecutor
+    {
+        public Task<StageExecutionResult> ExecuteAsync(
+            StageExecutionContext context,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(StageExecutionResult.Failed(context.StageName, exception));
+    }
+
+    private sealed class TestPipelineState
+    {
+        public int Counter { get; set; }
+        public string? LastStageName { get; set; }
+        public List<string> Findings { get; } = [];
+    }
+
+    private static PipelineStage FailedStage(
+        string name,
+        FailureDisposition disposition) =>
+        new(name, new FailedResultExecutor(disposition));
+
+    private sealed class FailedResultExecutor(FailureDisposition disposition) : IStageExecutor
+    {
+        public Task<StageExecutionResult> ExecuteAsync(
+            StageExecutionContext context,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(StageExecutionResult.Failed(
+                context.StageName,
+                new InvalidOperationException("stage failed"),
+                disposition: disposition));
+    }
+
+    // -------------------------------------------------------------------------
+    // Part C: Failure Disposition tests
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_StageReturnsFailed_AbortDisposition_AbortsPipeline()
+    {
+        var runner = CreateRunner();
+        var counter = new Counter();
+        var stages = new[]
+        {
+            SuccessStage("A"),
+            FailedStage("B", FailureDisposition.AbortPipeline),
+            CountingStage("C", counter),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(2, result.Stages.Count); // A + B (C never ran)
+        Assert.Equal(0, counter.Value);
+    }
+
+    [Fact]
+    public async Task RunAsync_StageReturnsFailed_AdvisoryDisposition_ContinuesPipeline()
+    {
+        var runner = CreateRunner();
+        var counter = new Counter();
+        var stages = new[]
+        {
+            SuccessStage("A"),
+            FailedStage("B", FailureDisposition.ContinueAdvisory),
+            CountingStage("C", counter),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(3, result.Stages.Count);
+        Assert.Equal(1, counter.Value);
+    }
+
+    [Fact]
+    public async Task RunAsync_AdvisoryFailure_StageRecordedWithFailedOutcome()
+    {
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            SuccessStage("A"),
+            FailedStage("B", FailureDisposition.ContinueAdvisory),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Equal(StageOutcome.Failed, result.Stages[1].Outcome);
+    }
+
+    [Fact]
+    public async Task RunAsync_SkippedStage_StageRecordedWithSkippedOutcome()
+    {
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            SuccessStage("A") with
+            {
+                Policy = new StageExecutionPolicy { ShouldSkip = _ => true },
+            },
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Equal(StageOutcome.Skipped, result.Stages[0].Outcome);
+    }
+
+    [Fact]
+    public async Task RunAsync_SuccessfulStage_StageRecordedWithSucceededOutcome()
+    {
+        var runner = CreateRunner();
+        var stages = new[] { SuccessStage("A") };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Equal(StageOutcome.Succeeded, result.Stages[0].Outcome);
+    }
+
+    [Fact]
+    public async Task RunAsync_MixedAdvisoryAndSuccess_PipelineSucceeds()
+    {
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            SuccessStage("A"),
+            FailedStage("B", FailureDisposition.ContinueAdvisory),
+            SuccessStage("C"),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(3, result.Stages.Count);
+        Assert.Equal(StageOutcome.Succeeded, result.Stages[0].Outcome);
+        Assert.Equal(StageOutcome.Failed, result.Stages[1].Outcome);
+        Assert.Equal(StageOutcome.Succeeded, result.Stages[2].Outcome);
+    }
+
+    [Fact]
+    public async Task RunAsync_AbortFailure_EmitsAgentFailedEvent()
+    {
+        var events = new List<IProgressEvent>();
+        var runner = CreateRunner(progressFactory: CreateCapturingProgressFactory(events));
+        var stages = new[]
+        {
+            FailedStage("A", FailureDisposition.AbortPipeline),
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Contains(events, e => e is AgentFailedEvent f && f.AgentName == "A");
+        Assert.DoesNotContain(events, e => e is AgentCompletedEvent c && c.AgentName == "A");
+    }
+
+    [Fact]
+    public async Task RunAsync_AdvisoryFailure_EmitsAgentFailedEvent()
+    {
+        var events = new List<IProgressEvent>();
+        var runner = CreateRunner(progressFactory: CreateCapturingProgressFactory(events));
+        var stages = new[]
+        {
+            FailedStage("A", FailureDisposition.ContinueAdvisory),
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Contains(events, e => e is AgentFailedEvent f && f.AgentName == "A");
+        Assert.DoesNotContain(events, e => e is AgentCompletedEvent c && c.AgentName == "A");
     }
 
     // -------------------------------------------------------------------------

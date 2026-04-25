@@ -38,7 +38,10 @@ public sealed class ContinueOnFailureExecutor(
         catch (Exception ex)
         {
             onFailure?.Invoke(ex);
-            return StageExecutionResult.Failed(context.StageName, ex);
+            return StageExecutionResult.Failed(
+                context.StageName,
+                ex,
+                disposition: FailureDisposition.ContinueAdvisory);
         }
     }
 }

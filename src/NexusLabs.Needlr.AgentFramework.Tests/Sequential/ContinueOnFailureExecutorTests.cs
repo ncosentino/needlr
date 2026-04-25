@@ -127,6 +127,22 @@ public class ContinueOnFailureExecutorTests
         Assert.False(result.Succeeded);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_InnerThrows_ReturnsFailed_WithAdvisoryDisposition()
+    {
+        var inner = new Mock<IStageExecutor>();
+        inner
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("boom"));
+
+        var executor = new ContinueOnFailureExecutor(inner.Object);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.Equal(FailureDisposition.ContinueAdvisory, result.FailureDisposition);
+    }
+
     private static StageExecutionContext CreateContext(
         string stageName,
         CancellationToken callerToken = default)

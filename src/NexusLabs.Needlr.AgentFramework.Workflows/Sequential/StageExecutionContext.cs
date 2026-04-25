@@ -18,6 +18,10 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// (e.g. <see cref="TimeoutExecutor"/>) should check this to distinguish user
 /// cancellation from internal timeouts.
 /// </param>
+/// <param name="PipelineState">
+/// Optional shared state object passed to all stages in the pipeline. Use
+/// <see cref="GetRequiredState{T}"/> to retrieve it with type safety.
+/// </param>
 /// <example>
 /// <code>
 /// public async Task&lt;StageExecutionResult&gt; ExecuteAsync(
@@ -36,4 +40,18 @@ public sealed record StageExecutionContext(
     int StageIndex,
     int TotalStages,
     string StageName,
-    CancellationToken CallerCancellationToken = default);
+    CancellationToken CallerCancellationToken = default,
+    object? PipelineState = null)
+{
+    /// <summary>
+    /// Gets the typed pipeline state, or throws if no state was provided or the type doesn't match.
+    /// </summary>
+    /// <typeparam name="T">The expected pipeline state type.</typeparam>
+    /// <returns>The pipeline state cast to <typeparamref name="T"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="PipelineState"/> is <see langword="null"/> or not of type <typeparamref name="T"/>.
+    /// </exception>
+    public T GetRequiredState<T>() where T : class =>
+        PipelineState as T ?? throw new InvalidOperationException(
+            $"Pipeline state is not available or is not of type {typeof(T).Name}.");
+}

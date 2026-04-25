@@ -45,4 +45,11 @@ public interface IAgentStageResult
     /// were not enabled via <c>UsingDiagnostics()</c>.
     /// </summary>
     IAgentRunDiagnostics? Diagnostics { get; }
+
+    /// <summary>
+    /// Gets the outcome of this stage's execution. Defaults to
+    /// <see cref="StageOutcome.Succeeded"/> for backward compatibility with
+    /// implementations that do not track outcomes.
+    /// </summary>
+    StageOutcome Outcome => StageOutcome.Succeeded;
 }

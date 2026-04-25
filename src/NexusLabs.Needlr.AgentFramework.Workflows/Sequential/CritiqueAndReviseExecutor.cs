@@ -32,6 +32,8 @@ public sealed class CritiqueAndReviseExecutor : IStageExecutor
     private readonly Func<StageExecutionContext, string, string> _reviserPromptFactory;
     private readonly Func<IAgentRunDiagnostics?, string?, bool> _passCheck;
     private readonly int _maxRetries;
+    private readonly Func<StageExecutionContext, string?, bool>? _postPassCheck;
+    private readonly Func<StageExecutionContext, string, Task>? _onRevisionCompleted;
 
     /// <summary>
     /// Initializes a new <see cref="CritiqueAndReviseExecutor"/>.
@@ -42,13 +44,18 @@ public sealed class CritiqueAndReviseExecutor : IStageExecutor
     /// <param name="reviserPromptFactory">Builds the prompt sent to the reviser agent from the stage context and critic feedback.</param>
     /// <param name="passCheck">Determines whether the critic's response constitutes a pass.</param>
     /// <param name="maxRetries">Maximum number of revision attempts after the initial critique. Defaults to 3.</param>
+    /// <param name="postPassCheck">Optional secondary check applied after <paramref name="passCheck"/> returns <see langword="true"/>.
+    /// Returns <see langword="false"/> to override the pass and continue revision.</param>
+    /// <param name="onRevisionCompleted">Optional callback invoked after the reviser runs, receiving the reviser's output text.</param>
     public CritiqueAndReviseExecutor(
         AIAgent critic,
         AIAgent reviser,
         Func<StageExecutionContext, string> criticPromptFactory,
         Func<StageExecutionContext, string, string> reviserPromptFactory,
         Func<IAgentRunDiagnostics?, string?, bool> passCheck,
-        int maxRetries = 3)
+        int maxRetries = 3,
+        Func<StageExecutionContext, string?, bool>? postPassCheck = null,
+        Func<StageExecutionContext, string, Task>? onRevisionCompleted = null)
     {
         _critic = critic;
         _reviser = reviser;
@@ -56,6 +63,8 @@ public sealed class CritiqueAndReviseExecutor : IStageExecutor
         _reviserPromptFactory = reviserPromptFactory;
         _passCheck = passCheck;
         _maxRetries = maxRetries;
+        _postPassCheck = postPassCheck;
+        _onRevisionCompleted = onRevisionCompleted;
     }
 
     /// <inheritdoc />
@@ -83,6 +92,11 @@ public sealed class CritiqueAndReviseExecutor : IStageExecutor
                 passed = _passCheck(diag, feedback);
             }
 
+            if (passed && _postPassCheck is not null)
+            {
+                passed = _postPassCheck(context, feedback);
+            }
+
             if (passed)
             {
                 break;
@@ -94,11 +108,17 @@ public sealed class CritiqueAndReviseExecutor : IStageExecutor
                 var reviserPrompt = _reviserPromptFactory(context, feedback ?? "");
                 using (context.DiagnosticsAccessor.BeginCapture())
                 {
-                    await _reviser.RunAsync(reviserPrompt, cancellationToken: cancellationToken);
+                    var reviserResponse = await _reviser.RunAsync(reviserPrompt, cancellationToken: cancellationToken);
                     var diag = context.DiagnosticsAccessor.LastRunDiagnostics;
                     if (diag is not null)
                     {
                         allDiagnostics.Add(diag);
+                    }
+
+                    if (_onRevisionCompleted is not null)
+                    {
+                        var reviserText = reviserResponse.GetText();
+                        await _onRevisionCompleted(context, reviserText ?? "");
                     }
                 }
             }

@@ -80,6 +80,87 @@ public class CritiqueAndReviseExecutorTests
     }
 
     // -------------------------------------------------------------------------
+    // Part C: PostPassCheck + OnRevisionCompleted hook tests
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task ExecuteAsync_PostPassCheck_OverridesPassToFail()
+    {
+        // Critic says "APPROVED" → passCheck returns true
+        // But postPassCheck returns false (e.g. found UNVERIFIED tags)
+        // Loop should continue to revision
+        var executor = new TestableCritiqueAndReviseExecutor(
+            criticResponses: ["APPROVED: looks good", "APPROVED: better now"],
+            passCheck: (_, feedback) => feedback?.Contains("APPROVED") == true,
+            maxRetries: 1,
+            postPassCheck: (ctx, feedback) => false);
+        var context = CreateContext("Review");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        // postPassCheck always returns false → despite passCheck passing,
+        // it should revise and ultimately fail (maxRetries=1 means 2 total attempts)
+        Assert.False(result.Succeeded);
+        Assert.Equal(1, executor.ReviserCallCount);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PostPassCheck_Null_NoOverride()
+    {
+        // When postPassCheck is null, pass is honored as-is
+        var executor = new TestableCritiqueAndReviseExecutor(
+            criticResponses: ["PASS: looks good"],
+            passCheck: (_, feedback) => feedback?.Contains("PASS") == true,
+            maxRetries: 3,
+            postPassCheck: null);
+        var context = CreateContext("Review");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(0, executor.ReviserCallCount);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnRevisionCompleted_CalledWithReviserOutput()
+    {
+        string? capturedRevision = null;
+        var executor = new TestableCritiqueAndReviseExecutor(
+            criticResponses: ["FAIL: needs work", "PASS: all good"],
+            passCheck: (_, feedback) => feedback?.Contains("PASS") == true,
+            maxRetries: 2,
+            onRevisionCompleted: (ctx, reviserText) =>
+            {
+                capturedRevision = reviserText;
+                return Task.CompletedTask;
+            });
+        var context = CreateContext("Review");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(capturedRevision);
+        Assert.Contains("Revised", capturedRevision);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnRevisionCompleted_Null_NoError()
+    {
+        // When onRevisionCompleted is null, no error
+        var executor = new TestableCritiqueAndReviseExecutor(
+            criticResponses: ["FAIL: needs work", "PASS: all good"],
+            passCheck: (_, feedback) => feedback?.Contains("PASS") == true,
+            maxRetries: 2,
+            onRevisionCompleted: null);
+        var context = CreateContext("Review");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(1, executor.ReviserCallCount);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -107,20 +188,26 @@ public class CritiqueAndReviseExecutorTests
         private readonly IReadOnlyList<string> _criticResponses;
         private readonly Func<IAgentRunDiagnostics?, string?, bool> _passCheck;
         private readonly int _maxRetries;
+        private readonly Func<StageExecutionContext, string?, bool>? _postPassCheck;
+        private readonly Func<StageExecutionContext, string, Task>? _onRevisionCompleted;
 
         public int ReviserCallCount { get; private set; }
 
         public TestableCritiqueAndReviseExecutor(
             IReadOnlyList<string> criticResponses,
             Func<IAgentRunDiagnostics?, string?, bool> passCheck,
-            int maxRetries)
+            int maxRetries,
+            Func<StageExecutionContext, string?, bool>? postPassCheck = null,
+            Func<StageExecutionContext, string, Task>? onRevisionCompleted = null)
         {
             _criticResponses = criticResponses;
             _passCheck = passCheck;
             _maxRetries = maxRetries;
+            _postPassCheck = postPassCheck;
+            _onRevisionCompleted = onRevisionCompleted;
         }
 
-        public Task<StageExecutionResult> ExecuteAsync(
+        public async Task<StageExecutionResult> ExecuteAsync(
             StageExecutionContext context,
             CancellationToken cancellationToken)
         {
@@ -149,6 +236,11 @@ public class CritiqueAndReviseExecutorTests
                     passed = _passCheck(diag, feedback);
                 }
 
+                if (passed && _postPassCheck is not null)
+                {
+                    passed = _postPassCheck(context, feedback);
+                }
+
                 if (passed)
                 {
                     break;
@@ -160,10 +252,16 @@ public class CritiqueAndReviseExecutorTests
                     using (context.DiagnosticsAccessor.BeginCapture())
                     {
                         ReviserCallCount++;
+                        var reviserText = $"Revised based on: {feedback}";
                         var diag = context.DiagnosticsAccessor.LastRunDiagnostics;
                         if (diag is not null)
                         {
                             allDiagnostics.Add(diag);
+                        }
+
+                        if (_onRevisionCompleted is not null)
+                        {
+                            await _onRevisionCompleted(context, reviserText);
                         }
                     }
                 }
@@ -179,7 +277,7 @@ public class CritiqueAndReviseExecutorTests
                         $"Critique-and-revise did not pass after {_maxRetries + 1} attempts. Last feedback: {feedback}"),
                     lastDiag);
 
-            return Task.FromResult(result);
+            return result;
         }
     }
 }

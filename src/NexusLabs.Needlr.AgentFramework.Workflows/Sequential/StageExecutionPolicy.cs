@@ -41,4 +41,10 @@ public sealed record StageExecutionPolicy
     /// budget tracker for this stage.
     /// </summary>
     public long? TokenBudget { get; init; }
+
+    /// <summary>
+    /// Called after stage execution (success or failure, not skip).
+    /// Receives the execution result and context for workspace checks or state updates.
+    /// </summary>
+    public Func<StageExecutionResult, StageExecutionContext, Task>? AfterExecution { get; init; }
 }

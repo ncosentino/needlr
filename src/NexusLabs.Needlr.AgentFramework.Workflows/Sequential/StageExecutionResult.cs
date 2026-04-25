@@ -11,6 +11,8 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// <param name="ResponseText">The text response produced by the stage, or <see langword="null"/> for non-agent stages.</param>
 /// <param name="Succeeded">Whether the stage completed successfully.</param>
 /// <param name="Exception">The exception that caused failure, or <see langword="null"/> on success.</param>
+/// <param name="FailureDisposition">Controls how the pipeline runner handles a failed result.
+/// Only meaningful when <paramref name="Succeeded"/> is <see langword="false"/>.</param>
 /// <example>
 /// <code>
 /// var result = StageExecutionResult.Success("Writer", diagnostics, "Draft text");
@@ -23,7 +25,8 @@ public sealed record StageExecutionResult(
     IAgentRunDiagnostics? Diagnostics,
     string? ResponseText,
     bool Succeeded,
-    Exception? Exception = null)
+    Exception? Exception = null,
+    FailureDisposition FailureDisposition = FailureDisposition.AbortPipeline)
 {
     /// <summary>
     /// Creates a successful result for a stage.
@@ -44,12 +47,16 @@ public sealed record StageExecutionResult(
     /// <param name="stageName">The name of the failed stage.</param>
     /// <param name="exception">The exception that caused the failure.</param>
     /// <param name="diagnostics">Captured diagnostics, or <see langword="null"/>.</param>
+    /// <param name="disposition">How the pipeline runner should handle this failure.
+    /// Defaults to <see cref="FailureDisposition.AbortPipeline"/>.</param>
     /// <returns>A failed <see cref="StageExecutionResult"/>.</returns>
     public static StageExecutionResult Failed(
         string stageName,
         Exception exception,
-        IAgentRunDiagnostics? diagnostics = null) =>
-        new(stageName, diagnostics, ResponseText: null, Succeeded: false, Exception: exception);
+        IAgentRunDiagnostics? diagnostics = null,
+        FailureDisposition disposition = FailureDisposition.AbortPipeline) =>
+        new(stageName, diagnostics, ResponseText: null, Succeeded: false,
+            Exception: exception, FailureDisposition: disposition);
 
     /// <summary>
     /// Creates a result indicating the stage was skipped.

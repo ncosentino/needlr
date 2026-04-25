@@ -64,9 +64,37 @@ public sealed class SequentialPipelineRunner
     /// <param name="options">Optional pipeline-level configuration.</param>
     /// <param name="cancellationToken">Token to observe for cancellation.</param>
     /// <returns>An <see cref="IPipelineRunResult"/> describing the pipeline outcome.</returns>
-    public async Task<IPipelineRunResult> RunAsync(
+    public Task<IPipelineRunResult> RunAsync(
         IWorkspace workspace,
         IReadOnlyList<PipelineStage> stages,
+        SequentialPipelineOptions? options,
+        CancellationToken cancellationToken) =>
+        RunCoreAsync(workspace, stages, pipelineState: null, options, cancellationToken);
+
+    /// <summary>
+    /// Runs all pipeline stages sequentially with a shared typed state object,
+    /// applying policies and collecting results.
+    /// </summary>
+    /// <typeparam name="TState">The type of the shared pipeline state.</typeparam>
+    /// <param name="workspace">The shared workspace for file I/O across stages.</param>
+    /// <param name="stages">The ordered list of stages to execute.</param>
+    /// <param name="state">A shared state object accessible to all stages via
+    /// <see cref="StageExecutionContext.GetRequiredState{T}"/>.</param>
+    /// <param name="options">Optional pipeline-level configuration.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation.</param>
+    /// <returns>An <see cref="IPipelineRunResult"/> describing the pipeline outcome.</returns>
+    public Task<IPipelineRunResult> RunAsync<TState>(
+        IWorkspace workspace,
+        IReadOnlyList<PipelineStage> stages,
+        TState state,
+        SequentialPipelineOptions? options,
+        CancellationToken cancellationToken) where TState : class =>
+        RunCoreAsync(workspace, stages, state, options, cancellationToken);
+
+    private async Task<IPipelineRunResult> RunCoreAsync(
+        IWorkspace workspace,
+        IReadOnlyList<PipelineStage> stages,
+        object? pipelineState,
         SequentialPipelineOptions? options,
         CancellationToken cancellationToken)
     {
@@ -104,7 +132,8 @@ public sealed class SequentialPipelineRunner
                     StageIndex: i,
                     TotalStages: stages.Count,
                     StageName: stage.Name,
-                    CallerCancellationToken: cancellationToken);
+                    CallerCancellationToken: cancellationToken,
+                    PipelineState: pipelineState);
 
                 // Evaluate ShouldSkip
                 if (policy?.ShouldSkip?.Invoke(context) == true)
@@ -112,7 +141,8 @@ public sealed class SequentialPipelineRunner
                     stageResults.Add(new AgentStageResult(
                         stage.Name,
                         FinalResponse: null,
-                        Diagnostics: null));
+                        Diagnostics: null,
+                        Outcome: StageOutcome.Skipped));
                     continue;
                 }
 
@@ -170,7 +200,8 @@ public sealed class SequentialPipelineRunner
                     stageResults.Add(new AgentStageResult(
                         stage.Name,
                         FinalResponse: null,
-                        Diagnostics: partialDiag));
+                        Diagnostics: partialDiag,
+                        Outcome: StageOutcome.Failed));
 
                     reporter.Report(new AgentFailedEvent(
                         DateTimeOffset.UtcNow,
@@ -189,9 +220,52 @@ public sealed class SequentialPipelineRunner
                     stageBudgetScope?.Dispose();
                 }
 
+                if (stageResult is not null && policy?.AfterExecution is { } afterExec)
+                {
+                    await afterExec(stageResult, context);
+                }
+
                 if (validationError is not null)
                 {
                     throw new StageValidationException(stage.Name, validationError);
+                }
+
+                // Handle explicit failure results from the stage executor.
+                if (!stageResult!.Succeeded)
+                {
+                    stageResults.Add(new AgentStageResult(
+                        stage.Name,
+                        FinalResponse: null,
+                        Diagnostics: stageResult.Diagnostics,
+                        Outcome: StageOutcome.Failed));
+
+                    reporter.Report(new AgentFailedEvent(
+                        DateTimeOffset.UtcNow,
+                        reporter.WorkflowId,
+                        stage.Name,
+                        ParentAgentId: null,
+                        reporter.Depth,
+                        reporter.NextSequence(),
+                        AgentName: stage.Name,
+                        ErrorMessage: stageResult.Exception?.Message ?? "Stage failed"));
+
+                    if (stageResult.FailureDisposition == FailureDisposition.AbortPipeline)
+                    {
+                        stopwatch.Stop();
+                        var errorMsg = stageResult.Exception?.Message
+                            ?? $"Stage '{stage.Name}' failed";
+                        ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, errorMsg);
+                        return new PipelineRunResult(
+                            stageResults,
+                            stopwatch.Elapsed,
+                            succeeded: false,
+                            errorMessage: errorMsg,
+                            exception: stageResult.Exception,
+                            plannedStageCount: stages.Count);
+                    }
+
+                    // ContinueAdvisory — proceed to the next stage.
+                    continue;
                 }
 
                 ChatResponse? chatResponse = stageResult!.ResponseText is not null
