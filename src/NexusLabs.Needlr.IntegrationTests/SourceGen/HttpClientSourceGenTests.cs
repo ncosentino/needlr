@@ -235,6 +235,44 @@ public sealed class HttpClientSourceGenTests
         Assert.True(client.DefaultRequestHeaders.TryGetValues("X-Trace-Id", out var traceValues));
         Assert.Contains("trace-123", traceValues!);
     }
+
+    [Fact]
+    public void HttpClient_DirectInterfaceBaseAddress_AppliedCorrectly()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["HttpClients:MyApi:BaseAddress"] = "https://my-worker.my-account.workers.dev/",
+                ["HttpClients:MyApi:Timeout"] = "00:00:15",
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("MyApi");
+
+        Assert.NotNull(client.BaseAddress);
+        Assert.Equal(new Uri("https://my-worker.my-account.workers.dev/"), client.BaseAddress);
+        Assert.Equal(TimeSpan.FromSeconds(15), client.Timeout);
+    }
+
+    [Fact]
+    public void HttpClient_DirectInterfaceBaseAddress_NullWhenNotConfigured()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["HttpClients:MyApi:Timeout"] = "00:00:30",
+            })
+            .Build();
+
+        var provider = BuildProvider(configuration);
+
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("MyApi");
+
+        Assert.Null(client.BaseAddress);
+        Assert.Equal(TimeSpan.FromSeconds(30), client.Timeout);
+    }
 }
 
 // ------------------------------------------------------------------
@@ -350,4 +388,16 @@ public sealed record DeeplyNestedHttpClientOptions : IStandardHttpClientOptions
     public string? UserAgent { get; init; }
     public Uri? BaseAddress { get; init; }
     public IReadOnlyDictionary<string, string>? DefaultHeaders { get; init; }
+}
+
+/// <summary>
+/// Bug repro: implements IHttpClientBaseAddress + IHttpClientTimeout directly
+/// (not via IStandardHttpClientOptions). Reported as broken when BaseAddress
+/// was null on the resolved HttpClient despite being configured.
+/// </summary>
+[HttpClientOptions]
+public sealed record MyApiHttpClientOptions : INamedHttpClientOptions, IHttpClientTimeout, IHttpClientBaseAddress
+{
+    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(15);
+    public Uri? BaseAddress { get; init; }
 }
