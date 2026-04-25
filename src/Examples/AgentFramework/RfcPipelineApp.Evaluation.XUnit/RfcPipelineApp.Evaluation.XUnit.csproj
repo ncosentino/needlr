@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <!-- Exclude from CI test runs — requires LLM provider -->
+    <ExcludeFromSolutionTests Condition="'$(CI)' == 'true'">true</ExcludeFromSolutionTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RfcPipelineApp.Core\RfcPipelineApp.Core.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Evaluation\NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Testing\NexusLabs.Needlr.AgentFramework.Testing.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Copilot\NexusLabs.Needlr.Copilot.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
