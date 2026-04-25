@@ -64,8 +64,11 @@ public class ContinueOnFailureExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_InnerThrowsCancellation_Rethrows()
+    public async Task ExecuteAsync_InnerThrowsCancellation_WhenCallerCancelled_Rethrows()
     {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
         var inner = new Mock<IStageExecutor>();
         inner
             .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
@@ -75,7 +78,27 @@ public class ContinueOnFailureExecutorTests
         var context = CreateContext("Stage");
 
         await Assert.ThrowsAsync<OperationCanceledException>(
-            () => executor.ExecuteAsync(context, CancellationToken.None));
+            () => executor.ExecuteAsync(context, cts.Token));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_HttpTimeout_ReturnsFailed()
+    {
+        // HTTP timeouts are OperationCanceledException but caller token is NOT cancelled
+        var inner = new Mock<IStageExecutor>();
+        inner
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException(
+                "Timeout", new TimeoutException("The operation timed out.")));
+
+        Exception? captured = null;
+        var executor = new ContinueOnFailureExecutor(inner.Object, ex => captured = ex);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.NotNull(captured);
     }
 
     private static StageExecutionContext CreateContext(string stageName)

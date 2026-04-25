@@ -29,7 +29,7 @@ public sealed class FallbackExecutor(
         {
             return await primary.ExecuteAsync(context, cancellationToken);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }

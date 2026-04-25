@@ -419,4 +419,44 @@ public class SequentialPipelineRunnerTests
                 context.StageName, diagnostics: null, responseText: null));
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Test: HTTP timeout → structured error, not crash
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_HttpTimeout_ReturnsFailedResultNotThrow()
+    {
+        var runner = CreateRunner();
+
+        // Simulate HttpClient.Timeout: TaskCanceledException wrapping TimeoutException
+        var timeout = new TaskCanceledException(
+            "The request was canceled due to the configured HttpClient.Timeout of 100 seconds elapsing.",
+            new TimeoutException("The operation was canceled."));
+
+        var stages = new[] { SuccessStage("A"), ThrowingStage("B", timeout), SuccessStage("C") };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("timed out", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(result.Exception);
+        Assert.Single(result.Stages); // only "A" completed
+    }
+
+    [Fact]
+    public async Task RunAsync_NonCallerCancellation_ReturnsFailedResultNotThrow()
+    {
+        var runner = CreateRunner();
+
+        // OperationCanceledException without TimeoutException inner — e.g. internal CTS
+        var cancel = new OperationCanceledException("Some internal cancellation");
+        var stages = new[] { ThrowingStage("A", cancel) };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.NotNull(result.ErrorMessage);
+        Assert.NotNull(result.Exception);
+    }
 }

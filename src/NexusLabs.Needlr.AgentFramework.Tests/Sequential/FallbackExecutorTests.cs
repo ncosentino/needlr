@@ -55,8 +55,11 @@ public class FallbackExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_PrimaryCancelled_Rethrows()
+    public async Task ExecuteAsync_PrimaryCancelled_WhenCallerCancelled_Rethrows()
     {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
         var primary = new Mock<IStageExecutor>();
         primary
             .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
@@ -68,11 +71,34 @@ public class FallbackExecutorTests
         var context = CreateContext("Stage");
 
         await Assert.ThrowsAsync<OperationCanceledException>(
-            () => executor.ExecuteAsync(context, CancellationToken.None));
+            () => executor.ExecuteAsync(context, cts.Token));
 
         fallback.Verify(
             x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PrimaryHttpTimeout_UsesFallback()
+    {
+        var primary = new Mock<IStageExecutor>();
+        primary
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("Timeout", new TimeoutException()));
+
+        var fallbackResult = StageExecutionResult.Success("Stage", diagnostics: null, responseText: "fallback");
+        var fallback = new Mock<IStageExecutor>();
+        fallback
+            .Setup(x => x.ExecuteAsync(It.IsAny<StageExecutionContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fallbackResult);
+
+        var executor = new FallbackExecutor(primary.Object, fallback.Object);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("fallback", result.ResponseText);
     }
 
     private static StageExecutionContext CreateContext(string stageName)

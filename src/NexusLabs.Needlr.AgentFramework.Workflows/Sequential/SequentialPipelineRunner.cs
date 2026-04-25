@@ -230,11 +230,28 @@ public sealed class SequentialPipelineRunner
                 errorMessage: budgetEx.Message,
                 exception: budgetEx);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             stopwatch.Stop();
             ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, "Cancelled");
             throw;
+        }
+        catch (OperationCanceledException ex)
+        {
+            // HTTP timeouts and other non-user cancellations — treat as stage failure,
+            // not as user cancellation. HttpClient.Timeout throws TaskCanceledException
+            // which is OperationCanceledException, but the caller's token is NOT cancelled.
+            stopwatch.Stop();
+            var message = ex.InnerException is TimeoutException
+                ? $"Stage timed out: {ex.InnerException.Message}"
+                : $"Operation cancelled (not by caller): {ex.Message}";
+            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, message);
+            return new PipelineRunResult(
+                stageResults,
+                stopwatch.Elapsed,
+                succeeded: false,
+                errorMessage: message,
+                exception: ex);
         }
         catch (Exception ex)
         {
