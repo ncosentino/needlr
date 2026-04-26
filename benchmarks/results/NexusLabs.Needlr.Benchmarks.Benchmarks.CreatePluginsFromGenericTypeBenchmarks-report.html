@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-20260419-040609</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CreatePluginsFromGenericTypeBenchmarks-20260426-041200</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.202
-  [Host]   : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.203
+  [Host]   : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,10 +26,10 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                   </th><th>Mean </th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>Reflection_AssemblyListProvided</td><td>11,523.4 ns</td><td>215.25 ns</td><td>55.90 ns</td><td>1.00</td><td>2</td><td>0.1678</td><td>3005 B</td><td>1.00</td>
-</tr><tr><td>SourceGen_AssemblyListProvided</td><td>24,106.1 ns</td><td>229.01 ns</td><td>35.44 ns</td><td>2.09</td><td>3</td><td>1.5564</td><td>26528 B</td><td>8.83</td>
-</tr><tr><td>SourceGen_EmptyAssemblyList</td><td>23,476.1 ns</td><td>230.00 ns</td><td>59.73 ns</td><td>2.04</td><td>3</td><td>1.5259</td><td>25528 B</td><td>8.50</td>
-</tr><tr><td>SourceGen_ParameterlessOverload</td><td>358.5 ns</td><td>6.22 ns</td><td>1.62 ns</td><td>0.03</td><td>1</td><td>0.0262</td><td>440 B</td><td>0.15</td>
+</thead><tbody><tr><td>Reflection_AssemblyListProvided</td><td>11,815.0 ns</td><td>96.06 ns</td><td>14.86 ns</td><td>1.00</td><td>2</td><td>0.1678</td><td>3005 B</td><td>1.00</td>
+</tr><tr><td>SourceGen_AssemblyListProvided</td><td>26,577.9 ns</td><td>154.50 ns</td><td>40.12 ns</td><td>2.25</td><td>3</td><td>1.5564</td><td>26528 B</td><td>8.83</td>
+</tr><tr><td>SourceGen_EmptyAssemblyList</td><td>24,755.5 ns</td><td>248.43 ns</td><td>64.52 ns</td><td>2.10</td><td>3</td><td>1.5259</td><td>25528 B</td><td>8.50</td>
+</tr><tr><td>SourceGen_ParameterlessOverload</td><td>484.7 ns</td><td>3.59 ns</td><td>0.93 ns</td><td>0.04</td><td>1</td><td>0.0257</td><td>440 B</td><td>0.15</td>
 </tr></tbody></table>
 </body>
 </html>

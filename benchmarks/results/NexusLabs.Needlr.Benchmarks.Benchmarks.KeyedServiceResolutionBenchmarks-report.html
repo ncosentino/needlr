@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-20260419-040830</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.KeyedServiceResolutionBenchmarks-20260426-041405</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.202
-  [Host]   : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.6 (10.0.626.17701), X64 RyuJIT AVX2
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.203
+  [Host]   : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                  </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveKeyed</td><td>27.12 ns</td><td>0.068 ns</td><td>0.018 ns</td><td>1.00</td><td>0.00</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveKeyed</td><td>22.08 ns</td><td>0.572 ns</td><td>0.148 ns</td><td>1.00</td><td>0.01</td><td>1</td><td>-</td><td>NA</td>
 </tr><tr><td>Needlr_Reflection_ResolveKeyed</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>?</td><td>NA</td><td>?</td>
-</tr><tr><td>Needlr_SourceGen_ResolveKeyed</td><td>26.68 ns</td><td>0.057 ns</td><td>0.015 ns</td><td>0.98</td><td>0.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveKeyed</td><td>23.52 ns</td><td>1.875 ns</td><td>0.487 ns</td><td>1.07</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>
