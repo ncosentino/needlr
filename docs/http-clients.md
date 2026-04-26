@@ -43,6 +43,31 @@ public sealed class WebFetchService(IHttpClientFactory factory)
 
 That is the whole registration. There is no `IServiceCollectionPlugin` code, no `AddHttpClient(...)` call, and no matching `AddOptions<>().BindConfiguration(...)` call to hand-write. The generator emits both into `TypeRegistry.g.cs` and wires them through the existing options-registration bootstrap path.
 
+!!! warning "Configuration must be passed explicitly"
+
+    The generated code binds options via `AddOptions<T>().BindConfiguration(...)`, which reads
+    from the `IConfiguration` registered in DI. If you use the **parameterless**
+    `BuildServiceProvider()` overload, it registers an **empty** configuration — your
+    `appsettings.json` values (including `BaseAddress`, `Timeout`, etc.) will be silently
+    ignored and only the record's default property values will apply.
+
+    **Always pass an `IConfiguration` when using `[Options]` or `[HttpClientOptions]`:**
+
+    ```csharp
+    var config = new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: true)
+        .Build();
+
+    var provider = new Syringe()
+        .UsingSourceGen()
+        .BuildServiceProvider(config); // ← pass config explicitly
+    ```
+
+    Web applications using `ForWebApplication()` or host-based apps using `ForHost()` handle
+    this automatically — the host builder loads `appsettings.json` as part of its default
+    configuration pipeline.
+
 ## Capability Interfaces
 
 Configuration is composed from small marker interfaces. The generator emits wiring for each capability **only if** the type implements the corresponding interface — there is no dead code for capabilities you don't use.

@@ -376,8 +376,37 @@ public static class SyringeExtensions
     }
 
     /// <summary>
-    /// Builds a service provider with default configuration.
+    /// Builds a service provider with an <strong>empty</strong> <see cref="IConfiguration"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This overload creates a <see cref="IConfiguration"/> with <strong>no configuration
+    /// sources</strong>. All <c>[Options]</c> and <c>[HttpClientOptions]</c> bindings will
+    /// use the record's default property values only — no <c>appsettings.json</c> values
+    /// will be loaded.
+    /// </para>
+    /// <para>
+    /// If your application uses <c>[Options]</c> or <c>[HttpClientOptions]</c> types that
+    /// rely on configuration from <c>appsettings.json</c> or other configuration sources,
+    /// use <see cref="ConfiguredSyringe.BuildServiceProvider(IConfiguration)"/> instead and
+    /// supply an explicit <see cref="IConfiguration"/>:
+    /// </para>
+    /// <code>
+    /// var config = new ConfigurationBuilder()
+    ///     .SetBasePath(AppContext.BaseDirectory)
+    ///     .AddJsonFile("appsettings.json", optional: true)
+    ///     .Build();
+    ///
+    /// var provider = new Syringe()
+    ///     .UsingSourceGen()
+    ///     .BuildServiceProvider(config);
+    /// </code>
+    /// <para>
+    /// This overload is appropriate for applications that do not use configuration-bound
+    /// options, or for tests that register configuration manually via
+    /// <see cref="SyringeExtensions.UsingPostPluginRegistrationCallback"/>.
+    /// </para>
+    /// </remarks>
     /// <param name="syringe">The configured syringe to build from.</param>
     /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
     public static IServiceProvider BuildServiceProvider(this ConfiguredSyringe syringe)

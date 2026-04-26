@@ -30,6 +30,30 @@ The generator automatically:
 2. Registers it with the DI container
 3. Makes it available via `IOptions<CacheSettings>`, `IOptionsSnapshot<CacheSettings>`, or `IOptionsMonitor<CacheSettings>`
 
+!!! warning "Configuration must be passed explicitly"
+
+    The generated options binding reads from the `IConfiguration` registered in DI. If you
+    use the **parameterless** `BuildServiceProvider()` overload, it registers an **empty**
+    configuration — your `appsettings.json` values will be silently ignored and only the
+    class's default property values will apply.
+
+    **Always pass an `IConfiguration` when using `[Options]`:**
+
+    ```csharp
+    var config = new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: true)
+        .Build();
+
+    var provider = new Syringe()
+        .UsingSourceGen()
+        .BuildServiceProvider(config); // ← pass config explicitly
+    ```
+
+    Web applications using `ForWebApplication()` or host-based apps using `ForHost()` handle
+    this automatically — the host builder loads `appsettings.json` as part of its default
+    configuration pipeline.
+
 ## Section Name
 
 ### Convention-Based (Default)

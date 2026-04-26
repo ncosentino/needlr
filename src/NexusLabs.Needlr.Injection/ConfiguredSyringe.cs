@@ -71,10 +71,23 @@ public sealed record ConfiguredSyringe
     internal ConfiguredSyringe() { }
 
     /// <summary>
-    /// Builds a service provider with the configured settings.
-    /// Automatically runs container verification based on <see cref="VerificationOptions"/>.
+    /// Builds a service provider with the supplied <see cref="IConfiguration"/>.
     /// </summary>
-    /// <param name="config">The configuration to use for building the service provider.</param>
+    /// <remarks>
+    /// <para>
+    /// The provided <paramref name="config"/> is registered as a singleton
+    /// <see cref="IConfiguration"/> in the container. All <c>[Options]</c> and
+    /// <c>[HttpClientOptions]</c> bindings resolve their configuration sections from
+    /// this instance. If your application uses configuration-bound options, this is
+    /// the overload you should call — pass an <see cref="IConfiguration"/> that includes
+    /// <c>appsettings.json</c> and any other sources your options types depend on.
+    /// </para>
+    /// <para>
+    /// Automatically runs container verification based on <see cref="VerificationOptions"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="config">The configuration to use for building the service provider.
+    /// This instance is registered in DI and used for all options binding.</param>
     /// <returns>The configured <see cref="IServiceProvider"/>.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown if required components (TypeRegistrar, TypeFilterer, PluginFactory, AssemblyProvider) are not configured.

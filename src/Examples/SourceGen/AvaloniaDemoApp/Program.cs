@@ -1,4 +1,5 @@
 using Avalonia;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.SourceGen;
@@ -18,12 +19,21 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Build configuration from appsettings.json so that [Options] and
+        // [HttpClientOptions] bindings can read their configuration sections.
+        // The parameterless BuildServiceProvider() overload uses an EMPTY
+        // configuration — it will NOT discover appsettings.json automatically.
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
+
         // Build the Needlr DI container. Source generation discovers GreetingService
         // and MainWindow automatically; Avalonia types are excluded via
         // NeedlrExcludeNamespacePrefix in the .csproj.
         var services = new Syringe()
             .UsingSourceGen()
-            .BuildServiceProvider();
+            .BuildServiceProvider(configuration);
 
         BuildAvaloniaApp()
             .AfterSetup(builder =>
