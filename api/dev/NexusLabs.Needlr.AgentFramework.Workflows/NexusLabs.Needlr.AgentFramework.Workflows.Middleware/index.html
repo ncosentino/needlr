@@ -3942,12 +3942,56 @@
 <td style="text-align: left;">MAF agent-level middleware that wraps each agent run call in a <a href="https://learn.microsoft.com/en-us/dotnet/api/polly.resiliencepipeline-1" title="Polly.ResiliencePipeline`1">Polly.ResiliencePipeline&lt;&gt;</a> from Microsoft.Extensions.Resilience / Polly.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ChatClientBuilderTranscriptExtensions/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ChatClientBuilderTranscriptExtensions">ChatClientBuilderTranscriptExtensions</a></td>
+<td style="text-align: left;">Extension methods for adding transcript logging to a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatclientbuilder" title="Microsoft.Extensions.AI.ChatClientBuilder">Microsoft.Extensions.AI.ChatClientBuilder</a> pipeline.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../InMemoryTranscriptWriter/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.InMemoryTranscriptWriter">InMemoryTranscriptWriter</a></td>
+<td style="text-align: left;">In-memory <a href="../ITranscriptWriter/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ITranscriptWriter">ITranscriptWriter</a> that stores entries in a list. Useful for testing and scenarios where transcript data is consumed programmatically after execution.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../NeedlrAgentMiddlewareExtensions/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.NeedlrAgentMiddlewareExtensions">NeedlrAgentMiddlewareExtensions</a></td>
 <td style="text-align: left;">Extension methods that add Needlr middleware to the <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe</a> and to MAF's <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.agents.ai.aiagentbuilder" title="Microsoft.Agents.AI.AIAgentBuilder">Microsoft.Agents.AI.AIAgentBuilder</a> directly.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ToolResultFunctionMiddleware/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ToolResultFunctionMiddleware">ToolResultFunctionMiddleware</a></td>
 <td style="text-align: left;">MAF function-invocation middleware that intercepts <code>[AgentFunction]</code> return values and exceptions, ensuring the LLM always receives a structured JSON response instead of a raw stack trace.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TranscriptEntry/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptEntry">TranscriptEntry</a></td>
+<td style="text-align: left;">A single transcript entry capturing either a request sent to the LLM or a response received from it.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TranscriptLoggingChatClient/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptLoggingChatClient">TranscriptLoggingChatClient</a></td>
+<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> middleware that intercepts             <a href="../TranscriptLoggingChatClient/#NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptLoggingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable_Microsoft.Extensions.AI.ChatMessage_,Microsoft.Extensions.AI.ChatOptions,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptLoggingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable\&lt;Microsoft.Extensions.AI.ChatMessage&gt;, Microsoft.Extensions.AI.ChatOptions, System.Threading.CancellationToken)">GetResponseAsync(IEnumerable&lt;ChatMessage&gt;, ChatOptions, CancellationToken)</a> calls and writes request/response pairs to an             <a href="../ITranscriptWriter/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ITranscriptWriter">ITranscriptWriter</a>.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Interfaces</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../ITranscriptWriter/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ITranscriptWriter">ITranscriptWriter</a></td>
+<td style="text-align: left;">Writes transcript entries for LLM interactions during agent execution. Implementations may write to files, streams, or in-memory buffers.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Enums</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../TranscriptEntryKind/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptEntryKind">TranscriptEntryKind</a></td>
+<td style="text-align: left;">Indicates whether a <a href="../TranscriptEntry/" title="NexusLabs.Needlr.AgentFramework.Workflows.Middleware.TranscriptEntry">TranscriptEntry</a> represents a request sent to the LLM or a response received from it.</td>
 </tr>
 </tbody>
 </table>

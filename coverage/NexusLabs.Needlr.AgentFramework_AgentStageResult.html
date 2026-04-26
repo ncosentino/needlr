@@ -41,7 +41,7 @@
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="4">4</td>
+<td class="limit-width right" title="5">5</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
@@ -49,15 +49,15 @@
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="4">4</td>
+<td class="limit-width right" title="5">5</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="12">12</td>
+<td class="limit-width right" title="13">13</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="4 of 4">100%</td>
+<td class="limit-width right" title="5 of 5">100%</td>
 </tr>
 </table>
 </div>
@@ -107,10 +107,11 @@
 </colgroup>
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)"><a href="#file0_line9" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title=".ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,NexusLabs.Needlr.AgentFramework.Diagnostics.StageOutcome)"><a href="#file0_line9" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_AgentName()"><a href="#file0_line10" class="navigatetohash">get_AgentName()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_FinalResponse()"><a href="#file0_line11" class="navigatetohash">get_FinalResponse()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_Diagnostics()"><a href="#file0_line12" class="navigatetohash">get_Diagnostics()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_Outcome()"><a href="#file0_line13" class="navigatetohash">get_Outcome()</a></td><td>100%</td><td>1</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 </div>
@@ -128,21 +129,23 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line6"></a><code>6</code></td><td></td><td class="lightgray"><code>///&nbsp;Default&nbsp;implementation&nbsp;of&nbsp;&lt;see&nbsp;cref=&quot;IAgentStageResult&quot;/&gt;.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line7"></a><code>7</code></td><td></td><td class="lightgray"><code>///&nbsp;&lt;/summary&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line8"></a><code>8</code></td><td></td><td class="lightgray"><code>[DoNotAutoRegister]</code></td></tr>
-<tr class="coverableline" title="Covered (133 visits)" data-coverage="{'AllTestMethods': {'VC': '133', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">133</td><td class="rightmargin right"><a id="file0_line9"></a><code>9</code></td><td></td><td class="lightgreen"><code>internal&nbsp;sealed&nbsp;record&nbsp;AgentStageResult(</code></td></tr>
-<tr class="coverableline" title="Covered (99 visits)" data-coverage="{'AllTestMethods': {'VC': '99', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">99</td><td class="rightmargin right"><a id="file0_line10"></a><code>10</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;AgentName,</code></td></tr>
-<tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line11"></a><code>11</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;ChatResponse?&nbsp;FinalResponse,</code></td></tr>
-<tr class="coverableline" title="Covered (175 visits)" data-coverage="{'AllTestMethods': {'VC': '175', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">175</td><td class="rightmargin right"><a id="file0_line12"></a><code>12</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IAgentRunDiagnostics?&nbsp;Diagnostics)&nbsp;:&nbsp;IAgentStageResult;</code></td></tr>
+<tr class="coverableline" title="Covered (180 visits)" data-coverage="{'AllTestMethods': {'VC': '180', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">180</td><td class="rightmargin right"><a id="file0_line9"></a><code>9</code></td><td></td><td class="lightgreen"><code>internal&nbsp;sealed&nbsp;record&nbsp;AgentStageResult(</code></td></tr>
+<tr class="coverableline" title="Covered (103 visits)" data-coverage="{'AllTestMethods': {'VC': '103', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">103</td><td class="rightmargin right"><a id="file0_line10"></a><code>10</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;AgentName,</code></td></tr>
+<tr class="coverableline" title="Covered (7 visits)" data-coverage="{'AllTestMethods': {'VC': '7', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">7</td><td class="rightmargin right"><a id="file0_line11"></a><code>11</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;ChatResponse?&nbsp;FinalResponse,</code></td></tr>
+<tr class="coverableline" title="Covered (43 visits)" data-coverage="{'AllTestMethods': {'VC': '43', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">43</td><td class="rightmargin right"><a id="file0_line12"></a><code>12</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;IAgentRunDiagnostics?&nbsp;Diagnostics,</code></td></tr>
+<tr class="coverableline" title="Covered (186 visits)" data-coverage="{'AllTestMethods': {'VC': '186', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">186</td><td class="rightmargin right"><a id="file0_line13"></a><code>13</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;StageOutcome&nbsp;Outcome&nbsp;=&nbsp;StageOutcome.Succeeded)&nbsp;:&nbsp;IAgentStageResult;</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.6.0<br />04/25/2026 - 09:17:43<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.6.0<br />04/26/2026 - 08:41:18<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
-<a href="#file0_line9" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)"><i class="icon-cube"></i>.ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)</a><br />
+<a href="#file0_line9" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - .ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,NexusLabs.Needlr.AgentFramework.Diagnostics.StageOutcome)"><i class="icon-cube"></i>.ctor(System.String,Microsoft.Extensions.AI.ChatResponse,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics,NexusLabs.Needlr.AgentFramework.Diagnostics.StageOutcome)</a><br />
 <a href="#file0_line10" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_AgentName()"><i class="icon-wrench"></i>get_AgentName()</a><br />
 <a href="#file0_line11" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_FinalResponse()"><i class="icon-wrench"></i>get_FinalResponse()</a><br />
 <a href="#file0_line12" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Diagnostics()"><i class="icon-wrench"></i>get_Diagnostics()</a><br />
+<a href="#file0_line13" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Outcome()"><i class="icon-wrench"></i>get_Outcome()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
