@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 05/01/2026 - 15:50:35 |
-| Coverage date: | 05/01/2026 - 15:48:09 - 05/01/2026 - 15:50:31 |
+| Generated on: | 05/01/2026 - 16:31:27 |
+| Coverage date: | 05/01/2026 - 16:28:56 - 05/01/2026 - 16:31:22 |
 | Parser: | MultiReport (28x Cobertura) |
 | Assemblies: | 25 |
 | Classes: | 505 |
 | Files: | 496 |
-| **Line coverage:** | 86.1% (21536 of 24988) |
-| Covered lines: | 21536 |
-| Uncovered lines: | 3452 |
+| **Line coverage:** | 86.1% (21537 of 24988) |
+| Covered lines: | 21537 |
+| Uncovered lines: | 3451 |
 | Coverable lines: | 24988 |
 | Total lines: | 59243 |
-| **Branch coverage:** | 74.6% (8228 of 11021) |
-| Covered branches: | 8228 |
+| **Branch coverage:** | 74.7% (8235 of 11021) |
+| Covered branches: | 8235 |
 | Total branches: | 11021 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -189,7 +189,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.2%|69.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.5%|69.9%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
@@ -309,14 +309,14 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.9%**|**71.3%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.9%**|**72.1%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddlewa<br/>re|89.2%|68.3%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|78.5%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions|100%|60%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddlew<br/>are|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.AgentDiagnosticsPlugi<br/>n|100%||
-|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|95.8%|66.6%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|95.8%|77.2%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsExtensions|100%|62.5%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsFunctionCa<br/>llingMiddleware|26%|0%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.PipelineRunExtensions|73.4%|63.7%|

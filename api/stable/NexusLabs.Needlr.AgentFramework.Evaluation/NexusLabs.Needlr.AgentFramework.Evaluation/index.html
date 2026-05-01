@@ -3969,6 +3969,22 @@
 <td style="text-align: left;">Deterministic evaluator that scores the iteration coherence of an iterative-loop agent run from the captured <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot carried in an <a href="../AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a>.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../PipelineCostEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineCostEvaluator">PipelineCostEvaluator</a></td>
+<td style="text-align: left;">Deterministic evaluator that scores token usage and cost breakdown per stage of a pipeline run from the captured <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> snapshot carried in a <a href="../PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a></td>
+<td style="text-align: left;">Carries an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> through the <code>Microsoft.Extensions.AI.Evaluation</code> evaluator pipeline so that pipeline-aware evaluators can score per-stage and aggregate metrics without re-invoking the model.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelineEvaluationExtensions/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationExtensions">PipelineEvaluationExtensions</a></td>
+<td style="text-align: left;">Extensions that convert <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> into the input shape expected by <code>Microsoft.Extensions.AI.Evaluation</code> evaluators.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelineStageEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineStageEvaluator">PipelineStageEvaluator</a></td>
+<td style="text-align: left;">Deterministic evaluator that scores per-stage success/failure and overall pipeline health from the captured <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> snapshot carried in a <a href="../PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../QualityGateFailedException/" title="NexusLabs.Needlr.AgentFramework.Evaluation.QualityGateFailedException">QualityGateFailedException</a></td>
 <td style="text-align: left;">Thrown by <a href="../EvaluationQualityGate/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])">Assert(EvaluationResult[])</a> when one or more evaluation metrics violate their configured thresholds.</td>
 </tr>

@@ -3941,6 +3941,22 @@
 <td style="text-align: left;">Executes <a href="../IAgentScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario">IAgentScenario</a> instances with proper workspace isolation, execution context scoping, and diagnostics capture.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../PipelineScenarioResult/" title="NexusLabs.Needlr.AgentFramework.Testing.PipelineScenarioResult">PipelineScenarioResult</a></td>
+<td style="text-align: left;">Result of running a single <a href="../IPipelineScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IPipelineScenario">IPipelineScenario</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelineScenarioRunner/" title="NexusLabs.Needlr.AgentFramework.Testing.PipelineScenarioRunner">PipelineScenarioRunner</a></td>
+<td style="text-align: left;">Runs <a href="../IPipelineScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IPipelineScenario">IPipelineScenario</a> instances using the <a href="../../NexusLabs.Needlr.AgentFramework.Workflows/">NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineRunner</a> and reports results.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PromptAssert/" title="NexusLabs.Needlr.AgentFramework.Testing.PromptAssert">PromptAssert</a></td>
+<td style="text-align: left;">Assertion helpers for verifying prompt integrity without LLM invocation. Use in unit tests to catch prompt regressions (missing safety rules, deleted sections, forbidden patterns) at zero token cost.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PromptAssertionException/" title="NexusLabs.Needlr.AgentFramework.Testing.PromptAssertionException">PromptAssertionException</a></td>
+<td style="text-align: left;">Thrown by <a href="../PromptAssert/" title="NexusLabs.Needlr.AgentFramework.Testing.PromptAssert">PromptAssert</a> methods when a prompt integrity assertion fails.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ScenarioRunResult/" title="NexusLabs.Needlr.AgentFramework.Testing.ScenarioRunResult">ScenarioRunResult</a></td>
 <td style="text-align: left;">Result of running a single <a href="../IAgentScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario">IAgentScenario</a>.</td>
 </tr>
@@ -3961,6 +3977,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IAgentScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario">IAgentScenario</a></td>
 <td style="text-align: left;">Defines a self-contained agent test scenario with seed → execute → verify lifecycle. Scenarios are discovered automatically when registered via DI.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IPipelineScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IPipelineScenario">IPipelineScenario</a></td>
+<td style="text-align: left;">Defines a pipeline scenario for multi-stage agent workflow testing. Extends the single-agent scenario pattern with pipeline stage construction and pipeline-specific verification.</td>
 </tr>
 </tbody>
 </table>
