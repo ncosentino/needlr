@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 /// <summary>
@@ -5,9 +7,14 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// The diagnostics function-calling middleware establishes and clears the metrics dict
 /// per tool invocation.
 /// </summary>
+/// <remarks>
+/// Uses <see cref="ConcurrentDictionary{TKey,TValue}"/> so that tool functions which
+/// fan out concurrent work via <c>Task.WhenAll</c> can safely call
+/// <see cref="AttachMetric"/> from multiple threads.
+/// </remarks>
 internal sealed class ToolMetricsAccessor : IToolMetricsAccessor
 {
-    internal static readonly AsyncLocal<Dictionary<string, object?>?> CurrentToolMetrics = new();
+    internal static readonly AsyncLocal<ConcurrentDictionary<string, object?>?> CurrentToolMetrics = new();
 
     /// <inheritdoc />
     public void AttachMetric(string key, object? value)

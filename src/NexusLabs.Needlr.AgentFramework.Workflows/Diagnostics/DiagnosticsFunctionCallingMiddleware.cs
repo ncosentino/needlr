@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 using Microsoft.Agents.AI;
@@ -45,7 +46,7 @@ internal static class DiagnosticsFunctionCallingMiddleware
                     SequenceNumber: progressAccessor.Current.NextSequence(),
                     ToolName: toolName));
 
-                var customMetrics = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                var customMetrics = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 ToolMetricsAccessor.CurrentToolMetrics.Value = customMetrics;
 
                 try

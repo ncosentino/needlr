@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
 namespace NexusLabs.Needlr.AgentFramework.Tests;
@@ -27,7 +29,7 @@ public class ToolMetricsAccessorTests
         var accessor = new ToolMetricsAccessor();
 
         // Simulate middleware establishing the scope
-        var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var dict = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         ToolMetricsAccessor.CurrentToolMetrics.Value = dict;
 
         try
@@ -49,7 +51,7 @@ public class ToolMetricsAccessorTests
     [Fact]
     public void AttachMetric_OverwritesPreviousValue()
     {
-        var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var dict = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         ToolMetricsAccessor.CurrentToolMetrics.Value = dict;
 
         try
@@ -69,7 +71,7 @@ public class ToolMetricsAccessorTests
     [Fact]
     public void AttachMetric_CaseInsensitive()
     {
-        var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var dict = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         ToolMetricsAccessor.CurrentToolMetrics.Value = dict;
 
         try
@@ -78,6 +80,38 @@ public class ToolMetricsAccessorTests
             accessor.AttachMetric("Provider", "brave");
 
             Assert.Equal("brave", accessor.GetCurrentMetrics()!["provider"]);
+        }
+        finally
+        {
+            ToolMetricsAccessor.CurrentToolMetrics.Value = null;
+        }
+    }
+
+    [Fact]
+    public async Task AttachMetric_ConcurrentAccess_DoesNotCorrupt()
+    {
+        var accessor = new ToolMetricsAccessor();
+        const int taskCount = 50;
+
+        // Simulate middleware establishing the scope
+        var dict = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        ToolMetricsAccessor.CurrentToolMetrics.Value = dict;
+
+        try
+        {
+            // Simulate Task.WhenAll inside a tool — all child tasks share the
+            // same AsyncLocal value and call AttachMetric concurrently.
+            var tasks = Enumerable.Range(0, taskCount).Select(i => Task.Run(() =>
+            {
+                accessor.AttachMetric($"metric_{i}", i);
+                accessor.AttachMetric($"metric_{i}_extra", i * 10);
+            }));
+
+            await Task.WhenAll(tasks);
+
+            var metrics = accessor.GetCurrentMetrics();
+            Assert.NotNull(metrics);
+            Assert.Equal(taskCount * 2, metrics!.Count);
         }
         finally
         {

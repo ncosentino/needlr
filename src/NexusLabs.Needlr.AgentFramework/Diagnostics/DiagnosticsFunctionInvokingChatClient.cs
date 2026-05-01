@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 using Microsoft.Extensions.AI;
@@ -73,7 +74,7 @@ public sealed class DiagnosticsFunctionInvokingChatClient : FunctionInvokingChat
             SequenceNumber: reporter.NextSequence(),
             ToolName: toolName));
 
-        var customMetrics = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var customMetrics = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         ToolMetricsAccessor.CurrentToolMetrics.Value = customMetrics;
 
         try
