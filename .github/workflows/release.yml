@@ -60,13 +60,26 @@ jobs:
 
     - name: Test
       run: |
-        dotnet test src/NexusLabs.Needlr.slnx \
-          --configuration Release \
-          --no-build \
-          --verbosity normal \
-          --filter "Category!=Integration" \
-          --collect:"XPlat Code Coverage" \
-          --results-directory coverage
+        # Run dotnet test per-project, excluding example evaluation projects
+        # that require API keys and are meant for manual/local runs only.
+        # We cannot use solution-wide dotnet test because the evaluation
+        # projects declare TestingPlatformDotnetTestSupport=true, which is
+        # incompatible with the VSTest target on .NET 10 SDK.
+        failed=0
+        while IFS= read -r proj; do
+          echo "::group::Testing $(basename "$proj")"
+          dotnet test "$proj" \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --filter "Category!=Integration" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory coverage || failed=1
+          echo "::endgroup::"
+        done < <(find src -name '*.csproj' -path '*Tests*' \
+                   ! -path '*Examples*Evaluation*' \
+                   | sort)
+        exit $failed
 
     - name: Install ReportGenerator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
