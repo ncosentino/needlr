@@ -1,3 +1,23 @@
+## [0.0.2-alpha.48] - 2026-04-30
+
+### Added
+- **Sequential pipeline runner** — `SequentialPipelineRunner` for orchestrating `IIterativeAgentLoop` runs as pipeline stages with retry, validation, skip, and criticality support
+- **Pipeline evaluation bridge** — `PipelineEvaluationContext` bridging `IPipelineRunResult` diagnostics to MEAI evaluators; pipeline-specific evaluators for stage-level scoring
+- **Executor decorators** — composable middleware for pipeline stage execution (retry, timeout, fallback, logging)
+- **Transcript logging middleware** — captures full agent conversation transcripts during pipeline runs
+- **Failure disposition and hooks** — pipeline stages can declare failure disposition (fail-fast, continue, skip) and pre/post execution hooks with typed state
+- **FallbackExecutor optional predicate** — fallback execution can be gated on a caller-supplied condition
+- **AsyncLocalScoped property proxies** — `[AsyncLocalScoped]` source generator now emits proxy properties for all public properties on the scoped type
+- **PromptAssert testing utility** — assertion helpers for validating LLM prompt content in unit tests
+- **Pipeline scenario runner** — test infrastructure for running deterministic pipeline scenarios with structured assertions
+- **RFC pipeline example** — full end-to-end example app exercising all pipeline features (decorators, hooks, typed state, eval tests)
+
+### Fixed
+- **`IToolMetricsAccessor.AttachMetric()` thread-safety** — replaced `Dictionary` with `ConcurrentDictionary` in the AsyncLocal backing store; concurrent `Task.WhenAll` branches inside `[AgentFunction]` methods no longer corrupt the metrics collection
+- Stage failure recording and cancellation heuristics in `SequentialPipelineRunner`
+- HTTP timeout handling now correctly recorded as stage failures
+- Planned stage count tracking, xUnit test discovery, and evaluation logging
+
 ## [0.0.2-alpha.47] - 2026-04-25
 
 ### ⚠️ Breaking Changes
