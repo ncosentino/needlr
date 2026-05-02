@@ -74,72 +74,7 @@ public static class SyringeExtensionsForAgentFramework
 
         return syringe.UsingPostPluginRegistrationCallback(services =>
         {
-            RegisterAgentFrameworkInfrastructure(services);
-
-            // Both IAgentFactory and IProgressReporterFactory resolve the same
-            // BuiltAgentFrameworkSyringe singleton, so the configure delegate
-            // runs exactly once and both consumers observe identical state
-            // regardless of resolution order.
-            services.AddSingleton<BuiltAgentFrameworkSyringe>(sp =>
-            {
-                AgentFrameworkSyringe afSyringe = new()
-                {
-                    ServiceProvider = sp,
-                };
-                afSyringe = configure.Invoke(afSyringe);
-
-                // Auto-populate from [ModuleInitializer] bootstrap if nothing was explicitly configured.
-                // Explicit calls (Add*FromGenerated, AddAgentFunctions*, etc.) take precedence.
-                if ((afSyringe.FunctionTypes is null || afSyringe.FunctionTypes.Count == 0) &&
-                    AgentFrameworkGeneratedBootstrap.TryGetFunctionTypes(out var functionProvider))
-                {
-                    afSyringe = afSyringe with { FunctionTypes = functionProvider().ToList() };
-                }
-
-                if ((afSyringe.FunctionGroupMap is null || afSyringe.FunctionGroupMap.Count == 0) &&
-                    AgentFrameworkGeneratedBootstrap.TryGetGroupTypes(out var groupProvider))
-                {
-                    afSyringe = afSyringe with { FunctionGroupMap = groupProvider() };
-                }
-
-                if ((afSyringe.AgentTypes is null || afSyringe.AgentTypes.Count == 0) &&
-                    AgentFrameworkGeneratedBootstrap.TryGetAgentTypes(out var agentProvider))
-                {
-                    afSyringe = afSyringe with { AgentTypes = agentProvider().ToList() };
-                }
-
-                return new BuiltAgentFrameworkSyringe(afSyringe);
-            });
-
-            services.TryAddSingleton<IProgressReporterFactory>(sp =>
-            {
-                var defaultSinks = sp.GetServices<IProgressSink>();
-                return new ProgressReporterFactory(
-                    defaultSinks,
-                    sp.GetRequiredService<IProgressSequence>(),
-                    sp.GetRequiredService<IProgressReporterErrorHandler>());
-            });
-
-            services.AddSingleton<IAgentFactory>(sp =>
-                sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value.BuildAgentFactory());
-
-            services.AddSingleton<IChatClientAccessor>(sp =>
-            {
-                var afSyringe = sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value;
-                return new ChatClientAccessor(sp, afSyringe.ConfigureAgentFactory ?? []);
-            });
-
-            services.AddSingleton<IIterativeAgentLoop>(sp =>
-                new IterativeAgentLoop(
-                    sp.GetRequiredService<IChatClientAccessor>(),
-                    sp.GetService<IAgentDiagnosticsWriter>(),
-                    sp.GetService<IAgentExecutionContextAccessor>(),
-                    sp.GetService<IProgressReporterAccessor>(),
-                    sp.GetService<ITokenBudgetTracker>(),
-                    sp.GetService<IAgentMetrics>()));
-
-            services.AddSingleton<IWorkflowFactory>(provider =>
-                new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
+            RegisterAgentFrameworkCore(services, configure);
         });
     }
 
@@ -169,6 +104,80 @@ public static class SyringeExtensionsForAgentFramework
         // BuiltAgentFrameworkSyringe holder, progress sink wiring, and
         // IProgressReporterFactory construction.
         return syringe.UsingAgentFramework(_ => configure.Invoke());
+    }
+
+    /// <summary>
+    /// Shared implementation for agent framework registration. Called by both
+    /// <see cref="UsingAgentFramework(ConfiguredSyringe, Func{AgentFrameworkSyringe, AgentFrameworkSyringe})"/>
+    /// and <see cref="ServiceCollectionAgentFrameworkExtensions.AddNeedlrAgentFramework(IServiceCollection)"/>
+    /// to ensure a single code path with zero drift between the two entry points.
+    /// </summary>
+    internal static void RegisterAgentFrameworkCore(
+        IServiceCollection services,
+        Func<AgentFrameworkSyringe, AgentFrameworkSyringe>? configure = null)
+    {
+        RegisterAgentFrameworkInfrastructure(services);
+
+        configure ??= s => s;
+
+        services.TryAddSingleton<BuiltAgentFrameworkSyringe>(sp =>
+        {
+            AgentFrameworkSyringe afSyringe = new()
+            {
+                ServiceProvider = sp,
+            };
+            afSyringe = configure.Invoke(afSyringe);
+
+            if ((afSyringe.FunctionTypes is null || afSyringe.FunctionTypes.Count == 0) &&
+                AgentFrameworkGeneratedBootstrap.TryGetFunctionTypes(out var functionProvider))
+            {
+                afSyringe = afSyringe with { FunctionTypes = functionProvider().ToList() };
+            }
+
+            if ((afSyringe.FunctionGroupMap is null || afSyringe.FunctionGroupMap.Count == 0) &&
+                AgentFrameworkGeneratedBootstrap.TryGetGroupTypes(out var groupProvider))
+            {
+                afSyringe = afSyringe with { FunctionGroupMap = groupProvider() };
+            }
+
+            if ((afSyringe.AgentTypes is null || afSyringe.AgentTypes.Count == 0) &&
+                AgentFrameworkGeneratedBootstrap.TryGetAgentTypes(out var agentProvider))
+            {
+                afSyringe = afSyringe with { AgentTypes = agentProvider().ToList() };
+            }
+
+            return new BuiltAgentFrameworkSyringe(afSyringe);
+        });
+
+        services.TryAddSingleton<IProgressReporterFactory>(sp =>
+        {
+            var defaultSinks = sp.GetServices<IProgressSink>();
+            return new ProgressReporterFactory(
+                defaultSinks,
+                sp.GetRequiredService<IProgressSequence>(),
+                sp.GetRequiredService<IProgressReporterErrorHandler>());
+        });
+
+        services.TryAddSingleton<IAgentFactory>(sp =>
+            sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value.BuildAgentFactory());
+
+        services.TryAddSingleton<IChatClientAccessor>(sp =>
+        {
+            var afSyringe = sp.GetRequiredService<BuiltAgentFrameworkSyringe>().Value;
+            return new ChatClientAccessor(sp, afSyringe.ConfigureAgentFactory ?? []);
+        });
+
+        services.TryAddSingleton<IIterativeAgentLoop>(sp =>
+            new IterativeAgentLoop(
+                sp.GetRequiredService<IChatClientAccessor>(),
+                sp.GetService<IAgentDiagnosticsWriter>(),
+                sp.GetService<IAgentExecutionContextAccessor>(),
+                sp.GetService<IProgressReporterAccessor>(),
+                sp.GetService<ITokenBudgetTracker>(),
+                sp.GetService<IAgentMetrics>()));
+
+        services.TryAddSingleton<IWorkflowFactory>(provider =>
+            new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
     }
 
     private static void RegisterAgentFrameworkInfrastructure(IServiceCollection services)

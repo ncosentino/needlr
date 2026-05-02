@@ -6,6 +6,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+		<ProjectReference Include="..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
 		<ProjectReference Include="..\NexusLabs.Needlr.Extensions.Logging\NexusLabs.Needlr.Extensions.Logging.csproj" />
 		<ProjectReference Include="..\NexusLabs.Needlr.Hosting\NexusLabs.Needlr.Hosting.csproj" />
 		<ProjectReference Include="..\NexusLabs.Needlr.Injection.Bundle\NexusLabs.Needlr.Injection.Bundle.csproj" />
