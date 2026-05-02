@@ -36,6 +36,15 @@ jobs:
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
     - name: Build (Release)
+      env:
+        # Nerdbank.GitVersioning's SetCloudBuildVariables MSBuild task detects
+        # GITHUB_ACTIONS=true and appends version metadata to $GITHUB_ENV during
+        # every project build. When parallel MSBuild workers race on the shared
+        # env file, a torn line can cause the runner post-step to fail with
+        # "Invalid format '<value>'". Redirecting to step-local tempfiles means
+        # NBGV writes harmlessly; the runner's real env file stays untouched.
+        GITHUB_ENV: /tmp/discard-build-env
+        GITHUB_OUTPUT: /tmp/discard-build-output
       run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore
 
     - name: Test with Coverage
