@@ -4026,6 +4026,10 @@
 <td style="text-align: left;">Declares which <a href="../IProgressSink/" title="NexusLabs.Needlr.AgentFramework.Progress.IProgressSink">IProgressSink</a> types should receive progress events when this agent runs. The source generator discovers this attribute and emits a companion method that returns the sink types for use by orchestrators when creating reporters.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ServiceCollectionAgentFrameworkExtensions/" title="NexusLabs.Needlr.AgentFramework.ServiceCollectionAgentFrameworkExtensions">ServiceCollectionAgentFrameworkExtensions</a></td>
+<td style="text-align: left;">Extension methods for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> that register the Needlr Agent Framework infrastructure directly, without requiring the <a href="../../NexusLabs.Needlr.Injection/">NexusLabs.Needlr.Injection.ConfiguredSyringe</a> fluent builder.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../SyringeExtensionsForAgentFramework/" title="NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework">SyringeExtensionsForAgentFramework</a></td>
 <td style="text-align: left;">Extension methods for <a href="../../NexusLabs.Needlr.Injection/">NexusLabs.Needlr.Injection.ConfiguredSyringe</a> that enable registering Microsoft Agent Framework infrastructure (namely <a href="../IAgentFactory/" title="NexusLabs.Needlr.AgentFramework.IAgentFactory">IAgentFactory</a>) as part of the Needlr build pipeline.</td>
 </tr>
