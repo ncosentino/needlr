@@ -158,16 +158,16 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;[RequiresUnreferencedCode(&quot;Enables&nbsp;reflection-based&nbsp;type&nbsp;discovery.&nbsp;Not&nbsp;compatible&nbsp;with&nbsp;AOT/trimming.&quot;)]</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;ConfiguredSyringe&nbsp;UsingReflection(this&nbsp;Syringe&nbsp;syringe)</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArgumentNullException.ThrowIfNull(syringe);</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;new&nbsp;ConfiguredSyringe(syringe)&nbsp;with</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeRegistrar&nbsp;=&nbsp;new&nbsp;ReflectionTypeRegistrar(),</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeFilterer&nbsp;=&nbsp;new&nbsp;ReflectionTypeFilterer(),</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PluginFactory&nbsp;=&nbsp;new&nbsp;ReflectionPluginFactory(),</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssemblyProvider&nbsp;=&nbsp;new&nbsp;AssemblyProviderBuilder().Build(),</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ServiceProviderBuilderFactory&nbsp;=&nbsp;(populator,&nbsp;assemblyProvider,&nbsp;additionalAssemblies)&nbsp;=&gt;</code></td></tr>
-<tr class="coverableline" title="Covered (505 visits)" data-coverage="{'AllTestMethods': {'VC': '505', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">505</td><td class="rightmargin right"><a id="file0_line44"></a><code>44</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new&nbsp;ReflectionServiceProviderBuilder(populator,&nbsp;assemblyProvider,&nbsp;additionalAssemblies)</code></td></tr>
-<tr class="coverableline" title="Covered (552 visits)" data-coverage="{'AllTestMethods': {'VC': '552', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">552</td><td class="rightmargin right"><a id="file0_line45"></a><code>45</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArgumentNullException.ThrowIfNull(syringe);</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;new&nbsp;ConfiguredSyringe(syringe)&nbsp;with</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeRegistrar&nbsp;=&nbsp;new&nbsp;ReflectionTypeRegistrar(),</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeFilterer&nbsp;=&nbsp;new&nbsp;ReflectionTypeFilterer(),</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PluginFactory&nbsp;=&nbsp;new&nbsp;ReflectionPluginFactory(),</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssemblyProvider&nbsp;=&nbsp;new&nbsp;AssemblyProviderBuilder().Build(),</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ServiceProviderBuilderFactory&nbsp;=&nbsp;(populator,&nbsp;assemblyProvider,&nbsp;additionalAssemblies)&nbsp;=&gt;</code></td></tr>
+<tr class="coverableline" title="Covered (508 visits)" data-coverage="{'AllTestMethods': {'VC': '508', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">508</td><td class="rightmargin right"><a id="file0_line44"></a><code>44</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new&nbsp;ReflectionServiceProviderBuilder(populator,&nbsp;assemblyProvider,&nbsp;additionalAssemblies)</code></td></tr>
+<tr class="coverableline" title="Covered (555 visits)" data-coverage="{'AllTestMethods': {'VC': '555', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">555</td><td class="rightmargin right"><a id="file0_line45"></a><code>45</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line46"></a><code>46</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line47"></a><code>47</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line48"></a><code>48</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
@@ -260,7 +260,7 @@
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.7.0<br />05/02/2026 - 07:32:38<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.9.0<br />05/02/2026 - 19:40:32<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -273,47 +273,5 @@
 <a href="#file0_line124" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - WithReflectionFallbackHandler(NexusLabs.Needlr.Injection.ConfiguredSyringe,System.Action`1&lt;NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext&gt;)"><i class="icon-cube"></i>WithReflectionFallbackHandler(NexusLabs.Needlr.Injection.ConfiguredSyringe,System.Action`1&lt;NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext&gt;)</a><br />
 <br/></div>
 </div></div>
-<script type="text/javascript">
-/* <![CDATA[ */
-(function() {
-    var url = window.location.href;
-    var startOfQueryString = url.indexOf('?');
-    var queryString = startOfQueryString > -1 ? url.substr(startOfQueryString) : '';
-
-    if (startOfQueryString > -1) {
-        var i = 0, href= null;
-        var css = document.getElementsByTagName('link');
-
-        for (i = 0; i < css.length; i++) {
-            if (css[i].getAttribute('rel') !== 'stylesheet') {
-            continue;
-            }
-
-            href = css[i].getAttribute('href');
-
-            if (href) {
-            css[i].setAttribute('href', href + queryString);
-            }
-        }
-
-        var links = document.getElementsByTagName('a');
-
-        for (i = 0; i < links.length; i++) {
-            href = links[i].getAttribute('href');
-
-            if (href
-                && !href.startsWith('http://')
-                && !href.startsWith('https://')
-                && !href.startsWith('#')
-                && href.indexOf('?') === -1) {
-            links[i].setAttribute('href', href + queryString);
-            }
-        }
-    }
-
-    var newScript = document.createElement('script');
-    newScript.src = 'class.js' + queryString;
-    document.getElementsByTagName('body')[0].appendChild(newScript);
-})();
-/* ]]> */ 
-</script></body></html>
+<script type="text/javascript" src="class.js"></script>
+</body></html>
