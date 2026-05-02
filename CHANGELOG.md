@@ -1,3 +1,10 @@
+## [0.0.2-alpha.49] - 2026-05-02
+
+### Fixed
+- **Same-assembly internal interface registration** — the source generator was blanket-skipping all internal interfaces (including same-assembly ones), breaking the standard `internal class Foo : IFoo` DI pattern. Replaced with `IsAccessibleFromGeneratedCode` that allows same-assembly internal/protected-internal interfaces while still skipping cross-assembly internals (e.g., Avalonia's `IContentPresenterHost`) that would produce CS0122
+- **`WouldBePluginIgnoringAccessibility` same-assembly awareness** — now passes `compilationAssembly` through to `GetPluginInterfaces` so plugin diagnostic reporting correctly recognizes same-assembly internal interfaces
+- **Release workflow test step** — `release.yml` was still running `dotnet test` on the entire solution (unlike `ci.yml` which was already fixed), hitting the MTP/VSTest incompatibility on .NET 10 SDK for evaluation example projects
+
 ## [0.0.2-alpha.48] - 2026-04-30
 
 ### Added
