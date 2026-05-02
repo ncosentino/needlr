@@ -461,7 +461,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 // Check if this type would have been registered if it were accessible
                 if (TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) ||
-                    TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                    TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol, compilation.Assembly))
                 {
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     inaccessibleTypes.Add(new InaccessibleType(typeName, assembly.Name));
@@ -558,7 +558,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 {
                     // Has at least one constructor with runtime params - generate factory
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol, compilation.Assembly);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     var generationMode = FactoryDiscoveryHelper.GetFactoryGenerationMode(typeSymbol);
                     var returnTypeOverride = FactoryDiscoveryHelper.GetFactoryReturnInterfaceType(typeSymbol);
@@ -617,9 +617,9 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     if (methods.Count > 0)
                     {
                         var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                        var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                        var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol, compilation.Assembly);
                         var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
-                        
+
                         // Collect all unique interceptor types
                         var allInterceptorTypes = classLevelInterceptors
                             .Concat(methodLevelInterceptors)
@@ -648,7 +648,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol);
                 if (lifetime.HasValue)
                 {
-                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol, compilation.Assembly);
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var interfaceNames = interfaces.Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i)).ToArray();
                     
@@ -717,7 +717,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Check for plugin types (concrete class with parameterless ctor and interfaces)
             if (TypeDiscoveryHelper.IsPluginType(typeSymbol, isCurrentAssembly))
             {
-                var pluginInterfaces = TypeDiscoveryHelper.GetPluginInterfaces(typeSymbol);
+                var pluginInterfaces = TypeDiscoveryHelper.GetPluginInterfaces(typeSymbol, compilation.Assembly);
                 if (pluginInterfaces.Count > 0)
                 {
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);

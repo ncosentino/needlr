@@ -84,20 +84,20 @@ internal static class AssemblyDiscoveryHelper
 
                     if (!hasFactoryAttr && !hasInterceptAttr && !isInterceptorProxy &&
                         !TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
-                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol, compilation.Assembly))
                         continue;
 
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
                     var shortName = typeSymbol.Name;
                     var lifetime = TypeDiscoveryHelper.DetermineLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
-                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol)
+                    var interfaces = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol, compilation.Assembly)
                         .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
                         .ToArray();
                     var dependencies = TypeDiscoveryHelper.GetBestConstructorParameters(typeSymbol)?
                         .ToArray() ?? Array.Empty<string>();
                     var isDecorator = TypeDiscoveryHelper.HasDecoratorForAttribute(typeSymbol) ||
                                       OpenDecoratorDiscoveryHelper.HasOpenDecoratorForAttribute(typeSymbol);
-                    var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol);
+                    var isPlugin = TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol, compilation.Assembly);
                     var keyedValues = TypeDiscoveryHelper.GetKeyedServiceKeys(typeSymbol);
                     var keyedValue = keyedValues.Length > 0 ? keyedValues[0] : null;
 
@@ -163,7 +163,7 @@ internal static class AssemblyDiscoveryHelper
                         continue;
 
                     if (!TypeDiscoveryHelper.WouldBeInjectableIgnoringAccessibility(typeSymbol) &&
-                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol))
+                        !TypeDiscoveryHelper.WouldBePluginIgnoringAccessibility(typeSymbol, compilation.Assembly))
                         continue;
 
                     // Skip decorators - they modify other services, not registered directly as services
@@ -172,7 +172,7 @@ internal static class AssemblyDiscoveryHelper
                         continue;
 
                     var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                    var interfaceSymbols = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol);
+                    var interfaceSymbols = TypeDiscoveryHelper.GetRegisterableInterfaces(typeSymbol, compilation.Assembly);
                     var interfaces = interfaceSymbols
                         .Select(i => TypeDiscoveryHelper.GetFullyQualifiedName(i))
                         .ToArray();

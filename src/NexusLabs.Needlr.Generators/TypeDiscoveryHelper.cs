@@ -53,8 +53,17 @@ internal static class TypeDiscoveryHelper
     /// Gets the interfaces that should be registered for a type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to get interfaces for.</param>
+    /// <param name="compilationAssembly">
+    /// The assembly of the current compilation. Used to determine whether an internal
+    /// interface is accessible from the generated code. Same-assembly internal interfaces
+    /// are valid registration targets because the generated TypeRegistry is emitted into
+    /// the same compilation unit. Cross-assembly internal interfaces (e.g., Avalonia's
+    /// <c>IContentPresenterHost</c>) are inaccessible and must be skipped to avoid CS0122.
+    /// </param>
     /// <returns>A list of interface symbols suitable for registration.</returns>
-    public static IReadOnlyList<INamedTypeSymbol> GetRegisterableInterfaces(INamedTypeSymbol typeSymbol)
+    public static IReadOnlyList<INamedTypeSymbol> GetRegisterableInterfaces(
+        INamedTypeSymbol typeSymbol,
+        IAssemblySymbol? compilationAssembly = null)
     {
         // Check for [RegisterAs<T>] attributes - if present, only register as those interfaces
         var registerAsInterfaces = GetRegisterAsInterfaces(typeSymbol);
@@ -76,10 +85,29 @@ internal static class TypeDiscoveryHelper
             if (IsSystemInterface(iface))
                 continue;
 
-            // Skip interfaces that are inaccessible from generated code (e.g., internal
-            // Avalonia interfaces inherited via Window base class). Without this check,
-            // emitting typeof(IContentPresenterHost) produces CS0122.
-            if (IsInternalOrLessAccessible(iface))
+            // Skip interfaces that are inaccessible from the generated code.
+            //
+            // WHY THIS EXISTS: The generated TypeRegistry emits typeof(IFoo) for each
+            // registered interface. If IFoo is internal to a DIFFERENT assembly, the
+            // generated code (which lives in THIS compilation) cannot access it → CS0122.
+            //
+            // CRITICAL: Same-assembly internal interfaces MUST be kept. This is the
+            // standard .NET DI pattern — an internal class implements an internal interface,
+            // both in the same project. The generated TypeRegistry is emitted into that
+            // same compilation and CAN legally reference typeof(InternalInterface).
+            //
+            // Example that MUST work (same assembly):
+            //   internal interface IAuthConfig { ... }
+            //   internal class AuthConfig : IAuthConfig { ... }
+            //   → typeof(IAuthConfig) in generated code is VALID
+            //
+            // Example that MUST be skipped (cross-assembly, e.g., Avalonia):
+            //   // In Avalonia.Controls.dll (internal):
+            //   internal interface IContentPresenterHost { ... }
+            //   // In consumer app:
+            //   public class MainWindow : Window { ... } // inherits IContentPresenterHost via Window
+            //   → typeof(IContentPresenterHost) in generated code produces CS0122
+            if (!IsAccessibleFromGeneratedCode(iface, compilationAssembly))
                 continue;
 
             if (HasDoNotAutoRegisterAttributeDirect(iface))
@@ -503,8 +531,15 @@ internal static class TypeDiscoveryHelper
     /// This is used to detect internal types that match namespace filters but cannot be included.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="compilationAssembly">
+    /// The compilation's assembly for same-assembly accessibility checks.
+    /// Passed through to <see cref="GetPluginInterfaces"/> so that same-assembly internal
+    /// interfaces are correctly recognized as plugin interfaces.
+    /// </param>
     /// <returns>True if the type would be a plugin if it were accessible.</returns>
-    public static bool WouldBePluginIgnoringAccessibility(INamedTypeSymbol typeSymbol)
+    public static bool WouldBePluginIgnoringAccessibility(
+        INamedTypeSymbol typeSymbol,
+        IAssemblySymbol? compilationAssembly = null)
     {
         // Must be a concrete class
         if (typeSymbol.TypeKind != TypeKind.Class)
@@ -531,7 +566,7 @@ internal static class TypeDiscoveryHelper
             return false;
 
         // Must have at least one plugin interface
-        var pluginInterfaces = GetPluginInterfaces(typeSymbol);
+        var pluginInterfaces = GetPluginInterfaces(typeSymbol, compilationAssembly);
         return pluginInterfaces.Count > 0;
     }
 
@@ -556,6 +591,78 @@ internal static class TypeDiscoveryHelper
             containingType = containingType.ContainingType;
         }
 
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether a type symbol is accessible from generated code emitted into
+    /// the given compilation assembly.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The generated TypeRegistry is emitted into the compilation's assembly. It can
+    /// reference any type that is accessible from that assembly:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><c>public</c> types — always accessible.</item>
+    /// <item><c>internal</c> / <c>protected internal</c> types — accessible only when
+    /// they belong to the same assembly as the compilation (same-assembly check).</item>
+    /// <item><c>private</c> / <c>protected</c> / <c>private protected</c> types — never
+    /// accessible from generated top-level code (even in the same assembly, generated code
+    /// is not inside the containing type's hierarchy).</item>
+    /// </list>
+    /// <para>
+    /// Containing types are checked recursively for nested types.
+    /// </para>
+    /// </remarks>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="compilationAssembly">
+    /// The compilation's output assembly. When <see langword="null"/>, falls back to
+    /// the conservative behavior of <see cref="IsInternalOrLessAccessible"/> (i.e.,
+    /// any non-public type is considered inaccessible).
+    /// </param>
+    /// <returns><see langword="true"/> if the type is accessible from generated code.</returns>
+    public static bool IsAccessibleFromGeneratedCode(
+        INamedTypeSymbol typeSymbol,
+        IAssemblySymbol? compilationAssembly)
+    {
+        return IsAccessibleCore(typeSymbol, compilationAssembly);
+    }
+
+    private static bool IsAccessibleCore(
+        INamedTypeSymbol typeSymbol,
+        IAssemblySymbol? compilationAssembly)
+    {
+        var accessibility = typeSymbol.DeclaredAccessibility;
+
+        if (accessibility == Accessibility.Public)
+        {
+            // Public is universally accessible, but check containing types for nested types
+            return typeSymbol.ContainingType == null ||
+                   IsAccessibleCore(typeSymbol.ContainingType, compilationAssembly);
+        }
+
+        // internal and protected-internal are accessible from the same assembly.
+        // The generated code lives in the compilation assembly, so if the type is
+        // also in that assembly, we can emit typeof() for it.
+        if (accessibility == Accessibility.Internal ||
+            accessibility == Accessibility.ProtectedOrInternal)
+        {
+            bool isSameAssembly = compilationAssembly != null &&
+                SymbolEqualityComparer.Default.Equals(
+                    typeSymbol.ContainingAssembly, compilationAssembly);
+
+            if (isSameAssembly)
+            {
+                // Same assembly — accessible via internal path.
+                // Still need to check containing types for nested types.
+                return typeSymbol.ContainingType == null ||
+                       IsAccessibleCore(typeSymbol.ContainingType, compilationAssembly);
+            }
+        }
+
+        // private, protected, private-protected, or cross-assembly internal
+        // → inaccessible from generated code.
         return false;
     }
 
@@ -862,15 +969,38 @@ internal static class TypeDiscoveryHelper
     /// Plugin base types are non-System interfaces and non-System/non-object base classes.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="compilationAssembly">
+    /// The compilation's assembly, used for same-assembly accessibility checks.
+    /// See <see cref="IsAccessibleFromGeneratedCode(INamedTypeSymbol, IAssemblySymbol?)"/> for details.
+    /// </param>
     /// <returns>A list of plugin base type symbols (interfaces and base classes).</returns>
-    public static IReadOnlyList<INamedTypeSymbol> GetPluginInterfaces(INamedTypeSymbol typeSymbol)
+    public static IReadOnlyList<INamedTypeSymbol> GetPluginInterfaces(
+        INamedTypeSymbol typeSymbol,
+        IAssemblySymbol? compilationAssembly = null)
     {
         var result = new List<INamedTypeSymbol>();
 
         // Add non-system interfaces that are accessible from generated code.
-        // Internal interfaces from framework assemblies (e.g., Avalonia's
-        // IContentPresenterHost) must be skipped — emitting typeof() for them
-        // produces CS0122 in the generated code.
+        //
+        // WHY THIS EXISTS: Same rules as GetRegisterableInterfaces — the generated
+        // TypeRegistry emits typeof() for each plugin interface. Same-assembly internal
+        // interfaces are valid (generated code is in the same compilation). Cross-assembly
+        // internal interfaces MUST be skipped to avoid CS0122.
+        //
+        // CRITICAL: Same-assembly internal interfaces MUST be kept. This is the standard
+        // pattern for internal plugin contracts within a single project.
+        //
+        // Example that MUST work (same assembly):
+        //   internal interface IMyPlugin { }
+        //   internal class MyPlugin : IMyPlugin { }
+        //   → typeof(IMyPlugin) in generated code is VALID
+        //
+        // Example that MUST be skipped (cross-assembly, e.g., Avalonia):
+        //   // In Framework.dll (internal):
+        //   internal interface IInternalHook { }
+        //   // In consumer app:
+        //   public class MyControl : Framework.BaseControl { } // inherits IInternalHook
+        //   → typeof(IInternalHook) in generated code produces CS0122
         foreach (var iface in typeSymbol.AllInterfaces)
         {
             if (iface.IsUnboundGenericType)
@@ -879,7 +1009,7 @@ internal static class TypeDiscoveryHelper
             if (IsSystemInterface(iface))
                 continue;
 
-            if (IsInternalOrLessAccessible(iface))
+            if (!IsAccessibleFromGeneratedCode(iface, compilationAssembly))
                 continue;
 
             result.Add(iface);
@@ -893,8 +1023,8 @@ internal static class TypeDiscoveryHelper
             if (IsSystemType(baseType))
                 break;
 
-            // Skip inaccessible base types (internal to other assemblies)
-            if (IsInternalOrLessAccessible(baseType))
+            // Skip inaccessible base types (same rules as interfaces)
+            if (!IsAccessibleFromGeneratedCode(baseType, compilationAssembly))
             {
                 baseType = baseType.BaseType;
                 continue;

@@ -55,6 +55,33 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Compiles a separate assembly from source and adds it as a metadata reference.
+    /// Used to test cross-assembly scenarios (e.g., a "framework" assembly with internal
+    /// types that the host assembly should not be able to access).
+    /// </summary>
+    public GeneratorTestRunner WithCrossAssemblySource(string assemblyName, string source)
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName,
+            [CSharpSyntaxTree.ParseText(source)],
+            Basic.Reference.Assemblies.Net100.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = compilation.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ToList();
+        if (errors.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Cross-assembly '{assemblyName}' failed to compile: " +
+                string.Join("; ", errors.Select(e => e.GetMessage())));
+        }
+
+        _additionalReferences.Add(compilation.ToMetadataReference());
+        return this;
+    }
+
+    /// <summary>
     /// Adds references to assemblies containing the specified types.
     /// </summary>
     public GeneratorTestRunner WithReferences<T1, T2>()
@@ -226,6 +253,40 @@ public sealed class GeneratorTestRunner
         var generator = new TypeRegistryGenerator();
         _ = RunGeneratorWithDiagnostics(generator, out var diagnostics);
         return diagnostics;
+    }
+
+    /// <summary>
+    /// Runs the TypeRegistryGenerator and returns any CS0122 errors from the output compilation.
+    /// CS0122 is "type is inaccessible due to its protection level" — the specific error
+    /// that occurs when the generator emits typeof() for a cross-assembly internal type.
+    /// Other compile errors (missing references, etc.) are expected in isolated test
+    /// compilations and are not relevant to accessibility validation.
+    /// </summary>
+    public IReadOnlyList<Diagnostic> RunTypeRegistryGeneratorCompilationErrors()
+    {
+        var generator = new TypeRegistryGenerator();
+        var parseOptions = _parseOptions ?? new CSharpParseOptions();
+        var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(_additionalReferences)
+            .ToArray();
+
+        var compilation = CSharpCompilation.Create(
+            _assemblyName,
+            syntaxTrees,
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out _);
+
+        return outputCompilation.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error && d.Id == "CS0122")
+            .ToArray();
     }
 
     /// <summary>
