@@ -1,3 +1,8 @@
+## [0.0.2-alpha.50] - 2026-05-02
+
+### Added
+- **`IServiceCollection.AddNeedlrAgentFramework()`** — new extension method enabling `IServiceCollectionPlugin` implementations to self-register the agent framework without requiring the composition root to call `UsingAgentFramework()` on the syringe builder. Both entry points share the same `RegisterAgentFrameworkCore()` implementation — zero duplication, zero drift.
+
 ## [0.0.2-alpha.49] - 2026-05-02
 
 ### Fixed

@@ -132,10 +132,10 @@ public sealed class ServiceCollectionAgentFrameworkExtensionsTests
     [Fact]
     public void UsingAgentFramework_And_AddNeedlrAgentFramework_BothCalled_AllTypesResolve()
     {
-        // Simulates the real scenario: a plugin calls AddNeedlrAgentFramework() during
-        // IServiceCollectionPlugin.Configure (step 2 in the pipeline), and the syringe
-        // builder also calls UsingAgentFramework() (step 3 — post-plugin callback).
-        // Both use TryAddSingleton, so calling both is idempotent. All types must resolve
+        // Simulates when a plugin calls AddNeedlrAgentFramework() during
+        // IServiceCollectionPlugin.Configure, and the syringe
+        // builder also calls UsingAgentFramework().
+        // Calling SHOULD be idempotent. All types must resolve
         // and there must be no duplicate registrations.
         var config = new ConfigurationBuilder().Build();
         var mockChatClient = new Mock<Microsoft.Extensions.AI.IChatClient>();
@@ -157,8 +157,11 @@ public sealed class ServiceCollectionAgentFrameworkExtensionsTests
         Assert.NotNull(provider.GetService<IAgentDiagnosticsAccessor>());
         Assert.NotNull(provider.GetService<IToolMetricsAccessor>());
 
-        // Verify no duplicate IAgentFactory registrations
-        var factories = provider.GetServices<IAgentFactory>().ToList();
-        Assert.Single(factories);
+        // Verify no duplicate registrations
+        Assert.Single(provider.GetServices<IAgentFactory>());
+        Assert.Single(provider.GetServices<IWorkflowFactory>());
+        Assert.Single(provider.GetServices<ITokenBudgetTracker>());
+        Assert.Single(provider.GetServices<IAgentDiagnosticsAccessor>());
+        Assert.Single(provider.GetServices<IToolMetricsAccessor>());
     }
 }
