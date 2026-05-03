@@ -10,4 +10,5 @@ internal sealed record AgentStageResult(
     string AgentName,
     ChatResponse? FinalResponse,
     IAgentRunDiagnostics? Diagnostics,
-    StageOutcome Outcome = StageOutcome.Succeeded) : IAgentStageResult;
+    StageOutcome Outcome = StageOutcome.Succeeded,
+    string? PhaseName = null) : IAgentStageResult;

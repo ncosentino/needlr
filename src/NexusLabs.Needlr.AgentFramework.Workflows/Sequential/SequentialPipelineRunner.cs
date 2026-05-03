@@ -372,6 +372,394 @@ public sealed class SequentialPipelineRunner
         }
     }
 
+    /// <summary>
+    /// Runs a phased pipeline where stages are grouped into named phases with
+    /// lifecycle hooks and optional phase-level token budgets.
+    /// </summary>
+    /// <param name="workspace">The shared workspace for file I/O across stages.</param>
+    /// <param name="phases">The ordered list of phases, each containing stages.</param>
+    /// <param name="options">Optional pipeline-level configuration.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation.</param>
+    /// <returns>An <see cref="IPipelineRunResult"/> describing the pipeline outcome.</returns>
+    public Task<IPipelineRunResult> RunPhasedAsync(
+        IWorkspace workspace,
+        IReadOnlyList<PipelinePhase> phases,
+        SequentialPipelineOptions? options,
+        CancellationToken cancellationToken) =>
+        RunPhasedCoreAsync(workspace, phases, pipelineState: null, options, cancellationToken);
+
+    /// <summary>
+    /// Runs a phased pipeline with a shared typed state object accessible to both
+    /// phase lifecycle hooks and stage executors.
+    /// </summary>
+    /// <typeparam name="TState">The type of the shared pipeline state.</typeparam>
+    /// <param name="workspace">The shared workspace for file I/O across stages.</param>
+    /// <param name="phases">The ordered list of phases, each containing stages.</param>
+    /// <param name="state">A shared state object accessible via
+    /// <see cref="PhaseContext.GetRequiredState{T}"/> and
+    /// <see cref="StageExecutionContext.GetRequiredState{T}"/>.</param>
+    /// <param name="options">Optional pipeline-level configuration.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation.</param>
+    /// <returns>An <see cref="IPipelineRunResult"/> describing the pipeline outcome.</returns>
+    public Task<IPipelineRunResult> RunPhasedAsync<TState>(
+        IWorkspace workspace,
+        IReadOnlyList<PipelinePhase> phases,
+        TState state,
+        SequentialPipelineOptions? options,
+        CancellationToken cancellationToken) where TState : class =>
+        RunPhasedCoreAsync(workspace, phases, state, options, cancellationToken);
+
+    private async Task<IPipelineRunResult> RunPhasedCoreAsync(
+        IWorkspace workspace,
+        IReadOnlyList<PipelinePhase> phases,
+        object? pipelineState,
+        SequentialPipelineOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var pipelineStopwatch = Stopwatch.StartNew();
+        var reporter = _progressReporterFactory.Create(Guid.NewGuid().ToString("N"));
+        var allStageResults = new List<IAgentStageResult>();
+        var totalStages = phases.Sum(p => p.Stages.Count);
+        var globalStageIndex = 0;
+
+        reporter.Report(new WorkflowStartedEvent(
+            DateTimeOffset.UtcNow,
+            reporter.WorkflowId,
+            reporter.AgentId,
+            ParentAgentId: null,
+            reporter.Depth,
+            reporter.NextSequence()));
+
+        IDisposable? pipelineBudgetScope = null;
+        try
+        {
+            if (options?.TotalTokenBudget is { } totalBudget)
+            {
+                pipelineBudgetScope = _budgetTracker.BeginScope(totalBudget);
+            }
+
+            for (var phaseIndex = 0; phaseIndex < phases.Count; phaseIndex++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var phase = phases[phaseIndex];
+                var phasePolicy = phase.Policy;
+                var phaseStopwatch = Stopwatch.StartNew();
+                var phaseSucceeded = true;
+
+                reporter.Report(new PhaseStartedEvent(
+                    DateTimeOffset.UtcNow,
+                    reporter.WorkflowId,
+                    reporter.AgentId,
+                    ParentAgentId: null,
+                    reporter.Depth,
+                    reporter.NextSequence(),
+                    phase.Name,
+                    phaseIndex,
+                    phases.Count,
+                    phase.Stages.Count));
+
+                var phaseContext = new PhaseContext(
+                    phase.Name,
+                    phaseIndex,
+                    phases.Count,
+                    workspace,
+                    pipelineState);
+
+                IDisposable? phaseBudgetScope = null;
+                try
+                {
+                    if (phasePolicy?.TokenBudget is { } phaseBudget)
+                    {
+                        phaseBudgetScope = _budgetTracker.BeginScope(phaseBudget);
+                    }
+
+                    if (phasePolicy?.OnEnterAsync is { } onEnter)
+                    {
+                        await onEnter(phaseContext, cancellationToken);
+                    }
+
+                    for (var stageInPhase = 0; stageInPhase < phase.Stages.Count; stageInPhase++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var stage = phase.Stages[stageInPhase];
+                        var policy = stage.Policy;
+
+                        var context = new StageExecutionContext(
+                            workspace,
+                            _diagnosticsAccessor,
+                            reporter,
+                            StageIndex: globalStageIndex,
+                            TotalStages: totalStages,
+                            StageName: stage.Name,
+                            CallerCancellationToken: cancellationToken,
+                            PipelineState: pipelineState,
+                            PhaseName: phase.Name,
+                            PhaseIndex: phaseIndex,
+                            StageIndexInPhase: stageInPhase,
+                            TotalStagesInPhase: phase.Stages.Count);
+
+                        if (policy?.ShouldSkip?.Invoke(context) == true)
+                        {
+                            allStageResults.Add(new AgentStageResult(
+                                stage.Name,
+                                FinalResponse: null,
+                                Diagnostics: null,
+                                Outcome: StageOutcome.Skipped,
+                                PhaseName: phase.Name));
+                            globalStageIndex++;
+                            continue;
+                        }
+
+                        reporter.Report(new AgentInvokedEvent(
+                            DateTimeOffset.UtcNow,
+                            reporter.WorkflowId,
+                            stage.Name,
+                            ParentAgentId: null,
+                            reporter.Depth,
+                            reporter.NextSequence(),
+                            stage.Name));
+
+                        var maxAttempts = policy?.MaxAttempts ?? 1;
+                        StageExecutionResult? stageResult = null;
+                        string? validationError = null;
+
+                        IDisposable? stageBudgetScope = null;
+                        try
+                        {
+                            if (policy?.TokenBudget is { } stageBudget)
+                            {
+                                stageBudgetScope = _budgetTracker.BeginChildScope(stage.Name, stageBudget);
+                            }
+
+                            for (var attempt = 0; attempt < maxAttempts; attempt++)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                stageResult = await stage.Executor.ExecuteAsync(context, cancellationToken);
+
+                                if (policy?.PostValidation is { } validate)
+                                {
+                                    validationError = validate(stageResult);
+                                    if (validationError is null)
+                                    {
+                                        break;
+                                    }
+
+                                    if (attempt < maxAttempts - 1)
+                                    {
+                                        validationError = null;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var partialDiag = _diagnosticsAccessor.LastRunDiagnostics;
+                            allStageResults.Add(new AgentStageResult(
+                                stage.Name,
+                                FinalResponse: null,
+                                Diagnostics: partialDiag,
+                                Outcome: StageOutcome.Failed,
+                                PhaseName: phase.Name));
+
+                            reporter.Report(new AgentFailedEvent(
+                                DateTimeOffset.UtcNow,
+                                reporter.WorkflowId,
+                                stage.Name,
+                                ParentAgentId: null,
+                                reporter.Depth,
+                                reporter.NextSequence(),
+                                AgentName: stage.Name,
+                                ErrorMessage: ex.Message));
+
+                            throw;
+                        }
+                        finally
+                        {
+                            stageBudgetScope?.Dispose();
+                        }
+
+                        if (stageResult is not null && policy?.AfterExecution is { } afterExec)
+                        {
+                            await afterExec(stageResult, context);
+                        }
+
+                        if (validationError is not null)
+                        {
+                            throw new StageValidationException(stage.Name, validationError);
+                        }
+
+                        if (!stageResult!.Succeeded)
+                        {
+                            allStageResults.Add(new AgentStageResult(
+                                stage.Name,
+                                FinalResponse: null,
+                                Diagnostics: stageResult.Diagnostics,
+                                Outcome: StageOutcome.Failed,
+                                PhaseName: phase.Name));
+
+                            reporter.Report(new AgentFailedEvent(
+                                DateTimeOffset.UtcNow,
+                                reporter.WorkflowId,
+                                stage.Name,
+                                ParentAgentId: null,
+                                reporter.Depth,
+                                reporter.NextSequence(),
+                                AgentName: stage.Name,
+                                ErrorMessage: stageResult.Exception?.Message ?? "Stage failed"));
+
+                            if (stageResult.FailureDisposition == FailureDisposition.AbortPipeline)
+                            {
+                                phaseSucceeded = false;
+                                pipelineStopwatch.Stop();
+                                var errorMsg = stageResult.Exception?.Message
+                                    ?? $"Stage '{stage.Name}' failed";
+                                ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, errorMsg);
+                                return new PipelineRunResult(
+                                    allStageResults,
+                                    pipelineStopwatch.Elapsed,
+                                    succeeded: false,
+                                    errorMessage: errorMsg,
+                                    exception: stageResult.Exception,
+                                    plannedStageCount: totalStages);
+                            }
+
+                            globalStageIndex++;
+                            continue;
+                        }
+
+                        ChatResponse? chatResponse = stageResult.ResponseText is not null
+                            ? new ChatResponse(new ChatMessage(ChatRole.Assistant, stageResult.ResponseText))
+                            : null;
+
+                        allStageResults.Add(new AgentStageResult(
+                            stage.Name,
+                            chatResponse,
+                            stageResult.Diagnostics,
+                            PhaseName: phase.Name));
+
+                        reporter.Report(new AgentCompletedEvent(
+                            DateTimeOffset.UtcNow,
+                            reporter.WorkflowId,
+                            stage.Name,
+                            ParentAgentId: null,
+                            reporter.Depth,
+                            reporter.NextSequence(),
+                            stage.Name,
+                            Duration: pipelineStopwatch.Elapsed,
+                            TotalTokens: stageResult.Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0));
+
+                        globalStageIndex++;
+                    }
+                }
+                finally
+                {
+                    phaseBudgetScope?.Dispose();
+
+                    if (phasePolicy?.OnExitAsync is { } onExit)
+                    {
+                        await onExit(phaseContext, cancellationToken);
+                    }
+
+                    phaseStopwatch.Stop();
+                    reporter.Report(new PhaseCompletedEvent(
+                        DateTimeOffset.UtcNow,
+                        reporter.WorkflowId,
+                        reporter.AgentId,
+                        ParentAgentId: null,
+                        reporter.Depth,
+                        reporter.NextSequence(),
+                        phase.Name,
+                        phaseIndex,
+                        phases.Count,
+                        phaseSucceeded,
+                        phaseStopwatch.Elapsed));
+                }
+            }
+
+            pipelineStopwatch.Stop();
+
+            var pipelineResult = new PipelineRunResult(
+                allStageResults,
+                pipelineStopwatch.Elapsed,
+                succeeded: true,
+                errorMessage: null,
+                plannedStageCount: totalStages);
+
+            if (options?.CompletionGate is { } gate)
+            {
+                var gateError = gate(pipelineResult);
+                if (gateError is not null)
+                {
+                    ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, gateError);
+                    return new PipelineRunResult(
+                        allStageResults,
+                        pipelineStopwatch.Elapsed,
+                        succeeded: false,
+                        errorMessage: gateError,
+                        plannedStageCount: totalStages);
+                }
+            }
+
+            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: true, errorMessage: null);
+            return pipelineResult;
+        }
+        catch (OperationCanceledException ex) when (ex.InnerException is TokenBudgetExceededException budgetEx)
+        {
+            pipelineStopwatch.Stop();
+            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, budgetEx.Message);
+            return new PipelineRunResult(
+                allStageResults,
+                pipelineStopwatch.Elapsed,
+                succeeded: false,
+                errorMessage: budgetEx.Message,
+                exception: budgetEx,
+                plannedStageCount: totalStages);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            pipelineStopwatch.Stop();
+            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, "Cancelled");
+            throw;
+        }
+        catch (OperationCanceledException ex)
+        {
+            pipelineStopwatch.Stop();
+            var message = ex.InnerException is TimeoutException
+                ? $"Stage timed out: {ex.InnerException.Message}"
+                : $"Operation cancelled (not by caller): {ex.Message}";
+            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, message);
+            return new PipelineRunResult(
+                allStageResults,
+                pipelineStopwatch.Elapsed,
+                succeeded: false,
+                errorMessage: message,
+                exception: ex,
+                plannedStageCount: totalStages);
+        }
+        catch (Exception ex)
+        {
+            pipelineStopwatch.Stop();
+            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, ex.Message);
+            return new PipelineRunResult(
+                allStageResults,
+                pipelineStopwatch.Elapsed,
+                succeeded: false,
+                errorMessage: ex.Message,
+                exception: ex,
+                plannedStageCount: totalStages);
+        }
+        finally
+        {
+            pipelineBudgetScope?.Dispose();
+        }
+    }
+
     private static void ReportCompleted(
         IProgressReporter reporter,
         TimeSpan duration,

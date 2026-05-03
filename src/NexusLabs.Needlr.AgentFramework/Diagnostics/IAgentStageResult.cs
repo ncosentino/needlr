@@ -52,4 +52,10 @@ public interface IAgentStageResult
     /// implementations that do not track outcomes.
     /// </summary>
     StageOutcome Outcome => StageOutcome.Succeeded;
+
+    /// <summary>
+    /// Gets the name of the pipeline phase this stage belongs to, or
+    /// <see langword="null"/> when running a flat (non-phased) pipeline.
+    /// </summary>
+    string? PhaseName => null;
 }

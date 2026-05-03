@@ -252,3 +252,34 @@ public sealed record SuperStepCompletedProgressEvent(
     int Depth,
     long SequenceNumber,
     int StepNumber) : IProgressEvent;
+
+// ---------------------------------------------------------------------------
+// Phase lifecycle events
+// ---------------------------------------------------------------------------
+
+/// <summary>A pipeline phase has started execution.</summary>
+public sealed record PhaseStartedEvent(
+    DateTimeOffset Timestamp,
+    string WorkflowId,
+    string? AgentId,
+    string? ParentAgentId,
+    int Depth,
+    long SequenceNumber,
+    string PhaseName,
+    int PhaseIndex,
+    int TotalPhases,
+    int StageCount) : IProgressEvent;
+
+/// <summary>A pipeline phase has completed execution.</summary>
+public sealed record PhaseCompletedEvent(
+    DateTimeOffset Timestamp,
+    string WorkflowId,
+    string? AgentId,
+    string? ParentAgentId,
+    int Depth,
+    long SequenceNumber,
+    string PhaseName,
+    int PhaseIndex,
+    int TotalPhases,
+    bool Succeeded,
+    TimeSpan Duration) : IProgressEvent;

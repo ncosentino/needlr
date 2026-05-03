@@ -22,6 +22,20 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// Optional shared state object passed to all stages in the pipeline. Use
 /// <see cref="GetRequiredState{T}"/> to retrieve it with type safety.
 /// </param>
+/// <param name="PhaseName">
+/// The name of the pipeline phase this stage belongs to, or <see langword="null"/>
+/// when running a flat (non-phased) pipeline.
+/// </param>
+/// <param name="PhaseIndex">
+/// Zero-based index of the current phase, or <see langword="null"/> for flat pipelines.
+/// </param>
+/// <param name="StageIndexInPhase">
+/// Zero-based index of the current stage within its phase, or <see langword="null"/>
+/// for flat pipelines.
+/// </param>
+/// <param name="TotalStagesInPhase">
+/// Total number of stages in the current phase, or <see langword="null"/> for flat pipelines.
+/// </param>
 /// <example>
 /// <code>
 /// public async Task&lt;StageExecutionResult&gt; ExecuteAsync(
@@ -29,6 +43,8 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 ///     CancellationToken cancellationToken)
 /// {
 ///     Console.WriteLine($"Running stage {context.StageIndex + 1}/{context.TotalStages}: {context.StageName}");
+///     if (context.PhaseName is not null)
+///         Console.WriteLine($"  Phase: {context.PhaseName} (stage {context.StageIndexInPhase + 1}/{context.TotalStagesInPhase})");
 ///     return StageExecutionResult.Success(context.StageName, diagnostics: null, responseText: null);
 /// }
 /// </code>
@@ -41,7 +57,11 @@ public sealed record StageExecutionContext(
     int TotalStages,
     string StageName,
     CancellationToken CallerCancellationToken = default,
-    object? PipelineState = null)
+    object? PipelineState = null,
+    string? PhaseName = null,
+    int? PhaseIndex = null,
+    int? StageIndexInPhase = null,
+    int? TotalStagesInPhase = null)
 {
     /// <summary>
     /// Gets the typed pipeline state, or throws if no state was provided or the type doesn't match.
