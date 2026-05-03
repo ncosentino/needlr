@@ -61,6 +61,8 @@
     <Project Path="Examples/AgentFramework/RfcPipelineApp.Tests/RfcPipelineApp.Tests.csproj" />
     <Project Path="Examples/AgentFramework/RfcPipelineApp.Evaluation.XUnit/RfcPipelineApp.Evaluation.XUnit.csproj" />
     <Project Path="Examples/AgentFramework/RfcPipelineApp.Evaluation.TUnit/RfcPipelineApp.Evaluation.TUnit.csproj" />
+    <Project Path="Examples/AgentFramework/CodeReviewPipelineApp/CodeReviewPipelineApp.csproj" />
+    <Project Path="Examples/AgentFramework/SupportTriagePipelineApp/SupportTriagePipelineApp.csproj" />
   </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
