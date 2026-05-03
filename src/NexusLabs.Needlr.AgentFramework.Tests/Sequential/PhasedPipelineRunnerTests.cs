@@ -353,6 +353,34 @@ public class PhasedPipelineRunnerTests
     }
 
     [Fact]
+    public async Task RunPhasedAsync_OnExitAsync_CanReadBudgetStateBeforeDispose()
+    {
+        var budgetTracker = new TokenBudgetTracker();
+        long? maxTokensInExit = null;
+        var phases = new[]
+        {
+            new PipelinePhase("P1",
+            [
+                SuccessStage("S1"),
+            ],
+            new PipelinePhasePolicy
+            {
+                TokenBudget = 42_000,
+                OnExitAsync = (_, _) =>
+                {
+                    maxTokensInExit = budgetTracker.MaxTokens;
+                    return ValueTask.CompletedTask;
+                },
+            }),
+        };
+        var runner = CreateRunner(budgetTracker: budgetTracker);
+
+        await runner.RunPhasedAsync(CreateWorkspace(), phases, options: null, _ct);
+
+        Assert.Equal(42_000, maxTokensInExit);
+    }
+
+    [Fact]
     public async Task RunPhasedAsync_StageBudget_NestsWithinPhaseBudget()
     {
         var budgetTracker = new TokenBudgetTracker();

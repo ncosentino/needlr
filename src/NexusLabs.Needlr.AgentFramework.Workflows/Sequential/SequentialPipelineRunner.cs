@@ -659,12 +659,12 @@ public sealed class SequentialPipelineRunner
                 }
                 finally
                 {
-                    phaseBudgetScope?.Dispose();
-
                     if (phasePolicy?.OnExitAsync is { } onExit)
                     {
                         await onExit(phaseContext, cancellationToken);
                     }
+
+                    phaseBudgetScope?.Dispose();
 
                     phaseStopwatch.Stop();
                     reporter.Report(new PhaseCompletedEvent(

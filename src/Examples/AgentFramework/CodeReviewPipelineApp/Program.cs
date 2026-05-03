@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,20 +11,27 @@ using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.AgentFramework.Workflows.Budget;
 using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
+using NexusLabs.Needlr.Copilot;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
-using CodeReviewPipelineApp;
-
 // ============================================================================
-// Code Review Pipeline — Phase-Level Token Budgets
+// Code Review Pipeline — Phase + Stage Token Budget Composition
 //
-// Demonstrates how PipelinePhase and PipelinePhasePolicy enforce per-phase
-// token budget boundaries. Each phase gets an independent budget scope, and
-// lifecycle hooks (OnEnterAsync / OnExitAsync) log allocation and consumption.
+// Demonstrates how phases enforce budget boundaries at TWO levels:
+//   - Phase budget: caps total tokens for all stages in the phase
+//   - Stage budget: caps tokens for each individual stage within the phase
 //
-// All stages use DelegateStageExecutor with simulated logic — no LLM calls,
-// no API keys required. The example runs instantly.
+// Analysis phase:  10K per stage, 30K phase cap (3 stages)
+// Synthesis phase: 30K per stage, 60K phase cap (2 stages)
+// Reporting phase: 5K per stage, 10K phase cap (2 stages)
+//
+// If a single stage exceeds its ceiling, the stage fails — but other stages
+// in the phase can still run. If the phase total is exceeded, remaining
+// stages in the phase are cancelled.
+//
+// Requirements:
+//   - GitHub Copilot CLI must be authenticated (run `gh auth login` first)
 // ============================================================================
 
 var configuration = new ConfigurationBuilder()
@@ -32,10 +40,16 @@ var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-// ── Needlr DI setup ────────────────────────────────────────────────────
+var copilotSection = configuration.GetSection("Copilot");
+IChatClient chatClient = new CopilotChatClient(new CopilotChatClientOptions
+{
+    DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4",
+});
+
 var serviceProvider = new Syringe()
     .UsingReflection()
     .UsingAgentFramework(af => af
+        .UsingChatClient(chatClient)
         .UsingDiagnostics()
         .UsingTokenBudget())
     .UsingPostPluginRegistrationCallback(services =>
@@ -46,171 +60,277 @@ var serviceProvider = new Syringe()
     })
     .BuildServiceProvider(configuration);
 
+var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 var budgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
 
-// ── Pipeline state ──────────────────────────────────────────────────────
-var state = new CodeReviewState();
+// ── The diff to review ──────────────────────────────────────────────────
+const string codeDiff = """
+    diff --git a/src/Auth/TokenValidator.cs b/src/Auth/TokenValidator.cs
+    @@ -12,6 +12,18 @@ public class TokenValidator
+    +    private readonly ILogger _logger;
+    +
+    +    public TokenValidator(ILogger logger)
+    +    {
+    +        _logger = logger;
+    +    }
+    +
+    +    public bool ValidateToken(string token)
+    +    {
+    +        if (token != null && token.Length > 0)
+    +        {
+    +            return token == _expectedToken;
+    +        }
+    +
+    +        return false;
+    +    }
+    """;
 
-// ── Define per-phase token budgets ──────────────────────────────────────
-const long analysisBudget = 10_000;
-const long synthesisBudget = 30_000;
-const long reportingBudget = 5_000;
+// ── Create agents ───────────────────────────────────────────────────────
+var patternAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "PatternDetector";
+    o.Instructions = "Find anti-patterns and code smells in the diff. List each as: [SEVERITY] Description. Be concise.";
+});
 
-// ── Phase 1: Analysis — lightweight parsing and pattern detection ───────
-var analysisPhase = new PipelinePhase(
-    "Analysis",
+var securityAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "SecurityScanner";
+    o.Instructions = "Find ONLY security vulnerabilities. Format: [SEVERITY] Description — Fix. If none, say 'No issues.'";
+});
+
+var styleAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "StyleChecker";
+    o.Instructions = "Check for C# style issues (naming, formatting, modern syntax). List each as: [LOW] Description.";
+});
+
+var commentAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "CommentWriter";
+    o.Instructions = "Generate a PR review comment in markdown. Sections: ## Summary, ## Findings, ## Recommendations. Under 200 words.";
+});
+
+var priorityAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "Prioritizer";
+    o.Instructions = "Given findings, output a numbered list sorted by severity (highest first). One line per finding.";
+});
+
+var summaryAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "Summarizer";
+    o.Instructions = "Write a one-paragraph summary (under 50 words) of the review findings.";
+});
+
+var formatAgent = agentFactory.CreateAgent(o =>
+{
+    o.Name = "Formatter";
+    o.Instructions = "Format the PR comment as a GitHub-flavored markdown comment block. Include the summary at the top.";
+});
+
+// ── Budget configuration ────────────────────────────────────────────────
+// Phase budgets cap the TOTAL for all stages in the phase.
+// Stage budgets cap EACH individual stage.
+// Both compose: a stage can't exceed its own cap OR the remaining phase budget.
+
+const long analysisPerStage = 10_000;
+const long analysisPhaseCap = 30_000; // 3 stages × 10K
+const long synthesisPerStage = 30_000;
+const long synthesisPhaseCap = 60_000; // 2 stages × 30K
+const long reportingPerStage = 5_000;
+const long reportingPhaseCap = 10_000; // 2 stages × 5K
+
+// ── Helper to persist output ────────────────────────────────────────────
+static StageExecutionPolicy PersistAs(string fileName, long stageBudget) => new()
+{
+    TokenBudget = stageBudget,
+    AfterExecution = (result, ctx) =>
+    {
+        if (result.ResponseText is not null)
+        {
+            ctx.Workspace.TryWriteFile(fileName, result.ResponseText);
+        }
+
+        return Task.CompletedTask;
+    },
+};
+
+// ── Build the 3-phase pipeline ──────────────────────────────────────────
+var phases = new[]
+{
+    // Phase 1: Analysis — 10K per stage, 30K phase cap
+    new PipelinePhase("Analysis",
     [
-        new PipelineStage("ParseDiff", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.HunkCount = 3;
-            reviewState.FileCount = 2;
-            ctx.Workspace.TryWriteFile("diff.patch", "@@ -12,6 +12,10 @@ public class TokenValidator\n+    private readonly ILogger _logger;\n+    public bool ValidateToken(string token) => token != null;");
-        })),
-        new PipelineStage("DetectPatterns", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.AntiPatterns.Add("Null check via != instead of pattern matching");
-            reviewState.AntiPatterns.Add("Missing input validation on public API");
-        })),
-        new PipelineStage("SecurityScan", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.SecurityFindings.Add("[MEDIUM] Token comparison susceptible to timing attacks — use constant-time comparison");
-        })),
+        new PipelineStage("PatternDetection",
+            new AgentStageExecutor(patternAgent, _ => $"Review this diff:\n{codeDiff}"),
+            PersistAs("patterns.txt", analysisPerStage)),
+        new PipelineStage("SecurityScan",
+            new AgentStageExecutor(securityAgent, _ => $"Scan for security issues:\n{codeDiff}"),
+            PersistAs("security.txt", analysisPerStage)),
+        new PipelineStage("StyleCheck",
+            new AgentStageExecutor(styleAgent, _ => $"Check style:\n{codeDiff}"),
+            PersistAs("style.txt", analysisPerStage)),
     ],
     new PipelinePhasePolicy
     {
-        TokenBudget = analysisBudget,
-        OnEnterAsync = (ctx, ct) =>
+        TokenBudget = analysisPhaseCap,
+        OnEnterAsync = (ctx, _) =>
         {
-            Console.WriteLine($"🔵 Phase {ctx.PhaseIndex + 1}: {ctx.PhaseName} [Budget: {analysisBudget:N0} tokens]");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"🔵 Phase {ctx.PhaseIndex + 1}/{ctx.TotalPhases}: {ctx.PhaseName}");
+            Console.WriteLine($"   Budget: {analysisPerStage:N0}/stage, {analysisPhaseCap:N0}/phase");
+            Console.ResetColor();
             return ValueTask.CompletedTask;
         },
-        OnExitAsync = (ctx, ct) =>
+        OnExitAsync = (ctx, _) =>
         {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            Console.WriteLine($"  ✓ ParseDiff — {reviewState.HunkCount} hunks, {reviewState.FileCount} files");
-            Console.WriteLine($"  ✓ DetectPatterns — found {reviewState.AntiPatterns.Count} patterns");
-            Console.WriteLine($"  ✓ SecurityScan — {reviewState.SecurityFindings.Count} finding (medium)");
-            Console.WriteLine($"  Budget: 0 / {analysisBudget:N0} consumed (simulated)");
-            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"   Phase consumed: {budgetTracker.CurrentTokens:N0} / {analysisPhaseCap:N0} tokens");
+            Console.ResetColor();
             return ValueTask.CompletedTask;
         },
-    });
+    }),
 
-// ── Phase 2: Synthesis — higher budget for comment generation ───────────
-var synthesisPhase = new PipelinePhase(
-    "Synthesis",
+    // Phase 2: Synthesis — 30K per stage, 60K phase cap
+    new PipelinePhase("Synthesis",
     [
-        new PipelineStage("GenerateComments", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.ReviewComments.Add("Line 14: Use `is not null` pattern matching instead of `!= null`");
-            reviewState.ReviewComments.Add("Line 14: ValidateToken should throw ArgumentNullException for null input");
-            reviewState.ReviewComments.Add("Line 14: Consider using CryptographicOperations.FixedTimeEquals for token comparison");
-            reviewState.ReviewComments.Add("Line 12: _logger field is declared but never used — wire up ILogger via constructor injection");
-        })),
-        new PipelineStage("PrioritizeFindings", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.FindingsPrioritized = true;
-        })),
-    ],
-    new PipelinePhasePolicy
-    {
-        TokenBudget = synthesisBudget,
-        OnEnterAsync = (ctx, ct) =>
-        {
-            Console.WriteLine($"🟡 Phase {ctx.PhaseIndex + 1}: {ctx.PhaseName} [Budget: {synthesisBudget:N0} tokens]");
-            return ValueTask.CompletedTask;
-        },
-        OnExitAsync = (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            Console.WriteLine($"  ✓ GenerateComments — {reviewState.ReviewComments.Count} review comments");
-            Console.WriteLine($"  ✓ PrioritizeFindings — ranked by severity");
-            Console.WriteLine($"  Budget: 0 / {synthesisBudget:N0} consumed (simulated)");
-            Console.WriteLine();
-            return ValueTask.CompletedTask;
-        },
-    });
-
-// ── Phase 3: Reporting — minimal budget for formatting ──────────────────
-var reportingPhase = new PipelinePhase(
-    "Reporting",
-    [
-        new PipelineStage("FormatPRComment", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            var comment = "## Code Review\n\n";
-            comment += "### Findings\n";
-            foreach (var c in reviewState.ReviewComments)
+        new PipelineStage("GenerateComments",
+            new AgentStageExecutor(commentAgent, ctx =>
             {
-                comment += $"- {c}\n";
-            }
-            comment += "\n### Security\n";
-            foreach (var s in reviewState.SecurityFindings)
+                var patterns = ctx.Workspace.TryReadFile("patterns.txt").Value.Content;
+                var security = ctx.Workspace.TryReadFile("security.txt").Value.Content;
+                var style = ctx.Workspace.TryReadFile("style.txt").Value.Content;
+                return $"Write PR comment from:\nPatterns:\n{patterns}\nSecurity:\n{security}\nStyle:\n{style}";
+            }),
+            PersistAs("comments.txt", synthesisPerStage)),
+        new PipelineStage("PrioritizeFindings",
+            new AgentStageExecutor(priorityAgent, ctx =>
             {
-                comment += $"- {s}\n";
-            }
-            reviewState.PrComment = comment;
-            ctx.Workspace.TryWriteFile("pr-comment.md", comment);
-        })),
-        new PipelineStage("GenerateSummary", new DelegateStageExecutor(async (ctx, ct) =>
-        {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            reviewState.Summary = $"Review of {reviewState.FileCount} files found {reviewState.AntiPatterns.Count} anti-patterns and {reviewState.SecurityFindings.Count} security issue. {reviewState.ReviewComments.Count} comments generated.";
-            ctx.Workspace.TryWriteFile("summary.txt", reviewState.Summary);
-        })),
+                var patterns = ctx.Workspace.TryReadFile("patterns.txt").Value.Content;
+                var security = ctx.Workspace.TryReadFile("security.txt").Value.Content;
+                return $"Prioritize these findings:\n{patterns}\n{security}";
+            }),
+            PersistAs("priorities.txt", synthesisPerStage)),
     ],
     new PipelinePhasePolicy
     {
-        TokenBudget = reportingBudget,
-        OnEnterAsync = (ctx, ct) =>
+        TokenBudget = synthesisPhaseCap,
+        OnEnterAsync = (ctx, _) =>
         {
-            Console.WriteLine($"🟢 Phase {ctx.PhaseIndex + 1}: {ctx.PhaseName} [Budget: {reportingBudget:N0} tokens]");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"\n🟡 Phase {ctx.PhaseIndex + 1}/{ctx.TotalPhases}: {ctx.PhaseName}");
+            Console.WriteLine($"   Budget: {synthesisPerStage:N0}/stage, {synthesisPhaseCap:N0}/phase");
+            Console.ResetColor();
             return ValueTask.CompletedTask;
         },
-        OnExitAsync = (ctx, ct) =>
+        OnExitAsync = (ctx, _) =>
         {
-            var reviewState = ctx.GetRequiredState<CodeReviewState>();
-            Console.WriteLine($"  ✓ FormatPRComment — PR comment ready ({reviewState.PrComment.Length} chars)");
-            Console.WriteLine($"  ✓ GenerateSummary — summary ready");
-            Console.WriteLine($"  Budget: 0 / {reportingBudget:N0} consumed (simulated)");
-            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"   Phase consumed: {budgetTracker.CurrentTokens:N0} / {synthesisPhaseCap:N0} tokens");
+            Console.ResetColor();
             return ValueTask.CompletedTask;
         },
-    });
+    }),
 
-// ── Assemble phases ─────────────────────────────────────────────────────
-var phases = new[] { analysisPhase, synthesisPhase, reportingPhase };
-var totalStages = phases.Sum(p => p.Stages.Count);
-var totalBudget = analysisBudget + synthesisBudget + reportingBudget;
+    // Phase 3: Reporting — 5K per stage, 10K phase cap
+    new PipelinePhase("Reporting",
+    [
+        new PipelineStage("FormatPRComment",
+            new AgentStageExecutor(formatAgent, ctx =>
+            {
+                var comments = ctx.Workspace.TryReadFile("comments.txt").Value.Content;
+                var summary = ctx.Workspace.TryReadFile("priorities.txt").Value.Content;
+                return $"Format as GitHub PR comment:\n{comments}\n\nPriorities:\n{summary}";
+            }),
+            PersistAs("pr-comment.md", reportingPerStage)),
+        new PipelineStage("GenerateSummary",
+            new AgentStageExecutor(summaryAgent, ctx =>
+            {
+                var priorities = ctx.Workspace.TryReadFile("priorities.txt").Value.Content;
+                return $"Summarize in one paragraph under 50 words:\n{priorities}";
+            }),
+            PersistAs("summary.txt", reportingPerStage)),
+    ],
+    new PipelinePhasePolicy
+    {
+        TokenBudget = reportingPhaseCap,
+        OnEnterAsync = (ctx, _) =>
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"\n🟢 Phase {ctx.PhaseIndex + 1}/{ctx.TotalPhases}: {ctx.PhaseName}");
+            Console.WriteLine($"   Budget: {reportingPerStage:N0}/stage, {reportingPhaseCap:N0}/phase");
+            Console.ResetColor();
+            return ValueTask.CompletedTask;
+        },
+        OnExitAsync = (ctx, _) =>
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"   Phase consumed: {budgetTracker.CurrentTokens:N0} / {reportingPhaseCap:N0} tokens");
+            Console.ResetColor();
+            return ValueTask.CompletedTask;
+        },
+    }),
+};
 
-// ── Print banner ────────────────────────────────────────────────────────
+// ── Banner ──────────────────────────────────────────────────────────────
 Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║     Code Review Pipeline — Phase-Level Token Budgets        ║");
+Console.WriteLine("║  Code Review Pipeline — Phase + Stage Budget Composition    ║");
+Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
+Console.WriteLine("║  Analysis:  10K/stage, 30K/phase  (3 stages)               ║");
+Console.WriteLine("║  Synthesis: 30K/stage, 60K/phase  (2 stages)               ║");
+Console.WriteLine("║  Reporting:  5K/stage, 10K/phase  (2 stages)               ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
 Console.WriteLine();
-Console.WriteLine("📋 Reviewing: src/Auth/TokenValidator.cs (+47, -12)");
+Console.WriteLine("📋 Reviewing: src/Auth/TokenValidator.cs (+16 lines)");
 Console.WriteLine();
 
-// ── Run phased pipeline ─────────────────────────────────────────────────
+// ── Run ─────────────────────────────────────────────────────────────────
 var workspace = new InMemoryWorkspace();
 var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory);
 
-var result = await runner.RunPhasedAsync(
-    workspace,
-    phases,
-    state,
-    options: null,
-    CancellationToken.None);
+var result = await runner.RunPhasedAsync(workspace, phases, options: null, CancellationToken.None);
 
-// ── Print result ────────────────────────────────────────────────────────
+// ── Per-stage diagnostics ───────────────────────────────────────────────
+Console.WriteLine();
+Console.WriteLine("╔═════════════════════╦═══════════╦══════════╦══════════╦═══════════╗");
+Console.WriteLine("║ Stage               ║ Phase     ║ Input Tk ║ Out Tk   ║ Duration  ║");
+Console.WriteLine("╠═════════════════════╬═══════════╬══════════╬══════════╬═══════════╣");
+
+foreach (var stage in result.Stages)
+{
+    var diag = stage.Diagnostics;
+    var name = stage.AgentName;
+    var phase = stage.PhaseName ?? "-";
+    var inputTk = diag?.AggregateTokenUsage.InputTokens.ToString("N0") ?? "-";
+    var outputTk = diag?.AggregateTokenUsage.OutputTokens.ToString("N0") ?? "-";
+    var duration = diag is not null ? $"{diag.TotalDuration.TotalSeconds:F1}s" : "-";
+    Console.WriteLine($"║ {name,-19} ║ {phase,-9} ║ {inputTk,8} ║ {outputTk,8} ║ {duration,9} ║");
+}
+
+Console.WriteLine("╚═════════════════════╩═══════════╩══════════╩══════════╩═══════════╝");
+
+// ── Summary ─────────────────────────────────────────────────────────────
+Console.WriteLine();
 Console.ForegroundColor = result.Succeeded ? ConsoleColor.Green : ConsoleColor.Red;
-Console.WriteLine($"Pipeline completed: {totalStages} stages, {phases.Length} phases, {(result.Succeeded ? "SUCCESS" : "FAILED")}");
+Console.WriteLine($"Pipeline: {(result.Succeeded ? "SUCCESS" : $"FAILED: {result.ErrorMessage}")}");
 Console.ResetColor();
-Console.WriteLine($"Total budget allocated: {totalBudget:N0} tokens across {phases.Length} phases");
+Console.WriteLine($"Duration: {result.TotalDuration.TotalSeconds:F1}s | Tokens: {result.AggregateTokenUsage?.TotalTokens ?? 0:N0}");
+
+Console.WriteLine();
+Console.WriteLine("═══ Budget Usage by Phase ═══");
+foreach (var group in result.Stages.GroupBy(s => s.PhaseName))
+{
+    var phaseTokens = group.Sum(s => s.Diagnostics?.AggregateTokenUsage.TotalTokens ?? 0);
+    Console.WriteLine($"  {group.Key}: {phaseTokens:N0} tokens");
+}
+
+// ── Show the generated PR comment ───────────────────────────────────────
+var prComment = workspace.TryReadFile("pr-comment.md");
+if (prComment.Value.Content is not null)
+{
+    Console.WriteLine();
+    Console.WriteLine("═══ Generated PR Comment ═══");
+    Console.WriteLine(prComment.Value.Content);
+}
