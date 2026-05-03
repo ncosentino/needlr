@@ -10,9 +10,9 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                                        | Mean         | Error      | StdDev     | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-|---------------------------------------------- |-------------:|-----------:|-----------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_BuildServiceProvider                 |     1.294 μs |  0.1008 μs |  0.0262 μs |     1.00 |    0.03 |    1 |  0.2785 | 0.0916 |   4.56 KB |        1.00 |
-| Needlr_Reflection_BuildServiceProvider        | 2,165.188 μs | 84.2248 μs | 13.0339 μs | 1,673.67 |   32.24 |    4 | 54.6875 | 7.8125 | 923.35 KB |      202.38 |
-| Needlr_SourceGenExplicit_BuildServiceProvider |    83.115 μs |  3.3211 μs |  0.8625 μs |    64.25 |    1.33 |    2 |  6.4697 | 0.8545 | 106.41 KB |       23.32 |
-| Needlr_SourceGenImplicit_BuildServiceProvider |   110.022 μs |  2.0637 μs |  0.5359 μs |    85.05 |    1.61 |    3 | 10.7422 | 0.9766 | 183.42 KB |       40.20 |
+| Method                                        | Mean         | Error       | StdDev     | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|---------------------------------------------- |-------------:|------------:|-----------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
+| ManualDI_BuildServiceProvider                 |     1.299 μs |   0.0118 μs |  0.0031 μs |     1.00 |    0.00 |    1 |  0.2785 | 0.0916 |   4.56 KB |        1.00 |
+| Needlr_Reflection_BuildServiceProvider        | 2,157.379 μs | 165.3665 μs | 42.9451 μs | 1,660.98 |   30.39 |    4 | 54.6875 | 7.8125 | 923.35 KB |      202.38 |
+| Needlr_SourceGenExplicit_BuildServiceProvider |    83.184 μs |   1.9436 μs |  0.5047 μs |    64.04 |    0.38 |    2 |  6.3477 | 0.4883 | 106.42 KB |       23.32 |
+| Needlr_SourceGenImplicit_BuildServiceProvider |   111.734 μs |   1.6411 μs |  0.4262 μs |    86.02 |    0.35 |    3 | 10.7422 | 0.9766 | 183.42 KB |       40.20 |

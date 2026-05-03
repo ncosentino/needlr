@@ -8,8 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                          | Mean           | Error        | StdDev       | Ratio     | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
--------------------------------- |---------------:|-------------:|-------------:|----------:|--------:|-----:|--------:|-------:|----------:|------------:|
- ManualDI_RegisterTypes          |       102.5 ns |      8.44 ns |      2.19 ns |      1.00 |    0.03 |    1 |  0.0315 |      - |     528 B |        1.00 |
- Needlr_Reflection_RegisterTypes | 1,207,035.9 ns | 38,810.24 ns | 10,078.90 ns | 11,776.57 |  245.90 |    3 | 35.1563 | 3.9063 |  589218 B |    1,115.94 |
- Needlr_SourceGen_RegisterTypes  |    17,691.9 ns |    782.50 ns |    121.09 ns |    172.61 |    3.53 |    2 |  1.8005 | 0.1221 |   30440 B |       57.65 |
+ Method                          | Mean            | Error          | StdDev         | Ratio     | RatioSD  | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+-------------------------------- |----------------:|---------------:|---------------:|----------:|---------:|-----:|--------:|-------:|----------:|------------:|
+ ManualDI_RegisterTypes          |        93.92 ns |       3.139 ns |       0.486 ns |      1.00 |     0.01 |    1 |  0.0315 |      - |     528 B |        1.00 |
+ Needlr_Reflection_RegisterTypes | 1,305,059.67 ns | 913,646.004 ns | 141,387.730 ns | 13,895.98 | 1,348.08 |    3 | 31.2500 |      - |  589831 B |    1,117.10 |
+ Needlr_SourceGen_RegisterTypes  |    17,018.43 ns |     532.527 ns |      82.409 ns |    181.21 |     1.15 |    2 |  1.8005 | 0.1221 |   30440 B |       57.65 |

@@ -8,8 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  InvocationCount=1  IterationCount=5  
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
- Method                                 | Mean        | Error      | StdDev    | Ratio  | RatioSD | Rank | Allocated | Alloc Ratio |
---------------------------------------- |------------:|-----------:|----------:|-------:|--------:|-----:|----------:|------------:|
- ManualDI_BuildAndResolveFirst          |    31.53 μs |   8.475 μs |  1.312 μs |   1.00 |    0.05 |    1 |         - |          NA |
- Needlr_Reflection_BuildAndResolveFirst | 6,159.44 μs | 282.975 μs | 73.488 μs | 195.58 |    7.62 |    3 | 1319568 B |          NA |
- Needlr_SourceGen_BuildAndResolveFirst  |   472.02 μs |  94.533 μs | 24.550 μs |  14.99 |    0.91 |    2 |  217096 B |          NA |
+ Method                                 | Mean        | Error     | StdDev    | Ratio  | RatioSD | Rank | Allocated | Alloc Ratio |
+--------------------------------------- |------------:|----------:|----------:|-------:|--------:|-----:|----------:|------------:|
+ ManualDI_BuildAndResolveFirst          |    27.26 μs |  9.661 μs |  1.495 μs |   1.00 |    0.07 |    1 |         - |          NA |
+ Needlr_Reflection_BuildAndResolveFirst | 5,827.90 μs | 52.579 μs |  8.137 μs | 214.22 |   10.00 |    3 | 1319568 B |          NA |
+ Needlr_SourceGen_BuildAndResolveFirst  |   470.05 μs | 78.479 μs | 12.145 μs |  17.28 |    0.90 |    2 |  217096 B |          NA |

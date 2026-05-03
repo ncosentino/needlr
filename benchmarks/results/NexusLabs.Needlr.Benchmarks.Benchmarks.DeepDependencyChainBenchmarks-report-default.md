@@ -8,8 +8,8 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                             | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
------------------------------------ |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
- ManualDI_ResolveDeepChain          | 14.69 ns | 0.090 ns | 0.014 ns |  1.00 |    0.00 |    1 |         - |          NA |
- Needlr_Reflection_ResolveDeepChain | 15.64 ns | 0.950 ns | 0.247 ns |  1.06 |    0.02 |    1 |         - |          NA |
- Needlr_SourceGen_ResolveDeepChain  | 15.25 ns | 0.040 ns | 0.006 ns |  1.04 |    0.00 |    1 |         - |          NA |
+ Method                             | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
+----------------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
+ ManualDI_ResolveDeepChain          | 15.41 ns | 0.086 ns | 0.013 ns |  1.00 |    1 |         - |          NA |
+ Needlr_Reflection_ResolveDeepChain | 15.47 ns | 0.459 ns | 0.119 ns |  1.00 |    1 |         - |          NA |
+ Needlr_SourceGen_ResolveDeepChain  | 15.25 ns | 0.038 ns | 0.010 ns |  0.99 |    1 |         - |          NA |

@@ -12,7 +12,7 @@ WarmupCount=3
 ```
 | Method                              | Mean       | Error       | StdDev     | Ratio  | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
 |------------------------------------ |-----------:|------------:|-----------:|-------:|--------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_ToServiceProvider          |   1.186 μs |   0.0815 μs |  0.0212 μs |   1.00 |    0.02 |    1 |  0.2689 | 0.0877 |   4.41 KB |        1.00 |
-| Needlr_Reflection_ToServiceProvider | 827.059 μs | 439.7687 μs | 68.0547 μs | 697.60 |   52.30 |    3 | 11.7188 |      - | 252.31 KB |       57.26 |
-| Needlr_SourceGen_ToServiceProvider  | 112.431 μs |   1.0057 μs |  0.1556 μs |  94.83 |    1.57 |    2 | 11.2305 | 1.4648 |  186.7 KB |       42.37 |
-| Needlr_SourceGen_ToProvider         | 125.333 μs |  34.8163 μs |  9.0417 μs | 105.71 |    7.18 |    2 | 10.7422 | 0.9766 | 191.38 KB |       43.43 |
+| ManualDI_ToServiceProvider          |   1.233 μs |   0.0751 μs |  0.0195 μs |   1.00 |    0.02 |    1 |  0.2689 | 0.0877 |   4.41 KB |        1.00 |
+| Needlr_Reflection_ToServiceProvider | 810.589 μs | 366.3009 μs | 56.6855 μs | 657.54 |   41.99 |    3 | 11.7188 |      - | 252.31 KB |       57.26 |
+| Needlr_SourceGen_ToServiceProvider  | 114.384 μs |   4.9699 μs |  0.7691 μs |  92.79 |    1.47 |    2 | 10.7422 | 0.9766 | 183.41 KB |       41.62 |
+| Needlr_SourceGen_ToProvider         | 128.901 μs |  63.2631 μs | 16.4292 μs | 104.56 |   12.26 |    2 | 10.7422 | 0.9766 | 188.09 KB |       42.69 |
