@@ -3958,6 +3958,22 @@
 <td style="text-align: left;">Tries a primary executor and, on failure, falls back to a secondary executor. User cancellation is never swallowed.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../IterativeLoopStageExecutor/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.IterativeLoopStageExecutor">IterativeLoopStageExecutor</a></td>
+<td style="text-align: left;">Executes a pipeline stage by running an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop</a> with dynamically constructed options and context.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PhaseContext/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PhaseContext">PhaseContext</a></td>
+<td style="text-align: left;">Provides typed access to pipeline state during phase lifecycle hooks (<a href="../PipelinePhasePolicy/#NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy.OnEnterAsync" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy.OnEnterAsync">OnEnterAsync</a> and <a href="../PipelinePhasePolicy/#NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy.OnExitAsync" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy.OnExitAsync">OnExitAsync</a>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelinePhase/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhase">PipelinePhase</a></td>
+<td style="text-align: left;">Defines a named group of sequential stages that share runtime configuration. The <a href="../SequentialPipelineRunner/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineRunner">SequentialPipelineRunner</a> applies the phase's policy (lifecycle hooks, token budget) before executing any stage within it.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../PipelinePhasePolicy/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy">PipelinePhasePolicy</a></td>
+<td style="text-align: left;">Configures runtime behavior for a <a href="../PipelinePhase/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhase">PipelinePhase</a>, including async lifecycle hooks and an optional phase-level token budget.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../PipelineStage/" title="NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelineStage">PipelineStage</a></td>
 <td style="text-align: left;">Defines a single stage in a sequential pipeline, binding a name, executor, and optional execution policy.</td>
 </tr>

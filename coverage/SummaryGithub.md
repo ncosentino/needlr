@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 05/02/2026 - 20:01:19 |
-| Coverage date: | 05/02/2026 - 19:58:56 - 05/02/2026 - 20:01:14 |
+| Generated on: | 05/04/2026 - 06:33:01 |
+| Coverage date: | 05/04/2026 - 06:30:30 - 05/04/2026 - 06:32:56 |
 | Parser: | MultiReport (28x Cobertura) |
 | Assemblies: | 25 |
-| Classes: | 506 |
-| Files: | 497 |
-| **Line coverage:** | 86.2% (21557 of 24996) |
-| Covered lines: | 21557 |
-| Uncovered lines: | 3439 |
-| Coverable lines: | 24996 |
-| Total lines: | 59427 |
-| **Branch coverage:** | 74.6% (8241 of 11035) |
-| Covered branches: | 8241 |
-| Total branches: | 11035 |
+| Classes: | 512 |
+| Files: | 501 |
+| **Line coverage:** | 86.1% (21835 of 25349) |
+| Covered lines: | 21835 |
+| Uncovered lines: | 3514 |
+| Coverable lines: | 25349 |
+| Total lines: | 60274 |
+| **Branch coverage:** | 74.6% (8327 of 11149) |
+| Covered branches: | 8327 |
+| Total branches: | 11149 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 87.3%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 87.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**87.3%**|**80.6%**|
+|**NexusLabs.Needlr.AgentFramework**|**87.1%**|**80.5%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|90%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions|100%||
@@ -145,7 +145,7 @@
 |NexusLabs.Needlr.AgentFramework.Iterative.ChatClientAccessor|100%|66.6%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecord|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterationRecordEvaluationExtensio<br/>ns|100%|91.6%|
-|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|96.4%|93.1%|
+|NexusLabs.Needlr.AgentFramework.Iterative.IterativeAgentLoop|97.1%|92.1%|
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeContext|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration|100%||
 |NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions|96.2%|62.5%|
@@ -167,6 +167,8 @@
 |NexusLabs.Needlr.AgentFramework.Progress.LlmCallStartedEvent|62.5%||
 |NexusLabs.Needlr.AgentFramework.Progress.NullProgressReporter|100%||
 |NexusLabs.Needlr.AgentFramework.Progress.NullProgressReporterErrorHandler|100%||
+|NexusLabs.Needlr.AgentFramework.Progress.PhaseCompletedEvent|41.6%||
+|NexusLabs.Needlr.AgentFramework.Progress.PhaseStartedEvent|45.4%||
 |NexusLabs.Needlr.AgentFramework.Progress.ProgressReporter|93.8%|91.6%|
 |NexusLabs.Needlr.AgentFramework.Progress.ProgressReporterAccessor|100%|75%|
 |NexusLabs.Needlr.AgentFramework.Progress.ProgressReporterFactory|100%|87.5%|
@@ -306,11 +308,11 @@
 |NexusLabs.Needlr.AgentFramework.Testing.ScenarioVerificationException|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 83.9%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 83.3%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.9%**|**71.3%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**83.3%**|**72%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddlewa<br/>re|89.2%|68.3%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|78.5%|
@@ -342,10 +344,14 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.CritiqueAndReviseExecu<br/>tor|33.3%|0%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.DelegateStageExecutor|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.FallbackExecutor|100%||
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.IterativeLoopStageExec<br/>utor|100%|100%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PhaseContext|100%|50%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhase|100%||
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelinePhasePolicy|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.PipelineStage|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineOpti<br/>ons|100%||
-|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineRunn<br/>er|99%|87.5%|
-|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.StageExecutionContext|72.7%|100%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineRunn<br/>er|85.4%|80.1%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Sequential.StageExecutionContext|93.3%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.StageExecutionPolicy|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.StageExecutionResult|90.9%||
 |NexusLabs.Needlr.AgentFramework.Workflows.Sequential.StageValidationExcepti<br/>on|100%||
@@ -538,17 +544,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.6%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.2%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.2%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -602,20 +608,20 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
