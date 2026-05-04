@@ -1,3 +1,17 @@
+## [0.0.2-alpha.51] - 2026-05-03
+
+### Added
+- **`IterativeLoopStageExecutor`** — new `IStageExecutor` that bridges `IIterativeAgentLoop` into the sequential pipeline ecosystem. Supports options factory, context factory, `onLoopCompleted` callback for termination metadata capture, `shouldTreatAsSuccess` predicate for acceptable non-success terminations, and configurable `FailureDisposition`. Result-based failure mapping (no exceptions for control flow). 56 tests.
+- **Pipeline phases** — `PipelinePhase` groups sequential stages with lifecycle hooks and phase-level token budgets. `RunPhasedAsync` / `RunPhasedAsync<TState>` on `SequentialPipelineRunner`. `PipelinePhasePolicy` provides async `OnEnterAsync` / `OnExitAsync` hooks (exit runs in `finally`) and `TokenBudget` that scopes the entire phase (composes with per-stage budgets). Phase metadata on `StageExecutionContext` (`PhaseName`, `PhaseIndex`, `StageIndexInPhase`, `TotalStagesInPhase`) and `IAgentStageResult.PhaseName` (default interface member, non-breaking). `PhaseStartedEvent` / `PhaseCompletedEvent` progress events. 29 tests.
+- **Customer Support Triage example** — 3-phase agent pipeline demonstrating `OnEnterAsync`, typed pipeline state via `RunPhasedAsync<TriageState>`, `ShouldSkip` driven by typed state, `PostValidation` with retry on urgency parsing, `CompletionGate`, and workspace-as-memory between phases. Real LLM agents via Copilot.
+- **Code Review Pipeline example** — 3-phase agent pipeline demonstrating phase + stage token budget composition (`StageExecutionPolicy.TokenBudget` nested within `PipelinePhasePolicy.TokenBudget`). `OnExitAsync` reports actual phase consumption. Real LLM agents via Copilot.
+
+### Fixed
+- **HTTP timeout no longer kills pipeline** — `IterativeAgentLoop` now distinguishes HTTP timeouts (`TaskCanceledException` with `TimeoutException` inner) from genuine user cancellation (`CancellationToken.IsCancellationRequested`). Timeouts report `TerminationReason.Error` with descriptive message instead of `TerminationReason.Cancelled` / "Loop was cancelled." Pipeline retry logic for Critical stages now works correctly for transient API slowdowns. 7 tests.
+- **Partial iteration recording** — when an iterative loop is interrupted mid-iteration (timeout or cancellation), completed tool calls and timing data are preserved in a partial `IterationRecord`. Previously reported "0 iterations, 0 tool calls" despite work being completed.
+- **`OnExitAsync` budget ordering** — phase `OnExitAsync` hooks now run before the phase budget scope is disposed, so exit hooks can read `ITokenBudgetTracker.CurrentTokens` and `MaxTokens` correctly.
+- **`CopilotChatClient` timeout documentation** — XML docs on constructors now call out `HttpClient.Timeout` configuration with examples for long-running pipeline workloads.
+
 ## [0.0.2-alpha.50] - 2026-05-02
 
 ### Added
