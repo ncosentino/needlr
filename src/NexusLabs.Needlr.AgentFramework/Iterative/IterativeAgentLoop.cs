@@ -121,6 +121,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             executionContextScope = _executionContextAccessor.BeginScope(executionContext);
         }
 
+        // Track in-progress iteration state so catch handlers can record
+        // partial IterationRecords when interrupted mid-iteration.
+        var currentIterationIndex = -1;
+        List<ToolCallResult>? currentIterationToolCalls = null;
+        Stopwatch? currentIterationStopwatch = null;
+
         try
         {
             context.CancellationToken = cancellationToken;
@@ -130,6 +136,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 cancellationToken.ThrowIfCancellationRequested();
 
                 context.Iteration = i;
+                currentIterationIndex = i;
 
                 // Hook: iteration start (wrapped to escape catch-all)
                 if (options.OnIterationStart != null)
@@ -167,7 +174,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 }
 
                 var iterationStopwatch = Stopwatch.StartNew();
+                currentIterationStopwatch = iterationStopwatch;
                 var iterationToolCalls = new List<ToolCallResult>();
+                currentIterationToolCalls = iterationToolCalls;
                 ChatResponse? iterationResponse = null;
                 long iterationInputTokens = 0;
                 long iterationOutputTokens = 0;
@@ -224,9 +233,9 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         response = await chatClient.GetResponseAsync(
                             messages, chatOptions, cancellationToken).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {
-                        throw; // let outer handler deal with cancellation
+                        throw; // genuine cancellation — let outer handler terminate the loop
                     }
                     catch (Exception)
                     {
@@ -502,12 +511,25 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 diagnosticsBuilder.RecordFailure(errorMessage);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             succeeded = false;
             termination = TerminationReason.Cancelled;
-            errorMessage = "Loop was cancelled.";
+            errorMessage = $"Loop was cancelled after {iterations.Count} completed iteration(s).";
             diagnosticsBuilder.RecordFailure(errorMessage);
+            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
+        }
+        catch (OperationCanceledException ex)
+        {
+            // HTTP timeout (TaskCanceledException with TimeoutException inner)
+            // or other non-user cancellation — report as Error, not Cancelled.
+            succeeded = false;
+            termination = TerminationReason.Error;
+            errorMessage = ex.InnerException is TimeoutException
+                ? $"Chat completion timed out on iteration {iterations.Count + 1}: {ex.InnerException.Message}"
+                : $"Operation cancelled (not by caller) on iteration {iterations.Count + 1}: {ex.Message}";
+            diagnosticsBuilder.RecordFailure(errorMessage);
+            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
         }
         catch (LifecycleHookException hookEx)
         {
@@ -521,6 +543,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             termination = TerminationReason.Error;
             errorMessage = ex.Message;
             diagnosticsBuilder.RecordFailure(errorMessage);
+            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
         }
 
         if (finalResponse == null && iterations.Count > 0)
@@ -552,6 +575,33 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             ErrorMessage: errorMessage,
             Termination: termination,
             Configuration: configuration);
+    }
+
+    /// <summary>
+    /// Records a partial <see cref="IterationRecord"/> for an iteration that was
+    /// interrupted by an exception. Captures whatever tool calls and timing data
+    /// were accumulated before the interruption.
+    /// </summary>
+    private static void RecordPartialIteration(
+        List<IterationRecord> iterations,
+        int currentIterationIndex,
+        List<ToolCallResult>? toolCalls,
+        Stopwatch? stopwatch)
+    {
+        if (currentIterationIndex < 0 || currentIterationIndex < iterations.Count)
+        {
+            return;
+        }
+
+        stopwatch?.Stop();
+        iterations.Add(new IterationRecord(
+            Iteration: currentIterationIndex,
+            ToolCalls: toolCalls ?? [],
+            FinalResponse: null,
+            Tokens: new TokenUsage(0, 0, 0, 0, 0),
+            Duration: stopwatch?.Elapsed ?? TimeSpan.Zero,
+            LlmCallCount: 0,
+            ToolCallCount: toolCalls?.Count ?? 0));
     }
 
     private static async Task<(List<ToolCallResult> Results, bool EarlyExit)> ExecuteToolCallsAsync(

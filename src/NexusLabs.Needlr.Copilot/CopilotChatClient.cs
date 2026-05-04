@@ -49,7 +49,22 @@ public sealed class CopilotChatClient : IChatClient
     /// Token discovery uses <see cref="CopilotChatClientOptions.TokenSource"/>.
     /// </summary>
     /// <param name="options">Configuration options. Uses defaults when <c>null</c>.</param>
-    /// <param name="httpClient">Optional HTTP client (shared with token provider). Created internally if <c>null</c>.</param>
+    /// <param name="httpClient">
+    /// Optional HTTP client (shared with token provider). Created internally if <c>null</c>.
+    /// Pass a pre-configured <see cref="HttpClient"/> to control timeout and other HTTP settings.
+    /// The default <see cref="HttpClient.Timeout"/> (100 seconds) may be too short for long-running
+    /// agent pipelines — consider increasing it for workloads with large context windows.
+    /// </param>
+    /// <example>
+    /// <code>
+    /// // Default timeout (100s) — suitable for short interactions
+    /// var client = new CopilotChatClient(options);
+    ///
+    /// // Extended timeout for pipeline workloads with large context windows
+    /// var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+    /// var client = new CopilotChatClient(options, httpClient);
+    /// </code>
+    /// </example>
     public CopilotChatClient(CopilotChatClientOptions? options = null, HttpClient? httpClient = null)
         : this(
             new CopilotTokenProvider(options ?? new CopilotChatClientOptions(), httpClient),
@@ -63,7 +78,11 @@ public sealed class CopilotChatClient : IChatClient
     /// </summary>
     /// <param name="tokenProvider">Supplies Copilot API bearer tokens.</param>
     /// <param name="options">Configuration options. Uses defaults when <c>null</c>.</param>
-    /// <param name="httpClient">Optional HTTP client. Created internally if <c>null</c>.</param>
+    /// <param name="httpClient">
+    /// Optional HTTP client. Created internally if <c>null</c>. Pass a pre-configured
+    /// <see cref="HttpClient"/> to control <see cref="HttpClient.Timeout"/> and other
+    /// HTTP settings for long-running agent pipelines.
+    /// </param>
     public CopilotChatClient(
         ICopilotTokenProvider tokenProvider,
         CopilotChatClientOptions? options = null,
