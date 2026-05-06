@@ -52,7 +52,9 @@ IChatClient chatClient = new AzureOpenAIClient(
 //   UsingResilience()          — Polly retry/timeout on every agent run (2 retries, 120s timeout).
 //                                GeographyAgent overrides this with [AgentResilience(3, 90)].
 //   UsingToolResultMiddleware() — Intercepts ToolResult<T,E> returns and unhandled exceptions,
-//                                converting them to safe JSON for the LLM.
+//                                converting them to safe JSON for the LLM. Enabling this is
+//                                strongly recommended for production agents — see
+//                                docs/tool-result-middleware.md for behaviors and ordering rules.
 //   UsingTokenBudget()         — Wraps IChatClient to enforce per-pipeline token budgets via
 //                                ITokenBudgetTracker.BeginScope().
 var serviceProvider = new Syringe()

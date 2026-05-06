@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json;
 
 using NexusLabs.Needlr.AgentFramework;
 
@@ -51,6 +52,30 @@ internal sealed class BatchFunctions
         int[] priorities)
     {
         return $"Tagged {topics.Length} topic(s) with {priorities.Length} priority score(s).";
+    }
+
+    /// <summary>
+    /// Demonstrates the <see cref="JsonElement"/> parameter pattern — the analyzer-recommended
+    /// alternative (NDLRMAF030) when a tool wants direct, typed access to arbitrary JSON the
+    /// model produces. Compare to a hypothetical <c>string payloadJson</c> shape: with
+    /// <see cref="JsonElement"/> the tool body inspects <see cref="JsonElement.ValueKind"/>
+    /// directly without re-parsing canonical text.
+    /// </summary>
+    [AgentFunction]
+    [Description("Stores arbitrary JSON metadata for a topic. Pass a JSON object describing the topic.")]
+    public string AttachTopicMetadata(
+        [Description("Topic identifier.")]
+        string topicId,
+        [Description("Arbitrary JSON object holding metadata fields.")]
+        JsonElement metadata)
+    {
+        if (metadata.ValueKind != JsonValueKind.Object)
+        {
+            return $"Metadata for '{topicId}' was not a JSON object (received {metadata.ValueKind}).";
+        }
+
+        var fieldCount = metadata.EnumerateObject().Count();
+        return $"Attached {fieldCount} metadata field(s) to topic '{topicId}'.";
     }
 }
 
