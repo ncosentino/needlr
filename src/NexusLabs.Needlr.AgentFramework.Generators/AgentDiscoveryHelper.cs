@@ -155,9 +155,26 @@ internal static class AgentDiscoveryHelper
                     }
                 }
 
+                // Build object schema for top-level complex DTO parameters (e.g., MyDto dto).
+                // Same machinery as array items but applied to the parameter type itself —
+                // gives the LLM a proper {"type":"object","properties":{…},"required":[…]}
+                // schema and lets the wrapper extract per-property via TryGetProperty + helper
+                // calls instead of the broken as-cast that silently returns default(MyDto).
+                string? objectSchemaJson = null;
+                IReadOnlyList<ObjectPropertyInfo>? objectProperties = null;
+                if (jsonSchemaType == "object")
+                {
+                    var dtoType = param.Type;
+                    if (dtoType is INamedTypeSymbol dtoNullable && dtoNullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+                        dtoType = dtoNullable.TypeArguments[0];
+                    objectSchemaJson = BuildObjectSchemaJson(dtoType);
+                    objectProperties = BuildObjectPropertyInfos(dtoType);
+                }
+
                 parameters.Add(new AgentFunctionParameterInfo(
                     param.Name, typeFullName, jsonSchemaType, jsonSchemaFormat, itemJsonSchemaType,
                     itemObjectSchemaJson, itemObjectProperties,
+                    objectSchemaJson, objectProperties,
                     isCancellationToken, isNullable, hasDefault, paramDesc));
             }
 

@@ -13,6 +13,8 @@ internal readonly struct AgentFunctionParameterInfo
         string? itemJsonSchemaType,
         string? itemObjectSchemaJson,
         IReadOnlyList<ObjectPropertyInfo>? itemObjectProperties,
+        string? objectSchemaJson,
+        IReadOnlyList<ObjectPropertyInfo>? objectProperties,
         bool isCancellationToken, bool isNullable, bool hasDefault, string? description)
     {
         Name = name; TypeFullName = typeFullName;
@@ -20,6 +22,8 @@ internal readonly struct AgentFunctionParameterInfo
         ItemJsonSchemaType = itemJsonSchemaType;
         ItemObjectSchemaJson = itemObjectSchemaJson;
         ItemObjectProperties = itemObjectProperties;
+        ObjectSchemaJson = objectSchemaJson;
+        ObjectProperties = objectProperties;
         IsCancellationToken = isCancellationToken; IsNullable = isNullable;
         HasDefault = hasDefault; Description = description;
     }
@@ -40,6 +44,18 @@ internal readonly struct AgentFunctionParameterInfo
     public string? ItemObjectSchemaJson { get; }
     /// <summary>Property extraction info for AOT-safe manual deserialization of complex array items.</summary>
     public IReadOnlyList<ObjectPropertyInfo>? ItemObjectProperties { get; }
+    /// <summary>
+    /// Pre-built JSON schema for a top-level complex object parameter (properties, required
+    /// fields). Set when <see cref="JsonSchemaType"/> is <c>"object"</c> AND the type has
+    /// public properties suitable for property-level binding.
+    /// </summary>
+    public string? ObjectSchemaJson { get; }
+    /// <summary>
+    /// Property extraction info for AOT-safe manual deserialization of a top-level complex
+    /// object parameter. Mirrors <see cref="ItemObjectProperties"/> but applies to the
+    /// parameter type itself rather than an array element.
+    /// </summary>
+    public IReadOnlyList<ObjectPropertyInfo>? ObjectProperties { get; }
     public bool IsCancellationToken { get; }
     public bool IsNullable { get; }
     public bool HasDefault { get; }

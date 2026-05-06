@@ -242,10 +242,22 @@ internal static class AIFunctionProviderCodeGenerator
 
         if (param.JsonSchemaType == "object")
         {
-            // Direct complex object parameter (not in an array)
+            // Direct complex object parameter (not in an array). Use the pre-built object
+            // schema (with properties + required fields) when discovery generated one;
+            // otherwise fall back to the bare {"type":"object"} shape — usually the case
+            // for empty DTOs or types with no public properties.
             var desc = string.IsNullOrEmpty(param.Description)
                 ? ""
                 : $",\"description\":\"{param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+            if (!string.IsNullOrEmpty(param.ObjectSchemaJson))
+            {
+                // ObjectSchemaJson already starts with {"type":"object","properties":{…},"required":[…]}.
+                // Splice the description in before the closing brace.
+                var inner = param.ObjectSchemaJson!.Substring(0, param.ObjectSchemaJson.Length - 1);
+                return string.IsNullOrEmpty(desc)
+                    ? param.ObjectSchemaJson!
+                    : $"{inner}{desc}}}";
+            }
             return $"{{\"type\":\"object\"{desc}}}";
         }
 
@@ -305,28 +317,12 @@ internal static class AIFunctionProviderCodeGenerator
                     // path, an array literal becomes canonical JSON for a string
                     // property, etc.
                     sb.AppendLine($"                    var _obj = new {elementType}();");
-                    foreach (var prop in param.ItemObjectProperties)
-                    {
-                        sb.AppendLine($"                    if (_elem.TryGetProperty(\"{prop.JsonName}\", out var _p_{prop.JsonName}))");
-                        switch (prop.SchemaType)
-                        {
-                            case "string":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetStringFamilyHelperForProperty(prop)}(_p_{prop.JsonName});");
-                                break;
-                            case "integer":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetIntegerHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
-                                break;
-                            case "number":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetNumberHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
-                                break;
-                            case "boolean":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetBooleanArgument(_p_{prop.JsonName});");
-                                break;
-                            default:
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetStringArgument(_p_{prop.JsonName});");
-                                break;
-                        }
-                    }
+                    AppendObjectPropertyAssignments(
+                        sb,
+                        targetVar: "_obj",
+                        sourceJsonElementVar: "_elem",
+                        properties: param.ItemObjectProperties,
+                        indent: "                    ");
                     sb.AppendLine($"                    _list_{param.Name}.Add(_obj);");
                 }
                 else if (param.ItemJsonSchemaType == "string")
@@ -348,9 +344,42 @@ internal static class AIFunctionProviderCodeGenerator
             }
             case "object":
             {
-                var cVar = $"_c_{param.Name}";
-                var nullSuppress = param.IsNullable ? "" : "!";
-                sb.AppendLine($"            var {param.Name} = {rawVar} is {param.TypeFullName} {cVar} ? {cVar} : default({param.TypeFullName}){nullSuppress};");
+                // Top-level complex DTO. When we have property metadata, generate
+                // per-property TryGetProperty + helper-call extraction so a model-supplied
+                // JsonElement of Object kind populates the DTO correctly. Falls back to
+                // the typed pass-through when the IChatClient pre-converted to the typed
+                // value, or to default(T) for empty-DTO / no-public-properties shapes.
+                if (param.ObjectProperties is { Count: > 0 })
+                {
+                    var cVar = $"_c_{param.Name}";
+                    var jObjVar = $"_j_{param.Name}";
+                    var nullSuppress = param.IsNullable ? "" : "!";
+                    sb.AppendLine($"            {param.TypeFullName} {param.Name};");
+                    sb.AppendLine($"            if ({rawVar} is global::System.Text.Json.JsonElement {jObjVar} && {jObjVar}.ValueKind == global::System.Text.Json.JsonValueKind.Object)");
+                    sb.AppendLine("            {");
+                    sb.AppendLine($"                {param.Name} = new {param.TypeFullName}();");
+                    AppendObjectPropertyAssignments(
+                        sb,
+                        targetVar: param.Name,
+                        sourceJsonElementVar: jObjVar,
+                        properties: param.ObjectProperties,
+                        indent: "                ");
+                    sb.AppendLine("            }");
+                    sb.AppendLine($"            else if ({rawVar} is {param.TypeFullName} {cVar})");
+                    sb.AppendLine("            {");
+                    sb.AppendLine($"                {param.Name} = {cVar};");
+                    sb.AppendLine("            }");
+                    sb.AppendLine("            else");
+                    sb.AppendLine("            {");
+                    sb.AppendLine($"                {param.Name} = default({param.TypeFullName}){nullSuppress};");
+                    sb.AppendLine("            }");
+                }
+                else
+                {
+                    var cVar = $"_c_{param.Name}";
+                    var nullSuppress = param.IsNullable ? "" : "!";
+                    sb.AppendLine($"            var {param.Name} = {rawVar} is {param.TypeFullName} {cVar} ? {cVar} : default({param.TypeFullName}){nullSuppress};");
+                }
                 break;
             }
             default:
@@ -450,6 +479,43 @@ internal static class AIFunctionProviderCodeGenerator
         if (typeFullName.Contains("System.Single")) return "GetSingleArgument";
         if (typeFullName.Contains("System.Decimal")) return "GetDecimalArgument";
         return "GetDoubleArgument";
+    }
+
+    /// <summary>
+    /// Emits per-property assignment statements for a complex object — used by both the
+    /// array-of-objects branch (one assignment block per array element) and the top-level
+    /// DTO branch (one assignment block for the parameter itself). Mirrors the schema-side
+    /// machinery in <c>BuildObjectSchemaJson</c> but on the C# code-emit side.
+    /// </summary>
+    private static void AppendObjectPropertyAssignments(
+        StringBuilder sb,
+        string targetVar,
+        string sourceJsonElementVar,
+        IReadOnlyList<ObjectPropertyInfo> properties,
+        string indent)
+    {
+        foreach (var prop in properties)
+        {
+            sb.AppendLine($"{indent}if ({sourceJsonElementVar}.TryGetProperty(\"{prop.JsonName}\", out var _p_{prop.JsonName}))");
+            switch (prop.SchemaType)
+            {
+                case "string":
+                    sb.AppendLine($"{indent}    {targetVar}.{prop.CSharpName} = {ExtractorFqn}.{GetStringFamilyHelperForProperty(prop)}(_p_{prop.JsonName});");
+                    break;
+                case "integer":
+                    sb.AppendLine($"{indent}    {targetVar}.{prop.CSharpName} = {ExtractorFqn}.{GetIntegerHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
+                    break;
+                case "number":
+                    sb.AppendLine($"{indent}    {targetVar}.{prop.CSharpName} = {ExtractorFqn}.{GetNumberHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
+                    break;
+                case "boolean":
+                    sb.AppendLine($"{indent}    {targetVar}.{prop.CSharpName} = {ExtractorFqn}.GetBooleanArgument(_p_{prop.JsonName});");
+                    break;
+                default:
+                    sb.AppendLine($"{indent}    {targetVar}.{prop.CSharpName} = {ExtractorFqn}.GetStringArgument(_p_{prop.JsonName});");
+                    break;
+            }
+        }
     }
 
     /// <summary>

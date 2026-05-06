@@ -1863,6 +1863,108 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
     }
 
     [Fact]
+    public void AIFunctionProvider_TopLevelDtoParameter_EmitsFullPropertySchema()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DtoTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(TopicMetadata metadata) => metadata.Source;
+                }
+
+                public sealed class TopicMetadata
+                {
+                    public string Source { get; set; } = "";
+                    public int Priority { get; set; }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // Schema must declare the DTO's properties — not just {"type":"object"}.
+        Assert.Contains("\"metadata\":{\"type\":\"object\",\"properties\":{", output);
+        Assert.Contains("\"source\":{\"type\":\"string\"", output);
+        Assert.Contains("\"priority\":{\"type\":\"integer\"", output);
+        Assert.Contains("\"required\":[\"source\",\"priority\"]", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_TopLevelDtoParameter_EmitsPerPropertyExtraction()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DtoTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(TopicMetadata metadata) => metadata.Source;
+                }
+
+                public sealed class TopicMetadata
+                {
+                    public string Source { get; set; } = "";
+                    public int Priority { get; set; }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // Per-property extraction with TryGetProperty + helper calls. Mirrors the
+        // array-of-objects branch but applied to a single top-level object.
+        Assert.Contains("TryGetProperty(\"source\"", output);
+        Assert.Contains("TryGetProperty(\"priority\"", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetStringArgument(_p_source)", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetInt32Argument(_p_priority)", output);
+        // Must use ValueKind.Object guard to handle non-object delivery shapes safely.
+        Assert.Contains("JsonValueKind.Object", output);
+        // The typed pass-through must still be present as a fallback for IChatClients
+        // that pre-convert tool args (e.g., Copilot's stringified shape).
+        Assert.Contains("is global::MyApp.TopicMetadata", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_TopLevelDtoParameter_TemporalPropertiesUseTypedHelpers()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DtoTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(EventEnvelope envelope) => envelope.Topic;
+                }
+
+                public sealed class EventEnvelope
+                {
+                    public string Topic { get; set; } = "";
+                    public System.Guid CorrelationId { get; set; }
+                    public System.DateTime When { get; set; }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("\"correlationId\":{\"type\":\"string\",\"format\":\"uuid\"", output);
+        Assert.Contains("\"when\":{\"type\":\"string\",\"format\":\"date-time\"", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetGuidArgument(_p_correlationId)", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeArgument(_p_when)", output);
+    }
+
+    [Fact]
     public void AIFunctionProvider_ArrayOfObjects_IncludesPropertyDescriptions()
     {
         var output = MafGeneratorTestRunner.Create()
