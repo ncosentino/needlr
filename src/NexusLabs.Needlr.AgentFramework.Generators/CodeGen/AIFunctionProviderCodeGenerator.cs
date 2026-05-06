@@ -249,13 +249,17 @@ internal static class AIFunctionProviderCodeGenerator
             return $"{{\"type\":\"object\"{desc}}}";
         }
 
+        var format = string.IsNullOrEmpty(param.JsonSchemaFormat)
+            ? ""
+            : $",\"format\":\"{param.JsonSchemaFormat}\"";
+
         if (!string.IsNullOrEmpty(param.Description))
         {
             var escapedDesc = param.Description!.Replace("\\", "\\\\").Replace("\"", "\\\"");
-            return $"{{\"type\":\"{param.JsonSchemaType}\",\"description\":\"{escapedDesc}\"}}";
+            return $"{{\"type\":\"{param.JsonSchemaType}\"{format},\"description\":\"{escapedDesc}\"}}";
         }
 
-        return $"{{\"type\":\"{param.JsonSchemaType}\"}}";
+        return $"{{\"type\":\"{param.JsonSchemaType}\"{format}}}";
     }
 
     private const string ExtractorFqn = "global::NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor";
@@ -269,7 +273,7 @@ internal static class AIFunctionProviderCodeGenerator
         switch (param.JsonSchemaType)
         {
             case "string":
-                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.GetStringArgument({rawVar});");
+                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{GetStringFamilyHelper(param)}({rawVar});");
                 break;
             case "boolean":
                 sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.GetBooleanArgument({rawVar});");
@@ -307,13 +311,13 @@ internal static class AIFunctionProviderCodeGenerator
                         switch (prop.SchemaType)
                         {
                             case "string":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetStringArgument(_p_{prop.JsonName});");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetStringFamilyHelperForProperty(prop)}(_p_{prop.JsonName});");
                                 break;
                             case "integer":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetInt32Argument(_p_{prop.JsonName});");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetIntegerHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
                                 break;
                             case "number":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetDoubleArgument(_p_{prop.JsonName});");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.{GetNumberHelperForType(prop.CSharpTypeFullName)}(_p_{prop.JsonName});");
                                 break;
                             case "boolean":
                                 sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetBooleanArgument(_p_{prop.JsonName});");
@@ -397,6 +401,55 @@ internal static class AIFunctionProviderCodeGenerator
             helperMethod = "GetDoubleArgument";
 
         sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{helperMethod}({rawVar});");
+    }
+
+    /// <summary>
+    /// Resolves the right helper for a "string" schema type, using the
+    /// <see cref="AgentFunctionParameterInfo.JsonSchemaFormat"/> hint and the C# type to
+    /// route <see cref="System.Guid"/>/<see cref="System.DateTime"/>/<see cref="System.DateTimeOffset"/>/
+    /// <see cref="System.TimeSpan"/> through their typed extractors instead of
+    /// <c>GetStringArgument</c> (which would fail to compile against a non-string parameter type).
+    /// JSON Schema collapses <see cref="System.DateTime"/> and <see cref="System.DateTimeOffset"/>
+    /// under the same <c>"date-time"</c> format; the C# type disambiguates.
+    /// </summary>
+    private static string GetStringFamilyHelper(AgentFunctionParameterInfo param) => param.JsonSchemaFormat switch
+    {
+        "uuid" => "GetGuidArgument",
+        "duration" => "GetTimeSpanArgument",
+        "date-time" => param.TypeFullName.Contains("DateTimeOffset") ? "GetDateTimeOffsetArgument" : "GetDateTimeArgument",
+        _ => "GetStringArgument",
+    };
+
+    /// <summary>
+    /// Resolves the right helper for a "string"-schema object property. Same disambiguation
+    /// as <see cref="GetStringFamilyHelper(AgentFunctionParameterInfo)"/> but uses
+    /// <see cref="ObjectPropertyInfo.CSharpTypeFullName"/> for the DateTime/DateTimeOffset split.
+    /// </summary>
+    private static string GetStringFamilyHelperForProperty(ObjectPropertyInfo prop) => prop.SchemaFormat switch
+    {
+        "uuid" => "GetGuidArgument",
+        "duration" => "GetTimeSpanArgument",
+        "date-time" => prop.CSharpTypeFullName.Contains("DateTimeOffset") ? "GetDateTimeOffsetArgument" : "GetDateTimeArgument",
+        _ => "GetStringArgument",
+    };
+
+    private static string GetIntegerHelperForType(string typeFullName)
+    {
+        if (typeFullName.Contains("System.Int64")) return "GetInt64Argument";
+        if (typeFullName.Contains("System.Int16")) return "GetInt16Argument";
+        if (typeFullName.Contains("System.SByte")) return "GetSByteArgument";
+        if (typeFullName.Contains("System.Byte")) return "GetByteArgument";
+        if (typeFullName.Contains("System.UInt64")) return "GetUInt64Argument";
+        if (typeFullName.Contains("System.UInt32")) return "GetUInt32Argument";
+        if (typeFullName.Contains("System.UInt16")) return "GetUInt16Argument";
+        return "GetInt32Argument";
+    }
+
+    private static string GetNumberHelperForType(string typeFullName)
+    {
+        if (typeFullName.Contains("System.Single")) return "GetSingleArgument";
+        if (typeFullName.Contains("System.Decimal")) return "GetDecimalArgument";
+        return "GetDoubleArgument";
     }
 
     /// <summary>

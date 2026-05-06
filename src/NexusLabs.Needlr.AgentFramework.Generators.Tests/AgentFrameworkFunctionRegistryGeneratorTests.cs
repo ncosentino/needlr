@@ -1734,6 +1734,135 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
     }
 
     [Fact]
+    public void AIFunctionProvider_GuidParameter_EmitsHelperAndStringSchemaWithUuidFormat()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class GuidTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.Guid id) => id.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetGuidArgument(_raw_id)", output);
+        Assert.Contains("\"id\":{\"type\":\"string\",\"format\":\"uuid\"", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DateTimeParameter_EmitsHelperAndDateTimeFormat()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DateTimeTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.DateTime when) => when.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeArgument(_raw_when)", output);
+        Assert.Contains("\"when\":{\"type\":\"string\",\"format\":\"date-time\"", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DateTimeOffsetParameter_EmitsHelperAndDateTimeFormat()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DtoTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.DateTimeOffset stamp) => stamp.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeOffsetArgument(_raw_stamp)", output);
+        Assert.Contains("\"stamp\":{\"type\":\"string\",\"format\":\"date-time\"", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_TimeSpanParameter_EmitsHelperAndDurationFormat()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class TimeSpanTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.TimeSpan duration) => duration.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetTimeSpanArgument(_raw_duration)", output);
+        Assert.Contains("\"duration\":{\"type\":\"string\",\"format\":\"duration\"", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_NestedTemporalProperties_EmitHelpersAndFormats()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class TemporalTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(TemporalEntry[] entries) => entries.Length.ToString();
+                }
+
+                public sealed class TemporalEntry
+                {
+                    public System.Guid Id { get; set; }
+                    public System.DateTime When { get; set; }
+                    public System.TimeSpan Duration { get; set; }
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // Nested object schema must declare these as string with the right format.
+        Assert.Contains("\"id\":{\"type\":\"string\",\"format\":\"uuid\"", output);
+        Assert.Contains("\"when\":{\"type\":\"string\",\"format\":\"date-time\"", output);
+        Assert.Contains("\"duration\":{\"type\":\"string\",\"format\":\"duration\"", output);
+
+        // Per-property extraction must call the typed helper, not GetStringArgument.
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetGuidArgument(_p_id)", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeArgument(_p_when)", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetTimeSpanArgument(_p_duration)", output);
+    }
+
+    [Fact]
     public void AIFunctionProvider_ArrayOfObjects_IncludesPropertyDescriptions()
     {
         var output = MafGeneratorTestRunner.Create()

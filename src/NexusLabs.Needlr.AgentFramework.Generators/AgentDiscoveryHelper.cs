@@ -134,6 +134,7 @@ internal static class AgentDiscoveryHelper
                 bool hasDefault = param.HasExplicitDefaultValue;
                 string? paramDesc = GetDescriptionFromAttributes(param.GetAttributes());
                 string jsonSchemaType = GetJsonSchemaType(param.Type, out string? itemJsonSchemaType);
+                string? jsonSchemaFormat = GetJsonSchemaFormat(param.Type);
                 string typeFullName = GetFullyQualifiedName(param.Type);
 
                 // Build object schema for complex array items (e.g., FaqEntry[] → properties of FaqEntry)
@@ -155,7 +156,7 @@ internal static class AgentDiscoveryHelper
                 }
 
                 parameters.Add(new AgentFunctionParameterInfo(
-                    param.Name, typeFullName, jsonSchemaType, itemJsonSchemaType,
+                    param.Name, typeFullName, jsonSchemaType, jsonSchemaFormat, itemJsonSchemaType,
                     itemObjectSchemaJson, itemObjectProperties,
                     isCancellationToken, isNullable, hasDefault, paramDesc));
             }
@@ -482,6 +483,7 @@ internal static class AgentDiscoveryHelper
             case SpecialType.System_Single:
             case SpecialType.System_Double:
             case SpecialType.System_Decimal: return "number";
+            case SpecialType.System_DateTime: return "string";
         }
 
         if (type is IArrayTypeSymbol arrayType)
@@ -508,6 +510,15 @@ internal static class AgentDiscoveryHelper
             }
         }
 
+        // Stringified value types — no SpecialType assignment in Roslyn for these.
+        // Identified by their full display name. The matching JSON Schema "format" comes
+        // from GetJsonSchemaFormat.
+        var displayName = type.ToDisplayString();
+        if (displayName == "System.Guid" ||
+            displayName == "System.DateTimeOffset" ||
+            displayName == "System.TimeSpan")
+            return "string";
+
         // Enum types map to string (LLMs pass enum values as strings)
         if (type.TypeKind == TypeKind.Enum)
             return "string";
@@ -517,6 +528,30 @@ internal static class AgentDiscoveryHelper
             return "object";
 
         return "";
+    }
+
+    /// <summary>
+    /// Returns the JSON Schema <c>format</c> hint for stringified value types: <c>"uuid"</c>
+    /// for <see cref="System.Guid"/>, <c>"date-time"</c> for <see cref="System.DateTime"/> and
+    /// <see cref="System.DateTimeOffset"/>, <c>"duration"</c> for <see cref="System.TimeSpan"/>.
+    /// Returns <see langword="null"/> for any other type.
+    /// </summary>
+    public static string? GetJsonSchemaFormat(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol nullable && nullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            type = nullable.TypeArguments[0];
+
+        if (type.SpecialType == SpecialType.System_DateTime)
+            return "date-time";
+
+        var displayName = type.ToDisplayString();
+        return displayName switch
+        {
+            "System.Guid" => "uuid",
+            "System.DateTimeOffset" => "date-time",
+            "System.TimeSpan" => "duration",
+            _ => null,
+        };
     }
 
     /// <summary>
@@ -554,6 +589,7 @@ internal static class AgentDiscoveryHelper
             var propSchemaType = GetJsonSchemaType(prop.Type, out _);
             if (string.IsNullOrEmpty(propSchemaType))
                 propSchemaType = "string"; // fallback
+            var propSchemaFormat = GetJsonSchemaFormat(prop.Type);
 
             // Check for [Description] attribute on the property
             string? propDesc = null;
@@ -567,6 +603,10 @@ internal static class AgentDiscoveryHelper
             }
 
             sb.Append($"\"{propName}\":{{\"type\":\"{propSchemaType}\"");
+            if (!string.IsNullOrEmpty(propSchemaFormat))
+            {
+                sb.Append($",\"format\":\"{propSchemaFormat}\"");
+            }
             if (!string.IsNullOrEmpty(propDesc))
             {
                 var escapedDesc = propDesc!.Replace("\\", "\\\\").Replace("\"", "\\\"");
@@ -621,9 +661,11 @@ internal static class AgentDiscoveryHelper
             var schemaType = GetJsonSchemaType(prop.Type, out _);
             if (string.IsNullOrEmpty(schemaType))
                 schemaType = "string";
+            var schemaFormat = GetJsonSchemaFormat(prop.Type);
+            var csharpTypeFullName = GetFullyQualifiedName(prop.Type);
             var isNullable = prop.NullableAnnotation == NullableAnnotation.Annotated ||
                 (prop.Type is INamedTypeSymbol pnt && pnt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T);
-            result.Add(new ObjectPropertyInfo(prop.Name, jsonName, schemaType, isNullable));
+            result.Add(new ObjectPropertyInfo(prop.Name, jsonName, csharpTypeFullName, schemaType, schemaFormat, isNullable));
         }
 
         return result;

@@ -9,13 +9,15 @@ internal readonly struct AgentFunctionParameterInfo
 {
     public AgentFunctionParameterInfo(
         string name, string typeFullName,
-        string jsonSchemaType, string? itemJsonSchemaType,
+        string jsonSchemaType, string? jsonSchemaFormat,
+        string? itemJsonSchemaType,
         string? itemObjectSchemaJson,
         IReadOnlyList<ObjectPropertyInfo>? itemObjectProperties,
         bool isCancellationToken, bool isNullable, bool hasDefault, string? description)
     {
         Name = name; TypeFullName = typeFullName;
-        JsonSchemaType = jsonSchemaType; ItemJsonSchemaType = itemJsonSchemaType;
+        JsonSchemaType = jsonSchemaType; JsonSchemaFormat = jsonSchemaFormat;
+        ItemJsonSchemaType = itemJsonSchemaType;
         ItemObjectSchemaJson = itemObjectSchemaJson;
         ItemObjectProperties = itemObjectProperties;
         IsCancellationToken = isCancellationToken; IsNullable = isNullable;
@@ -25,6 +27,13 @@ internal readonly struct AgentFunctionParameterInfo
     public string Name { get; }
     public string TypeFullName { get; }
     public string JsonSchemaType { get; }
+    /// <summary>
+    /// JSON Schema <c>format</c> hint for stringified value types (e.g., <c>"uuid"</c> for
+    /// <see cref="System.Guid"/>, <c>"date-time"</c> for <see cref="System.DateTime"/>,
+    /// <c>"duration"</c> for <see cref="System.TimeSpan"/>). <see langword="null"/> when no
+    /// format applies.
+    /// </summary>
+    public string? JsonSchemaFormat { get; }
     /// <summary>JSON schema type for array items (e.g., "string", "integer", "object").</summary>
     public string? ItemJsonSchemaType { get; }
     /// <summary>Pre-built JSON schema for complex object array items (properties, required fields).</summary>
