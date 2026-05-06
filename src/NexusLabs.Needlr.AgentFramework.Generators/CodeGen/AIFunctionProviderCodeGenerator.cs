@@ -143,7 +143,7 @@ internal static class AIFunctionProviderCodeGenerator
         {
             if (param.IsCancellationToken)
                 continue;
-            AppendParameterExtraction(sb, param);
+            AppendParameterExtraction(sb, type, method, param);
         }
 
         var paramList = string.Join(", ", method.Parameters.Select(p => p.IsCancellationToken ? "ct" : p.Name));
@@ -276,7 +276,11 @@ internal static class AIFunctionProviderCodeGenerator
 
     private const string ExtractorFqn = "global::NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor";
 
-    private static void AppendParameterExtraction(StringBuilder sb, AgentFunctionParameterInfo param)
+    private static void AppendParameterExtraction(
+        StringBuilder sb,
+        AgentFunctionTypeInfo type,
+        AgentFunctionMethodInfo method,
+        AgentFunctionParameterInfo param)
     {
         var rawVar = $"_raw_{param.Name}";
         var jVar = $"_j_{param.Name}";
@@ -285,22 +289,22 @@ internal static class AIFunctionProviderCodeGenerator
         switch (param.JsonSchemaType)
         {
             case "string":
-                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{GetStringFamilyHelper(param)}({rawVar});");
+                if (param.IsEnum)
+                    AppendEnumExtraction(sb, type, method, param, rawVar);
+                else
+                    AppendPrimitiveExtraction(sb, type, method, param, rawVar, GetStringFamilyHelper(param));
                 break;
             case "boolean":
-                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.GetBooleanArgument({rawVar});");
+                AppendPrimitiveExtraction(sb, type, method, param, rawVar, "GetBooleanArgument");
                 break;
             case "integer":
-                AppendIntegerExtraction(sb, param, rawVar);
+                AppendPrimitiveExtraction(sb, type, method, param, rawVar, GetIntegerHelperForType(param.TypeFullName));
                 break;
             case "number":
-                AppendNumberExtraction(sb, param, rawVar);
+                AppendPrimitiveExtraction(sb, type, method, param, rawVar, GetNumberHelperForType(param.TypeFullName));
                 break;
             case "array":
             {
-                // AOT-safe array extraction: manually enumerate JsonElement items
-                // instead of using JsonSerializer.Deserialize<T[]> (which triggers
-                // IL2026/IL3050 in NativeAOT builds).
                 var elementType = GetArrayElementType(param.TypeFullName);
                 sb.AppendLine($"            {param.TypeFullName} {param.Name};");
                 sb.AppendLine($"            if ({rawVar} is global::System.Text.Json.JsonElement {jVar} && {jVar}.ValueKind == global::System.Text.Json.JsonValueKind.Array)");
@@ -311,11 +315,6 @@ internal static class AIFunctionProviderCodeGenerator
 
                 if (param.ItemJsonSchemaType == "object" && param.ItemObjectProperties is { Count: > 0 })
                 {
-                    // Complex object: manual property extraction (AOT-safe). Each
-                    // property goes through the kind-tolerant helper so a
-                    // model-supplied numeric stays parseable as int via String
-                    // path, an array literal becomes canonical JSON for a string
-                    // property, etc.
                     sb.AppendLine($"                    var _obj = new {elementType}();");
                     AppendObjectPropertyAssignments(
                         sb,
@@ -344,11 +343,6 @@ internal static class AIFunctionProviderCodeGenerator
             }
             case "object":
             {
-                // Top-level complex DTO. When we have property metadata, generate
-                // per-property TryGetProperty + helper-call extraction so a model-supplied
-                // JsonElement of Object kind populates the DTO correctly. Falls back to
-                // the typed pass-through when the IChatClient pre-converted to the typed
-                // value, or to default(T) for empty-DTO / no-public-properties shapes.
                 if (param.ObjectProperties is { Count: > 0 })
                 {
                     var cVar = $"_c_{param.Name}";
@@ -392,44 +386,108 @@ internal static class AIFunctionProviderCodeGenerator
         }
     }
 
-    private static void AppendIntegerExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar)
+    /// <summary>
+    /// Emits a kind-tolerant extraction call for a primitive parameter, gated by
+    /// <c>AgentFrameworkArgumentExtractor.IsArgumentSupplied</c>:
+    /// <list type="bullet">
+    /// <item><description>Required (not nullable, no default): emit a fail-fast guard that
+    /// throws <see cref="System.ArgumentException"/> citing the tool/method/argument name.</description></item>
+    /// <item><description>Has default: fall back to the captured C# default literal when the
+    /// argument is missing, <c>JsonValueKind.Null</c>, or <c>JsonValueKind.Undefined</c>. The
+    /// default literal wins over <c>null</c> even when the parameter is nullable
+    /// (<c>string? p = "x"</c> falls back to <c>"x"</c>, not <c>null</c>).</description></item>
+    /// <item><description>Nullable with no default: fall back to <see langword="null"/>.</description></item>
+    /// </list>
+    /// </summary>
+    private static void AppendPrimitiveExtraction(
+        StringBuilder sb,
+        AgentFunctionTypeInfo type,
+        AgentFunctionMethodInfo method,
+        AgentFunctionParameterInfo param,
+        string rawVar,
+        string extractorMethod)
     {
-        var typeFqn = param.TypeFullName;
-        string helperMethod;
+        var varType = GetVariableTypeForParam(param);
+        var extractorCall = $"{ExtractorFqn}.{extractorMethod}({rawVar})";
 
-        if (typeFqn.Contains("System.Int64"))
-            helperMethod = "GetInt64Argument";
-        else if (typeFqn.Contains("System.Int16"))
-            helperMethod = "GetInt16Argument";
-        else if (typeFqn.Contains("System.SByte"))
-            helperMethod = "GetSByteArgument";
-        else if (typeFqn.Contains("System.Byte"))
-            helperMethod = "GetByteArgument";
-        else if (typeFqn.Contains("System.UInt64"))
-            helperMethod = "GetUInt64Argument";
-        else if (typeFqn.Contains("System.UInt32"))
-            helperMethod = "GetUInt32Argument";
-        else if (typeFqn.Contains("System.UInt16"))
-            helperMethod = "GetUInt16Argument";
-        else
-            helperMethod = "GetInt32Argument";
+        if (param.IsRequired)
+        {
+            var toolMethodName = $"{AgentDiscoveryHelper.GetShortName(type.TypeName)}.{method.MethodName}";
+            sb.AppendLine($"            if (!{ExtractorFqn}.IsArgumentSupplied({rawVar}))");
+            sb.AppendLine("            {");
+            sb.AppendLine("                throw new global::System.ArgumentException(");
+            sb.AppendLine($"                    \"Required argument '{param.Name}' was not supplied to AIFunction '{toolMethodName}'.\",");
+            sb.AppendLine("                    nameof(arguments));");
+            sb.AppendLine("            }");
+            sb.AppendLine($"            {varType} {param.Name} = {extractorCall};");
+            return;
+        }
 
-        sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{helperMethod}({rawVar});");
+        var fallback = param.HasDefault ? param.DefaultLiteral! : "null";
+        sb.AppendLine($"            {varType} {param.Name};");
+        sb.AppendLine($"            if (!{ExtractorFqn}.IsArgumentSupplied({rawVar}))");
+        sb.AppendLine($"                {param.Name} = {fallback};");
+        sb.AppendLine("            else");
+        sb.AppendLine($"                {param.Name} = {extractorCall};");
     }
 
-    private static void AppendNumberExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar)
+    /// <summary>
+    /// Resolves the C# variable-declaration type for a parameter. For nullable reference
+    /// types (where <see cref="AgentFunctionParameterInfo.TypeFullName"/> does not already
+    /// carry a trailing <c>?</c> from Roslyn's nullable-value-type shorthand), appends
+    /// <c>?</c> so the declaration accepts a <see langword="null"/> assignment without
+    /// warnings under <c>#nullable enable</c>. For nullable value types, the type name
+    /// already ends with <c>?</c> (e.g., <c>global::System.Int32?</c>) and is returned
+    /// unchanged to avoid the invalid <c>int??</c> shape.
+    /// </summary>
+    private static string GetVariableTypeForParam(AgentFunctionParameterInfo param)
     {
-        var typeFqn = param.TypeFullName;
-        string helperMethod;
+        if (param.IsNullable && !param.TypeFullName.EndsWith("?"))
+            return param.TypeFullName + "?";
+        return param.TypeFullName;
+    }
 
-        if (typeFqn.Contains("System.Single"))
-            helperMethod = "GetSingleArgument";
-        else if (typeFqn.Contains("System.Decimal"))
-            helperMethod = "GetDecimalArgument";
-        else
-            helperMethod = "GetDoubleArgument";
+    /// <summary>
+    /// Emits enum-aware extraction. The JSON schema treats enums as <c>"string"</c> (LLMs
+    /// emit enum values as strings), but the variable type is the enum itself — so the raw
+    /// pipeline of <c>GetStringArgument</c> won't compile against an enum target. This
+    /// emission gates with <c>AgentFrameworkArgumentExtractor.IsArgumentSupplied</c>, then
+    /// routes the supplied string through <c>Enum.Parse&lt;T&gt;(s, ignoreCase: true)</c>.
+    /// Default-value semantics mirror <see cref="AppendPrimitiveExtraction"/>: required →
+    /// fail-fast guard; defaulted → emit the captured enum-member literal; nullable, no
+    /// default → fall back to <see langword="null"/>.
+    /// </summary>
+    private static void AppendEnumExtraction(
+        StringBuilder sb,
+        AgentFunctionTypeInfo type,
+        AgentFunctionMethodInfo method,
+        AgentFunctionParameterInfo param,
+        string rawVar)
+    {
+        var varType = GetVariableTypeForParam(param);
+        var enumType = param.TypeFullName.TrimEnd('?');
+        var stringExtract = $"{ExtractorFqn}.GetStringArgument({rawVar})";
+        var enumParse = $"global::System.Enum.Parse<{enumType}>({stringExtract}, ignoreCase: true)";
 
-        sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{helperMethod}({rawVar});");
+        if (param.IsRequired)
+        {
+            var toolMethodName = $"{AgentDiscoveryHelper.GetShortName(type.TypeName)}.{method.MethodName}";
+            sb.AppendLine($"            if (!{ExtractorFqn}.IsArgumentSupplied({rawVar}))");
+            sb.AppendLine("            {");
+            sb.AppendLine("                throw new global::System.ArgumentException(");
+            sb.AppendLine($"                    \"Required argument '{param.Name}' was not supplied to AIFunction '{toolMethodName}'.\",");
+            sb.AppendLine("                    nameof(arguments));");
+            sb.AppendLine("            }");
+            sb.AppendLine($"            {varType} {param.Name} = {enumParse};");
+            return;
+        }
+
+        var fallback = param.HasDefault ? param.DefaultLiteral! : "null";
+        sb.AppendLine($"            {varType} {param.Name};");
+        sb.AppendLine($"            if (!{ExtractorFqn}.IsArgumentSupplied({rawVar}))");
+        sb.AppendLine($"                {param.Name} = {fallback};");
+        sb.AppendLine("            else");
+        sb.AppendLine($"                {param.Name} = {enumParse};");
     }
 
     /// <summary>
@@ -486,6 +544,16 @@ internal static class AIFunctionProviderCodeGenerator
     /// array-of-objects branch (one assignment block per array element) and the top-level
     /// DTO branch (one assignment block for the parameter itself). Mirrors the schema-side
     /// machinery in <c>BuildObjectSchemaJson</c> but on the C# code-emit side.
+    /// <para>
+    /// Each property assignment is gated on both <c>TryGetProperty</c> (key present) and an
+    /// inline <c>JsonValueKind.Null</c>/<c>JsonValueKind.Undefined</c> check (value supplied).
+    /// When the value is missing or null, the property is left at whatever the parent
+    /// <c>new T()</c> established — which respects any C# init-default declared on the
+    /// property (e.g., <c>public string Foo { get; init; } = "default";</c>) without the
+    /// generator needing to re-emit the literal. This avoids invoking the strict extractors
+    /// (which throw on null) and makes <c>{"foo": null}</c> payloads symmetric with omitted
+    /// keys.
+    /// </para>
     /// </summary>
     private static void AppendObjectPropertyAssignments(
         StringBuilder sb,
@@ -496,7 +564,9 @@ internal static class AIFunctionProviderCodeGenerator
     {
         foreach (var prop in properties)
         {
-            sb.AppendLine($"{indent}if ({sourceJsonElementVar}.TryGetProperty(\"{prop.JsonName}\", out var _p_{prop.JsonName}))");
+            sb.AppendLine($"{indent}if ({sourceJsonElementVar}.TryGetProperty(\"{prop.JsonName}\", out var _p_{prop.JsonName}) &&");
+            sb.AppendLine($"{indent}    _p_{prop.JsonName}.ValueKind != global::System.Text.Json.JsonValueKind.Null &&");
+            sb.AppendLine($"{indent}    _p_{prop.JsonName}.ValueKind != global::System.Text.Json.JsonValueKind.Undefined)");
             switch (prop.SchemaType)
             {
                 case "string":

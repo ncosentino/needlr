@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace NexusLabs.Needlr.AgentFramework.Generators;
@@ -132,6 +134,14 @@ internal static class AgentDiscoveryHelper
                 bool isNullable = param.NullableAnnotation == NullableAnnotation.Annotated ||
                     (param.Type is INamedTypeSymbol pnt && pnt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T);
                 bool hasDefault = param.HasExplicitDefaultValue;
+                string? defaultLiteral = hasDefault
+                    ? ConvertToCSharpLiteral(param.ExplicitDefaultValue, param.Type)
+                    : null;
+                bool isEnum = param.Type.TypeKind == TypeKind.Enum ||
+                    (param.Type is INamedTypeSymbol enumNullable &&
+                     enumNullable.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
+                     enumNullable.TypeArguments.Length == 1 &&
+                     enumNullable.TypeArguments[0].TypeKind == TypeKind.Enum);
                 string? paramDesc = GetDescriptionFromAttributes(param.GetAttributes());
                 string jsonSchemaType = GetJsonSchemaType(param.Type, out string? itemJsonSchemaType);
                 string? jsonSchemaFormat = GetJsonSchemaFormat(param.Type);
@@ -175,7 +185,7 @@ internal static class AgentDiscoveryHelper
                     param.Name, typeFullName, jsonSchemaType, jsonSchemaFormat, itemJsonSchemaType,
                     itemObjectSchemaJson, itemObjectProperties,
                     objectSchemaJson, objectProperties,
-                    isCancellationToken, isNullable, hasDefault, paramDesc));
+                    isCancellationToken, isNullable, hasDefault, defaultLiteral, isEnum, paramDesc));
             }
 
             methodInfos.Add(new AgentFunctionMethodInfo(
@@ -682,7 +692,10 @@ internal static class AgentDiscoveryHelper
             var csharpTypeFullName = GetFullyQualifiedName(prop.Type);
             var isNullable = prop.NullableAnnotation == NullableAnnotation.Annotated ||
                 (prop.Type is INamedTypeSymbol pnt && pnt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T);
-            result.Add(new ObjectPropertyInfo(prop.Name, jsonName, csharpTypeFullName, schemaType, schemaFormat, isNullable));
+            var initDefaultLiteral = TryGetPropertyInitializerLiteral(prop);
+            result.Add(new ObjectPropertyInfo(
+                prop.Name, jsonName, csharpTypeFullName, schemaType, schemaFormat,
+                isNullable, initDefaultLiteral));
         }
 
         return result;
@@ -770,5 +783,124 @@ internal static class AgentDiscoveryHelper
             }
         }
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Converts a Roslyn-supplied parameter default value (boxed as <see cref="object"/>) into a
+    /// C# literal expression suitable for direct emission into generated source.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Handles the three cases that produce non-trivial output:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>
+    /// <paramref name="value"/> is <see langword="null"/> for a non-nullable value type
+    /// (e.g., <c>Guid id = default</c>) — emits <c>default(typeFullName)</c> rather than
+    /// <c>"null"</c> which would not compile against the variable's declared type.
+    /// </description></item>
+    /// <item><description>
+    /// <paramref name="parameterType"/> is an <see langword="enum"/> — Roslyn surfaces the
+    /// underlying primitive value (e.g., <c>2</c> for <c>Mode.Append</c>); this method
+    /// resolves the matching enum field by constant value and emits the typed literal
+    /// (<c>global::MyApp.Mode.Append</c>). When no field matches (flags combination), emits
+    /// a typed cast (<c>(global::MyApp.Mode)2</c>) which is still C#-legal.
+    /// </description></item>
+    /// <item><description>
+    /// Primitive types — emits the standard C# literal form (e.g., <c>5L</c> for long,
+    /// <c>9.99m</c> for decimal, escaped string literals).
+    /// </description></item>
+    /// </list>
+    /// <para>
+    /// Falls back to <c>default(typeFullName)</c> for any value the helper cannot render
+    /// unambiguously.
+    /// </para>
+    /// </remarks>
+    public static string ConvertToCSharpLiteral(object? value, ITypeSymbol parameterType)
+    {
+        var typeFullName = GetFullyQualifiedName(parameterType);
+
+        var underlyingType = parameterType is INamedTypeSymbol nullableNamed &&
+            nullableNamed.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
+            nullableNamed.TypeArguments.Length == 1
+                ? nullableNamed.TypeArguments[0]
+                : parameterType;
+
+        if (value is null)
+        {
+            bool isNullableValueType = parameterType is INamedTypeSymbol nvt &&
+                nvt.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
+            bool isAnnotatedReference = !parameterType.IsValueType &&
+                parameterType.NullableAnnotation == NullableAnnotation.Annotated;
+
+            if (parameterType.IsValueType && !isNullableValueType)
+                return "default(" + typeFullName + ")";
+
+            if (!parameterType.IsValueType && !isAnnotatedReference)
+                return "default(" + typeFullName + ")";
+
+            return "null";
+        }
+
+        if (underlyingType.TypeKind == TypeKind.Enum)
+        {
+            var underlyingTypeFullName = GetFullyQualifiedName(underlyingType);
+            foreach (var member in underlyingType.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (member.HasConstantValue && Equals(member.ConstantValue, value))
+                    return underlyingTypeFullName + "." + member.Name;
+            }
+
+            var castValue = ConvertPrimitiveLiteral(value, underlyingTypeFullName);
+            return "(" + underlyingTypeFullName + ")(" + castValue + ")";
+        }
+
+        return ConvertPrimitiveLiteral(value, typeFullName);
+    }
+
+    private static string ConvertPrimitiveLiteral(object value, string typeFullName)
+    {
+        return value switch
+        {
+            bool b => b ? "true" : "false",
+            string s => SymbolDisplay.FormatLiteral(s, quote: true),
+            char c => SymbolDisplay.FormatLiteral(c, quote: true),
+            byte n => n.ToString(CultureInfo.InvariantCulture),
+            sbyte n => n.ToString(CultureInfo.InvariantCulture),
+            short n => n.ToString(CultureInfo.InvariantCulture),
+            ushort n => n.ToString(CultureInfo.InvariantCulture),
+            int n => n.ToString(CultureInfo.InvariantCulture),
+            uint n => n.ToString(CultureInfo.InvariantCulture) + "U",
+            long n => n.ToString(CultureInfo.InvariantCulture) + "L",
+            ulong n => n.ToString(CultureInfo.InvariantCulture) + "UL",
+            float n when !float.IsNaN(n) && !float.IsInfinity(n) => n.ToString("R", CultureInfo.InvariantCulture) + "f",
+            double n when !double.IsNaN(n) && !double.IsInfinity(n) => n.ToString("R", CultureInfo.InvariantCulture) + "d",
+            decimal n => n.ToString(CultureInfo.InvariantCulture) + "m",
+            _ => "default(" + typeFullName + ")"
+        };
+    }
+
+    /// <summary>
+    /// Reads the property's source declaration to extract a simple-literal initializer (e.g.,
+    /// <c>= "default"</c>, <c>= 5</c>, <c>= true</c>, <c>= null</c>) and returns it as a C#
+    /// literal string suitable for direct emission. Returns <see langword="null"/> when the
+    /// property has no initializer or the initializer is not a simple literal expression
+    /// (e.g., a method call, an array creation, an interpolated string). Non-literal
+    /// initializers are intentionally skipped — they are not safe to splice into generated
+    /// code without semantic analysis.
+    /// </summary>
+    public static string? TryGetPropertyInitializerLiteral(IPropertySymbol prop)
+    {
+        foreach (var syntaxRef in prop.DeclaringSyntaxReferences)
+        {
+            var node = syntaxRef.GetSyntax();
+            if (node is PropertyDeclarationSyntax propDecl &&
+                propDecl.Initializer is { } init &&
+                init.Value is LiteralExpressionSyntax literal)
+            {
+                return literal.ToString();
+            }
+        }
+        return null;
     }
 }

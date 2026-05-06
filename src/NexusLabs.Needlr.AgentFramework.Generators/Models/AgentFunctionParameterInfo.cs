@@ -15,7 +15,8 @@ internal readonly struct AgentFunctionParameterInfo
         IReadOnlyList<ObjectPropertyInfo>? itemObjectProperties,
         string? objectSchemaJson,
         IReadOnlyList<ObjectPropertyInfo>? objectProperties,
-        bool isCancellationToken, bool isNullable, bool hasDefault, string? description)
+        bool isCancellationToken, bool isNullable, bool hasDefault,
+        string? defaultLiteral, bool isEnum, string? description)
     {
         Name = name; TypeFullName = typeFullName;
         JsonSchemaType = jsonSchemaType; JsonSchemaFormat = jsonSchemaFormat;
@@ -25,7 +26,8 @@ internal readonly struct AgentFunctionParameterInfo
         ObjectSchemaJson = objectSchemaJson;
         ObjectProperties = objectProperties;
         IsCancellationToken = isCancellationToken; IsNullable = isNullable;
-        HasDefault = hasDefault; Description = description;
+        HasDefault = hasDefault; DefaultLiteral = defaultLiteral;
+        IsEnum = isEnum; Description = description;
     }
 
     public string Name { get; }
@@ -59,6 +61,22 @@ internal readonly struct AgentFunctionParameterInfo
     public bool IsCancellationToken { get; }
     public bool IsNullable { get; }
     public bool HasDefault { get; }
+    /// <summary>
+    /// The C# literal expression for the parameter's default value, when
+    /// <see cref="HasDefault"/> is <see langword="true"/>. For example, <c>"false"</c> for
+    /// <c>bool flag = false</c>, <c>"5"</c> for <c>int max = 5</c>, <c>"\"x\""</c> for
+    /// <c>string p = "x"</c>, or <c>"null"</c> for <c>string? p = null</c>. The literal is
+    /// emitted directly into generated extraction code as the fallback when the model omits
+    /// the argument or supplies <c>JsonValueKind.Null</c> / <c>JsonValueKind.Undefined</c>.
+    /// </summary>
+    public string? DefaultLiteral { get; }
+    /// <summary>
+    /// <see langword="true"/> when the parameter type is a C# <see langword="enum"/>. Drives
+    /// enum-aware extraction emission: the wrapper calls
+    /// <c>GetStringArgument</c> then <c>Enum.Parse&lt;T&gt;(s, ignoreCase: true)</c> rather
+    /// than directly assigning a <see cref="string"/> to an enum-typed variable.
+    /// </summary>
+    public bool IsEnum { get; }
     public string? Description { get; }
     public bool IsRequired => !IsCancellationToken && !IsNullable && !HasDefault;
 }

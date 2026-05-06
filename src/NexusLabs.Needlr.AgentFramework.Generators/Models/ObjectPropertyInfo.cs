@@ -7,7 +7,14 @@ namespace NexusLabs.Needlr.AgentFramework.Generators;
 /// </summary>
 internal readonly struct ObjectPropertyInfo
 {
-    public ObjectPropertyInfo(string csharpName, string jsonName, string csharpTypeFullName, string schemaType, string? schemaFormat, bool isNullable)
+    public ObjectPropertyInfo(
+        string csharpName,
+        string jsonName,
+        string csharpTypeFullName,
+        string schemaType,
+        string? schemaFormat,
+        bool isNullable,
+        string? initDefaultLiteral)
     {
         CSharpName = csharpName;
         JsonName = jsonName;
@@ -15,6 +22,7 @@ internal readonly struct ObjectPropertyInfo
         SchemaType = schemaType;
         SchemaFormat = schemaFormat;
         IsNullable = isNullable;
+        InitDefaultLiteral = initDefaultLiteral;
     }
 
     /// <summary>The C# property name (PascalCase, e.g., "Topic").</summary>
@@ -37,4 +45,15 @@ internal readonly struct ObjectPropertyInfo
 
     /// <summary>Whether the property is nullable.</summary>
     public bool IsNullable { get; }
+
+    /// <summary>
+    /// The C# literal expression for the property's initializer default, when present and
+    /// expressible as a simple literal. For example, <c>"\"default\""</c> for
+    /// <c>public string Foo { get; init; } = "default";</c> or <c>"5"</c> for
+    /// <c>public int Count { get; init; } = 5;</c>. <see langword="null"/> when the
+    /// property has no initializer (or the initializer is not a simple literal expression).
+    /// Emitted as the fallback when a DTO payload supplies the property as
+    /// <c>JsonValueKind.Null</c> / <c>JsonValueKind.Undefined</c>.
+    /// </summary>
+    public string? InitDefaultLiteral { get; }
 }

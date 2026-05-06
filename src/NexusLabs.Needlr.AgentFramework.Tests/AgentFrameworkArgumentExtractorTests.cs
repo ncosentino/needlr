@@ -48,17 +48,31 @@ public class AgentFrameworkArgumentExtractorTests
     }
 
     [Fact]
-    public void GetStringArgument_FromNullElement_ReturnsEmpty()
+    public void GetStringArgument_FromNullElement_Throws()
     {
         var je = ParseElement("null");
 
-        Assert.Equal(string.Empty, AgentFrameworkArgumentExtractor.GetStringArgument(je));
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => AgentFrameworkArgumentExtractor.GetStringArgument(je));
+        Assert.Contains("string argument", ex.Message);
     }
 
     [Fact]
-    public void GetStringArgument_FromNull_ReturnsEmpty()
+    public void GetStringArgument_FromNull_Throws()
     {
-        Assert.Equal(string.Empty, AgentFrameworkArgumentExtractor.GetStringArgument(null));
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => AgentFrameworkArgumentExtractor.GetStringArgument(null));
+        Assert.Contains("string argument", ex.Message);
+    }
+
+    [Fact]
+    public void GetStringArgument_FromUndefinedElement_Throws()
+    {
+        var je = default(JsonElement);
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => AgentFrameworkArgumentExtractor.GetStringArgument(je));
+        Assert.Contains("string argument", ex.Message);
     }
 
     [Fact]
@@ -492,5 +506,65 @@ public class AgentFrameworkArgumentExtractorTests
     {
         Assert.Throws<InvalidOperationException>(() =>
             AgentFrameworkArgumentExtractor.GetTimeSpanArgument(ParseElement("null")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromNull_ReturnsFalse()
+    {
+        Assert.False(AgentFrameworkArgumentExtractor.IsArgumentSupplied(null));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonNullElement_ReturnsFalse()
+    {
+        Assert.False(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("null")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromUndefinedJsonElement_ReturnsFalse()
+    {
+        Assert.False(AgentFrameworkArgumentExtractor.IsArgumentSupplied(default(JsonElement)));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromTypedString_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied("hello"));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromTypedBool_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(true));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonStringElement_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("\"hi\"")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonNumberElement_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("42")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonBooleanElement_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("true")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonObjectElement_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("{\"k\":1}")));
+    }
+
+    [Fact]
+    public void IsArgumentSupplied_FromJsonArrayElement_ReturnsTrue()
+    {
+        Assert.True(AgentFrameworkArgumentExtractor.IsArgumentSupplied(ParseElement("[1,2,3]")));
     }
 }

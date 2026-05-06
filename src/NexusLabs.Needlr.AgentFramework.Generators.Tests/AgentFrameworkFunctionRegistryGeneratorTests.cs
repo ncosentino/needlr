@@ -2790,4 +2790,478 @@ public sealed class AgentFrameworkFunctionRegistryGeneratorTests
         Assert.Contains("ReturnJsonSchema => _returnSchema", output);
         Assert.Contains("\"type\":\"boolean\"", output);
     }
+
+    [Fact]
+    public void AIFunctionProvider_RequiredBoolParam_EmitsArgumentExceptionGuard()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class RequiredBoolTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(bool flag) => flag.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_flag)", output);
+        Assert.Contains("global::System.ArgumentException", output);
+        Assert.Contains("Required argument 'flag'", output);
+        Assert.Contains("AIFunction 'RequiredBoolTool.DoIt'", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedBoolParam_EmitsLiteralFalseFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalBoolTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(bool flag = false) => flag.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_flag)", output);
+        Assert.Contains("flag = false;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetBooleanArgument(_raw_flag)", output);
+        Assert.DoesNotContain("global::System.ArgumentException", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedBoolParamTrue_EmitsLiteralTrueFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalBoolTrueTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(bool flag = true) => flag.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("flag = true;", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedIntParam_EmitsLiteralFiveFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalIntTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(int max = 5) => max.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_max)", output);
+        Assert.Contains("max = 5;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetInt32Argument(_raw_max)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_NullableStringParam_EmitsNullFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            #nullable enable
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class NullableStringTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(string? label = null) => label ?? string.Empty;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_label)", output);
+        Assert.Contains("label = null;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetStringArgument(_raw_label)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_NullableStringParamWithLiteralDefault_EmitsLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            #nullable enable
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class NullableStringWithDefaultTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(string? label = "x") => label ?? string.Empty;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("label = \"x\";", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_NullableIntParamWithLiteralDefault_EmitsLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            #nullable enable
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class NullableIntTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(int? n = 5) => n.ToString() ?? string.Empty;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_n)", output);
+        Assert.Contains("n = 5;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetInt32Argument(_raw_n)", output);
+        Assert.DoesNotContain("global::System.Int32??", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_NullableIntParamWithNullDefault_EmitsNullFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            #nullable enable
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class NullableIntNullDefaultTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(int? n = null) => n.ToString() ?? string.Empty;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("n = null;", output);
+        Assert.DoesNotContain("global::System.Int32??", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DoesNotEmitPerClassTryGetSuppliedRawHelper()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class HelperShapeTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(int max = 5, bool flag = false) => max.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.DoesNotContain("_TryGetSuppliedRaw", output);
+        Assert.DoesNotContain("private static bool TryGetSuppliedRaw", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DtoProperty_GatesNullAndUndefinedJsonValueKinds()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            #nullable enable
+            namespace MyApp
+            {
+                public sealed class MyDto
+                {
+                    public string Name { get; set; } = "default";
+                    public int Count { get; set; } = 5;
+                }
+
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class DtoGateTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(MyDto dto) => dto.Name;
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("TryGetProperty(\"name\", out var _p_name)", output);
+        Assert.Contains("_p_name.ValueKind != global::System.Text.Json.JsonValueKind.Null", output);
+        Assert.Contains("_p_name.ValueKind != global::System.Text.Json.JsonValueKind.Undefined", output);
+        Assert.Contains("TryGetProperty(\"count\", out var _p_count)", output);
+        Assert.Contains("_p_count.ValueKind != global::System.Text.Json.JsonValueKind.Null", output);
+        Assert.Contains("_p_count.ValueKind != global::System.Text.Json.JsonValueKind.Undefined", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedDecimalParam_EmitsLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalDecimalTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(decimal price = 9.99m) => price.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_price)", output);
+        Assert.Contains("price = 9.99m;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDecimalArgument(_raw_price)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedFloatParam_EmitsLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalFloatTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(float ratio = 1.5f) => ratio.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_ratio)", output);
+        Assert.Contains("ratio = 1.5f;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetSingleArgument(_raw_ratio)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedDoubleParam_EmitsLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalDoubleTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(double ratio = 2.5) => ratio.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_ratio)", output);
+        Assert.Contains("ratio = 2.5d;", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDoubleArgument(_raw_ratio)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedGuidParam_EmitsDefaultLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalGuidTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.Guid id = default) => id.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_id)", output);
+        Assert.Contains("id = default(global::System.Guid);", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetGuidArgument(_raw_id)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedDateTimeParam_EmitsDefaultLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalDateTimeTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.DateTime when = default) => when.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_when)", output);
+        Assert.Contains("when = default(global::System.DateTime);", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeArgument(_raw_when)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedDateTimeOffsetParam_EmitsDefaultLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalDateTimeOffsetTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.DateTimeOffset stamp = default) => stamp.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_stamp)", output);
+        Assert.Contains("stamp = default(global::System.DateTimeOffset);", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetDateTimeOffsetArgument(_raw_stamp)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_DefaultedTimeSpanParam_EmitsDefaultLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalTimeSpanTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(System.TimeSpan duration = default) => duration.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_duration)", output);
+        Assert.Contains("duration = default(global::System.TimeSpan);", output);
+        Assert.Contains("AgentFrameworkArgumentExtractor.GetTimeSpanArgument(_raw_duration)", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_EnumParamRequired_DeclaresEnumTypedVariableAndCastsExtractedString()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public enum Mode { Read, Write, Append }
+
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class RequiredEnumTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(Mode mode) => mode.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        // The extractor returns string, but the variable is a Mode — generator must
+        // emit an enum parse/conversion, not a raw assignment that won't compile.
+        Assert.Contains("global::MyApp.Mode mode", output);
+        Assert.Contains("global::System.Enum.Parse<global::MyApp.Mode>", output);
+        Assert.DoesNotContain("global::MyApp.Mode mode = global::NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetStringArgument", output);
+    }
+
+    [Fact]
+    public void AIFunctionProvider_EnumParamWithDefault_EmitsEnumLiteralFallback()
+    {
+        var source = MafGeneratorTestRunner.MafAttributeDefinitions + """
+            namespace MyApp
+            {
+                public enum Mode { Read, Write, Append }
+
+                [NexusLabs.Needlr.AgentFramework.AgentFunctionGroup("test")]
+                public sealed class OptionalEnumTool
+                {
+                    [NexusLabs.Needlr.AgentFramework.AgentFunction]
+                    public string DoIt(Mode mode = Mode.Append) => mode.ToString();
+                }
+            }
+            """;
+
+        var output = new MafGeneratorTestRunner()
+            .WithSource(source)
+            .GetFile("GeneratedAIFunctionProvider.g.cs");
+
+        Assert.Contains("AgentFrameworkArgumentExtractor.IsArgumentSupplied(_raw_mode)", output);
+        Assert.Contains("mode = global::MyApp.Mode.Append;", output);
+        Assert.Contains("global::System.Enum.Parse<global::MyApp.Mode>", output);
+    }
 }

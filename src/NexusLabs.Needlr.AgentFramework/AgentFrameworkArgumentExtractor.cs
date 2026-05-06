@@ -34,13 +34,15 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// single uniform call regardless of the chat client's delivery shape.
 /// </para>
 /// <para>
-/// <strong>Extractors assume the value is present and non-null.</strong> The generator is
-/// responsible for missing-key, <see cref="JsonValueKind.Null"/>, and
-/// <see cref="JsonValueKind.Undefined"/> handling — typically by short-circuiting to a
-/// declared default value or to <see langword="null"/> for nullable parameter types.
-/// <see cref="GetStringArgument(object?)"/> is the exception: it returns
-/// <see cref="string.Empty"/> for null/undefined inputs to preserve compatibility with the
-/// generator's existing emission shape.
+/// <strong>Extractors assume the value is present and non-null.</strong> Every extractor
+/// throws on <see langword="null"/> raws, on <see cref="JsonValueKind.Null"/>, and on
+/// <see cref="JsonValueKind.Undefined"/>. The generator is responsible for missing-key /
+/// null / undefined handling — typically by gating each extraction call with
+/// <see cref="IsArgumentSupplied(object?)"/> and short-circuiting to a declared default
+/// value or to <see langword="null"/> for nullable parameter types. This keeps the
+/// presence/optionality concern at the generator layer where the C# parameter metadata
+/// (<c>HasExplicitDefaultValue</c>, <c>NullableAnnotation</c>) lives, and keeps the
+/// extractors focused on kind-tolerant decoding of <em>present</em> values.
 /// </para>
 /// <para>
 /// <strong>Strict semantics for typed primitives.</strong> Booleans receiving numeric kinds
@@ -62,27 +64,67 @@ namespace NexusLabs.Needlr.AgentFramework;
 public static class AgentFrameworkArgumentExtractor
 {
     /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="raw"/> represents a value the
+    /// extractor methods are willing to decode. Returns <see langword="false"/> for
+    /// <see langword="null"/> raws, <see cref="JsonValueKind.Null"/>, and
+    /// <see cref="JsonValueKind.Undefined"/> — these mean the chat client did not supply the
+    /// argument and the generator-emitted wrapper should fall back to the parameter's
+    /// declared default value (or <see langword="null"/> for nullable parameters), or throw
+    /// <see cref="ArgumentException"/> for required parameters.
+    /// </summary>
+    /// <param name="raw">The raw argument value as delivered by <c>AIFunctionArguments</c>.</param>
+    /// <returns>
+    /// <see langword="false"/> when the argument is missing/null/undefined; <see langword="true"/>
+    /// otherwise (including for typed values, JSON strings, numbers, booleans, arrays, and objects).
+    /// </returns>
+    /// <remarks>
+    /// This is the documented gate for the extractor methods on this class. Source-generated
+    /// agent-function wrappers call this once per parameter site to decide whether to invoke the
+    /// kind-tolerant extractor or to short-circuit to a fallback. The check is intentionally
+    /// inexpensive — a single null check plus, for <see cref="JsonElement"/>, two
+    /// <see cref="JsonValueKind"/> comparisons.
+    /// </remarks>
+    public static bool IsArgumentSupplied(object? raw)
+    {
+        if (raw is null)
+        {
+            return false;
+        }
+
+        if (raw is JsonElement je &&
+            (je.ValueKind == JsonValueKind.Null || je.ValueKind == JsonValueKind.Undefined))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Extracts a <see cref="string"/> argument from a raw <see cref="object"/> delivered
     /// by <c>AIFunctionArguments</c>.
     /// </summary>
     /// <param name="raw">The raw argument value.</param>
     /// <returns>
     /// <see cref="JsonElement"/> with <see cref="JsonValueKind.String"/> →
-    /// <see cref="JsonElement.GetString"/> (or empty string if null);<br/>
-    /// <see cref="JsonValueKind.Null"/> or <see cref="JsonValueKind.Undefined"/> →
-    /// <see cref="string.Empty"/>;<br/>
+    /// <see cref="JsonElement.GetString"/> (or empty string if the JSON string is null);<br/>
     /// <see cref="JsonValueKind.Array"/>, <see cref="JsonValueKind.Object"/>,
     /// <see cref="JsonValueKind.Number"/>, <see cref="JsonValueKind.True"/>,
     /// <see cref="JsonValueKind.False"/> → <see cref="JsonElement.GetRawText"/>;<br/>
     /// already-typed <see cref="string"/> → as-is;<br/>
-    /// <see langword="null"/> → <see cref="string.Empty"/>;<br/>
     /// any other object → <see cref="object.ToString"/> (or empty string).
     /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="raw"/> is <see langword="null"/>, <see cref="JsonValueKind.Null"/>,
+    /// or <see cref="JsonValueKind.Undefined"/>. Callers must gate with
+    /// <see cref="IsArgumentSupplied(object?)"/> first.
+    /// </exception>
     public static string GetStringArgument(object? raw)
     {
         if (raw is null)
         {
-            return string.Empty;
+            throw new InvalidOperationException(
+                "Cannot extract string argument from null.");
         }
 
         if (raw is JsonElement je)
@@ -90,7 +132,9 @@ public static class AgentFrameworkArgumentExtractor
             return je.ValueKind switch
             {
                 JsonValueKind.String => je.GetString() ?? string.Empty,
-                JsonValueKind.Null or JsonValueKind.Undefined => string.Empty,
+                JsonValueKind.Null or JsonValueKind.Undefined =>
+                    throw new InvalidOperationException(
+                        $"Cannot extract string argument: unexpected JsonValueKind {je.ValueKind}."),
                 _ => je.GetRawText(),
             };
         }
