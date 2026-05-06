@@ -34,3 +34,4 @@ NDLRMAF025 | NexusLabs.Needlr.AgentFramework | Error | WaitAnyCreateGraphAnalyze
 NDLRMAF027 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphTerminalNodeAnalyzer, Terminal node has outgoing edges
 NDLRMAF028 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphConditionMethodAnalyzer, Condition method not found or has wrong signature
 NDLRMAF029 | NexusLabs.Needlr.AgentFramework | Error | AgentGraphReducerMethodAnalyzer, Reducer method not found or has wrong signature
+NDLRMAF030 | NexusLabs.Needlr.AgentFramework | Info | AgentFunctionJsonStringParameterAnalyzer, AgentFunction string parameter described as JSON could be JsonElement

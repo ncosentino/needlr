@@ -5,4 +5,3 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-NDLRMAF030 | NexusLabs.Needlr.AgentFramework | Info | AgentFunction string parameter described as JSON could be JsonElement
