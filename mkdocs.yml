@@ -74,6 +74,7 @@ nav:
     - AI Integrations: ai-integrations.md
     - GitHub Copilot: copilot.md
     - Iterative Agent Loop: iterative-agent-loop.md
+    - Tool Result Middleware: tool-result-middleware.md
     - Progress Reporting: progress-reporting.md
     - Evaluation: evaluation.md
   - Advanced:

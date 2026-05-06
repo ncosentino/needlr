@@ -152,6 +152,20 @@ var generalAgent = agentFactory.CreateAgent();
 
 `FunctionTypes = null` means all registered types are available. `FunctionTypes = []` means no tools.
 
+### Recommended: surviving tool-call failures
+
+Tool bodies throw — sometimes from the user's logic (NRE, validation), sometimes from infrastructure (DB timeout, transient HTTP). By default the exception bubbles all the way to `FunctionInvokingChatClient` and fails the entire agent turn. Call `.UsingToolResultMiddleware()` on the `AgentFrameworkSyringe` to catch these exceptions and translate them into structured `{ error: … }` results the LLM can recover from:
+
+```csharp
+serviceProvider.UsingAgentFramework()
+    .AddAgentFunctionsFromGenerated(...)
+    .UsingResilience()             // Innermost — retries first
+    .UsingToolResultMiddleware()   // Outermost — catches what resilience couldn't recover
+    .BuildAgentFactory();
+```
+
+See [Tool Result Middleware](tool-result-middleware.md) for the full behavior breakdown, ordering rules, and trade-offs.
+
 ---
 
 ## Semantic Kernel
