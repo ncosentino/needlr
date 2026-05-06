@@ -379,4 +379,17 @@ public static class MafDiagnosticDescriptors
         isEnabledByDefault: true,
         description: "The ReducerMethod property on [AgentGraphReducer] references a static method that aggregates multiple branch outputs into a single string. The method must be public, static, accept IReadOnlyList<string>, and return string.",
         helpLinkUri: HelpLinkBase + "NDLRMAF029.md");
+
+    /// <summary>
+    /// NDLRMAF030: <c>[AgentFunction]</c> string parameter described as JSON could be JsonElement.
+    /// </summary>
+    public static readonly DiagnosticDescriptor AgentFunctionJsonStringParameter = new(
+        id: MafDiagnosticIds.AgentFunctionJsonStringParameter,
+        title: "[AgentFunction] string parameter described as JSON could be JsonElement",
+        messageFormat: "Parameter '{0}' on '{1}' is typed as string but {2}. The model may deliver this as a non-string JsonElement (Array/Object/Number) — the generated wrapper coerces it to canonical JSON text via GetRawText(), but typing the parameter as JsonElement gives the tool body direct, typed access to the underlying shape.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "When an [AgentFunction] string parameter is named like JSON (Json/_json suffix) or described as containing JSON (\"JSON array\", \"JSON object\"), the underlying IChatClient may deliver it as a non-string JsonElement kind. The kind-tolerant generator coercion makes this work, but typing the parameter as System.Text.Json.JsonElement avoids the canonical-text round-trip and lets the tool body work with the parsed shape directly.",
+        helpLinkUri: HelpLinkBase + "NDLRMAF030.md");
 }

@@ -180,4 +180,13 @@ public static class MafDiagnosticIds
     /// <c>static string MethodName(IReadOnlyList&lt;string&gt;)</c>.
     /// </summary>
     public const string GraphReducerMethodInvalid = "NDLRMAF029";
+
+    /// <summary>
+    /// NDLRMAF030: An <c>[AgentFunction]</c> parameter typed as <c>string</c> whose name ends
+    /// with <c>Json</c>/<c>_json</c> or whose <c>[Description]</c> mentions <c>"JSON array"</c>
+    /// or <c>"JSON object"</c> could be typed as <c>System.Text.Json.JsonElement</c> for
+    /// direct, typed access. Informational only — the kind-tolerant generator coercion makes
+    /// the string-typed shape work via <c>JsonElement.GetRawText()</c>.
+    /// </summary>
+    public const string AgentFunctionJsonStringParameter = "NDLRMAF030";
 }
