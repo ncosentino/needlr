@@ -1051,6 +1051,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../tool-result-middleware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Result Middleware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../progress-reporting/" class="md-nav__link">
         
   
@@ -3247,6 +3275,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRMAF030/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRMAF030
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3944,8 +4000,12 @@ stack trace.</p>
   wrapped), and the original <a href="https://learn.microsoft.com/en-us/dotnet/api/system.exception" title="System.Exception">System.Exception</a> is preserved on <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Tools.IToolResult.Exception</a>
   for diagnostics.</p>
 <p>When an <code>[AgentFunction]</code> throws an <em>unhandled</em> exception, the middleware catches it,
-wraps it in an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception)</a> result, and returns a safe generic error
+wraps it in an <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception,System.Func{System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError})</a> result, and returns a safe generic error
 message to the LLM. <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Tools.IToolResult.IsTransient</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> in this case.</p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.operationcanceledexception" title="System.OperationCanceledException">System.OperationCanceledException</a> is intentionally <em>not</em> caught — it propagates so
+            cooperative cancellation (parent timeouts, user cancels, structured-concurrency aborts) continues
+            to function correctly. Tools that legitimately catch and translate cancellation should do so
+            inside the tool body, not rely on this middleware.</p>
 <p>Non-<a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Tools.IToolResult</a> return values pass through unchanged.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Middleware.ToolResultFunctionMiddleware.Configure(NexusLabs.Needlr.AgentFramework.AIAgentBuilderPluginOptions)'></a></p>

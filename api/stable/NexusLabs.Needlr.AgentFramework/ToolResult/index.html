@@ -1051,6 +1051,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../tool-result-middleware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Result Middleware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../progress-reporting/" class="md-nav__link">
         
   
@@ -3247,6 +3275,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRMAF030/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRMAF030
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3988,18 +4044,33 @@ using the default <a href="../ToolError/" title="NexusLabs.Needlr.AgentFramework
 <p><code>value</code> <a href="./#NexusLabs.Needlr.AgentFramework.Tools.ToolResult.Ok_TValue_(TValue).TValue" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult.Ok\&lt;TValue&gt;(TValue).TValue">TValue</a></p>
 <h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
 <p><a href="../ToolResult_TValue%2CTError_/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult\&lt;TValue,TError&gt;">NexusLabs.Needlr.AgentFramework.Tools.ToolResult&lt;</a><a href="./#NexusLabs.Needlr.AgentFramework.Tools.ToolResult.Ok_TValue_(TValue).TValue" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult.Ok\&lt;TValue&gt;(TValue).TValue">TValue</a><a href="../ToolResult_TValue%2CTError_/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult\&lt;TValue,TError&gt;">,</a><a href="../ToolError/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolError">ToolError</a><a href="../ToolResult_TValue%2CTError_/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult\&lt;TValue,TError&gt;">&gt;</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception)'></a></p>
-<h2 id="toolresultunhandledfailureexception-method">ToolResult.UnhandledFailure(Exception) Method<a class="headerlink" href="#toolresultunhandledfailureexception-method" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception,System.Func_System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError_)'></a></p>
+<h2 id="toolresultunhandledfailureexception-funcexceptiontoolerror-method">ToolResult.UnhandledFailure(Exception, Func&lt;Exception,ToolError&gt;) Method<a class="headerlink" href="#toolresultunhandledfailureexception-funcexceptiontoolerror-method" title="Permanent link">&para;</a></h2>
 <p>Creates an <a href="../IToolResult/" title="NexusLabs.Needlr.AgentFramework.Tools.IToolResult">IToolResult</a> for an unhandled exception caught by middleware.
 <a href="../IToolResult/#NexusLabs.Needlr.AgentFramework.Tools.IToolResult.IsTransient" title="NexusLabs.Needlr.AgentFramework.Tools.IToolResult.IsTransient">IsTransient</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> because middleware
 cannot determine whether the failure is transient without domain knowledge.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Tools</span><span class="p">.</span><span class="n">IToolResult</span><span class="w"> </span><span class="n">UnhandledFailure</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Exception</span><span class="w"> </span><span class="n">ex</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Tools</span><span class="p">.</span><span class="n">IToolResult</span><span class="w"> </span><span class="n">UnhandledFailure</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Exception</span><span class="w"> </span><span class="n">ex</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">Exception</span><span class="p">,</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Tools</span><span class="p">.</span><span class="n">ToolError</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">formatter</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception).ex'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception,System.Func_System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError_).ex'></a></p>
 <p><code>ex</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.exception" title="System.Exception">System.Exception</a></p>
+<p>The exception that escaped the tool body.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception,System.Func_System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError_).formatter'></a></p>
+<p><code>formatter</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">System.Func&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.exception" title="System.Exception">System.Exception</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">,</a><a href="../ToolError/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolError">ToolError</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">&gt;</a></p>
+<p>Optional formatter that converts the exception into the LLM-facing
+<a href="../ToolError/" title="NexusLabs.Needlr.AgentFramework.Tools.ToolError">ToolError</a>. When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, a default formatter is used that
+includes the exception type name without the message body.</p>
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="../IToolResult/" title="NexusLabs.Needlr.AgentFramework.Tools.IToolResult">IToolResult</a></p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p>The default LLM-facing error message is
+<code>"An unexpected error occurred ({ExceptionTypeName}). Please try again."</code> — the
+type name is included so the model can distinguish a shape mismatch from a timeout
+from an authorization failure and choose a sensible recovery strategy. The
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.exception.message" title="System.Exception.Message">System.Exception.Message</a> body is intentionally \&lt;em&gt;not\&lt;/em&gt; included to avoid
+leaking application or PII details (DB connection strings, user data, internal IDs).
+Pass <a href="./#NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception,System.Func_System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError_).formatter" title="NexusLabs.Needlr.AgentFramework.Tools.ToolResult.UnhandledFailure(System.Exception, System.Func\&lt;System.Exception,NexusLabs.Needlr.AgentFramework.Tools.ToolError&gt;).formatter">formatter</a> to override the LLM-facing message — useful when an
+application wants to keep the bland legacy message or surface domain-specific guidance.</p>
 
 
 
