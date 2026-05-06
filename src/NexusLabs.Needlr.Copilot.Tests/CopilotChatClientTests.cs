@@ -36,7 +36,7 @@ public class CopilotChatClientTests
                         "id": "test-1",
                         "object": "chat.completion",
                         "created": 1700000000,
-                        "model": "claude-sonnet-4",
+                        "model": "claude-sonnet-4.5",
                         "choices": [{
                             "index": 0,
                             "message": {"role": "assistant", "content": "Hello!"},
@@ -140,7 +140,7 @@ public class CopilotChatClientTests
                         "id": "resp-tc",
                         "object": "chat.completion",
                         "created": 1700000000,
-                        "model": "claude-sonnet-4",
+                        "model": "claude-sonnet-4.5",
                         "choices": [{
                             "index": 0,
                             "message": {

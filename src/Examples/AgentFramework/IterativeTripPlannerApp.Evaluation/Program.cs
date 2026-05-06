@@ -62,7 +62,7 @@ var serviceProvider = new Syringe()
             var copilotSection = config.GetSection("Copilot");
             return new CopilotChatClient(new CopilotChatClientOptions
             {
-                DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4",
+                DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4.5",
             });
         }))
     .BuildServiceProvider(configuration);

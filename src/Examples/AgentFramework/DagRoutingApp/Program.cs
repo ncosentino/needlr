@@ -65,7 +65,7 @@ var configuration = new ConfigurationBuilder()
 var copilotSection = configuration.GetSection("Copilot");
 var copilotOptions = new CopilotChatClientOptions
 {
-    DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4",
+    DefaultModel = copilotSection["Model"] ?? "claude-sonnet-4.5",
 };
 IChatClient chatClient = new CopilotChatClient(copilotOptions);
 

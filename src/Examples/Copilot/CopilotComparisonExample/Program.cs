@@ -50,7 +50,7 @@ Console.WriteLine("╚═══════════════════�
 Console.WriteLine();
 
 var configuration = new ConfigurationBuilder().Build();
-var copilotOptions = new CopilotChatClientOptions { DefaultModel = "claude-sonnet-4" };
+var copilotOptions = new CopilotChatClientOptions { DefaultModel = "claude-sonnet-4.5" };
 IChatClient chatClient = new CopilotChatClient(copilotOptions);
 var copilotTools = CopilotToolSet.Create(t => t.EnableWebSearch = true);
 
@@ -134,7 +134,7 @@ try
     await using var session = await sdkClient.CreateSessionAsync(
         new GitHub.Copilot.SDK.SessionConfig
         {
-            Model = "claude-sonnet-4",
+            Model = "claude-sonnet-4.5",
             OnPermissionRequest = GitHub.Copilot.SDK.PermissionHandler.ApproveAll,
         });
 

@@ -60,7 +60,7 @@ public class RfcPipelineEvalTests
 
             var copilotOptions = new CopilotChatClientOptions
             {
-                DefaultModel = "claude-sonnet-4",
+                DefaultModel = "claude-sonnet-4.5",
             };
             IChatClient chatClient = new CopilotChatClient(copilotOptions);
 

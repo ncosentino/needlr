@@ -22,7 +22,7 @@ public sealed class CopilotSmokeTests
     {
         using var judge = new CopilotChatClient(new CopilotChatClientOptions
         {
-            DefaultModel = "claude-sonnet-4",
+            DefaultModel = "claude-sonnet-4.5",
         });
 
         var evaluator = new RelevanceEvaluator();
