@@ -202,4 +202,115 @@ public class AIFunctionWrapperEndToEndTests
         Assert.Equal("[1,2]", single.Name);
         Assert.Equal(3, single.Count);
     }
+
+    [Fact]
+    public async Task Wrapper_GuidParam_AcceptsStringLiteral()
+    {
+        E2EGuidTool.Captured = null;
+        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record));
+
+        await fn.InvokeAsync(
+            Args("id", Parse("\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"")),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), E2EGuidTool.Captured);
+    }
+
+    [Fact]
+    public async Task Wrapper_GuidParam_RejectsInvalidGuidString()
+    {
+        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await fn.InvokeAsync(
+                Args("id", Parse("\"not-a-guid\"")),
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task Wrapper_DateTimeParam_AcceptsIso8601String()
+    {
+        E2EDateTimeTool.Captured = null;
+        var fn = ResolveFunction<E2EDateTimeTool>(nameof(E2EDateTimeTool.Record));
+
+        await fn.InvokeAsync(
+            Args("when", Parse("\"2026-05-05T18:30:00Z\"")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2EDateTimeTool.Captured);
+        Assert.Equal(2026, E2EDateTimeTool.Captured!.Value.Year);
+        Assert.Equal(5, E2EDateTimeTool.Captured!.Value.Month);
+        Assert.Equal(5, E2EDateTimeTool.Captured!.Value.Day);
+    }
+
+    [Fact]
+    public async Task Wrapper_DateTimeOffsetParam_PreservesOffset()
+    {
+        E2EDateTimeOffsetTool.Captured = null;
+        var fn = ResolveFunction<E2EDateTimeOffsetTool>(nameof(E2EDateTimeOffsetTool.Record));
+
+        await fn.InvokeAsync(
+            Args("stamp", Parse("\"2026-05-05T18:30:00+05:00\"")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2EDateTimeOffsetTool.Captured);
+        Assert.Equal(TimeSpan.FromHours(5), E2EDateTimeOffsetTool.Captured!.Value.Offset);
+    }
+
+    [Fact]
+    public async Task Wrapper_TimeSpanParam_AcceptsDotNetFormat()
+    {
+        E2ETimeSpanTool.Captured = null;
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+
+        await fn.InvokeAsync(
+            Args("duration", Parse("\"01:30:00\"")),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(TimeSpan.FromMinutes(90), E2ETimeSpanTool.Captured);
+    }
+
+    [Fact]
+    public async Task Wrapper_TimeSpanParam_AcceptsIso8601Duration()
+    {
+        E2ETimeSpanTool.Captured = null;
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+
+        await fn.InvokeAsync(
+            Args("duration", Parse("\"PT1H30M\"")),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(TimeSpan.FromMinutes(90), E2ETimeSpanTool.Captured);
+    }
+
+    [Fact]
+    public async Task Wrapper_TimeSpanParam_RejectsInvalidString()
+    {
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await fn.InvokeAsync(
+                Args("duration", Parse("\"abc\"")),
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task Wrapper_ObjectArrayParam_TemporalPropertiesExtractCorrectly()
+    {
+        E2ETemporalArrayTool.Captured = null;
+        var fn = ResolveFunction<E2ETemporalArrayTool>(nameof(E2ETemporalArrayTool.Record));
+
+        await fn.InvokeAsync(
+            Args("entries", Parse(
+                "[{\"id\":\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"," +
+                "\"when\":\"2026-05-05T18:30:00Z\"," +
+                "\"duration\":\"PT1H30M\"}]")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2ETemporalArrayTool.Captured);
+        var single = Assert.Single(E2ETemporalArrayTool.Captured!);
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), single.Id);
+        Assert.Equal(2026, single.When.Year);
+        Assert.Equal(TimeSpan.FromMinutes(90), single.Duration);
+    }
 }
