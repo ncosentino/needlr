@@ -77,6 +77,46 @@ internal sealed class BatchFunctions
         var fieldCount = metadata.EnumerateObject().Count();
         return $"Attached {fieldCount} metadata field(s) to topic '{topicId}'.";
     }
+
+    /// <summary>
+    /// Demonstrates the <em>typed DTO</em> parameter pattern — the natural shape for tool
+    /// parameters with a known schema. The source generator emits a full property schema
+    /// (<c>type:object,properties:{…},required:[…]</c>) and per-property
+    /// <c>TryGetProperty</c> + helper-call extraction. The tool body works with strongly-
+    /// typed properties — no <see cref="JsonElement"/> inspection, no manual deserialization.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Limitations: the DTO must have a parameterless constructor and mutable
+    /// (<c>get</c>/<c>set</c>) properties. Records with positional primary constructors
+    /// (<c>record Foo(string Bar)</c>) and init-only properties (<c>{ get; init; }</c>) are
+    /// not currently supported by the source generator's property-binding emission.
+    /// </para>
+    /// </remarks>
+    [AgentFunction]
+    [Description("Records a topic feedback summary with a structured DTO.")]
+    public string RecordTopicFeedback(
+        [Description("Feedback summary fields.")] TopicFeedbackSummary summary)
+    {
+        return $"Recorded feedback for '{summary.TopicId}': rating={summary.Rating}, " +
+               $"comment='{summary.Comment}'.";
+    }
+}
+
+/// <summary>
+/// DTO parameter type for <see cref="BatchFunctions.RecordTopicFeedback"/>. Demonstrates the
+/// natural typed-parameter shape — no <see cref="JsonElement"/> required.
+/// </summary>
+public sealed class TopicFeedbackSummary
+{
+    [Description("The topic being summarized.")]
+    public string TopicId { get; set; } = "";
+
+    [Description("Numeric rating from 1 to 5.")]
+    public int Rating { get; set; }
+
+    [Description("Optional comment about the topic.")]
+    public string? Comment { get; set; }
 }
 
 /// <summary>

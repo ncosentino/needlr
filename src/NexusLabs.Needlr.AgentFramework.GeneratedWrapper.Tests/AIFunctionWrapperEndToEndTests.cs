@@ -313,4 +313,60 @@ public class AIFunctionWrapperEndToEndTests
         Assert.Equal(2026, single.When.Year);
         Assert.Equal(TimeSpan.FromMinutes(90), single.Duration);
     }
+
+    [Fact]
+    public async Task Wrapper_DtoParam_ExtractsAllPropertiesFromObjectLiteral()
+    {
+        E2EDtoTool.Captured = null;
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+
+        await fn.InvokeAsync(
+            Args("metadata", Parse(
+                "{\"source\":\"news-feed\"," +
+                "\"priority\":3," +
+                "\"correlationId\":\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"," +
+                "\"when\":\"2026-05-05T18:30:00Z\"}")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2EDtoTool.Captured);
+        Assert.Equal("news-feed", E2EDtoTool.Captured!.Source);
+        Assert.Equal(3, E2EDtoTool.Captured.Priority);
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), E2EDtoTool.Captured.CorrelationId);
+        Assert.Equal(2026, E2EDtoTool.Captured.When.Year);
+    }
+
+    [Fact]
+    public async Task Wrapper_DtoParam_HandlesPartialJson()
+    {
+        E2EDtoTool.Captured = null;
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+
+        // Model omits some properties — the wrapper must populate the present ones
+        // and leave the rest at their default (no exception, no null reference).
+        await fn.InvokeAsync(
+            Args("metadata", Parse("{\"source\":\"partial\"}")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2EDtoTool.Captured);
+        Assert.Equal("partial", E2EDtoTool.Captured!.Source);
+        Assert.Equal(0, E2EDtoTool.Captured.Priority);
+        Assert.Equal(Guid.Empty, E2EDtoTool.Captured.CorrelationId);
+        Assert.Equal(default, E2EDtoTool.Captured.When);
+    }
+
+    [Fact]
+    public async Task Wrapper_DtoParam_PropertyKindCoercionWorks()
+    {
+        E2EDtoTool.Captured = null;
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+
+        // Model sends 'priority' as a numeric String instead of a Number — the per-property
+        // helper coerces via int.TryParse, mirroring the top-level int parameter behavior.
+        await fn.InvokeAsync(
+            Args("metadata", Parse("{\"source\":\"x\",\"priority\":\"7\"}")),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(E2EDtoTool.Captured);
+        Assert.Equal(7, E2EDtoTool.Captured!.Priority);
+    }
 }
