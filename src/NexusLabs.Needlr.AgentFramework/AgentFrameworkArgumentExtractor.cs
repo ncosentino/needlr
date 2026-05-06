@@ -50,10 +50,13 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// and fall back to invariant-culture parsing on <see cref="JsonValueKind.String"/>.
 /// </para>
 /// <para>
-/// <strong>Out of scope.</strong> <see cref="DateTime"/>, <see cref="DateTimeOffset"/>,
-/// <see cref="TimeSpan"/>, and <see cref="Guid"/> — the source generator currently does not
-/// emit JSON extraction for these types (they fall through to a cast-only branch).
-/// Extending support is a separate enhancement.
+/// <strong>Supported parameter types.</strong> <see cref="string"/>, <see cref="bool"/>, the
+/// 8 integer types (<see cref="byte"/>/<see cref="sbyte"/>/<see cref="short"/>/<see cref="ushort"/>/
+/// <see cref="int"/>/<see cref="uint"/>/<see cref="long"/>/<see cref="ulong"/>),
+/// <see cref="float"/>/<see cref="double"/>/<see cref="decimal"/>, <see cref="Guid"/>,
+/// <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, and <see cref="TimeSpan"/>. JSON has
+/// no native kind for the temporal/GUID types — the model emits a string and the extractor
+/// parses it (ISO 8601 for date-time / duration, GUID literal for <see cref="Guid"/>).
 /// </para>
 /// </remarks>
 public static class AgentFrameworkArgumentExtractor
@@ -281,6 +284,186 @@ public static class AgentFrameworkArgumentExtractor
 
         throw new InvalidOperationException(
             $"Cannot extract decimal argument from {raw?.GetType().FullName ?? "null"}.");
+    }
+
+    /// <summary>Extracts a <see cref="Guid"/> argument.</summary>
+    /// <param name="raw">The raw argument value.</param>
+    /// <remarks>
+    /// JSON has no native GUID kind — the model emits a string. Uses
+    /// <see cref="JsonElement.TryGetGuid"/> on <see cref="JsonValueKind.String"/>; throws on
+    /// any other kind to surface schema violations rather than silently substituting
+    /// <see cref="Guid.Empty"/>.
+    /// </remarks>
+    public static Guid GetGuidArgument(object? raw)
+    {
+        if (raw is Guid g)
+        {
+            return g;
+        }
+
+        if (raw is JsonElement je)
+        {
+            switch (je.ValueKind)
+            {
+                case JsonValueKind.String:
+                    if (je.TryGetGuid(out var v))
+                    {
+                        return v;
+                    }
+                    throw new InvalidOperationException(
+                        $"Cannot extract Guid argument: JSON String '{je.GetString()}' is not a valid GUID.");
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot extract Guid argument: unexpected JsonValueKind {je.ValueKind}.");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot extract Guid argument from {raw?.GetType().FullName ?? "null"}.");
+    }
+
+    /// <summary>Extracts a <see cref="DateTime"/> argument from an ISO 8601 string.</summary>
+    /// <param name="raw">The raw argument value.</param>
+    /// <remarks>
+    /// JSON has no native date-time kind — the model emits a string. Uses
+    /// <see cref="JsonElement.TryGetDateTime"/> which accepts the JSON-Schema-spec
+    /// <c>"date-time"</c> format (ISO 8601 with optional offset).
+    /// </remarks>
+    public static DateTime GetDateTimeArgument(object? raw)
+    {
+        if (raw is DateTime dt)
+        {
+            return dt;
+        }
+
+        if (raw is JsonElement je)
+        {
+            switch (je.ValueKind)
+            {
+                case JsonValueKind.String:
+                    if (je.TryGetDateTime(out var v))
+                    {
+                        return v;
+                    }
+                    throw new InvalidOperationException(
+                        $"Cannot extract DateTime argument: JSON String '{je.GetString()}' is not a valid ISO 8601 date-time.");
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot extract DateTime argument: unexpected JsonValueKind {je.ValueKind}.");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot extract DateTime argument from {raw?.GetType().FullName ?? "null"}.");
+    }
+
+    /// <summary>Extracts a <see cref="DateTimeOffset"/> argument from an ISO 8601 string.</summary>
+    /// <param name="raw">The raw argument value.</param>
+    /// <remarks>
+    /// JSON has no native date-time kind — the model emits a string with optional offset.
+    /// Uses <see cref="JsonElement.TryGetDateTimeOffset"/>.
+    /// </remarks>
+    public static DateTimeOffset GetDateTimeOffsetArgument(object? raw)
+    {
+        if (raw is DateTimeOffset dto)
+        {
+            return dto;
+        }
+
+        if (raw is JsonElement je)
+        {
+            switch (je.ValueKind)
+            {
+                case JsonValueKind.String:
+                    if (je.TryGetDateTimeOffset(out var v))
+                    {
+                        return v;
+                    }
+                    throw new InvalidOperationException(
+                        $"Cannot extract DateTimeOffset argument: JSON String '{je.GetString()}' is not a valid ISO 8601 date-time.");
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot extract DateTimeOffset argument: unexpected JsonValueKind {je.ValueKind}.");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot extract DateTimeOffset argument from {raw?.GetType().FullName ?? "null"}.");
+    }
+
+    /// <summary>Extracts a <see cref="TimeSpan"/> argument from a string.</summary>
+    /// <param name="raw">The raw argument value.</param>
+    /// <remarks>
+    /// <para>
+    /// JSON has no native duration kind. This helper accepts both common LLM outputs:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <description>
+    /// .NET round-trip format like <c>"01:30:00"</c> or <c>"1.02:03:04"</c> via
+    /// <see cref="TimeSpan.TryParse(string?, IFormatProvider?, out TimeSpan)"/> with invariant culture.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// JSON-Schema-spec ISO 8601 duration like <c>"PT1H30M"</c> via
+    /// <see cref="System.Xml.XmlConvert.ToTimeSpan"/>.
+    /// </description>
+    /// </item>
+    /// </list>
+    /// </remarks>
+    public static TimeSpan GetTimeSpanArgument(object? raw)
+    {
+        if (raw is TimeSpan ts)
+        {
+            return ts;
+        }
+
+        if (raw is JsonElement je)
+        {
+            switch (je.ValueKind)
+            {
+                case JsonValueKind.String:
+                    var s = je.GetString();
+                    if (TryParseTimeSpan(s, out var v))
+                    {
+                        return v;
+                    }
+                    throw new InvalidOperationException(
+                        $"Cannot extract TimeSpan argument: JSON String '{s}' is neither a .NET duration ('hh:mm:ss') nor an ISO 8601 duration ('PT1H30M').");
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot extract TimeSpan argument: unexpected JsonValueKind {je.ValueKind}.");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot extract TimeSpan argument from {raw?.GetType().FullName ?? "null"}.");
+    }
+
+    private static bool TryParseTimeSpan(string? s, out TimeSpan result)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            result = default;
+            return false;
+        }
+
+        if (TimeSpan.TryParse(s, CultureInfo.InvariantCulture, out result))
+        {
+            return true;
+        }
+
+        try
+        {
+            result = System.Xml.XmlConvert.ToTimeSpan(s!);
+            return true;
+        }
+        catch (FormatException)
+        {
+            result = default;
+            return false;
+        }
     }
 
     private delegate bool TryNumber<T>(JsonElement je, out T value);

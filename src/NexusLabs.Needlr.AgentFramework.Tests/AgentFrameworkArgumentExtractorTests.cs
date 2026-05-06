@@ -320,4 +320,177 @@ public class AgentFrameworkArgumentExtractorTests
     {
         Assert.Equal(42.5m, AgentFrameworkArgumentExtractor.GetDecimalArgument(42.5m));
     }
+
+    [Fact]
+    public void GetGuidArgument_FromStringElement_ReturnsParsedGuid()
+    {
+        var je = ParseElement("\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetGuidArgument(je);
+
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), result);
+    }
+
+    [Fact]
+    public void GetGuidArgument_FromInvalidString_Throws()
+    {
+        var je = ParseElement("\"not-a-guid\"");
+
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetGuidArgument(je));
+    }
+
+    [Fact]
+    public void GetGuidArgument_FromTypedGuid_ReturnsAsIs()
+    {
+        var g = Guid.NewGuid();
+
+        Assert.Equal(g, AgentFrameworkArgumentExtractor.GetGuidArgument(g));
+    }
+
+    [Fact]
+    public void GetGuidArgument_FromNumberKind_Throws()
+    {
+        var je = ParseElement("42");
+
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetGuidArgument(je));
+    }
+
+    [Fact]
+    public void GetGuidArgument_FromNullElement_Throws()
+    {
+        var je = ParseElement("null");
+
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetGuidArgument(je));
+    }
+
+    [Fact]
+    public void GetGuidArgument_FromNull_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetGuidArgument(null));
+    }
+
+    [Fact]
+    public void GetDateTimeArgument_FromIso8601String_ReturnsParsedDateTime()
+    {
+        var je = ParseElement("\"2026-05-05T18:30:00Z\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetDateTimeArgument(je);
+
+        Assert.Equal(2026, result.Year);
+        Assert.Equal(5, result.Month);
+        Assert.Equal(5, result.Day);
+    }
+
+    [Fact]
+    public void GetDateTimeArgument_FromInvalidString_Throws()
+    {
+        var je = ParseElement("\"not-a-date\"");
+
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetDateTimeArgument(je));
+    }
+
+    [Fact]
+    public void GetDateTimeArgument_FromTypedDateTime_ReturnsAsIs()
+    {
+        var dt = new DateTime(2026, 5, 5, 18, 30, 0, DateTimeKind.Utc);
+
+        Assert.Equal(dt, AgentFrameworkArgumentExtractor.GetDateTimeArgument(dt));
+    }
+
+    [Fact]
+    public void GetDateTimeArgument_FromNumberKind_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetDateTimeArgument(ParseElement("1735689600")));
+    }
+
+    [Fact]
+    public void GetDateTimeOffsetArgument_FromIso8601StringWithOffset_ReturnsParsedDateTimeOffset()
+    {
+        var je = ParseElement("\"2026-05-05T18:30:00+05:00\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetDateTimeOffsetArgument(je);
+
+        Assert.Equal(TimeSpan.FromHours(5), result.Offset);
+        Assert.Equal(2026, result.Year);
+    }
+
+    [Fact]
+    public void GetDateTimeOffsetArgument_FromInvalidString_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetDateTimeOffsetArgument(ParseElement("\"nonsense\"")));
+    }
+
+    [Fact]
+    public void GetDateTimeOffsetArgument_FromTypedDateTimeOffset_ReturnsAsIs()
+    {
+        var dto = new DateTimeOffset(2026, 5, 5, 18, 30, 0, TimeSpan.FromHours(-7));
+
+        Assert.Equal(dto, AgentFrameworkArgumentExtractor.GetDateTimeOffsetArgument(dto));
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromDotNetRoundTripFormat_ReturnsParsed()
+    {
+        var je = ParseElement("\"01:30:00\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetTimeSpanArgument(je);
+
+        Assert.Equal(TimeSpan.FromMinutes(90), result);
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromIso8601DurationFormat_ReturnsParsed()
+    {
+        var je = ParseElement("\"PT1H30M\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetTimeSpanArgument(je);
+
+        Assert.Equal(TimeSpan.FromMinutes(90), result);
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromIso8601LongerDuration_ReturnsParsed()
+    {
+        var je = ParseElement("\"P1DT2H3M4S\"");
+
+        var result = AgentFrameworkArgumentExtractor.GetTimeSpanArgument(je);
+
+        Assert.Equal(new TimeSpan(1, 2, 3, 4), result);
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromInvalidString_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetTimeSpanArgument(ParseElement("\"abc\"")));
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromTypedTimeSpan_ReturnsAsIs()
+    {
+        var ts = TimeSpan.FromMinutes(90);
+
+        Assert.Equal(ts, AgentFrameworkArgumentExtractor.GetTimeSpanArgument(ts));
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromNumberKind_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetTimeSpanArgument(ParseElement("3600")));
+    }
+
+    [Fact]
+    public void GetTimeSpanArgument_FromNullElement_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AgentFrameworkArgumentExtractor.GetTimeSpanArgument(ParseElement("null")));
+    }
 }
