@@ -167,6 +167,8 @@ nav:
   - Video Tutorials: video-tutorials.md
   - Architecture Decisions:
     - ADR-0001 DAG Workflow Support: adr/adr-0001-dag-graph-workflow-support.md
+  - Migrations:
+    - 0.0.2-alpha.52 — Tool Argument Boundary: migrations/0.0.2-alpha-0052.md
 
 plugins:
   - search
