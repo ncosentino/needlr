@@ -258,6 +258,8 @@ internal static class AIFunctionProviderCodeGenerator
         return $"{{\"type\":\"{param.JsonSchemaType}\"}}";
     }
 
+    private const string ExtractorFqn = "global::NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor";
+
     private static void AppendParameterExtraction(StringBuilder sb, AgentFunctionParameterInfo param)
     {
         var rawVar = $"_raw_{param.Name}";
@@ -267,19 +269,16 @@ internal static class AIFunctionProviderCodeGenerator
         switch (param.JsonSchemaType)
         {
             case "string":
-                sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.GetString() ?? \"\" : {rawVar}?.ToString() ?? \"\";");
+                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.GetStringArgument({rawVar});");
                 break;
             case "boolean":
-            {
-                var bVar = $"_b_{param.Name}";
-                sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.GetBoolean() : {rawVar} is bool {bVar} ? {bVar} : global::System.Convert.ToBoolean({rawVar});");
+                sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.GetBooleanArgument({rawVar});");
                 break;
-            }
             case "integer":
-                AppendIntegerExtraction(sb, param, rawVar, jVar);
+                AppendIntegerExtraction(sb, param, rawVar);
                 break;
             case "number":
-                AppendNumberExtraction(sb, param, rawVar, jVar);
+                AppendNumberExtraction(sb, param, rawVar);
                 break;
             case "array":
             {
@@ -296,7 +295,11 @@ internal static class AIFunctionProviderCodeGenerator
 
                 if (param.ItemJsonSchemaType == "object" && param.ItemObjectProperties is { Count: > 0 })
                 {
-                    // Complex object: manual property extraction (AOT-safe)
+                    // Complex object: manual property extraction (AOT-safe). Each
+                    // property goes through the kind-tolerant helper so a
+                    // model-supplied numeric stays parseable as int via String
+                    // path, an array literal becomes canonical JSON for a string
+                    // property, etc.
                     sb.AppendLine($"                    var _obj = new {elementType}();");
                     foreach (var prop in param.ItemObjectProperties)
                     {
@@ -304,32 +307,32 @@ internal static class AIFunctionProviderCodeGenerator
                         switch (prop.SchemaType)
                         {
                             case "string":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetString(){(prop.IsNullable ? "" : " ?? \"\"")};");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetStringArgument(_p_{prop.JsonName});");
                                 break;
                             case "integer":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetInt32();");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetInt32Argument(_p_{prop.JsonName});");
                                 break;
                             case "number":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetDouble();");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetDoubleArgument(_p_{prop.JsonName});");
                                 break;
                             case "boolean":
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetBoolean();");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetBooleanArgument(_p_{prop.JsonName});");
                                 break;
                             default:
-                                sb.AppendLine($"                        _obj.{prop.CSharpName} = _p_{prop.JsonName}.GetString(){(prop.IsNullable ? "" : " ?? \"\"")};");
+                                sb.AppendLine($"                        _obj.{prop.CSharpName} = {ExtractorFqn}.GetStringArgument(_p_{prop.JsonName});");
                                 break;
                         }
                     }
                     sb.AppendLine($"                    _list_{param.Name}.Add(_obj);");
                 }
                 else if (param.ItemJsonSchemaType == "string")
-                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetString() ?? \"\");");
+                    sb.AppendLine($"                    _list_{param.Name}.Add({ExtractorFqn}.GetStringArgument(_elem));");
                 else if (param.ItemJsonSchemaType == "integer")
-                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetInt32());");
+                    sb.AppendLine($"                    _list_{param.Name}.Add({ExtractorFqn}.GetInt32Argument(_elem));");
                 else if (param.ItemJsonSchemaType == "number")
-                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetDouble());");
+                    sb.AppendLine($"                    _list_{param.Name}.Add({ExtractorFqn}.GetDoubleArgument(_elem));");
                 else if (param.ItemJsonSchemaType == "boolean")
-                    sb.AppendLine($"                    _list_{param.Name}.Add(_elem.GetBoolean());");
+                    sb.AppendLine($"                    _list_{param.Name}.Add({ExtractorFqn}.GetBooleanArgument(_elem));");
                 else
                     sb.AppendLine($"                    _list_{param.Name}.Add(default!);");
 
@@ -356,46 +359,44 @@ internal static class AIFunctionProviderCodeGenerator
         }
     }
 
-    private static void AppendIntegerExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar, string jVar)
+    private static void AppendIntegerExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar)
     {
         var typeFqn = param.TypeFullName;
-        string getMethod, castType, convertMethod;
-        var iVar = $"_i_{param.Name}";
+        string helperMethod;
 
         if (typeFqn.Contains("System.Int64"))
-        { getMethod = "GetInt64()"; castType = "long"; convertMethod = "ToInt64"; }
+            helperMethod = "GetInt64Argument";
         else if (typeFqn.Contains("System.Int16"))
-        { getMethod = "GetInt16()"; castType = "short"; convertMethod = "ToInt16"; }
+            helperMethod = "GetInt16Argument";
         else if (typeFqn.Contains("System.SByte"))
-        { getMethod = "GetSByte()"; castType = "sbyte"; convertMethod = "ToSByte"; }
+            helperMethod = "GetSByteArgument";
         else if (typeFqn.Contains("System.Byte"))
-        { getMethod = "GetByte()"; castType = "byte"; convertMethod = "ToByte"; }
+            helperMethod = "GetByteArgument";
         else if (typeFqn.Contains("System.UInt64"))
-        { getMethod = "GetUInt64()"; castType = "ulong"; convertMethod = "ToUInt64"; }
+            helperMethod = "GetUInt64Argument";
         else if (typeFqn.Contains("System.UInt32"))
-        { getMethod = "GetUInt32()"; castType = "uint"; convertMethod = "ToUInt32"; }
+            helperMethod = "GetUInt32Argument";
         else if (typeFqn.Contains("System.UInt16"))
-        { getMethod = "GetUInt16()"; castType = "ushort"; convertMethod = "ToUInt16"; }
+            helperMethod = "GetUInt16Argument";
         else
-        { getMethod = "GetInt32()"; castType = "int"; convertMethod = "ToInt32"; }
+            helperMethod = "GetInt32Argument";
 
-        sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.{getMethod} : {rawVar} is {castType} {iVar} ? {iVar} : global::System.Convert.{convertMethod}({rawVar});");
+        sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{helperMethod}({rawVar});");
     }
 
-    private static void AppendNumberExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar, string jVar)
+    private static void AppendNumberExtraction(StringBuilder sb, AgentFunctionParameterInfo param, string rawVar)
     {
         var typeFqn = param.TypeFullName;
-        string getMethod, castType, convertMethod;
-        var nVar = $"_n_{param.Name}";
+        string helperMethod;
 
         if (typeFqn.Contains("System.Single"))
-        { getMethod = "GetSingle()"; castType = "float"; convertMethod = "ToSingle"; }
+            helperMethod = "GetSingleArgument";
         else if (typeFqn.Contains("System.Decimal"))
-        { getMethod = "GetDecimal()"; castType = "decimal"; convertMethod = "ToDecimal"; }
+            helperMethod = "GetDecimalArgument";
         else
-        { getMethod = "GetDouble()"; castType = "double"; convertMethod = "ToDouble"; }
+            helperMethod = "GetDoubleArgument";
 
-        sb.AppendLine($"            var {param.Name} = {rawVar} is global::System.Text.Json.JsonElement {jVar} ? {jVar}.{getMethod} : {rawVar} is {castType} {nVar} ? {nVar} : global::System.Convert.{convertMethod}({rawVar});");
+        sb.AppendLine($"            var {param.Name} = {ExtractorFqn}.{helperMethod}({rawVar});");
     }
 
     /// <summary>
