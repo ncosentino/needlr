@@ -1,3 +1,37 @@
+## [0.0.2-alpha.52] - 2026-05-05
+
+### Fixed
+
+- **🛠️ Production crash: `JsonElement.GetString()` throws on non-string kinds** — `AIFunctionProviderCodeGenerator` emitted unsafe direct `JsonElement.GetXxx()` calls into every generated tool wrapper. When the underlying `IChatClient` was anything other than the GitHub Copilot client (e.g. `AzureOpenAIClient.AsIChatClient()`), tool arguments arrived as the raw `JsonValueKind` the model produced — `Array`, `Object`, `Number`, etc. — and the call threw `InvalidOperationException` before user code could run. The same bug class affected `GetInt32`, `GetBoolean`, `GetDouble`, and the per-element extractors inside arrays and object items. Generated wrappers now route every extraction through the new kind-tolerant `AgentFrameworkArgumentExtractor` helper.
+- **`Guid`/`DateTime`/`DateTimeOffset`/`TimeSpan` parameter binding** — these types fell through to a cast-only branch (`raw is Guid g ? g : default(Guid)!`) that silently substituted `Guid.Empty` / `DateTime.MinValue` / `TimeSpan.Zero` whenever the actual delivery shape was a `JsonElement` of `String` kind (which is always, since JSON has no native kind for any of these). Their JSON schema also emitted as `{"type":"object"}` — meaningless to the LLM. Now correctly emits `{"type":"string","format":"uuid"|"date-time"|"duration"}` and routes extraction through typed helpers. `TimeSpan` accepts both .NET round-trip `"01:30:00"` and ISO 8601 `"PT1H30M"` formats.
+- **`OperationCanceledException` swallowed by `ToolResultFunctionMiddleware`** — `catch (Exception ex)` at line 56 caught cancellation tokens and converted them to `{ error: "An unexpected error occurred…" }`. Cooperative cancellation signals (parent timeouts, user cancels, structured-concurrency aborts) were silently lost. Now rethrows OCE before the general catch.
+- **Object-property extraction used wrong typed helper for sub-types** — `long`/`Int16`/`Decimal`/`Single` properties inside complex array items were extracted via `GetInt32()` / `GetDouble()`, with overflow / precision-loss potential. Now picks the right typed helper (`GetInt64Argument`, `GetDecimalArgument`, etc.) per the property's declared C# type.
+
+### Added
+
+- **`AgentFrameworkArgumentExtractor` (`NexusLabs.Needlr.AgentFramework`)** — public static class with kind-tolerant extractors for `string`, `bool`, the 8 integer types (`byte`/`sbyte`/`short`/`ushort`/`int`/`uint`/`long`/`ulong`), `float`/`double`/`decimal`, `Guid`, `DateTime`, `DateTimeOffset`, and `TimeSpan`. Strict bool semantics (no `0`/`1` numeric coercion), `TryGetDecimal`-first / `TryGetDouble`-first precision, `NaN`/`Infinity` rejection, and dual-format `TimeSpan` parsing (.NET + ISO 8601). 63 unit tests.
+- **`ToolResultFunctionMiddleware.HandleInvocationAsync`** — internal static method exposing the translation logic (exception capture, `IToolResult` unwrap, plain pass-through) for direct unit testing without standing up a full agent pipeline. Same logic as before; refactored for testability.
+- **`ToolResult.UnhandledFailure(Exception, Func<Exception, ToolError>? formatter = null)`** — overload that lets consumers customize the LLM-facing failure message. Default formatter now includes the exception type name so the LLM can distinguish `ArgumentException` (fix shape) from `TimeoutException` (retry later). The `Exception.Message` body is intentionally still excluded to avoid PII leaks.
+- **NDLRMAF030 analyzer** (Info severity) — hints when an `[AgentFunction]` `string` parameter is being used to carry JSON. Fires when the parameter name ends with `Json` / `_json` OR its `[Description]` text mentions `"JSON array"` / `"JSON object"`. Suggests typing the parameter as `JsonElement` for direct, typed access. Informational only — the new generator coercion makes the string-typed shape work via `GetRawText()`.
+- **End-to-end wrapper tests** — new `NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests` project that exercises generated `AIFunction` wrappers via the same path `FunctionInvokingChatClient` uses (resolve `IAIFunctionProvider` → invoke with literal `JsonElement` args). Closes the test-ergonomics gap that hid the production crash. 19 tests covering string/int/bool/array/object-array branches plus all four temporal/Guid types plus a nested-temporal-property fixture.
+- **`docs/tool-result-middleware.md`** — comprehensive reference for `ToolResultFunctionMiddleware`: its three behaviors (exception capture, `IToolResult` unwrap, plain pass-through), trade-offs of enabling it (agent-turn survives tool exceptions; LLM gets sanitized error; diagnostics counts as success), the plugin-ordering pitfall vs `UsingResilience()`, and a clear recommendation to enable for production agent setups.
+- **`docs/analyzers/NDLRMAF030.md`** — analyzer reference page in the standard cause / rule / how-to-fix / when-to-suppress format.
+- **`BatchFunctions.AttachTopicMetadata`** in `SimpleAgentFrameworkApp.Agents` — example tool demonstrating the `JsonElement` parameter pattern (the analyzer-suggested alternative for arbitrary JSON metadata).
+
+### Changed
+
+- **`UnhandledFailure` default LLM-facing message** changed from `"An unexpected error occurred. Please try again."` to `"An unexpected error occurred ({ExceptionTypeName}). Please try again."` — type names only (no message body or stack). Pass `formatter:` to opt out.
+- **`string` parameter null/undefined handling** — was throw (`JsonElement.GetString()` throws on `Undefined`), now returns `""`. Code expecting null-tolerance can rely on this.
+- **`string` parameter receiving non-string kinds** — was throw, now returns `GetRawText()` (canonical JSON of the literal). Existing tool bodies that call `JsonSerializer.Deserialize<T[]>(arg)` keep working transparently because `GetRawText()` of an array is valid JSON.
+- **`bool`/numeric parameter receiving wrong kind or `null`** — still throws, but with a useful kind-detail message; the previous `Convert.ToInt32(null) → 0` silent path is gone.
+- **`int[]` and `string[]` element extraction** — previously crashed when an element was the wrong `JsonValueKind`; now routes through the kind-tolerant helper per element.
+- Behavior change for nested-object Guid/DateTime/TimeSpan properties: the JSON schema previously emitted `{"type":"object"}` for these (broken — model didn't know what to send). Now correctly emits `{"type":"string","format":"..."}`. Tools that rely on the old broken behavior will see different LLM input shapes — the new shape is what was intended.
+
+### Internal
+
+- `AgentFunctionParameterInfo` gained a `JsonSchemaFormat` field; `ObjectPropertyInfo` gained `SchemaFormat` and `CSharpTypeFullName` so nested-object temporal properties dispatch to the right typed helper.
+- `AppendIntegerExtraction` / `AppendNumberExtraction` no longer take a `jVar` parameter (unused after the helper-call refactor).
+
 ## [0.0.2-alpha.51] - 2026-05-03
 
 ### Added
