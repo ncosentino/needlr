@@ -151,6 +151,57 @@ public class ToolResultTests
         Assert.Contains("unexpected error", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void UnhandledFailure_DefaultFormat_IncludesExceptionTypeName()
+    {
+        var ex = new ArgumentOutOfRangeException("paramName", "validation detail");
+        var result = ToolResult.UnhandledFailure(ex);
+
+        var error = Assert.IsType<ToolError>(result.BoxedError);
+        Assert.Contains(nameof(ArgumentOutOfRangeException), error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UnhandledFailure_DefaultFormat_DoesNotLeakExceptionMessageBody()
+    {
+        // The exception message contains a sentinel that should never appear in the LLM-facing payload.
+        var sentinel = "SENSITIVE_DB_CONNECTION_STRING=Server=secret;Pwd=hunter2";
+        var ex = new InvalidOperationException(sentinel);
+
+        var result = ToolResult.UnhandledFailure(ex);
+
+        var error = Assert.IsType<ToolError>(result.BoxedError);
+        Assert.DoesNotContain(sentinel, error.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("hunter2", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UnhandledFailure_CustomFormatter_IsHonored()
+    {
+        var ex = new TimeoutException("upstream slow");
+        var result = ToolResult.UnhandledFailure(
+            ex,
+            formatter: e => new ToolError($"custom: {e.GetType().Name}", Suggestion: "retry"));
+
+        var error = Assert.IsType<ToolError>(result.BoxedError);
+        Assert.Equal($"custom: {nameof(TimeoutException)}", error.Message);
+        Assert.Equal("retry", error.Suggestion);
+    }
+
+    [Fact]
+    public void UnhandledFailure_DefaultFormatter_DistinguishesExceptionTypes()
+    {
+        var arg = ToolResult.UnhandledFailure(new ArgumentException("a"));
+        var timeout = ToolResult.UnhandledFailure(new TimeoutException("b"));
+
+        var argMsg = Assert.IsType<ToolError>(arg.BoxedError).Message;
+        var timeoutMsg = Assert.IsType<ToolError>(timeout.BoxedError).Message;
+
+        Assert.NotEqual(argMsg, timeoutMsg);
+        Assert.Contains(nameof(ArgumentException), argMsg, StringComparison.Ordinal);
+        Assert.Contains(nameof(TimeoutException), timeoutMsg, StringComparison.Ordinal);
+    }
+
     // -------------------------------------------------------------------------
     // ToolError record
     // -------------------------------------------------------------------------

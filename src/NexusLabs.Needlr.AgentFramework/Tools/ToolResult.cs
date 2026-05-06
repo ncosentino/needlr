@@ -150,18 +150,44 @@ public static class ToolResult
     /// <see cref="IToolResult.IsTransient"/> is <see langword="null"/> because middleware
     /// cannot determine whether the failure is transient without domain knowledge.
     /// </summary>
-    public static IToolResult UnhandledFailure(Exception ex)
-        => new UnhandledToolResult(ex);
+    /// <param name="ex">The exception that escaped the tool body.</param>
+    /// <param name="formatter">
+    /// Optional formatter that converts the exception into the LLM-facing
+    /// <see cref="ToolError"/>. When <see langword="null"/>, a default formatter is used that
+    /// includes the exception type name without the message body.
+    /// </param>
+    /// <remarks>
+    /// The default LLM-facing error message is
+    /// <c>"An unexpected error occurred ({ExceptionTypeName}). Please try again."</c> — the
+    /// type name is included so the model can distinguish a shape mismatch from a timeout
+    /// from an authorization failure and choose a sensible recovery strategy. The
+    /// <see cref="Exception.Message"/> body is intentionally <em>not</em> included to avoid
+    /// leaking application or PII details (DB connection strings, user data, internal IDs).
+    /// Pass <paramref name="formatter"/> to override the LLM-facing message — useful when an
+    /// application wants to keep the bland legacy message or surface domain-specific guidance.
+    /// </remarks>
+    public static IToolResult UnhandledFailure(
+        Exception ex,
+        Func<Exception, ToolError>? formatter = null)
+        => new UnhandledToolResult(ex, formatter ?? DefaultUnhandledFailureFormatter);
+
+    private static ToolError DefaultUnhandledFailureFormatter(Exception ex) =>
+        new($"An unexpected error occurred ({ex.GetType().Name}). Please try again.");
 
     private sealed class UnhandledToolResult : IToolResult
     {
         private readonly Exception _ex;
+        private readonly Func<Exception, ToolError> _formatter;
 
-        public UnhandledToolResult(Exception ex) => _ex = ex;
+        public UnhandledToolResult(Exception ex, Func<Exception, ToolError> formatter)
+        {
+            _ex = ex;
+            _formatter = formatter;
+        }
 
         public bool IsSuccess => false;
         public object? BoxedValue => null;
-        public object? BoxedError => new ToolError("An unexpected error occurred. Please try again.");
+        public object? BoxedError => _formatter(_ex);
         public Exception? Exception => _ex;
         public bool? IsTransient => null;
     }
