@@ -66,5 +66,5 @@ Suppress this diagnostic when you have a deliberate reason to receive the JSON a
 ## See Also
 
 - [Agent Framework — Tool Functions](../ai-integrations.md)
-- [NDLRMAF012](NDLRMAF012.md) — `[AgentFunction]` method missing `[Description]`
-- [NDLRMAF013](NDLRMAF013.md) — `[AgentFunction]` parameter missing `[Description]`
+- [Tool Result Middleware](../tool-result-middleware.md) — exception fence for tool invocations
+- [NDLRMAF005](NDLRMAF005.md) — `FunctionGroups` references a missing `[AgentFunctionGroup]`
