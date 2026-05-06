@@ -33,6 +33,12 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Middleware;
 /// message to the LLM. <see cref="IToolResult.IsTransient"/> is <see langword="null"/> in this case.
 /// </para>
 /// <para>
+/// <see cref="OperationCanceledException"/> is intentionally <em>not</em> caught — it propagates so
+/// cooperative cancellation (parent timeouts, user cancels, structured-concurrency aborts) continues
+/// to function correctly. Tools that legitimately catch and translate cancellation should do so
+/// inside the tool body, not rely on this middleware.
+/// </para>
+/// <para>
 /// Non-<see cref="IToolResult"/> return values pass through unchanged.
 /// </para>
 /// </remarks>
@@ -46,26 +52,48 @@ public sealed class ToolResultFunctionMiddleware : IAIAgentBuilderPlugin
         FunctionInvocationDelegatingAgentBuilderExtensions.Use(
             options.AgentBuilder,
             async (agent, context, next, cancellationToken) =>
-            {
-                object? raw;
+                await HandleInvocationAsync(
+                    invokeNext: ct => next(context, ct),
+                    cancellationToken: cancellationToken).ConfigureAwait(false));
+    }
 
-                try
-                {
-                    raw = await next(context, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    raw = ToolResult.UnhandledFailure(ex);
-                }
+    /// <summary>
+    /// Core middleware logic: invoke <paramref name="invokeNext"/>, translate exceptions into
+    /// <see cref="IToolResult"/> failures, and unwrap <see cref="IToolResult"/> returns into
+    /// LLM-facing <see cref="IToolResult.BoxedValue"/> or <c>{ error: BoxedError }</c>.
+    /// Cooperative <see cref="OperationCanceledException"/> propagates unchanged so cancellation
+    /// signals are not swallowed.
+    /// </summary>
+    /// <remarks>
+    /// Internal-but-exposed-via-<c>InternalsVisibleTo</c> for direct unit testing — exercising the
+    /// translation logic without standing up a full agent pipeline.
+    /// </remarks>
+    internal static async ValueTask<object?> HandleInvocationAsync(
+        Func<CancellationToken, ValueTask<object?>> invokeNext,
+        CancellationToken cancellationToken)
+    {
+        object? raw;
 
-                if (raw is IToolResult result)
-                {
-                    return result.IsSuccess
-                        ? result.BoxedValue
-                        : new { error = result.BoxedError };
-                }
+        try
+        {
+            raw = await invokeNext(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            raw = ToolResult.UnhandledFailure(ex);
+        }
 
-                return raw;
-            });
+        if (raw is IToolResult result)
+        {
+            return result.IsSuccess
+                ? result.BoxedValue
+                : new { error = result.BoxedError };
+        }
+
+        return raw;
     }
 }

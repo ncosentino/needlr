@@ -130,6 +130,87 @@ public class ToolResultFunctionMiddlewareTests
 
         Assert.NotNull(response);
     }
+
+    [Fact]
+    public async Task HandleInvocationAsync_PassesThroughPlainReturnValue()
+    {
+        var result = await ToolResultFunctionMiddleware.HandleInvocationAsync(
+            invokeNext: _ => new ValueTask<object?>("hello"),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("hello", result);
+    }
+
+    [Fact]
+    public async Task HandleInvocationAsync_UnwrapsSuccessToolResultIntoBoxedValue()
+    {
+        var inner = ToolResult.Ok("payload");
+
+        var result = await ToolResultFunctionMiddleware.HandleInvocationAsync(
+            invokeNext: _ => new ValueTask<object?>(inner),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("payload", result);
+    }
+
+    [Fact]
+    public async Task HandleInvocationAsync_WrapsFailureToolResultIntoErrorEnvelope()
+    {
+        var inner = ToolResult.Fail<string>("boom");
+
+        var result = await ToolResultFunctionMiddleware.HandleInvocationAsync(
+            invokeNext: _ => new ValueTask<object?>(inner),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result);
+        var errorProp = result!.GetType().GetProperty("error");
+        Assert.NotNull(errorProp);
+        var error = Assert.IsType<ToolError>(errorProp!.GetValue(result));
+        Assert.Equal("boom", error.Message);
+    }
+
+    [Fact]
+    public async Task HandleInvocationAsync_TranslatesUnhandledExceptionIntoErrorEnvelope()
+    {
+        var thrown = new InvalidOperationException("something blew up");
+
+        var result = await ToolResultFunctionMiddleware.HandleInvocationAsync(
+            invokeNext: _ => throw thrown,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result);
+        var errorProp = result!.GetType().GetProperty("error");
+        Assert.NotNull(errorProp);
+        Assert.IsType<ToolError>(errorProp!.GetValue(result));
+    }
+
+    [Fact]
+    public async Task HandleInvocationAsync_PropagatesOperationCanceledException()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await ToolResultFunctionMiddleware.HandleInvocationAsync(
+                invokeNext: ct =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    return new ValueTask<object?>("never reached");
+                },
+                cancellationToken: cts.Token));
+    }
+
+    [Fact]
+    public async Task HandleInvocationAsync_PropagatesTaskCanceledException()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+            await ToolResultFunctionMiddleware.HandleInvocationAsync(
+                invokeNext: ct => throw new TaskCanceledException("aborted", innerException: null, ct),
+                cancellationToken: cts.Token));
+    }
 }
 
 // ---------------------------------------------------------------------------
