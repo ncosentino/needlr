@@ -14,10 +14,6 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 public class AgentMetricsTests
 {
-    // -------------------------------------------------------------------------
-    // DI registration
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void UsingAgentFramework_RegistersIAgentMetrics()
     {
@@ -34,10 +30,6 @@ public class AgentMetricsTests
 
         Assert.NotNull(metrics);
     }
-
-    // -------------------------------------------------------------------------
-    // Interface methods don't throw
-    // -------------------------------------------------------------------------
 
     [Fact]
     public void RecordRunStarted_DoesNotThrow()
@@ -74,19 +66,16 @@ public class AgentMetricsTests
         metrics.RecordChatCompletion("unknown", TimeSpan.FromMilliseconds(50), false);
     }
 
-    // -------------------------------------------------------------------------
-    // Meter emits correct instruments
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void Meter_EmitsRunStartedCounter()
     {
+        var meterName = $"NexusLabs.Needlr.AgentFramework.Tests.{Guid.NewGuid():N}";
         using var listener = new MeterListener();
         long captured = 0;
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.run.started")
+            if (instrument.Meter.Name == meterName && instrument.Name == "agent.run.started")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 
@@ -97,7 +86,7 @@ public class AgentMetricsTests
 
         listener.Start();
 
-        var metrics = new AgentMetrics();
+        var metrics = new AgentMetrics(new AgentFrameworkMetricsOptions { MeterName = meterName });
         metrics.RecordRunStarted("TestAgent");
         metrics.RecordRunStarted("TestAgent");
 
@@ -109,12 +98,13 @@ public class AgentMetricsTests
     [Fact]
     public void Meter_EmitsToolCallCounter()
     {
+        var meterName = $"NexusLabs.Needlr.AgentFramework.Tests.{Guid.NewGuid():N}";
         using var listener = new MeterListener();
         long captured = 0;
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.tool.completed")
+            if (instrument.Meter.Name == meterName && instrument.Name == "agent.tool.completed")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 
@@ -125,7 +115,7 @@ public class AgentMetricsTests
 
         listener.Start();
 
-        var metrics = new AgentMetrics();
+        var metrics = new AgentMetrics(new AgentFrameworkMetricsOptions { MeterName = meterName });
         metrics.RecordToolCall("GetData", TimeSpan.FromMilliseconds(50), true);
 
         Assert.Equal(1, captured);
@@ -134,12 +124,13 @@ public class AgentMetricsTests
     [Fact]
     public void Meter_EmitsTokensUsedCounter()
     {
+        var meterName = $"NexusLabs.Needlr.AgentFramework.Tests.{Guid.NewGuid():N}";
         using var listener = new MeterListener();
         long captured = 0;
 
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == "NexusLabs.Needlr.AgentFramework" && instrument.Name == "agent.tokens.used")
+            if (instrument.Meter.Name == meterName && instrument.Name == "agent.tokens.used")
                 meterListener.EnableMeasurementEvents(instrument);
         };
 
@@ -150,16 +141,11 @@ public class AgentMetricsTests
 
         listener.Start();
 
-        var metrics = new AgentMetrics();
+        var metrics = new AgentMetrics(new AgentFrameworkMetricsOptions { MeterName = meterName });
         metrics.RecordRunCompleted(CreateDiagnostics("Agent", inputTokens: 100, outputTokens: 200));
 
-        // 100 input + 200 output
         Assert.Equal(300, captured);
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private static IAgentRunDiagnostics CreateDiagnostics(
         string agentName,
