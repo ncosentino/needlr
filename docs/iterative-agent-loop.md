@@ -325,6 +325,19 @@ Console.WriteLine($"Tokens: {diag.AggregateTokenUsage.TotalTokens}");
 !!! warning "BeginCapture is required"
     Without `BeginCapture()`, `LastRunDiagnostics` will be `null` after the run. The loop writes diagnostics into an `AsyncLocal<T>` holder — `BeginCapture()` creates the shared holder that both the loop and the caller can access.
 
+### Partial iterations on interruption
+
+When an iteration is interrupted by an exception, an HTTP timeout, or genuine cancellation **after** one or more LLM calls have already completed, the loop records a **partial** `IterationRecord` for the in-flight iteration with everything observed so far:
+
+- `Iteration` — the in-flight index (so it lines up with the iteration that threw).
+- `ToolCalls` — every tool call that completed before the interruption.
+- `FinalResponse` — `null` (the iteration never produced one).
+- `Tokens` — accumulated `InputTokens`, `OutputTokens`, `TotalTokens`, `CachedInputTokens`, `ReasoningTokens` from every LLM call that returned a `UsageDetails` before the throw.
+- `LlmCallCount` — the number of LLM calls that completed before the throw.
+- `Duration` — wall-clock time from the start of the iteration to the interruption.
+
+This applies to all three failure handlers (cancellation, HTTP timeout / non-user `OperationCanceledException`, and generic `Exception`). It does **not** apply to `LifecycleHookException` — those propagate to the caller without a partial record because they originate from caller-supplied hook code. Telemetry of in-flight LLM/tool work is preserved on the unhappy path so cost and trajectory can still be inspected after a failed run.
+
 ---
 
 ## Execution Context Bridge
@@ -416,7 +429,7 @@ Console.WriteLine($"Total tokens: {diag?.AggregateTokenUsage.TotalTokens}");
 | `Iteration` | `int` | 0-based iteration index |
 | `ToolCalls` | `IReadOnlyList<ToolCallResult>` | All tool calls made this iteration |
 | `ResponseText` | `string?` | Final model text response (if any) |
-| `Tokens` | `TokenUsage` | Input/output token counts for this iteration |
+| `Tokens` | `TokenUsage` | Per-iteration token counts: `InputTokens`, `OutputTokens`, `TotalTokens`, `CachedInputTokens` (provider-side prompt-cache hits), and `ReasoningTokens` (chain-of-thought tokens for o-series / reasoning models). Sourced from `Microsoft.Extensions.AI.UsageDetails` first-class properties; zero when the provider does not report a field. |
 | `Duration` | `TimeSpan` | Wall-clock time for this iteration |
 | `LlmCallCount` | `int` | Number of LLM API calls made this iteration |
 
