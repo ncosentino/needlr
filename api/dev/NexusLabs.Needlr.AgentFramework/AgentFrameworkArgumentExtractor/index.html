@@ -1023,6 +1023,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../agent-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../iterative-agent-loop/" class="md-nav__link">
         
   
@@ -4003,13 +4031,15 @@
 directly throws <a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a> when <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind" title="System.Text.Json.JsonValueKind">System.Text.Json.JsonValueKind</a>
 doesn't match. These extractors translate per-kind so the source generator can emit a
 single uniform call regardless of the chat client's delivery shape.</p>
-<p><strong>Extractors assume the value is present and non-null.</strong> The generator is
-            responsible for missing-key, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.null" title="System.Text.Json.JsonValueKind.Null">System.Text.Json.JsonValueKind.Null</a>, and
-            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.undefined" title="System.Text.Json.JsonValueKind.Undefined">System.Text.Json.JsonValueKind.Undefined</a> handling — typically by short-circuiting to a
-            declared default value or to <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for nullable parameter types.
-            <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetStringArgument(object)" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetStringArgument(object)">GetStringArgument(object)</a> is the exception: it returns
-            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string.empty" title="System.String.Empty">System.String.Empty</a> for null/undefined inputs to preserve compatibility with the
-            generator's existing emission shape.</p>
+<p><strong>Extractors assume the value is present and non-null.</strong> Every extractor
+            throws on <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> raws, on <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.null" title="System.Text.Json.JsonValueKind.Null">System.Text.Json.JsonValueKind.Null</a>, and on
+            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.undefined" title="System.Text.Json.JsonValueKind.Undefined">System.Text.Json.JsonValueKind.Undefined</a>. The generator is responsible for missing-key /
+            null / undefined handling — typically by gating each extraction call with
+            <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object)" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object)">IsArgumentSupplied(object)</a> and short-circuiting to a declared default
+            value or to <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for nullable parameter types. This keeps the
+            presence/optionality concern at the generator layer where the C# parameter metadata
+            (<code>HasExplicitDefaultValue</code>, <code>NullableAnnotation</code>) lives, and keeps the
+            extractors focused on kind-tolerant decoding of <em>present</em> values.</p>
 <p><strong>Strict semantics for typed primitives.</strong> Booleans receiving numeric kinds
             throw rather than coerce <code>0</code>/<code>1</code> — the model is violating its own schema; the
             helper does not paper over it. Numeric extractors prefer the precision-preserving
@@ -4201,12 +4231,16 @@ by <code>AIFunctionArguments</code>.</p>
 <h4 id="returns_12">Returns<a class="headerlink" href="#returns_12" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><br />
 <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement" title="System.Text.Json.JsonElement">System.Text.Json.JsonElement</a> with <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.string" title="System.Text.Json.JsonValueKind.String">System.Text.Json.JsonValueKind.String</a> →
-            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement.getstring" title="System.Text.Json.JsonElement.GetString">System.Text.Json.JsonElement.GetString</a> (or empty string if null);<br/><a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.null" title="System.Text.Json.JsonValueKind.Null">System.Text.Json.JsonValueKind.Null</a> or <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.undefined" title="System.Text.Json.JsonValueKind.Undefined">System.Text.Json.JsonValueKind.Undefined</a> →
-            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string.empty" title="System.String.Empty">System.String.Empty</a>;<br/><a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.array" title="System.Text.Json.JsonValueKind.Array">System.Text.Json.JsonValueKind.Array</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.object" title="System.Text.Json.JsonValueKind.Object">System.Text.Json.JsonValueKind.Object</a>,
+            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement.getstring" title="System.Text.Json.JsonElement.GetString">System.Text.Json.JsonElement.GetString</a> (or empty string if the JSON string is null);<br/><a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.array" title="System.Text.Json.JsonValueKind.Array">System.Text.Json.JsonValueKind.Array</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.object" title="System.Text.Json.JsonValueKind.Object">System.Text.Json.JsonValueKind.Object</a>,
             <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.number" title="System.Text.Json.JsonValueKind.Number">System.Text.Json.JsonValueKind.Number</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.true" title="System.Text.Json.JsonValueKind.True">System.Text.Json.JsonValueKind.True</a>,
             <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.false" title="System.Text.Json.JsonValueKind.False">System.Text.Json.JsonValueKind.False</a> → <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement.getrawtext" title="System.Text.Json.JsonElement.GetRawText">System.Text.Json.JsonElement.GetRawText</a>;<br/>
-            already-typed <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a> → as-is;<br/><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> → <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string.empty" title="System.String.Empty">System.String.Empty</a>;<br/>
+            already-typed <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a> → as-is;<br/>
             any other object → <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring" title="System.Object.ToString">System.Object.ToString</a> (or empty string).</p>
+<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
+Thrown when <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetStringArgument(object).raw" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetStringArgument(object).raw">raw</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.null" title="System.Text.Json.JsonValueKind.Null">System.Text.Json.JsonValueKind.Null</a>,
+or <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.undefined" title="System.Text.Json.JsonValueKind.Undefined">System.Text.Json.JsonValueKind.Undefined</a>. Callers must gate with
+<a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object)" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object)">IsArgumentSupplied(object)</a> first.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.GetTimeSpanArgument(object)'></a></p>
 <h2 id="agentframeworkargumentextractorgettimespanargumentobject-method">AgentFrameworkArgumentExtractor.GetTimeSpanArgument(object) Method<a class="headerlink" href="#agentframeworkargumentextractorgettimespanargumentobject-method" title="Permanent link">&para;</a></h2>
 <p>Extracts a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a> argument from a string.</p>
@@ -4257,6 +4291,31 @@ by <code>AIFunctionArguments</code>.</p>
 <p>The raw argument value.</p>
 <h4 id="returns_16">Returns<a class="headerlink" href="#returns_16" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.uint64" title="System.UInt64">System.UInt64</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object)'></a></p>
+<h2 id="agentframeworkargumentextractorisargumentsuppliedobject-method">AgentFrameworkArgumentExtractor.IsArgumentSupplied(object) Method<a class="headerlink" href="#agentframeworkargumentextractorisargumentsuppliedobject-method" title="Permanent link">&para;</a></h2>
+<p>Returns <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> when <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object).raw" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object).raw">raw</a> represents a value the
+extractor methods are willing to decode. Returns <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a> for
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> raws, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.null" title="System.Text.Json.JsonValueKind.Null">System.Text.Json.JsonValueKind.Null</a>, and
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind.undefined" title="System.Text.Json.JsonValueKind.Undefined">System.Text.Json.JsonValueKind.Undefined</a> — these mean the chat client did not supply the
+argument and the generator-emitted wrapper should fall back to the parameter's
+declared default value (or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> for nullable parameters), or throw
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a> for required parameters.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsArgumentSupplied</span><span class="p">(</span><span class="kt">object?</span><span class="w"> </span><span class="n">raw</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_17">Parameters<a class="headerlink" href="#parameters_17" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkArgumentExtractor.IsArgumentSupplied(object).raw'></a></p>
+<p><code>raw</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a></p>
+<p>The raw argument value as delivered by <code>AIFunctionArguments</code>.</p>
+<h4 id="returns_17">Returns<a class="headerlink" href="#returns_17" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a><br />
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a> when the argument is missing/null/undefined; <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a>
+            otherwise (including for typed values, JSON strings, numbers, booleans, arrays, and objects).</p>
+<h3 id="remarks_8">Remarks<a class="headerlink" href="#remarks_8" title="Permanent link">&para;</a></h3>
+<p>This is the documented gate for the extractor methods on this class. Source-generated
+agent-function wrappers call this once per parameter site to decide whether to invoke the
+kind-tolerant extractor or to short-circuit to a fallback. The check is intentionally
+inexpensive — a single null check plus, for <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement" title="System.Text.Json.JsonElement">System.Text.Json.JsonElement</a>, two
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonvaluekind" title="System.Text.Json.JsonValueKind">System.Text.Json.JsonValueKind</a> comparisons.</p>
 
 
 
