@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Testing;
@@ -34,10 +35,10 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 /// </remarks>
 public class AIFunctionWrapperEndToEndTests
 {
-    private static AIFunction ResolveFunction<TTool>(string methodName)
+    private static AIFunction ResolveFunction<TTool>(string methodName, object capture)
         where TTool : class
     {
-        var runner = ToolInvocationRunner.CreateFor<TTool>();
+        var runner = ToolInvocationRunner.CreateFor<TTool>(s => s.AddSingleton(capture.GetType(), capture));
         runner.AssertGeneratedProviderAvailable();
         return runner.GetFunction<TTool>(methodName);
     }
@@ -50,34 +51,34 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_StringParam_AcceptsArrayLiteral()
     {
-        E2EStringTool.Captured = null;
-        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record));
+        var capture = new E2EStringTool.Capture();
+        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("findingsJson", Parse("[{\"severity\":\"Warning\"}]")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal("[{\"severity\":\"Warning\"}]", E2EStringTool.Captured);
+        Assert.Equal("[{\"severity\":\"Warning\"}]", capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_StringParam_AcceptsObjectLiteral()
     {
-        E2EStringTool.Captured = null;
-        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record));
+        var capture = new E2EStringTool.Capture();
+        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("findingsJson", Parse("{\"k\":1}")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal("{\"k\":1}", E2EStringTool.Captured);
+        Assert.Equal("{\"k\":1}", capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_StringParam_RequiredNullJson_ThrowsArgumentException()
     {
-        E2EStringTool.Captured = null;
-        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record));
+        var capture = new E2EStringTool.Capture();
+        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record), capture);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await fn.InvokeAsync(
@@ -91,60 +92,60 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_StringParam_AcceptsStringLiteralAsIs()
     {
-        E2EStringTool.Captured = null;
-        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record));
+        var capture = new E2EStringTool.Capture();
+        var fn = ResolveFunction<E2EStringTool>(nameof(E2EStringTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("findingsJson", Parse("\"plain text\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal("plain text", E2EStringTool.Captured);
+        Assert.Equal("plain text", capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_IntParam_AcceptsNumericString()
     {
-        E2EIntTool.Captured = null;
-        var fn = ResolveFunction<E2EIntTool>(nameof(E2EIntTool.SetMax));
+        var capture = new E2EIntTool.Capture();
+        var fn = ResolveFunction<E2EIntTool>(nameof(E2EIntTool.SetMax), capture);
 
         await fn.InvokeAsync(
             Args("max", Parse("\"42\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(42, E2EIntTool.Captured);
+        Assert.Equal(42, capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_IntParam_AcceptsNumberLiteral()
     {
-        E2EIntTool.Captured = null;
-        var fn = ResolveFunction<E2EIntTool>(nameof(E2EIntTool.SetMax));
+        var capture = new E2EIntTool.Capture();
+        var fn = ResolveFunction<E2EIntTool>(nameof(E2EIntTool.SetMax), capture);
 
         await fn.InvokeAsync(
             Args("max", Parse("42")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(42, E2EIntTool.Captured);
+        Assert.Equal(42, capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_BoolParam_AcceptsStringTrue()
     {
-        E2EBoolTool.Captured = null;
-        var fn = ResolveFunction<E2EBoolTool>(nameof(E2EBoolTool.SetFlag));
+        var capture = new E2EBoolTool.Capture();
+        var fn = ResolveFunction<E2EBoolTool>(nameof(E2EBoolTool.SetFlag), capture);
 
         await fn.InvokeAsync(
             Args("flag", Parse("\"true\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2EBoolTool.Captured);
+        Assert.True(capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_BoolParam_RejectsNumericLiteral()
     {
-        E2EBoolTool.Captured = null;
-        var fn = ResolveFunction<E2EBoolTool>(nameof(E2EBoolTool.SetFlag));
+        var capture = new E2EBoolTool.Capture();
+        var fn = ResolveFunction<E2EBoolTool>(nameof(E2EBoolTool.SetFlag), capture);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await fn.InvokeAsync(
@@ -155,29 +156,29 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_StringArrayParam_AcceptsArrayOfNumbers()
     {
-        E2EStringArrayTool.Captured = null;
-        var fn = ResolveFunction<E2EStringArrayTool>(nameof(E2EStringArrayTool.Tag));
+        var capture = new E2EStringArrayTool.Capture();
+        var fn = ResolveFunction<E2EStringArrayTool>(nameof(E2EStringArrayTool.Tag), capture);
 
         await fn.InvokeAsync(
             Args("tags", Parse("[1,2,3]")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EStringArrayTool.Captured);
-        Assert.Equal(["1", "2", "3"], E2EStringArrayTool.Captured);
+        Assert.NotNull(capture.Value);
+        Assert.Equal(["1", "2", "3"], capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_ObjectArrayParam_ExtractsTypicalShape()
     {
-        E2EObjectArrayTool.Captured = null;
-        var fn = ResolveFunction<E2EObjectArrayTool>(nameof(E2EObjectArrayTool.Save));
+        var capture = new E2EObjectArrayTool.Capture();
+        var fn = ResolveFunction<E2EObjectArrayTool>(nameof(E2EObjectArrayTool.Save), capture);
 
         await fn.InvokeAsync(
             Args("entries", Parse("[{\"name\":\"alpha\",\"count\":3}]")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EObjectArrayTool.Captured);
-        var single = Assert.Single(E2EObjectArrayTool.Captured!);
+        Assert.NotNull(capture.Value);
+        var single = Assert.Single(capture.Value!);
         Assert.Equal("alpha", single.Name);
         Assert.Equal(3, single.Count);
     }
@@ -185,15 +186,15 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_ObjectArrayParam_StringPropertyAcceptsArrayLiteral()
     {
-        E2EObjectArrayTool.Captured = null;
-        var fn = ResolveFunction<E2EObjectArrayTool>(nameof(E2EObjectArrayTool.Save));
+        var capture = new E2EObjectArrayTool.Capture();
+        var fn = ResolveFunction<E2EObjectArrayTool>(nameof(E2EObjectArrayTool.Save), capture);
 
         await fn.InvokeAsync(
             Args("entries", Parse("[{\"name\":[1,2],\"count\":3}]")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EObjectArrayTool.Captured);
-        var single = Assert.Single(E2EObjectArrayTool.Captured!);
+        Assert.NotNull(capture.Value);
+        var single = Assert.Single(capture.Value!);
         Assert.Equal("[1,2]", single.Name);
         Assert.Equal(3, single.Count);
     }
@@ -201,20 +202,21 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_GuidParam_AcceptsStringLiteral()
     {
-        E2EGuidTool.Captured = null;
-        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record));
+        var capture = new E2EGuidTool.Capture();
+        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("id", Parse("\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), E2EGuidTool.Captured);
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_GuidParam_RejectsInvalidGuidString()
     {
-        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record));
+        var capture = new E2EGuidTool.Capture();
+        var fn = ResolveFunction<E2EGuidTool>(nameof(E2EGuidTool.Record), capture);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await fn.InvokeAsync(
@@ -225,63 +227,64 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_DateTimeParam_AcceptsIso8601String()
     {
-        E2EDateTimeTool.Captured = null;
-        var fn = ResolveFunction<E2EDateTimeTool>(nameof(E2EDateTimeTool.Record));
+        var capture = new E2EDateTimeTool.Capture();
+        var fn = ResolveFunction<E2EDateTimeTool>(nameof(E2EDateTimeTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("when", Parse("\"2026-05-05T18:30:00Z\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDateTimeTool.Captured);
-        Assert.Equal(2026, E2EDateTimeTool.Captured!.Value.Year);
-        Assert.Equal(5, E2EDateTimeTool.Captured!.Value.Month);
-        Assert.Equal(5, E2EDateTimeTool.Captured!.Value.Day);
+        Assert.NotNull(capture.Value);
+        Assert.Equal(2026, capture.Value!.Value.Year);
+        Assert.Equal(5, capture.Value!.Value.Month);
+        Assert.Equal(5, capture.Value!.Value.Day);
     }
 
     [Fact]
     public async Task Wrapper_DateTimeOffsetParam_PreservesOffset()
     {
-        E2EDateTimeOffsetTool.Captured = null;
-        var fn = ResolveFunction<E2EDateTimeOffsetTool>(nameof(E2EDateTimeOffsetTool.Record));
+        var capture = new E2EDateTimeOffsetTool.Capture();
+        var fn = ResolveFunction<E2EDateTimeOffsetTool>(nameof(E2EDateTimeOffsetTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("stamp", Parse("\"2026-05-05T18:30:00+05:00\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDateTimeOffsetTool.Captured);
-        Assert.Equal(TimeSpan.FromHours(5), E2EDateTimeOffsetTool.Captured!.Value.Offset);
+        Assert.NotNull(capture.Value);
+        Assert.Equal(TimeSpan.FromHours(5), capture.Value!.Value.Offset);
     }
 
     [Fact]
     public async Task Wrapper_TimeSpanParam_AcceptsDotNetFormat()
     {
-        E2ETimeSpanTool.Captured = null;
-        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+        var capture = new E2ETimeSpanTool.Capture();
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("duration", Parse("\"01:30:00\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(TimeSpan.FromMinutes(90), E2ETimeSpanTool.Captured);
+        Assert.Equal(TimeSpan.FromMinutes(90), capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_TimeSpanParam_AcceptsIso8601Duration()
     {
-        E2ETimeSpanTool.Captured = null;
-        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+        var capture = new E2ETimeSpanTool.Capture();
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("duration", Parse("\"PT1H30M\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(TimeSpan.FromMinutes(90), E2ETimeSpanTool.Captured);
+        Assert.Equal(TimeSpan.FromMinutes(90), capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_TimeSpanParam_RejectsInvalidString()
     {
-        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record));
+        var capture = new E2ETimeSpanTool.Capture();
+        var fn = ResolveFunction<E2ETimeSpanTool>(nameof(E2ETimeSpanTool.Record), capture);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await fn.InvokeAsync(
@@ -292,8 +295,8 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_ObjectArrayParam_TemporalPropertiesExtractCorrectly()
     {
-        E2ETemporalArrayTool.Captured = null;
-        var fn = ResolveFunction<E2ETemporalArrayTool>(nameof(E2ETemporalArrayTool.Record));
+        var capture = new E2ETemporalArrayTool.Capture();
+        var fn = ResolveFunction<E2ETemporalArrayTool>(nameof(E2ETemporalArrayTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("entries", Parse(
@@ -302,8 +305,8 @@ public class AIFunctionWrapperEndToEndTests
                 "\"duration\":\"PT1H30M\"}]")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2ETemporalArrayTool.Captured);
-        var single = Assert.Single(E2ETemporalArrayTool.Captured!);
+        Assert.NotNull(capture.Value);
+        var single = Assert.Single(capture.Value!);
         Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), single.Id);
         Assert.Equal(2026, single.When.Year);
         Assert.Equal(TimeSpan.FromMinutes(90), single.Duration);
@@ -312,8 +315,8 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_DtoParam_ExtractsAllPropertiesFromObjectLiteral()
     {
-        E2EDtoTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+        var capture = new E2EDtoTool.Capture();
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("metadata", Parse(
@@ -323,18 +326,18 @@ public class AIFunctionWrapperEndToEndTests
                 "\"when\":\"2026-05-05T18:30:00Z\"}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoTool.Captured);
-        Assert.Equal("news-feed", E2EDtoTool.Captured!.Source);
-        Assert.Equal(3, E2EDtoTool.Captured.Priority);
-        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), E2EDtoTool.Captured.CorrelationId);
-        Assert.Equal(2026, E2EDtoTool.Captured.When.Year);
+        Assert.NotNull(capture.Value);
+        Assert.Equal("news-feed", capture.Value!.Source);
+        Assert.Equal(3, capture.Value.Priority);
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), capture.Value.CorrelationId);
+        Assert.Equal(2026, capture.Value.When.Year);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_HandlesPartialJson()
     {
-        E2EDtoTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+        var capture = new E2EDtoTool.Capture();
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record), capture);
 
         // Model omits some properties — the wrapper must populate the present ones
         // and leave the rest at their default (no exception, no null reference).
@@ -342,18 +345,18 @@ public class AIFunctionWrapperEndToEndTests
             Args("metadata", Parse("{\"source\":\"partial\"}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoTool.Captured);
-        Assert.Equal("partial", E2EDtoTool.Captured!.Source);
-        Assert.Equal(0, E2EDtoTool.Captured.Priority);
-        Assert.Equal(Guid.Empty, E2EDtoTool.Captured.CorrelationId);
-        Assert.Equal(default, E2EDtoTool.Captured.When);
+        Assert.NotNull(capture.Value);
+        Assert.Equal("partial", capture.Value!.Source);
+        Assert.Equal(0, capture.Value.Priority);
+        Assert.Equal(Guid.Empty, capture.Value.CorrelationId);
+        Assert.Equal(default, capture.Value.When);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_PropertyKindCoercionWorks()
     {
-        E2EDtoTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record));
+        var capture = new E2EDtoTool.Capture();
+        var fn = ResolveFunction<E2EDtoTool>(nameof(E2EDtoTool.Record), capture);
 
         // Model sends 'priority' as a numeric String instead of a Number — the per-property
         // helper coerces via int.TryParse, mirroring the top-level int parameter behavior.
@@ -361,15 +364,15 @@ public class AIFunctionWrapperEndToEndTests
             Args("metadata", Parse("{\"source\":\"x\",\"priority\":\"7\"}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoTool.Captured);
-        Assert.Equal(7, E2EDtoTool.Captured!.Priority);
+        Assert.NotNull(capture.Value);
+        Assert.Equal(7, capture.Value!.Priority);
     }
 
     [Fact]
     public async Task Wrapper_RequiredBool_KeyAbsent_ThrowsArgumentException()
     {
-        E2ERequiredBoolTool.Captured = null;
-        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag));
+        var capture = new E2ERequiredBoolTool.Capture();
+        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag), capture);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken));
@@ -381,8 +384,8 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_RequiredBool_JsonNull_ThrowsArgumentException()
     {
-        E2ERequiredBoolTool.Captured = null;
-        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag));
+        var capture = new E2ERequiredBoolTool.Capture();
+        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag), capture);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await fn.InvokeAsync(
@@ -396,306 +399,301 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_RequiredBool_JsonTrue_PassesTrue()
     {
-        E2ERequiredBoolTool.Captured = null;
-        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag));
+        var capture = new E2ERequiredBoolTool.Capture();
+        var fn = ResolveFunction<E2ERequiredBoolTool>(nameof(E2ERequiredBoolTool.SetFlag), capture);
 
         await fn.InvokeAsync(
             Args("required", Parse("true")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2ERequiredBoolTool.Captured);
+        Assert.True(capture.Value);
     }
 
     [Fact]
     public async Task Wrapper_OptionalBoolFalse_KeyAbsent_PassesDefaultFalse()
     {
-        E2EOptionalBoolTool.CapturedDefaultFalse = true;
-        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse));
+        var capture = new E2EOptionalBoolTool.Capture();
+        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.False(E2EOptionalBoolTool.CapturedDefaultFalse);
+        Assert.False(capture.DefaultFalse);
     }
 
     [Fact]
     public async Task Wrapper_OptionalBoolFalse_JsonNull_PassesDefaultFalse()
     {
-        E2EOptionalBoolTool.CapturedDefaultFalse = true;
-        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse));
+        var capture = new E2EOptionalBoolTool.Capture();
+        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse), capture);
 
         await fn.InvokeAsync(
             Args("flag", Parse("null")),
             TestContext.Current.CancellationToken);
 
-        Assert.False(E2EOptionalBoolTool.CapturedDefaultFalse);
+        Assert.False(capture.DefaultFalse);
     }
 
     [Fact]
     public async Task Wrapper_OptionalBoolFalse_JsonUndefined_PassesDefaultFalse()
     {
-        E2EOptionalBoolTool.CapturedDefaultFalse = true;
-        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse));
+        var capture = new E2EOptionalBoolTool.Capture();
+        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse), capture);
 
         var args = new AIFunctionArguments { ["flag"] = default(JsonElement) };
         await fn.InvokeAsync(args, TestContext.Current.CancellationToken);
 
-        Assert.False(E2EOptionalBoolTool.CapturedDefaultFalse);
+        Assert.False(capture.DefaultFalse);
     }
 
     [Fact]
     public async Task Wrapper_OptionalBoolFalse_JsonTrue_PassesTrue()
     {
-        E2EOptionalBoolTool.CapturedDefaultFalse = false;
-        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse));
+        var capture = new E2EOptionalBoolTool.Capture();
+        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultFalse), capture);
 
         await fn.InvokeAsync(
             Args("flag", Parse("true")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2EOptionalBoolTool.CapturedDefaultFalse);
+        Assert.True(capture.DefaultFalse);
     }
 
     [Fact]
     public async Task Wrapper_OptionalBoolTrue_KeyAbsent_PassesDefaultTrue()
     {
-        E2EOptionalBoolTool.CapturedDefaultTrue = false;
-        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultTrue));
+        var capture = new E2EOptionalBoolTool.Capture();
+        var fn = ResolveFunction<E2EOptionalBoolTool>(nameof(E2EOptionalBoolTool.SetFlagDefaultTrue), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.True(E2EOptionalBoolTool.CapturedDefaultTrue);
+        Assert.True(capture.DefaultTrue);
     }
 
     [Fact]
     public async Task Wrapper_OptionalIntZero_KeyAbsent_PassesZero()
     {
-        E2EOptionalIntTool.CapturedDefaultZero = 999;
-        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultZero));
+        var capture = new E2EOptionalIntTool.Capture();
+        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultZero), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(0, E2EOptionalIntTool.CapturedDefaultZero);
+        Assert.Equal(0, capture.DefaultZero);
     }
 
     [Fact]
     public async Task Wrapper_OptionalIntFive_KeyAbsent_PassesDefaultFive()
     {
-        E2EOptionalIntTool.CapturedDefaultFive = 999;
-        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive));
+        var capture = new E2EOptionalIntTool.Capture();
+        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(5, E2EOptionalIntTool.CapturedDefaultFive);
+        Assert.Equal(5, capture.DefaultFive);
     }
 
     [Fact]
     public async Task Wrapper_OptionalIntFive_JsonNull_PassesDefaultFive()
     {
-        E2EOptionalIntTool.CapturedDefaultFive = 999;
-        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive));
+        var capture = new E2EOptionalIntTool.Capture();
+        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive), capture);
 
         await fn.InvokeAsync(
             Args("max", Parse("null")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(5, E2EOptionalIntTool.CapturedDefaultFive);
+        Assert.Equal(5, capture.DefaultFive);
     }
 
     [Fact]
     public async Task Wrapper_OptionalIntFive_JsonNumber_PassesNumber()
     {
-        E2EOptionalIntTool.CapturedDefaultFive = 0;
-        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive));
+        var capture = new E2EOptionalIntTool.Capture();
+        var fn = ResolveFunction<E2EOptionalIntTool>(nameof(E2EOptionalIntTool.SetMaxDefaultFive), capture);
 
         await fn.InvokeAsync(
             Args("max", Parse("7")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(7, E2EOptionalIntTool.CapturedDefaultFive);
+        Assert.Equal(7, capture.DefaultFive);
     }
 
     [Fact]
     public async Task Wrapper_OptionalNullableStringNullDefault_KeyAbsent_PassesNull()
     {
-        E2EOptionalStringTool.CapturedDefaultNull = "preset";
-        E2EOptionalStringTool.CapturedDefaultNullWasSet = false;
-        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull));
+        var capture = new E2EOptionalStringTool.Capture();
+        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.True(E2EOptionalStringTool.CapturedDefaultNullWasSet);
-        Assert.Null(E2EOptionalStringTool.CapturedDefaultNull);
+        Assert.True(capture.DefaultNullWasSet);
+        Assert.Null(capture.DefaultNull);
     }
 
     [Fact]
     public async Task Wrapper_OptionalNullableStringNullDefault_JsonNull_PassesNull()
     {
-        E2EOptionalStringTool.CapturedDefaultNull = "preset";
-        E2EOptionalStringTool.CapturedDefaultNullWasSet = false;
-        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull));
+        var capture = new E2EOptionalStringTool.Capture();
+        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull), capture);
 
         await fn.InvokeAsync(
             Args("label", Parse("null")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2EOptionalStringTool.CapturedDefaultNullWasSet);
-        Assert.Null(E2EOptionalStringTool.CapturedDefaultNull);
+        Assert.True(capture.DefaultNullWasSet);
+        Assert.Null(capture.DefaultNull);
     }
 
     [Fact]
     public async Task Wrapper_OptionalNullableStringNullDefault_JsonString_PassesString()
     {
-        E2EOptionalStringTool.CapturedDefaultNull = null;
-        E2EOptionalStringTool.CapturedDefaultNullWasSet = false;
-        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull));
+        var capture = new E2EOptionalStringTool.Capture();
+        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultNull), capture);
 
         await fn.InvokeAsync(
             Args("label", Parse("\"x\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2EOptionalStringTool.CapturedDefaultNullWasSet);
-        Assert.Equal("x", E2EOptionalStringTool.CapturedDefaultNull);
+        Assert.True(capture.DefaultNullWasSet);
+        Assert.Equal("x", capture.DefaultNull);
     }
 
     [Fact]
     public async Task Wrapper_OptionalNullableStringLiteralDefault_KeyAbsent_PassesLiteral()
     {
-        E2EOptionalStringTool.CapturedDefaultLiteral = null;
-        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultLiteral));
+        var capture = new E2EOptionalStringTool.Capture();
+        var fn = ResolveFunction<E2EOptionalStringTool>(nameof(E2EOptionalStringTool.RecordDefaultLiteral), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal("x", E2EOptionalStringTool.CapturedDefaultLiteral);
+        Assert.Equal("x", capture.DefaultLiteral);
     }
 
     [Fact]
     public async Task Wrapper_NullableIntNullDefault_KeyAbsent_PassesNull()
     {
-        E2ENullableIntTool.CapturedDefaultNull = 999;
-        E2ENullableIntTool.CapturedDefaultNullWasSet = false;
-        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultNull));
+        var capture = new E2ENullableIntTool.Capture();
+        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultNull), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.True(E2ENullableIntTool.CapturedDefaultNullWasSet);
-        Assert.Null(E2ENullableIntTool.CapturedDefaultNull);
+        Assert.True(capture.DefaultNullWasSet);
+        Assert.Null(capture.DefaultNull);
     }
 
     [Fact]
     public async Task Wrapper_NullableIntNullDefault_JsonNumber_PassesNumber()
     {
-        E2ENullableIntTool.CapturedDefaultNull = null;
-        E2ENullableIntTool.CapturedDefaultNullWasSet = false;
-        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultNull));
+        var capture = new E2ENullableIntTool.Capture();
+        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultNull), capture);
 
         await fn.InvokeAsync(
             Args("offset", Parse("7")),
             TestContext.Current.CancellationToken);
 
-        Assert.True(E2ENullableIntTool.CapturedDefaultNullWasSet);
-        Assert.Equal(7, E2ENullableIntTool.CapturedDefaultNull);
+        Assert.True(capture.DefaultNullWasSet);
+        Assert.Equal(7, capture.DefaultNull);
     }
 
     [Fact]
     public async Task Wrapper_NullableIntFiveDefault_KeyAbsent_PassesDefaultFive()
     {
-        E2ENullableIntTool.CapturedDefaultFive = null;
-        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultFive));
+        var capture = new E2ENullableIntTool.Capture();
+        var fn = ResolveFunction<E2ENullableIntTool>(nameof(E2ENullableIntTool.RecordDefaultFive), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(5, E2ENullableIntTool.CapturedDefaultFive);
+        Assert.Equal(5, capture.DefaultFive);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_StringPropertyWithInitDefault_NullPayloadKeepsDefault()
     {
-        E2EDtoWithDefaultsTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record));
+        var capture = new E2EDtoWithDefaultsTool.Capture();
+        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("dto", Parse("{\"foo\":null}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoWithDefaultsTool.Captured);
-        Assert.Equal("default", E2EDtoWithDefaultsTool.Captured!.Foo);
+        Assert.NotNull(capture.Value);
+        Assert.Equal("default", capture.Value!.Foo);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_NullableStringProperty_NullPayloadResolvesToNull()
     {
-        E2EDtoWithDefaultsTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record));
+        var capture = new E2EDtoWithDefaultsTool.Capture();
+        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("dto", Parse("{\"bar\":null}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoWithDefaultsTool.Captured);
-        Assert.Null(E2EDtoWithDefaultsTool.Captured!.Bar);
+        Assert.NotNull(capture.Value);
+        Assert.Null(capture.Value!.Bar);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_IntPropertyWithInitDefault_NullPayloadKeepsDefault()
     {
-        E2EDtoWithDefaultsTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record));
+        var capture = new E2EDtoWithDefaultsTool.Capture();
+        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("dto", Parse("{\"count\":null}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoWithDefaultsTool.Captured);
-        Assert.Equal(5, E2EDtoWithDefaultsTool.Captured!.Count);
+        Assert.NotNull(capture.Value);
+        Assert.Equal(5, capture.Value!.Count);
     }
 
     [Fact]
     public async Task Wrapper_DtoParam_AllPropertiesPresent_PopulatesEverything()
     {
-        E2EDtoWithDefaultsTool.Captured = null;
-        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record));
+        var capture = new E2EDtoWithDefaultsTool.Capture();
+        var fn = ResolveFunction<E2EDtoWithDefaultsTool>(nameof(E2EDtoWithDefaultsTool.Record), capture);
 
         await fn.InvokeAsync(
             Args("dto", Parse("{\"foo\":\"override\",\"bar\":\"present\",\"count\":42}")),
             TestContext.Current.CancellationToken);
 
-        Assert.NotNull(E2EDtoWithDefaultsTool.Captured);
-        Assert.Equal("override", E2EDtoWithDefaultsTool.Captured!.Foo);
-        Assert.Equal("present", E2EDtoWithDefaultsTool.Captured.Bar);
-        Assert.Equal(42, E2EDtoWithDefaultsTool.Captured.Count);
+        Assert.NotNull(capture.Value);
+        Assert.Equal("override", capture.Value!.Foo);
+        Assert.Equal("present", capture.Value.Bar);
+        Assert.Equal(42, capture.Value.Count);
     }
 
     [Fact]
     public async Task Wrapper_RequiredEnumParam_StringValue_ParsesToEnum()
     {
-        E2EEnumTool.CapturedRequired = null;
-        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode));
+        var capture = new E2EEnumTool.Capture();
+        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode), capture);
 
         await fn.InvokeAsync(
             Args("mode", Parse("\"Write\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(E2EMode.Write, E2EEnumTool.CapturedRequired);
+        Assert.Equal(E2EMode.Write, capture.Required);
     }
 
     [Fact]
     public async Task Wrapper_RequiredEnumParam_LowercaseString_ParsesCaseInsensitively()
     {
-        E2EEnumTool.CapturedRequired = null;
-        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode));
+        var capture = new E2EEnumTool.Capture();
+        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode), capture);
 
         await fn.InvokeAsync(
             Args("mode", Parse("\"append\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(E2EMode.Append, E2EEnumTool.CapturedRequired);
+        Assert.Equal(E2EMode.Append, capture.Required);
     }
 
     [Fact]
     public async Task Wrapper_RequiredEnumParam_MissingKey_ThrowsArgumentException()
     {
-        E2EEnumTool.CapturedRequired = null;
-        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode));
+        var capture = new E2EEnumTool.Capture();
+        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetMode), capture);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken));
@@ -707,105 +705,105 @@ public class AIFunctionWrapperEndToEndTests
     [Fact]
     public async Task Wrapper_DefaultedEnumParam_KeyAbsent_FallsBackToDefaultMember()
     {
-        E2EEnumTool.CapturedDefault = null;
-        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetModeDefault));
+        var capture = new E2EEnumTool.Capture();
+        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetModeDefault), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(E2EMode.Append, E2EEnumTool.CapturedDefault);
+        Assert.Equal(E2EMode.Append, capture.Default);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedEnumParam_StringValue_ParsesToEnum()
     {
-        E2EEnumTool.CapturedDefault = null;
-        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetModeDefault));
+        var capture = new E2EEnumTool.Capture();
+        var fn = ResolveFunction<E2EEnumTool>(nameof(E2EEnumTool.SetModeDefault), capture);
 
         await fn.InvokeAsync(
             Args("mode", Parse("\"Read\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(E2EMode.Read, E2EEnumTool.CapturedDefault);
+        Assert.Equal(E2EMode.Read, capture.Default);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedGuidParam_KeyAbsent_FallsBackToEmpty()
     {
-        E2EDefaultedTemporalsTool.CapturedGuid = Guid.NewGuid();
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordGuid));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordGuid), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(Guid.Empty, E2EDefaultedTemporalsTool.CapturedGuid);
+        Assert.Equal(Guid.Empty, capture.Guid);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedGuidParam_StringValue_ParsesGuid()
     {
-        E2EDefaultedTemporalsTool.CapturedGuid = null;
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordGuid));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordGuid), capture);
 
         await fn.InvokeAsync(
             Args("id", Parse("\"d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a\"")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), E2EDefaultedTemporalsTool.CapturedGuid);
+        Assert.Equal(Guid.Parse("d2719b96-4d6e-4f1c-9bff-3a8d6f1c2e7a"), capture.Guid);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedDateTimeParam_KeyAbsent_FallsBackToMinValue()
     {
-        E2EDefaultedTemporalsTool.CapturedDateTime = DateTime.UtcNow;
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDateTime));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDateTime), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(default(DateTime), E2EDefaultedTemporalsTool.CapturedDateTime);
+        Assert.Equal(default(DateTime), capture.DateTime);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedDateTimeOffsetParam_KeyAbsent_FallsBackToMinValue()
     {
-        E2EDefaultedTemporalsTool.CapturedDateTimeOffset = DateTimeOffset.UtcNow;
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDateTimeOffset));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDateTimeOffset), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(default(DateTimeOffset), E2EDefaultedTemporalsTool.CapturedDateTimeOffset);
+        Assert.Equal(default(DateTimeOffset), capture.DateTimeOffset);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedTimeSpanParam_KeyAbsent_FallsBackToZero()
     {
-        E2EDefaultedTemporalsTool.CapturedTimeSpan = TimeSpan.FromMinutes(5);
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordTimeSpan));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordTimeSpan), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(TimeSpan.Zero, E2EDefaultedTemporalsTool.CapturedTimeSpan);
+        Assert.Equal(TimeSpan.Zero, capture.TimeSpan);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedDecimalParam_KeyAbsent_FallsBackToLiteral()
     {
-        E2EDefaultedTemporalsTool.CapturedDecimal = null;
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDecimal));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDecimal), capture);
 
         await fn.InvokeAsync(new AIFunctionArguments(), TestContext.Current.CancellationToken);
 
-        Assert.Equal(9.99m, E2EDefaultedTemporalsTool.CapturedDecimal);
+        Assert.Equal(9.99m, capture.Decimal);
     }
 
     [Fact]
     public async Task Wrapper_DefaultedDecimalParam_NumericValue_ExtractsCorrectly()
     {
-        E2EDefaultedTemporalsTool.CapturedDecimal = null;
-        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDecimal));
+        var capture = new E2EDefaultedTemporalsTool.Capture();
+        var fn = ResolveFunction<E2EDefaultedTemporalsTool>(nameof(E2EDefaultedTemporalsTool.RecordDecimal), capture);
 
         await fn.InvokeAsync(
             Args("price", Parse("19.95")),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(19.95m, E2EDefaultedTemporalsTool.CapturedDecimal);
+        Assert.Equal(19.95m, capture.Decimal);
     }
 }

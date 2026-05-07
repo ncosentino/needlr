@@ -17,9 +17,13 @@ public sealed class ToolInvocationRunnerLimitToToolsTests
     [Fact]
     public void LimitToTools_DoesNotPreventResolutionOfTypesPresentInGlobalProvider()
     {
+        var stringCapture = new E2EStringTool.Capture();
+        var intCapture = new E2EIntTool.Capture();
         var runner = ToolInvocationRunner
             .Create(s =>
             {
+                s.AddSingleton(stringCapture);
+                s.AddSingleton(intCapture);
                 s.AddSingleton<E2EStringTool>();
                 s.AddSingleton<E2EIntTool>();
             })
@@ -33,10 +37,13 @@ public sealed class ToolInvocationRunnerLimitToToolsTests
     [Fact]
     public async Task LimitToTools_ResolvedFunctionStillInvokesCorrectly()
     {
-        E2EStringTool.Captured = null;
-
+        var capture = new E2EStringTool.Capture();
         var runner = ToolInvocationRunner
-            .Create(s => s.AddSingleton<E2EStringTool>())
+            .Create(s =>
+            {
+                s.AddSingleton(capture);
+                s.AddSingleton<E2EStringTool>();
+            })
             .LimitToTools(typeof(E2EStringTool));
 
         var result = await runner.InvokeAsync<E2EStringTool>(
@@ -46,13 +53,18 @@ public sealed class ToolInvocationRunnerLimitToToolsTests
 
         result.AssertSuccess();
         Assert.Equal(ToolFunctionSource.Generated, result.FunctionSource);
-        Assert.Equal("[]", E2EStringTool.Captured);
+        Assert.Equal("[]", capture.Value);
     }
 
     [Fact]
     public void LimitToTools_ImmutableSemantics()
     {
-        var original = ToolInvocationRunner.Create(s => s.AddSingleton<E2EStringTool>());
+        var capture = new E2EStringTool.Capture();
+        var original = ToolInvocationRunner.Create(s =>
+        {
+            s.AddSingleton(capture);
+            s.AddSingleton<E2EStringTool>();
+        });
         var limited = original.LimitToTools(typeof(E2EStringTool));
 
         Assert.NotSame(original, limited);

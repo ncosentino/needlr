@@ -5,18 +5,28 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 [AgentFunctionGroup("e2e-defaulted-temporals")]
 public sealed class E2EDefaultedTemporalsTool
 {
-    public static Guid? CapturedGuid { get; set; }
-    public static DateTime? CapturedDateTime { get; set; }
-    public static DateTimeOffset? CapturedDateTimeOffset { get; set; }
-    public static TimeSpan? CapturedTimeSpan { get; set; }
-    public static decimal? CapturedDecimal { get; set; }
+    public sealed class Capture
+    {
+        public Guid? Guid { get; set; }
+        public DateTime? DateTime { get; set; }
+        public DateTimeOffset? DateTimeOffset { get; set; }
+        public TimeSpan? TimeSpan { get; set; }
+        public decimal? Decimal { get; set; }
+    }
+
+    private readonly Capture _capture;
+
+    public E2EDefaultedTemporalsTool(Capture capture)
+    {
+        _capture = capture;
+    }
 
     [AgentFunction]
     [Description("Records an optional Guid (defaults to Guid.Empty via default literal).")]
     public string RecordGuid(
         [Description("Guid value.")] Guid id = default)
     {
-        CapturedGuid = id;
+        _capture.Guid = id;
         return "ok";
     }
 
@@ -25,7 +35,7 @@ public sealed class E2EDefaultedTemporalsTool
     public string RecordDateTime(
         [Description("DateTime value.")] DateTime when = default)
     {
-        CapturedDateTime = when;
+        _capture.DateTime = when;
         return "ok";
     }
 
@@ -34,7 +44,7 @@ public sealed class E2EDefaultedTemporalsTool
     public string RecordDateTimeOffset(
         [Description("DateTimeOffset value.")] DateTimeOffset stamp = default)
     {
-        CapturedDateTimeOffset = stamp;
+        _capture.DateTimeOffset = stamp;
         return "ok";
     }
 
@@ -43,7 +53,7 @@ public sealed class E2EDefaultedTemporalsTool
     public string RecordTimeSpan(
         [Description("TimeSpan value.")] TimeSpan duration = default)
     {
-        CapturedTimeSpan = duration;
+        _capture.TimeSpan = duration;
         return "ok";
     }
 
@@ -52,7 +62,7 @@ public sealed class E2EDefaultedTemporalsTool
     public string RecordDecimal(
         [Description("Decimal value.")] decimal price = 9.99m)
     {
-        CapturedDecimal = price;
+        _capture.Decimal = price;
         return "ok";
     }
 }
