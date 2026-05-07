@@ -36,6 +36,14 @@ public sealed partial class IterativeAgentLoopTests
     private static Mock<IChatClient> CreateMockChatWithTokens(
         string responseText, int inputTokens, int outputTokens)
     {
+        return CreateMockChatWithFullTokens(
+            responseText, inputTokens, outputTokens, cachedInputTokens: 0, reasoningTokens: 0);
+    }
+
+    private static Mock<IChatClient> CreateMockChatWithFullTokens(
+        string responseText, int inputTokens, int outputTokens,
+        int cachedInputTokens, int reasoningTokens)
+    {
         var mock = new Mock<IChatClient>();
         mock
             .Setup(c => c.GetResponseAsync(
@@ -51,6 +59,8 @@ public sealed partial class IterativeAgentLoopTests
                     InputTokenCount = inputTokens,
                     OutputTokenCount = outputTokens,
                     TotalTokenCount = inputTokens + outputTokens,
+                    CachedInputTokenCount = cachedInputTokens,
+                    ReasoningTokenCount = reasoningTokens,
                 };
                 return response;
             });

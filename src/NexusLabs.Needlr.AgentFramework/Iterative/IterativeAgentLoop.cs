@@ -181,6 +181,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 long iterationInputTokens = 0;
                 long iterationOutputTokens = 0;
                 long iterationTotalTokens = 0;
+                long iterationCachedInputTokens = 0;
+                long iterationReasoningTokens = 0;
                 int llmCallCount = 0;
 
                 // Build messages — always just [system, user], no history
@@ -247,7 +249,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                     llmCallCount++;
 
-                    // Track tokens
+                    // Track tokens (input/output/total + cached/reasoning when reported)
                     long callInput = 0, callOutput = 0, callTotal = 0;
                     if (response.Usage is { } usage)
                     {
@@ -257,6 +259,14 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         iterationInputTokens += callInput;
                         iterationOutputTokens += callOutput;
                         iterationTotalTokens += callTotal;
+                        iterationCachedInputTokens +=
+                            usage.CachedInputTokenCount
+                            ?? usage.AdditionalCounts?.GetValueOrDefault("CachedInputTokens")
+                            ?? 0;
+                        iterationReasoningTokens +=
+                            usage.ReasoningTokenCount
+                            ?? usage.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
+                            ?? 0;
                     }
 
                     var responseMessageCount = response.Messages.Count;
@@ -377,7 +387,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         Iteration: i,
                         ToolCalls: iterationToolCalls,
                         FinalResponse: iterationResponse,
-                        Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
+                        Tokens: new TokenUsage(
+                            InputTokens: iterationInputTokens,
+                            OutputTokens: iterationOutputTokens,
+                            TotalTokens: iterationTotalTokens,
+                            CachedInputTokens: iterationCachedInputTokens,
+                            ReasoningTokens: iterationReasoningTokens),
                         Duration: iterationStopwatch.Elapsed,
                         LlmCallCount: llmCallCount,
                         ToolCallCount: iterationToolCalls.Count));
@@ -393,7 +408,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         Iteration: i,
                         ToolCalls: iterationToolCalls,
                         FinalResponse: iterationResponse,
-                        Tokens: new TokenUsage(iterationInputTokens, iterationOutputTokens, iterationTotalTokens, 0, 0),
+                        Tokens: new TokenUsage(
+                            InputTokens: iterationInputTokens,
+                            OutputTokens: iterationOutputTokens,
+                            TotalTokens: iterationTotalTokens,
+                            CachedInputTokens: iterationCachedInputTokens,
+                            ReasoningTokens: iterationReasoningTokens),
                         Duration: iterationStopwatch.Elapsed,
                         LlmCallCount: llmCallCount,
                         ToolCallCount: iterationToolCalls.Count));
@@ -413,8 +433,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     InputTokens: iterationInputTokens,
                     OutputTokens: iterationOutputTokens,
                     TotalTokens: iterationTotalTokens,
-                    CachedInputTokens: 0,
-                    ReasoningTokens: 0);
+                    CachedInputTokens: iterationCachedInputTokens,
+                    ReasoningTokens: iterationReasoningTokens);
 
                 iterations.Add(new IterationRecord(
                     Iteration: i,

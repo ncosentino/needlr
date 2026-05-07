@@ -148,6 +148,106 @@ public sealed class DiagnosticsChatClientMiddlewareStreamingTests
     }
 
     [Fact]
+    public async Task HandleStreamingAsync_PopulatesCachedAndReasoningTokens_FromUsageContentFirstClassProperties()
+    {
+        var (middleware, mockInner, _) = CreateMiddleware();
+
+        mockInner
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(AsyncEnumerable(new[]
+            {
+                new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    Contents = [new TextContent("answer")],
+                    ModelId = "azure-gpt-4.1",
+                },
+                new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    Contents = [new UsageContent(new UsageDetails
+                    {
+                        InputTokenCount = 5000,
+                        OutputTokenCount = 200,
+                        TotalTokenCount = 5200,
+                        CachedInputTokenCount = 3000,
+                        ReasoningTokenCount = 50,
+                    })],
+                    ModelId = "azure-gpt-4.1",
+                },
+            }));
+
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        var messages = new List<ChatMessage> { new(ChatRole.User, "hi") };
+        await foreach (var _ in middleware.HandleStreamingAsync(messages, options: null, mockInner.Object, _ct))
+        {
+        }
+
+        var diag = builder.Build();
+        var completion = Assert.Single(diag.ChatCompletions);
+        Assert.NotNull(completion.Response);
+        Assert.NotNull(completion.Response!.Usage);
+        Assert.Equal(3000, completion.Response.Usage!.CachedInputTokenCount);
+        Assert.Equal(50, completion.Response.Usage!.ReasoningTokenCount);
+        Assert.Equal(5000, completion.Tokens.InputTokens);
+        Assert.Equal(200, completion.Tokens.OutputTokens);
+        Assert.Equal(5200, completion.Tokens.TotalTokens);
+        Assert.Equal(3000, completion.Tokens.CachedInputTokens);
+        Assert.Equal(50, completion.Tokens.ReasoningTokens);
+    }
+
+    [Fact]
+    public async Task HandleStreamingAsync_FallsBackToAdditionalCounts_WhenFirstClassPropertiesAreNull()
+    {
+        var (middleware, mockInner, _) = CreateMiddleware();
+
+        mockInner
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(AsyncEnumerable(new[]
+            {
+                new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    Contents = [new TextContent("answer")],
+                    ModelId = "custom",
+                },
+                new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    Contents = [new UsageContent(new UsageDetails
+                    {
+                        InputTokenCount = 100,
+                        OutputTokenCount = 50,
+                        TotalTokenCount = 150,
+                        AdditionalCounts = new AdditionalPropertiesDictionary<long>
+                        {
+                            ["CachedInputTokens"] = 42,
+                            ["ReasoningTokens"] = 7,
+                        },
+                    })],
+                    ModelId = "custom",
+                },
+            }));
+
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        var messages = new List<ChatMessage> { new(ChatRole.User, "hi") };
+        await foreach (var _ in middleware.HandleStreamingAsync(messages, options: null, mockInner.Object, _ct))
+        {
+        }
+
+        var diag = builder.Build();
+        var completion = Assert.Single(diag.ChatCompletions);
+        Assert.Equal(42, completion.Tokens.CachedInputTokens);
+        Assert.Equal(7, completion.Tokens.ReasoningTokens);
+    }
+
+    [Fact]
     public async Task HandleStreamingAsync_ErrorMidStream_EmitsFailedProgressEvent()
     {
         var events = new List<IProgressEvent>();

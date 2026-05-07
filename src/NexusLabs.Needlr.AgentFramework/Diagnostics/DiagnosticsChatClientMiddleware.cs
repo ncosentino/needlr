@@ -108,11 +108,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 InputTokens: usage?.InputTokenCount ?? 0,
                 OutputTokens: usage?.OutputTokenCount ?? 0,
                 TotalTokens: usage?.TotalTokenCount ?? 0,
-                CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
-                ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
+                CachedInputTokens:
+                    usage?.CachedInputTokenCount
+                    ?? usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens")
+                    ?? 0,
+                ReasoningTokens:
+                    usage?.ReasoningTokenCount
+                    ?? usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
+                    ?? 0);
 
             targetActivity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
             targetActivity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
+            targetActivity?.SetTag("gen_ai.usage.cached_input_tokens", tokens.CachedInputTokens);
+            targetActivity?.SetTag("gen_ai.usage.reasoning_tokens", tokens.ReasoningTokens);
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
@@ -285,11 +293,19 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                 InputTokens: usage?.InputTokenCount ?? 0,
                 OutputTokens: usage?.OutputTokenCount ?? 0,
                 TotalTokens: usage?.TotalTokenCount ?? 0,
-                CachedInputTokens: usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens") ?? 0,
-                ReasoningTokens: usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens") ?? 0);
+                CachedInputTokens:
+                    usage?.CachedInputTokenCount
+                    ?? usage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens")
+                    ?? 0,
+                ReasoningTokens:
+                    usage?.ReasoningTokenCount
+                    ?? usage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
+                    ?? 0);
 
             targetActivity?.SetTag("gen_ai.usage.input_tokens", tokens.InputTokens);
             targetActivity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
+            targetActivity?.SetTag("gen_ai.usage.cached_input_tokens", tokens.CachedInputTokens);
+            targetActivity?.SetTag("gen_ai.usage.reasoning_tokens", tokens.ReasoningTokens);
 
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
