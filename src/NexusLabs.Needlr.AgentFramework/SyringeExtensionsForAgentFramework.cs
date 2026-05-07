@@ -190,6 +190,7 @@ public static class SyringeExtensionsForAgentFramework
                 sp.GetService<ToolCallCollectorHolder>()));
         services.TryAddSingleton<IAgentDiagnosticsAccessor>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
+        services.TryAddSingleton<IInFlightAgentDiagnosticsAccessor, InFlightAgentDiagnosticsAccessor>();
         services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
         services.TryAddSingleton<IAgentMetrics>(sp =>
         {
