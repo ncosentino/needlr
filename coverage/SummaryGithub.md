@@ -3,8 +3,8 @@
 
 |||
 |:---|:---|
-| Generated on: | 05/07/2026 - 01:45:19 |
-| Coverage date: | 05/07/2026 - 01:43:14 - 05/07/2026 - 01:45:16 |
+| Generated on: | 05/07/2026 - 01:45:55 |
+| Coverage date: | 05/07/2026 - 01:43:23 - 05/07/2026 - 01:45:50 |
 | Parser: | MultiReport (29x Cobertura) |
 | Assemblies: | 25 |
 | Classes: | 514 |
@@ -550,13 +550,13 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**38.5%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.6%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|50%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -610,8 +610,8 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
