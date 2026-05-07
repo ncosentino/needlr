@@ -352,11 +352,25 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             _metrics?.RecordChatCompletion("unknown", stopwatch.Elapsed, succeeded: false, agentName: builder?.AgentName);
 
+            var failureUsage = aggregated.Usage;
+            var failureTokens = new TokenUsage(
+                InputTokens: failureUsage?.InputTokenCount ?? 0,
+                OutputTokens: failureUsage?.OutputTokenCount ?? 0,
+                TotalTokens: failureUsage?.TotalTokenCount ?? 0,
+                CachedInputTokens:
+                    failureUsage?.CachedInputTokenCount
+                    ?? failureUsage?.AdditionalCounts?.GetValueOrDefault("CachedInputTokens")
+                    ?? 0,
+                ReasoningTokens:
+                    failureUsage?.ReasoningTokenCount
+                    ?? failureUsage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
+                    ?? 0);
+
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: aggregated.ModelId ?? "unknown",
-                Tokens: new TokenUsage(0, 0, 0, 0, 0),
-                InputMessageCount: 0,
+                Tokens: failureTokens,
+                InputMessageCount: messageList.Count,
                 Duration: stopwatch.Elapsed,
                 Succeeded: false,
                 ErrorMessage: failure.Message,

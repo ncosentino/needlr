@@ -248,6 +248,63 @@ public sealed class DiagnosticsChatClientMiddlewareStreamingTests
     }
 
     [Fact]
+    public async Task HandleStreamingAsync_StreamFailureAfterUsageChunk_PreservesPartialTokenUsage()
+    {
+        var (middleware, mockInner, _) = CreateMiddleware();
+
+        var updates = new[]
+        {
+            new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("partial answer")],
+                ModelId = "azure-gpt-4.1",
+            },
+            new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new UsageContent(new UsageDetails
+                {
+                    InputTokenCount = 5000,
+                    OutputTokenCount = 200,
+                    TotalTokenCount = 5200,
+                    CachedInputTokenCount = 3000,
+                    ReasoningTokenCount = 50,
+                })],
+                ModelId = "azure-gpt-4.1",
+            },
+        };
+
+        mockInner
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(ThrowingStreamMany(updates, new InvalidOperationException("late stream failure")));
+
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        var messages = new List<ChatMessage> { new(ChatRole.User, "hi") };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in middleware.HandleStreamingAsync(messages, options: null, mockInner.Object, _ct))
+            {
+            }
+        });
+
+        var diag = builder.Build();
+        var completion = Assert.Single(diag.ChatCompletions);
+        Assert.False(completion.Succeeded);
+        Assert.Equal("late stream failure", completion.ErrorMessage);
+        Assert.Equal(5000, completion.Tokens.InputTokens);
+        Assert.Equal(200, completion.Tokens.OutputTokens);
+        Assert.Equal(5200, completion.Tokens.TotalTokens);
+        Assert.Equal(3000, completion.Tokens.CachedInputTokens);
+        Assert.Equal(50, completion.Tokens.ReasoningTokens);
+        Assert.Equal(1, completion.InputMessageCount);
+    }
+
+    [Fact]
     public async Task HandleStreamingAsync_ErrorMidStream_EmitsFailedProgressEvent()
     {
         var events = new List<IProgressEvent>();
@@ -315,6 +372,19 @@ public sealed class DiagnosticsChatClientMiddlewareStreamingTests
         Exception toThrow)
     {
         yield return firstUpdate;
+        await Task.CompletedTask;
+        throw toThrow;
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> ThrowingStreamMany(
+        IEnumerable<ChatResponseUpdate> updates,
+        Exception toThrow)
+    {
+        foreach (var update in updates)
+        {
+            yield return update;
+        }
+
         await Task.CompletedTask;
         throw toThrow;
     }
