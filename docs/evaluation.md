@@ -79,6 +79,64 @@ All four properties are init-only, default to `null`, and are populated automati
 
 With these in hand you can rehydrate a MEAI `ChatResponse` + trajectory from a persisted diagnostics document and feed it into any `IEvaluator` offline.
 
+## In-flight access from inside a tool
+
+The post-hoc accessor (`IAgentDiagnosticsAccessor.LastRunDiagnostics`) is only populated after the agent run completes, which is too late for cross-tool verification within the same run. The companion `IInFlightAgentDiagnosticsAccessor.Current` exposes a snapshot of the diagnostics being accumulated **while the run is still executing**, scoped to the calling async flow.
+
+Inject it like any other accessor and read `Current` from inside a tool. The snapshot type is the same `IAgentRunDiagnostics` you get post-run, so the same code reads cleanly in both contexts.
+
+```csharp
+public sealed class RecordFixDecisionTool(IInFlightAgentDiagnosticsAccessor diag)
+{
+    [AgentFunction]
+    public RecordFixDecisionResult Record(int issueId, string action, string reason)
+    {
+        if (action == "Applied" && diag.Current is { } snap)
+        {
+            // Find the most recent prior FindReplaceWithCount call. Its
+            // structured Result is captured losslessly by the diagnostics
+            // middleware — no shadow store required.
+            var lastWrite = snap.ToolCalls
+                .Where(t => t.ToolName == "FindReplaceWithCount")
+                .LastOrDefault();
+
+            if (lastWrite?.Result is FindReplaceWithCountResult { Success: false } r)
+            {
+                action = "Rejected";
+                reason = $"[auto-corrected: prior write returned Success=false: {r.Error}] {reason}";
+            }
+        }
+
+        // ...
+    }
+}
+```
+
+### Mid-flight semantics on the snapshot
+
+The fields that aren't yet meaningful at snapshot time degrade safely rather than throw:
+
+| Field | Mid-flight meaning |
+|---|---|
+| `ToolCalls` | Every tool call that has **completed** on this async flow so far, ordered by reserved sequence number. The currently-executing tool (whose body called `Current`) is **not** present — the diagnostics middleware appends only after the tool returns. |
+| `ChatCompletions` | Every chat completion that has finished so far. The in-progress completion that triggered the current tool call is not yet present. |
+| `AggregateTokenUsage` | Reflects only completed completions; grows as the run continues. |
+| `TotalDuration` | Elapsed-so-far, measured from `StartedAt` to the snapshot time. |
+| `CompletedAt` | Snapshot time, not a true run-end time. |
+| `Succeeded` / `ErrorMessage` | `true` / `null` unless the run has explicitly recorded a failure. |
+| `OutputResponse` | Typically `null` mid-run (recorded at run end). |
+
+### Snapshot, isolation, and sub-agent guarantees
+
+- **Snapshot** — each call to `Current` returns a freshly materialized snapshot with ordered arrays. Subsequent tool calls or completions added to the underlying builder do **not** mutate previously-returned snapshots.
+- **Per-run AsyncLocal isolation** — concurrent agent runs on parallel async flows each see only their own data. Standard AsyncLocal flow propagation means `ConfigureAwait(false)` doesn't break it.
+- **Sub-agent innermost-wins** — if a sub-agent is currently executing (its own `AgentRunDiagnosticsBuilder` was pushed onto the AsyncLocal stack), `Current` reflects the sub-agent's run. When the sub-agent completes and its builder is disposed, the parent run's builder becomes current again.
+- **`null` outside a run** — callers must handle `null`. This happens when no diagnostics builder is active on the flow (e.g., the consumer didn't wire `UsingDiagnostics()`, or the accessor is being exercised from a unit test that didn't start a builder).
+
+### Test seam
+
+`InFlightAgentDiagnosticsAccessor` is `internal` but registered through DI, so test code typically substitutes its own `IInFlightAgentDiagnosticsAccessor` mock. For tests that want to drive the real accessor, just call `AgentRunDiagnosticsBuilder.StartNew("AgentName")` to push a builder onto the AsyncLocal stack — the accessor will pick it up.
+
 ## Full-fidelity transcripts
 
 Evaluation and agent-assisted debugging both depend on **replay-grade** transcripts — every chat exchange, not just totals.
