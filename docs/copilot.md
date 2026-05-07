@@ -172,7 +172,38 @@ The client retries only on HTTP 429 (Too Many Requests):
 - Falls back to exponential backoff: `RetryBaseDelayMs * 2^attempt`
 - Gives up after `MaxRetries` attempts
 
-Other HTTP errors (401, 500, etc.) are thrown immediately.
+Other transient HTTP errors (5xx) surface as `HttpRequestException` with the upstream status code in the message.
+
+---
+
+## Typed Exceptions
+
+The SDK surfaces two failure modes as typed exceptions so consumers can catch them without parsing message text. Everything else throws `HttpRequestException` (transport/5xx) or other framework exceptions.
+
+| Exception | Trigger | Notes |
+|---|---|---|
+| `CopilotRateLimitException` | HTTP 429 after retry exhaustion, or rate-limit prose detected in a successful MCP response body | Carries `RetryAfter` parsed from the `Retry-After` header or message text |
+| `CopilotAuthException` | (a) `GitHubOAuthTokenProvider` cannot resolve a token from the configured source(s), or (b) `CopilotMcpToolClient` receives HTTP 401 or 403 from the MCP endpoint | Indicates the GitHub OAuth token is missing, expired, invalid, or lacks the required scopes |
+
+`CopilotWebSearchFunction.InvokeCoreAsync` lets both exceptions propagate to the caller. Other failures inside the function are converted into a `"Web search failed: …"` text return so the agent loop can keep going — but auth and rate-limit cases break out so consumers can route to a fallback provider or surface a re-auth prompt.
+
+```csharp
+try
+{
+    var result = await searchFunction.InvokeAsync(args, ct);
+    // ...
+}
+catch (CopilotAuthException ex)
+{
+    // Token missing / expired / rejected. Prompt the user to re-authenticate.
+    throw new ProviderUnavailableException("copilot", ex.Message, ex);
+}
+catch (CopilotRateLimitException ex)
+{
+    // Fall through to an alternative search provider; honour ex.RetryAfter.
+    throw new ProviderUnavailableException("copilot", ex.Message, ex);
+}
+```
 
 ---
 
@@ -197,7 +228,7 @@ The official [GitHub Copilot SDK](https://github.com/github/copilot-sdk) (`GitHu
 ### When to use Needlr Copilot
 
 - **You need structured web search results.** `WebSearchResult.Citations` gives your application code programmatic access to source URLs, titles, and character offsets — the SDK's agent loop consumes this data internally and only returns the agent's final text.
-- **You need a tiered provider fallback.** `CopilotRateLimitException` integrates with `ITieredProviderSelector` so rate-limited queries fall through to alternative search providers (DuckDuckGo, Bing API). The SDK doesn't expose rate-limit exceptions for provider-level routing.
+- **You need a tiered provider fallback.** `CopilotRateLimitException` and `CopilotAuthException` integrate with `ITieredProviderSelector` so rate-limited or auth-rejected queries fall through to alternative search providers (DuckDuckGo, Bing API) without parsing English error prose. The SDK doesn't expose typed exceptions for provider-level routing.
 - **You want a lightweight `IChatClient`.** `CopilotChatClient` is a pure HTTP client (~0 binary overhead). The SDK bundles the entire Copilot CLI binary.
 - **You're already using Needlr's agent framework.** `CopilotToolSet` produces `AIFunction` instances that plug directly into `IterativeLoopOptions.AdditionalTools`.
 
