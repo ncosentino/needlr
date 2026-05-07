@@ -31,6 +31,8 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Tool Result Middleware](https://github.devleader.ca/needlr/tool-result-middleware/) -- How Needlr's ToolResultFunctionMiddleware translates tool exceptions and IToolResult returns into LLM-safe responses, and the trade-offs of enabling it.
 - [Progress Reporting](https://github.devleader.ca/needlr/progress-reporting/) -- Track agent and workflow execution in real-time with Needlr's progress reporting system -- auto-discovered sinks, per-orchestration isolation, and ambient async context.
 - [Evaluation](https://github.devleader.ca/needlr/evaluation/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Testing Tool Integrations](https://github.devleader.ca/needlr/testing-tools/) -- Paved-path testing for [AgentFunction]-decorated tools. Use ToolInvocationRunner to exercise the source-generated AIFunction wrapper with seeded workspace state, zero hand-rolled DI, and the same code path FunctionInvokingChatClient takes in production.
+- [Workspace](https://github.devleader.ca/needlr/workspace/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Advanced
 
@@ -138,3 +140,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 ## Architecture Decisions
 
 - [ADR-0001 DAG Workflow Support](https://github.devleader.ca/needlr/adr/adr-0001-dag-graph-workflow-support/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0002 ScriptedChatClient Build Decision](https://github.devleader.ca/needlr/adr/adr-0002-build-scriptedchatclient-locally/) -- Opinionated fluent dependency injection for .NET with source generation

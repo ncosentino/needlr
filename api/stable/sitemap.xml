@@ -261,6 +261,14 @@
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/ToolInvocationResult/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/ToolFunctionSource/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/AgentScenarioRunner/</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
@@ -269,7 +277,15 @@
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/AgentExecutionContextBuilder/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/PipelineScenarioRunner/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework.Testing/ToolInvocationRunner/</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
@@ -1213,6 +1229,10 @@
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/AgentFrameworkAccessorServiceCollectionExtensions/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/DiagnosticsFunctionInvocationExtensions/</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
@@ -1397,6 +1417,10 @@
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/IInFlightAgentDiagnosticsAccessor/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/SuperStepStartedProgressEvent/</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
@@ -1430,6 +1454,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/DiagnosticsTimelineEntryKind/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/stable/NexusLabs.Needlr.AgentFramework/WorkspacePath/</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
   <url>
