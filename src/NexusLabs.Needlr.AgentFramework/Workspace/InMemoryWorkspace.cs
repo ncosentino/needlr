@@ -12,20 +12,22 @@ namespace NexusLabs.Needlr.AgentFramework.Workspace;
 /// singleton — workspaces have per-orchestration lifecycle and must be explicitly constructed.
 /// </para>
 /// <para>
-/// Paths are normalized: backslashes are replaced with forward slashes, leading slashes are trimmed,
-/// and comparison is case-insensitive (matching Windows file system behavior by default).
+/// Path canonicalization is delegated to <see cref="WorkspacePath.Canonicalize"/> and
+/// <see cref="WorkspacePath.CanonicalizeDirectory"/>; path equality uses
+/// <see cref="WorkspacePath.PathComparer"/>. See the <see cref="IWorkspace"/> remarks
+/// and <see cref="WorkspacePath"/> for the full contract.
 /// </para>
 /// </remarks>
 [DoNotAutoRegister]
 public sealed class InMemoryWorkspace : IWorkspace
 {
     private readonly ConcurrentDictionary<string, string> _files =
-        new(StringComparer.OrdinalIgnoreCase);
+        new(WorkspacePath.PathComparer);
 
     /// <inheritdoc />
     public WorkspaceResult<ReadFileResult> TryReadFile(string path)
     {
-        var normalized = NormalizePath(path);
+        var normalized = WorkspacePath.Canonicalize(path);
         return _files.TryGetValue(normalized, out var content)
             ? WorkspaceResult<ReadFileResult>.Ok(new ReadFileResult(normalized, content))
             : WorkspaceResult<ReadFileResult>.Fail(new FileNotFoundException($"File not found: {normalized}", normalized));
@@ -34,14 +36,14 @@ public sealed class InMemoryWorkspace : IWorkspace
     /// <inheritdoc />
     public WorkspaceResult<WriteFileResult> TryWriteFile(string path, string content)
     {
-        var normalized = NormalizePath(path);
+        var normalized = WorkspacePath.Canonicalize(path);
         _files[normalized] = content;
         return WorkspaceResult<WriteFileResult>.Ok(new WriteFileResult(normalized, content.Length));
     }
 
     /// <inheritdoc />
     public bool FileExists(string path) =>
-        _files.ContainsKey(NormalizePath(path));
+        _files.ContainsKey(WorkspacePath.Canonicalize(path));
 
     /// <inheritdoc />
     public IEnumerable<string> GetFilePaths() =>
@@ -59,13 +61,13 @@ public sealed class InMemoryWorkspace : IWorkspace
     /// <inheritdoc />
     public string ListDirectory(string directory, int maxDepth = 2)
     {
-        var root = NormalizePath(directory).TrimEnd('/');
+        var root = WorkspacePath.CanonicalizeDirectory(directory);
         var prefix = root.Length > 0 ? root + "/" : "";
 
         var entries = _files.Keys
-            .Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) || prefix.Length == 0)
+            .Where(k => prefix.Length == 0 || k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Select(k => prefix.Length > 0 ? k[prefix.Length..] : k)
-            .OrderBy(k => k, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(k => k, WorkspacePath.PathComparer)
             .ToList();
 
         if (entries.Count == 0)
@@ -82,7 +84,7 @@ public sealed class InMemoryWorkspace : IWorkspace
 
     private static SortedDictionary<string, object?> BuildTree(List<string> paths)
     {
-        var root = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var root = new SortedDictionary<string, object?>(WorkspacePath.PathComparer);
         foreach (var path in paths)
         {
             var parts = path.Split('/');
@@ -92,15 +94,13 @@ public sealed class InMemoryWorkspace : IWorkspace
                 var part = parts[i];
                 if (i == parts.Length - 1)
                 {
-                    // File leaf
                     current.TryAdd(part, null);
                 }
                 else
                 {
-                    // Directory node
                     if (!current.TryGetValue(part, out var child) || child is not SortedDictionary<string, object?> dict)
                     {
-                        dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                        dict = new SortedDictionary<string, object?>(WorkspacePath.PathComparer);
                         current[part] = dict;
                     }
                     current = dict;
@@ -143,7 +143,7 @@ public sealed class InMemoryWorkspace : IWorkspace
     /// <inheritdoc />
     public WorkspaceResult<CompareExchangeResult> TryCompareExchange(string path, string expectedContent, string newContent)
     {
-        var normalized = NormalizePath(path);
+        var normalized = WorkspacePath.Canonicalize(path);
 
         if (!_files.TryGetValue(normalized, out var current))
             return WorkspaceResult<CompareExchangeResult>.Fail(
@@ -163,8 +163,6 @@ public sealed class InMemoryWorkspace : IWorkspace
     /// Convenience method for test setup and scenario harnesses.
     /// </summary>
     public void SeedFile(string path, string content) =>
-        _files[NormalizePath(path)] = content;
-
-    private static string NormalizePath(string path) =>
-        path.Replace('\\', '/').TrimStart('/');
+        _files[WorkspacePath.Canonicalize(path)] = content;
 }
+

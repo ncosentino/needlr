@@ -12,7 +12,30 @@ namespace NexusLabs.Needlr.AgentFramework.Workspace;
 /// building blocks — never forced.
 /// </para>
 /// <para>
-/// All paths use forward-slash separators and are normalized by implementations.
+/// <strong>Path canonicalization contract.</strong> Every method that takes a path
+/// argument MUST canonicalize the input via <see cref="WorkspacePath.Canonicalize"/>
+/// (file paths) or <see cref="WorkspacePath.CanonicalizeDirectory"/> (directory paths,
+/// e.g. the argument to <see cref="ListDirectory"/>) before keying or comparing.
+/// Implementations MUST also use <see cref="WorkspacePath.PathComparer"/> (or a comparer
+/// with equivalent semantics) for path equality. This guarantees that strings like
+/// <c>kb/foo.md</c>, <c>./kb/foo.md</c>, <c>kb//foo.md</c>, <c>kb/./foo.md</c>,
+/// <c>/kb/foo.md</c>, and <c>kb/foo.md/</c> all refer to the same logical file. See
+/// <see cref="WorkspacePath"/> for the full canonicalization rules and the rejection
+/// list (notably: <c>..</c> segments are not permitted).
+/// </para>
+/// <para>
+/// The <c>ActualPath</c> values returned in <see cref="ReadFileResult"/> and
+/// <see cref="WriteFileResult"/> are the canonical form. Callers can rely on the
+/// returned path being safe to feed back into other workspace methods.
+/// </para>
+/// <para>
+/// <strong>Exceptions vs <see cref="WorkspaceResult{T}"/>.</strong> Invalid path
+/// arguments (null, empty, whitespace-only, containing <c>..</c>, canonicalizing to
+/// empty for file APIs) throw <see cref="ArgumentNullException"/> or
+/// <see cref="ArgumentException"/> directly — they are NOT wrapped in
+/// <see cref="WorkspaceResult{T}.Fail"/>. <see cref="WorkspaceResult{T}.Fail"/> is
+/// reserved for valid paths where the workspace operation legitimately fails (file
+/// missing, compare-exchange content mismatch, etc.).
 /// </para>
 /// </remarks>
 public interface IWorkspace
