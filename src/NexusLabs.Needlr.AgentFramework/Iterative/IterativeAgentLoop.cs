@@ -126,6 +126,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         var currentIterationIndex = -1;
         List<ToolCallResult>? currentIterationToolCalls = null;
         Stopwatch? currentIterationStopwatch = null;
+        long currentIterationInputTokens = 0;
+        long currentIterationOutputTokens = 0;
+        long currentIterationTotalTokens = 0;
+        long currentIterationCachedInputTokens = 0;
+        long currentIterationReasoningTokens = 0;
+        int currentIterationLlmCallCount = 0;
 
         try
         {
@@ -137,6 +143,12 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
                 context.Iteration = i;
                 currentIterationIndex = i;
+                currentIterationInputTokens = 0;
+                currentIterationOutputTokens = 0;
+                currentIterationTotalTokens = 0;
+                currentIterationCachedInputTokens = 0;
+                currentIterationReasoningTokens = 0;
+                currentIterationLlmCallCount = 0;
 
                 // Hook: iteration start (wrapped to escape catch-all)
                 if (options.OnIterationStart != null)
@@ -178,12 +190,6 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 var iterationToolCalls = new List<ToolCallResult>();
                 currentIterationToolCalls = iterationToolCalls;
                 ChatResponse? iterationResponse = null;
-                long iterationInputTokens = 0;
-                long iterationOutputTokens = 0;
-                long iterationTotalTokens = 0;
-                long iterationCachedInputTokens = 0;
-                long iterationReasoningTokens = 0;
-                int llmCallCount = 0;
 
                 // Build messages — always just [system, user], no history
                 var messages = new List<ChatMessage>
@@ -247,7 +253,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         throw;
                     }
 
-                    llmCallCount++;
+                    currentIterationLlmCallCount++;
 
                     // Track tokens (input/output/total + cached/reasoning when reported)
                     long callInput = 0, callOutput = 0, callTotal = 0;
@@ -256,14 +262,14 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         callInput = usage.InputTokenCount ?? 0;
                         callOutput = usage.OutputTokenCount ?? 0;
                         callTotal = usage.TotalTokenCount ?? 0;
-                        iterationInputTokens += callInput;
-                        iterationOutputTokens += callOutput;
-                        iterationTotalTokens += callTotal;
-                        iterationCachedInputTokens +=
+                        currentIterationInputTokens += callInput;
+                        currentIterationOutputTokens += callOutput;
+                        currentIterationTotalTokens += callTotal;
+                        currentIterationCachedInputTokens +=
                             usage.CachedInputTokenCount
                             ?? usage.AdditionalCounts?.GetValueOrDefault("CachedInputTokens")
                             ?? 0;
-                        iterationReasoningTokens +=
+                        currentIterationReasoningTokens +=
                             usage.ReasoningTokenCount
                             ?? usage.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
                             ?? 0;
@@ -388,13 +394,13 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         ToolCalls: iterationToolCalls,
                         FinalResponse: iterationResponse,
                         Tokens: new TokenUsage(
-                            InputTokens: iterationInputTokens,
-                            OutputTokens: iterationOutputTokens,
-                            TotalTokens: iterationTotalTokens,
-                            CachedInputTokens: iterationCachedInputTokens,
-                            ReasoningTokens: iterationReasoningTokens),
+                            InputTokens: currentIterationInputTokens,
+                            OutputTokens: currentIterationOutputTokens,
+                            TotalTokens: currentIterationTotalTokens,
+                            CachedInputTokens: currentIterationCachedInputTokens,
+                            ReasoningTokens: currentIterationReasoningTokens),
                         Duration: iterationStopwatch.Elapsed,
-                        LlmCallCount: llmCallCount,
+                        LlmCallCount: currentIterationLlmCallCount,
                         ToolCallCount: iterationToolCalls.Count));
                     context.LastToolResults = iterationToolCalls;
                     break;
@@ -409,13 +415,13 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                         ToolCalls: iterationToolCalls,
                         FinalResponse: iterationResponse,
                         Tokens: new TokenUsage(
-                            InputTokens: iterationInputTokens,
-                            OutputTokens: iterationOutputTokens,
-                            TotalTokens: iterationTotalTokens,
-                            CachedInputTokens: iterationCachedInputTokens,
-                            ReasoningTokens: iterationReasoningTokens),
+                            InputTokens: currentIterationInputTokens,
+                            OutputTokens: currentIterationOutputTokens,
+                            TotalTokens: currentIterationTotalTokens,
+                            CachedInputTokens: currentIterationCachedInputTokens,
+                            ReasoningTokens: currentIterationReasoningTokens),
                         Duration: iterationStopwatch.Elapsed,
-                        LlmCallCount: llmCallCount,
+                        LlmCallCount: currentIterationLlmCallCount,
                         ToolCallCount: iterationToolCalls.Count));
                     context.LastToolResults = iterationToolCalls;
 
@@ -430,11 +436,11 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 iterationStopwatch.Stop();
 
                 var tokenUsage = new TokenUsage(
-                    InputTokens: iterationInputTokens,
-                    OutputTokens: iterationOutputTokens,
-                    TotalTokens: iterationTotalTokens,
-                    CachedInputTokens: iterationCachedInputTokens,
-                    ReasoningTokens: iterationReasoningTokens);
+                    InputTokens: currentIterationInputTokens,
+                    OutputTokens: currentIterationOutputTokens,
+                    TotalTokens: currentIterationTotalTokens,
+                    CachedInputTokens: currentIterationCachedInputTokens,
+                    ReasoningTokens: currentIterationReasoningTokens);
 
                 iterations.Add(new IterationRecord(
                     Iteration: i,
@@ -442,7 +448,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                     FinalResponse: iterationResponse,
                     Tokens: tokenUsage,
                     Duration: iterationStopwatch.Elapsed,
-                    LlmCallCount: llmCallCount,
+                    LlmCallCount: currentIterationLlmCallCount,
                     ToolCallCount: iterationToolCalls.Count));
 
                 // Update context for next iteration
@@ -537,7 +543,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             termination = TerminationReason.Cancelled;
             errorMessage = $"Loop was cancelled after {iterations.Count} completed iteration(s).";
             diagnosticsBuilder.RecordFailure(errorMessage);
-            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
+            RecordPartialIteration(
+                iterations,
+                currentIterationIndex,
+                currentIterationToolCalls,
+                currentIterationStopwatch,
+                currentIterationInputTokens,
+                currentIterationOutputTokens,
+                currentIterationTotalTokens,
+                currentIterationCachedInputTokens,
+                currentIterationReasoningTokens,
+                currentIterationLlmCallCount);
         }
         catch (OperationCanceledException ex)
         {
@@ -549,7 +565,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
                 ? $"Chat completion timed out on iteration {iterations.Count + 1}: {ex.InnerException.Message}"
                 : $"Operation cancelled (not by caller) on iteration {iterations.Count + 1}: {ex.Message}";
             diagnosticsBuilder.RecordFailure(errorMessage);
-            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
+            RecordPartialIteration(
+                iterations,
+                currentIterationIndex,
+                currentIterationToolCalls,
+                currentIterationStopwatch,
+                currentIterationInputTokens,
+                currentIterationOutputTokens,
+                currentIterationTotalTokens,
+                currentIterationCachedInputTokens,
+                currentIterationReasoningTokens,
+                currentIterationLlmCallCount);
         }
         catch (LifecycleHookException hookEx)
         {
@@ -563,7 +589,17 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             termination = TerminationReason.Error;
             errorMessage = ex.Message;
             diagnosticsBuilder.RecordFailure(errorMessage);
-            RecordPartialIteration(iterations, currentIterationIndex, currentIterationToolCalls, currentIterationStopwatch);
+            RecordPartialIteration(
+                iterations,
+                currentIterationIndex,
+                currentIterationToolCalls,
+                currentIterationStopwatch,
+                currentIterationInputTokens,
+                currentIterationOutputTokens,
+                currentIterationTotalTokens,
+                currentIterationCachedInputTokens,
+                currentIterationReasoningTokens,
+                currentIterationLlmCallCount);
         }
 
         if (finalResponse == null && iterations.Count > 0)
@@ -599,14 +635,20 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
 
     /// <summary>
     /// Records a partial <see cref="IterationRecord"/> for an iteration that was
-    /// interrupted by an exception. Captures whatever tool calls and timing data
-    /// were accumulated before the interruption.
+    /// interrupted by an exception. Captures whatever tool calls, timing data,
+    /// and per-iteration token counters were accumulated before the interruption.
     /// </summary>
     private static void RecordPartialIteration(
         List<IterationRecord> iterations,
         int currentIterationIndex,
         List<ToolCallResult>? toolCalls,
-        Stopwatch? stopwatch)
+        Stopwatch? stopwatch,
+        long inputTokens,
+        long outputTokens,
+        long totalTokens,
+        long cachedInputTokens,
+        long reasoningTokens,
+        int llmCallCount)
     {
         if (currentIterationIndex < 0 || currentIterationIndex < iterations.Count)
         {
@@ -618,9 +660,14 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             Iteration: currentIterationIndex,
             ToolCalls: toolCalls ?? [],
             FinalResponse: null,
-            Tokens: new TokenUsage(0, 0, 0, 0, 0),
+            Tokens: new TokenUsage(
+                InputTokens: inputTokens,
+                OutputTokens: outputTokens,
+                TotalTokens: totalTokens,
+                CachedInputTokens: cachedInputTokens,
+                ReasoningTokens: reasoningTokens),
             Duration: stopwatch?.Elapsed ?? TimeSpan.Zero,
-            LlmCallCount: 0,
+            LlmCallCount: llmCallCount,
             ToolCallCount: toolCalls?.Count ?? 0));
     }
 
