@@ -83,6 +83,10 @@ public sealed class CopilotWebSearchFunction : AIFunction
         {
             throw;
         }
+        catch (CopilotAuthException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             return $"Web search failed: {ex.Message}";

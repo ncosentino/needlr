@@ -93,6 +93,17 @@ internal sealed class CopilotMcpToolClient : IDisposable
                     retryAfter);
             }
 
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                || httpResponse.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                var errorBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                throw new CopilotAuthException(
+                    $"Copilot MCP request rejected with HTTP {(int)httpResponse.StatusCode} "
+                    + $"{httpResponse.StatusCode}. Verify the GitHub OAuth token is valid and has the "
+                    + $"required scopes. Server response: {errorBody}");
+            }
+
             var errorContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
             throw new HttpRequestException(
