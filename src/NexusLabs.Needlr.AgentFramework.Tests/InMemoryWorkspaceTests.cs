@@ -4,10 +4,6 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 public class InMemoryWorkspaceTests
 {
-    // -------------------------------------------------------------------------
-    // WriteFile + ReadFile
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void WriteFile_ThenReadFile_ReturnsContent()
     {
@@ -37,10 +33,6 @@ public class InMemoryWorkspaceTests
         Assert.IsType<FileNotFoundException>(result.Exception);
     }
 
-    // -------------------------------------------------------------------------
-    // FileExists
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void FileExists_ExistingFile_ReturnsTrue()
     {
@@ -57,10 +49,6 @@ public class InMemoryWorkspaceTests
 
         Assert.False(ws.FileExists("missing.txt"));
     }
-
-    // -------------------------------------------------------------------------
-    // GetFilePaths
-    // -------------------------------------------------------------------------
 
     [Fact]
     public void GetFilePaths_ReturnsAllPaths()
@@ -86,9 +74,21 @@ public class InMemoryWorkspaceTests
         Assert.Empty(ws.GetFilePaths());
     }
 
-    // -------------------------------------------------------------------------
-    // Path normalization
-    // -------------------------------------------------------------------------
+    [Fact]
+    public void GetFilePaths_AfterAliasingWrites_ReturnsCanonicalKeys()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.TryWriteFile("kb/foo.md", "v1");
+        ws.TryWriteFile("./kb/foo.md", "v2");
+        ws.TryWriteFile("kb//foo.md", "v3");
+        ws.TryWriteFile("/kb/foo.md", "v4");
+        ws.TryWriteFile("kb/foo.md/", "v5");
+
+        var paths = ws.GetFilePaths().ToList();
+
+        Assert.Single(paths);
+        Assert.Equal("kb/foo.md", paths[0]);
+    }
 
     [Fact]
     public void Paths_AreNormalized_BackslashToForward()
@@ -110,6 +110,15 @@ public class InMemoryWorkspaceTests
     }
 
     [Fact]
+    public void Paths_TrailingSlash_IsTrimmed()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("kb/foo.md/", "content");
+
+        Assert.True(ws.FileExists("kb/foo.md"));
+    }
+
+    [Fact]
     public void Paths_AreCaseInsensitive()
     {
         var ws = new InMemoryWorkspace();
@@ -119,9 +128,65 @@ public class InMemoryWorkspaceTests
         Assert.Equal("content", ws.TryReadFile("FILE.TXT").Value.Content);
     }
 
-    // -------------------------------------------------------------------------
-    // CompareExchange
-    // -------------------------------------------------------------------------
+    [Fact]
+    public void AliasingPaths_AreTreatedAsTheSameFile()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.TryWriteFile("kb/foo.md", "content-A");
+        ws.TryWriteFile("./kb/foo.md", "content-B");
+
+        Assert.Single(ws.GetFilePaths());
+        Assert.Equal("content-B", ws.TryReadFile("kb/foo.md").Value.Content);
+    }
+
+    [Fact]
+    public void RedundantSeparators_CollapseToSingleEntry()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.TryWriteFile("kb/audience/foo.md", "v1");
+        ws.TryWriteFile("kb//audience/foo.md", "v2");
+        ws.TryWriteFile("kb/./audience/foo.md", "v3");
+        ws.TryWriteFile("/kb/audience/foo.md", "v4");
+
+        Assert.Single(ws.GetFilePaths());
+        Assert.Equal("v4", ws.TryReadFile("kb/audience/foo.md").Value.Content);
+    }
+
+    [Fact]
+    public void CompareExchange_CanonicalizesBeforeMatching()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.TryWriteFile("kb/foo.md", "v1");
+
+        var result = ws.TryCompareExchange("./kb/foo.md", "v1", "v2");
+
+        Assert.True(result.Success);
+        Assert.True(result.Value.Exchanged);
+        Assert.Equal("v2", ws.TryReadFile("kb/foo.md").Value.Content);
+    }
+
+    [Fact]
+    public void TryReadFile_ActualPath_IsCanonical()
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("kb/foo.md", "content");
+
+        var result = ws.TryReadFile("./kb//foo.md/");
+
+        Assert.True(result.Success);
+        Assert.Equal("kb/foo.md", result.Value.ActualPath);
+    }
+
+    [Fact]
+    public void TryWriteFile_ActualPath_IsCanonical()
+    {
+        var ws = new InMemoryWorkspace();
+
+        var result = ws.TryWriteFile(@"./kb\foo.md/", "content");
+
+        Assert.True(result.Success);
+        Assert.Equal("kb/foo.md", result.Value.ActualPath);
+    }
 
     [Fact]
     public void CompareExchange_MatchingContent_SwapsAndReturnsTrue()
@@ -160,10 +225,6 @@ public class InMemoryWorkspaceTests
         Assert.IsType<FileNotFoundException>(result.Exception);
     }
 
-    // -------------------------------------------------------------------------
-    // SeedFile
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void SeedFile_CreatesFile()
     {
@@ -173,10 +234,6 @@ public class InMemoryWorkspaceTests
         Assert.True(ws.FileExists("setup.txt"));
         Assert.Equal("seeded content", ws.TryReadFile("setup.txt").Value.Content);
     }
-
-    // -------------------------------------------------------------------------
-    // Thread safety
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ConcurrentWrites_AllSucceed()
@@ -191,10 +248,6 @@ public class InMemoryWorkspaceTests
 
         Assert.Equal(100, ws.GetFilePaths().Count());
     }
-
-    // -------------------------------------------------------------------------
-    // ReadFileAsMemory
-    // -------------------------------------------------------------------------
 
     [Fact]
     public void ReadFileAsMemory_ExistingFile_ReturnsContent()
@@ -229,10 +282,6 @@ public class InMemoryWorkspaceTests
         Assert.Equal(3, lineCount);
     }
 
-    // -------------------------------------------------------------------------
-    // ListDirectory
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void ListDirectory_EmptyWorkspace_ReturnsRoot()
     {
@@ -241,6 +290,47 @@ public class InMemoryWorkspaceTests
         var result = ws.ListDirectory("");
 
         Assert.Equal("./", result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(".")]
+    [InlineData("./")]
+    [InlineData("/")]
+    [InlineData("//")]
+    [InlineData("/./")]
+    [InlineData(" ")]
+    public void ListDirectory_RootSentinels_ListRoot(string sentinel)
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("a.txt", "");
+        ws.SeedFile("b.txt", "");
+
+        var result = ws.ListDirectory(sentinel);
+
+        Assert.Contains("a.txt", result);
+        Assert.Contains("b.txt", result);
+    }
+
+    [Theory]
+    [InlineData("src")]
+    [InlineData("./src")]
+    [InlineData("src/")]
+    [InlineData("/src")]
+    [InlineData("src//")]
+    [InlineData(@"src\")]
+    public void ListDirectory_DirectoryAliases_ScopeToSamePrefix(string variant)
+    {
+        var ws = new InMemoryWorkspace();
+        ws.SeedFile("src/main.cs", "");
+        ws.SeedFile("src/util/helper.cs", "");
+        ws.SeedFile("docs/readme.md", "");
+
+        var result = ws.ListDirectory(variant);
+
+        Assert.Contains("main.cs", result);
+        Assert.Contains("util/", result);
+        Assert.DoesNotContain("readme.md", result);
     }
 
     [Fact]
@@ -281,7 +371,6 @@ public class InMemoryWorkspaceTests
         var result = ws.ListDirectory("", maxDepth: 1);
 
         Assert.Contains("a/", result);
-        // At depth 1, we see the 'a' directory but not its children
         Assert.DoesNotContain("deep.txt", result);
         Assert.DoesNotContain("top.txt", result);
     }
@@ -299,5 +388,89 @@ public class InMemoryWorkspaceTests
         Assert.Contains("main.cs", result);
         Assert.Contains("util/", result);
         Assert.DoesNotContain("readme.md", result);
+    }
+
+    [Fact]
+    public void TryReadFile_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.TryReadFile("../foo.md"));
+        Assert.Throws<ArgumentException>(() => ws.TryReadFile("kb/../foo.md"));
+    }
+
+    [Fact]
+    public void TryWriteFile_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile("../foo.md", "content"));
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile("kb/../foo.md", "content"));
+    }
+
+    [Fact]
+    public void FileExists_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.FileExists("../foo.md"));
+    }
+
+    [Fact]
+    public void TryCompareExchange_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.TryCompareExchange("../foo.md", "a", "b"));
+    }
+
+    [Fact]
+    public void ReadFileAsMemory_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.ReadFileAsMemory("../foo.md"));
+    }
+
+    [Fact]
+    public void ListDirectory_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.ListDirectory("../src"));
+    }
+
+    [Fact]
+    public void SeedFile_ParentSegment_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.SeedFile("../foo.md", "content"));
+    }
+
+    [Fact]
+    public void TryReadFile_NullPath_ThrowsArgumentNullException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentNullException>(() => ws.TryReadFile(null!));
+    }
+
+    [Fact]
+    public void TryWriteFile_EmptyPath_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile("", "content"));
+    }
+
+    [Fact]
+    public void TryWriteFile_RootEquivalentPath_ThrowsArgumentException()
+    {
+        var ws = new InMemoryWorkspace();
+
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile("/", "content"));
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile(".", "content"));
+        Assert.Throws<ArgumentException>(() => ws.TryWriteFile("./", "content"));
     }
 }
