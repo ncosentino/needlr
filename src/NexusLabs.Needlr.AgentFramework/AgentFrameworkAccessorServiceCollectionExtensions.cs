@@ -14,9 +14,10 @@ namespace NexusLabs.Needlr.AgentFramework;
 /// <remarks>
 /// <para>
 /// Use this when you need the Needlr accessors (<see cref="IAgentExecutionContextAccessor"/>,
-/// <see cref="IAgentDiagnosticsAccessor"/>, <see cref="IAgentDiagnosticsWriter"/>) but do not
-/// want the rest of the Agent Framework wiring — typically because you are constructing a
-/// minimal service provider for a tool-level test.
+/// <see cref="IAgentDiagnosticsAccessor"/>, <see cref="IInFlightAgentDiagnosticsAccessor"/>,
+/// <see cref="IAgentDiagnosticsWriter"/>) but do not want the rest of the Agent Framework
+/// wiring — typically because you are constructing a minimal service provider for a
+/// tool-level test.
 /// </para>
 /// <para>
 /// The <c>UsingAgentFramework()</c> extension on <see cref="NexusLabs.Needlr.Injection.ConfiguredSyringe"/>
@@ -30,7 +31,7 @@ public static class AgentFrameworkAccessorServiceCollectionExtensions
     /// <summary>
     /// Registers the Needlr Agent Framework accessor singletons:
     /// <see cref="IAgentExecutionContextAccessor"/>, <see cref="IAgentDiagnosticsAccessor"/>,
-    /// and <see cref="IAgentDiagnosticsWriter"/>.
+    /// <see cref="IInFlightAgentDiagnosticsAccessor"/>, and <see cref="IAgentDiagnosticsWriter"/>.
     /// </summary>
     /// <param name="services">The service collection to add registrations to.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -51,6 +52,7 @@ public static class AgentFrameworkAccessorServiceCollectionExtensions
             sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp =>
             sp.GetRequiredService<AgentDiagnosticsAccessor>());
+        services.TryAddSingleton<IInFlightAgentDiagnosticsAccessor, InFlightAgentDiagnosticsAccessor>();
 
         return services;
     }
