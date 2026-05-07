@@ -37,16 +37,16 @@ internal sealed class GitHubOAuthTokenProvider : IGitHubOAuthTokenProvider
         return _options.TokenSource switch
         {
             CopilotTokenSource.AppsJson => ReadFromAppsJson()
-                ?? throw new InvalidOperationException(
+                ?? throw new CopilotAuthException(
                     "No OAuth token found in apps.json. Ensure the Copilot CLI is logged in."),
 
             CopilotTokenSource.EnvironmentVariable => ReadFromEnvironment()
-                ?? throw new InvalidOperationException(
+                ?? throw new CopilotAuthException(
                     "No GH_TOKEN or GITHUB_TOKEN environment variable found."),
 
             CopilotTokenSource.Auto => ReadFromAppsJson()
                 ?? ReadFromEnvironment()
-                ?? throw new InvalidOperationException(
+                ?? throw new CopilotAuthException(
                     "No GitHub OAuth token found. Log in via the Copilot CLI, " +
                     "set GH_TOKEN/GITHUB_TOKEN, or provide an explicit GitHubToken in options."),
 
