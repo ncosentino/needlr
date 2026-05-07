@@ -1,3 +1,25 @@
+## [Unreleased]
+
+### Added
+
+- **`ToolInvocationRunner`** (`NexusLabs.Needlr.AgentFramework.Testing`) — public, supported test harness for invoking `[AgentFunction]`-decorated tool methods through their source-generated `AIFunction` wrapper. Removes the boilerplate consumers used to face: build a service provider with the right registrations, look up the source-generated `IAIFunctionProvider`, find the right `AIFunction` by name, build `AIFunctionArguments`, establish an ambient `IAgentExecutionContext` so the tool can read `accessor.Current.GetWorkspace()`. Default mode is generated-only; reflection fallback is opt-in via the explicitly-named, AOT-annotated `GetFunctionAllowingReflection*` methods. Per-invocation `IServiceScopeFactory.CreateScope()` so tools with scoped dependencies behave correctly. Immutable `With*` methods return new instances to prevent cross-test leakage. `LimitToTools(...)` wraps `AgentFrameworkGeneratedBootstrap.BeginTestScope` for per-test source-gen scope isolation. 25 unit tests + 60 integration tests (existing `GeneratedWrapper.Tests` migrated as the forcing function).
+- **`AgentExecutionContextBuilder`** (`NexusLabs.Needlr.AgentFramework.Testing`) — fluent builder for the `IAgentExecutionContext` the runner establishes during invocation. Top-level `WithWorkspace(seed)` / `WithWorkspace(IWorkspace)` overloads remove the need to learn the longer `WithExecutionContext(c => c.WithWorkspace(...))` chain.
+- **`ToolInvocationResult`** (`NexusLabs.Needlr.AgentFramework.Testing`) — record returned from `InvokeAsync`. Exposes `ReturnValue`, `Exception`, `FunctionSource` (Generated vs Reflection — surfaces which path actually ran), `Workspace` (for post-invocation file assertions), and `Duration`. Helpers: `Succeeded`, `GetValue<T>()`, `AssertSuccess()`, `AssertResultContains(...)`.
+- **`ToolFunctionSource`** (`NexusLabs.Needlr.AgentFramework.Testing`) — enum (`Generated`, `Reflection`) so tests can assert they exercised the source-generated wrapper rather than silently falling through to reflection-based discovery.
+- **`AgentFrameworkAccessorServiceCollectionExtensions.AddAgentFrameworkAccessors()`** (`NexusLabs.Needlr.AgentFramework`) — public extension that registers the small set of Needlr agent accessors (`IAgentExecutionContextAccessor`, `IAgentDiagnosticsAccessor`, `IAgentDiagnosticsWriter`) without dragging in the rest of the Agent Framework wiring. Lets tool tests build a minimal `IServiceProvider` without going through Syringe.
+- **`AgentFrameworkGeneratedBootstrap.BeginTestScope`** promoted from `internal` to `public`. Unlocks per-test isolation for consumer test projects with many `[AgentFunction]` types — they can scope the source-gen visibility to a specific subset for the duration of one test without disturbing parallel tests in different async flows.
+- **`docs/testing-tools.md`** — paved-path testing reference covering `ToolInvocationRunner`, wrapper edge-case tests, per-test source-gen scoping via `LimitToTools`, the explicit reflection fallback, full-agent scenario tests via `AgentScenarioRunner`, and a clear pointer to the planned `ScriptedChatClient` follow-up. Includes anti-patterns to avoid (calling `tool.DoIt(...)` directly, hand-rolling DI, sharing mutable runners).
+- **`docs/adr/adr-0002-build-scriptedchatclient-locally.md`** — ADR documenting the build-vs-buy investigation for a scripted `IChatClient`. Conclusion: `Microsoft.Extensions.AI.Testing` does not exist (HTTP 404, no roadmap entry, dotnet/extensions team's own multi-turn tests use a copy-pasted internal `TestChatClient`). The follow-up will ship a first-party `ScriptedChatClient` in `NexusLabs.Needlr.AgentFramework.Testing`.
+
+### Changed
+
+- **`AgentFrameworkGeneratedBootstrap.BeginTestScope`** — visibility changed from `internal` to `public`. Existing internal callers (`AgentFramework.Tests`, `AgentFramework.Workflows`) continue to work unchanged.
+
+### Internal
+
+- `NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests/AIFunctionWrapperEndToEndTests.cs` — migrated from a private `ResolveFunction<TTool>(string methodName)` helper to the public `ToolInvocationRunner.GetFunction<TTool>(name)` API. Forcing function: if the public surface couldn't express what the 57 wrapper edge-case tests needed, we missed something in the API. All 57 tests pass.
+- `NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests/ToolInvocationRunnerLimitToToolsTests.cs` — new 3-test integration suite covering the source-gen scope wrapper.
+
 ## [0.0.2-alpha.54] - 2026-05-06
 
 ### Fixed
