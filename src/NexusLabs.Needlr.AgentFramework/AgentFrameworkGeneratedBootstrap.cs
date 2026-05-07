@@ -314,7 +314,63 @@ public static class AgentFrameworkGeneratedBootstrap
     /// Creates a test-scoped override that replaces bootstrap discovery for the current async context.
     /// Dispose the returned scope to restore the previous state.
     /// </summary>
-    internal static IDisposable BeginTestScope(
+    /// <param name="functionTypes">
+    /// Provider for the set of <c>[AgentFunction]</c>-bearing types visible inside the scope.
+    /// Use <c>static () =&gt; []</c> for an empty registry.
+    /// </param>
+    /// <param name="groupTypes">
+    /// Provider for the <c>[AgentFunctionGroup]</c> name → type list map visible inside the scope.
+    /// </param>
+    /// <param name="agentTypes">
+    /// Provider for the set of <c>[NeedlrAiAgent]</c>-decorated agent types visible inside the scope.
+    /// </param>
+    /// <param name="handoffTopology">
+    /// Optional handoff edges built by the <c>[AgentHandoffsTo]</c> generator. Defaults to empty.
+    /// </param>
+    /// <param name="groupChatGroups">
+    /// Optional group-chat membership built by the <c>[AgentGroupChatMember]</c> generator. Defaults to empty.
+    /// </param>
+    /// <param name="sequentialTopology">
+    /// Optional sequential-pipeline topology built by the <c>[AgentSequenceMember]</c> generator. Defaults to empty.
+    /// </param>
+    /// <param name="aiFunctionProvider">
+    /// Optional source-generated <see cref="IAIFunctionProvider"/> to install for the scope.
+    /// Pass <see langword="null"/> to fall back to reflection-based <see cref="Microsoft.Extensions.AI.AIFunction"/> creation
+    /// inside the scope.
+    /// </param>
+    /// <returns>
+    /// A disposable scope. The override is restored to its previous value when the returned object is disposed.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is the preferred mechanism for test isolation when consumer test projects contain many
+    /// <c>[AgentFunction]</c>, <c>[AgentFunctionGroup]</c>, or <c>[NeedlrAiAgent]</c> types: the
+    /// generated <c>[ModuleInitializer]</c> registers <em>all</em> of them globally, so a test
+    /// targeting a specific subset can use <c>BeginTestScope</c> to limit visibility for the
+    /// duration of the test without disturbing other tests running concurrently in different async
+    /// flows.
+    /// </para>
+    /// <para>
+    /// The override is keyed to <see cref="AsyncLocal{T}"/>, so concurrent tests in unrelated async
+    /// flows do not interfere with each other.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// [Fact]
+    /// public void OnlyMyToolIsVisible()
+    /// {
+    ///     using var scope = AgentFrameworkGeneratedBootstrap.BeginTestScope(
+    ///         functionTypes: static () =&gt; [typeof(MyTool)],
+    ///         groupTypes:    static () =&gt; new Dictionary&lt;string, IReadOnlyList&lt;Type&gt;&gt;(),
+    ///         agentTypes:    static () =&gt; []);
+    ///
+    ///     // The Syringe built inside this scope sees only MyTool, even if other [AgentFunction]
+    ///     // types are registered globally by the [ModuleInitializer].
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static IDisposable BeginTestScope(
         Func<IReadOnlyList<Type>> functionTypes,
         Func<IReadOnlyDictionary<string, IReadOnlyList<Type>>> groupTypes,
         Func<IReadOnlyList<Type>> agentTypes,

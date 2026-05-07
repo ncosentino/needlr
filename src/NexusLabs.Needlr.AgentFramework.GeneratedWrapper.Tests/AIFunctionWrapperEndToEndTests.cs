@@ -1,11 +1,9 @@
-using System.ComponentModel;
 using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 
 using NexusLabs.Needlr.AgentFramework;
-using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.Reflection;
+using NexusLabs.Needlr.AgentFramework.Testing;
 
 namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 
@@ -28,25 +26,20 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 /// <c>AgentFrameworkGeneratedBootstrap</c> state used by the broader test suite (which has
 /// many <c>[AgentFunctionGroup]</c> fixtures designed for the reflection-based scanner).
 /// </para>
+/// <para>
+/// Function resolution flows through <see cref="ToolInvocationRunner"/>'s public surface: the
+/// same path downstream consumers use to write tool-level tests against their own
+/// <c>[AgentFunction]</c>-decorated tools.
+/// </para>
 /// </remarks>
 public class AIFunctionWrapperEndToEndTests
 {
     private static AIFunction ResolveFunction<TTool>(string methodName)
         where TTool : class
     {
-        Assert.True(
-            AgentFrameworkGeneratedBootstrap.TryGetAIFunctionProvider(out var provider),
-            "Generated IAIFunctionProvider was not registered — the source generator's ModuleInitializer didn't run.");
-
-        var services = new Syringe()
-            .UsingReflection()
-            .BuildServiceProvider();
-
-        Assert.True(
-            provider!.TryGetFunctions(typeof(TTool), services, out var functions),
-            $"No generated functions for {typeof(TTool).Name}.");
-
-        return Assert.Single(functions!, f => f.Name == methodName);
+        var runner = ToolInvocationRunner.CreateFor<TTool>();
+        runner.AssertGeneratedProviderAvailable();
+        return runner.GetFunction<TTool>(methodName);
     }
 
     private static AIFunctionArguments Args(string key, JsonElement value) =>

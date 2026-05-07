@@ -78,6 +78,7 @@ nav:
     - Tool Result Middleware: tool-result-middleware.md
     - Progress Reporting: progress-reporting.md
     - Evaluation: evaluation.md
+    - Testing Tool Integrations: testing-tools.md
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md
@@ -168,6 +169,7 @@ nav:
   - Video Tutorials: video-tutorials.md
   - Architecture Decisions:
     - ADR-0001 DAG Workflow Support: adr/adr-0001-dag-graph-workflow-support.md
+    - ADR-0002 ScriptedChatClient Build Decision: adr/adr-0002-build-scriptedchatclient-locally.md
 
 plugins:
   - search
