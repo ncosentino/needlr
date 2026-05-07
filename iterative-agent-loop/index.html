@@ -1365,6 +1365,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#partial-iterations-on-interruption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partial iterations on interruption
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4656,7 +4667,7 @@
 </span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">            </span><span class="n">Continue</span><span class="w"> </span><span class="n">working</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">article</span><span class="p">.</span>
 </span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">            </span><span class="s">&quot;&quot;&quot;;</span>
 </span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">    </span><span class="n">MaxIterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">    </span><span class="n">MaxIterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
 </span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="w">    </span><span class="n">IsComplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">Workspace</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="s">&quot;done.txt&quot;</span><span class="p">),</span>
 </span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="p">};</span>
 </span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>
@@ -4937,13 +4948,13 @@
 </span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="p">});</span>
 </span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">    </span><span class="p">},</span>
 </span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="n">OnIterationEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="n">OnIterationEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="k">record</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
 </span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">    </span><span class="p">{</span>
 </span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">hub</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="s">&quot;IterationCompleted&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span>
 </span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">            </span><span class="n">record</span><span class="p">.</span><span class="n">Iteration</span><span class="p">,</span>
-</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">            </span><span class="n">ToolCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">.</span><span class="n">Count</span><span class="p">,</span>
-</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">            </span><span class="n">record</span><span class="p">.</span><span class="n">Duration</span><span class="p">,</span>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">            </span><span class="k">record</span><span class="p">.</span><span class="n">Iteration</span><span class="p">,</span>
+</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">            </span><span class="n">ToolCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">record</span><span class="p">.</span><span class="n">ToolCalls</span><span class="p">.</span><span class="n">Count</span><span class="p">,</span>
+</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">            </span><span class="k">record</span><span class="p">.</span><span class="n">Duration</span><span class="p">,</span>
 </span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">        </span><span class="p">});</span>
 </span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">    </span><span class="p">},</span>
 </span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="p">};</span>
@@ -4978,6 +4989,17 @@
 <p class="admonition-title">BeginCapture is required</p>
 <p>Without <code>BeginCapture()</code>, <code>LastRunDiagnostics</code> will be <code>null</code> after the run. The loop writes diagnostics into an <code>AsyncLocal&lt;T&gt;</code> holder — <code>BeginCapture()</code> creates the shared holder that both the loop and the caller can access.</p>
 </div>
+<h3 id="partial-iterations-on-interruption">Partial iterations on interruption<a class="headerlink" href="#partial-iterations-on-interruption" title="Permanent link">&para;</a></h3>
+<p>When an iteration is interrupted by an exception, an HTTP timeout, or genuine cancellation <strong>after</strong> one or more LLM calls have already completed, the loop records a <strong>partial</strong> <code>IterationRecord</code> for the in-flight iteration with everything observed so far:</p>
+<ul>
+<li><code>Iteration</code> — the in-flight index (so it lines up with the iteration that threw).</li>
+<li><code>ToolCalls</code> — every tool call that completed before the interruption.</li>
+<li><code>FinalResponse</code> — <code>null</code> (the iteration never produced one).</li>
+<li><code>Tokens</code> — accumulated <code>InputTokens</code>, <code>OutputTokens</code>, <code>TotalTokens</code>, <code>CachedInputTokens</code>, <code>ReasoningTokens</code> from every LLM call that returned a <code>UsageDetails</code> before the throw.</li>
+<li><code>LlmCallCount</code> — the number of LLM calls that completed before the throw.</li>
+<li><code>Duration</code> — wall-clock time from the start of the iteration to the interruption.</li>
+</ul>
+<p>This applies to all three failure handlers (cancellation, HTTP timeout / non-user <code>OperationCanceledException</code>, and generic <code>Exception</code>). It does <strong>not</strong> apply to <code>LifecycleHookException</code> — those propagate to the caller without a partial record because they originate from caller-supplied hook code. Telemetry of in-flight LLM/tool work is preserved on the unhappy path so cost and trajectory can still be inspected after a failed run.</p>
 <hr />
 <h2 id="execution-context-bridge">Execution Context Bridge<a class="headerlink" href="#execution-context-bridge" title="Permanent link">&para;</a></h2>
 <p>DI-resolved tools often need access to the workspace. The iterative loop automatically bridges its <code>IterativeContext.Workspace</code> to <code>IAgentExecutionContextAccessor</code> so that tool classes can read/write workspace files.</p>
@@ -5074,7 +5096,7 @@
 <tr>
 <td><code>Tokens</code></td>
 <td><code>TokenUsage</code></td>
-<td>Input/output token counts for this iteration</td>
+<td>Per-iteration token counts: <code>InputTokens</code>, <code>OutputTokens</code>, <code>TotalTokens</code>, <code>CachedInputTokens</code> (provider-side prompt-cache hits), and <code>ReasoningTokens</code> (chain-of-thought tokens for o-series / reasoning models). Sourced from <code>Microsoft.Extensions.AI.UsageDetails</code> first-class properties; zero when the provider does not report a field.</td>
 </tr>
 <tr>
 <td><code>Duration</code></td>

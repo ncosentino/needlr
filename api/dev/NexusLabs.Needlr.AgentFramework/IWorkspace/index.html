@@ -1156,6 +1156,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../testing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Tool Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workspace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3982,6 +4038,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adr/adr-0002-build-scriptedchatclient-locally/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002 ScriptedChatClient Build Decision
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4025,7 +4116,26 @@ an in-memory dictionary, a real file system, or a cloud blob store.</p>
             workspace instances per-orchestration and attach them wherever they choose (execution
             context properties, direct injection, etc.). Needlr provides implementations as opt-in
             building blocks — never forced.</p>
-<p>All paths use forward-slash separators and are normalized by implementations.</p>
+<p><strong>Path canonicalization contract.</strong> Every method that takes a path
+            argument MUST canonicalize the input via <a href="../WorkspacePath/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.Canonicalize(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.Canonicalize(string)">Canonicalize(string)</a>
+            (file paths) or <a href="../WorkspacePath/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.CanonicalizeDirectory(string)" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.CanonicalizeDirectory(string)">CanonicalizeDirectory(string)</a> (directory paths,
+            e.g. the argument to <a href="./#NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string,int)" title="NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.ListDirectory(string, int)">ListDirectory(string, int)</a>) before keying or comparing.
+            Implementations MUST also use <a href="../WorkspacePath/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.PathComparer" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath.PathComparer">PathComparer</a> (or a comparer
+            with equivalent semantics) for path equality. This guarantees that strings like
+            <code>kb/foo.md</code>, <code>./kb/foo.md</code>, <code>kb//foo.md</code>, <code>kb/./foo.md</code>,
+            <code>/kb/foo.md</code>, and <code>kb/foo.md/</code> all refer to the same logical file. See
+            <a href="../WorkspacePath/" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspacePath">WorkspacePath</a> for the full canonicalization rules and the rejection
+            list (notably: <code>..</code> segments are not permitted).</p>
+<p>The <code>ActualPath</code> values returned in <a href="../ReadFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.ReadFileResult">ReadFileResult</a> and
+<a href="../WriteFileResult/" title="NexusLabs.Needlr.AgentFramework.Workspace.WriteFileResult">WriteFileResult</a> are the canonical form. Callers can rely on the
+returned path being safe to feed back into other workspace methods.</p>
+<p><strong>Exceptions vs &lt;see cref="T:NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult<code>1"/&gt;.&lt;/strong&gt; Invalid path
+            arguments (null, empty, whitespace-only, containing</code>..`, canonicalizing to
+            empty for file APIs) throw <a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception" title="System.ArgumentNullException">System.ArgumentNullException</a> or
+            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a> directly — they are NOT wrapped in
+            <a href="../WorkspaceResult_T_/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult_T_.Fail(System.Exception)" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;.Fail(System.Exception)">Fail(Exception)</a>. <a href="../WorkspaceResult_T_/#NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult_T_.Fail(System.Exception)" title="NexusLabs.Needlr.AgentFramework.Workspace.WorkspaceResult\&lt;T&gt;.Fail(System.Exception)">Fail(Exception)</a> is
+            reserved for valid paths where the workspace operation legitimately fails (file
+            missing, compare-exchange content mismatch, etc.).</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace.FileExists(string)'></a></p>
 <h2 id="iworkspacefileexistsstring-method">IWorkspace.FileExists(string) Method<a class="headerlink" href="#iworkspacefileexistsstring-method" title="Permanent link">&para;</a></h2>

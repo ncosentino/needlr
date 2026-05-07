@@ -1156,6 +1156,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../testing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Tool Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workspace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3982,6 +4038,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adr/adr-0002-build-scriptedchatclient-locally/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002 ScriptedChatClient Build Decision
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4130,6 +4221,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a></td>
 <td style="text-align: left;">Accepts diagnostic records produced during an agent run. Writers (middleware, orchestration loops) call these methods to record individual chat completions and tool calls. The sink is responsible for storage and aggregation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IInFlightAgentDiagnosticsAccessor/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IInFlightAgentDiagnosticsAccessor">IInFlightAgentDiagnosticsAccessor</a></td>
+<td style="text-align: left;">Read-only accessor that exposes a snapshot of the diagnostics being accumulated for the currently in-flight agent run on the calling async flow. The post-run sibling is <a href="../IAgentDiagnosticsAccessor/#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics">LastRunDiagnostics</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IPipelineRunResult/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult">IPipelineRunResult</a></td>

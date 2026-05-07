@@ -1192,6 +1192,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#typed-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Typed Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#needlr-copilot-vs-github-copilot-sdk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4544,7 +4555,48 @@
 <li>Falls back to exponential backoff: <code>RetryBaseDelayMs * 2^attempt</code></li>
 <li>Gives up after <code>MaxRetries</code> attempts</li>
 </ul>
-<p>Other HTTP errors (401, 500, etc.) are thrown immediately.</p>
+<p>Other transient HTTP errors (5xx) surface as <code>HttpRequestException</code> with the upstream status code in the message.</p>
+<hr />
+<h2 id="typed-exceptions">Typed Exceptions<a class="headerlink" href="#typed-exceptions" title="Permanent link">&para;</a></h2>
+<p>The SDK surfaces two failure modes as typed exceptions so consumers can catch them without parsing message text. Everything else throws <code>HttpRequestException</code> (transport/5xx) or other framework exceptions.</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Trigger</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CopilotRateLimitException</code></td>
+<td>HTTP 429 after retry exhaustion, or rate-limit prose detected in a successful MCP response body</td>
+<td>Carries <code>RetryAfter</code> parsed from the <code>Retry-After</code> header or message text</td>
+</tr>
+<tr>
+<td><code>CopilotAuthException</code></td>
+<td>(a) <code>GitHubOAuthTokenProvider</code> cannot resolve a token from the configured source(s), or (b) <code>CopilotMcpToolClient</code> receives HTTP 401 or 403 from the MCP endpoint</td>
+<td>Indicates the GitHub OAuth token is missing, expired, invalid, or lacks the required scopes</td>
+</tr>
+</tbody>
+</table>
+<p><code>CopilotWebSearchFunction.InvokeCoreAsync</code> lets both exceptions propagate to the caller. Other failures inside the function are converted into a <code>"Web search failed: …"</code> text return so the agent loop can keep going — but auth and rate-limit cases break out so consumers can route to a fallback provider or surface a re-auth prompt.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">try</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">{</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">searchFunction</span><span class="p">.</span><span class="n">InvokeAsync</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">);</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="c1">// ...</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">}</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">CopilotAuthException</span><span class="w"> </span><span class="n">ex</span><span class="p">)</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">{</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="c1">// Token missing / expired / rejected. Prompt the user to re-authenticate.</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ProviderUnavailableException</span><span class="p">(</span><span class="s">&quot;copilot&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">Message</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">);</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="p">}</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">CopilotRateLimitException</span><span class="w"> </span><span class="n">ex</span><span class="p">)</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">{</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="c1">// Fall through to an alternative search provider; honour ex.RetryAfter.</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ProviderUnavailableException</span><span class="p">(</span><span class="s">&quot;copilot&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">Message</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">);</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h2 id="needlr-copilot-vs-github-copilot-sdk">Needlr Copilot vs GitHub Copilot SDK<a class="headerlink" href="#needlr-copilot-vs-github-copilot-sdk" title="Permanent link">&para;</a></h2>
 <p>The official <a href="https://github.com/github/copilot-sdk">GitHub Copilot SDK</a> (<code>GitHub.Copilot.SDK</code> on NuGet) provides a superset of what <code>NexusLabs.Needlr.Copilot</code> offers. Before choosing Needlr Copilot, understand the overlap:</p>
@@ -4617,7 +4669,7 @@
 <h3 id="when-to-use-needlr-copilot">When to use Needlr Copilot<a class="headerlink" href="#when-to-use-needlr-copilot" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>You need structured web search results.</strong> <code>WebSearchResult.Citations</code> gives your application code programmatic access to source URLs, titles, and character offsets — the SDK's agent loop consumes this data internally and only returns the agent's final text.</li>
-<li><strong>You need a tiered provider fallback.</strong> <code>CopilotRateLimitException</code> integrates with <code>ITieredProviderSelector</code> so rate-limited queries fall through to alternative search providers (DuckDuckGo, Bing API). The SDK doesn't expose rate-limit exceptions for provider-level routing.</li>
+<li><strong>You need a tiered provider fallback.</strong> <code>CopilotRateLimitException</code> and <code>CopilotAuthException</code> integrate with <code>ITieredProviderSelector</code> so rate-limited or auth-rejected queries fall through to alternative search providers (DuckDuckGo, Bing API) without parsing English error prose. The SDK doesn't expose typed exceptions for provider-level routing.</li>
 <li><strong>You want a lightweight <code>IChatClient</code>.</strong> <code>CopilotChatClient</code> is a pure HTTP client (~0 binary overhead). The SDK bundles the entire Copilot CLI binary.</li>
 <li><strong>You're already using Needlr's agent framework.</strong> <code>CopilotToolSet</code> produces <code>AIFunction</code> instances that plug directly into <code>IterativeLoopOptions.AdditionalTools</code>.</li>
 </ul>

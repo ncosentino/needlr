@@ -1156,6 +1156,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../testing-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Tool Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../workspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workspace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3982,6 +4038,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adr/adr-0002-build-scriptedchatclient-locally/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002 ScriptedChatClient Build Decision
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4021,6 +4112,10 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../AgentExecutionContextBuilder/" title="NexusLabs.Needlr.AgentFramework.Testing.AgentExecutionContextBuilder">AgentExecutionContextBuilder</a></td>
+<td style="text-align: left;">Mutable builder used by <a href="../ToolInvocationRunner/#NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner.WithExecutionContext(System.Action_NexusLabs.Needlr.AgentFramework.Testing.AgentExecutionContextBuilder_)" title="NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner.WithExecutionContext(System.Action\&lt;NexusLabs.Needlr.AgentFramework.Testing.AgentExecutionContextBuilder&gt;)">WithExecutionContext(Action&lt;AgentExecutionContextBuilder&gt;)</a> to configure the <a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Context.IAgentExecutionContext</a> a tool sees during invocation.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../AgentScenarioRunner/" title="NexusLabs.Needlr.AgentFramework.Testing.AgentScenarioRunner">AgentScenarioRunner</a></td>
 <td style="text-align: left;">Executes <a href="../IAgentScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario">IAgentScenario</a> instances with proper workspace isolation, execution context scoping, and diagnostics capture.</td>
 </tr>
@@ -4048,6 +4143,14 @@
 <td style="text-align: left;"><a href="../ScenarioVerificationException/" title="NexusLabs.Needlr.AgentFramework.Testing.ScenarioVerificationException">ScenarioVerificationException</a></td>
 <td style="text-align: left;">Thrown when a scenario's <a href="../IAgentScenario/#NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario.Verify(NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace,NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)" title="NexusLabs.Needlr.AgentFramework.Testing.IAgentScenario.Verify(NexusLabs.Needlr.AgentFramework.Workspace.IWorkspace, NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics)">Verify(IWorkspace, IAgentRunDiagnostics)</a> method detects a failure.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><a href="../ToolInvocationResult/" title="NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationResult">ToolInvocationResult</a></td>
+<td style="text-align: left;">Result of a single <a href="../ToolInvocationRunner/#NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner.InvokeAsync_TTool_(string,System.Action_Microsoft.Extensions.AI.AIFunctionArguments_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner.InvokeAsync\&lt;TTool&gt;(string, System.Action\&lt;Microsoft.Extensions.AI.AIFunctionArguments&gt;, System.Threading.CancellationToken)">InvokeAsync&lt;TTool&gt;(string, Action&lt;AIFunctionArguments&gt;, CancellationToken)</a> call.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ToolInvocationRunner/" title="NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner">ToolInvocationRunner</a></td>
+<td style="text-align: left;">Test harness for invoking <code>[AgentFunction]</code>-decorated tool methods through their source-generated <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> wrapper, with the same plumbing <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.functioninvokingchatclient" title="Microsoft.Extensions.AI.FunctionInvokingChatClient">Microsoft.Extensions.AI.FunctionInvokingChatClient</a> uses in production.</td>
+</tr>
 </tbody>
 </table>
 <table>
@@ -4065,6 +4168,20 @@
 <tr>
 <td style="text-align: left;"><a href="../IPipelineScenario/" title="NexusLabs.Needlr.AgentFramework.Testing.IPipelineScenario">IPipelineScenario</a></td>
 <td style="text-align: left;">Defines a pipeline scenario for multi-stage agent workflow testing. Extends the single-agent scenario pattern with pipeline stage construction and pipeline-specific verification.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Enums</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../ToolFunctionSource/" title="NexusLabs.Needlr.AgentFramework.Testing.ToolFunctionSource">ToolFunctionSource</a></td>
+<td style="text-align: left;">Identifies which discovery path produced an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.aifunction" title="Microsoft.Extensions.AI.AIFunction">Microsoft.Extensions.AI.AIFunction</a> resolved by <a href="../ToolInvocationRunner/" title="NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner">ToolInvocationRunner</a>.</td>
 </tr>
 </tbody>
 </table>
