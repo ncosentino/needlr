@@ -58,6 +58,21 @@ public class AgentRunDiagnosticsBuilderTests
     }
 
     [Fact]
+    public void AddChatCompletion_AccumulatesCachedAndReasoningTokens()
+    {
+        using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
+        builder.AddChatCompletion(MakeCompletion(
+            sequence: 0, input: 5000, output: 200, total: 5200, cached: 3000, reasoning: 50));
+        builder.AddChatCompletion(MakeCompletion(
+            sequence: 1, input: 5000, output: 200, total: 5200, cached: 1500, reasoning: 25));
+
+        var result = builder.Build();
+
+        Assert.Equal(4500, result.AggregateTokenUsage.CachedInputTokens);
+        Assert.Equal(75, result.AggregateTokenUsage.ReasoningTokens);
+    }
+
+    [Fact]
     public void AddChatCompletion_AccumulatesTokens()
     {
         using var builder = AgentRunDiagnosticsBuilder.StartNew("Agent");
@@ -138,10 +153,11 @@ public class AgentRunDiagnosticsBuilderTests
     // -------------------------------------------------------------------------
 
     private static ChatCompletionDiagnostics MakeCompletion(
-        int sequence, long input = 0, long output = 0, long total = 0) =>
+        int sequence, long input = 0, long output = 0, long total = 0,
+        long cached = 0, long reasoning = 0) =>
         new(Sequence: sequence,
             Model: "test-model",
-            Tokens: new TokenUsage(input, output, total, 0, 0),
+            Tokens: new TokenUsage(input, output, total, cached, reasoning),
             InputMessageCount: 1,
             Duration: TimeSpan.FromMilliseconds(10),
             Succeeded: true,

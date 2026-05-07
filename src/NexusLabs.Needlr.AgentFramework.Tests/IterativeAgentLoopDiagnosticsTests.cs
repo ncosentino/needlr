@@ -12,6 +12,30 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 public sealed partial class IterativeAgentLoopTests
 {
     [Fact]
+    public async Task RunAsync_Diagnostics_CapturesCachedAndReasoningTokensPerIteration()
+    {
+        var mockChat = CreateMockChatWithFullTokens(
+            "done",
+            inputTokens: 5000,
+            outputTokens: 200,
+            cachedInputTokens: 3000,
+            reasoningTokens: 50);
+        var loop = CreateLoop(mockChat);
+
+        var result = await loop.RunAsync(CreateOptions(), CreateContext(), TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Diagnostics);
+        var iter = Assert.Single(result.Iterations);
+        Assert.Equal(5000, iter.Tokens.InputTokens);
+        Assert.Equal(200, iter.Tokens.OutputTokens);
+        Assert.Equal(3000, iter.Tokens.CachedInputTokens);
+        Assert.Equal(50, iter.Tokens.ReasoningTokens);
+
+        Assert.Equal(3000, result.Diagnostics!.AggregateTokenUsage.CachedInputTokens);
+        Assert.Equal(50, result.Diagnostics.AggregateTokenUsage.ReasoningTokens);
+    }
+
+    [Fact]
     public async Task RunAsync_Diagnostics_CapturesTokenCounts()
     {
         var mockChat = CreateMockChatWithTokens("done", inputTokens: 100, outputTokens: 25);

@@ -111,6 +111,8 @@ internal sealed class DiagnosticsAgentRunMiddleware
         activity?.SetTag("gen_ai.usage.input_tokens", diagnostics.AggregateTokenUsage.InputTokens);
         activity?.SetTag("gen_ai.usage.output_tokens", diagnostics.AggregateTokenUsage.OutputTokens);
         activity?.SetTag("gen_ai.usage.total_tokens", diagnostics.AggregateTokenUsage.TotalTokens);
+        activity?.SetTag("gen_ai.usage.cached_input_tokens", diagnostics.AggregateTokenUsage.CachedInputTokens);
+        activity?.SetTag("gen_ai.usage.reasoning_tokens", diagnostics.AggregateTokenUsage.ReasoningTokens);
 
         if (failure is not null)
         {
@@ -166,6 +168,8 @@ internal sealed class DiagnosticsAgentRunMiddleware
             activity?.SetTag("gen_ai.usage.input_tokens", diagnostics.AggregateTokenUsage.InputTokens);
             activity?.SetTag("gen_ai.usage.output_tokens", diagnostics.AggregateTokenUsage.OutputTokens);
             activity?.SetTag("gen_ai.usage.total_tokens", diagnostics.AggregateTokenUsage.TotalTokens);
+            activity?.SetTag("gen_ai.usage.cached_input_tokens", diagnostics.AggregateTokenUsage.CachedInputTokens);
+            activity?.SetTag("gen_ai.usage.reasoning_tokens", diagnostics.AggregateTokenUsage.ReasoningTokens);
         }
     }
 
