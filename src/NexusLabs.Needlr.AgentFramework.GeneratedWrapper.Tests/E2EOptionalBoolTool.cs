@@ -5,15 +5,25 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 [AgentFunctionGroup("e2e-optional-bool")]
 public sealed class E2EOptionalBoolTool
 {
-    public static bool? CapturedDefaultFalse { get; set; }
-    public static bool? CapturedDefaultTrue { get; set; }
+    public sealed class Capture
+    {
+        public bool? DefaultFalse { get; set; }
+        public bool? DefaultTrue { get; set; }
+    }
+
+    private readonly Capture _capture;
+
+    public E2EOptionalBoolTool(Capture capture)
+    {
+        _capture = capture;
+    }
 
     [AgentFunction]
     [Description("Sets a boolean flag with a default of false.")]
     public string SetFlagDefaultFalse(
         [Description("Flag value.")] bool flag = false)
     {
-        CapturedDefaultFalse = flag;
+        _capture.DefaultFalse = flag;
         return "ok";
     }
 
@@ -22,7 +32,7 @@ public sealed class E2EOptionalBoolTool
     public string SetFlagDefaultTrue(
         [Description("Flag value.")] bool flag = true)
     {
-        CapturedDefaultTrue = flag;
+        _capture.DefaultTrue = flag;
         return "ok";
     }
 }

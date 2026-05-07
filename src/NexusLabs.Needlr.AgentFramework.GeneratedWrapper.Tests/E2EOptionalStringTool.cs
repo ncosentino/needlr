@@ -5,17 +5,27 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 [AgentFunctionGroup("e2e-optional-string")]
 public sealed class E2EOptionalStringTool
 {
-    public static string? CapturedDefaultNull { get; set; }
-    public static bool CapturedDefaultNullWasSet { get; set; }
-    public static string? CapturedDefaultLiteral { get; set; }
+    public sealed class Capture
+    {
+        public string? DefaultNull { get; set; }
+        public bool DefaultNullWasSet { get; set; }
+        public string? DefaultLiteral { get; set; }
+    }
+
+    private readonly Capture _capture;
+
+    public E2EOptionalStringTool(Capture capture)
+    {
+        _capture = capture;
+    }
 
     [AgentFunction]
     [Description("Records a label with a nullable default of null.")]
     public string RecordDefaultNull(
         [Description("Label value.")] string? label = null)
     {
-        CapturedDefaultNull = label;
-        CapturedDefaultNullWasSet = true;
+        _capture.DefaultNull = label;
+        _capture.DefaultNullWasSet = true;
         return "ok";
     }
 
@@ -24,7 +34,7 @@ public sealed class E2EOptionalStringTool
     public string RecordDefaultLiteral(
         [Description("Label value.")] string? label = "x")
     {
-        CapturedDefaultLiteral = label;
+        _capture.DefaultLiteral = label;
         return "ok";
     }
 }

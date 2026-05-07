@@ -12,15 +12,25 @@ public enum E2EMode
 [AgentFunctionGroup("e2e-enum")]
 public sealed class E2EEnumTool
 {
-    public static E2EMode? CapturedRequired { get; set; }
-    public static E2EMode? CapturedDefault { get; set; }
+    public sealed class Capture
+    {
+        public E2EMode? Required { get; set; }
+        public E2EMode? Default { get; set; }
+    }
+
+    private readonly Capture _capture;
+
+    public E2EEnumTool(Capture capture)
+    {
+        _capture = capture;
+    }
 
     [AgentFunction]
     [Description("Sets the mode (required, no default).")]
     public string SetMode(
         [Description("Mode value.")] E2EMode mode)
     {
-        CapturedRequired = mode;
+        _capture.Required = mode;
         return "ok";
     }
 
@@ -29,7 +39,7 @@ public sealed class E2EEnumTool
     public string SetModeDefault(
         [Description("Mode value.")] E2EMode mode = E2EMode.Append)
     {
-        CapturedDefault = mode;
+        _capture.Default = mode;
         return "ok";
     }
 }

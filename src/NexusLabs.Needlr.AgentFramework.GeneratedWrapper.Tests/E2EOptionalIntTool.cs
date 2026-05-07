@@ -5,15 +5,25 @@ namespace NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests;
 [AgentFunctionGroup("e2e-optional-int")]
 public sealed class E2EOptionalIntTool
 {
-    public static int? CapturedDefaultZero { get; set; }
-    public static int? CapturedDefaultFive { get; set; }
+    public sealed class Capture
+    {
+        public int? DefaultZero { get; set; }
+        public int? DefaultFive { get; set; }
+    }
+
+    private readonly Capture _capture;
+
+    public E2EOptionalIntTool(Capture capture)
+    {
+        _capture = capture;
+    }
 
     [AgentFunction]
     [Description("Sets a max count with a default of zero.")]
     public string SetMaxDefaultZero(
         [Description("Maximum count.")] int max = 0)
     {
-        CapturedDefaultZero = max;
+        _capture.DefaultZero = max;
         return "ok";
     }
 
@@ -22,7 +32,7 @@ public sealed class E2EOptionalIntTool
     public string SetMaxDefaultFive(
         [Description("Maximum count.")] int max = 5)
     {
-        CapturedDefaultFive = max;
+        _capture.DefaultFive = max;
         return "ok";
     }
 }
