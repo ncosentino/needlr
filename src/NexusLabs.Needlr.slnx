@@ -59,7 +59,6 @@
     <Project Path="Examples/AgentFramework/RfcPipelineApp/RfcPipelineApp.csproj" />
     <Project Path="Examples/AgentFramework/RfcPipelineApp.Core/RfcPipelineApp.Core.csproj" />
     <Project Path="Examples/AgentFramework/RfcPipelineApp.Tests/RfcPipelineApp.Tests.csproj" />
-    <Project Path="Examples/AgentFramework/RfcPipelineApp.Evaluation.TUnit/RfcPipelineApp.Evaluation.TUnit.csproj" />
     <Project Path="Examples/AgentFramework/CodeReviewPipelineApp/CodeReviewPipelineApp.csproj" />
     <Project Path="Examples/AgentFramework/SupportTriagePipelineApp/SupportTriagePipelineApp.csproj" />
   </Folder>
