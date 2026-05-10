@@ -111,7 +111,7 @@ public class TieredProviderSelectorTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task ExecuteAsync_AllFail_ThrowsWithAttemptChain()
+    public async Task ExecuteAsync_AllFail_ThrowsAllProvidersFailedExceptionWithAttemptChain()
     {
         var providers = new ITieredProvider<string, string>[]
         {
@@ -122,12 +122,15 @@ public class TieredProviderSelectorTests
         var selector = new TieredProviderSelector<string, string>(
             providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var ex = await Assert.ThrowsAsync<AllProvidersFailedException>(() =>
             selector.ExecuteAsync("query", CancellationToken.None));
 
         Assert.Contains("All providers failed", ex.Message);
         Assert.Contains("A:", ex.Message);
         Assert.Contains("B:", ex.Message);
+        Assert.Equal(2, ex.Attempts.Count);
+        Assert.Contains(ex.Attempts, a => a.StartsWith("A:", StringComparison.Ordinal));
+        Assert.Contains(ex.Attempts, a => a.StartsWith("B:", StringComparison.Ordinal));
     }
 
     // -------------------------------------------------------------------------
@@ -135,13 +138,133 @@ public class TieredProviderSelectorTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task ExecuteAsync_NoProviders_Throws()
+    public async Task ExecuteAsync_NoProviders_ThrowsNoProvidersRegisteredException()
     {
         var selector = new TieredProviderSelector<string, string>(
             [], new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<NoProvidersRegisteredException>(() =>
             selector.ExecuteAsync("query", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnlyDisabledProviders_ThrowsNoProvidersRegisteredException()
+    {
+        var providers = new ITieredProvider<string, string>[]
+        {
+            new StubProvider("Disabled1", priority: 1, result: "x", enabled: false),
+            new StubProvider("Disabled2", priority: 2, result: "y", enabled: false),
+        };
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
+
+        await Assert.ThrowsAsync<NoProvidersRegisteredException>(() =>
+            selector.ExecuteAsync("query", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoProviders_CanBeCaughtAsNoProvidersAvailableException()
+    {
+        var selector = new TieredProviderSelector<string, string>(
+            [], new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
+
+        var ex = await Assert.ThrowsAsync<NoProvidersRegisteredException>(() =>
+            selector.ExecuteAsync("query", CancellationToken.None));
+
+        Assert.IsAssignableFrom<NoProvidersAvailableException>(ex);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AllFail_CanBeCaughtAsNoProvidersAvailableException()
+    {
+        var providers = new ITieredProvider<string, string>[]
+        {
+            new FailingProvider("A", priority: 1),
+            new FailingProvider("B", priority: 2),
+        };
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
+
+        var ex = await Assert.ThrowsAsync<AllProvidersFailedException>(() =>
+            selector.ExecuteAsync("query", CancellationToken.None));
+
+        Assert.IsAssignableFrom<NoProvidersAvailableException>(ex);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AllQuotaDenied_ThrowsAllProvidersFailedException()
+    {
+        var providers = new[]
+        {
+            new StubProvider("A", priority: 1, result: "a"),
+            new StubProvider("B", priority: 2, result: "b"),
+        };
+
+        var gate = new DenyAllQuotaGate();
+
+        var selector = new TieredProviderSelector<string, string>(
+            providers, gate, new AgentExecutionContextAccessor());
+
+        var ex = await Assert.ThrowsAsync<AllProvidersFailedException>(() =>
+            selector.ExecuteAsync("query", CancellationToken.None));
+
+        Assert.Equal(2, ex.Attempts.Count);
+        Assert.All(ex.Attempts, a => Assert.Contains("quota denied", a));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_BaseExceptionCatch_HandlesBothFailureModes()
+    {
+        var noneSelector = new TieredProviderSelector<string, string>(
+            [], new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
+
+        var failProviders = new ITieredProvider<string, string>[]
+        {
+            new FailingProvider("A", priority: 1),
+        };
+        var failSelector = new TieredProviderSelector<string, string>(
+            failProviders, new AlwaysGrantQuotaGate(), new AgentExecutionContextAccessor());
+
+        NoProvidersAvailableException? caughtForNone = null;
+        try
+        {
+            await noneSelector.ExecuteAsync("q", CancellationToken.None);
+        }
+        catch (NoProvidersAvailableException ex)
+        {
+            caughtForNone = ex;
+        }
+
+        NoProvidersAvailableException? caughtForFail = null;
+        try
+        {
+            await failSelector.ExecuteAsync("q", CancellationToken.None);
+        }
+        catch (NoProvidersAvailableException ex)
+        {
+            caughtForFail = ex;
+        }
+
+        Assert.IsType<NoProvidersRegisteredException>(caughtForNone);
+        Assert.IsType<AllProvidersFailedException>(caughtForFail);
+    }
+
+    [Fact]
+    public void AllProvidersFailedException_NullAttempts_ThrowsArgumentNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => new AllProvidersFailedException(null!));
+    }
+
+    [Fact]
+    public void AllProvidersFailedException_PreservesInnerException()
+    {
+        var inner = new InvalidOperationException("root cause");
+
+        var ex = new AllProvidersFailedException(["A: failed"], inner);
+
+        Assert.Same(inner, ex.InnerException);
     }
 
     // -------------------------------------------------------------------------
@@ -344,6 +467,15 @@ public class TieredProviderSelectorTests
     {
         public Task<bool> TryReserveAsync(string providerName, string? quotaPartition, CancellationToken ct) =>
             Task.FromResult(!string.Equals(providerName, denyName, StringComparison.OrdinalIgnoreCase));
+
+        public Task ReleaseAsync(string providerName, string? quotaPartition, bool succeeded, CancellationToken ct) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class DenyAllQuotaGate : IQuotaGate
+    {
+        public Task<bool> TryReserveAsync(string providerName, string? quotaPartition, CancellationToken ct) =>
+            Task.FromResult(false);
 
         public Task ReleaseAsync(string providerName, string? quotaPartition, bool succeeded, CancellationToken ct) =>
             Task.CompletedTask;

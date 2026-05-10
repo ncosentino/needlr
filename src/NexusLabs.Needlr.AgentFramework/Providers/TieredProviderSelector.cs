@@ -68,7 +68,7 @@ public sealed class TieredProviderSelector<TQuery, TResult> : ITieredProviderSel
     public async Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken)
     {
         if (_providers.Count == 0)
-            throw new InvalidOperationException("No enabled providers are registered.");
+            throw new NoProvidersRegisteredException();
 
         var partition = _partitionSelector(_contextAccessor.Current);
         var attempts = new List<string>();
@@ -101,7 +101,6 @@ public sealed class TieredProviderSelector<TQuery, TResult> : ITieredProviderSel
             }
         }
 
-        throw new InvalidOperationException(
-            $"All providers failed. Attempts: [{string.Join("; ", attempts)}]");
+        throw new AllProvidersFailedException(attempts);
     }
 }
