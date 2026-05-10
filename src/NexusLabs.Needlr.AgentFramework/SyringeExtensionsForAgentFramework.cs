@@ -110,7 +110,7 @@ public static class SyringeExtensionsForAgentFramework
     /// Shared implementation for agent framework registration. Called by both
     /// <see cref="UsingAgentFramework(ConfiguredSyringe, Func{AgentFrameworkSyringe, AgentFrameworkSyringe})"/>
     /// and <see cref="ServiceCollectionAgentFrameworkExtensions.AddNeedlrAgentFramework(IServiceCollection)"/>
-    /// to ensure a single code path with zero drift between the two entry points.
+    /// (and its configure overloads) to ensure a single code path with zero drift between the two entry points.
     /// </summary>
     internal static void RegisterAgentFrameworkCore(
         IServiceCollection services,
