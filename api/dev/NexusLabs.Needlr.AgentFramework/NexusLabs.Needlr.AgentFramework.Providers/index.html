@@ -4113,8 +4113,20 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../AllProvidersFailedException/" title="NexusLabs.Needlr.AgentFramework.Providers.AllProvidersFailedException">AllProvidersFailedException</a></td>
+<td style="text-align: left;">Thrown by <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> when at least one provider was registered but every provider failed or was denied by the quota gate.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../AlwaysGrantQuotaGate/" title="NexusLabs.Needlr.AgentFramework.Providers.AlwaysGrantQuotaGate">AlwaysGrantQuotaGate</a></td>
 <td style="text-align: left;"><a href="../IQuotaGate/" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate">IQuotaGate</a> that always grants reservations. Suitable for development             and scenarios where quota tracking is not needed.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../NoProvidersAvailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.NoProvidersAvailableException">NoProvidersAvailableException</a></td>
+<td style="text-align: left;">Base exception type thrown by <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> when it cannot return a result because no provider is available to serve the request.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../NoProvidersRegisteredException/" title="NexusLabs.Needlr.AgentFramework.Providers.NoProvidersRegisteredException">NoProvidersRegisteredException</a></td>
+<td style="text-align: left;">Thrown by <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> when no enabled providers were registered, so there is nothing to attempt.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ProviderUnavailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException">ProviderUnavailableException</a></td>
