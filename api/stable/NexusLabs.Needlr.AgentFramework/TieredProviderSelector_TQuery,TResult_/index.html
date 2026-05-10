@@ -4169,8 +4169,13 @@ from the ambient context.</p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1" title="System.Threading.Tasks.Task`1">System.Threading.Tasks.Task&lt;</a><a href="./#NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector_TQuery,TResult_.TResult" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector\&lt;TQuery,TResult&gt;.TResult">TResult</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1" title="System.Threading.Tasks.Task`1">&gt;</a></p>
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a><br />
-All providers failed or none are enabled.</p>
+<p><a href="../NoProvidersRegisteredException/" title="NexusLabs.Needlr.AgentFramework.Providers.NoProvidersRegisteredException">NoProvidersRegisteredException</a><br />
+No enabled providers were registered, so there was nothing to attempt.</p>
+<p><a href="../AllProvidersFailedException/" title="NexusLabs.Needlr.AgentFramework.Providers.AllProvidersFailedException">AllProvidersFailedException</a><br />
+At least one provider was registered, but every provider failed or was denied by the quota gate.</p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Both exceptions inherit from <a href="../NoProvidersAvailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.NoProvidersAvailableException">NoProvidersAvailableException</a>, so callers can
+catch that base type to handle both conditions uniformly.</p>
 
 
 
