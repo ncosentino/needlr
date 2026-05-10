@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ProviderFactoryResolutionBenchmarks-20260503-042507</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ProviderFactoryResolutionBenchmarks-20260510-042823</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,7 +14,7 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.203
   [Host]   : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
@@ -26,13 +26,13 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_FuncFactory_PreResolved</td><td>13.52 ns</td><td>4.794 ns</td><td>0.742 ns</td><td>1.00</td><td>0.07</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>ManualDI_FuncFactory_WithResolution</td><td>18.87 ns</td><td>0.092 ns</td><td>0.014 ns</td><td>1.40</td><td>0.07</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>DirectFactory_PreResolved</td><td>11.04 ns</td><td>1.914 ns</td><td>0.497 ns</td><td>0.82</td><td>0.05</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>DirectFactory_WithResolution</td><td>22.67 ns</td><td>0.448 ns</td><td>0.069 ns</td><td>1.68</td><td>0.08</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>Provider_FactoryShorthand</td><td>17.51 ns</td><td>5.215 ns</td><td>1.354 ns</td><td>1.30</td><td>0.11</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>Provider_FactoryInterface</td><td>14.75 ns</td><td>3.617 ns</td><td>0.939 ns</td><td>1.09</td><td>0.08</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
-</tr><tr><td>Provider_MixedShorthand</td><td>13.80 ns</td><td>3.248 ns</td><td>0.844 ns</td><td>1.02</td><td>0.08</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_FuncFactory_PreResolved</td><td>9.548 ns</td><td>1.5166 ns</td><td>0.3939 ns</td><td>1.00</td><td>0.05</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>ManualDI_FuncFactory_WithResolution</td><td>23.732 ns</td><td>0.3732 ns</td><td>0.0969 ns</td><td>2.49</td><td>0.10</td><td>2</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>DirectFactory_PreResolved</td><td>8.759 ns</td><td>1.1388 ns</td><td>0.1762 ns</td><td>0.92</td><td>0.04</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>DirectFactory_WithResolution</td><td>26.030 ns</td><td>1.9547 ns</td><td>0.5076 ns</td><td>2.73</td><td>0.12</td><td>2</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>Provider_FactoryShorthand</td><td>9.141 ns</td><td>0.7398 ns</td><td>0.1921 ns</td><td>0.96</td><td>0.04</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>Provider_FactoryInterface</td><td>8.727 ns</td><td>0.4621 ns</td><td>0.1200 ns</td><td>0.92</td><td>0.04</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
+</tr><tr><td>Provider_MixedShorthand</td><td>9.307 ns</td><td>0.3276 ns</td><td>0.0851 ns</td><td>0.98</td><td>0.04</td><td>1</td><td>0.0019</td><td>32 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>
