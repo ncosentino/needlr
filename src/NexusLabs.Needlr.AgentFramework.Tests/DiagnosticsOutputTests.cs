@@ -31,6 +31,11 @@ public sealed class DiagnosticsOutputTests
             MaxTotalToolCalls = 50,
             BudgetPressureThreshold = 0.75,
             LoopName = "research-stage",
+            StallDetection = new StallDetectionOptions
+            {
+                ConsecutiveThreshold = 4,
+                TolerancePercent = 0.05,
+            },
         };
 
         var result = await loop.RunAsync(
@@ -45,6 +50,9 @@ public sealed class DiagnosticsOutputTests
         Assert.Equal(50, result.Configuration.MaxTotalToolCalls);
         Assert.Equal(0.75, result.Configuration.BudgetPressureThreshold);
         Assert.Equal("research-stage", result.Configuration.LoopName);
+        Assert.NotNull(result.Configuration.StallDetection);
+        Assert.Equal(4, result.Configuration.StallDetection!.ConsecutiveThreshold);
+        Assert.Equal(0.05, result.Configuration.StallDetection.TolerancePercent);
     }
 
     [Fact]
@@ -72,6 +80,7 @@ public sealed class DiagnosticsOutputTests
         Assert.Null(result.Configuration.MaxTotalToolCalls);
         Assert.Null(result.Configuration.BudgetPressureThreshold);
         Assert.Equal("iterative-loop", result.Configuration.LoopName);
+        Assert.Null(result.Configuration.StallDetection);
     }
 
     [Fact]

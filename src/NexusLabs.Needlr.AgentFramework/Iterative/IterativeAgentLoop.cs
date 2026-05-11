@@ -621,7 +621,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
             MaxTotalToolCalls: options.MaxTotalToolCalls,
             BudgetPressureThreshold: options.BudgetPressureThreshold,
             LoopName: options.LoopName,
-            CheckCompletionAfterToolCalls: options.CheckCompletionAfterToolCalls);
+            CheckCompletionAfterToolCalls: options.CheckCompletionAfterToolCalls,
+            StallDetection: options.StallDetection);
 
         return new IterativeLoopResult(
             Iterations: iterations,
