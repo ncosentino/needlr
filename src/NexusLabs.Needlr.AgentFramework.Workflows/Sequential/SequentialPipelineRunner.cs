@@ -142,7 +142,8 @@ public sealed class SequentialPipelineRunner
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: null,
-                        Outcome: StageOutcome.Skipped));
+                        Outcome: StageOutcome.Skipped,
+                        Termination: new StageTermination.Skipped()));
                     continue;
                 }
 
@@ -201,7 +202,8 @@ public sealed class SequentialPipelineRunner
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: partialDiag,
-                        Outcome: StageOutcome.Failed));
+                        Outcome: StageOutcome.Failed,
+                        Termination: new StageTermination.Failed(ex)));
 
                     reporter.Report(new AgentFailedEvent(
                         DateTimeOffset.UtcNow,
@@ -237,7 +239,8 @@ public sealed class SequentialPipelineRunner
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: stageResult.Diagnostics,
-                        Outcome: StageOutcome.Failed));
+                        Outcome: StageOutcome.Failed,
+                        Termination: stageResult.Termination));
 
                     reporter.Report(new AgentFailedEvent(
                         DateTimeOffset.UtcNow,
@@ -275,7 +278,8 @@ public sealed class SequentialPipelineRunner
                 stageResults.Add(new AgentStageResult(
                     stage.Name,
                     chatResponse,
-                    stageResult.Diagnostics));
+                    stageResult.Diagnostics,
+                    Termination: stageResult.Termination));
 
                 reporter.Report(new AgentCompletedEvent(
                     DateTimeOffset.UtcNow,
@@ -507,7 +511,8 @@ public sealed class SequentialPipelineRunner
                                 FinalResponse: null,
                                 Diagnostics: null,
                                 Outcome: StageOutcome.Skipped,
-                                PhaseName: phase.Name));
+                                PhaseName: phase.Name,
+                                Termination: new StageTermination.Skipped()));
                             globalStageIndex++;
                             continue;
                         }
@@ -565,7 +570,8 @@ public sealed class SequentialPipelineRunner
                                 FinalResponse: null,
                                 Diagnostics: partialDiag,
                                 Outcome: StageOutcome.Failed,
-                                PhaseName: phase.Name));
+                                PhaseName: phase.Name,
+                                Termination: new StageTermination.Failed(ex)));
 
                             reporter.Report(new AgentFailedEvent(
                                 DateTimeOffset.UtcNow,
@@ -601,7 +607,8 @@ public sealed class SequentialPipelineRunner
                                 FinalResponse: null,
                                 Diagnostics: stageResult.Diagnostics,
                                 Outcome: StageOutcome.Failed,
-                                PhaseName: phase.Name));
+                                PhaseName: phase.Name,
+                                Termination: stageResult.Termination));
 
                             reporter.Report(new AgentFailedEvent(
                                 DateTimeOffset.UtcNow,
@@ -641,7 +648,8 @@ public sealed class SequentialPipelineRunner
                             stage.Name,
                             chatResponse,
                             stageResult.Diagnostics,
-                            PhaseName: phase.Name));
+                            PhaseName: phase.Name,
+                            Termination: stageResult.Termination));
 
                         reporter.Report(new AgentCompletedEvent(
                             DateTimeOffset.UtcNow,
