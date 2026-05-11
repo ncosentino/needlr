@@ -111,6 +111,7 @@ public sealed class SequentialPipelineRunner
         var stopwatch = Stopwatch.StartNew();
         var reporter = _progressReporterFactory.Create(Guid.NewGuid().ToString("N"));
         var stageResults = new List<IAgentStageResult>();
+        var pipelineName = ResolvePipelineName(options, reporter);
 
         reporter.Report(new WorkflowStartedEvent(
             DateTimeOffset.UtcNow,
@@ -120,6 +121,7 @@ public sealed class SequentialPipelineRunner
             reporter.Depth,
             reporter.NextSequence()));
 
+        var pipelineActivity = StartPipelineScope(pipelineName);
         IDisposable? pipelineBudgetScope = null;
         try
         {
@@ -148,14 +150,18 @@ public sealed class SequentialPipelineRunner
                 // Evaluate ShouldSkip
                 if (policy?.ShouldSkip?.Invoke(context) == true)
                 {
-                    stageResults.Add(new AgentStageResult(
+                    var skipResult = new AgentStageResult(
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: null,
                         Outcome: StageOutcome.Skipped,
-                        Termination: new StageTermination.Skipped()));
+                        Termination: new StageTermination.Skipped());
+                    stageResults.Add(skipResult);
+                    _pipelineMetrics.RecordStageCompleted(pipelineName, skipResult, TimeSpan.Zero);
                     continue;
                 }
+
+                var (stageStopwatch, stageActivity) = StartStageScope(pipelineName, stage.Name, phaseName: null);
 
                 reporter.Report(new AgentInvokedEvent(
                     DateTimeOffset.UtcNow,
@@ -208,12 +214,14 @@ public sealed class SequentialPipelineRunner
                     // Always record the failed stage so it appears in diagnostics.
                     // Capture any partial diagnostics the stage may have produced.
                     var partialDiag = _diagnosticsAccessor.LastRunDiagnostics;
-                    stageResults.Add(new AgentStageResult(
+                    var failedStageResult = new AgentStageResult(
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: partialDiag,
                         Outcome: StageOutcome.Failed,
-                        Termination: new StageTermination.Failed(ex)));
+                        Termination: new StageTermination.Failed(ex));
+                    stageResults.Add(failedStageResult);
+                    EmitStageMetricsAndDisposeActivity(pipelineName, failedStageResult, stageStopwatch, stageActivity);
 
                     reporter.Report(new AgentFailedEvent(
                         DateTimeOffset.UtcNow,
@@ -245,12 +253,14 @@ public sealed class SequentialPipelineRunner
                 // Handle explicit failure results from the stage executor.
                 if (!stageResult!.Succeeded)
                 {
-                    stageResults.Add(new AgentStageResult(
+                    var failedExecResult = new AgentStageResult(
                         stage.Name,
                         FinalResponse: null,
                         Diagnostics: stageResult.Diagnostics,
                         Outcome: StageOutcome.Failed,
-                        Termination: stageResult.Termination));
+                        Termination: stageResult.Termination);
+                    stageResults.Add(failedExecResult);
+                    EmitStageMetricsAndDisposeActivity(pipelineName, failedExecResult, stageStopwatch, stageActivity);
 
                     reporter.Report(new AgentFailedEvent(
                         DateTimeOffset.UtcNow,
@@ -267,7 +277,7 @@ public sealed class SequentialPipelineRunner
                         stopwatch.Stop();
                         var errorMsg = stageResult.Exception?.Message
                             ?? $"Stage '{stage.Name}' failed";
-                        ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, errorMsg);
+                        ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, errorMsg);
                         return new PipelineRunResult(
                             stageResults,
                             stopwatch.Elapsed,
@@ -285,11 +295,13 @@ public sealed class SequentialPipelineRunner
                     ? new ChatResponse(new ChatMessage(ChatRole.Assistant, stageResult.ResponseText))
                     : null;
 
-                stageResults.Add(new AgentStageResult(
+                var successResult = new AgentStageResult(
                     stage.Name,
                     chatResponse,
                     stageResult.Diagnostics,
-                    Termination: stageResult.Termination));
+                    Termination: stageResult.Termination);
+                stageResults.Add(successResult);
+                EmitStageMetricsAndDisposeActivity(pipelineName, successResult, stageStopwatch, stageActivity);
 
                 reporter.Report(new AgentCompletedEvent(
                     DateTimeOffset.UtcNow,
@@ -324,18 +336,18 @@ public sealed class SequentialPipelineRunner
                         errorMessage: gateError,
                         plannedStageCount: stages.Count);
 
-                    ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, gateError);
+                    ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, gateError);
                     return failedResult;
                 }
             }
 
-            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: true, errorMessage: null);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: true, errorMessage: null);
             return pipelineResult;
         }
         catch (OperationCanceledException ex) when (ex.InnerException is TokenBudgetExceededException budgetEx)
         {
             stopwatch.Stop();
-            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, budgetEx.Message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, budgetEx.Message);
             return new PipelineRunResult(
                 stageResults,
                 stopwatch.Elapsed,
@@ -347,7 +359,7 @@ public sealed class SequentialPipelineRunner
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             stopwatch.Stop();
-            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, "Cancelled");
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, "Cancelled");
             throw;
         }
         catch (OperationCanceledException ex)
@@ -359,7 +371,7 @@ public sealed class SequentialPipelineRunner
             var message = ex.InnerException is TimeoutException
                 ? $"Stage timed out: {ex.InnerException.Message}"
                 : $"Operation cancelled (not by caller): {ex.Message}";
-            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, message);
             return new PipelineRunResult(
                 stageResults,
                 stopwatch.Elapsed,
@@ -371,7 +383,7 @@ public sealed class SequentialPipelineRunner
         catch (Exception ex)
         {
             stopwatch.Stop();
-            ReportCompleted(reporter, stopwatch.Elapsed, succeeded: false, ex.Message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, stopwatch.Elapsed, succeeded: false, ex.Message);
             return new PipelineRunResult(
                 stageResults,
                 stopwatch.Elapsed,
@@ -435,6 +447,7 @@ public sealed class SequentialPipelineRunner
         var allStageResults = new List<IAgentStageResult>();
         var totalStages = phases.Sum(p => p.Stages.Count);
         var globalStageIndex = 0;
+        var pipelineName = ResolvePipelineName(options, reporter);
 
         reporter.Report(new WorkflowStartedEvent(
             DateTimeOffset.UtcNow,
@@ -444,6 +457,7 @@ public sealed class SequentialPipelineRunner
             reporter.Depth,
             reporter.NextSequence()));
 
+        var pipelineActivity = StartPipelineScope(pipelineName);
         IDisposable? pipelineBudgetScope = null;
         try
         {
@@ -516,16 +530,20 @@ public sealed class SequentialPipelineRunner
 
                         if (policy?.ShouldSkip?.Invoke(context) == true)
                         {
-                            allStageResults.Add(new AgentStageResult(
+                            var skipResult = new AgentStageResult(
                                 stage.Name,
                                 FinalResponse: null,
                                 Diagnostics: null,
                                 Outcome: StageOutcome.Skipped,
                                 PhaseName: phase.Name,
-                                Termination: new StageTermination.Skipped()));
+                                Termination: new StageTermination.Skipped());
+                            allStageResults.Add(skipResult);
+                            _pipelineMetrics.RecordStageCompleted(pipelineName, skipResult, TimeSpan.Zero);
                             globalStageIndex++;
                             continue;
                         }
+
+                        var (stageStopwatch, stageActivity) = StartStageScope(pipelineName, stage.Name, phase.Name);
 
                         reporter.Report(new AgentInvokedEvent(
                             DateTimeOffset.UtcNow,
@@ -575,13 +593,15 @@ public sealed class SequentialPipelineRunner
                         catch (Exception ex)
                         {
                             var partialDiag = _diagnosticsAccessor.LastRunDiagnostics;
-                            allStageResults.Add(new AgentStageResult(
+                            var failedPhasedResult = new AgentStageResult(
                                 stage.Name,
                                 FinalResponse: null,
                                 Diagnostics: partialDiag,
                                 Outcome: StageOutcome.Failed,
                                 PhaseName: phase.Name,
-                                Termination: new StageTermination.Failed(ex)));
+                                Termination: new StageTermination.Failed(ex));
+                            allStageResults.Add(failedPhasedResult);
+                            EmitStageMetricsAndDisposeActivity(pipelineName, failedPhasedResult, stageStopwatch, stageActivity);
 
                             reporter.Report(new AgentFailedEvent(
                                 DateTimeOffset.UtcNow,
@@ -612,13 +632,15 @@ public sealed class SequentialPipelineRunner
 
                         if (!stageResult!.Succeeded)
                         {
-                            allStageResults.Add(new AgentStageResult(
+                            var failedPhasedExecResult = new AgentStageResult(
                                 stage.Name,
                                 FinalResponse: null,
                                 Diagnostics: stageResult.Diagnostics,
                                 Outcome: StageOutcome.Failed,
                                 PhaseName: phase.Name,
-                                Termination: stageResult.Termination));
+                                Termination: stageResult.Termination);
+                            allStageResults.Add(failedPhasedExecResult);
+                            EmitStageMetricsAndDisposeActivity(pipelineName, failedPhasedExecResult, stageStopwatch, stageActivity);
 
                             reporter.Report(new AgentFailedEvent(
                                 DateTimeOffset.UtcNow,
@@ -636,7 +658,7 @@ public sealed class SequentialPipelineRunner
                                 pipelineStopwatch.Stop();
                                 var errorMsg = stageResult.Exception?.Message
                                     ?? $"Stage '{stage.Name}' failed";
-                                ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, errorMsg);
+                                ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, errorMsg);
                                 return new PipelineRunResult(
                                     allStageResults,
                                     pipelineStopwatch.Elapsed,
@@ -660,6 +682,11 @@ public sealed class SequentialPipelineRunner
                             stageResult.Diagnostics,
                             PhaseName: phase.Name,
                             Termination: stageResult.Termination));
+                        EmitStageMetricsAndDisposeActivity(
+                            pipelineName,
+                            allStageResults[^1],
+                            stageStopwatch,
+                            stageActivity);
 
                         reporter.Report(new AgentCompletedEvent(
                             DateTimeOffset.UtcNow,
@@ -714,7 +741,7 @@ public sealed class SequentialPipelineRunner
                 var gateError = gate(pipelineResult);
                 if (gateError is not null)
                 {
-                    ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, gateError);
+                    ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, gateError);
                     return new PipelineRunResult(
                         allStageResults,
                         pipelineStopwatch.Elapsed,
@@ -724,13 +751,13 @@ public sealed class SequentialPipelineRunner
                 }
             }
 
-            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: true, errorMessage: null);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: true, errorMessage: null);
             return pipelineResult;
         }
         catch (OperationCanceledException ex) when (ex.InnerException is TokenBudgetExceededException budgetEx)
         {
             pipelineStopwatch.Stop();
-            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, budgetEx.Message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, budgetEx.Message);
             return new PipelineRunResult(
                 allStageResults,
                 pipelineStopwatch.Elapsed,
@@ -742,7 +769,7 @@ public sealed class SequentialPipelineRunner
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             pipelineStopwatch.Stop();
-            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, "Cancelled");
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, "Cancelled");
             throw;
         }
         catch (OperationCanceledException ex)
@@ -751,7 +778,7 @@ public sealed class SequentialPipelineRunner
             var message = ex.InnerException is TimeoutException
                 ? $"Stage timed out: {ex.InnerException.Message}"
                 : $"Operation cancelled (not by caller): {ex.Message}";
-            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, message);
             return new PipelineRunResult(
                 allStageResults,
                 pipelineStopwatch.Elapsed,
@@ -763,7 +790,7 @@ public sealed class SequentialPipelineRunner
         catch (Exception ex)
         {
             pipelineStopwatch.Stop();
-            ReportCompleted(reporter, pipelineStopwatch.Elapsed, succeeded: false, ex.Message);
+            ReportPipelineCompletion(reporter, pipelineActivity, pipelineName, pipelineStopwatch.Elapsed, succeeded: false, ex.Message);
             return new PipelineRunResult(
                 allStageResults,
                 pipelineStopwatch.Elapsed,
@@ -794,5 +821,56 @@ public sealed class SequentialPipelineRunner
             succeeded,
             errorMessage,
             duration));
+    }
+
+    private static string ResolvePipelineName(SequentialPipelineOptions? options, IProgressReporter reporter) =>
+        options?.PipelineName ?? reporter.WorkflowId;
+
+    private Activity? StartPipelineScope(string pipelineName)
+    {
+        var activity = _pipelineMetrics.ActivitySource.StartActivity("pipeline.run");
+        activity?.SetTag("pipeline_name", pipelineName);
+        _pipelineMetrics.RecordPipelineStarted(pipelineName);
+        return activity;
+    }
+
+    private void ReportPipelineCompletion(
+        IProgressReporter reporter,
+        Activity? pipelineActivity,
+        string pipelineName,
+        TimeSpan duration,
+        bool succeeded,
+        string? errorMessage)
+    {
+        ReportCompleted(reporter, duration, succeeded, errorMessage);
+        pipelineActivity?.SetTag("outcome", succeeded ? "Succeeded" : "Failed");
+        pipelineActivity?.Dispose();
+        _pipelineMetrics.RecordPipelineCompleted(pipelineName, succeeded, duration);
+    }
+
+    private (Stopwatch stopwatch, Activity? activity) StartStageScope(
+        string pipelineName,
+        string stageName,
+        string? phaseName)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var activity = _pipelineMetrics.ActivitySource.StartActivity("pipeline.stage");
+        activity?.SetTag("pipeline_name", pipelineName);
+        activity?.SetTag("stage_name", stageName);
+        activity?.SetTag("phase_name", phaseName ?? "(none)");
+        return (stopwatch, activity);
+    }
+
+    private void EmitStageMetricsAndDisposeActivity(
+        string pipelineName,
+        IAgentStageResult stage,
+        Stopwatch stageStopwatch,
+        Activity? stageActivity)
+    {
+        stageStopwatch.Stop();
+        stageActivity?.SetTag("outcome", stage.Outcome.ToString());
+        stageActivity?.SetTag("termination_cause", stage.Termination?.ToTagValue() ?? "Unspecified");
+        stageActivity?.Dispose();
+        _pipelineMetrics.RecordStageCompleted(pipelineName, stage, stageStopwatch.Elapsed);
     }
 }
