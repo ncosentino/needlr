@@ -207,7 +207,8 @@ public class PipelineScenarioRunnerTests
         var pipelineRunner = new SequentialPipelineRunner(
             CreateDiagnosticsAccessor(),
             new TokenBudgetTracker(),
-            CreateProgressFactory());
+            CreateProgressFactory(),
+            new NoOpPipelineMetrics());
 
         return new PipelineScenarioRunner(pipelineRunner);
     }

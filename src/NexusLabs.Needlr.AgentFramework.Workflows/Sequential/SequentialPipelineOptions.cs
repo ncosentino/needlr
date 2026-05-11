@@ -28,4 +28,12 @@ public sealed record SequentialPipelineOptions
     /// Optional overall pipeline token budget.
     /// </summary>
     public long? TotalTokenBudget { get; init; }
+
+    /// <summary>
+    /// Optional stable identifier for the pipeline. Used as the <c>pipeline_name</c>
+    /// tag on every pipeline-shape metric and span emitted via
+    /// <see cref="IPipelineMetrics"/>. When <see langword="null"/>, the runner
+    /// falls back to the progress reporter's <c>WorkflowId</c> at run time.
+    /// </summary>
+    public string? PipelineName { get; init; }
 }

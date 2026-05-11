@@ -59,6 +59,7 @@ var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 var budgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
+var pipelineMetrics = serviceProvider.GetRequiredService<IPipelineMetrics>();
 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 var logger = loggerFactory.CreateLogger("RfcPipeline");
 
@@ -124,7 +125,7 @@ for (var i = 0; i < stages.Count; i++)
 Console.WriteLine();
 
 // ── Run pipeline ────────────────────────────────────────────────────────
-var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory);
+var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory, pipelineMetrics);
 
 Console.WriteLine("Starting pipeline execution...");
 Console.WriteLine();

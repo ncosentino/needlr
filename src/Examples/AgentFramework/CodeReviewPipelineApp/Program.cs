@@ -64,6 +64,7 @@ var agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
 var budgetTracker = serviceProvider.GetRequiredService<ITokenBudgetTracker>();
 var progressFactory = serviceProvider.GetRequiredService<IProgressReporterFactory>();
+var pipelineMetrics = serviceProvider.GetRequiredService<IPipelineMetrics>();
 
 // ── The diff to review ──────────────────────────────────────────────────
 const string codeDiff = """
@@ -288,7 +289,7 @@ Console.WriteLine();
 
 // ── Run ─────────────────────────────────────────────────────────────────
 var workspace = new InMemoryWorkspace();
-var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory);
+var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory, pipelineMetrics);
 
 var result = await runner.RunPhasedAsync(workspace, phases, options: null, CancellationToken.None);
 
