@@ -1,3 +1,7 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -221,6 +225,88 @@ foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
     Console.WriteLine();
 }
 
+// ── Custom IStageTermination demo ───────────────────────────────────────
+//
+// Demonstrates the third-party extension contract for IStageTermination:
+//
+//   1. Define a custom termination type that implements IStageTermination
+//      directly (does NOT inherit from the framework's closed StageTermination
+//      hierarchy — that's compile-blocked by an internal constructor).
+//   2. Register the type at the JSON layer via a JsonTypeInfoResolver
+//      modifier so JsonSerializer.Serialize<IStageTermination>(...) round-trips
+//      cleanly. Without this registration, serialization throws
+//      NotSupportedException.
+//   3. Serialize a mix of framework cases + custom case to prove both flow
+//      through the same `$kind` discriminator scheme.
+//   4. Deserialize back and pattern-match each case to demonstrate typed
+//      consumer-side dispatch.
+//
+// In a real consumer this would live inside an onLoopCompleted callback on
+// IterativeLoopStageExecutor and the resulting IStageTermination would flow
+// through StageExecutionResult.Termination → IAgentStageResult.Termination →
+// IPipelineMetrics.RecordStageCompleted (where its ToTagValue() drives the
+// `termination_cause` OTel tag). See docs/stage-termination.md.
+
+Console.WriteLine();
+Console.WriteLine("═══ Custom IStageTermination — JSON round-trip demo ═══");
+
+var jsonOptions = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    TypeInfoResolver = new DefaultJsonTypeInfoResolver
+    {
+        Modifiers =
+        {
+            info =>
+            {
+                if (info.Type == typeof(IStageTermination)
+                    && info.PolymorphismOptions is { } poly)
+                {
+                    poly.DerivedTypes.Add(new JsonDerivedType(
+                        typeof(RfcReviewerConsensus), "RfcReviewerConsensus"));
+                }
+            },
+        },
+    },
+};
+
+IStageTermination[] terminations =
+[
+    new StageTermination.MaxIterationsReached(Limit: 5, IterationsUsed: 5),
+    new StageTermination.NaturalCompletion(),
+    new RfcReviewerConsensus(ApprovingReviewers: 3, RequestedChanges: 1),
+    new StageTermination.Custom(
+        Reason: "AwaitingUpstream",
+        Properties: new Dictionary<string, object?> { ["TicketId"] = "RFC-42" }),
+];
+
+foreach (var t in terminations)
+{
+    var json = JsonSerializer.Serialize<IStageTermination>(t, jsonOptions);
+    Console.WriteLine($"--- {t.GetType().Name} (tag: {t.ToTagValue()}) ---");
+    Console.WriteLine(json);
+
+    var roundTripped = JsonSerializer.Deserialize<IStageTermination>(json, jsonOptions);
+    var summary = roundTripped switch
+    {
+        StageTermination.MaxIterationsReached m =>
+            $"  → MaxIterationsReached pattern matched: limit={m.Limit}, used={m.IterationsUsed}",
+        StageTermination.NaturalCompletion =>
+            "  → NaturalCompletion pattern matched (parameterless framework case)",
+        RfcReviewerConsensus c =>
+            $"  → RfcReviewerConsensus pattern matched: approving={c.ApprovingReviewers}, " +
+            $"requestedChanges={c.RequestedChanges}",
+        StageTermination.Custom { Reason: var r, Properties: var p } =>
+            $"  → Custom pattern matched: reason={r}, properties={p?.Count ?? 0}",
+        _ => "  → unknown case",
+    };
+    Console.WriteLine(summary);
+    Console.WriteLine();
+}
+
+Console.WriteLine("═══ End custom IStageTermination demo ═══");
+Console.WriteLine();
+
 static IReadOnlyList<string> WordWrap(string text, int maxWidth)
 {
     if (string.IsNullOrWhiteSpace(text))
@@ -251,4 +337,20 @@ static IReadOnlyList<string> WordWrap(string text, int maxWidth)
     }
 
     return lines;
+}
+
+/// <summary>
+/// Custom <see cref="IStageTermination"/> implementation outside the framework's
+/// closed <see cref="StageTermination"/> hierarchy. Demonstrates the third-party
+/// extension contract: implement the interface directly (the framework's
+/// abstract record is closed for external derivation by an internal constructor),
+/// supply a <see cref="ToTagValue"/> for the OTel <c>termination_cause</c> tag,
+/// and register the type with <see cref="JsonSerializerOptions"/> via a
+/// <see cref="DefaultJsonTypeInfoResolver"/> modifier for JSON round-tripping.
+/// </summary>
+internal sealed record RfcReviewerConsensus(
+    int ApprovingReviewers,
+    int RequestedChanges) : IStageTermination
+{
+    public string ToTagValue() => "RfcReviewerConsensus";
 }
