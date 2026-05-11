@@ -13,6 +13,7 @@ namespace NexusLabs.Needlr.AgentFramework.Iterative;
 /// <param name="BudgetPressureThreshold">Token budget pressure threshold, or <see langword="null"/> if disabled.</param>
 /// <param name="LoopName">Human-readable name used in diagnostics and progress events.</param>
 /// <param name="CheckCompletionAfterToolCalls">When the <see cref="IterativeLoopOptions.IsComplete"/> predicate was checked relative to tool calls.</param>
+/// <param name="StallDetection">Stall-detection configuration the loop ran with, or <see langword="null"/> if stall detection was disabled.</param>
 public sealed record IterativeLoopConfiguration(
     ToolResultMode ToolResultMode,
     int MaxIterations,
@@ -20,4 +21,5 @@ public sealed record IterativeLoopConfiguration(
     int? MaxTotalToolCalls,
     double? BudgetPressureThreshold,
     string LoopName,
-    ToolCompletionCheckMode CheckCompletionAfterToolCalls);
+    ToolCompletionCheckMode CheckCompletionAfterToolCalls,
+    StallDetectionOptions? StallDetection = null);
