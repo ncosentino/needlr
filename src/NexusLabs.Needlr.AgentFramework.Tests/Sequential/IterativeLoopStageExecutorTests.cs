@@ -1132,6 +1132,111 @@ public class IterativeLoopStageExecutorTests
         Assert.Contains("loop blew up", typed.Exception.Message);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_BudgetPressure_PopulatesThresholdFromConfiguration()
+    {
+        var loopResult = CreateLoopResultWithCustomConfig(
+            termination: TerminationReason.BudgetPressure,
+            configMutator: cfg => cfg with { BudgetPressureThreshold = 0.85 });
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.BudgetPressure>(result.Termination);
+        Assert.Equal(0.85, typed.Threshold);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_BudgetPressure_NullThresholdFlowsThrough()
+    {
+        var loopResult = CreateLoopResultWithCustomConfig(
+            termination: TerminationReason.BudgetPressure,
+            configMutator: cfg => cfg with { BudgetPressureThreshold = null });
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.BudgetPressure>(result.Termination);
+        Assert.Null(typed.Threshold);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_StallDetected_PopulatesConsecutiveThresholdFromConfiguration()
+    {
+        var loopResult = CreateLoopResultWithCustomConfig(
+            termination: TerminationReason.StallDetected,
+            configMutator: cfg => cfg with
+            {
+                StallDetection = new StallDetectionOptions
+                {
+                    ConsecutiveThreshold = 4,
+                    TolerancePercent = 0.05,
+                },
+            });
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.StallDetected>(result.Termination);
+        Assert.Equal(4, typed.ConsecutiveThreshold);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_StallDetected_NullStallDetectionInConfigYieldsNullThreshold()
+    {
+        var loopResult = CreateLoopResultWithCustomConfig(
+            termination: TerminationReason.StallDetected,
+            configMutator: cfg => cfg with { StallDetection = null });
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.StallDetected>(result.Termination);
+        Assert.Null(typed.ConsecutiveThreshold);
+    }
+
+    private static IterativeLoopResult CreateLoopResultWithCustomConfig(
+        TerminationReason termination,
+        Func<IterativeLoopConfiguration, IterativeLoopConfiguration> configMutator)
+    {
+        var baseConfig = new IterativeLoopConfiguration(
+            ToolResultMode: ToolResultMode.SingleCall,
+            MaxIterations: 10,
+            MaxToolRoundsPerIteration: 5,
+            MaxTotalToolCalls: null,
+            BudgetPressureThreshold: null,
+            LoopName: "test-loop",
+            CheckCompletionAfterToolCalls: ToolCompletionCheckMode.None);
+
+        var config = configMutator(baseConfig);
+
+        var iteration = new IterationRecord(
+            Iteration: 0,
+            ToolCalls: [],
+            FinalResponse: null,
+            Tokens: new TokenUsage(0, 0, 0, 0, 0),
+            Duration: TimeSpan.Zero,
+            LlmCallCount: 0,
+            ToolCallCount: 0);
+
+        return new IterativeLoopResult(
+            Iterations: [iteration],
+            FinalResponse: null,
+            Diagnostics: CreateDiag("test"),
+            Succeeded: true,
+            ErrorMessage: null,
+            Termination: termination,
+            Configuration: config);
+    }
+
     private static IterativeLoopResult CreateLoopResultWithToolCalls(
         TerminationReason termination,
         int maxTotalToolCalls,
