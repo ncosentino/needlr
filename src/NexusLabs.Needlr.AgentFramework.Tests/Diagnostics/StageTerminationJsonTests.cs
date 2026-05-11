@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
@@ -206,5 +207,82 @@ public sealed class StageTerminationJsonTests
 
         var isTrue = Assert.IsType<JsonElement>(typed.Properties["IsTrue"]);
         Assert.True(isTrue.GetBoolean());
+    }
+
+    /// <summary>
+    /// Bulletproof guarantee — every public sealed nested record under
+    /// <see cref="StageTermination"/> MUST be registered in the
+    /// <see cref="IStageTermination"/> polymorphism table. Adding a new framework
+    /// case without also adding the corresponding <c>[JsonDerivedType]</c> entry
+    /// fails this test loudly. Catches the design risk we accepted when we made
+    /// the JSON registration a per-attribute additive contract — if the framework
+    /// ever forgets to register a new case, every consumer's pipeline-result
+    /// JSON serialization breaks, and this test is the canary.
+    /// </summary>
+    [Fact]
+    public void IStageTermination_PolymorphismRegistry_CoversEveryFrameworkCase()
+    {
+        var frameworkCases = typeof(StageTermination)
+            .GetNestedTypes(System.Reflection.BindingFlags.Public)
+            .Where(t => t.IsSealed && typeof(StageTermination).IsAssignableFrom(t))
+            .ToList();
+
+        Assert.NotEmpty(frameworkCases);
+
+        var registeredTypes = typeof(IStageTermination)
+            .GetCustomAttributes(typeof(JsonDerivedTypeAttribute), inherit: false)
+            .Cast<JsonDerivedTypeAttribute>()
+            .Select(a => a.DerivedType)
+            .ToHashSet();
+
+        foreach (var frameworkCase in frameworkCases)
+        {
+            Assert.True(
+                registeredTypes.Contains(frameworkCase),
+                $"Framework StageTermination case '{frameworkCase.Name}' is missing a [JsonDerivedType] entry on IStageTermination. " +
+                $"Add: [JsonDerivedType(typeof(StageTermination.{frameworkCase.Name}), nameof(StageTermination.{frameworkCase.Name}))] " +
+                "to IStageTermination.cs.");
+        }
+
+        var staleRegistrations = registeredTypes
+            .Where(t => !frameworkCases.Contains(t))
+            .ToList();
+        Assert.Empty(staleRegistrations);
+    }
+
+    /// <summary>
+    /// Round-trips each framework case through the IStageTermination interface
+    /// declared type (which is what consumers actually serialize when
+    /// <see cref="IAgentStageResult.Termination"/> is the source). This complements
+    /// the abstract-record-typed round trip tests above and proves the polymorphism
+    /// registry on the interface is wired correctly for the runtime declared type
+    /// callers will see in the wild.
+    /// </summary>
+    [Theory]
+    [InlineData(typeof(StageTermination.Completed))]
+    [InlineData(typeof(StageTermination.NaturalCompletion))]
+    [InlineData(typeof(StageTermination.CompletedEarlyAfterToolCall))]
+    [InlineData(typeof(StageTermination.Cancelled))]
+    public void IStageTermination_RoundTrips_ParameterlessFrameworkCases(Type caseType)
+    {
+        IStageTermination original = (IStageTermination)Activator.CreateInstance(caseType)!;
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains($"\"$kind\":\"{caseType.Name}\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<IStageTermination>(json, Options);
+        Assert.IsType(caseType, roundTripped);
+    }
+
+    [Fact]
+    public void IStageTermination_RoundTrips_MaxIterationsReached_PreservesValues()
+    {
+        IStageTermination original = new StageTermination.MaxIterationsReached(Limit: 10, IterationsUsed: 7);
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"MaxIterationsReached\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<IStageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.MaxIterationsReached>(roundTripped);
+        Assert.Equal(10, typed.Limit);
+        Assert.Equal(7, typed.IterationsUsed);
     }
 }

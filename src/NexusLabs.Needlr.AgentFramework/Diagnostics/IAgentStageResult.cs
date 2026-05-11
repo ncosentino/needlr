@@ -77,7 +77,7 @@ public interface IAgentStageResult
     /// </code>
     /// <para>
     /// For OpenTelemetry / Prometheus tag values, use
-    /// <see cref="StageTermination.ToTagValue"/> — it returns a stable,
+    /// <see cref="IStageTermination.ToTagValue"/> — it returns a stable,
     /// low-cardinality string suitable for use as a metric dimension.
     /// </para>
     /// <para>
@@ -88,6 +88,13 @@ public interface IAgentStageResult
     /// <see cref="StageOutcome.Succeeded"/> still reports
     /// <see cref="StageTermination.MaxIterationsReached"/> here.
     /// </para>
+    /// <para>
+    /// Typed as <see cref="IStageTermination"/> so consumers can supply their own
+    /// typed extension cases by implementing the interface directly. The framework's
+    /// closed <see cref="StageTermination"/> hierarchy (with the
+    /// <see cref="StageTermination.Custom"/> escape hatch) covers the canonical
+    /// cases; see <see cref="IStageTermination"/> for the contract on extending.
+    /// </para>
     /// </remarks>
-    StageTermination? Termination => null;
+    IStageTermination? Termination => null;
 }

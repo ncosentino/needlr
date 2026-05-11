@@ -329,10 +329,46 @@ public sealed class PipelineMetricsTests
             metrics.RecordStageCompleted("Pipeline", stage: null!, TimeSpan.Zero));
     }
 
+    /// <summary>
+    /// Documents the third-party extension contract: a consumer-defined
+    /// <see cref="IStageTermination"/> implementation (one that does NOT inherit
+    /// from the framework's closed <see cref="StageTermination"/> hierarchy) flows
+    /// through <see cref="PipelineMetrics.RecordStageCompleted"/> and its
+    /// <see cref="IStageTermination.ToTagValue"/> drives the
+    /// <c>termination_cause</c> tag value. Proves the abstraction works for
+    /// non-framework cases the framework's polymorphism table doesn't know about.
+    /// </summary>
+    [Fact]
+    public void RecordStageCompleted_ThirdPartyTermination_FlowsToTerminationCauseTag()
+    {
+        using var capture = new MetricCapture(out var meterName);
+        using var metrics = new PipelineMetrics(new PipelineMetricsOptions { MeterName = meterName });
+
+        var stage = StageResult(
+            agentName: "W",
+            outcome: StageOutcome.Succeeded,
+            termination: new ThirdPartyTermination(SomeField: "DomainSpecific"));
+
+        metrics.RecordStageCompleted("Pipeline", stage, TimeSpan.FromSeconds(1));
+
+        var completed = Assert.Single(capture.LongMeasurements("pipeline.stage.completed"));
+        Assert.Equal("ThirdParty:DomainSpecific", completed.Tags["termination_cause"]);
+    }
+
+    /// <summary>
+    /// A test-local <see cref="IStageTermination"/> implementation that does NOT
+    /// inherit from the framework's closed <see cref="StageTermination"/>
+    /// hierarchy. Stands in for any consumer-defined typed termination case.
+    /// </summary>
+    private sealed record ThirdPartyTermination(string SomeField) : IStageTermination
+    {
+        public string ToTagValue() => $"ThirdParty:{SomeField}";
+    }
+
     private static IAgentStageResult StageResult(
         string agentName,
         StageOutcome outcome = StageOutcome.Succeeded,
-        StageTermination? termination = null,
+        IStageTermination? termination = null,
         string? phaseName = null,
         IAgentRunDiagnostics? diagnostics = null) =>
         new TestStageResult(agentName, outcome, termination, phaseName, diagnostics);
@@ -369,7 +405,7 @@ public sealed class PipelineMetricsTests
     private sealed class TestStageResult(
         string agentName,
         StageOutcome outcome,
-        StageTermination? termination,
+        IStageTermination? termination,
         string? phaseName,
         IAgentRunDiagnostics? diagnostics) : IAgentStageResult
     {
@@ -378,7 +414,7 @@ public sealed class PipelineMetricsTests
         public IAgentRunDiagnostics? Diagnostics => diagnostics;
         public StageOutcome Outcome => outcome;
         public string? PhaseName => phaseName;
-        public StageTermination? Termination => termination;
+        public IStageTermination? Termination => termination;
     }
 
     /// <summary>

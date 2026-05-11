@@ -35,7 +35,7 @@ public sealed record StageExecutionResult(
     bool Succeeded,
     Exception? Exception = null,
     FailureDisposition FailureDisposition = FailureDisposition.AbortPipeline,
-    StageTermination? Termination = null)
+    IStageTermination? Termination = null)
 {
     /// <summary>
     /// Creates a successful result for a stage.
@@ -49,7 +49,7 @@ public sealed record StageExecutionResult(
         string stageName,
         IAgentRunDiagnostics? diagnostics,
         string? responseText,
-        StageTermination? termination = null) =>
+        IStageTermination? termination = null) =>
         new(stageName, diagnostics, responseText, Succeeded: true, Termination: termination);
 
     /// <summary>
@@ -70,7 +70,7 @@ public sealed record StageExecutionResult(
         Exception exception,
         IAgentRunDiagnostics? diagnostics = null,
         FailureDisposition disposition = FailureDisposition.AbortPipeline,
-        StageTermination? termination = null) =>
+        IStageTermination? termination = null) =>
         new(stageName, diagnostics, ResponseText: null, Succeeded: false,
             Exception: exception, FailureDisposition: disposition,
             Termination: termination ?? new StageTermination.Failed(exception));

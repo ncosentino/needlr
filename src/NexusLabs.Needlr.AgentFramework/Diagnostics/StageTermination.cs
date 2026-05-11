@@ -50,8 +50,17 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 [JsonDerivedType(typeof(Failed), nameof(Failed))]
 [JsonDerivedType(typeof(Skipped), nameof(Skipped))]
 [JsonDerivedType(typeof(Custom), nameof(Custom))]
-public abstract record StageTermination
+public abstract record StageTermination : IStageTermination
 {
+    /// <summary>
+    /// Internal constructor closes the hierarchy for external derivation. Consumers
+    /// who need a typed extension case implement <see cref="IStageTermination"/>
+    /// directly rather than inheriting from this abstract record (see the interface's
+    /// XML doc for the contract). The framework's nested case records still chain
+    /// through this constructor because they live in the same assembly.
+    /// </summary>
+    internal StageTermination() { }
+
     /// <summary>
     /// The stage's <see cref="Iterative.IterativeLoopOptions.IsComplete"/> predicate
     /// returned <see langword="true"/> after an iteration — the stage achieved its goal.

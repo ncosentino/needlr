@@ -40,6 +40,6 @@ public sealed class IAgentStageResultTerminationTests
         public string AgentName => "Test";
         public Microsoft.Extensions.AI.ChatResponse? FinalResponse => null;
         public IAgentRunDiagnostics? Diagnostics => null;
-        public StageTermination? Termination => termination;
+        public IStageTermination? Termination => termination;
     }
 }
