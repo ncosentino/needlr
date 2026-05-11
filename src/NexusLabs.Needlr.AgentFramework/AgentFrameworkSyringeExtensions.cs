@@ -279,6 +279,37 @@ public static class AgentFrameworkSyringeExtensions
         return syringe with { MetricsOptions = options };
     }
 
+    /// <summary>
+    /// Configures pipeline-shape OpenTelemetry metrics emitted by
+    /// <see cref="Diagnostics.IPipelineMetrics"/> via the meter and ActivitySource
+    /// names on <see cref="Diagnostics.PipelineMetricsOptions"/>. Without this call,
+    /// the DI-registered <see cref="Diagnostics.IPipelineMetrics"/> is the no-op
+    /// implementation — observability is opt-in with zero overhead by default.
+    /// </summary>
+    /// <remarks>
+    /// Sibling of <see cref="ConfigureMetrics"/> — that targets per-agent-run
+    /// metrics; this one targets per-pipeline / per-stage metrics emitted by
+    /// <c>SequentialPipelineRunner</c>. Most consumers will want pipeline metrics
+    /// under a separate meter (e.g. <c>"BrandGhost.Pipelines"</c>) so OTel views
+    /// and Prometheus aggregation can target each scope independently:
+    /// <code>
+    /// .UsingAgentFramework(af => af
+    ///     .ConfigureMetrics(o => o.MeterName = "BrandGhost.Agents")
+    ///     .ConfigurePipelineMetrics(o => o.MeterName = "BrandGhost.Pipelines"))
+    /// </code>
+    /// </remarks>
+    public static AgentFrameworkSyringe ConfigurePipelineMetrics(
+        this AgentFrameworkSyringe syringe,
+        Action<Diagnostics.PipelineMetricsOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(syringe);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var options = syringe.PipelineMetricsOptions ?? new Diagnostics.PipelineMetricsOptions();
+        configure(options);
+        return syringe with { PipelineMetricsOptions = options };
+    }
+
     private static AgentFrameworkSyringe MergeFunctionGroups(        this AgentFrameworkSyringe syringe,
         IReadOnlyDictionary<string, IReadOnlyList<Type>> newGroups)
     {

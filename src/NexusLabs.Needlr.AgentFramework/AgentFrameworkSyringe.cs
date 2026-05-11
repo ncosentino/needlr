@@ -67,6 +67,14 @@ public sealed record AgentFrameworkSyringe
     internal Diagnostics.AgentFrameworkMetricsOptions? MetricsOptions { get; init; }
 
     /// <summary>
+    /// Pipeline-shape metrics configuration (meter name, ActivitySource name).
+    /// Populated by <c>ConfigurePipelineMetrics()</c>. When <see langword="null"/>
+    /// the registered <see cref="Diagnostics.IPipelineMetrics"/> is the no-op
+    /// implementation; observability is opt-in with zero overhead by default.
+    /// </summary>
+    internal Diagnostics.PipelineMetricsOptions? PipelineMetricsOptions { get; init; }
+
+    /// <summary>
     /// Whether <c>UsingTokenTracking()</c> has already been called. Prevents
     /// double-wiring the recording middleware when both <c>UsingTokenBudget()</c>
     /// and <c>UsingDiagnostics()</c> are used together.
