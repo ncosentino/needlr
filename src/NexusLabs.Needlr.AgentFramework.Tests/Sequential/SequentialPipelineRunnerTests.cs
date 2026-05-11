@@ -1103,6 +1103,49 @@ public class SequentialPipelineRunnerTests
     }
 
     /// <summary>
+    /// Documents that a third-party <see cref="IStageTermination"/> implementation
+    /// flows end-to-end through the runner — set as
+    /// <see cref="StageExecutionResult.Termination"/> by a custom executor, exposed
+    /// as <see cref="IAgentStageResult.Termination"/> on the runner's emitted result,
+    /// and passed to <see cref="IPipelineMetrics.RecordStageCompleted"/> with its
+    /// <see cref="IStageTermination.ToTagValue"/> driving the
+    /// <c>termination_cause</c> tag value.
+    /// </summary>
+    [Fact]
+    public async Task RunAsync_ThirdPartyTerminationFromExecutor_FlowsEndToEnd()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var thirdParty = new RunnerThirdPartyTermination(SomeField: "BackendDecision");
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[]
+        {
+            new PipelineStage("A", new TerminationCarryingExecutor(
+                StageExecutionResult.Success(
+                    stageName: "A",
+                    diagnostics: null,
+                    responseText: "done",
+                    termination: thirdParty))),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        var stage = Assert.Single(result.Stages);
+        Assert.Same(thirdParty, stage.Termination);
+        var captured = Assert.Single(capturing.StageCompletions);
+        Assert.Same(thirdParty, captured.Stage.Termination);
+    }
+
+    /// <summary>
+    /// A test-local <see cref="IStageTermination"/> implementation outside the
+    /// framework's closed <see cref="StageTermination"/> hierarchy. Used in
+    /// runner-flow tests to prove the abstraction works for consumer-defined types.
+    /// </summary>
+    private sealed record RunnerThirdPartyTermination(string SomeField) : IStageTermination
+    {
+        public string ToTagValue() => $"ThirdParty:{SomeField}";
+    }
+
+    /// <summary>
     /// Capturing test double for <see cref="IPipelineMetrics"/>. Records call
     /// arguments for every Record* method so flow tests can assert on
     /// what was emitted, in what order, and with what tag/value derivations

@@ -12,4 +12,4 @@ internal sealed record AgentStageResult(
     IAgentRunDiagnostics? Diagnostics,
     StageOutcome Outcome = StageOutcome.Succeeded,
     string? PhaseName = null,
-    StageTermination? Termination = null) : IAgentStageResult;
+    IStageTermination? Termination = null) : IAgentStageResult;
