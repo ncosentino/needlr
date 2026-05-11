@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
@@ -284,5 +285,73 @@ public sealed class StageTerminationJsonTests
         var typed = Assert.IsType<StageTermination.MaxIterationsReached>(roundTripped);
         Assert.Equal(10, typed.Limit);
         Assert.Equal(7, typed.IterationsUsed);
+    }
+
+    /// <summary>
+    /// Locks down the documented third-party JSON contract: a consumer-defined
+    /// <see cref="IStageTermination"/> impl, registered via a
+    /// <see cref="System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver"/>
+    /// modifier, round-trips cleanly with the same <c>$kind</c> discriminator
+    /// scheme as the framework cases. This is the contract
+    /// <c>docs/stage-termination.md</c> describes and
+    /// <c>src/Examples/AgentFramework/RfcPipelineApp</c> demonstrates.
+    /// </summary>
+    [Fact]
+    public void IStageTermination_ThirdPartyTypeViaJsonTypeInfoResolverModifier_RoundTrips()
+    {
+        var options = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver
+            {
+                Modifiers =
+                {
+                    info =>
+                    {
+                        if (info.Type == typeof(IStageTermination)
+                            && info.PolymorphismOptions is { } poly)
+                        {
+                            poly.DerivedTypes.Add(new JsonDerivedType(
+                                typeof(ConsumerDefinedTermination), "ConsumerDefinedTermination"));
+                        }
+                    },
+                },
+            },
+        };
+
+        IStageTermination original = new ConsumerDefinedTermination(Detail: "approved", Score: 42);
+
+        var json = JsonSerializer.Serialize(original, options);
+        Assert.Contains("\"$kind\":\"ConsumerDefinedTermination\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<IStageTermination>(json, options);
+        var typed = Assert.IsType<ConsumerDefinedTermination>(roundTripped);
+        Assert.Equal("approved", typed.Detail);
+        Assert.Equal(42, typed.Score);
+    }
+
+    /// <summary>
+    /// Without the JsonTypeInfoResolver modifier, serializing a third-party
+    /// IStageTermination instance against the canonical interface declared type
+    /// throws NotSupportedException — same loud failure the framework cases have
+    /// for unregistered types. Documents the consequence consumers face if they
+    /// implement IStageTermination but forget to register their type.
+    /// </summary>
+    [Fact]
+    public void IStageTermination_ThirdPartyTypeWithoutRegistration_ThrowsNotSupported()
+    {
+        IStageTermination unregistered = new ConsumerDefinedTermination(Detail: "x", Score: 0);
+
+        Assert.Throws<NotSupportedException>(() =>
+            JsonSerializer.Serialize(unregistered, Options));
+    }
+
+    /// <summary>
+    /// Stand-in for any consumer-defined typed termination case. Implements
+    /// <see cref="IStageTermination"/> directly (does NOT inherit from the
+    /// framework's closed <see cref="StageTermination"/> hierarchy).
+    /// </summary>
+    private sealed record ConsumerDefinedTermination(string Detail, int Score) : IStageTermination
+    {
+        public string ToTagValue() => $"ConsumerDefinedTermination:{Detail}";
     }
 }

@@ -8,6 +8,8 @@ description: Typed-case StageTermination hierarchy describes why a pipeline stag
 
 It exists alongside `StageOutcome` (the rollup 3-value `Succeeded` / `Skipped` / `Failed` enum the runner decided about the stage). They carry overlapping but distinct signal — see [`StageOutcome` vs `Termination`](#stageoutcome-vs-termination) below.
 
+The `StageTermination` hierarchy itself is **closed for external derivation at compile time** — the abstract record's constructor is `internal`, so consumer code cannot inherit from it. Extension happens by implementing the [`IStageTermination`](#extending-istagetermination) interface directly. The framework's typed cases stay exhaustive; consumer-defined cases are first-class peers of the framework cases through the interface contract.
+
 ---
 
 ## Why typed?
@@ -116,6 +118,103 @@ Pipeline-shape metrics use this automatically as the `termination_cause` tag —
 string tag = stage.Termination?.ToTagValue() ?? "Unspecified";
 metrics.RecordStageOutcome(tag);
 ```
+
+---
+
+## Extending: `IStageTermination`
+
+The framework's `StageTermination` hierarchy is closed for external derivation by design — the abstract record's constructor is `internal` so external `: StageTermination` is a compile error. The 11 framework typed cases plus `Custom` are exhaustive for the runner's needs.
+
+Consumers who want their own typed extension case (with named-record pattern matching like `is MyDomainTermination { FindingCount: var c }`) implement the **`IStageTermination`** interface directly:
+
+```csharp
+public sealed record MyDomainTermination(int FindingCount) : IStageTermination
+{
+    public string ToTagValue() => "MyDomain";
+}
+```
+
+`IAgentStageResult.Termination` is declared as `IStageTermination?`, so a third-party impl flows through the runner and pipeline metrics seamlessly. Pattern matching against your own type works exactly as it does for framework cases:
+
+```csharp
+foreach (var stage in result.Stages)
+{
+    if (stage.Termination is MyDomainTermination { FindingCount: var n })
+    {
+        _logger.LogInformation("Stage reconciled with {Count} findings", n);
+    }
+}
+```
+
+### When to use which
+
+- **Use `StageTermination.Custom`** when you don't need named-record pattern matching and want zero JSON-serialisation work. Wraps your termination data into the `Reason` string + `Properties` dictionary; round-trips cleanly via the framework's polymorphism registry.
+- **Use a custom `IStageTermination` impl** when you need typed pattern matching, structured-but-typed properties (not stringified into a dictionary), or richer per-case semantics. **You own JSON serialization** — see below.
+
+### Third-party JSON contract
+
+Implementing `IStageTermination` is a contract: **you handle JSON serialization for your derived type**. The framework's `[JsonPolymorphic]` registry on the interface only knows about the framework cases — your type is not in it. `JsonSerializer.Serialize<IStageTermination>(yourInstance)` throws `NotSupportedException` until you register your type.
+
+Two practical options:
+
+#### Option A — `JsonTypeInfoResolver` modifier (lightweight)
+
+```csharp
+var options = new JsonSerializerOptions
+{
+    TypeInfoResolver = new DefaultJsonTypeInfoResolver
+    {
+        Modifiers =
+        {
+            info =>
+            {
+                if (info.Type == typeof(IStageTermination)
+                    && info.PolymorphismOptions is { } poly)
+                {
+                    poly.DerivedTypes.Add(new JsonDerivedType(
+                        typeof(MyDomainTermination), "MyDomainTermination"));
+                }
+            },
+        },
+    },
+};
+
+var json = JsonSerializer.Serialize<IStageTermination>(myInstance, options);
+// {"$kind":"MyDomainTermination","FindingCount":7}
+```
+
+Your derived type joins the polymorphism table for that `JsonSerializerOptions` instance. The `$kind` discriminator stays uniform across framework + third-party cases. Apply the modifier to **every** `JsonSerializerOptions` your code uses to serialise `StageTermination` results — easy to forget, but the failure mode (`NotSupportedException`) is loud.
+
+#### Option B — custom `JsonConverter<IStageTermination>` (full control)
+
+For consumers who need to fully own the wire format (not just register a discriminator), write a custom converter:
+
+```csharp
+public sealed class MyStageTerminationConverter : JsonConverter<IStageTermination>
+{
+    public override IStageTermination? Read(
+        ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        // ... full control: choose discriminator field, fallback behaviour, etc.
+    }
+
+    public override void Write(
+        Utf8JsonWriter writer, IStageTermination value, JsonSerializerOptions options)
+    {
+        // ...
+    }
+}
+```
+
+Heavier than the modifier path but gives you complete wire-format control — useful when you have multiple consumer-defined types and a consistent registration scheme, or when you need to bridge to a non-`$kind` discriminator convention used elsewhere in your serialised payloads.
+
+### What if you do nothing?
+
+`JsonSerializer.Serialize<IStageTermination>(myUnregisteredInstance)` throws `NotSupportedException`. Same loud failure the framework cases have today for unregistered types — **no silent data loss**. The contract is: implement the interface, take on the JSON registration. If that's too much work, fall back to `StageTermination.Custom`.
+
+### See an example
+
+`src/Examples/AgentFramework/RfcPipelineApp` demonstrates the `JsonTypeInfoResolver` modifier path end-to-end: a custom `IStageTermination` returned from an `onLoopCompleted` callback, registered against `JsonSerializerOptions`, and round-tripped through `JsonSerializer` to prove the wire format works.
 
 ---
 
