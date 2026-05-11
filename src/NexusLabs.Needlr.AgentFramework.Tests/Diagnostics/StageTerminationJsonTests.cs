@@ -1,0 +1,210 @@
+using System.Text.Json;
+
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
+
+using Xunit;
+
+namespace NexusLabs.Needlr.AgentFramework.Tests.Diagnostics;
+
+/// <summary>
+/// Tests for polymorphic JSON round-trip on <see cref="StageTermination"/>. Locks in
+/// the wire format: <c>$kind</c> discriminator + case-name discriminator values.
+/// Once shipped, this contract is part of the public API surface.
+/// </summary>
+public sealed class StageTerminationJsonTests
+{
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = false,
+    };
+
+    [Fact]
+    public void Completed_RoundTrips()
+    {
+        StageTermination original = new StageTermination.Completed();
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"Completed\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        Assert.IsType<StageTermination.Completed>(roundTripped);
+    }
+
+    [Fact]
+    public void NaturalCompletion_RoundTrips()
+    {
+        StageTermination original = new StageTermination.NaturalCompletion();
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"NaturalCompletion\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        Assert.IsType<StageTermination.NaturalCompletion>(roundTripped);
+    }
+
+    [Fact]
+    public void CompletedEarlyAfterToolCall_RoundTrips()
+    {
+        StageTermination original = new StageTermination.CompletedEarlyAfterToolCall();
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"CompletedEarlyAfterToolCall\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        Assert.IsType<StageTermination.CompletedEarlyAfterToolCall>(roundTripped);
+    }
+
+    [Fact]
+    public void MaxIterationsReached_RoundTrips_PreservesValues()
+    {
+        StageTermination original = new StageTermination.MaxIterationsReached(Limit: 10, IterationsUsed: 7);
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"MaxIterationsReached\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.MaxIterationsReached>(roundTripped);
+        Assert.Equal(10, typed.Limit);
+        Assert.Equal(7, typed.IterationsUsed);
+    }
+
+    [Fact]
+    public void MaxToolCallsReached_RoundTrips_PreservesValues()
+    {
+        StageTermination original = new StageTermination.MaxToolCallsReached(Limit: 50, ToolCallsUsed: 53);
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"MaxToolCallsReached\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.MaxToolCallsReached>(roundTripped);
+        Assert.Equal(50, typed.Limit);
+        Assert.Equal(53, typed.ToolCallsUsed);
+    }
+
+    [Fact]
+    public void BudgetPressure_RoundTrips_PreservesThreshold()
+    {
+        StageTermination original = new StageTermination.BudgetPressure(Threshold: 0.85);
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"BudgetPressure\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.BudgetPressure>(roundTripped);
+        Assert.Equal(0.85, typed.Threshold);
+    }
+
+    [Fact]
+    public void BudgetPressure_NullThreshold_RoundTrips()
+    {
+        StageTermination original = new StageTermination.BudgetPressure(Threshold: null);
+        var json = JsonSerializer.Serialize(original, Options);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.BudgetPressure>(roundTripped);
+        Assert.Null(typed.Threshold);
+    }
+
+    [Fact]
+    public void StallDetected_RoundTrips_PreservesConsecutiveThreshold()
+    {
+        StageTermination original = new StageTermination.StallDetected(ConsecutiveThreshold: 3);
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"StallDetected\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.StallDetected>(roundTripped);
+        Assert.Equal(3, typed.ConsecutiveThreshold);
+    }
+
+    [Fact]
+    public void Cancelled_RoundTrips()
+    {
+        StageTermination original = new StageTermination.Cancelled();
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"Cancelled\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        Assert.IsType<StageTermination.Cancelled>(roundTripped);
+    }
+
+    /// <summary>
+    /// Failed serializes the discriminator but the Exception payload does NOT
+    /// round-trip cleanly through System.Text.Json — the framework's default Exception
+    /// converter writes the Message but reconstructs as a generic Exception (or fails).
+    /// We assert only the discriminator + serialization behavior here; consumers
+    /// needing exception fidelity should serialize the message + type name separately.
+    /// </summary>
+    [Fact]
+    public void Failed_SerializesDiscriminator()
+    {
+        StageTermination original = new StageTermination.Failed(new InvalidOperationException("boom"));
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"Failed\"", json);
+    }
+
+    [Fact]
+    public void Skipped_RoundTrips_PreservesReason()
+    {
+        StageTermination original = new StageTermination.Skipped("no work to do");
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"Skipped\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.Skipped>(roundTripped);
+        Assert.Equal("no work to do", typed.Reason);
+    }
+
+    [Fact]
+    public void Skipped_NullReason_RoundTrips()
+    {
+        StageTermination original = new StageTermination.Skipped();
+        var json = JsonSerializer.Serialize(original, Options);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.Skipped>(roundTripped);
+        Assert.Null(typed.Reason);
+    }
+
+    [Fact]
+    public void Custom_RoundTrips_PreservesReason()
+    {
+        StageTermination original = new StageTermination.Custom("Reconciled");
+        var json = JsonSerializer.Serialize(original, Options);
+        Assert.Contains("\"$kind\":\"Custom\"", json);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.Custom>(roundTripped);
+        Assert.Equal("Reconciled", typed.Reason);
+    }
+
+    /// <summary>
+    /// Documents the documented limitation: <see cref="StageTermination.Custom.Properties"/>
+    /// values are typed as <see cref="object"/> in C#, but JSON round-trip yields
+    /// <see cref="JsonElement"/> values rather than the original concrete types
+    /// (<c>int</c>, <c>string</c>, <c>bool</c>, etc.). Consumers needing type-safe
+    /// properties should deserialize each value individually via
+    /// <c>JsonElement.Deserialize&lt;T&gt;()</c>.
+    /// </summary>
+    [Fact]
+    public void Custom_Properties_RoundTripYieldsJsonElement()
+    {
+        var props = new Dictionary<string, object?>
+        {
+            ["FindingCount"] = 4,
+            ["Severity"] = "warn",
+            ["IsTrue"] = true,
+        };
+        StageTermination original = new StageTermination.Custom("Reconciled", props);
+        var json = JsonSerializer.Serialize(original, Options);
+
+        var roundTripped = JsonSerializer.Deserialize<StageTermination>(json, Options);
+        var typed = Assert.IsType<StageTermination.Custom>(roundTripped);
+        Assert.NotNull(typed.Properties);
+        Assert.Equal(3, typed.Properties!.Count);
+
+        var findingCount = Assert.IsType<JsonElement>(typed.Properties["FindingCount"]);
+        Assert.Equal(4, findingCount.GetInt32());
+
+        var severity = Assert.IsType<JsonElement>(typed.Properties["Severity"]);
+        Assert.Equal("warn", severity.GetString());
+
+        var isTrue = Assert.IsType<JsonElement>(typed.Properties["IsTrue"]);
+        Assert.True(isTrue.GetBoolean());
+    }
+}
