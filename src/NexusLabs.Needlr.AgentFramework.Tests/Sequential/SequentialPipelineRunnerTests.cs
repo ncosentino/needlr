@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Budget;
@@ -900,5 +902,228 @@ public class SequentialPipelineRunnerTests
             StageExecutionContext context,
             CancellationToken cancellationToken) =>
             Task.FromResult(result);
+    }
+
+    [Fact]
+    public async Task RunAsync_AllStagesSucceed_CallsRecordPipelineStartedAndCompletedExactlyOnce()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[] { SuccessStage("A"), SuccessStage("B") };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Single(capturing.PipelineStarts);
+        Assert.Single(capturing.PipelineCompletions);
+        Assert.True(capturing.PipelineCompletions[0].Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_PipelineNameFromOptions_FlowsToAllRecordCalls()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[] { SuccessStage("A") };
+        var options = new SequentialPipelineOptions { PipelineName = "MyPipeline" };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options, CancellationToken.None);
+
+        Assert.Equal("MyPipeline", capturing.PipelineStarts[0]);
+        Assert.Equal("MyPipeline", capturing.PipelineCompletions[0].PipelineName);
+        Assert.Equal("MyPipeline", capturing.StageCompletions[0].PipelineName);
+    }
+
+    [Fact]
+    public async Task RunAsync_NoPipelineNameOption_FallsBackToWorkflowId()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[] { SuccessStage("A") };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Equal("test-workflow", capturing.PipelineStarts[0]);
+        Assert.Equal("test-workflow", capturing.PipelineCompletions[0].PipelineName);
+    }
+
+    [Fact]
+    public async Task RunAsync_OneStageCompletionPerStageInResultOrder()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[] { SuccessStage("A"), SuccessStage("B"), SuccessStage("C") };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Equal(3, capturing.StageCompletions.Count);
+        Assert.Equal("A", capturing.StageCompletions[0].Stage.AgentName);
+        Assert.Equal("B", capturing.StageCompletions[1].Stage.AgentName);
+        Assert.Equal("C", capturing.StageCompletions[2].Stage.AgentName);
+    }
+
+    [Fact]
+    public async Task RunAsync_SkipPath_EmitsStageCompletionWithZeroDuration()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[]
+        {
+            new PipelineStage("A", new DelegateStageExecutor((_, _) => Task.CompletedTask))
+            {
+                Policy = new StageExecutionPolicy { ShouldSkip = _ => true },
+            },
+        };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        var completion = Assert.Single(capturing.StageCompletions);
+        Assert.Equal(StageOutcome.Skipped, completion.Stage.Outcome);
+        Assert.Equal(TimeSpan.Zero, completion.Duration);
+    }
+
+    [Fact]
+    public async Task RunAsync_ThrowingStage_EmitsStageCompletionWithFailedTermination()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var boom = new InvalidOperationException("boom");
+        var stages = new[] { ThrowingStage("A", boom) };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        var completion = Assert.Single(capturing.StageCompletions);
+        var termination = Assert.IsType<StageTermination.Failed>(completion.Stage.Termination);
+        Assert.Same(boom, termination.Exception);
+        Assert.False(capturing.PipelineCompletions[0].Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_FailedResult_EmitsStageCompletionAndPipelineFailed()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var stages = new[] { FailedStage("A", FailureDisposition.AbortPipeline) };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        var completion = Assert.Single(capturing.StageCompletions);
+        Assert.Equal(StageOutcome.Failed, completion.Stage.Outcome);
+        Assert.False(capturing.PipelineCompletions[0].Succeeded);
+    }
+
+    [Fact]
+    public async Task RunAsync_CreatesParentPipelineRunActivityWithStageChildren()
+    {
+        var sourceName = $"PipelineMetricsActivityTest.{Guid.NewGuid():N}";
+        var capturedActivities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = src => src.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => capturedActivities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using var pipelineMetrics = new PipelineMetrics(new PipelineMetricsOptions
+        {
+            MeterName = $"NoMatter.{Guid.NewGuid():N}",
+            ActivitySourceName = sourceName,
+        });
+
+        var runner = CreateRunner(pipelineMetrics: pipelineMetrics);
+        var stages = new[] { SuccessStage("A"), SuccessStage("B") };
+        var options = new SequentialPipelineOptions { PipelineName = "ActivityTestPipeline" };
+
+        await runner.RunAsync(CreateWorkspace(), stages, options, CancellationToken.None);
+
+        var pipelineRun = Assert.Single(capturedActivities, a => a.OperationName == "pipeline.run");
+        Assert.Equal("ActivityTestPipeline", pipelineRun.GetTagItem("pipeline_name"));
+        Assert.Equal("Succeeded", pipelineRun.GetTagItem("outcome"));
+
+        var stageActivities = capturedActivities.Where(a => a.OperationName == "pipeline.stage").ToList();
+        Assert.Equal(2, stageActivities.Count);
+        Assert.All(stageActivities, a => Assert.Equal("ActivityTestPipeline", a.GetTagItem("pipeline_name")));
+        Assert.All(stageActivities, a => Assert.Equal("Succeeded", a.GetTagItem("outcome")));
+        Assert.All(stageActivities, a => Assert.Equal("(none)", a.GetTagItem("phase_name")));
+        Assert.Contains(stageActivities, a => (string?)a.GetTagItem("stage_name") == "A");
+        Assert.Contains(stageActivities, a => (string?)a.GetTagItem("stage_name") == "B");
+    }
+
+    [Fact]
+    public async Task RunPhasedAsync_StageActivitiesCarryPhaseName()
+    {
+        var sourceName = $"PipelineMetricsActivityTest.{Guid.NewGuid():N}";
+        var capturedActivities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = src => src.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => capturedActivities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using var pipelineMetrics = new PipelineMetrics(new PipelineMetricsOptions
+        {
+            MeterName = $"NoMatter.{Guid.NewGuid():N}",
+            ActivitySourceName = sourceName,
+        });
+
+        var runner = CreateRunner(pipelineMetrics: pipelineMetrics);
+        var phases = new[]
+        {
+            new PipelinePhase("Phase1", [SuccessStage("A")]),
+        };
+
+        await runner.RunPhasedAsync(CreateWorkspace(), phases, options: null, CancellationToken.None);
+
+        var stageActivity = Assert.Single(capturedActivities, a => a.OperationName == "pipeline.stage");
+        Assert.Equal("Phase1", stageActivity.GetTagItem("phase_name"));
+        Assert.Equal("A", stageActivity.GetTagItem("stage_name"));
+    }
+
+    [Fact]
+    public async Task RunPhasedAsync_AllPathsRecordPipelineMetrics()
+    {
+        var capturing = new CapturingPipelineMetrics();
+        var runner = CreateRunner(pipelineMetrics: capturing);
+        var phases = new[]
+        {
+            new PipelinePhase("Phase1", [SuccessStage("A")]),
+            new PipelinePhase("Phase2", [SuccessStage("B")]),
+        };
+
+        await runner.RunPhasedAsync(CreateWorkspace(), phases, options: null, CancellationToken.None);
+
+        Assert.Single(capturing.PipelineStarts);
+        Assert.Single(capturing.PipelineCompletions);
+        Assert.True(capturing.PipelineCompletions[0].Succeeded);
+        Assert.Equal(2, capturing.StageCompletions.Count);
+        Assert.Equal("A", capturing.StageCompletions[0].Stage.AgentName);
+        Assert.Equal("B", capturing.StageCompletions[1].Stage.AgentName);
+    }
+
+    /// <summary>
+    /// Capturing test double for <see cref="IPipelineMetrics"/>. Records call
+    /// arguments for every Record* method so flow tests can assert on
+    /// what was emitted, in what order, and with what tag/value derivations
+    /// without having to attach a real ``MeterListener``.
+    /// </summary>
+    private sealed class CapturingPipelineMetrics : IPipelineMetrics
+    {
+        private readonly ActivitySource _source = new($"CapturingPipelineMetrics.{Guid.NewGuid():N}");
+        public ActivitySource ActivitySource => _source;
+
+        public List<string> PipelineStarts { get; } = [];
+        public List<(string PipelineName, bool Succeeded, TimeSpan Duration)> PipelineCompletions { get; } = [];
+        public List<(string PipelineName, IAgentStageResult Stage, TimeSpan Duration)> StageCompletions { get; } = [];
+
+        public void RecordPipelineStarted(string pipelineName) =>
+            PipelineStarts.Add(pipelineName);
+
+        public void RecordPipelineCompleted(string pipelineName, bool succeeded, TimeSpan duration) =>
+            PipelineCompletions.Add((pipelineName, succeeded, duration));
+
+        public void RecordStageCompleted(string pipelineName, IAgentStageResult stage, TimeSpan duration) =>
+            StageCompletions.Add((pipelineName, stage, duration));
     }
 }
