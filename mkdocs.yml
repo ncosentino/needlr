@@ -77,6 +77,8 @@ nav:
     - Iterative Agent Loop: iterative-agent-loop.md
     - Tool Result Middleware: tool-result-middleware.md
     - Progress Reporting: progress-reporting.md
+    - Stage Termination: stage-termination.md
+    - Pipeline Metrics: pipeline-metrics.md
     - Evaluation: evaluation.md
     - Testing Tool Integrations: testing-tools.md
     - Workspace: workspace.md
