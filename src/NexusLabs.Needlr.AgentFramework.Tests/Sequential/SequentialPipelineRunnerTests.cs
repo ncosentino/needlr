@@ -770,4 +770,133 @@ public class SequentialPipelineRunnerTests
         Assert.NotNull(result.ErrorMessage);
         Assert.NotNull(result.Exception);
     }
+
+    [Fact]
+    public async Task RunAsync_SkipPath_PopulatesStageTerminationSkipped()
+    {
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            new PipelineStage("A", new DelegateStageExecutor((_, _) => Task.CompletedTask))
+            {
+                Policy = new StageExecutionPolicy { ShouldSkip = _ => true },
+            },
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        Assert.IsType<StageTermination.Skipped>(result.Stages[0].Termination);
+    }
+
+    [Fact]
+    public async Task RunAsync_PartialFailCatch_PopulatesStageTerminationFailedWithException()
+    {
+        var runner = CreateRunner();
+        var boom = new InvalidOperationException("boom from throwing executor");
+        var stages = new[] { ThrowingStage("A", boom) };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        var termination = Assert.IsType<StageTermination.Failed>(result.Stages[0].Termination);
+        Assert.Same(boom, termination.Exception);
+    }
+
+    [Fact]
+    public async Task RunAsync_FailedResult_FlowsExecutorTerminationThrough()
+    {
+        var customTermination = new StageTermination.MaxIterationsReached(Limit: 5, IterationsUsed: 5);
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            new PipelineStage("A", new TerminationCarryingExecutor(
+                StageExecutionResult.Failed(
+                    stageName: "A",
+                    exception: new InvalidOperationException("loop hit cap"),
+                    disposition: FailureDisposition.AbortPipeline,
+                    termination: customTermination))),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        Assert.Same(customTermination, result.Stages[0].Termination);
+    }
+
+    [Fact]
+    public async Task RunAsync_SuccessfulStage_FlowsExecutorTerminationThrough()
+    {
+        var customTermination = new StageTermination.NaturalCompletion();
+        var runner = CreateRunner();
+        var stages = new[]
+        {
+            new PipelineStage("A", new TerminationCarryingExecutor(
+                StageExecutionResult.Success(
+                    stageName: "A",
+                    diagnostics: null,
+                    responseText: "done",
+                    termination: customTermination))),
+        };
+
+        var result = await runner.RunAsync(CreateWorkspace(), stages, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        Assert.Same(customTermination, result.Stages[0].Termination);
+    }
+
+    [Fact]
+    public async Task RunAsync_PhasedSkipPath_PopulatesStageTerminationSkippedWithPhaseName()
+    {
+        var runner = CreateRunner();
+        var phases = new[]
+        {
+            new PipelinePhase("Phase1",
+            [
+                new PipelineStage("A", new DelegateStageExecutor((_, _) => Task.CompletedTask))
+                {
+                    Policy = new StageExecutionPolicy { ShouldSkip = _ => true },
+                },
+            ]),
+        };
+
+        var result = await runner.RunPhasedAsync(CreateWorkspace(), phases, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        Assert.IsType<StageTermination.Skipped>(result.Stages[0].Termination);
+        Assert.Equal("Phase1", result.Stages[0].PhaseName);
+    }
+
+    [Fact]
+    public async Task RunAsync_PhasedSuccessfulStage_FlowsExecutorTerminationThrough()
+    {
+        var customTermination = new StageTermination.Custom("Reconciled");
+        var runner = CreateRunner();
+        var phases = new[]
+        {
+            new PipelinePhase("Phase1",
+            [
+                new PipelineStage("A", new TerminationCarryingExecutor(
+                    StageExecutionResult.Success(
+                        stageName: "A",
+                        diagnostics: null,
+                        responseText: "done",
+                        termination: customTermination))),
+            ]),
+        };
+
+        var result = await runner.RunPhasedAsync(CreateWorkspace(), phases, options: null, CancellationToken.None);
+
+        Assert.Single(result.Stages);
+        Assert.Same(customTermination, result.Stages[0].Termination);
+        Assert.Equal("Phase1", result.Stages[0].PhaseName);
+    }
+
+    private sealed class TerminationCarryingExecutor(StageExecutionResult result) : IStageExecutor
+    {
+        public Task<StageExecutionResult> ExecuteAsync(
+            StageExecutionContext context,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(result);
+    }
 }
