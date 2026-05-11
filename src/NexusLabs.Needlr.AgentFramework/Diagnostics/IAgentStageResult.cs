@@ -58,4 +58,36 @@ public interface IAgentStageResult
     /// <see langword="null"/> when running a flat (non-phased) pipeline.
     /// </summary>
     string? PhaseName => null;
+
+    /// <summary>
+    /// Gets the typed termination cause for this stage. <see langword="null"/> when
+    /// the executor or runner did not specify one (legacy implementations / executors
+    /// with no termination metadata).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Use pattern matching to inspect specific cases:
+    /// </para>
+    /// <code>
+    /// if (stage.Termination is StageTermination.MaxToolCallsReached { Limit: var limit })
+    /// {
+    ///     _logger.LogWarning("Stage {Name} exceeded {Limit} tool calls",
+    ///         stage.AgentName, limit);
+    /// }
+    /// </code>
+    /// <para>
+    /// For OpenTelemetry / Prometheus tag values, use
+    /// <see cref="StageTermination.ToTagValue"/> — it returns a stable,
+    /// low-cardinality string suitable for use as a metric dimension.
+    /// </para>
+    /// <para>
+    /// Distinct from <see cref="Outcome"/>: <see cref="Outcome"/> is the rollup
+    /// 3-value enum the runner decided about the stage; <see cref="Termination"/>
+    /// is the detailed reason. For example, an executor that uses
+    /// <c>shouldTreatAsSuccess</c> to flip a <c>MaxIterationsReached</c> result to
+    /// <see cref="StageOutcome.Succeeded"/> still reports
+    /// <see cref="StageTermination.MaxIterationsReached"/> here.
+    /// </para>
+    /// </remarks>
+    StageTermination? Termination => null;
 }

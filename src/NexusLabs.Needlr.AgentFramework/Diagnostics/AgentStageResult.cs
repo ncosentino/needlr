@@ -11,4 +11,5 @@ internal sealed record AgentStageResult(
     ChatResponse? FinalResponse,
     IAgentRunDiagnostics? Diagnostics,
     StageOutcome Outcome = StageOutcome.Succeeded,
-    string? PhaseName = null) : IAgentStageResult;
+    string? PhaseName = null,
+    StageTermination? Termination = null) : IAgentStageResult;
