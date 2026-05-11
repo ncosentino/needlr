@@ -198,6 +198,14 @@ public static class SyringeExtensionsForAgentFramework
             var options = syringe?.Value.MetricsOptions ?? new AgentFrameworkMetricsOptions();
             return new AgentMetrics(options);
         });
+        services.TryAddSingleton<IPipelineMetrics>(sp =>
+        {
+            var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
+            var options = syringe?.Value.PipelineMetricsOptions;
+            return options is null
+                ? new NoOpPipelineMetrics()
+                : new PipelineMetrics(options);
+        });
         services.TryAddSingleton<ChatCompletionCollectorHolder>();
         services.TryAddSingleton<IChatCompletionCollector>(sp => sp.GetRequiredService<ChatCompletionCollectorHolder>());
         services.TryAddSingleton<ToolCallCollectorHolder>();

@@ -205,5 +205,59 @@ public sealed class AgentFrameworkSyringeExtensionsTests
         Assert.NotNull(sp.GetService<IProgressReporterFactory>());
         Assert.NotNull(sp.GetService<IProgressReporterAccessor>());
     }
+
+    [Fact]
+    public void ConfigurePipelineMetrics_PopulatesPipelineMetricsOptions()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var serviceProvider = new Syringe().UsingReflection().BuildServiceProvider(config);
+        var syringe = new AgentFrameworkSyringe { ServiceProvider = serviceProvider };
+
+        var configured = syringe.ConfigurePipelineMetrics(o =>
+        {
+            o.MeterName = "Configured.Pipelines";
+            o.ActivitySourceName = "Configured.PipelinesSource";
+        });
+
+        Assert.NotNull(configured.PipelineMetricsOptions);
+        Assert.Equal("Configured.Pipelines", configured.PipelineMetricsOptions!.MeterName);
+        Assert.Equal("Configured.PipelinesSource", configured.PipelineMetricsOptions.ActivitySourceName);
+    }
+
+    [Fact]
+    public void ConfigurePipelineMetrics_CalledTwice_MutatesSameOptionsInstance()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var serviceProvider = new Syringe().UsingReflection().BuildServiceProvider(config);
+        var syringe = new AgentFrameworkSyringe { ServiceProvider = serviceProvider };
+
+        var configured = syringe
+            .ConfigurePipelineMetrics(o => o.MeterName = "FirstCall")
+            .ConfigurePipelineMetrics(o => o.ActivitySourceName = "SecondCall");
+
+        Assert.NotNull(configured.PipelineMetricsOptions);
+        Assert.Equal("FirstCall", configured.PipelineMetricsOptions!.MeterName);
+        Assert.Equal("SecondCall", configured.PipelineMetricsOptions.ActivitySourceName);
+    }
+
+    [Fact]
+    public void ConfigurePipelineMetrics_NullSyringe_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            AgentFrameworkSyringeExtensions.ConfigurePipelineMetrics(
+                syringe: null!,
+                configure: _ => { }));
+    }
+
+    [Fact]
+    public void ConfigurePipelineMetrics_NullConfigure_Throws()
+    {
+        var config = new ConfigurationBuilder().Build();
+        var serviceProvider = new Syringe().UsingReflection().BuildServiceProvider(config);
+        var syringe = new AgentFrameworkSyringe { ServiceProvider = serviceProvider };
+
+        Assert.Throws<ArgumentNullException>(() =>
+            syringe.ConfigurePipelineMetrics(configure: null!));
+    }
 }
 

@@ -447,4 +447,51 @@ public sealed class ServiceCollectionAgentFrameworkExtensionsTests
             Assert.NotNull(extensionProvider.GetService(type));
         }
     }
+
+    [Fact]
+    public void AddNeedlrAgentFramework_RegistersIPipelineMetrics_AsNoOpByDefault()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+
+        services.AddNeedlrAgentFramework();
+
+        var provider = services.BuildServiceProvider();
+        var metrics = provider.GetService<IPipelineMetrics>();
+        Assert.NotNull(metrics);
+        Assert.Equal("NexusLabs.Needlr.AgentFramework.Pipelines.NoOp", metrics!.ActivitySource.Name);
+    }
+
+    [Fact]
+    public void AddNeedlrAgentFramework_WithConfigurePipelineMetrics_ResolvesRealPipelineMetrics()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+
+        services.AddNeedlrAgentFramework(af => af
+            .ConfigurePipelineMetrics(o => o.MeterName = "Test.Pipelines"));
+
+        var provider = services.BuildServiceProvider();
+        var metrics = provider.GetService<IPipelineMetrics>();
+        Assert.NotNull(metrics);
+        Assert.Equal("Test.Pipelines", metrics!.ActivitySource.Name);
+    }
+
+    [Fact]
+    public void AddNeedlrAgentFramework_PipelineMetricsAndAgentMetrics_ResolveIndependently()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+
+        services.AddNeedlrAgentFramework(af => af
+            .ConfigureMetrics(o => o.MeterName = "Test.Agents")
+            .ConfigurePipelineMetrics(o => o.MeterName = "Test.Pipelines"));
+
+        var provider = services.BuildServiceProvider();
+        var agentMetrics = provider.GetRequiredService<IAgentMetrics>();
+        var pipelineMetrics = provider.GetRequiredService<IPipelineMetrics>();
+
+        Assert.Equal("Test.Agents", agentMetrics.ActivitySource.Name);
+        Assert.Equal("Test.Pipelines", pipelineMetrics.ActivitySource.Name);
+    }
 }
