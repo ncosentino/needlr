@@ -10,6 +10,7 @@
     <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Testing\NexusLabs.Needlr.AgentFramework.Testing.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Workflows\NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.Injection.Reflection\NexusLabs.Needlr.Injection.Reflection.csproj" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
   <ItemGroup>
