@@ -1,3 +1,4 @@
+using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Iterative;
 
 namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
@@ -24,11 +25,14 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// observes the linked <see cref="CancellationToken"/> and terminates cooperatively.
 /// </para>
 /// <para>
-/// The <c>onLoopCompleted</c> callback fires immediately after the loop returns,
-/// before result mapping. Use it to capture loop-specific metadata (termination reason,
-/// per-iteration diagnostics, tool call counts) that is not surfaced on
-/// <see cref="StageExecutionResult"/>. This is the only point where the raw
-/// <see cref="IterativeLoopResult"/> is accessible.
+/// On every successful loop completion, the executor maps
+/// <see cref="IterativeLoopResult.Termination"/> (a <see cref="TerminationReason"/>
+/// enum) to a typed <see cref="StageTermination"/> case and surfaces it via
+/// <see cref="StageExecutionResult.Termination"/>. The
+/// <c>onLoopCompleted</c> callback can return a <see cref="StageTermination"/> to
+/// override the framework-mapped default (e.g. to attach app-specific narrative as
+/// a <see cref="StageTermination.Custom"/> case); returning <see langword="null"/>
+/// uses the framework default.
 /// </para>
 /// </remarks>
 /// <example>
@@ -45,14 +49,17 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 ///         LoopName = ctx.StageName,
 ///     });
 ///
-/// // With onLoopCompleted to capture termination metadata
+/// // With onLoopCompleted to override the framework-mapped termination
 /// var executor = new IterativeLoopStageExecutor(
 ///     iterativeLoop,
 ///     ctx =&gt; buildOptions(ctx),
 ///     onLoopCompleted: (loopResult, ctx) =&gt;
 ///     {
 ///         accessor.LastDiagnostics = loopResult.Diagnostics;
-///         accessor.LastTerminationReason = loopResult.Termination.ToString();
+///         // Return a Custom termination to attach app narrative + metadata.
+///         return new StageTermination.Custom(
+///             Reason: "Reconciled",
+///             Properties: new Dictionary&lt;string, object?&gt; { ["FindingCount"] = 7 });
 ///     });
 ///
 /// // With shouldTreatAsSuccess for acceptable non-success terminations
@@ -75,7 +82,7 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
     private readonly IIterativeAgentLoop _loop;
     private readonly Func<StageExecutionContext, IterativeLoopOptions> _optionsFactory;
     private readonly Func<StageExecutionContext, IterativeContext>? _contextFactory;
-    private readonly Action<IterativeLoopResult, StageExecutionContext>? _onLoopCompleted;
+    private readonly Func<IterativeLoopResult, StageExecutionContext, StageTermination?>? _onLoopCompleted;
     private readonly Func<IterativeLoopResult, bool>? _shouldTreatAsSuccess;
     private readonly FailureDisposition _failureDisposition;
 
@@ -98,8 +105,10 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
     /// <param name="onLoopCompleted">
     /// Optional callback invoked immediately after the loop completes, before result mapping.
     /// Receives the raw <see cref="IterativeLoopResult"/> and the <see cref="StageExecutionContext"/>.
-    /// Use this to capture loop-specific metadata (termination reason, per-iteration
-    /// diagnostics) that is not surfaced on <see cref="StageExecutionResult"/>.
+    /// May return a <see cref="StageTermination"/> to override the framework-mapped default
+    /// (e.g. to attach app narrative as a <see cref="StageTermination.Custom"/> case);
+    /// returning <see langword="null"/> uses the framework default mapped from
+    /// <see cref="IterativeLoopResult.Termination"/>.
     /// Called on both success and failure paths. Not called if the loop throws an exception.
     /// </param>
     /// <param name="shouldTreatAsSuccess">
@@ -107,7 +116,9 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
     /// <see cref="IterativeLoopResult.Succeeded"/> = <see langword="false"/>. When the
     /// predicate returns <see langword="true"/>, the executor treats the result as a success.
     /// Use this for termination reasons like <see cref="TerminationReason.MaxIterationsReached"/>
-    /// that are acceptable in the caller's domain.
+    /// that are acceptable in the caller's domain. The reported
+    /// <see cref="StageExecutionResult.Termination"/> still reflects the loop's actual
+    /// termination — only the success/failure outcome is flipped.
     /// Not called when the loop already succeeded.
     /// </param>
     /// <param name="failureDisposition">
@@ -120,7 +131,7 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
         IIterativeAgentLoop loop,
         Func<StageExecutionContext, IterativeLoopOptions> optionsFactory,
         Func<StageExecutionContext, IterativeContext>? contextFactory = null,
-        Action<IterativeLoopResult, StageExecutionContext>? onLoopCompleted = null,
+        Func<IterativeLoopResult, StageExecutionContext, StageTermination?>? onLoopCompleted = null,
         Func<IterativeLoopResult, bool>? shouldTreatAsSuccess = null,
         FailureDisposition failureDisposition = FailureDisposition.AbortPipeline)
     {
@@ -147,7 +158,9 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
             var diagnostics = loopResult.Diagnostics
                 ?? context.DiagnosticsAccessor.LastRunDiagnostics;
 
-            _onLoopCompleted?.Invoke(loopResult, context);
+            var mappedTermination = MapTermination(loopResult);
+            var overriddenTermination = _onLoopCompleted?.Invoke(loopResult, context);
+            var termination = overriddenTermination ?? mappedTermination;
 
             var succeeded = loopResult.Succeeded
                 || (_shouldTreatAsSuccess?.Invoke(loopResult) == true);
@@ -157,16 +170,45 @@ public sealed class IterativeLoopStageExecutor : IStageExecutor
                 return StageExecutionResult.Success(
                     context.StageName,
                     diagnostics,
-                    loopResult.FinalResponse?.Text);
+                    loopResult.FinalResponse?.Text,
+                    termination: termination);
             }
 
+            var failureException = new InvalidOperationException(
+                $"{context.StageName} terminated [{loopResult.Termination}] after " +
+                $"{loopResult.Iterations.Count} iteration(s): {loopResult.ErrorMessage}");
             return StageExecutionResult.Failed(
                 context.StageName,
-                new InvalidOperationException(
-                    $"{context.StageName} terminated [{loopResult.Termination}] after " +
-                    $"{loopResult.Iterations.Count} iteration(s): {loopResult.ErrorMessage}"),
+                failureException,
                 diagnostics,
-                _failureDisposition);
+                _failureDisposition,
+                termination: termination);
         }
+    }
+
+    private static StageTermination MapTermination(IterativeLoopResult loopResult)
+    {
+        var cfg = loopResult.Configuration;
+        return loopResult.Termination switch
+        {
+            TerminationReason.Completed => new StageTermination.Completed(),
+            TerminationReason.NaturalCompletion => new StageTermination.NaturalCompletion(),
+            TerminationReason.CompletedEarlyAfterToolCall => new StageTermination.CompletedEarlyAfterToolCall(),
+            TerminationReason.MaxIterationsReached => new StageTermination.MaxIterationsReached(
+                Limit: cfg.MaxIterations,
+                IterationsUsed: loopResult.Iterations.Count),
+            TerminationReason.MaxToolCallsReached => new StageTermination.MaxToolCallsReached(
+                Limit: cfg.MaxTotalToolCalls ?? int.MaxValue,
+                ToolCallsUsed: loopResult.Iterations.Sum(i => i.ToolCallCount)),
+            TerminationReason.BudgetPressure => new StageTermination.BudgetPressure(
+                Threshold: cfg.BudgetPressureThreshold),
+            TerminationReason.Cancelled => new StageTermination.Cancelled(),
+            TerminationReason.Error => new StageTermination.Failed(
+                new InvalidOperationException(loopResult.ErrorMessage ?? "loop reported error")),
+            TerminationReason.StallDetected => new StageTermination.StallDetected(
+                ConsecutiveThreshold: cfg.StallDetection?.ConsecutiveThreshold),
+            _ => throw new InvalidOperationException(
+                $"Unknown TerminationReason value '{loopResult.Termination}' — add a mapping arm to {nameof(IterativeLoopStageExecutor)}.{nameof(MapTermination)}."),
+        };
     }
 }

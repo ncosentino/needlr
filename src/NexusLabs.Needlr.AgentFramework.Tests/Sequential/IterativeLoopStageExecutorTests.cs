@@ -640,6 +640,7 @@ public class IterativeLoopStageExecutorTests
             {
                 capturedResult = r;
                 capturedContext = ctx;
+                return null;
             });
         var context = CreateContext("Writer");
 
@@ -662,7 +663,7 @@ public class IterativeLoopStageExecutorTests
         var executor = new IterativeLoopStageExecutor(
             loop.Object,
             DefaultOptionsFactory,
-            onLoopCompleted: (_, _) => called = true);
+            onLoopCompleted: (_, _) => { called = true; return null; });
         var context = CreateContext("Stage");
 
         await executor.ExecuteAsync(context, _ct);
@@ -701,7 +702,7 @@ public class IterativeLoopStageExecutorTests
         var executor = new IterativeLoopStageExecutor(
             loop.Object,
             DefaultOptionsFactory,
-            onLoopCompleted: (r, _) => wasSucceeded = r.Succeeded,
+            onLoopCompleted: (r, _) => { wasSucceeded = r.Succeeded; return null; },
             shouldTreatAsSuccess: _ => true);
         var context = CreateContext("Stage");
 
@@ -726,7 +727,7 @@ public class IterativeLoopStageExecutorTests
         var executor = new IterativeLoopStageExecutor(
             loop.Object,
             DefaultOptionsFactory,
-            onLoopCompleted: (_, _) => called = true);
+            onLoopCompleted: (_, _) => { called = true; return null; });
         var context = CreateContext("Stage");
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -747,7 +748,7 @@ public class IterativeLoopStageExecutorTests
         var executor = new IterativeLoopStageExecutor(
             loop.Object,
             DefaultOptionsFactory,
-            onLoopCompleted: (r, _) => terminationReason = r.Termination.ToString(),
+            onLoopCompleted: (r, _) => { terminationReason = r.Termination.ToString(); return null; },
             shouldTreatAsSuccess: _ => true);
         var context = CreateContext("Stage");
 
@@ -769,7 +770,7 @@ public class IterativeLoopStageExecutorTests
         var executor = new IterativeLoopStageExecutor(
             loop.Object,
             DefaultOptionsFactory,
-            onLoopCompleted: (r, _) => iterationCount = r.Iterations.Count);
+            onLoopCompleted: (r, _) => { iterationCount = r.Iterations.Count; return null; });
         var context = CreateContext("Stage");
 
         await executor.ExecuteAsync(context, _ct);
@@ -986,6 +987,184 @@ public class IterativeLoopStageExecutorTests
         Assert.False(result.Succeeded, "Expected failure");
         Assert.Same(diag, result.Diagnostics);
         _mocks.VerifyAll();
+    }
+
+    [Theory]
+    [InlineData(TerminationReason.Completed, typeof(StageTermination.Completed))]
+    [InlineData(TerminationReason.NaturalCompletion, typeof(StageTermination.NaturalCompletion))]
+    [InlineData(TerminationReason.CompletedEarlyAfterToolCall, typeof(StageTermination.CompletedEarlyAfterToolCall))]
+    [InlineData(TerminationReason.MaxIterationsReached, typeof(StageTermination.MaxIterationsReached))]
+    [InlineData(TerminationReason.MaxToolCallsReached, typeof(StageTermination.MaxToolCallsReached))]
+    [InlineData(TerminationReason.BudgetPressure, typeof(StageTermination.BudgetPressure))]
+    [InlineData(TerminationReason.Cancelled, typeof(StageTermination.Cancelled))]
+    [InlineData(TerminationReason.Error, typeof(StageTermination.Failed))]
+    [InlineData(TerminationReason.StallDetected, typeof(StageTermination.StallDetected))]
+    public async Task ExecuteAsync_MapsTerminationReasonToTypedStageTermination(
+        TerminationReason reason,
+        Type expectedTerminationType)
+    {
+        var loopResult = CreateLoopResult(succeeded: true, termination: reason);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        Assert.NotNull(result.Termination);
+        Assert.IsType(expectedTerminationType, result.Termination);
+        _mocks.VerifyAll();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MaxIterationsReached_PopulatesLimitAndIterationsUsed()
+    {
+        var loopResult = CreateLoopResult(
+            succeeded: true,
+            termination: TerminationReason.MaxIterationsReached,
+            iterationCount: 7);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.MaxIterationsReached>(result.Termination);
+        Assert.Equal(10, typed.Limit);
+        Assert.Equal(7, typed.IterationsUsed);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MaxToolCallsReached_SumsToolCallsAcrossIterations()
+    {
+        var loopResult = CreateLoopResultWithToolCalls(
+            termination: TerminationReason.MaxToolCallsReached,
+            maxTotalToolCalls: 50,
+            toolCallsPerIteration: [10, 20, 25]);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.MaxToolCallsReached>(result.Termination);
+        Assert.Equal(50, typed.Limit);
+        Assert.Equal(55, typed.ToolCallsUsed);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnLoopCompleted_NonNullReturn_OverridesMappedTermination()
+    {
+        var loopResult = CreateLoopResult(succeeded: true, termination: TerminationReason.NaturalCompletion);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(
+            loop.Object,
+            DefaultOptionsFactory,
+            onLoopCompleted: (_, _) => new StageTermination.Custom("Reconciled"));
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.Custom>(result.Termination);
+        Assert.Equal("Reconciled", typed.Reason);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnLoopCompleted_NullReturn_UsesMappedTermination()
+    {
+        var loopResult = CreateLoopResult(succeeded: true, termination: TerminationReason.NaturalCompletion);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(
+            loop.Object,
+            DefaultOptionsFactory,
+            onLoopCompleted: (_, _) => null);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        Assert.IsType<StageTermination.NaturalCompletion>(result.Termination);
+    }
+
+    /// <summary>
+    /// Documents the intentional decoupling of <see cref="StageOutcome"/> and
+    /// <see cref="StageTermination"/>. When <c>shouldTreatAsSuccess</c> flips a
+    /// failed-loop result to a successful stage outcome, the reported
+    /// <see cref="StageTermination"/> still reflects what the loop actually did
+    /// (e.g. <see cref="StageTermination.MaxIterationsReached"/>) — only the
+    /// stage-level success/failure flag is changed.
+    /// </summary>
+    [Fact]
+    public async Task ExecuteAsync_ShouldTreatAsSuccess_KeepsTerminationFromLoop()
+    {
+        var loopResult = CreateLoopResult(
+            succeeded: false,
+            termination: TerminationReason.MaxIterationsReached,
+            iterationCount: 10);
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(
+            loop.Object,
+            DefaultOptionsFactory,
+            shouldTreatAsSuccess: _ => true);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        Assert.True(result.Succeeded, "shouldTreatAsSuccess flips outcome to success");
+        var typed = Assert.IsType<StageTermination.MaxIterationsReached>(result.Termination);
+        Assert.Equal(10, typed.Limit);
+        Assert.Equal(10, typed.IterationsUsed);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ErrorTermination_MapsToFailedWithInvalidOperationException()
+    {
+        var loopResult = CreateLoopResult(
+            succeeded: false,
+            termination: TerminationReason.Error,
+            errorMessage: "loop blew up");
+        var loop = SetupLoop(loopResult);
+        var executor = new IterativeLoopStageExecutor(loop.Object, DefaultOptionsFactory);
+        var context = CreateContext("Stage");
+
+        var result = await executor.ExecuteAsync(context, _ct);
+
+        var typed = Assert.IsType<StageTermination.Failed>(result.Termination);
+        Assert.IsType<InvalidOperationException>(typed.Exception);
+        Assert.Contains("loop blew up", typed.Exception.Message);
+    }
+
+    private static IterativeLoopResult CreateLoopResultWithToolCalls(
+        TerminationReason termination,
+        int maxTotalToolCalls,
+        IReadOnlyList<int> toolCallsPerIteration)
+    {
+        var iterations = toolCallsPerIteration
+            .Select((count, i) => new IterationRecord(
+                Iteration: i,
+                ToolCalls: [],
+                FinalResponse: null,
+                Tokens: new TokenUsage(0, 0, 0, 0, 0),
+                Duration: TimeSpan.Zero,
+                LlmCallCount: 0,
+                ToolCallCount: count))
+            .ToList();
+
+        var config = new IterativeLoopConfiguration(
+            ToolResultMode: ToolResultMode.SingleCall,
+            MaxIterations: 10,
+            MaxToolRoundsPerIteration: 5,
+            MaxTotalToolCalls: maxTotalToolCalls,
+            BudgetPressureThreshold: null,
+            LoopName: "test-loop",
+            CheckCompletionAfterToolCalls: ToolCompletionCheckMode.None);
+
+        return new IterativeLoopResult(
+            Iterations: iterations,
+            FinalResponse: null,
+            Diagnostics: CreateDiag("test"),
+            Succeeded: true,
+            ErrorMessage: null,
+            Termination: termination,
+            Configuration: config);
     }
 
     private static Func<StageExecutionContext, IterativeLoopOptions> DefaultOptionsFactory =>
