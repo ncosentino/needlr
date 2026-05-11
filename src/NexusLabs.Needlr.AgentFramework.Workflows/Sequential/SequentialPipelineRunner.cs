@@ -24,7 +24,7 @@ namespace NexusLabs.Needlr.AgentFramework.Workflows.Sequential;
 /// </remarks>
 /// <example>
 /// <code>
-/// var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory);
+/// var runner = new SequentialPipelineRunner(diagnosticsAccessor, budgetTracker, progressFactory, pipelineMetrics);
 /// var stages = new[]
 /// {
 ///     new PipelineStage("Writer", new AgentStageExecutor(writerAgent, ctx =&gt; "Write a draft.")),
@@ -39,6 +39,7 @@ public sealed class SequentialPipelineRunner
     private readonly IAgentDiagnosticsAccessor _diagnosticsAccessor;
     private readonly ITokenBudgetTracker _budgetTracker;
     private readonly IProgressReporterFactory _progressReporterFactory;
+    private readonly IPipelineMetrics _pipelineMetrics;
 
     /// <summary>
     /// Initializes a new <see cref="SequentialPipelineRunner"/>.
@@ -46,14 +47,23 @@ public sealed class SequentialPipelineRunner
     /// <param name="diagnosticsAccessor">Accessor for capturing per-stage agent diagnostics.</param>
     /// <param name="budgetTracker">Token budget tracker for scoping per-stage and pipeline-level budgets.</param>
     /// <param name="progressReporterFactory">Factory for creating progress reporters.</param>
+    /// <param name="pipelineMetrics">
+    /// Pipeline-shape metrics sink used to emit per-pipeline and per-stage instruments
+    /// + spans. Resolved from DI; defaults to <see cref="NoOpPipelineMetrics"/> when no
+    /// <see cref="PipelineMetricsOptions"/> was configured via
+    /// <c>ConfigurePipelineMetrics</c> on the agent-framework syringe — observability
+    /// is opt-in with zero overhead by default.
+    /// </param>
     public SequentialPipelineRunner(
         IAgentDiagnosticsAccessor diagnosticsAccessor,
         ITokenBudgetTracker budgetTracker,
-        IProgressReporterFactory progressReporterFactory)
+        IProgressReporterFactory progressReporterFactory,
+        IPipelineMetrics pipelineMetrics)
     {
         _diagnosticsAccessor = diagnosticsAccessor;
         _budgetTracker = budgetTracker;
         _progressReporterFactory = progressReporterFactory;
+        _pipelineMetrics = pipelineMetrics;
     }
 
     /// <summary>

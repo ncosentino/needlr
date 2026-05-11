@@ -17,12 +17,14 @@ public class SequentialPipelineRunnerTests
     private static SequentialPipelineRunner CreateRunner(
         IAgentDiagnosticsAccessor? diagnosticsAccessor = null,
         ITokenBudgetTracker? budgetTracker = null,
-        IProgressReporterFactory? progressFactory = null)
+        IProgressReporterFactory? progressFactory = null,
+        IPipelineMetrics? pipelineMetrics = null)
     {
         return new SequentialPipelineRunner(
             diagnosticsAccessor ?? CreateDiagnosticsAccessor(),
             budgetTracker ?? new TokenBudgetTracker(),
-            progressFactory ?? CreateProgressFactory());
+            progressFactory ?? CreateProgressFactory(),
+            pipelineMetrics ?? new NoOpPipelineMetrics());
     }
 
     private static IAgentDiagnosticsAccessor CreateDiagnosticsAccessor()

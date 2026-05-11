@@ -668,7 +668,8 @@ public class PhasedPipelineRunnerTests
         return new SequentialPipelineRunner(
             diagnosticsAccessor ?? CreateDiagnosticsAccessor(),
             budgetTracker ?? new TokenBudgetTracker(),
-            progressFactory ?? CreateProgressFactory());
+            progressFactory ?? CreateProgressFactory(),
+            new NoOpPipelineMetrics());
     }
 
     private static IAgentDiagnosticsAccessor CreateDiagnosticsAccessor()
