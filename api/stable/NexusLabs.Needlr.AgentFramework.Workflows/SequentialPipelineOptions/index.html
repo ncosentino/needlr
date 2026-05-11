@@ -1135,6 +1135,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../stage-termination/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Termination
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pipeline-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../evaluation/" class="md-nav__link">
         
   
@@ -4128,12 +4184,22 @@ if the pipeline output is unacceptable.</p>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">System.Func&lt;</a><a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineOptions.PipelineName'></a></p>
+<h2 id="sequentialpipelineoptionspipelinename-property">SequentialPipelineOptions.PipelineName Property<a class="headerlink" href="#sequentialpipelineoptionspipelinename-property" title="Permanent link">&para;</a></h2>
+<p>Optional stable identifier for the pipeline. Used as the <code>pipeline_name</code>
+tag on every pipeline-shape metric and span emitted via
+<a href="../../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics</a>. When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, the runner
+falls back to the progress reporter's <code>WorkflowId</code> at run time.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">PipelineName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Workflows.Sequential.SequentialPipelineOptions.TotalTokenBudget'></a></p>
 <h2 id="sequentialpipelineoptionstotaltokenbudget-property">SequentialPipelineOptions.TotalTokenBudget Property<a class="headerlink" href="#sequentialpipelineoptionstotaltokenbudget-property" title="Permanent link">&para;</a></h2>
 <p>Optional overall pipeline token budget.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">TotalTokenBudget</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="w"> </span><span class="n">TotalTokenBudget</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int64" title="System.Int64">System.Int64</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
 
 

@@ -1135,6 +1135,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../stage-termination/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Termination
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pipeline-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../evaluation/" class="md-nav__link">
         
   
@@ -4114,36 +4170,39 @@ the loop's settings after execution without referencing the original
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; IterativeLoopConfiguration</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration">IterativeLoopConfiguration</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
 <h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode)'></a></p>
-<h2 id="iterativeloopconfigurationtoolresultmode-int-int-nullableint-nullabledouble-string-toolcompletioncheckmode-constructor">IterativeLoopConfiguration(ToolResultMode, int, int, Nullable&lt;int&gt;, Nullable&lt;double&gt;, string, ToolCompletionCheckMode) Constructor<a class="headerlink" href="#iterativeloopconfigurationtoolresultmode-int-int-nullableint-nullabledouble-string-toolcompletioncheckmode-constructor" title="Permanent link">&para;</a></h2>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions)'></a></p>
+<h2 id="iterativeloopconfigurationtoolresultmode-int-int-nullableint-nullabledouble-string-toolcompletioncheckmode-stalldetectionoptions-constructor">IterativeLoopConfiguration(ToolResultMode, int, int, Nullable&lt;int&gt;, Nullable&lt;double&gt;, string, ToolCompletionCheckMode, StallDetectionOptions) Constructor<a class="headerlink" href="#iterativeloopconfigurationtoolresultmode-int-int-nullableint-nullabledouble-string-toolcompletioncheckmode-stalldetectionoptions-constructor" title="Permanent link">&para;</a></h2>
 <p>Snapshot of the resolved configuration used for an <a href="../IIterativeAgentLoop/" title="NexusLabs.Needlr.AgentFramework.Iterative.IIterativeAgentLoop">IIterativeAgentLoop</a> run.
 Echoed on <a href="../IterativeLoopResult/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult.Configuration" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopResult.Configuration">Configuration</a> so consumers can inspect
 the loop's settings after execution without referencing the original
 <a href="../IterativeLoopOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions">IterativeLoopOptions</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">IterativeLoopConfiguration</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolResultMode</span><span class="w"> </span><span class="n">ToolResultMode</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxIterations</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxToolRoundsPerIteration</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">MaxTotalToolCalls</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">BudgetPressureThreshold</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">LoopName</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolCompletionCheckMode</span><span class="w"> </span><span class="n">CheckCompletionAfterToolCalls</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">IterativeLoopConfiguration</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolResultMode</span><span class="w"> </span><span class="n">ToolResultMode</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxIterations</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxToolRoundsPerIteration</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">MaxTotalToolCalls</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">BudgetPressureThreshold</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">LoopName</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolCompletionCheckMode</span><span class="w"> </span><span class="n">CheckCompletionAfterToolCalls</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">StallDetectionOptions</span><span class="o">?</span><span class="w"> </span><span class="n">StallDetection</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).ToolResultMode'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).ToolResultMode'></a></p>
 <p><code>ToolResultMode</code> <a href="../ToolResultMode/" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode">ToolResultMode</a></p>
 <p>How tool results were fed back to the model.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).MaxIterations'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).MaxIterations'></a></p>
 <p><code>MaxIterations</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Maximum iterations allowed.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).MaxToolRoundsPerIteration'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).MaxToolRoundsPerIteration'></a></p>
 <p><code>MaxToolRoundsPerIteration</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
 <p>Maximum tool-calling rounds per iteration in <a href="../ToolResultMode/#NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode.MultiRound">MultiRound</a>.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).MaxTotalToolCalls'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).MaxTotalToolCalls'></a></p>
 <p><code>MaxTotalToolCalls</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
 <p>Cumulative tool call limit, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if unlimited.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).BudgetPressureThreshold'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).BudgetPressureThreshold'></a></p>
 <p><code>BudgetPressureThreshold</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
 <p>Token budget pressure threshold, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if disabled.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).LoopName'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).LoopName'></a></p>
 <p><code>LoopName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>Human-readable name used in diagnostics and progress events.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode).CheckCompletionAfterToolCalls'></a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).CheckCompletionAfterToolCalls'></a></p>
 <p><code>CheckCompletionAfterToolCalls</code> <a href="../ToolCompletionCheckMode/" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode">ToolCompletionCheckMode</a></p>
 <p>When the <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate was checked relative to tool calls.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.IterativeLoopConfiguration(NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode,int,int,System.Nullable_int_,System.Nullable_double_,string,NexusLabs.Needlr.AgentFramework.Iterative.ToolCompletionCheckMode,NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions).StallDetection'></a></p>
+<p><code>StallDetection</code> <a href="../StallDetectionOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions">StallDetectionOptions</a></p>
+<p>Stall-detection configuration the loop ran with, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if stall detection was disabled.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.BudgetPressureThreshold'></a></p>
 <h2 id="iterativeloopconfigurationbudgetpressurethreshold-property">IterativeLoopConfiguration.BudgetPressureThreshold Property<a class="headerlink" href="#iterativeloopconfigurationbudgetpressurethreshold-property" title="Permanent link">&para;</a></h2>
@@ -4187,12 +4246,19 @@ the loop's settings after execution without referencing the original
 </span></code></pre></div>
 <h4 id="property-value_5">Property Value<a class="headerlink" href="#property-value_5" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.StallDetection'></a></p>
+<h2 id="iterativeloopconfigurationstalldetection-property">IterativeLoopConfiguration.StallDetection Property<a class="headerlink" href="#iterativeloopconfigurationstalldetection-property" title="Permanent link">&para;</a></h2>
+<p>Stall-detection configuration the loop ran with, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> if stall detection was disabled.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">StallDetectionOptions</span><span class="o">?</span><span class="w"> </span><span class="n">StallDetection</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<p><a href="../StallDetectionOptions/" title="NexusLabs.Needlr.AgentFramework.Iterative.StallDetectionOptions">StallDetectionOptions</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopConfiguration.ToolResultMode'></a></p>
 <h2 id="iterativeloopconfigurationtoolresultmode-property">IterativeLoopConfiguration.ToolResultMode Property<a class="headerlink" href="#iterativeloopconfigurationtoolresultmode-property" title="Permanent link">&para;</a></h2>
 <p>How tool results were fed back to the model.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolResultMode</span><span class="w"> </span><span class="n">ToolResultMode</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Iterative</span><span class="p">.</span><span class="n">ToolResultMode</span><span class="w"> </span><span class="n">ToolResultMode</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="n">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_7">Property Value<a class="headerlink" href="#property-value_7" title="Permanent link">&para;</a></h4>
 <p><a href="../ToolResultMode/" title="NexusLabs.Needlr.AgentFramework.Iterative.ToolResultMode">ToolResultMode</a></p>
 
 

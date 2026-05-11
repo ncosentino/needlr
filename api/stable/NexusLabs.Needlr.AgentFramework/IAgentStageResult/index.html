@@ -1135,6 +1135,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../stage-termination/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Termination
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pipeline-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../evaluation/" class="md-nav__link">
         
   
@@ -4168,6 +4224,37 @@ implementations that do not track outcomes.</p>
 </span></code></pre></div>
 <h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Termination'></a></p>
+<h2 id="iagentstageresulttermination-property">IAgentStageResult.Termination Property<a class="headerlink" href="#iagentstageresulttermination-property" title="Permanent link">&para;</a></h2>
+<p>Gets the typed termination cause for this stage. <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> when
+the executor or runner did not specify one (legacy implementations / executors
+with no termination metadata).</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">IStageTermination</span><span class="o">?</span><span class="w"> </span><span class="n">Termination</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_5">Property Value<a class="headerlink" href="#property-value_5" title="Permanent link">&para;</a></h4>
+<p><a href="../IStageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination">IStageTermination</a></p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Use pattern matching to inspect specific cases:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stage</span><span class="p">.</span><span class="n">Termination</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">StageTermination</span><span class="p">.</span><span class="n">MaxToolCallsReached</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Limit</span><span class="p">:</span><span class="w"> </span><span class="kt">var</span><span class="w"> </span><span class="n">limit</span><span class="w"> </span><span class="p">})</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="p">{</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">_logger</span><span class="p">.</span><span class="n">LogWarning</span><span class="p">(</span><span class="s">&quot;Stage {Name} exceeded {Limit} tool calls&quot;</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="n">stage</span><span class="p">.</span><span class="n">AgentName</span><span class="p">,</span><span class="w"> </span><span class="n">limit</span><span class="p">);</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>For OpenTelemetry / Prometheus tag values, use
+<a href="../IStageTermination/#NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()">ToTagValue()</a> — it returns a stable,
+low-cardinality string suitable for use as a metric dimension.</p>
+<p>Distinct from <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Outcome" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Outcome">Outcome</a>: <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Outcome" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Outcome">Outcome</a> is the rollup
+3-value enum the runner decided about the stage; <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Termination" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentStageResult.Termination">Termination</a>
+is the detailed reason. For example, an executor that uses
+<code>shouldTreatAsSuccess</code> to flip a <code>MaxIterationsReached</code> result to
+<a href="../StageOutcome/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageOutcome.Succeeded" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageOutcome.Succeeded">Succeeded</a> still reports
+<a href="../StageTermination.MaxIterationsReached/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.MaxIterationsReached">MaxIterationsReached</a> here.</p>
+<p>Typed as <a href="../IStageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination">IStageTermination</a> so consumers can supply their own
+typed extension cases by implementing the interface directly. The framework's
+closed <a href="../StageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination">StageTermination</a> hierarchy (with the
+<a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> escape hatch) covers the canonical
+cases; see <a href="../IStageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination">IStageTermination</a> for the contract on extending.</p>
 
 
 
