@@ -1135,6 +1135,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../stage-termination/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Termination
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pipeline-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../evaluation/" class="md-nav__link">
         
   
@@ -4223,32 +4279,58 @@ to avoid a dashboard migration when adopting Needlr's metrics:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">.</span><span class="n">UsingAgentFramework</span><span class="p">(</span><span class="n">af</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">af</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">MeterName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BrandGhost.Agents&quot;</span><span class="p">))</span>
 </span></code></pre></div>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.ConfigurePipelineMetrics(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action_NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions_)'></a></p>
+<h2 id="agentframeworksyringeextensionsconfigurepipelinemetricsthis-agentframeworksyringe-actionpipelinemetricsoptions-method">AgentFrameworkSyringeExtensions.ConfigurePipelineMetrics(this AgentFrameworkSyringe, Action&lt;PipelineMetricsOptions&gt;) Method<a class="headerlink" href="#agentframeworksyringeextensionsconfigurepipelinemetricsthis-agentframeworksyringe-actionpipelinemetricsoptions-method" title="Permanent link">&para;</a></h2>
+<p>Configures pipeline-shape OpenTelemetry metrics emitted by
+<a href="../IPipelineMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics">IPipelineMetrics</a> via the meter and ActivitySource
+names on <a href="../PipelineMetricsOptions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions">PipelineMetricsOptions</a>. Without this call,
+the DI-registered <a href="../IPipelineMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics">IPipelineMetrics</a> is the no-op
+implementation — observability is opt-in with zero overhead by default.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">ConfigurePipelineMetrics</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">PipelineMetricsOptions</span><span class="o">&gt;</span><span class="w"> </span><span class="n">configure</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.ConfigurePipelineMetrics(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action_NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions_).syringe'></a></p>
+<p><code>syringe</code> <a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.ConfigurePipelineMetrics(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action_NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions_).configure'></a></p>
+<p><code>configure</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">System.Action&lt;</a><a href="../PipelineMetricsOptions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions">PipelineMetricsOptions</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.action-1" title="System.Action`1">&gt;</a></p>
+<h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
+<p><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Sibling of <a href="./#NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.ConfigureMetrics(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action_NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions_)" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.ConfigureMetrics(this NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe, System.Action\&lt;NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions&gt;)">ConfigureMetrics(this AgentFrameworkSyringe, Action&lt;AgentFrameworkMetricsOptions&gt;)</a> — that targets per-agent-run
+metrics; this one targets per-pipeline / per-stage metrics emitted by
+<code>SequentialPipelineRunner</code>. Most consumers will want pipeline metrics
+under a separate meter (e.g. <code>"BrandGhost.Pipelines"</code>) so OTel views
+and Prometheus aggregation can target each scope independently:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">.</span><span class="n">UsingAgentFramework</span><span class="p">(</span><span class="n">af</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">af</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">MeterName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BrandGhost.Agents&quot;</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigurePipelineMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">MeterName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BrandGhost.Pipelines&quot;</span><span class="p">))</span>
+</span></code></pre></div>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,Microsoft.Extensions.AI.IChatClient)'></a></p>
 <h2 id="agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-ichatclient-method">AgentFrameworkSyringeExtensions.UsingChatClient(this AgentFrameworkSyringe, IChatClient) Method<a class="headerlink" href="#agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-ichatclient-method" title="Permanent link">&para;</a></h2>
 <p>Sets the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a> used by all agents created from the factory.
 This is the preferred alternative to calling
 <a href="../">NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.Configure(NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Action{NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions})</a> and setting <a href="../AgentFrameworkConfigureOptions/#NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions.ChatClientFactory" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkConfigureOptions.ChatClientFactory">ChatClientFactory</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingChatClient</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">IChatClient</span><span class="w"> </span><span class="n">chatClient</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingChatClient</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">IChatClient</span><span class="w"> </span><span class="n">chatClient</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,Microsoft.Extensions.AI.IChatClient).syringe'></a></p>
 <p><code>syringe</code> <a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,Microsoft.Extensions.AI.IChatClient).chatClient'></a></p>
 <p><code>chatClient</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a></p>
-<h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
+<h4 id="returns_8">Returns<a class="headerlink" href="#returns_8" title="Permanent link">&para;</a></h4>
 <p><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Func_System.IServiceProvider,Microsoft.Extensions.AI.IChatClient_)'></a></p>
 <h2 id="agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-funciserviceproviderichatclient-method">AgentFrameworkSyringeExtensions.UsingChatClient(this AgentFrameworkSyringe, Func&lt;IServiceProvider,IChatClient&gt;) Method<a class="headerlink" href="#agentframeworksyringeextensionsusingchatclientthis-agentframeworksyringe-funciserviceproviderichatclient-method" title="Permanent link">&para;</a></h2>
 <p>Sets a factory that creates the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a> used by all agents.
 The factory receives the DI <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iserviceprovider" title="System.IServiceProvider">System.IServiceProvider</a> for resolving dependencies.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingChatClient</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">IServiceProvider</span><span class="p">,</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">IChatClient</span><span class="o">&gt;</span><span class="w"> </span><span class="n">chatClientFactory</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">UsingChatClient</span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">AgentFrameworkSyringe</span><span class="w"> </span><span class="n">syringe</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Func</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">IServiceProvider</span><span class="p">,</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">IChatClient</span><span class="o">&gt;</span><span class="w"> </span><span class="n">chatClientFactory</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_9">Parameters<a class="headerlink" href="#parameters_9" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Func_System.IServiceProvider,Microsoft.Extensions.AI.IChatClient_).syringe'></a></p>
 <p><code>syringe</code> <a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringeExtensions.UsingChatClient(thisNexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe,System.Func_System.IServiceProvider,Microsoft.Extensions.AI.IChatClient_).chatClientFactory'></a></p>
 <p><code>chatClientFactory</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">System.Func&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iserviceprovider" title="System.IServiceProvider">System.IServiceProvider</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.ichatclient" title="Microsoft.Extensions.AI.IChatClient">Microsoft.Extensions.AI.IChatClient</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.func-2" title="System.Func`2">&gt;</a></p>
-<h4 id="returns_8">Returns<a class="headerlink" href="#returns_8" title="Permanent link">&para;</a></h4>
+<h4 id="returns_9">Returns<a class="headerlink" href="#returns_9" title="Permanent link">&para;</a></h4>
 <p><a href="../AgentFrameworkSyringe/" title="NexusLabs.Needlr.AgentFramework.AgentFrameworkSyringe">AgentFrameworkSyringe</a></p>
 
 

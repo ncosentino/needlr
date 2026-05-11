@@ -1135,6 +1135,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../stage-termination/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Termination
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pipeline-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../evaluation/" class="md-nav__link">
         
   
@@ -4157,6 +4213,58 @@
 <td style="text-align: left;">A single entry in an agent run's ordered timeline of chat completions and tool calls.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../PipelineMetricsOptions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.PipelineMetricsOptions">PipelineMetricsOptions</a></td>
+<td style="text-align: left;">Configuration options for pipeline-shape OpenTelemetry metrics emitted by <a href="../IPipelineMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics">IPipelineMetrics</a>. Sibling of <a href="../AgentFrameworkMetricsOptions/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions">AgentFrameworkMetricsOptions</a> — that type scopes the per-agent-run meter; this one scopes the pipeline-runner meter.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination">StageTermination</a></td>
+<td style="text-align: left;">Describes why a pipeline stage terminated. Framework cases carry structured metadata (e.g. <a href="../StageTermination.MaxIterationsReached/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.MaxIterationsReached">MaxIterationsReached</a> knows the limit and the iterations used); application narrative goes through <a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.BudgetPressure/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.BudgetPressure">StageTermination.BudgetPressure</a></td>
+<td style="text-align: left;">The token budget tracker reported usage above the configured budget pressure threshold, and the loop ran one final finalization iteration before terminating.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.Cancelled/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Cancelled">StageTermination.Cancelled</a></td>
+<td style="text-align: left;">The loop was cancelled via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.Completed/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Completed">StageTermination.Completed</a></td>
+<td style="text-align: left;">The stage's <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate returned <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> after an iteration — the stage achieved its goal.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.CompletedEarlyAfterToolCall/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.CompletedEarlyAfterToolCall">StageTermination.CompletedEarlyAfterToolCall</a></td>
+<td style="text-align: left;">The <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate returned <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> after a tool call within an iteration. This is a success termination — the stage achieved its goal and the loop exited early to avoid a wasted chat completion call.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">StageTermination.Custom</a></td>
+<td style="text-align: left;">Application-specific termination cause not covered by framework cases. Use this from an <code>onLoopCompleted</code> callback when a stage has app-specific semantics (e.g. <code>"Reconciled — 7 outstanding issues"</code>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.Failed/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Failed">StageTermination.Failed</a></td>
+<td style="text-align: left;">The stage threw an exception, OR the iterative loop reported an unrecoverable error (in which case the loop's error message is wrapped in an <a href="https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception" title="System.InvalidOperationException">System.InvalidOperationException</a> here).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.MaxIterationsReached/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.MaxIterationsReached">StageTermination.MaxIterationsReached</a></td>
+<td style="text-align: left;">The loop exhausted its configured iteration limit without the <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.IsComplete">IsComplete</a> predicate returning <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.MaxToolCallsReached/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.MaxToolCallsReached">StageTermination.MaxToolCallsReached</a></td>
+<td style="text-align: left;">The cumulative tool-call count across all iterations exceeded the configured <a href="../IterativeLoopOptions/#NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.MaxTotalToolCalls" title="NexusLabs.Needlr.AgentFramework.Iterative.IterativeLoopOptions.MaxTotalToolCalls">MaxTotalToolCalls</a> limit.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.NaturalCompletion/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.NaturalCompletion">StageTermination.NaturalCompletion</a></td>
+<td style="text-align: left;">The model produced a text response without requesting tool calls, signalling natural completion of the task.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.Skipped/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Skipped">StageTermination.Skipped</a></td>
+<td style="text-align: left;">The stage was skipped via a <code>ShouldSkip</code> predicate on <code>StageExecutionPolicy</code>. <a href="../StageTermination.Skipped/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Skipped.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Skipped.Reason">Reason</a> is optional because the current predicate signature does not supply one.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../StageTermination.StallDetected/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.StallDetected">StageTermination.StallDetected</a></td>
+<td style="text-align: left;">The loop detected that consecutive iterations produced nearly identical token usage, indicating the LLM is repeating the same work without making progress.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../TeeDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.TeeDiagnosticsSink">TeeDiagnosticsSink</a></td>
 <td style="text-align: left;">An <a href="../IDiagnosticsSink/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IDiagnosticsSink">IDiagnosticsSink</a> that dispatches every record to N inner sinks. Owns its own sequence counters so all sinks see consistent sequence numbers.</td>
 </tr>
@@ -4227,8 +4335,16 @@
 <td style="text-align: left;">Read-only accessor that exposes a snapshot of the diagnostics being accumulated for the currently in-flight agent run on the calling async flow. The post-run sibling is <a href="../IAgentDiagnosticsAccessor/#NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentDiagnosticsAccessor.LastRunDiagnostics">LastRunDiagnostics</a>.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../IPipelineMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics">IPipelineMetrics</a></td>
+<td style="text-align: left;">Records pipeline-shape execution metrics for observability. The default implementation emits <a href="https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.metrics.meter" title="System.Diagnostics.Metrics.Meter">System.Diagnostics.Metrics.Meter</a> counters / histograms and <a href="../IPipelineMetrics/#NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics.ActivitySource" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics.ActivitySource">ActivitySource</a> activities compatible with OpenTelemetry. Sibling of <a href="../IAgentMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentMetrics">IAgentMetrics</a> — that interface scopes to per-agent-run signals; this one scopes to per-pipeline and per-stage signals emitted by <code>SequentialPipelineRunner</code>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../IPipelineRunResult/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult">IPipelineRunResult</a></td>
 <td style="text-align: left;">Aggregated result of a multi-agent pipeline run, providing per-stage diagnostics alongside the response text from each agent.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IStageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination">IStageTermination</a></td>
+<td style="text-align: left;">Contract for any value that describes why a pipeline stage terminated. Implemented by the framework's closed <a href="../StageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination">StageTermination</a> hierarchy (12 framework cases including the <a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> escape hatch) and — optionally — by consumer-defined types when a typed extension case is required.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IToolCallCollector/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IToolCallCollector">IToolCallCollector</a></td>
