@@ -182,13 +182,18 @@ if (workspaceFiles.Count > 0)
     Console.WriteLine();
 }
 
-// --- Demo: Tiered Provider Fallback ---
-// TieredProviderSelector tries providers in priority order, falling through on
-// ProviderUnavailableException. Here PremiumGeoAPI (priority 1) always throws,
-// so LocalData (priority 100) handles the request.
-Console.WriteLine("=== Tiered Provider Fallback ===");
+// --- Demo: Tiered Provider Fallback + Failure Policies ---
+// TieredProviderSelector tries providers in priority order. Failure handling is
+// configurable via TieredProviderSelectorOptions.FailurePolicies. Default options
+// preserve the historical behaviour (ProviderUnavailableException falls through,
+// no skip). Here we extend the default with an OnHit callback that logs every
+// hit, plus a 5-second skip duration so the second call bypasses the failing
+// provider entirely without an attempt.
+Console.WriteLine("=== Tiered Provider Fallback + Failure Policies ===");
 Console.WriteLine("  PremiumGeoAPI (priority 1) throws ProviderUnavailableException.");
-Console.WriteLine("  LocalData (priority 100) succeeds as fallback.");
+Console.WriteLine("  Custom policy: log every hit + skip for 5 seconds.");
+Console.WriteLine("  Call 1 — PremiumGeoAPI is attempted, throws, fall through to LocalData.");
+Console.WriteLine("  Call 2 — PremiumGeoAPI is in skip cache, bypassed without attempt.");
 Console.WriteLine();
 
 var providers = new ITieredProvider<string, IReadOnlyList<string>>[]
@@ -196,11 +201,35 @@ var providers = new ITieredProvider<string, IReadOnlyList<string>>[]
     new PremiumGeographyProvider(),
     new LocalGeographyProvider(),
 };
-var selector = new TieredProviderSelector<string, IReadOnlyList<string>>(
-    providers, new AlwaysGrantQuotaGate(), contextAccessor);
 
-var countries = await selector.ExecuteAsync("countries", CancellationToken.None);
-Console.WriteLine($"  Result: {string.Join(", ", countries)}");
+var providerOptions = new TieredProviderSelectorOptions
+{
+    FailurePolicies =
+    [
+        new ProviderFailurePolicy(
+            Match: ex => ex is ProviderUnavailableException,
+            SkipDuration: TimeSpan.FromSeconds(5),
+            OnHit: ctx =>
+            {
+                Console.WriteLine(
+                    $"    [OnHit] {ctx.ProviderName} → {ctx.Exception.Message} (skip until {ctx.SkipUntil:HH:mm:ss})");
+                return ValueTask.CompletedTask;
+            }),
+    ],
+};
+
+var selector = new TieredProviderSelector<string, IReadOnlyList<string>>(
+    providers,
+    new AlwaysGrantQuotaGate(),
+    contextAccessor,
+    options: providerOptions);
+
+var countriesCall1 = await selector.ExecuteAsync("countries", CancellationToken.None);
+Console.WriteLine($"  Call 1 result: {string.Join(", ", countriesCall1)}");
+
+var countriesCall2 = await selector.ExecuteAsync("countries", CancellationToken.None);
+Console.WriteLine($"  Call 2 result: {string.Join(", ", countriesCall2)}");
+Console.WriteLine("  (Note: Call 2 produced no [OnHit] line — PremiumGeoAPI was bypassed via skip cache.)");
 Console.WriteLine();
 
 // --- Demo 2: Token budget enforcement ---
