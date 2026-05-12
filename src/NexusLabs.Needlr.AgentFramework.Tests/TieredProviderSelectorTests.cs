@@ -5,10 +5,6 @@ namespace NexusLabs.Needlr.AgentFramework.Tests;
 
 public class TieredProviderSelectorTests
 {
-    // -------------------------------------------------------------------------
-    // Happy path — first provider succeeds
-    // -------------------------------------------------------------------------
-
     [Fact]
     public async Task ExecuteAsync_FirstProvider_Succeeds()
     {
@@ -24,10 +20,6 @@ public class TieredProviderSelectorTests
 
         Assert.Equal("result-A", result);
     }
-
-    // -------------------------------------------------------------------------
-    // Fallback — first fails, second succeeds
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_FirstFails_FallsToSecond()
@@ -45,10 +37,6 @@ public class TieredProviderSelectorTests
 
         Assert.Equal("result-B", result);
     }
-
-    // -------------------------------------------------------------------------
-    // Priority ordering
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_ProvidersOrderedByPriority()
@@ -85,10 +73,6 @@ public class TieredProviderSelectorTests
         Assert.Equal("alpha", result);
     }
 
-    // -------------------------------------------------------------------------
-    // Disabled providers are skipped
-    // -------------------------------------------------------------------------
-
     [Fact]
     public async Task ExecuteAsync_DisabledProviders_AreSkipped()
     {
@@ -105,10 +89,6 @@ public class TieredProviderSelectorTests
 
         Assert.Equal("correct", result);
     }
-
-    // -------------------------------------------------------------------------
-    // All providers fail — throws
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_AllFail_ThrowsAllProvidersFailedExceptionWithAttemptChain()
@@ -132,10 +112,6 @@ public class TieredProviderSelectorTests
         Assert.Contains(ex.Attempts, a => a.StartsWith("A:", StringComparison.Ordinal));
         Assert.Contains(ex.Attempts, a => a.StartsWith("B:", StringComparison.Ordinal));
     }
-
-    // -------------------------------------------------------------------------
-    // No providers — throws
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_NoProviders_ThrowsNoProvidersRegisteredException()
@@ -267,10 +243,6 @@ public class TieredProviderSelectorTests
         Assert.Same(inner, ex.InnerException);
     }
 
-    // -------------------------------------------------------------------------
-    // Quota gate — denied skips provider
-    // -------------------------------------------------------------------------
-
     [Fact]
     public async Task ExecuteAsync_QuotaDenied_SkipsProvider()
     {
@@ -289,10 +261,6 @@ public class TieredProviderSelectorTests
 
         Assert.Equal("fallback", result);
     }
-
-    // -------------------------------------------------------------------------
-    // Quota gate — release called on success and failure
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_Success_ReleasesWithSucceeded()
@@ -337,14 +305,6 @@ public class TieredProviderSelectorTests
         Assert.True(gate.Releases[1].Succeeded);
         Assert.Equal("B", gate.Releases[1].ProviderName);
     }
-
-    // -------------------------------------------------------------------------
-    // Constructor validation
-    // -------------------------------------------------------------------------
-
-    // -------------------------------------------------------------------------
-    // Partition flows from context to quota gate
-    // -------------------------------------------------------------------------
 
     [Fact]
     public async Task ExecuteAsync_WithContextScope_PassesUserIdAsPartition()
@@ -413,10 +373,6 @@ public class TieredProviderSelectorTests
         Assert.Equal("orch-99", gate.Releases[0].Partition);
     }
 
-    // -------------------------------------------------------------------------
-    // Null guards
-    // -------------------------------------------------------------------------
-
     [Fact]
     public void Constructor_NullProviders_ThrowsArgumentNull()
     {
@@ -437,10 +393,6 @@ public class TieredProviderSelectorTests
         Assert.Throws<ArgumentNullException>(() =>
             new TieredProviderSelector<string, string>([], new AlwaysGrantQuotaGate(), null!));
     }
-
-    // -------------------------------------------------------------------------
-    // Test helpers
-    // -------------------------------------------------------------------------
 
     private sealed class StubProvider(string name, int priority, string result, bool enabled = true)
         : ITieredProvider<string, string>
