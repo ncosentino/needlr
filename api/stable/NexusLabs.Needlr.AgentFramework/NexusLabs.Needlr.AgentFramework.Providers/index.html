@@ -855,6 +855,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../tiered-provider-selector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tiered Provider Selector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../interceptors/" class="md-nav__link">
         
   
@@ -4185,12 +4213,28 @@
 <td style="text-align: left;">Thrown by <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> when no enabled providers were registered, so there is nothing to attempt.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ProviderFailureContext/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderFailureContext">ProviderFailureContext</a></td>
+<td style="text-align: left;">Diagnostic context passed to <a href="../ProviderFailurePolicy/#NexusLabs.Needlr.AgentFramework.Providers.ProviderFailurePolicy.OnHit" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderFailurePolicy.OnHit">OnHit</a> when a matching failure policy is applied to a provider's thrown exception.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ProviderFailurePolicy/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderFailurePolicy">ProviderFailurePolicy</a></td>
+<td style="text-align: left;">Declarative failure-handling rule applied by <a href="../TieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector\&lt;TQuery,TResult&gt;">TieredProviderSelector&lt;TQuery,TResult&gt;</a> when a provider throws an exception during <a href="../ITieredProvider_TQuery%2CTResult_/#NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider_TQuery,TResult_.ExecuteAsync(TQuery,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider\&lt;TQuery,TResult&gt;.ExecuteAsync(TQuery, System.Threading.CancellationToken)">ExecuteAsync(TQuery, CancellationToken)</a>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ProviderUnavailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException">ProviderUnavailableException</a></td>
 <td style="text-align: left;">Thrown when a provider is temporarily unavailable. The tiered selector catches this and falls through to the next provider in the chain.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../TieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector\&lt;TQuery,TResult&gt;">TieredProviderSelector&lt;TQuery,TResult&gt;</a></td>
-<td style="text-align: left;">Default <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> that iterates providers in ascending <a href="../ITieredProvider_TQuery%2CTResult_/#NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider_TQuery,TResult_.Priority" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider\&lt;TQuery,TResult&gt;.Priority">Priority</a> order, gated by an <a href="../IQuotaGate/" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate">IQuotaGate</a>. On <a href="../ProviderUnavailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException">ProviderUnavailableException</a> the selector falls through to the next provider.</td>
+<td style="text-align: left;">Default <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> that iterates providers in ascending <a href="../ITieredProvider_TQuery%2CTResult_/#NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider_TQuery,TResult_.Priority" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProvider\&lt;TQuery,TResult&gt;.Priority">Priority</a> order, gated by an <a href="../IQuotaGate/" title="NexusLabs.Needlr.AgentFramework.Providers.IQuotaGate">IQuotaGate</a>. Exception handling is configurable via <a href="../TieredProviderSelectorOptions/#NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions.FailurePolicies" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions.FailurePolicies">FailurePolicies</a>; the default options (<a href="../TieredProviderSelectorOptions/#NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions.Default" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions.Default">Default</a>) preserve the framework's historical behaviour of falling through to the next provider on <a href="../ProviderUnavailableException/" title="NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException">ProviderUnavailableException</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TieredProviderSelectorOptions/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions">TieredProviderSelectorOptions</a></td>
+<td style="text-align: left;">Configuration for <a href="../TieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector\&lt;TQuery,TResult&gt;">TieredProviderSelector&lt;TQuery,TResult&gt;</a> controlling how exceptions thrown by providers are handled.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../TieredProviderSelectorServiceCollectionExtensions/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorServiceCollectionExtensions">TieredProviderSelectorServiceCollectionExtensions</a></td>
+<td style="text-align: left;">Extension methods that register an <a href="../ITieredProviderSelector_TQuery%2CTResult_/" title="NexusLabs.Needlr.AgentFramework.Providers.ITieredProviderSelector\&lt;TQuery,TResult&gt;">ITieredProviderSelector&lt;TQuery,TResult&gt;</a> with optional consumer-supplied <a href="../TieredProviderSelectorOptions/" title="NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions">TieredProviderSelectorOptions</a> in the DI container.</td>
 </tr>
 </tbody>
 </table>
