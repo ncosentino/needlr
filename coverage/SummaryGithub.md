@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 05/11/2026 - 20:43:41 |
-| Coverage date: | 05/11/2026 - 20:41:00 - 05/11/2026 - 20:43:35 |
+| Generated on: | 05/12/2026 - 01:37:20 |
+| Coverage date: | 05/12/2026 - 01:35:25 - 05/12/2026 - 01:37:16 |
 | Parser: | MultiReport (29x Cobertura) |
 | Assemblies: | 25 |
-| Classes: | 528 |
-| Files: | 517 |
-| **Line coverage:** | 86.4% (22811 of 26375) |
-| Covered lines: | 22811 |
+| Classes: | 532 |
+| Files: | 521 |
+| **Line coverage:** | 86.5% (22898 of 26462) |
+| Covered lines: | 22898 |
 | Uncovered lines: | 3564 |
-| Coverable lines: | 26375 |
-| Total lines: | 63534 |
-| **Branch coverage:** | 75.3% (8844 of 11738) |
-| Covered branches: | 8844 |
-| Total branches: | 11738 |
+| Coverable lines: | 26462 |
+| Total lines: | 64011 |
+| **Branch coverage:** | 75.4% (8871 of 11764) |
+| Covered branches: | 8871 |
+| Total branches: | 11764 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework - 87.5%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework - 87.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework**|**87.5%**|**80.1%**|
+|**NexusLabs.Needlr.AgentFramework**|**87.7%**|**80.4%**|
 |NexusLabs.Needlr.AgentFramework.AgentFactory|98.6%|90%|
 |NexusLabs.Needlr.AgentFramework.AgentFactoryOptions|100%||
 |NexusLabs.Needlr.AgentFramework.AgentFrameworkAccessorServiceCollectionExte<br/>nsions|100%||
@@ -193,8 +193,12 @@
 |NexusLabs.Needlr.AgentFramework.Providers.AlwaysGrantQuotaGate|100%||
 |NexusLabs.Needlr.AgentFramework.Providers.NoProvidersAvailableException|100%||
 |NexusLabs.Needlr.AgentFramework.Providers.NoProvidersRegisteredException|50%||
+|NexusLabs.Needlr.AgentFramework.Providers.ProviderFailureContext|100%||
+|NexusLabs.Needlr.AgentFramework.Providers.ProviderFailurePolicy|100%||
 |NexusLabs.Needlr.AgentFramework.Providers.ProviderUnavailableException|75%||
 |NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelector`2|100%|100%|
+|NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorOptions|100%||
+|NexusLabs.Needlr.AgentFramework.Providers.TieredProviderSelectorServiceColl<br/>ectionExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.ServiceCollectionAgentFrameworkExtensions|100%||
 |NexusLabs.Needlr.AgentFramework.SyringeExtensionsForAgentFramework|100%|90%|
 |NexusLabs.Needlr.AgentFramework.TerminationContext|100%||
@@ -202,7 +206,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.5%|69.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.2%|69.9%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
@@ -629,15 +633,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||

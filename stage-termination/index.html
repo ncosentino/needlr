@@ -870,6 +870,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../tiered-provider-selector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tiered Provider Selector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../interceptors/" class="md-nav__link">
         
   
@@ -4687,7 +4715,7 @@
 <h2 id="extending-istagetermination">Extending: <code>IStageTermination</code><a class="headerlink" href="#extending-istagetermination" title="Permanent link">&para;</a></h2>
 <p>The framework's <code>StageTermination</code> hierarchy is closed for external derivation by design — the abstract record's constructor is <code>internal</code> so external <code>: StageTermination</code> is a compile error. The 11 framework typed cases plus <code>Custom</code> are exhaustive for the runner's needs.</p>
 <p>Consumers who want their own typed extension case (with named-record pattern matching like <code>is MyDomainTermination { FindingCount: var c }</code>) implement the <strong><code>IStageTermination</code></strong> interface directly:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="nf">MyDomainTermination</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">FindingCount</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IStageTermination</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="nf">MyDomainTermination</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">FindingCount</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IStageTermination</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p">{</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ToTagValue</span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;MyDomain&quot;</span><span class="p">;</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
