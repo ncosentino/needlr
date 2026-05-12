@@ -67,6 +67,7 @@ nav:
     - HttpClient Options: http-clients.md
     - Factories: factories.md
     - Providers: providers.md
+    - Tiered Provider Selector: tiered-provider-selector.md
     - Interceptors: interceptors.md
     - Open Generic Decorators: open-generic-decorators.md
     - Service Catalog: service-catalog.md
