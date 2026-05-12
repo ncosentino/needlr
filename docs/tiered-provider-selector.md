@@ -28,37 +28,55 @@ The policy model addresses all three: arbitrary exception types match by predica
 
 Migrate a Copilot WebSearch provider that throws `CopilotAuthException` on bad credentials. The default behaviour is to propagate `CopilotAuthException` raw (because it is not `ProviderUnavailableException`); a policy makes it fall through to the next provider and skip the failing provider for 5 minutes.
 
+The recommended path is to use the `AddTieredProviderSelector` DI extension (covered in detail in [DI registration](#di-registration) below). The `IServiceProvider`-aware overload lets the policy callbacks resolve other services (loggers, options monitors, telemetry sinks) from the container:
+
 ```csharp
 using NexusLabs.Needlr.AgentFramework.Providers;
 
-var options = TieredProviderSelectorOptions.Default with
+services.AddTieredProviderSelector<string, SearchResult>((sp, opts) =>
 {
-    FailurePolicies =
-    [
-        .. TieredProviderSelectorOptions.Default.FailurePolicies,
-        new ProviderFailurePolicy(
-            Match: ex => ex is CopilotAuthException,
-            SkipDuration: TimeSpan.FromMinutes(5),
-            OnHit: ctx =>
-            {
-                logger.LogWarning(
-                    ctx.Exception,
-                    "Provider {Provider} skipped until {Until}",
-                    ctx.ProviderName,
-                    ctx.SkipUntil);
-                return ValueTask.CompletedTask;
-            }),
-    ],
-};
-
-var selector = new TieredProviderSelector<string, SearchResult>(
-    providers,
-    quotaGate,
-    contextAccessor,
-    options: options);
+    var logger = sp.GetRequiredService<ILogger<CopilotWebSearchProvider>>();
+    return opts with
+    {
+        FailurePolicies =
+        [
+            .. opts.FailurePolicies,
+            new ProviderFailurePolicy(
+                Match: ex => ex is CopilotAuthException,
+                SkipDuration: TimeSpan.FromMinutes(5),
+                OnHit: ctx =>
+                {
+                    logger.LogWarning(
+                        ctx.Exception,
+                        "Provider {Provider} skipped until {Until}",
+                        ctx.ProviderName,
+                        ctx.SkipUntil);
+                    return ValueTask.CompletedTask;
+                }),
+        ],
+    };
+});
 ```
 
-The default policy (matching `ProviderUnavailableException`) is preserved by the spread `[.. Default.FailurePolicies, ...]`. Policies are evaluated in order, first match wins.
+> **What you replace.** Most adopters previously embedded the catch-and-translate logic directly inside their `ITieredProvider.ExecuteAsync`:
+>
+> ```csharp
+> // BEFORE — translation lives inside ExecuteAsync
+> public async Task<SearchResult> ExecuteAsync(string query, CancellationToken ct)
+> {
+>     try { return await _client.SearchAsync(query, ct); }
+>     catch (CopilotAuthException ex) { throw new ProviderUnavailableException(Name, ex.Message, ex); }
+>     catch (HttpRequestException ex) { throw new ProviderUnavailableException(Name, ex.Message, ex); }
+> }
+>
+> // AFTER — provider throws naturally; policy decides what to do
+> public Task<SearchResult> ExecuteAsync(string query, CancellationToken ct) =>
+>     _client.SearchAsync(query, ct);
+> ```
+>
+> If you wrapped the translation in a separate decorator class instead of inlining it, the same migration applies — drop the decorator and let the underlying provider throw whatever it naturally throws.
+
+The default policy (matching `ProviderUnavailableException`) is preserved by the spread `[.. opts.FailurePolicies, ...]`. Policies are evaluated in order, first match wins.
 
 ---
 
@@ -166,6 +184,8 @@ public sealed record ProviderFailureContext(
 
 This is intentional: a throwing `OnHit` is a programming error and surfacing it loudly is preferable to silently swallowing it. Wrap your callback bodies in `try`/`catch` if you want a different policy.
 
+> **OnHit fires per failure, not per failure-burst.** If N concurrent calls to the same selector all hit a freshly-failed provider before any of them populate the skip cache, all N will invoke `OnHit`. The skip cache prevents subsequent waves but not the first wave — within a single concurrent burst, `OnHit` can fire up to N times for the same root failure. If your callback ships counters or alerts to a downstream system that doesn't tolerate duplicates (e.g., a Sentry-style "first occurrence" alert), dedupe at the consumer (e.g., a per-provider `MemoryCache` keyed on provider name + minute window).
+
 ---
 
 ## Default behaviour and migration
@@ -220,3 +240,55 @@ If you genuinely want to treat cancellation as a skip-eligible failure, you cann
 - `docs/providers.md` — the unrelated `[Provider]` typed-service-locator pattern.
 - `docs/copilot.md` — the `CopilotAuthException` typed exception that motivated this feature.
 - `src/Examples/AgentFramework/SimpleAgentFrameworkApp/Program.cs` — working example of `Default with { ... }` extension with a logging `OnHit` callback.
+
+---
+
+## DI registration
+
+The recommended path for production hosts is the `AddTieredProviderSelector<TQuery, TResult>` extension method in `NexusLabs.Needlr.AgentFramework.Providers`. It wraps the boilerplate of resolving providers, the quota gate, the execution-context accessor, and `TimeProvider` from the container.
+
+### Three overloads
+
+```csharp
+// 1. Defaults — TieredProviderSelectorOptions.Default, no customisation
+services.AddTieredProviderSelector<WebSearchQuery, IReadOnlyList<WebSearchResult>>();
+
+// 2. Simple options-only configure — for callbacks that don't need DI
+services.AddTieredProviderSelector<WebSearchQuery, IReadOnlyList<WebSearchResult>>(
+    opts => opts with { FailurePolicies = [...] });
+
+// 3. DI-aware configure — when policy callbacks need ILogger, IOptionsMonitor, etc.
+services.AddTieredProviderSelector<WebSearchQuery, IReadOnlyList<WebSearchResult>>(
+    (sp, opts) =>
+    {
+        var logger = sp.GetRequiredService<ILogger<CopilotWebSearchProvider>>();
+        return opts with { FailurePolicies = [...with logger captured...] };
+    });
+```
+
+Pick the DI-aware overload (3) when your `OnHit` callback (or any other policy field) needs a logger, an `IOptionsMonitor`, a telemetry sink, or anything else from the container. The `configure` delegate runs lazily inside the singleton factory at first resolution, with a real `IServiceProvider` in scope, so you cannot accidentally capture a stale or test-only logger from your plugin's `Configure` scope. The delegate runs **exactly once per Singleton lifetime** — not once per `ExecuteAsync` call — so the cost of resolving services from `sp` inside `configure` is paid once.
+
+### Lifetime and registration semantics
+
+- **Singleton.** The selector's per-instance skip cache lives on the instance. Scoped or Transient would reset it per request, defeating the cross-call skip. The extension doesn't expose a knob for the lifetime — if you need a different one, hand-roll the registration.
+- **Last-wins (override-friendly).** The extension uses `AddSingleton` (not `TryAddSingleton`). If two plugins both call `AddTieredProviderSelector<W, R>(...)` for the same `(TQuery, TResult)` pair, `GetRequiredService<ITieredProviderSelector<W, R>>()` returns the LAST registration's selector. This is intentional — it lets a downstream plugin or a test harness override an upstream plugin's selector without removing the prior registration first. (Both descriptors stay in the container; `GetServices` would return both. Almost no consumer enumerates the plural for a selector.)
+- **`TimeProvider` registration is first-wins.** The extension calls `services.TryAddSingleton(TimeProvider.System)`. If the host already registered `TimeProvider` (ASP.NET Core / `Host.CreateApplicationBuilder()` does this automatically in .NET 8+), the existing registration is preserved. Test fixtures injecting `FakeTimeProvider` before calling the extension see their registration honoured.
+
+### Configure delegate must not return `null`
+
+If your `configure` lambda returns `null` (almost certainly a bug — a forgotten branch or an exception swallowed inside the lambda), the factory throws `InvalidOperationException` with a message pointing to `TieredProviderSelectorOptions.Default` as the correct value to return when you want framework defaults. Surfacing the bug loudly beats silently coalescing to `Default`.
+
+### Escape hatch: hand-rolled factory
+
+If you need something the extension doesn't expose (custom `QuotaPartitionSelector`, non-Singleton lifetime, custom `IServiceProvider` resolution strategy), the type is `[DoNotAutoRegister]` and the constructor accepts everything by parameter. Build the factory yourself:
+
+```csharp
+services.AddSingleton<ITieredProviderSelector<WebSearchQuery, IReadOnlyList<WebSearchResult>>>(sp =>
+    new TieredProviderSelector<WebSearchQuery, IReadOnlyList<WebSearchResult>>(
+        sp.GetServices<ITieredProvider<WebSearchQuery, IReadOnlyList<WebSearchResult>>>(),
+        sp.GetRequiredService<IQuotaGate>(),
+        sp.GetRequiredService<IAgentExecutionContextAccessor>(),
+        partitionSelector: ctx => ctx?.Properties["TenantId"]?.ToString(),
+        options: BuildOptions(sp),
+        timeProvider: sp.GetRequiredService<TimeProvider>()));
+```

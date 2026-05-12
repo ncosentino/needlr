@@ -149,6 +149,13 @@ public sealed class TieredProviderSelector<TQuery, TResult> : ITieredProviderSel
             }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
+                // Filter intent: cancellation MUST NOT participate in policy matching.
+                // If the active token is cancelled, fall through this catch entirely so
+                // OperationCanceledException propagates raw, no skip cache entry is
+                // added, and subsequent providers are not attempted. A future maintainer
+                // who "improves" this filter to e.g. `when (ex is not OperationCanceledException)`
+                // would silently let cancellation participate in policy matching, which
+                // breaks linked-CTS patterns where a sibling cancels the in-flight call.
                 ProviderFailurePolicy? matched = null;
                 foreach (var policy in _options.FailurePolicies)
                 {
