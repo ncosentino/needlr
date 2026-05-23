@@ -50,6 +50,7 @@
     <Project Path="Examples/AgentFramework/DevUIApp/DevUIApp.csproj" />
     <Project Path="Examples/AgentFramework/DiagnosticAttributionApp/DiagnosticAttributionApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeLoopDiagnosticsApp/IterativeLoopDiagnosticsApp.csproj" />
+    <Project Path="Examples/AgentFramework/GenAiTokenMetricsApp/GenAiTokenMetricsApp.csproj" />
     <Project Path="Examples/AgentFramework/EarlyCompletionApp/EarlyCompletionApp.csproj" />
     <Project Path="Examples/AgentFramework/GraphWorkflowApp/GraphWorkflowApp.csproj" />
     <Project Path="Examples/AgentFramework/GeneratorCoexistenceApp/GeneratorCoexistenceApp.csproj" />
