@@ -2,6 +2,9 @@ using System.Diagnostics.Metrics;
 
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+
 namespace NexusLabs.Needlr.AgentFramework.Tests.Diagnostics;
 
 /// <summary>
@@ -236,6 +239,42 @@ public sealed class GenAiTokenMetricsTests
         Assert.Equal(
             new[] { 1, 4, 16, 64, 256, 1_024, 4_096, 16_384, 65_536, 262_144, 1_048_576, 4_194_304, 16_777_216, 67_108_864 },
             GenAiTokenMetrics.InstrumentBucketBoundaries);
+    }
+
+    [Fact]
+    public void Histogram_BucketBoundariesFlowToInstrumentAdvice_ViaOpenTelemetrySdk()
+    {
+        var meterName = $"NexusLabs.Tests.{Guid.NewGuid():N}";
+        var exportedMetrics = new List<Metric>();
+
+        using var meterProvider = Sdk.CreateMeterProviderBuilder()
+            .AddMeter(meterName)
+            .AddInMemoryExporter(exportedMetrics)
+            .Build();
+
+        using var metrics = new GenAiTokenMetrics(new AgentFrameworkMetricsOptions { GenAiMeterName = meterName });
+        metrics.RecordTokenUsage("cache_read", 100, new GenAiTokenUsageTags());
+
+        meterProvider.ForceFlush();
+
+        var metric = Assert.Single(exportedMetrics, m => m.Name == "gen_ai.client.token.usage");
+
+        var exportedBoundaries = new List<double>();
+        foreach (ref readonly var point in metric.GetMetricPoints())
+        {
+            foreach (var bucket in point.GetHistogramBuckets())
+            {
+                exportedBoundaries.Add(bucket.ExplicitBound);
+            }
+            break;
+        }
+
+        var expectedBoundaries = GenAiTokenMetrics.InstrumentBucketBoundaries
+            .Select(i => (double)i)
+            .Concat([double.PositiveInfinity])
+            .ToArray();
+
+        Assert.Equal(expectedBoundaries, exportedBoundaries);
     }
 
     [Fact]
