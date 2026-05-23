@@ -99,16 +99,35 @@ public sealed class GenAiTokenMetricsTests
         Assert.False(sample.Tags.ContainsKey("server.port"));
     }
 
-    [Fact]
-    public void RecordTokenUsage_TokenCountOverflowsInt32_ClampedToInt32MaxValue()
+    [Theory]
+    [InlineData((long)int.MaxValue + 1L)]
+    [InlineData((long)int.MaxValue * 2L)]
+    [InlineData(long.MaxValue)]
+    [InlineData(1_000_000_000_000L)]
+    public void RecordTokenUsage_TokenCountExceedsInt32_ClampedToInt32MaxValue(long tokenCount)
     {
         using var capture = new MetricCapture(out var meterName);
         using var metrics = new GenAiTokenMetrics(new AgentFrameworkMetricsOptions { GenAiMeterName = meterName });
 
-        metrics.RecordTokenUsage("reasoning", (long)int.MaxValue + 1L, new GenAiTokenUsageTags());
+        metrics.RecordTokenUsage("reasoning", tokenCount, new GenAiTokenUsageTags());
 
         var sample = Assert.Single(capture.IntMeasurements("gen_ai.client.token.usage"));
         Assert.Equal(int.MaxValue, sample.Value);
+    }
+
+    [Theory]
+    [InlineData(1L)]
+    [InlineData(1000L)]
+    [InlineData((long)int.MaxValue)]
+    public void RecordTokenUsage_TokenCountWithinInt32Range_RecordedUnclamped(long tokenCount)
+    {
+        using var capture = new MetricCapture(out var meterName);
+        using var metrics = new GenAiTokenMetrics(new AgentFrameworkMetricsOptions { GenAiMeterName = meterName });
+
+        metrics.RecordTokenUsage("cache_read", tokenCount, new GenAiTokenUsageTags());
+
+        var sample = Assert.Single(capture.IntMeasurements("gen_ai.client.token.usage"));
+        Assert.Equal((int)tokenCount, sample.Value);
     }
 
     [Fact]
