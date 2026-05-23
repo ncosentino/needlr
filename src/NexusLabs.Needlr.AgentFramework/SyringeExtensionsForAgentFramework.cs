@@ -193,6 +193,11 @@ public static class SyringeExtensionsForAgentFramework
         services.TryAddSingleton<IAgentDiagnosticsWriter>(sp => sp.GetRequiredService<AgentDiagnosticsAccessor>());
         services.TryAddSingleton<IInFlightAgentDiagnosticsAccessor, InFlightAgentDiagnosticsAccessor>();
         services.TryAddSingleton<IToolMetricsAccessor, ToolMetricsAccessor>();
+        services.TryAddSingleton<AgentFrameworkMetricsOptions>(sp =>
+        {
+            var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
+            return syringe?.Value.MetricsOptions ?? new AgentFrameworkMetricsOptions();
+        });
         services.TryAddSingleton<IAgentMetrics>(sp =>
         {
             var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
