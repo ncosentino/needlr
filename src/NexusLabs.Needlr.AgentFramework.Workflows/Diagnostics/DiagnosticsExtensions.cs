@@ -29,11 +29,13 @@ public static class DiagnosticsExtensions
         var result = syringe.Configure(opts =>
         {
             var metrics = opts.ServiceProvider.GetRequiredService<IAgentMetrics>();
+            var genAiTokenMetrics = opts.ServiceProvider.GetRequiredService<IGenAiTokenMetrics>();
             var progressAccessor = opts.ServiceProvider.GetRequiredService<IProgressReporterAccessor>();
             var metricsOptions = opts.ServiceProvider.GetService<AgentFrameworkMetricsOptions>();
             var chatMiddleware = new DiagnosticsChatClientMiddleware(
                 metrics, progressAccessor,
-                metricsOptions?.ChatCompletionActivityMode ?? ChatCompletionActivityMode.Always);
+                metricsOptions?.ChatCompletionActivityMode ?? ChatCompletionActivityMode.Always,
+                genAiTokenMetrics);
 
             // Register the real collector via the DI-managed holder — NOT a static field.
             var holder = opts.ServiceProvider.GetRequiredService<ChatCompletionCollectorHolder>();

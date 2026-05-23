@@ -174,7 +174,8 @@ public static class SyringeExtensionsForAgentFramework
                 sp.GetService<IAgentExecutionContextAccessor>(),
                 sp.GetService<IProgressReporterAccessor>(),
                 sp.GetService<ITokenBudgetTracker>(),
-                sp.GetService<IAgentMetrics>()));
+                sp.GetService<IAgentMetrics>(),
+                genAiTokenMetrics: sp.GetService<IGenAiTokenMetrics>()));
 
         services.TryAddSingleton<IWorkflowFactory>(provider =>
             new WorkflowFactory(provider.GetRequiredService<IAgentFactory>()));
@@ -197,6 +198,12 @@ public static class SyringeExtensionsForAgentFramework
             var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
             var options = syringe?.Value.MetricsOptions ?? new AgentFrameworkMetricsOptions();
             return new AgentMetrics(options);
+        });
+        services.TryAddSingleton<IGenAiTokenMetrics>(sp =>
+        {
+            var syringe = sp.GetService<BuiltAgentFrameworkSyringe>();
+            var options = syringe?.Value.MetricsOptions ?? new AgentFrameworkMetricsOptions();
+            return new GenAiTokenMetrics(options);
         });
         services.TryAddSingleton<IPipelineMetrics>(sp =>
         {

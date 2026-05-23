@@ -33,6 +33,7 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 {
     private readonly IAgentMetrics? _metrics;
+    private readonly IGenAiTokenMetrics? _genAiTokenMetrics;
     private readonly IProgressReporterAccessor? _progressAccessor;
     private readonly ChatCompletionActivityMode _activityMode;
     private readonly ConcurrentQueue<ChatCompletionDiagnostics> _allCompletions = new();
@@ -41,9 +42,11 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
     internal DiagnosticsChatClientMiddleware(
         IAgentMetrics? metrics = null,
         IProgressReporterAccessor? progressAccessor = null,
-        ChatCompletionActivityMode activityMode = ChatCompletionActivityMode.Always)
+        ChatCompletionActivityMode activityMode = ChatCompletionActivityMode.Always,
+        IGenAiTokenMetrics? genAiTokenMetrics = null)
     {
         _metrics = metrics;
+        _genAiTokenMetrics = genAiTokenMetrics;
         _progressAccessor = progressAccessor;
         _activityMode = activityMode;
     }
@@ -121,6 +124,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             targetActivity?.SetTag("gen_ai.usage.output_tokens", tokens.OutputTokens);
             targetActivity?.SetTag("gen_ai.usage.cached_input_tokens", tokens.CachedInputTokens);
             targetActivity?.SetTag("gen_ai.usage.reasoning_tokens", tokens.ReasoningTokens);
+
+            EmitGenAiTokenUsage(tokens, options?.ModelId, response, innerChatClient);
 
             var messageList = messages as ICollection<ChatMessage> ?? messages.ToList();
 
@@ -307,6 +312,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
             targetActivity?.SetTag("gen_ai.usage.cached_input_tokens", tokens.CachedInputTokens);
             targetActivity?.SetTag("gen_ai.usage.reasoning_tokens", tokens.ReasoningTokens);
 
+            EmitGenAiTokenUsage(tokens, options?.ModelId, aggregated, innerChatClient);
+
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: model,
@@ -366,6 +373,8 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
                     ?? failureUsage?.AdditionalCounts?.GetValueOrDefault("ReasoningTokens")
                     ?? 0);
 
+            EmitGenAiTokenUsage(failureTokens, options?.ModelId, aggregated, innerChatClient);
+
             var diagnostics = new ChatCompletionDiagnostics(
                 Sequence: sequence,
                 Model: aggregated.ModelId ?? "unknown",
@@ -403,6 +412,42 @@ internal sealed class DiagnosticsChatClientMiddleware : IChatCompletionCollector
 
             throw failure;
         }
+    }
+
+    /// <summary>
+    /// Records <c>cache_read</c> and/or <c>reasoning</c> measurements on the
+    /// <c>gen_ai.client.token.usage</c> histogram (the same histogram MEAI's
+    /// <see cref="Microsoft.Extensions.AI.OpenTelemetryChatClient"/> emits <c>input</c> and
+    /// <c>output</c> on). Short-circuits BEFORE any tag construction or
+    /// <see cref="Microsoft.Extensions.AI.ChatClientMetadata"/> resolution when both
+    /// counts are zero — that is the common path for non-cached, non-reasoning calls.
+    /// </summary>
+    private void EmitGenAiTokenUsage(
+        TokenUsage tokens,
+        string? requestModel,
+        ChatResponse response,
+        IChatClient innerChatClient)
+    {
+        if (_genAiTokenMetrics is null)
+            return;
+
+        if (tokens.CachedInputTokens <= 0 && tokens.ReasoningTokens <= 0)
+            return;
+
+        var metadata = innerChatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var tags = new GenAiTokenUsageTags(
+            OperationName: "chat",
+            RequestModel: requestModel ?? metadata?.DefaultModelId,
+            ResponseModel: response.ModelId,
+            ProviderName: metadata?.ProviderName,
+            ServerAddress: metadata?.ProviderUri?.Host,
+            ServerPort: metadata?.ProviderUri is { } uri ? uri.Port : null);
+
+        if (tokens.CachedInputTokens > 0)
+            _genAiTokenMetrics.RecordTokenUsage(GenAiTokenTypes.CacheRead, tokens.CachedInputTokens, tags);
+
+        if (tokens.ReasoningTokens > 0)
+            _genAiTokenMetrics.RecordTokenUsage(GenAiTokenTypes.Reasoning, tokens.ReasoningTokens, tags);
     }
 
     /// <summary>

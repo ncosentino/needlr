@@ -34,6 +34,38 @@ public sealed class AgentFrameworkMetricsOptions
     public string? ActivitySourceName { get; set; }
 
     /// <summary>
+    /// The name used for the <see cref="System.Diagnostics.Metrics.Meter"/> that owns
+    /// the <c>gen_ai.client.token.usage</c> histogram on which Needlr emits
+    /// <c>cache_read</c> and <c>reasoning</c> measurements via
+    /// <see cref="IGenAiTokenMetrics"/>. Defaults to <c>"Experimental.Microsoft.Extensions.AI"</c>,
+    /// matching MEAI 10.5.0's <c>OpenTelemetryConsts.DefaultSourceName</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// MEAI's <see cref="Microsoft.Extensions.AI.OpenTelemetryChatClient"/> emits the
+    /// same <c>gen_ai.client.token.usage</c> histogram for <c>input</c> and <c>output</c>
+    /// token types under a meter named by its <c>sourceName</c> constructor parameter
+    /// (default <c>"Experimental.Microsoft.Extensions.AI"</c>). For the OpenTelemetry SDK
+    /// to aggregate Needlr's <c>cache_read</c> / <c>reasoning</c> measurements into the
+    /// same metric stream as MEAI's <c>input</c> / <c>output</c> measurements, the meter
+    /// names MUST match. If the host configures MEAI with a custom <c>sourceName</c>
+    /// (e.g. <c>UseOpenTelemetry(sourceName: "MyApp.GenAI")</c>), set this property to
+    /// the same value:
+    /// <code>
+    /// .UsingAgentFramework(af => af
+    ///     .ConfigureMetrics(o => o.GenAiMeterName = "MyApp.GenAI"))
+    /// </code>
+    /// </para>
+    /// <para>
+    /// This property is independent of <see cref="MeterName"/> — that property scopes
+    /// Needlr-shape agent metrics (<c>agent.run.*</c>, <c>agent.tool.*</c>, etc.) which
+    /// have no upstream cohabitation requirement, while this property scopes the OTel
+    /// gen_ai semantic-convention histogram that Needlr shares with MEAI.
+    /// </para>
+    /// </remarks>
+    public string GenAiMeterName { get; set; } = "Experimental.Microsoft.Extensions.AI";
+
+    /// <summary>
     /// Controls how Needlr's diagnostics middleware creates
     /// <see cref="System.Diagnostics.Activity"/> spans for chat completion calls.
     /// </summary>

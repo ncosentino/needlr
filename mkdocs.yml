@@ -80,6 +80,7 @@ nav:
     - Progress Reporting: progress-reporting.md
     - Stage Termination: stage-termination.md
     - Pipeline Metrics: pipeline-metrics.md
+    - GenAI Token Metrics: gen-ai-token-metrics.md
     - Evaluation: evaluation.md
     - Testing Tool Integrations: testing-tools.md
     - Workspace: workspace.md

@@ -33,6 +33,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
     private readonly IProgressReporterAccessor? _progressReporterAccessor;
     private readonly ITokenBudgetTracker? _budgetTracker;
     private readonly IAgentMetrics? _metrics;
+    private readonly IGenAiTokenMetrics? _genAiTokenMetrics;
     private readonly ChatCompletionActivityMode _activityMode;
 
     internal IterativeAgentLoop(
@@ -42,7 +43,8 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         IProgressReporterAccessor? progressReporterAccessor = null,
         ITokenBudgetTracker? budgetTracker = null,
         IAgentMetrics? metrics = null,
-        ChatCompletionActivityMode activityMode = ChatCompletionActivityMode.Always)
+        ChatCompletionActivityMode activityMode = ChatCompletionActivityMode.Always,
+        IGenAiTokenMetrics? genAiTokenMetrics = null)
     {
         _chatClientAccessor = chatClientAccessor;
         _diagnosticsWriter = diagnosticsWriter;
@@ -50,6 +52,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         _progressReporterAccessor = progressReporterAccessor;
         _budgetTracker = budgetTracker;
         _metrics = metrics;
+        _genAiTokenMetrics = genAiTokenMetrics;
         _activityMode = activityMode;
     }
 
@@ -92,7 +95,7 @@ internal sealed class IterativeAgentLoop : IIterativeAgentLoop
         // chain, so it works regardless of where the middleware was installed.
         if (chatClient.GetService<DiagnosticsRecordingChatClient>() is null)
         {
-            var chatMiddleware = new DiagnosticsChatClientMiddleware(_metrics, _progressReporterAccessor, _activityMode);
+            var chatMiddleware = new DiagnosticsChatClientMiddleware(_metrics, _progressReporterAccessor, _activityMode, _genAiTokenMetrics);
             chatClient = new DiagnosticsRecordingChatClient(chatClient, chatMiddleware);
         }
 
