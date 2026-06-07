@@ -939,6 +939,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../cancellation-aware-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cancellation-Aware Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../service-catalog/" class="md-nav__link">
         
   
@@ -1199,6 +1227,34 @@
     
   
     Pipeline Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gen-ai-token-metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GenAI Token Metrics
   
 
     
@@ -3629,7 +3685,7 @@
   <span class="md-ellipsis">
     
   
-    HttpClient Analyzers
+    Logging Analyzers
   
 
     
@@ -3642,6 +3698,236 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Logging Analyzers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG001/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG002/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG003/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG004/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG004
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG005/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG005
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analyzers/NDLRLOG006/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRLOG006
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HttpClient Analyzers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -4228,13 +4514,41 @@ Needlr will add its tags (sequence number, char counts, agent name) to the
 existing parent <code>gen_ai.*</code> activity instead of creating a new one.</p>
 <p>Tool call activities (<code>agent.tool</code>) are not affected by this setting —
 they are always created because neither MEAI nor MAF produces per-tool-call spans.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions.GenAiMeterName'></a></p>
+<h2 id="agentframeworkmetricsoptionsgenaimetername-property">AgentFrameworkMetricsOptions.GenAiMeterName Property<a class="headerlink" href="#agentframeworkmetricsoptionsgenaimetername-property" title="Permanent link">&para;</a></h2>
+<p>The name used for the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.metrics.meter" title="System.Diagnostics.Metrics.Meter">System.Diagnostics.Metrics.Meter</a> that owns
+the <code>gen_ai.client.token.usage</code> histogram on which Needlr emits
+<code>cache_read</code> and <code>reasoning</code> measurements via
+<a href="../IGenAiTokenMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IGenAiTokenMetrics">IGenAiTokenMetrics</a>. Defaults to <code>"Experimental.Microsoft.Extensions.AI"</code>,
+matching MEAI 10.5.0's <code>OpenTelemetryConsts.DefaultSourceName</code>.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">GenAiMeterName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>MEAI's <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.opentelemetrychatclient" title="Microsoft.Extensions.AI.OpenTelemetryChatClient">Microsoft.Extensions.AI.OpenTelemetryChatClient</a> emits the
+same <code>gen_ai.client.token.usage</code> histogram for <code>input</code> and <code>output</code>
+token types under a meter named by its <code>sourceName</code> constructor parameter
+(default <code>"Experimental.Microsoft.Extensions.AI"</code>). For the OpenTelemetry SDK
+to aggregate Needlr's <code>cache_read</code> / <code>reasoning</code> measurements into the
+same metric stream as MEAI's <code>input</code> / <code>output</code> measurements, the meter
+names MUST match. If the host configures MEAI with a custom <code>sourceName</code>
+(e.g. <code>UseOpenTelemetry(sourceName: "MyApp.GenAI")</code>), set this property to
+the same value:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">.</span><span class="n">UsingAgentFramework</span><span class="p">(</span><span class="n">af</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">af</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">GenAiMeterName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MyApp.GenAI&quot;</span><span class="p">))</span>
+</span></code></pre></div>
+<p>This property is independent of <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions.MeterName" title="NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions.MeterName">MeterName</a> — that property scopes
+Needlr-shape agent metrics (<code>agent.run.*</code>, <code>agent.tool.*</code>, etc.) which
+have no upstream cohabitation requirement, while this property scopes the OTel
+gen_ai semantic-convention histogram that Needlr shares with MEAI.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.AgentFrameworkMetricsOptions.MeterName'></a></p>
 <h2 id="agentframeworkmetricsoptionsmetername-property">AgentFrameworkMetricsOptions.MeterName Property<a class="headerlink" href="#agentframeworkmetricsoptionsmetername-property" title="Permanent link">&para;</a></h2>
 <p>The name used for the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.metrics.meter" title="System.Diagnostics.Metrics.Meter">System.Diagnostics.Metrics.Meter</a> that emits
 counters and histograms. Defaults to <code>"NexusLabs.Needlr.AgentFramework"</code>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">MeterName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">MeterName</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 
