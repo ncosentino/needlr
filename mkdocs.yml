@@ -70,6 +70,7 @@ nav:
     - Tiered Provider Selector: tiered-provider-selector.md
     - Interceptors: interceptors.md
     - Open Generic Decorators: open-generic-decorators.md
+    - Cancellation-Aware Logging: cancellation-aware-logging.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - AI Integrations: ai-integrations.md
@@ -159,6 +160,13 @@ nav:
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
+    - Logging Analyzers:
+      - NDLRLOG001: analyzers/NDLRLOG001.md
+      - NDLRLOG002: analyzers/NDLRLOG002.md
+      - NDLRLOG003: analyzers/NDLRLOG003.md
+      - NDLRLOG004: analyzers/NDLRLOG004.md
+      - NDLRLOG005: analyzers/NDLRLOG005.md
+      - NDLRLOG006: analyzers/NDLRLOG006.md
     - HttpClient Analyzers:
       - NDLRHTTP001: analyzers/NDLRHTTP001.md
       - NDLRHTTP002: analyzers/NDLRHTTP002.md

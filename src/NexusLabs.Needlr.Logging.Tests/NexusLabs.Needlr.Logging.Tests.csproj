@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Logging\NexusLabs.Needlr.Logging.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.Logging.Generators\NexusLabs.Needlr.Logging.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

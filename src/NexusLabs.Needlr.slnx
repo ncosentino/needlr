@@ -109,6 +109,13 @@
     <Project Path="NexusLabs.Needlr.Hosting.Tests/NexusLabs.Needlr.Hosting.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Hosting/NexusLabs.Needlr.Hosting.csproj" />
   </Folder>
+  <Folder Name="/Integrations/Logging/">
+    <Project Path="NexusLabs.Needlr.Logging.Analyzers.Tests/NexusLabs.Needlr.Logging.Analyzers.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Logging.Analyzers/NexusLabs.Needlr.Logging.Analyzers.csproj" />
+    <Project Path="NexusLabs.Needlr.Logging.Generators/NexusLabs.Needlr.Logging.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.Logging.Tests/NexusLabs.Needlr.Logging.Tests.csproj" />
+    <Project Path="NexusLabs.Needlr.Logging/NexusLabs.Needlr.Logging.csproj" />
+  </Folder>
   <Folder Name="/Integrations/Serilog/">
     <Project Path="NexusLabs.Needlr.Serilog/NexusLabs.Needlr.Serilog.csproj" />
     <Project Path="NexusLabs.Needlr.Serilog.Tests/NexusLabs.Needlr.Serilog.Tests.csproj" />

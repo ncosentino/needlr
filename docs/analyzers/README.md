@@ -68,6 +68,21 @@ These analyzers are included with the `NexusLabs.Needlr.SignalR` package.
 | [NDLRSIG001](NDLRSIG001.md) | Warning | HubPath must be a constant expression |
 | [NDLRSIG002](NDLRSIG002.md) | Warning | HubType must be a typeof expression |
 
+## Logging Analyzers (NexusLabs.Needlr.Logging.Analyzers)
+
+These analyzers are included with the `NexusLabs.Needlr.Logging` package and validate
+`[NeedlrLoggerMessage]` usage.
+
+| Rule ID | Severity | Description |
+|---------|----------|-------------|
+| [NDLRLOG001](NDLRLOG001.md) | Error | Method must be partial |
+| [NDLRLOG002](NDLRLOG002.md) | Error | Method must return void |
+| [NDLRLOG003](NDLRLOG003.md) | Error | Method must not be generic |
+| [NDLRLOG004](NDLRLOG004.md) | Error | Containing type must be partial |
+| [NDLRLOG005](NDLRLOG005.md) | Error | No accessible ILogger |
+| [NDLRLOG006](NDLRLOG006.md) | Info | More than six non-exception parameters |
+
+
 ## Generator Diagnostics (NexusLabs.Needlr.Generators)
 
 These diagnostics are emitted by the source generator to detect configuration issues at compile time.
@@ -118,6 +133,7 @@ Needlr uses a component-based naming convention for diagnostic IDs:
 | Core Analyzers | `NDLRCOR` | `NDLRCOR001` |
 | MAF Analyzers | `NDLRMAF` | `NDLRMAF001` |
 | SignalR Analyzers | `NDLRSIG` | `NDLRSIG001` |
+| Logging Analyzers | `NDLRLOG` | `NDLRLOG001` |
 | Source Generators | `NDLRGEN` | `NDLRGEN001` |
 | HttpClient Analyzers | `NDLRHTTP` | `NDLRHTTP001` |
 
