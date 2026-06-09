@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 06/08/2026 - 01:22:30 |
-| Coverage date: | 06/08/2026 - 01:19:39 - 06/08/2026 - 01:22:24 |
+| Generated on: | 06/09/2026 - 19:16:26 |
+| Coverage date: | 06/09/2026 - 19:13:49 - 06/09/2026 - 19:16:21 |
 | Parser: | MultiReport (31x Cobertura) |
 | Assemblies: | 27 |
 | Classes: | 538 |
 | Files: | 527 |
-| **Line coverage:** | 86.5% (23153 of 26747) |
+| **Line coverage:** | 86.5% (23153 of 26746) |
 | Covered lines: | 23153 |
-| Uncovered lines: | 3594 |
-| Coverable lines: | 26747 |
-| Total lines: | 64884 |
+| Uncovered lines: | 3593 |
+| Coverable lines: | 26746 |
+| Total lines: | 64891 |
 | **Branch coverage:** | 75.5% (9008 of 11916) |
 | Covered branches: | 9008 |
 | Total branches: | 11916 |
@@ -348,7 +348,7 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeDetail|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeRouter|97.4%|85.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopology|100%|100%|
-|NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|97.6%|100%|
+|NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|98.8%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.4%|68.1%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowServiceExtensions|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition|100%|80%|

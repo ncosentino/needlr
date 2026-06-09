@@ -4530,10 +4530,11 @@ wire format at the cost of dictionary-typed properties.</p>
 <p>Returns a stable, low-cardinality string suitable for OpenTelemetry tag values
 (e.g. the <code>termination_cause</code> tag emitted by
 <a href="../IPipelineMetrics/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineMetrics">IPipelineMetrics</a>). Framework cases return their case name
-(e.g. <code>"MaxIterationsReached"</code>); <a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a>
-returns its <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> field. Third-party
-implementations are responsible for their own cardinality discipline —
-the returned string is used directly as a metric tag value.</p>
+(e.g. <code>"MaxIterationsReached"</code>, <code>"Custom"</code>) — bounded by the case
+enumeration. Free-form detail such as <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a>
+is preserved on the record / in JSON rather than in this tag, so the metric stays
+bounded by default. Third-party implementations are responsible for their own
+cardinality discipline — the returned string is used directly as a metric tag value.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">string</span><span class="w"> </span><span class="nf">ToTagValue</span><span class="p">();</span>
 </span></code></pre></div>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>

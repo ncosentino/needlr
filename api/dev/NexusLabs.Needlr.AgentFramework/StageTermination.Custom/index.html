@@ -4482,6 +4482,13 @@ from an <code>onLoopCompleted</code> callback when a stage has app-specific sema
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; <a href="../StageTermination/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination">StageTermination</a> &#129106; Custom</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
+<h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
+<p><a href="../StageTermination/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()">ToTagValue()</a> is intentionally not overridden: it returns the bounded
+            discriminator <code>"Custom"</code> (the inherited default) so a run-specific
+            <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> cannot explode the cardinality of the <code>termination_cause</code>
+            metric/span tag. The full reason is preserved on the record, round-trips through
+            JSON, and is reachable via <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties">Properties</a> — read it there for
+            diagnostics rather than from the tag.</p>
 <h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Custom(string,System.Collections.Generic.IReadOnlyDictionary_string,object_)'></a></p>
 <h2 id="customstring-ireadonlydictionarystringobject-constructor">Custom(string, IReadOnlyDictionary&lt;string,object&gt;) Constructor<a class="headerlink" href="#customstring-ireadonlydictionarystringobject-constructor" title="Permanent link">&para;</a></h2>
@@ -4493,14 +4500,21 @@ from an <code>onLoopCompleted</code> callback when a stage has app-specific sema
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Custom(string,System.Collections.Generic.IReadOnlyDictionary_string,object_).Reason'></a></p>
 <p><code>Reason</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>Short, dashboard-friendly description. Used as the OpenTelemetry tag value via
-<a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.ToTagValue()">ToTagValue()</a>, so consumers should keep the cardinality bounded
-(or normalise / bucket before constructing the case).</p>
+<p>Human-readable description of the termination, kept for diagnostics. It round-trips
+through JSON and is available via pattern matching; it is deliberately not used as
+a metric/span tag value, so it is safe to include run-specific detail here.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Custom(string,System.Collections.Generic.IReadOnlyDictionary_string,object_).Properties'></a></p>
 <p><code>Properties</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">System.Collections.Generic.IReadOnlyDictionary&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">&gt;</a></p>
 <p>Optional structured metadata for richer post-mortem queries. Values typed as
 <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> for flexibility — note that JSON deserialization yields
 <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement" title="System.Text.Json.JsonElement">System.Text.Json.JsonElement</a> values, not the original concrete types.</p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p><a href="../StageTermination/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()">ToTagValue()</a> is intentionally not overridden: it returns the bounded
+            discriminator <code>"Custom"</code> (the inherited default) so a run-specific
+            <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> cannot explode the cardinality of the <code>termination_cause</code>
+            metric/span tag. The full reason is preserved on the record, round-trips through
+            JSON, and is reachable via <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties">Properties</a> — read it there for
+            diagnostics rather than from the tag.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties'></a></p>
 <h2 id="stageterminationcustomproperties-property">StageTermination.Custom.Properties Property<a class="headerlink" href="#stageterminationcustomproperties-property" title="Permanent link">&para;</a></h2>
@@ -4513,23 +4527,12 @@ from an <code>onLoopCompleted</code> callback when a stage has app-specific sema
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">System.Collections.Generic.IReadOnlyDictionary&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">&gt;</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason'></a></p>
 <h2 id="stageterminationcustomreason-property">StageTermination.Custom.Reason Property<a class="headerlink" href="#stageterminationcustomreason-property" title="Permanent link">&para;</a></h2>
-<p>Short, dashboard-friendly description. Used as the OpenTelemetry tag value via
-<a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.ToTagValue()">ToTagValue()</a>, so consumers should keep the cardinality bounded
-(or normalise / bucket before constructing the case).</p>
+<p>Human-readable description of the termination, kept for diagnostics. It round-trips
+through JSON and is available via pattern matching; it is deliberately not used as
+a metric/span tag value, so it is safe to include run-specific detail here.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Reason</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.ToTagValue()'></a></p>
-<h2 id="stageterminationcustomtotagvalue-method">StageTermination.Custom.ToTagValue() Method<a class="headerlink" href="#stageterminationcustomtotagvalue-method" title="Permanent link">&para;</a></h2>
-<p>Returns a stable, low-cardinality string suitable for OpenTelemetry tag values.
-Default implementation returns the case name (e.g. <code>"MaxIterationsReached"</code>).
-<a href="./" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> overrides this to return its <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> field.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ToTagValue</span><span class="p">();</span>
-</span></code></pre></div>
-<p>Implements <a href="../IStageTermination/#NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()">ToTagValue()</a></p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 
 
