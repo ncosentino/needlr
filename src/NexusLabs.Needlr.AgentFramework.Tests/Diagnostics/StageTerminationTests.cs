@@ -176,17 +176,25 @@ public sealed class StageTerminationTests
     }
 
     [Fact]
-    public void ToTagValue_Custom_ReturnsReason()
+    public void ToTagValue_Custom_ReturnsBoundedDiscriminator()
     {
-        var t = new StageTermination.Custom("Reconciled");
-        Assert.Equal("Reconciled", t.ToTagValue());
+        var t = new StageTermination.Custom("Reconciled — 7 issues remaining");
+        Assert.Equal("Custom", t.ToTagValue());
     }
 
     [Fact]
-    public void ToTagValue_Custom_DoesNotReturnLiteralCustom()
+    public void ToTagValue_Custom_IsBoundedRegardlessOfReason()
     {
-        var t = new StageTermination.Custom("MyDomainSpecificValue");
-        Assert.NotEqual("Custom", t.ToTagValue());
+        var a = new StageTermination.Custom("Reconciled — 7 issues remaining");
+        var b = new StageTermination.Custom("Analysis complete: 12 issues found");
+        Assert.Equal(a.ToTagValue(), b.ToTagValue());
+    }
+
+    [Fact]
+    public void Custom_Reason_IsPreservedOnTheRecord()
+    {
+        var t = new StageTermination.Custom("Reconciled — 7 issues remaining");
+        Assert.Equal("Reconciled — 7 issues remaining", t.Reason);
     }
 
     /// <summary>

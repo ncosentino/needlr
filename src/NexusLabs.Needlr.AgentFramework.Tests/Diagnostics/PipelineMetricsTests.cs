@@ -208,7 +208,7 @@ public sealed class PipelineMetricsTests
     }
 
     [Fact]
-    public void RecordStageCompleted_CustomTermination_TerminationCauseIsReason()
+    public void RecordStageCompleted_CustomTermination_TerminationCauseIsBoundedDiscriminator()
     {
         using var capture = new MetricCapture(out var meterName);
         using var metrics = new PipelineMetrics(new PipelineMetricsOptions { MeterName = meterName });
@@ -216,12 +216,12 @@ public sealed class PipelineMetricsTests
         var stage = StageResult(
             agentName: "W",
             outcome: StageOutcome.Succeeded,
-            termination: new StageTermination.Custom("Reconciled"));
+            termination: new StageTermination.Custom("Reconciled — 7 issues remaining"));
 
         metrics.RecordStageCompleted("Pipeline", stage, TimeSpan.FromSeconds(1));
 
         var completed = Assert.Single(capture.LongMeasurements("pipeline.stage.completed"));
-        Assert.Equal("Reconciled", completed.Tags["termination_cause"]);
+        Assert.Equal("Custom", completed.Tags["termination_cause"]);
     }
 
     [Fact]

@@ -85,10 +85,11 @@ public interface IStageTermination
     /// Returns a stable, low-cardinality string suitable for OpenTelemetry tag values
     /// (e.g. the <c>termination_cause</c> tag emitted by
     /// <see cref="IPipelineMetrics"/>). Framework cases return their case name
-    /// (e.g. <c>"MaxIterationsReached"</c>); <see cref="StageTermination.Custom"/>
-    /// returns its <see cref="StageTermination.Custom.Reason"/> field. Third-party
-    /// implementations are responsible for their own cardinality discipline —
-    /// the returned string is used directly as a metric tag value.
+    /// (e.g. <c>"MaxIterationsReached"</c>, <c>"Custom"</c>) — bounded by the case
+    /// enumeration. Free-form detail such as <see cref="StageTermination.Custom.Reason"/>
+    /// is preserved on the record / in JSON rather than in this tag, so the metric stays
+    /// bounded by default. Third-party implementations are responsible for their own
+    /// cardinality discipline — the returned string is used directly as a metric tag value.
     /// </summary>
     string ToTagValue();
 }

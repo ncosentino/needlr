@@ -249,6 +249,8 @@ foreach (var file in workspace.GetFilePaths().OrderBy(f => f))
 
 Console.WriteLine();
 Console.WriteLine("═══ Custom IStageTermination — JSON round-trip demo ═══");
+Console.WriteLine("ToTagValue() is the bounded metric tag — the case name (Custom yields");
+Console.WriteLine("\"Custom\", not its Reason). The full reason/fields ride along in the JSON below.");
 
 var jsonOptions = new JsonSerializerOptions
 {

@@ -20,10 +20,11 @@ namespace NexusLabs.Needlr.AgentFramework.Diagnostics;
 /// <para>
 /// For OpenTelemetry / Prometheus tag values, use <see cref="ToTagValue"/> — it
 /// returns a stable, low-cardinality string suitable for use as a metric dimension.
-/// Framework cases return their case name (e.g. <c>"MaxIterationsReached"</c>);
-/// <see cref="Custom"/> returns its <see cref="Custom.Reason"/> field directly. If
-/// the consumer's <see cref="Custom"/> reasons are high-cardinality, the consumer is
-/// responsible for bucketing before recording the tag.
+/// Every case — including <see cref="Custom"/> — returns its case name (e.g.
+/// <c>"MaxIterationsReached"</c>, <c>"Custom"</c>), so the tag stays bounded by the
+/// case enumeration no matter what free-form text a <see cref="Custom.Reason"/>
+/// carries. The reason is preserved on the record and in JSON for diagnostics — it
+/// is deliberately not used as a metric/span tag.
 /// </para>
 /// <para>
 /// JSON serialization is supported via <see cref="JsonPolymorphicAttribute"/> with
@@ -147,26 +148,32 @@ public abstract record StageTermination : IStageTermination
     /// from an <c>onLoopCompleted</c> callback when a stage has app-specific semantics
     /// (e.g. <c>"Reconciled — 7 outstanding issues"</c>).
     /// </summary>
+    /// <remarks>
+    /// <see cref="ToTagValue"/> is intentionally not overridden: it returns the bounded
+    /// discriminator <c>"Custom"</c> (the inherited default) so a run-specific
+    /// <see cref="Reason"/> cannot explode the cardinality of the <c>termination_cause</c>
+    /// metric/span tag. The full reason is preserved on the record, round-trips through
+    /// JSON, and is reachable via <see cref="Properties"/> — read it there for
+    /// diagnostics rather than from the tag.
+    /// </remarks>
     /// <param name="Reason">
-    /// Short, dashboard-friendly description. Used as the OpenTelemetry tag value via
-    /// <see cref="ToTagValue"/>, so consumers should keep the cardinality bounded
-    /// (or normalise / bucket before constructing the case).
+    /// Human-readable description of the termination, kept for diagnostics. It round-trips
+    /// through JSON and is available via pattern matching; it is deliberately not used as
+    /// a metric/span tag value, so it is safe to include run-specific detail here.
     /// </param>
     /// <param name="Properties">
     /// Optional structured metadata for richer post-mortem queries. Values typed as
     /// <see cref="object"/> for flexibility — note that JSON deserialization yields
     /// <see cref="System.Text.Json.JsonElement"/> values, not the original concrete types.
     /// </param>
-    public sealed record Custom(string Reason, IReadOnlyDictionary<string, object?>? Properties = null) : StageTermination
-    {
-        /// <inheritdoc/>
-        public override string ToTagValue() => Reason;
-    }
+    public sealed record Custom(string Reason, IReadOnlyDictionary<string, object?>? Properties = null) : StageTermination;
 
     /// <summary>
     /// Returns a stable, low-cardinality string suitable for OpenTelemetry tag values.
-    /// Default implementation returns the case name (e.g. <c>"MaxIterationsReached"</c>).
-    /// <see cref="Custom"/> overrides this to return its <see cref="Custom.Reason"/> field.
+    /// Returns the case name (e.g. <c>"MaxIterationsReached"</c>, <c>"Custom"</c>) for
+    /// every case, so the value is bounded by the case enumeration. Free-form detail on
+    /// <see cref="Custom"/> lives in <see cref="Custom.Reason"/> /
+    /// <see cref="Custom.Properties"/>, not in this tag value.
     /// </summary>
     public virtual string ToTagValue() => GetType().Name;
 }

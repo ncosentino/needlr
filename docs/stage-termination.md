@@ -110,7 +110,7 @@ foreach (var stage in result.Stages)
 Every `StageTermination` exposes a `virtual string ToTagValue()` that returns a stable, low-cardinality string suitable for OpenTelemetry / Prometheus tag values:
 
 - **Framework cases** return the case name via `GetType().Name` — so `MaxIterationsReached`, `Cancelled`, `BudgetPressure`, etc. produce literally those strings. There are 11 framework case names total, so the cardinality contribution is bounded by the case enumeration.
-- **`Custom`** overrides `ToTagValue()` to return its `Reason` field directly — so `new Custom("Reconciled")` produces `"Reconciled"`. Consumers with high-cardinality `Custom.Reason` strings (user IDs, timestamps, free-form messages) are responsible for bucketing before they record the tag, or for using OTel `MeterView` to drop the tag entirely.
+- **`Custom`** does **not** override `ToTagValue()` — it inherits the default and returns the bounded discriminator `"Custom"`, so `new Custom("Reconciled — 7 issues remaining")` produces `"Custom"`. The free-form `Reason` is therefore *never* a metric/span tag value and cannot explode cardinality. The reason is still preserved on the record, round-trips through JSON, and is reachable via `Custom.Properties` — read it from there (or from a JSON-serialized result) for diagnostics, not from the tag.
 
 Pipeline-shape metrics use this automatically as the `termination_cause` tag — see [Pipeline Metrics](pipeline-metrics.md) for the full tag schema.
 
@@ -340,18 +340,22 @@ foreach (var stage in result.Stages)
 ```csharp
 // In every stage factory's onLoopCompleted callback:
 onLoopCompleted: (loopResult, ctx) => new StageTermination.Custom(
-    Reason: "Completed",
+    Reason: $"Reconciled — {findingCount} findings",
     Properties: new Dictionary<string, object?> { ["FindingCount"] = findingCount });
 
 // In the runner that reads results:
 foreach (var stage in result.Stages)
 {
-    var reason = stage.Termination?.ToTagValue() ?? "Unspecified";
-    // ... pass to Loki / Prometheus / job result JSON ...
+    // Bounded value for metric labels (the Custom case yields "Custom"):
+    var tag = stage.Termination?.ToTagValue() ?? "Unspecified";
+
+    // Full reason for Loki / job-result JSON — serialize the termination, or read
+    // Custom.Reason / Custom.Properties directly:
+    var detail = stage.Termination is StageTermination.Custom c ? c.Reason : tag;
 }
 ```
 
-The accessor interface, holder, and ConcurrentDictionary all delete. The factory callback signature and call sites simplify. Pipeline-shape metrics already pick up the `termination_cause` tag automatically — no separate bucketing helper is needed because `ToTagValue()` is cardinality-safe by default.
+The accessor interface, holder, and ConcurrentDictionary all delete. The factory callback signature and call sites simplify. Pipeline-shape metrics already pick up the `termination_cause` tag automatically — no separate bucketing helper is needed because `ToTagValue()` is cardinality-safe by default for every case, including `Custom` (which yields the bounded `"Custom"` discriminator). The free-form reason rides along on the typed `Custom` record for diagnostics.
 
 ---
 

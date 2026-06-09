@@ -75,7 +75,7 @@ All instruments emit on the configured `Meter` (defaults to `"NexusLabs.Needlr.A
 | `stage_name` | `IAgentStageResult.AgentName` (the stage name registered when constructing `PipelineStage`). | Bounded by stage definitions. |
 | `phase_name` | `IAgentStageResult.PhaseName` for phased pipelines (via `RunPhasedAsync`); `"(none)"` for flat. | Bounded by phase definitions. |
 | `outcome` | `IAgentStageResult.Outcome.ToString()` for stage tags; `"Succeeded"` / `"Failed"` for pipeline tags. | 3 values: `Succeeded`, `Skipped`, `Failed`. |
-| `termination_cause` | `stage.Termination?.ToTagValue() ?? "Unspecified"`. See [Stage Termination](stage-termination.md#totagvalue-opentelemetry-tag-values). | Bounded by the 11 framework `StageTermination` case names plus your `Custom.Reason` values. **Watch this**: if your `Custom.Reason` strings are high-cardinality, this tag will explode — bucket before constructing the `Custom` case, or drop the tag via `MeterView`. |
+| `termination_cause` | `stage.Termination?.ToTagValue() ?? "Unspecified"`. See [Stage Termination](stage-termination.md#totagvalue-opentelemetry-tag-values). | Bounded by the ~11 `StageTermination` case names (`Custom` included — it yields the discriminator `"Custom"`, never its free-form `Reason`). Third-party `IStageTermination` impls own their own `ToTagValue()` cardinality. |
 | `token_kind` | Hardcoded: `input`, `output`, `cached_input`, `reasoning`. | 4 values. |
 | `tool_name` | `ToolCallDiagnostics.ToolName`. | Bounded by your registered tool count. |
 
@@ -168,10 +168,11 @@ pipeline_count × stage_count × outcome × termination_cause × phase_count
 
 For a 23-stage pipeline with 12 termination causes, 3 outcomes, and 1 pipeline name, that's already ~828 series per pipeline. Acceptable for most OTel backends (Prometheus, Mimir, Cortex) but worth being deliberate about.
 
-The two cardinality risks worth calling out:
+The cardinality risk worth calling out:
 
-1. **`termination_cause` from unbounded `Custom.Reason` strings.** If your `onLoopCompleted` callbacks return `new StageTermination.Custom(reason: $"User {userId} failed")`, the cardinality of `termination_cause` becomes the cardinality of your user IDs. Bucket before constructing the case, or drop the tag via OTel `MeterView`.
-2. **`pipeline_name` from the WorkflowId fallback.** If you don't set `PipelineName` on `SequentialPipelineOptions`, every invocation gets a fresh `Guid` for the tag — cardinality grows linearly with invocations. **Always set `PipelineName`** for production telemetry.
+- **`pipeline_name` from the WorkflowId fallback.** If you don't set `PipelineName` on `SequentialPipelineOptions`, every invocation gets a fresh `Guid` for the tag — cardinality grows linearly with invocations. **Always set `PipelineName`** for production telemetry.
+
+`termination_cause` is bounded by construction: every `StageTermination` case — including `Custom` — emits a case-name discriminator (`Custom`'s free-form `Reason` is kept for diagnostics on the record / in JSON, never used as the tag). A third-party `IStageTermination` controls its own `ToTagValue()`, so only a deliberately unbounded third-party impl can reintroduce a problem there.
 
 For dropping a tag via OTel views:
 
@@ -215,7 +216,7 @@ _pipelineMetrics.RecordStage(stageName, terminationReason, ...);
 
 Delete the bespoke metrics class. Delete the `RecordRun` / `RecordStage` calls in the wrapper. Re-point dashboard queries to the new instrument names (`pipeline.run.*`, `pipeline.stage.*`) — the tag schema is documented above.
 
-If the bespoke metrics class implemented bucketing for a stringly-typed termination reason, that helper deletes too: `termination_cause` is now `Termination?.ToTagValue()`, which is cardinality-safe by default for framework cases. Only `Custom.Reason` strings need consumer-side bucketing.
+If the bespoke metrics class implemented bucketing for a stringly-typed termination reason, that helper deletes too: `termination_cause` is now `Termination?.ToTagValue()`, which is cardinality-safe by default for **every** case — `Custom` emits the bounded `"Custom"` discriminator, and its free-form `Reason` is preserved on the typed record / in JSON for diagnostics instead of becoming a label. No consumer-side bucketing is needed.
 
 ---
 
