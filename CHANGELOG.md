@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.2-alpha.61] - 2026-06-09
+
 ### Changed
 
 - **`StageTermination.Custom.ToTagValue()` now returns the bounded discriminator `"Custom"` instead of its free-form `Reason`** (`NexusLabs.Needlr.AgentFramework.Diagnostics`). The `Reason` was previously used verbatim as the `termination_cause` tag on both the `pipeline.stage.completed` metric and the `pipeline.stage` span, so any run-specific text (counts, ids, short narratives) produced unbounded OpenTelemetry / Prometheus label cardinality — exactly the footgun `ToTagValue()` exists to prevent, and the one case that violated its own "stable, low-cardinality" contract. `Custom` no longer overrides `ToTagValue()`; it inherits the default case-name discriminator, so `termination_cause` is now bounded by the ~11 `StageTermination` case names for every consumer with no code change. The free-form reason is preserved everywhere it matters for diagnostics: it remains a property on the `Custom` record, round-trips through JSON unchanged (`$kind` / `Reason` / `Properties`), and is reachable via pattern matching and `Custom.Properties`. **Behavior-changing for dashboards, queries, or recording rules** that grouped `pipeline.stage.completed` (or the `pipeline.stage` span) by `termination_cause` and relied on the verbatim `Custom.Reason` — those now see `"Custom"`; read the reason from the serialized result or `Custom.Properties` instead. Third-party `IStageTermination` implementations are unaffected — their own `ToTagValue()` still drives the tag.
