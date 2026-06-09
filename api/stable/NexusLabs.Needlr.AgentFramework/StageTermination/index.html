@@ -4503,10 +4503,11 @@ used); application narrative goes through <a href="../StageTermination.Custom/" 
 </span></code></pre></div>
 <p>For OpenTelemetry / Prometheus tag values, use <a href="./#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()">ToTagValue()</a> — it
 returns a stable, low-cardinality string suitable for use as a metric dimension.
-Framework cases return their case name (e.g. <code>"MaxIterationsReached"</code>);
-<a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> returns its <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> field directly. If
-the consumer's <a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> reasons are high-cardinality, the consumer is
-responsible for bucketing before recording the tag.</p>
+Every case — including <a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> — returns its case name (e.g.
+<code>"MaxIterationsReached"</code>, <code>"Custom"</code>), so the tag stays bounded by the
+case enumeration no matter what free-form text a <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a>
+carries. The reason is preserved on the record and in JSON for diagnostics — it
+is deliberately not used as a metric/span tag.</p>
 <p>JSON serialization is supported via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json.serialization.jsonpolymorphicattribute" title="System.Text.Json.Serialization.JsonPolymorphicAttribute">System.Text.Json.Serialization.JsonPolymorphicAttribute</a> with
 the <code>$kind</code> discriminator. Each derived type is registered with its case name
 (e.g. <code>"MaxIterationsReached"</code>) as the discriminator value. Once shipped,
@@ -4519,8 +4520,10 @@ arm. Switch statements with no return value continue to work without modificatio
 <p><a name='NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.ToTagValue()'></a></p>
 <h2 id="stageterminationtotagvalue-method">StageTermination.ToTagValue() Method<a class="headerlink" href="#stageterminationtotagvalue-method" title="Permanent link">&para;</a></h2>
 <p>Returns a stable, low-cardinality string suitable for OpenTelemetry tag values.
-Default implementation returns the case name (e.g. <code>"MaxIterationsReached"</code>).
-<a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> overrides this to return its <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> field.</p>
+Returns the case name (e.g. <code>"MaxIterationsReached"</code>, <code>"Custom"</code>) for
+every case, so the value is bounded by the case enumeration. Free-form detail on
+<a href="../StageTermination.Custom/" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom">Custom</a> lives in <a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Reason">Reason</a> /
+<a href="../StageTermination.Custom/#NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties" title="NexusLabs.Needlr.AgentFramework.Diagnostics.StageTermination.Custom.Properties">Properties</a>, not in this tag value.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="k">virtual</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">ToTagValue</span><span class="p">();</span>
 </span></code></pre></div>
 <p>Implements <a href="../IStageTermination/#NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()" title="NexusLabs.Needlr.AgentFramework.Diagnostics.IStageTermination.ToTagValue()">ToTagValue()</a></p>
