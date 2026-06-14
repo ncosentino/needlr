@@ -26,6 +26,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Cancellation-Aware Logging](https://github.devleader.ca/needlr/cancellation-aware-logging/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Service Catalog](https://github.devleader.ca/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Breadcrumbs](https://github.devleader.ca/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
+- [.NET MAUI](https://github.devleader.ca/needlr/maui/) -- Opinionated fluent dependency injection for .NET with source generation
 - [AI Integrations](https://github.devleader.ca/needlr/ai-integrations/) -- Integrate AI agent frameworks with Needlr in .NET -- automatic function discovery, DI wiring, and lifecycle management for Semantic Kernel and Microsoft Agent Framework.
 - [GitHub Copilot](https://github.devleader.ca/needlr/copilot/) -- Use GitHub Copilot as an IChatClient provider in Needlr -- zero-cost local AI for agent development with web search tool support.
 - [Agent Functions](https://github.devleader.ca/needlr/agent-functions/) -- Parameter optionality, default-value resolution, and DTO null-handling semantics for [AgentFunction]-decorated tools in Needlr's source-generated AIFunction wrappers.
