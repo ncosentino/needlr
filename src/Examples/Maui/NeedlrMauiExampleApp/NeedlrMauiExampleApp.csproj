@@ -8,6 +8,11 @@
 		     entry points under Platforms/ (which are framework-owned and never injected). -->
 		<NeedlrAutoGenerate>true</NeedlrAutoGenerate>
 
+		<!-- This MAUI head requires the MAUI workload and platform TFMs, so it is excluded from the
+		     workload-free package-validation build (scripts/test-packages.ps1, run on the ubuntu CI
+		     agent). It is built instead by the dedicated .github/workflows/maui-example.yml job. -->
+		<NeedlrExcludeFromValidation>true</NeedlrExcludeFromValidation>
+
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
 		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
