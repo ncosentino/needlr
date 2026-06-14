@@ -25,15 +25,14 @@
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
             <Label
-                x:Name="GreetingLabel"
+                Text="{Binding Greeting}"
                 Style="{StaticResource SubHeadline}"
                 SemanticProperties.HeadingLevel="Level2" />
 
             <Button
-                x:Name="CounterBtn"
-                Text="Click me" 
+                Text="{Binding CounterText}"
+                Command="{Binding IncrementCommand}"
                 SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
                 HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>

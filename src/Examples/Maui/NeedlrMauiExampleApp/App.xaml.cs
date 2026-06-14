@@ -1,20 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
 namespace NeedlrMauiExampleApp;
 
 public partial class App : Application
 {
-	public App()
+	private readonly Lazy<MainPage> _mainPage;
+
+	// Needlr automatically registers Lazy<T> for every discovered service, so the page is
+	// constructor-injected here and created only when the window is first shown — real DI,
+	// no service locator and no manual page registration.
+	public App(Lazy<MainPage> mainPage)
 	{
 		InitializeComponent();
+		_mainPage = mainPage;
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		// Resolve the first page from the Needlr-populated container so its constructor
-		// dependencies (IGreetingService) are injected — no manual page registration required.
-		var services = activationState?.Context.Services
-			?? IPlatformApplication.Current!.Services;
-		return new Window(services.GetRequiredService<MainPage>());
-	}
+		=> new Window(_mainPage.Value);
 }

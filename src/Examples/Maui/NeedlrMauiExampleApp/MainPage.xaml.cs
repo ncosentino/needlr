@@ -2,23 +2,11 @@
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
-
-	public MainPage(IGreetingService greetingService)
+	// The view model is injected by Needlr — no manual registration. Setting it as the
+	// BindingContext is all that is needed to bind the view's XAML to the view model.
+	public MainPage(MainPageViewModel viewModel)
 	{
 		InitializeComponent();
-		GreetingLabel.Text = greetingService.Greet();
-	}
-
-	private void OnCounterClicked(object? sender, EventArgs e)
-	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
+		BindingContext = viewModel;
 	}
 }

@@ -87,6 +87,43 @@ If you prefer to keep the head free of source generation entirely, set `NeedlrAu
 the head and put your injectable types in a referenced class library; `UseNeedlr` will still populate
 MAUI's container from those generated libraries.
 
+## View models and pages
+
+Because the head is scanned, your pages and view models are registered automatically. Inject a view
+model into a page's constructor and assign it to `BindingContext` — the canonical MVVM wiring, with
+no manual registration:
+
+```csharp
+public partial class MainPage : ContentPage
+{
+    public MainPage(MainPageViewModel viewModel)
+    {
+        InitializeComponent();
+        BindingContext = viewModel;
+    }
+}
+```
+
+Needlr also registers `Lazy<T>` (and `IReadOnlyList<T>`) for every service, so you can defer creation
+where MAUI needs it — for example injecting `Lazy<MainPage>` into `App` and creating the page when the
+window is first shown, instead of reaching for a service locator:
+
+```csharp
+public partial class App : Application
+{
+    private readonly Lazy<MainPage> _mainPage;
+
+    public App(Lazy<MainPage> mainPage)
+    {
+        InitializeComponent();
+        _mainPage = mainPage;
+    }
+
+    protected override Window CreateWindow(IActivationState? activationState)
+        => new Window(_mainPage.Value);
+}
+```
+
 ## API reference
 
 | Member | Description |

@@ -7,11 +7,16 @@ A minimal .NET MAUI head that uses **Needlr source-generated dependency injectio
 - `MauiProgram.CreateMauiApp` calls `builder.UseNeedlr(s => s.UsingSourceGen())` — one line wires
   every Needlr-discovered service into MAUI's single container.
 - Needlr's source generator runs on the head (`NeedlrAutoGenerate=true`) and registers `App`,
-  `MainPage`, and `GreetingService` with **no manual registration**. The per-platform application
-  entry points under `Platforms/` (Windows `App : MauiWinUIApplication`, Android
-  `MainApplication : MauiApplication`) are skipped automatically.
-- `MainPage` is constructor-injected with `IGreetingService` and resolved from the container in
-  `App.CreateWindow`, so launching the app shows the injected greeting.
+  `MainPage`, `MainPageViewModel`, and `GreetingService` with **no manual registration**. The
+  per-platform application entry points under `Platforms/` (Windows `App : MauiWinUIApplication`,
+  Android `MainApplication : MauiApplication`) are skipped automatically.
+- **MVVM via DI (the core pattern):** `MainPageViewModel` — which itself depends on
+  `IGreetingService` — is injected into `MainPage`'s constructor and assigned to `BindingContext`;
+  the XAML binds to it. Your view models flow into your views' constructors with zero manual
+  registration.
+- `App` receives a `Lazy<MainPage>` by **constructor injection** (Needlr automatically registers
+  `Lazy<T>` for every service) and creates the page when the window first shows — deferred creation
+  with real DI, no service locator.
 
 ## Why it is not in the solution
 
