@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    Inherit the Examples build props (which wire the Needlr generator + auto [assembly:
+    GenerateTypeRegistry], and exclude examples from coverage) but override the inherited
+    single-target net10.0 so this project's <TargetFrameworks> platform multi-targeting applies.
+    A .NET MAUI head cannot target plain net10.0; it must target the per-platform TFMs.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <TargetFramework></TargetFramework>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <!-- This example is a demonstration head, not a shipped library; don't fail the build on
+         MAUI template/analyzer warnings. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -190,5 +190,7 @@
   <Project Path="NexusLabs.Needlr.Injection.Bundle/NexusLabs.Needlr.Injection.Bundle.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.Reflection/NexusLabs.Needlr.Injection.Reflection.csproj" />
   <Project Path="NexusLabs.Needlr.Injection.SourceGen/NexusLabs.Needlr.Injection.SourceGen.csproj" />
+  <Project Path="NexusLabs.Needlr.Maui.Tests/NexusLabs.Needlr.Maui.Tests.csproj" />
+  <Project Path="NexusLabs.Needlr.Maui/NexusLabs.Needlr.Maui.csproj" />
   <Project Path="NexusLabs.Needlr.Roslyn.Shared/NexusLabs.Needlr.Roslyn.Shared.csproj" />
 </Solution>

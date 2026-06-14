@@ -73,6 +73,7 @@ nav:
     - Cancellation-Aware Logging: cancellation-aware-logging.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
+    - .NET MAUI: maui.md
     - AI Integrations: ai-integrations.md
     - GitHub Copilot: copilot.md
     - Agent Functions: agent-functions.md

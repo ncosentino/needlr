@@ -456,6 +456,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (TypeDiscoveryHelper.MatchesExclusionFilter(typeSymbol, excludeNamespacePrefixes))
                 continue;
 
+            // .NET MAUI per-platform application entry points are framework-owned and carry
+            // platform-generated interop members that are inaccessible from generated code.
+            // Scanning them breaks the head build, so skip them before any discovery path runs.
+            if (TypeDiscoveryHelper.IsMauiPlatformEntryType(typeSymbol))
+                continue;
+
             // For referenced assemblies, check if the type would be registerable but is inaccessible
             if (!isCurrentAssembly && TypeDiscoveryHelper.IsInternalOrLessAccessible(typeSymbol))
             {
