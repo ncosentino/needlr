@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20260517-042951</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20260614-043614</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.300
-  [Host]   : .NET 10.0.8 (10.0.826.23019), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.8 (10.0.826.23019), X64 RyuJIT AVX2
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.301
+  [Host]   : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                        </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>24.39 ns</td><td>0.622 ns</td><td>0.162 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>23.70 ns</td><td>0.338 ns</td><td>0.052 ns</td><td>0.97</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>22.29 ns</td><td>1.358 ns</td><td>0.353 ns</td><td>0.91</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>20.13 ns</td><td>0.343 ns</td><td>0.053 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>20.35 ns</td><td>0.919 ns</td><td>0.239 ns</td><td>1.01</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>20.04 ns</td><td>0.397 ns</td><td>0.103 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>
