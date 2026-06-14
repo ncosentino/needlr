@@ -388,6 +388,7 @@ var webApplication = new Syringe()
 ## Next Steps
 
 - Set up [Solution-Wide Source Generation](solution-wide-source-generation.md) for multi-project solutions using `NexusLabs.Needlr.Build`
+- Wire source-generated DI into a .NET MAUI app with [.NET MAUI](maui.md)
 - Bind typed settings from `appsettings.json` without manual registration via [Options Binding](options.md)
 - Source-generate named `HttpClient` registrations from typed options records via [HttpClient Options](http-clients.md)
 - Skip noisy cancellation logs with source-generated [Cancellation-Aware Logging](cancellation-aware-logging.md)

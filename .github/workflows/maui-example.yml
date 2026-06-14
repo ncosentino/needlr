@@ -1,0 +1,64 @@
+name: MAUI Example
+
+# The MAUI example head is deliberately excluded from NexusLabs.Needlr.slnx and the main CI build,
+# because a MAUI head needs the MAUI workload and platform TFMs that the workload-free library build
+# does not. This dedicated job builds it on a workload-equipped Windows runner. It runs:
+#   - manually (workflow_dispatch), and
+#   - automatically only when MAUI-relevant code changes (path filters),
+# so it never burdens unrelated PRs.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/NexusLabs.Needlr.Maui/**'
+      - 'src/NexusLabs.Needlr.Maui.Tests/**'
+      - 'src/Examples/Maui/**'
+      - 'src/NexusLabs.Needlr.Generators/**'
+      - 'src/NexusLabs.Needlr.Roslyn.Shared/**'
+      - '.github/workflows/maui-example.yml'
+      - 'scripts/build-maui-example.ps1'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/NexusLabs.Needlr.Maui/**'
+      - 'src/NexusLabs.Needlr.Maui.Tests/**'
+      - 'src/Examples/Maui/**'
+      - 'src/NexusLabs.Needlr.Generators/**'
+      - 'src/NexusLabs.Needlr.Roslyn.Shared/**'
+      - '.github/workflows/maui-example.yml'
+      - 'scripts/build-maui-example.ps1'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  build-maui-example:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for NBGV / SourceLink on the referenced library projects
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui-android maui-windows
+
+      - name: Build MAUI example (Windows)
+        run: dotnet build src/Examples/Maui/NeedlrMauiExampleApp/NeedlrMauiExampleApp.csproj --configuration Release --framework net10.0-windows10.0.19041.0
+
+      - name: Build MAUI example (Android)
+        run: dotnet build src/Examples/Maui/NeedlrMauiExampleApp/NeedlrMauiExampleApp.csproj --configuration Release --framework net10.0-android
+
+      - name: Run NexusLabs.Needlr.Maui tests
+        run: dotnet test src/NexusLabs.Needlr.Maui.Tests/NexusLabs.Needlr.Maui.Tests.csproj --configuration Release

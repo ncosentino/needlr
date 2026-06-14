@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageTags>dependency-injection;ioc;maui;mobile;plugins</PackageTags>
+    <Description>.NET MAUI integration for Needlr. Populates a MauiAppBuilder's service collection with Needlr-discovered services so MAUI resolves your App, pages, and view models from a single container.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusLabs.Needlr.Injection\NexusLabs.Needlr.Injection.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr\NexusLabs.Needlr.csproj" />
+  </ItemGroup>
+
+</Project>

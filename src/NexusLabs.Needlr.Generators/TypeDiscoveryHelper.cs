@@ -356,6 +356,28 @@ internal static class TypeDiscoveryHelper
     private static bool InheritsFrom(INamedTypeSymbol typeSymbol, string baseTypeName)
         => SharedHelper.InheritsFrom(typeSymbol, baseTypeName);
 
+    /// <summary>
+    /// Determines whether a type is a .NET MAUI per-platform application entry point — the Windows
+    /// <c>App : Microsoft.Maui.MauiWinUIApplication</c>, the Android
+    /// <c>MainApplication : Microsoft.Maui.MauiApplication</c>, or the iOS/Mac
+    /// <c>AppDelegate : Microsoft.Maui.MauiUIApplicationDelegate</c> that live under <c>Platforms/</c>.
+    /// </summary>
+    /// <remarks>
+    /// These types are framework-owned and constructed by the MAUI platform host; they are never
+    /// resolved as Needlr services. They are also decorated by the platform's own source generators
+    /// with interop members (for example WinRT plumbing such as <c>ApplicationRcwFactoryAttribute</c>)
+    /// that are inaccessible from generated code, so including them in the registry breaks the head
+    /// build. They are therefore excluded from all discovery. The cross-platform
+    /// <c>App : Microsoft.Maui.Controls.Application</c>, pages, views, and view models are ordinary
+    /// types and remain scannable.
+    /// </remarks>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <returns><see langword="true"/> if the type derives from a MAUI platform application base type.</returns>
+    public static bool IsMauiPlatformEntryType(INamedTypeSymbol typeSymbol)
+        => InheritsFrom(typeSymbol, "Microsoft.Maui.MauiWinUIApplication")
+        || InheritsFrom(typeSymbol, "Microsoft.Maui.MauiApplication")
+        || InheritsFrom(typeSymbol, "Microsoft.Maui.MauiUIApplicationDelegate");
+
     private static bool IsSystemInterface(INamedTypeSymbol interfaceSymbol)
         => SharedHelper.IsSystemType(interfaceSymbol);
 
