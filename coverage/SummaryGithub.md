@@ -3,8 +3,8 @@
 
 |||
 |:---|:---|
-| Generated on: | 06/14/2026 - 17:25:17 |
-| Coverage date: | 06/14/2026 - 17:22:33 - 06/14/2026 - 17:25:12 |
+| Generated on: | 06/14/2026 - 17:25:32 |
+| Coverage date: | 06/14/2026 - 17:22:39 - 06/14/2026 - 17:25:27 |
 | Parser: | MultiReport (32x Cobertura) |
 | Assemblies: | 28 |
 | Classes: | 542 |
