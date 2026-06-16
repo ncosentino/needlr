@@ -1670,6 +1670,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Multi-Assembly TypeRegistry Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#participants-with-no-registerable-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participants With No Registerable Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -4708,11 +4725,17 @@
 <li>An entry-point project referencing a Bootstrap project (which references feature projects) gets all types from all of them</li>
 <li>Test projects that reference any of those get full service resolution without needing their own TypeRegistry</li>
 </ul>
+<h3 id="participants-with-no-registerable-types">Participants With No Registerable Types<a class="headerlink" href="#participants-with-no-registerable-types" title="Permanent link">&para;</a></h3>
+<p>A project can carry <code>[assembly: GenerateTypeRegistry]</code> (for example because <code>NeedlrAutoGenerate=true</code> is set solution-wide) yet contain nothing to register — a domain, contracts, or abstractions library made up only of <code>record</code>, <code>enum</code>, and <code>interface</code> types is the common case.</p>
+<p>Such a project still emits a <strong>minimal</strong> <code>TypeRegistry</code> (empty <code>GetInjectableTypes()</code> / <code>GetPluginTypes()</code> providers and a module initializer). This matters because any project that references it force-loads <code>typeof(&lt;Assembly&gt;.Generated.TypeRegistry)</code> to run that module initializer; if the registry were omitted, the referencing project would fail to compile with <code>CS0234</code>. Emitting the minimal registry keeps the producer and consumer in agreement, so adding a type-less participant never breaks an aggregator build.</p>
+<p>The minimal registry depends only on the attributes package (<code>NexusLabs.Needlr.Generators.Attributes</code>) — never on the injection packages. A project must already reference the attributes package to use <code>[GenerateTypeRegistry]</code>, so the registry always compiles, <strong>even for a project that references no Needlr injection packages</strong> (a pure contracts or documentation library). It does not register a <code>ServiceCatalog</code> or apply decorators, because there is nothing to register.</p>
+<p>To opt a project out of participation entirely — so it emits no <code>TypeRegistry</code> and no module initializer at all — set <code>NeedlrAutoGenerate=false</code>, which suppresses the <code>[GenerateTypeRegistry]</code> attribute for that project.</p>
 <h2 id="example-multiprojectapp">Example: MultiProjectApp<a class="headerlink" href="#example-multiprojectapp" title="Permanent link">&para;</a></h2>
 <p>The <code>src/Examples/MultiProjectApp/</code> example in this repository demonstrates this pattern end-to-end:</p>
 <ul>
 <li>Feature projects (<code>Notifications</code>, <code>Reporting</code>) each have their own TypeRegistry</li>
 <li><code>Bootstrap</code> references both feature projects, acting as the single "pull everything in" anchor</li>
+<li><code>Contracts</code> is a pure-domain library (records/enums only) with no injection packages; <code>Bootstrap</code> references it to exercise the minimal type-less registry — force-loading it compiles without <code>CS0234</code></li>
 <li>Entry points (<code>ConsoleApp</code>, <code>WorkerApp</code>) reference only Bootstrap</li>
 <li><code>ConsoleApp.Tests</code> and <code>Features.Reporting.Tests</code> set <code>NeedlrAutoGenerate=false</code> — they consume TypeRegistries from referenced projects but don't produce their own</li>
 <li><code>Integration.Tests</code> keeps source gen enabled and registers test-only plugin types (<code>TestInfrastructurePlugin</code>) that are discovered automatically alongside the real feature plugins</li>

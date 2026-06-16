@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 06/14/2026 - 17:25:32 |
-| Coverage date: | 06/14/2026 - 17:22:39 - 06/14/2026 - 17:25:27 |
+| Generated on: | 06/16/2026 - 15:33:56 |
+| Coverage date: | 06/16/2026 - 15:31:11 - 06/16/2026 - 15:33:51 |
 | Parser: | MultiReport (32x Cobertura) |
 | Assemblies: | 28 |
-| Classes: | 542 |
-| Files: | 531 |
-| **Line coverage:** | 86.5% (23189 of 26794) |
-| Covered lines: | 23189 |
-| Uncovered lines: | 3605 |
-| Coverable lines: | 26794 |
-| Total lines: | 65153 |
-| **Branch coverage:** | 75.5% (9019 of 11944) |
-| Covered branches: | 9019 |
+| Classes: | 543 |
+| Files: | 532 |
+| **Line coverage:** | 86.5% (23249 of 26852) |
+| Covered lines: | 23249 |
+| Uncovered lines: | 3603 |
+| Coverable lines: | 26852 |
+| Total lines: | 65263 |
+| **Branch coverage:** | 75.5% (9021 of 11944) |
+| Covered branches: | 9021 |
 | Total branches: | 11944 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -489,16 +489,17 @@
 |NexusLabs.Needlr.FluentValidation.ValidationFailureConverter|88.8%|50%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 84.1%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 84.3%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**84.1%**|**72.5%**|
+|**NexusLabs.Needlr.Generators**|**84.3%**|**72.6%**|
 |NexusLabs.Needlr.Generators.AssemblyDiscoveryHelper|42.7%|50%|
 |NexusLabs.Needlr.Generators.BreadcrumbWriter|91.8%|83.3%|
 |NexusLabs.Needlr.Generators.CaptiveDependencyAnalyzer|89.3%|88%|
 |NexusLabs.Needlr.Generators.CodeGen.BootstrapCodeGenerator|100%|100%|
 |NexusLabs.Needlr.Generators.CodeGen.DecoratorsCodeGenerator|84.9%|81.8%|
+|NexusLabs.Needlr.Generators.CodeGen.EmptyTypeRegistryCodeGenerator|100%||
 |NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator|99.2%|86%|
 |NexusLabs.Needlr.Generators.CodeGen.HttpClientCodeGenerator|0%|0%|
 |NexusLabs.Needlr.Generators.CodeGen.InjectableTypesCodeGenerator|88%|86.3%|
@@ -561,7 +562,7 @@
 |NexusLabs.Needlr.Generators.ProviderAttributeAnalyzer|91.8%|73.2%|
 |NexusLabs.Needlr.Generators.ProviderDiscoveryHelper|91.5%|86.2%|
 |NexusLabs.Needlr.Generators.TypeDiscoveryHelper|85.5%|81.7%|
-|NexusLabs.Needlr.Generators.TypeRegistryGenerator|94%|85.1%|
+|NexusLabs.Needlr.Generators.TypeRegistryGenerator|94.5%|85.8%|
 |NexusLabs.Needlr.Generators.UnsupportedDataAnnotationAnalyzer|95.5%|81.8%|
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
