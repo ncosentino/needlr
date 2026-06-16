@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+## [0.0.2-alpha.63] - 2026-06-16
+
+### Fixed
+
+- **The source generator (`TypeRegistryGenerator`) now emits a minimal `TypeRegistry` for an attribute-carrying assembly that has no registerable types, instead of emitting nothing — fixing a `CS0234` build failure when another project references such an assembly.** Under solution-wide `NeedlrAutoGenerate=true`, every project receives `[assembly: GenerateTypeRegistry]`, including pure-domain / contracts / abstractions libraries made up only of `record`, `enum`, and `interface` types (none of which are auto-registered). Previously the generator's producer side emitted nothing for a type-less assembly, but the consumer side still emitted `_ = typeof(<Assembly>.Generated.TypeRegistry).Assembly;` in the referencing project's generated `NeedlrSourceGenBootstrap.g.cs` force-load block. So adding — or referencing — a type-less participant broke the next build with `error CS0234: The type or namespace name 'Generated' does not exist in the namespace '<Assembly>'`, inside generated code the consumer cannot edit, and the correct opt-out (`NeedlrAutoGenerate=false`) was non-obvious from the error. The generator now emits a minimal registry (empty `GetInjectableTypes()` / `GetPluginTypes()` providers plus a `[ModuleInitializer]` calling the two-argument `NeedlrSourceGenBootstrap.Register`) for any assembly that declares the attribute but has nothing to register. The minimal registry depends **only** on `NexusLabs.Needlr.Generators.Attributes` (which a project must already reference to use the attribute) and not on the injection packages, so it compiles even for a project that references no Needlr injection packages; it registers no `ServiceCatalog` and applies no decorators because there is nothing to register. An assembly that does not declare `[GenerateTypeRegistry]` (e.g. one with `NeedlrAutoGenerate=false`) still emits nothing.
+
+### Changed
+
+- **A type-less project that carries `[GenerateTypeRegistry]` now emits a minimal `TypeRegistry` and a `[ModuleInitializer]` where it previously emitted no generated output.** This is the mechanism of the `CS0234` fix above and is required so the assembly is force-loadable by consumers; at runtime its module initializer registers empty providers (harmless). To opt a project out of source-gen participation entirely — no registry, no module initializer — set `NeedlrAutoGenerate=false`, which suppresses the attribute. The `src/Examples/MultiProjectApp` example adds a `Contracts` project (records / enums only, no injection packages) referenced by `Bootstrap` to exercise and guard this path against regression.
+
 ## [0.0.2-alpha.62] - 2026-06-14
 
 ### Added
