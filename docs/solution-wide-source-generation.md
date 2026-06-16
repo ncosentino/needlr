@@ -82,12 +82,23 @@ When you call `new Syringe().UsingSourceGen()`, it calls `TryGetProviders()`, wh
 - An entry-point project referencing a Bootstrap project (which references feature projects) gets all types from all of them
 - Test projects that reference any of those get full service resolution without needing their own TypeRegistry
 
+### Participants With No Registerable Types
+
+A project can carry `[assembly: GenerateTypeRegistry]` (for example because `NeedlrAutoGenerate=true` is set solution-wide) yet contain nothing to register — a domain, contracts, or abstractions library made up only of `record`, `enum`, and `interface` types is the common case.
+
+Such a project still emits a **minimal** `TypeRegistry` (empty `GetInjectableTypes()` / `GetPluginTypes()` providers and a module initializer). This matters because any project that references it force-loads `typeof(<Assembly>.Generated.TypeRegistry)` to run that module initializer; if the registry were omitted, the referencing project would fail to compile with `CS0234`. Emitting the minimal registry keeps the producer and consumer in agreement, so adding a type-less participant never breaks an aggregator build.
+
+The minimal registry depends only on the attributes package (`NexusLabs.Needlr.Generators.Attributes`) — never on the injection packages. A project must already reference the attributes package to use `[GenerateTypeRegistry]`, so the registry always compiles, **even for a project that references no Needlr injection packages** (a pure contracts or documentation library). It does not register a `ServiceCatalog` or apply decorators, because there is nothing to register.
+
+To opt a project out of participation entirely — so it emits no `TypeRegistry` and no module initializer at all — set `NeedlrAutoGenerate=false`, which suppresses the `[GenerateTypeRegistry]` attribute for that project.
+
 ## Example: MultiProjectApp
 
 The `src/Examples/MultiProjectApp/` example in this repository demonstrates this pattern end-to-end:
 
 - Feature projects (`Notifications`, `Reporting`) each have their own TypeRegistry
 - `Bootstrap` references both feature projects, acting as the single "pull everything in" anchor
+- `Contracts` is a pure-domain library (records/enums only) with no injection packages; `Bootstrap` references it to exercise the minimal type-less registry — force-loading it compiles without `CS0234`
 - Entry points (`ConsoleApp`, `WorkerApp`) reference only Bootstrap
 - `ConsoleApp.Tests` and `Features.Reporting.Tests` set `NeedlrAutoGenerate=false` — they consume TypeRegistries from referenced projects but don't produce their own
 - `Integration.Tests` keeps source gen enabled and registers test-only plugin types (`TestInfrastructurePlugin`) that are discovered automatically alongside the real feature plugins

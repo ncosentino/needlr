@@ -1142,24 +1142,58 @@ namespace NexusLabs.Needlr
 }";
 
     [Fact]
-    public void Generator_WithNoInjectableTypes_EmitsNoOutput()
+    public void Generator_WithNoTypes_EmitsMinimalInjectionFreeRegistry()
     {
-        // A project that has [GenerateTypeRegistry] but zero injectable (auto-registerable) types.
-        // The generator should emit nothing — no TypeRegistry, no bootstrap initializer.
-        // This prevents compile errors in projects that don't reference Needlr injection packages
-        // (e.g. a documentation-only project or a Roslyn test harness).
-        // Use IncludeNamespacePrefixes to scope discovery to this assembly only.
-        // In real projects, NeedlrNamespacePrefix=$(MSBuildProjectName) is set in Directory.Build.props,
-        // which has the same effect of scoping discovery to only the project's own types.
+        // A type-less participant: carries [GenerateTypeRegistry] but has only non-registerable types
+        // (records/enums/interfaces) and references ONLY the attributes assembly — no Needlr injection
+        // packages. It still emits a minimal Generated.TypeRegistry so consumers that force-load
+        // typeof(DomainOnly.Generated.TypeRegistry) compile. The emitted code depends only on the
+        // attributes package, so it references neither IServiceCollection nor IServiceCatalog.
         var source = @"
 using NexusLabs.Needlr.Generators;
 
-[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""DocumentationOnly"" })]
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""DomainOnly"" })]
 
-namespace DocumentationOnly
+namespace DomainOnly
 {
-    public static class Constants { public const string Version = ""1.0""; }
-    public static class Helpers { public static string Format(string s) => s; }
+    public sealed record Thing(int Value);
+}";
+
+        var files = GeneratorTestRunner.ForTypeRegistry()
+            .WithAssemblyName("DomainOnly")
+            .WithSource(source)
+            .RunTypeRegistryGeneratorFiles();
+
+        var registry = files.FirstOrDefault(f => f.FilePath.EndsWith("TypeRegistry.g.cs"));
+        Assert.NotNull(registry);
+        Assert.Contains("namespace DomainOnly.Generated;", registry!.Content);
+        Assert.Contains("GetInjectableTypes()", registry.Content);
+        Assert.Contains("GetPluginTypes()", registry.Content);
+        // Injection-free: no ApplyDecorators, no IServiceCollection, no IServiceCatalog.
+        Assert.DoesNotContain("IServiceCollection", registry.Content);
+        Assert.DoesNotContain("IServiceCatalog", registry.Content);
+        Assert.DoesNotContain("ApplyDecorators", registry.Content);
+
+        var bootstrap = files.FirstOrDefault(f => f.FilePath.EndsWith("NeedlrSourceGenBootstrap.g.cs"));
+        Assert.NotNull(bootstrap);
+        Assert.Contains("NeedlrSourceGenBootstrap.Register(", bootstrap!.Content);
+        Assert.DoesNotContain("IServiceCollection", bootstrap.Content);
+
+        // No ServiceCatalog is emitted for an assembly with nothing to catalog.
+        Assert.DoesNotContain(files, f => f.FilePath.EndsWith("ServiceCatalog.g.cs"));
+    }
+
+    [Fact]
+    public void Generator_WithNoGenerateTypeRegistryAttribute_EmitsNoOutput()
+    {
+        // The only "emit nothing" case: an assembly that does not declare [GenerateTypeRegistry] is not
+        // a Needlr participant, so the generator produces no TypeRegistry and no bootstrap initializer.
+        // This is how a project opts out entirely (e.g. via NeedlrAutoGenerate=false, which suppresses
+        // the attribute).
+        var source = @"
+namespace NotAParticipant
+{
+    public sealed class MyService { }
 }";
 
         var generatedCode = GeneratorTestRunner.ForTypeRegistry()
@@ -1167,6 +1201,121 @@ namespace DocumentationOnly
             .RunTypeRegistryGenerator();
 
         Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void Generator_AggregatorReferencingTypelessParticipant_CompilesWithoutCS0234()
+    {
+        // End-to-end regression: a type-less participant ([GenerateTypeRegistry], records only) that
+        // references NO Needlr injection packages is referenced by an aggregator that participates.
+        // The aggregator's bootstrap force-loads typeof(DomainOnly.Generated.TypeRegistry); before the
+        // fix the producer emitted no registry for DomainOnly, so the aggregator failed with CS0234.
+        var (domainGenerated, domainEmit, aggregatorGenerated, aggregatorEmit) =
+            CompileTypelessParticipantThenAggregator();
+
+        // The type-less participant emits a minimal registry that compiles WITHOUT injection packages.
+        Assert.Contains("namespace DomainOnly.Generated;", domainGenerated);
+        Assert.True(domainEmit.Success,
+            "Type-less participant failed to compile: " +
+            string.Join("; ", domainEmit.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.GetMessage())));
+
+        // The aggregator force-loads the participant's registry, and that reference now resolves.
+        Assert.Contains("typeof(global::DomainOnly.Generated.TypeRegistry).Assembly", aggregatorGenerated);
+        Assert.DoesNotContain(aggregatorEmit.Diagnostics, d => d.Id == "CS0234");
+        Assert.True(aggregatorEmit.Success,
+            "Aggregator failed to compile: " +
+            string.Join("; ", aggregatorEmit.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.GetMessage())));
+    }
+
+    private static (string domainGenerated, Microsoft.CodeAnalysis.Emit.EmitResult domainEmit, string aggregatorGenerated, Microsoft.CodeAnalysis.Emit.EmitResult aggregatorEmit)
+        CompileTypelessParticipantThenAggregator()
+    {
+        var domainSource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""DomainOnly"" })]
+
+namespace DomainOnly
+{
+    public sealed record Thing(int Value);
+}";
+
+        var aggregatorSource = @"
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""Aggregator"" })]
+
+namespace Aggregator
+{
+    public sealed class MyService { }
+}";
+
+        // The participant references ONLY the attributes assembly — no Needlr injection packages —
+        // proving the minimal registry it emits is injection-free (the documentation/contracts case).
+        var attributesRef = (MetadataReference)MetadataReference.CreateFromFile(
+            typeof(NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute).Assembly.Location);
+        var domainReferences = Basic.Reference.Assemblies.Net100.References.All
+            .Append(attributesRef)
+            .ToArray();
+
+        // The aggregator additionally references the injection runtime (it has a real service to
+        // register) plus the compiled participant assembly.
+        var aggregatorBaseReferences = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(new[]
+            {
+                typeof(NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute).Assembly.Location,
+                typeof(NexusLabs.Needlr.Catalog.IServiceCatalog).Assembly.Location,
+                typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location,
+                typeof(Microsoft.Extensions.Configuration.IConfiguration).Assembly.Location,
+            }
+            .Distinct()
+            .Select(loc => (MetadataReference)MetadataReference.CreateFromFile(loc)))
+            .ToArray();
+
+        // Compile the type-less participant WITH the generator, then emit it so its metadata
+        // contains DomainOnly.Generated.TypeRegistry (the minimal registry produced by the fix).
+        var domainCompilation = CSharpCompilation.Create(
+            "DomainOnly",
+            new[] { CSharpSyntaxTree.ParseText(domainSource) },
+            domainReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var domainDriver = CSharpGeneratorDriver.Create(new TypeRegistryGenerator());
+        domainDriver = (CSharpGeneratorDriver)domainDriver.RunGeneratorsAndUpdateCompilation(
+            domainCompilation, out var domainOutput, out _);
+
+        var domainGenerated = string.Join("\n", domainOutput.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .Select(t => t.GetText().ToString()));
+
+        using var domainStream = new System.IO.MemoryStream();
+        var domainEmit = domainOutput.Emit(domainStream);
+        domainStream.Position = 0;
+        var domainReference = MetadataReference.CreateFromStream(domainStream);
+
+        // Compile the aggregator that references the participant and run the generator.
+        var aggregatorCompilation = CSharpCompilation.Create(
+            "Aggregator",
+            new[] { CSharpSyntaxTree.ParseText(aggregatorSource) },
+            aggregatorBaseReferences.Append(domainReference),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var aggregatorDriver = CSharpGeneratorDriver.Create(new TypeRegistryGenerator());
+        aggregatorDriver = (CSharpGeneratorDriver)aggregatorDriver.RunGeneratorsAndUpdateCompilation(
+            aggregatorCompilation, out var aggregatorOutput, out _);
+
+        var aggregatorGenerated = string.Join("\n", aggregatorOutput.SyntaxTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .Select(t => t.GetText().ToString()));
+
+        using var aggregatorStream = new System.IO.MemoryStream();
+        var aggregatorEmit = aggregatorOutput.Emit(aggregatorStream);
+
+        return (domainGenerated, domainEmit, aggregatorGenerated, aggregatorEmit);
     }
 
     // -------------------------------------------------------------------------

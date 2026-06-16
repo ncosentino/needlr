@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!--
+      A pure-domain/contracts library. NeedlrAutoGenerate=true is inherited from Directory.Build.props,
+      so it carries [assembly: GenerateTypeRegistry], but it contains only records and enums (nothing
+      to register) and references NO Needlr injection packages. The generator still emits a minimal,
+      injection-free TypeRegistry for it.
+
+      This is the scenario that used to break the build: MultiProjectApp.Bootstrap references this
+      project and force-loads typeof(MultiProjectApp.Contracts.Generated.TypeRegistry). Without the
+      minimal registry, that reference would not compile (CS0234). Building the aggregator chain
+      (e.g. MultiProjectApp.ConsoleApp) therefore guards that regression.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Attributes provides [GenerateTypeRegistry]; the generator runs as an analyzer. No injection packages. -->
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

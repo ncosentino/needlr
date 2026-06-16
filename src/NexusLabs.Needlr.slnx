@@ -65,6 +65,7 @@
   </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
+    <Project Path="Examples/MultiProjectApp/MultiProjectApp.Contracts/MultiProjectApp.Contracts.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.ConsoleApp/MultiProjectApp.ConsoleApp.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.ConsoleApp.Tests/MultiProjectApp.ConsoleApp.Tests.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Features.Notifications/MultiProjectApp.Features.Notifications.csproj" />

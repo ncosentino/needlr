@@ -56,13 +56,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // If nothing was discovered — no injectable types, factories, providers, options,
+            // Nothing was discovered: no injectable types, factories, providers, options,
             // interceptors, hosted services, plugins, no referenced assemblies to force-load,
-            // no inaccessible type errors, and no missing TypeRegistry warnings —
-            // emit nothing. This avoids compile errors in projects that don't reference Needlr
-            // injection packages (e.g. a documentation-only project): the generated bootstrap code
-            // references types from those packages and would fail to build without them.
-            if (discoveryResult.InjectableTypes.Count == 0 &&
+            // no inaccessible type errors, and no missing TypeRegistry warnings.
+            var nothingDiscovered =
+                discoveryResult.InjectableTypes.Count == 0 &&
                 discoveryResult.PluginTypes.Count == 0 &&
                 discoveryResult.Decorators.Count == 0 &&
                 discoveryResult.InterceptedServices.Count == 0 &&
@@ -73,8 +71,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 discoveryResult.Providers.Count == 0 &&
                 discoveryResult.InaccessibleTypes.Count == 0 &&
                 discoveryResult.MissingTypeRegistryPlugins.Count == 0 &&
-                referencedAssemblies.Count == 0)
+                referencedAssemblies.Count == 0;
+
+            // A type-less assembly that still carries [GenerateTypeRegistry] (guaranteed here by the
+            // attributeInfo guard above) is a declared Needlr participant. Consumers force-load
+            // typeof({Assembly}.Generated.TypeRegistry) for every attribute-carrying referenced
+            // assembly, so emitting nothing makes those consumers fail to compile with CS0234. Emit
+            // a minimal registry instead. It depends only on the attributes package (never the
+            // injection packages), so it compiles whether or not this assembly references them — a
+            // domain, contracts, or documentation-only project participates without being forced to
+            // take a dependency it would not otherwise have.
+            if (nothingDiscovered)
             {
+                var emptyRegistrySource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateTypeRegistrySource(assemblyName, breadcrumbs);
+                spc.AddSource("TypeRegistry.g.cs", SourceText.From(emptyRegistrySource, Encoding.UTF8));
+
+                var emptyBootstrapSource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateBootstrapSource(assemblyName, breadcrumbs);
+                spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(emptyBootstrapSource, Encoding.UTF8));
                 return;
             }
 

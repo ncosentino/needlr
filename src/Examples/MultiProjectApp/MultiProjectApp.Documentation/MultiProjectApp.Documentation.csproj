@@ -7,10 +7,11 @@
     <IsPackable>false</IsPackable>
     <!--
       This project intentionally has NO injectable types and references NO Needlr injection packages.
-      It demonstrates that a project with NeedlrAutoGenerate=true (inherited from Directory.Build.props)
-      and zero injectable types compiles cleanly without any explicit NeedlrAutoGenerate=false opt-out.
-      The generator detects that there is nothing to register and emits no output, avoiding compile
-      errors that would otherwise occur because the generated bootstrap code references IServiceCollection.
+      It carries [assembly: GenerateTypeRegistry] (NeedlrAutoGenerate=true is inherited from
+      Directory.Build.props) but has nothing to register. The generator emits a minimal,
+      injection-free TypeRegistry for it: it depends only on the attributes package, so the project
+      compiles cleanly without referencing IServiceCollection / IServiceCatalog, and it can be
+      referenced by an aggregator without causing a CS0234 force-load failure.
     -->
   </PropertyGroup>
 

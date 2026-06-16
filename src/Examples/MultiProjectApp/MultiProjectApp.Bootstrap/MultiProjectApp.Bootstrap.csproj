@@ -19,6 +19,10 @@
                       ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\MultiProjectApp.Features.Notifications\MultiProjectApp.Features.Notifications.csproj" />
     <ProjectReference Include="..\MultiProjectApp.Features.Reporting\MultiProjectApp.Features.Reporting.csproj" />
+    <!-- A type-less, injection-package-free contracts library. Referencing it exercises the empty
+         TypeRegistry force-load path: Bootstrap force-loads Contracts.Generated.TypeRegistry, which
+         the generator now always emits (minimally) for an attribute-carrying participant. -->
+    <ProjectReference Include="..\MultiProjectApp.Contracts\MultiProjectApp.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
