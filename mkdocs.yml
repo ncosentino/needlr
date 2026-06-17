@@ -84,6 +84,7 @@ nav:
     - Pipeline Metrics: pipeline-metrics.md
     - GenAI Token Metrics: gen-ai-token-metrics.md
     - Evaluation: evaluation.md
+    - Langfuse: langfuse.md
     - Testing Tool Integrations: testing-tools.md
     - Workspace: workspace.md
   - Advanced:
