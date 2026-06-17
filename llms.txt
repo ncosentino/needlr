@@ -37,6 +37,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Pipeline Metrics](https://github.devleader.ca/needlr/pipeline-metrics/) -- Pipeline-shape OpenTelemetry metrics and distributed-tracing spans emitted automatically by SequentialPipelineRunner — per-pipeline outcome, per-stage duration / tokens / tool-failures, parent + child activity spans.
 - [GenAI Token Metrics](https://github.devleader.ca/needlr/gen-ai-token-metrics/) -- Emit cache_read and reasoning measurements on the OpenTelemetry gen_ai.client.token.usage histogram so dashboards can answer "what's my prompt-cache hit ratio?" and "how many tokens went to reasoning vs final completion?" per LLM call.
 - [Evaluation](https://github.devleader.ca/needlr/evaluation/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Langfuse](https://github.devleader.ca/needlr/langfuse/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Testing Tool Integrations](https://github.devleader.ca/needlr/testing-tools/) -- Paved-path testing for [AgentFunction]-decorated tools. Use ToolInvocationRunner to exercise the source-generated AIFunction wrapper with seeded workspace state, zero hand-rolled DI, and the same code path FunctionInvokingChatClient takes in production.
 - [Workspace](https://github.devleader.ca/needlr/workspace/) -- Opinionated fluent dependency injection for .NET with source generation
 

@@ -562,6 +562,30 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.AgentFramework.Generators.TopologyGraphCodeGenerator", "rp": "NexusLabs.Needlr.AgentFramework.Generators_TopologyGraphCodeGenerator.html", "cl": 57, "ucl": 19, "cal": 76, "tl": 160, "cb": 36, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
+    "name": "NexusLabs.Needlr.AgentFramework.Langfuse",
+    "classes": [
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScenario", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_DisabledLangfuseScenario.html", "cl": 6, "ucl": 1, "cal": 7, "tl": 39, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScoreClient", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_DisabledLangfuseScoreClient.html", "cl": 3, "ucl": 3, "cal": 6, "tl": 32, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseSession", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_DisabledLangfuseSession.html", "cl": 4, "ucl": 1, "cal": 5, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseActivitySource", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseActivitySource.html", "cl": 1, "ucl": 0, "cal": 1, "tl": 24, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEndpoints", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseEndpoints.html", "cl": 53, "ucl": 1, "cal": 54, "tl": 127, "cb": 19, "tb": 21, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreExtensions", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseEvaluationScoreExtensions.html", "cl": 16, "ucl": 3, "cal": 19, "tl": 82, "cb": 4, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseException", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseException.html", "cl": 2, "ucl": 2, "cal": 4, "tl": 26, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExportGuard", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseExportGuard.html", "cl": 9, "ucl": 0, "cal": 9, "tl": 30, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseOptions.html", "cl": 32, "ucl": 0, "cal": 32, "tl": 223, "cb": 10, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScenario.html", "cl": 40, "ucl": 7, "cal": 47, "tl": 117, "cb": 21, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScore", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScore.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreApiClient", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreApiClient.html", "cl": 34, "ucl": 3, "cal": 37, "tl": 86, "cb": 5, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreClient", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreClient.html", "cl": 7, "ucl": 5, "cal": 12, "tl": 44, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreError", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreError.html", "cl": 1, "ucl": 0, "cal": 1, "tl": 12, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureSink", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreFailureSink.html", "cl": 13, "ucl": 0, "cal": 13, "tl": 44, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecorder", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreRecorder.html", "cl": 49, "ucl": 7, "cal": 56, "tl": 138, "cb": 27, "tb": 28, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseServiceCollectionExtensions.html", "cl": 39, "ucl": 7, "cal": 46, "tl": 101, "cb": 8, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseSession", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseSession.html", "cl": 0, "ucl": 36, "cal": 36, "tl": 94, "cb": 0, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseTelemetry.html", "cl": 4, "ucl": 41, "cal": 45, "tl": 126, "cb": 1, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceAttributeProcessor", "rp": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseTraceAttributeProcessor.html", "cl": 41, "ucl": 7, "cal": 48, "tl": 127, "cb": 40, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+    ]},
+  {
     "name": "NexusLabs.Needlr.AgentFramework.Testing",
     "classes": [
       { "name": "NexusLabs.Needlr.AgentFramework.Testing.AgentExecutionContextBuilder", "rp": "NexusLabs.Needlr.AgentFramework.Testing_AgentExecutionContextBuilder.html", "cl": 22, "ucl": 5, "cal": 27, "tl": 107, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -1495,6 +1519,12 @@ var riskHotspots = [
       { "value": 42, "exceeded": true },
     ]},
   {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Langfuse", "class": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseSession", "reportPath": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseSession.html", "methodName": "ToTimeoutMilliseconds(System.Nullable\u00601\u003CSystem.TimeSpan\u003E)", "methodShortName": "ToTimeoutMilliseconds(...)", "fileIndex": 0, "line": 81,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 6, "exceeded": false },
+    ]},
+  {
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_PluginConstructorDependenciesAnalyzer.html", "methodName": "ImplementsPluginInterface(Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax,Microsoft.CodeAnalysis.SemanticModel)", "methodShortName": "ImplementsPluginInterface(...)", "fileIndex": 0, "line": 88,
     "metrics": [
       { "value": 42, "exceeded": true },
@@ -1619,6 +1649,12 @@ var riskHotspots = [
     "metrics": [
       { "value": 40, "exceeded": true },
       { "value": 40, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Langfuse", "class": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceAttributeProcessor", "reportPath": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseTraceAttributeProcessor.html", "methodName": "ReadTokenTag(System.Diagnostics.Activity,System.String)", "methodShortName": "ReadTokenTag(...)", "fileIndex": 0, "line": 117,
+    "metrics": [
+      { "value": 39, "exceeded": true },
+      { "value": 14, "exceeded": false },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "BuildTypeLookup(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Models.DiscoveredType\u003E\u003E)", "methodShortName": "BuildTypeLookup(...)", "fileIndex": 0, "line": 99,
@@ -2030,6 +2066,12 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.AgentDiscoveryHelper", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_AgentDiscoveryHelper.html", "methodName": "BuildObjectPropertyInfos(Microsoft.CodeAnalysis.ITypeSymbol)", "methodShortName": "BuildObjectPropertyInfos(...)", "fileIndex": 0, "line": 671,
+    "metrics": [
+      { "value": 22, "exceeded": false },
+      { "value": 22, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Langfuse", "class": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceAttributeProcessor", "reportPath": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseTraceAttributeProcessor.html", "methodName": "SetUsageDetails(System.Diagnostics.Activity)", "methodShortName": "SetUsageDetails(...)", "fileIndex": 0, "line": 92,
     "metrics": [
       { "value": 22, "exceeded": false },
       { "value": 22, "exceeded": true },
@@ -2468,6 +2510,18 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.AgentFramework.Generators", "class": "NexusLabs.Needlr.AgentFramework.Generators.GraphDiscoveryHelper", "reportPath": "NexusLabs.Needlr.AgentFramework.Generators_GraphDiscoveryHelper.html", "methodName": "GetGraphNodeEntries(Microsoft.CodeAnalysis.GeneratorAttributeSyntaxContext,System.Threading.CancellationToken)", "methodShortName": "GetGraphNodeEntries(...)", "fileIndex": 0, "line": 118,
+    "metrics": [
+      { "value": 16, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Langfuse", "class": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario", "reportPath": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScenario.html", "methodName": "ApplyTraceAttributes(System.Diagnostics.Activity,System.String,System.String,System.String,System.Collections.Generic.IEnumerable\u00601\u003CSystem.String\u003E,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.String\u003E)", "methodShortName": "ApplyTraceAttributes(...)", "fileIndex": 0, "line": 78,
+    "metrics": [
+      { "value": 16, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.AgentFramework.Langfuse", "class": "NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecorder", "reportPath": "NexusLabs.Needlr.AgentFramework.Langfuse_LangfuseScoreRecorder.html", "methodName": "RecordEvaluationAsync()", "methodShortName": "RecordEvaluationAsync()", "fileIndex": 0, "line": 50,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
