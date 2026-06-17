@@ -47,6 +47,8 @@
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp/IterativeTripPlannerApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Core/IterativeTripPlannerApp.Core.csproj" />
     <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Evaluation/IterativeTripPlannerApp.Evaluation.csproj" />
+    <Project Path="Examples/AgentFramework/LangfuseEvaluationApp/LangfuseEvaluationApp.csproj" />
+    <Project Path="Examples/AgentFramework/LangfuseConformanceApp/LangfuseConformanceApp.csproj" />
     <Project Path="Examples/AgentFramework/DevUIApp/DevUIApp.csproj" />
     <Project Path="Examples/AgentFramework/DiagnosticAttributionApp/DiagnosticAttributionApp.csproj" />
     <Project Path="Examples/AgentFramework/IterativeLoopDiagnosticsApp/IterativeLoopDiagnosticsApp.csproj" />
@@ -136,6 +138,8 @@
     <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation/NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Langfuse/NexusLabs.Needlr.AgentFramework.Langfuse.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Langfuse.Tests/NexusLabs.Needlr.AgentFramework.Langfuse.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Testing/NexusLabs.Needlr.AgentFramework.Testing.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests/NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests.csproj" />

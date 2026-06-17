@@ -56,9 +56,10 @@
     <!-- ASP.NET packages -->
     <PackageVersion Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
-    <!-- OpenTelemetry SDK (test-only — used to verify gen_ai histogram bucket-boundary flow end-to-end) -->
     <PackageVersion Include="OpenTelemetry" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
     <!-- Testing packages -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.3" />
