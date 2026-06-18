@@ -61,6 +61,14 @@ if (args.Length > 0 && string.Equals(args[0], "resiliency", StringComparison.Ord
     return await RunResiliencyCheckAsync();
 }
 
+// "experiments" mode exercises the dataset/experiment, score-config, comment,
+// trace-context, and session-score features end to end against a LIVE Langfuse,
+// then reads each one back through the public API to prove it landed.
+if (args.Length > 0 && string.Equals(args[0], "experiments", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunExperimentsCheckAsync();
+}
+
 var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
 var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
 var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
@@ -317,6 +325,308 @@ static async Task<int> RunResiliencyCheckAsync()
 
     Console.WriteLine("RESILIENCY FAILED — failures were not surfaced as expected.");
     return 1;
+}
+
+// ── Experiments mode: prove every Wave-1..3 capability against a LIVE Langfuse ─
+// Exercises datasets + experiment runs (dataset-run-items), score configs,
+// comments, trace context (environment/release/public/input/output), and
+// session scoring — then reads each back through the public API to prove it
+// actually landed.
+static async Task<int> RunExperimentsCheckAsync()
+{
+    var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
+    var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
+    var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
+
+    if (string.IsNullOrWhiteSpace(publicKey) || string.IsNullOrWhiteSpace(secretKey))
+    {
+        Console.WriteLine("This check requires a LIVE Langfuse instance.");
+        Console.WriteLine("Set LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY (and optionally LANGFUSE_HOST) and re-run.");
+        return 2;
+    }
+
+    Console.WriteLine($"[setup] Langfuse host: {host}");
+
+    var runId = $"needlr-exp-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}";
+    const string datasetName = "needlr-conformance-dataset";
+    const string configName = "needlr_conformance_score";
+    var sessionId = $"{runId}-session";
+
+    var options = new LangfuseOptions
+    {
+        PublicKey = publicKey,
+        SecretKey = secretKey,
+        Host = host,
+        ServiceName = "needlr-langfuse-experiments",
+        Environment = "needlr-conformance",
+        Release = runId,
+        ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        DiagnosticsCallback = msg => Console.WriteLine($"[langfuse] {msg}"),
+    };
+
+    var serviceProvider = new Syringe()
+        .UsingReflection()
+        .UsingAgentFramework(af => af
+            .Configure(opts => opts.ChatClientFactory = _ => new MockChatClient())
+            .UsingDiagnostics())
+        .BuildServiceProvider(new ConfigurationBuilder().Build());
+
+    var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+    var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    if (!langfuse.IsEnabled)
+    {
+        Console.WriteLine("[error] Langfuse export did not enable — check keys/host.");
+        return 2;
+    }
+
+    // P2 — score config (idempotent)
+    await langfuse.ScoreConfigs.EnsureScoreConfigAsync(new LangfuseScoreConfig
+    {
+        Name = configName,
+        DataType = LangfuseScoreDataType.Numeric,
+        MinValue = 0,
+        MaxValue = 1,
+        Description = "Needlr conformance numeric score config.",
+    });
+    Console.WriteLine($"[setup] Ensured score config '{configName}'.");
+
+    // P1 — dataset + items
+    await langfuse.Datasets.EnsureDatasetAsync(datasetName, "Needlr conformance dataset.");
+    var items = new[] { "case-cached", "case-fresh" };
+    foreach (var id in items)
+    {
+        await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
+        {
+            DatasetName = datasetName,
+            Id = id,
+            Input = new { prompt = $"Summarize content for {id}." },
+            ExpectedOutput = "a concise summary",
+        });
+    }
+    Console.WriteLine($"[setup] Ensured dataset '{datasetName}' with {items.Length} items.");
+
+    // P1 — experiment run: a trace per item, linked as a dataset-run-item
+    var run = langfuse.BeginExperimentRun(datasetName, runId, "Needlr conformance run.");
+    var itemTraceIds = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    foreach (var id in items)
+    {
+        using var scenario = await run.BeginItemAsync(id, scenarioName: $"exp: {id}", tags: ["conformance", "experiment"]);
+        var traceId = scenario.TraceId;
+        if (string.IsNullOrEmpty(traceId))
+        {
+            Console.WriteLine($"[error] No trace id for item '{id}'.");
+            return 2;
+        }
+
+        itemTraceIds[id] = traceId;
+
+        // P4/P6 — trace context
+        scenario.SetInput(new { prompt = $"Summarize content for {id}." });
+        scenario.SetVersion("prompt-v1");
+        scenario.SetTracePublic();
+
+        var diagnostics = await RunMockAsync(loop, diagnosticsAccessor, $"summary-{id}");
+        if (diagnostics is null)
+        {
+            Console.WriteLine("[error] No diagnostics captured.");
+            return 2;
+        }
+
+        scenario.SetOutput("Mock summary of the cached prompt content.");
+
+        var inputs = diagnostics.ToEvaluationInputs();
+        await scenario.EvaluateAndRecordAsync(
+            evaluators:
+            [
+                new EfficiencyEvaluator(tokenBudget: 200_000),
+                new IterationCoherenceEvaluator(maxIterations: 20),
+            ],
+            messages: inputs.Messages,
+            modelResponse: inputs.ModelResponse,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)]);
+    }
+    Console.WriteLine($"[run] Linked {itemTraceIds.Count} run item(s) to experiment '{runId}'.");
+
+    // P3 — session-level scoring (separate scenario carrying a session id)
+    using (var sessionScenario = langfuse.BeginScenario("exp: session-scored", sessionId: sessionId, tags: ["conformance"]))
+    {
+        await RunMockAsync(loop, diagnosticsAccessor, "session-trace");
+        await sessionScenario.RecordSessionScoreAsync("session_resolved", true, "Whole conversation resolved.");
+    }
+    Console.WriteLine($"[run] Recorded a session score on session '{sessionId}'.");
+
+    langfuse.Flush(TimeSpan.FromSeconds(10));
+    Console.WriteLine("[run] Flushed telemetry. Verifying read-back from Langfuse...");
+    Console.WriteLine();
+
+    using var http = new HttpClient { BaseAddress = new Uri(host.TrimEnd('/') + "/") };
+    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{publicKey}:{secretKey}")));
+
+    var firstTraceId = itemTraceIds[items[0]];
+
+    // P11 — comments require the target trace to already exist, so (unlike scores) they are a
+    // POST-FLUSH operation: wait for the trace to be ingested, then attach the comment by id.
+    var commentTraceReady = await PollAsync("trace ingestion (for comment)", 15, TimeSpan.FromSeconds(2),
+        async () => await GetRawAsync(http, $"api/public/traces/{Uri.EscapeDataString(firstTraceId)}") is not null);
+    if (commentTraceReady)
+    {
+        await langfuse.AddTraceCommentAsync(firstTraceId, $"Needlr conformance run {runId} — item {items[0]}.");
+    }
+
+    // CHECK — P1: the experiment run read-back references every item's trace.
+    var runReadBack = await PollAsync("experiment run items", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var body = await GetRawAsync(http, $"api/public/datasets/{Uri.EscapeDataString(datasetName)}/runs/{Uri.EscapeDataString(runId)}");
+        return body is not null && itemTraceIds.Values.All(body.Contains);
+    });
+
+    // CHECK — P2: the score config is readable by name.
+    var configReadBack = await PollAsync("score config", 10, TimeSpan.FromSeconds(2), async () =>
+    {
+        var body = await GetRawAsync(http, "api/public/score-configs?page=1&limit=100");
+        return body is not null && body.Contains($"\"{configName}\"", StringComparison.Ordinal);
+    });
+
+    // CHECK — P11: the trace comment is readable.
+    var commentReadBack = await PollAsync("trace comment", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var body = await GetRawAsync(http, $"api/public/comments?objectType=TRACE&objectId={Uri.EscapeDataString(firstTraceId)}");
+        return body is not null && body.Contains(runId, StringComparison.Ordinal);
+    });
+
+    // CHECK — P4/P6: trace context (environment, release, public, input, output).
+    var (contextReadBack, contextDetail) = await PollTraceContextAsync(http, firstTraceId, "needlr-conformance", runId);
+
+    // CHECK — scores: trace-level eval scores landed.
+    var traceScores = await PollForScoresAsync(http, firstTraceId, expectedCount: 1, attempts: 15, delay: TimeSpan.FromSeconds(2));
+
+    // CHECK — P3: the session score is readable by session id.
+    var sessionScoreReadBack = await PollAsync("session score", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var names = await GetScoreNamesByQueryAsync(http, $"sessionId={Uri.EscapeDataString(sessionId)}");
+        return names.Contains("session_resolved");
+    });
+
+    Console.WriteLine();
+    Console.WriteLine("── Results ──────────────────────────────────────────────");
+    Console.WriteLine($"  P1 experiment run-items linked:   {Mark(runReadBack)}");
+    Console.WriteLine($"  P2 score config readable:         {Mark(configReadBack)}");
+    Console.WriteLine($"  P11 trace comment readable:       {Mark(commentReadBack)}");
+    Console.WriteLine($"  P4/P6 trace context:              {Mark(contextReadBack)}  {contextDetail}");
+    Console.WriteLine($"  trace-level eval scores:          {Mark(traceScores.Count > 0)} ({traceScores.Count})");
+    Console.WriteLine($"  P3 session score readable:        {Mark(sessionScoreReadBack)}");
+    Console.WriteLine();
+
+    var passed = runReadBack && configReadBack && commentReadBack && contextReadBack
+        && traceScores.Count > 0 && sessionScoreReadBack;
+
+    if (passed)
+    {
+        Console.WriteLine("EXPERIMENTS CONFORMANCE PASSED — every new capability is GET-readable from Langfuse.");
+        return 0;
+    }
+
+    Console.WriteLine("EXPERIMENTS CONFORMANCE FAILED — see above. (Increase the poll window if your instance is slow.)");
+    return 1;
+}
+
+static string Mark(bool ok) => ok ? "PASS" : "FAIL";
+
+static async Task<IAgentRunDiagnostics?> RunMockAsync(IIterativeAgentLoop loop, IAgentDiagnosticsAccessor accessor, string loopName)
+{
+    var loopOptions = new IterativeLoopOptions
+    {
+        Instructions = "You summarise cached prompt content.",
+        PromptFactory = _ => "Summarize the cached prompt content.",
+        Tools = [],
+        MaxIterations = 1,
+        IsComplete = _ => true,
+        LoopName = loopName,
+    };
+
+    using (accessor.BeginCapture())
+    {
+        await loop.RunAsync(
+            loopOptions,
+            new IterativeContext { Workspace = new InMemoryWorkspace() },
+            CancellationToken.None);
+        return accessor.LastRunDiagnostics;
+    }
+}
+
+static async Task<string?> GetRawAsync(HttpClient http, string path)
+{
+    using var response = await http.GetAsync(path);
+    return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : null;
+}
+
+static async Task<(bool Ok, string Detail)> PollTraceContextAsync(HttpClient http, string traceId, string expectedEnvironment, string expectedRelease)
+{
+    for (var i = 1; i <= 15; i++)
+    {
+        var body = await GetRawAsync(http, $"api/public/traces/{Uri.EscapeDataString(traceId)}");
+        if (body is not null)
+        {
+            using var json = JsonDocument.Parse(body);
+            var root = json.RootElement;
+            var env = GetString(root, "environment");
+            var release = GetString(root, "release");
+            var isPublic = root.TryGetProperty("public", out var p) && p.ValueKind == JsonValueKind.True;
+            var hasInput = root.TryGetProperty("input", out var inp) && inp.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined;
+            var hasOutput = root.TryGetProperty("output", out var outp) && outp.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined;
+
+            if (string.Equals(env, expectedEnvironment, StringComparison.Ordinal)
+                && string.Equals(release, expectedRelease, StringComparison.Ordinal)
+                && isPublic && hasInput && hasOutput)
+            {
+                return (true, $"(env={env}, release={release}, public={isPublic}, input+output present)");
+            }
+
+            if (i == 15)
+            {
+                return (false, $"(env={env}, release={release}, public={isPublic}, input={hasInput}, output={hasOutput})");
+            }
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+    }
+
+    return (false, "(trace not found)");
+}
+
+static string? GetString(JsonElement element, string property) =>
+    element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
+        ? value.GetString()
+        : null;
+
+static async Task<HashSet<string>> GetScoreNamesByQueryAsync(HttpClient http, string query)
+{
+    var names = new HashSet<string>(StringComparer.Ordinal);
+
+    using var response = await http.GetAsync($"api/public/v3/scores?{query}&limit=100");
+    if (!response.IsSuccessStatusCode)
+    {
+        return names;
+    }
+
+    using var stream = await response.Content.ReadAsStreamAsync();
+    using var json = await JsonDocument.ParseAsync(stream);
+    if (json.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+    {
+        foreach (var score in data.EnumerateArray())
+        {
+            if (score.TryGetProperty("name", out var name) && name.GetString() is { } n)
+            {
+                names.Add(n);
+            }
+        }
+    }
+
+    return names;
 }
 
 static bool HasValue(EvaluationMetric metric) => metric switch

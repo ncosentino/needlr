@@ -66,7 +66,7 @@ public static class LangfuseTelemetry
             .AddSource(LangfuseActivitySource.Name)
             .AddSource(options.AgentActivitySourceName)
             .AddSource([.. options.AdditionalActivitySources])
-            .AddProcessor(new LangfuseTraceAttributeProcessor())
+            .AddProcessor(new LangfuseTraceAttributeProcessor(options.Environment, options.Release))
             .AddOtlpExporter(otlp => ConfigureOtlp(otlp, endpoints.TracesEndpoint, endpoints.Headers))
             .Build();
 
@@ -83,15 +83,28 @@ public static class LangfuseTelemetry
         }
 
         var httpClient = new HttpClient();
-        var apiClient = new LangfuseScoreApiClient(
+        var scoreApiClient = new LangfuseScoreApiClient(
             httpClient,
             endpoints.ScoresEndpoint,
             endpoints.AuthorizationHeaderValue);
+        var apiClient = new LangfuseApiClient(
+            httpClient,
+            endpoints.BaseUrl,
+            endpoints.AuthorizationHeaderValue);
 
         var failureSink = new LangfuseScoreFailureSink(options.ScoreFailureMode, options.ScoreErrorCallback);
-        var recorder = new LangfuseScoreRecorder(apiClient, failureSink, options.NormalizeScoreNames);
+        var recorder = new LangfuseScoreRecorder(scoreApiClient, failureSink, options.NormalizeScoreNames);
+        var commentRecorder = new LangfuseCommentRecorder(apiClient, options.DiagnosticsCallback);
 
-        return new LangfuseSession(tracerProvider, meterProvider, httpClient, recorder, failureSink);
+        return new LangfuseSession(
+            tracerProvider,
+            meterProvider,
+            httpClient,
+            recorder,
+            failureSink,
+            commentRecorder,
+            apiClient,
+            options.DiagnosticsCallback);
     }
 
     private static ResourceBuilder BuildResource(LangfuseOptions options)

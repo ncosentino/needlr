@@ -39,6 +39,26 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
     private const string ChatStreamActivityName = "agent.chat.stream";
     private const string ToolActivityPrefix = "agent.tool";
 
+    private readonly string? _environment;
+    private readonly string? _release;
+
+    /// <summary>
+    /// Initializes the processor with optional trace-level context propagated to every span.
+    /// </summary>
+    /// <param name="environment">
+    /// The Langfuse environment emitted as <c>langfuse.environment</c>, or <see langword="null"/>
+    /// to leave it unset.
+    /// </param>
+    /// <param name="release">
+    /// The release identifier emitted as <c>langfuse.release</c>, or <see langword="null"/> to
+    /// leave it unset.
+    /// </param>
+    public LangfuseTraceAttributeProcessor(string? environment = null, string? release = null)
+    {
+        _environment = string.IsNullOrWhiteSpace(environment) ? null : environment;
+        _release = string.IsNullOrWhiteSpace(release) ? null : release;
+    }
+
     /// <inheritdoc />
     public override void OnStart(Activity data)
     {
@@ -46,6 +66,7 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
 
         CopyBaggageToTags(data);
         SetObservationType(data);
+        SetContextAttributes(data);
     }
 
     /// <inheritdoc />
@@ -54,6 +75,19 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
         ArgumentNullException.ThrowIfNull(data);
 
         SetUsageDetails(data);
+    }
+
+    private void SetContextAttributes(Activity data)
+    {
+        if (_environment is not null && data.GetTagItem("langfuse.environment") is null)
+        {
+            data.SetTag("langfuse.environment", _environment);
+        }
+
+        if (_release is not null && data.GetTagItem("langfuse.release") is null)
+        {
+            data.SetTag("langfuse.release", _release);
+        }
     }
 
     private static void CopyBaggageToTags(Activity data)

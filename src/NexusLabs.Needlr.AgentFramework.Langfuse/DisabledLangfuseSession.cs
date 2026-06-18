@@ -13,6 +13,12 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
     public int ScoresFailed => 0;
 
     /// <inheritdoc />
+    public ILangfuseDatasetClient Datasets { get; } = new DisabledLangfuseDatasetClient();
+
+    /// <inheritdoc />
+    public ILangfuseScoreConfigClient ScoreConfigs { get; } = new DisabledLangfuseScoreConfigClient();
+
+    /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null) => true;
 
     /// <inheritdoc />
@@ -23,6 +29,14 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
         IEnumerable<string>? tags = null,
         IReadOnlyDictionary<string, string>? metadata = null) =>
         new DisabledLangfuseScenario();
+
+    /// <inheritdoc />
+    public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null) =>
+        new DisabledLangfuseExperimentRun(datasetName, runName);
+
+    /// <inheritdoc />
+    public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 
     /// <inheritdoc />
     public void Dispose()

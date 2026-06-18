@@ -74,4 +74,62 @@ public interface ILangfuseScenario : IDisposable
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
     Task RecordEvaluationAsync(EvaluationResult result, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks this scenario's trace as public so Langfuse exposes it via a shareable URL that needs
+    /// no login — useful for linking a failing eval trace in a pull request. No-op when the owning
+    /// session is disabled.
+    /// </summary>
+    /// <param name="isPublic">Whether the trace is public. Defaults to <see langword="true"/>.</param>
+    void SetTracePublic(bool isPublic = true);
+
+    /// <summary>
+    /// Sets the version of this scenario's trace (for example a git SHA or prompt/logic version),
+    /// emitted as <c>langfuse.version</c>. No-op when the owning session is disabled.
+    /// </summary>
+    /// <param name="version">The version identifier.</param>
+    void SetVersion(string version);
+
+    /// <summary>
+    /// Sets the trace-level input shown at the top of the trace in Langfuse. Strings are stored
+    /// verbatim; other values are serialized to JSON. No-op when the owning session is disabled.
+    /// </summary>
+    /// <param name="input">The input value (typically the eval's prompt or request).</param>
+    void SetInput(object input);
+
+    /// <summary>
+    /// Sets the trace-level output shown at the top of the trace in Langfuse. Strings are stored
+    /// verbatim; other values are serialized to JSON. Typically called with the agent's final
+    /// answer before the scenario is disposed. No-op when the owning session is disabled.
+    /// </summary>
+    /// <param name="output">The output value (typically the agent's final answer).</param>
+    void SetOutput(object output);
+
+    /// <summary>
+    /// Records a numeric score against the session this scenario belongs to (the session id passed
+    /// when the scenario began), scoring the whole multi-turn conversation rather than this single
+    /// trace. Surfaced as a non-fatal skip when the scenario has no session id.
+    /// </summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The numeric value.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Records a boolean session score (stored as <c>1</c>/<c>0</c>) for this scenario's session.</summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The boolean value.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Records a categorical session score for this scenario's session.</summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The category label.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default);
 }

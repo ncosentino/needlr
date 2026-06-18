@@ -34,15 +34,24 @@ internal sealed class LangfuseScoreRecorder
     }
 
     public Task RecordNumericAsync(string traceId, string name, double value, string? comment, CancellationToken cancellationToken) =>
-        SendAsync(traceId, name, value, NumericDataType, comment, cancellationToken);
+        RecordNumericAsync(LangfuseScoreTarget.Trace(traceId), name, value, comment, cancellationToken);
 
     public Task RecordBooleanAsync(string traceId, string name, bool value, string? comment, CancellationToken cancellationToken) =>
-        SendAsync(traceId, name, value ? 1.0 : 0.0, BooleanDataType, comment, cancellationToken);
+        RecordBooleanAsync(LangfuseScoreTarget.Trace(traceId), name, value, comment, cancellationToken);
 
-    public Task RecordCategoricalAsync(string traceId, string name, string value, string? comment, CancellationToken cancellationToken)
+    public Task RecordCategoricalAsync(string traceId, string name, string value, string? comment, CancellationToken cancellationToken) =>
+        RecordCategoricalAsync(LangfuseScoreTarget.Trace(traceId), name, value, comment, cancellationToken);
+
+    public Task RecordNumericAsync(LangfuseScoreTarget target, string name, double value, string? comment, CancellationToken cancellationToken) =>
+        SendAsync(target, name, value, NumericDataType, comment, cancellationToken);
+
+    public Task RecordBooleanAsync(LangfuseScoreTarget target, string name, bool value, string? comment, CancellationToken cancellationToken) =>
+        SendAsync(target, name, value ? 1.0 : 0.0, BooleanDataType, comment, cancellationToken);
+
+    public Task RecordCategoricalAsync(LangfuseScoreTarget target, string name, string value, string? comment, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return SendAsync(traceId, name, value, CategoricalDataType, comment, cancellationToken);
+        return SendAsync(target, name, value, CategoricalDataType, comment, cancellationToken);
     }
 
     public async Task RecordEvaluationAsync(string traceId, EvaluationResult result, CancellationToken cancellationToken)
@@ -66,14 +75,15 @@ internal sealed class LangfuseScoreRecorder
         }
     }
 
-    private async Task SendAsync(string traceId, string name, object value, string dataType, string? comment, CancellationToken cancellationToken)
+    private async Task SendAsync(LangfuseScoreTarget target, string name, object value, string dataType, string? comment, CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(traceId);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         var score = new LangfuseScore
         {
-            TraceId = traceId,
+            TraceId = target.TraceId,
+            ObservationId = target.ObservationId,
+            SessionId = target.SessionId,
             Name = NormalizeName(name),
             Value = value,
             DataType = dataType,
@@ -86,7 +96,7 @@ internal sealed class LangfuseScoreRecorder
         }
         catch (LangfuseException ex)
         {
-            _failureSink.Record(name, traceId, ex);
+            _failureSink.Record(name, target.TraceId, ex);
         }
     }
 
@@ -95,11 +105,23 @@ internal sealed class LangfuseScoreRecorder
     /// example, head sampling dropped the scenario span). Routed through the failure sink so it is
     /// surfaced rather than silently lost.
     /// </summary>
-    public Task RecordSkippedAsync(string name, CancellationToken cancellationToken)
-    {
-        var failure = new LangfuseException(
+    public Task RecordSkippedAsync(string name, CancellationToken cancellationToken) =>
+        RecordSkippedAsync(
+            name,
             $"Cannot record score '{name}': no sampled trace was available to attach it to. " +
-            "Ensure the Langfuse session is enabled and sampling is not dropping the scenario span.");
+            "Ensure the Langfuse session is enabled and sampling is not dropping the scenario span.",
+            cancellationToken);
+
+    /// <summary>
+    /// Records a score that was skipped for a specific reason, routed through the failure sink so it
+    /// is surfaced rather than silently lost.
+    /// </summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="message">The reason the score was skipped.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    public Task RecordSkippedAsync(string name, string message, CancellationToken cancellationToken)
+    {
+        var failure = new LangfuseException(message);
 
         try
         {

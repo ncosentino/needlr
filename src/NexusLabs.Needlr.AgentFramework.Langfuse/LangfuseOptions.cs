@@ -93,6 +93,22 @@ public sealed class LangfuseOptions
     public string? ServiceVersion { get; set; }
 
     /// <summary>
+    /// Gets or sets the Langfuse deployment environment (for example <c>ci</c>, <c>local</c>,
+    /// <c>staging</c>, or <c>production</c>). When set, it is emitted as <c>langfuse.environment</c>
+    /// on every exported span so Langfuse partitions this run's data — keeping CI eval noise out of
+    /// production dashboards. <see langword="null"/> by default (Langfuse uses its <c>default</c>
+    /// environment).
+    /// </summary>
+    public string? Environment { get; set; }
+
+    /// <summary>
+    /// Gets or sets the application release identifier (for example a git SHA or semantic version).
+    /// When set, it is emitted as <c>langfuse.release</c> on every exported span so scores, cost,
+    /// and latency can be compared across releases. <see langword="null"/> by default.
+    /// </summary>
+    public string? Release { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether Needlr's <c>gen_ai</c> metrics (including the
     /// <c>gen_ai.client.token.usage</c> histogram) are exported alongside traces. Defaults to
     /// <see langword="false"/>.
@@ -210,9 +226,9 @@ public sealed class LangfuseOptions
     {
         var options = new LangfuseOptions
         {
-            PublicKey = NullIfBlank(Environment.GetEnvironmentVariable(PublicKeyEnvironmentVariable)),
-            SecretKey = NullIfBlank(Environment.GetEnvironmentVariable(SecretKeyEnvironmentVariable)),
-            Host = NullIfBlank(Environment.GetEnvironmentVariable(HostEnvironmentVariable)),
+            PublicKey = NullIfBlank(System.Environment.GetEnvironmentVariable(PublicKeyEnvironmentVariable)),
+            SecretKey = NullIfBlank(System.Environment.GetEnvironmentVariable(SecretKeyEnvironmentVariable)),
+            Host = NullIfBlank(System.Environment.GetEnvironmentVariable(HostEnvironmentVariable)),
         };
 
         return options;
