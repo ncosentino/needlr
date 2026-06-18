@@ -10,8 +10,12 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// </remarks>
 internal sealed record LangfuseScore
 {
-    /// <summary>Gets the id of the trace the score is attached to. Required.</summary>
-    public required string TraceId { get; init; }
+    /// <summary>
+    /// Gets the id of the trace the score is attached to. Optional: a score may instead target a
+    /// session (<see cref="SessionId"/>) or dataset run (<see cref="DatasetRunId"/>). Required when
+    /// <see cref="ObservationId"/> is set.
+    /// </summary>
+    public string? TraceId { get; init; }
 
     /// <summary>Gets the score name (for example an evaluator metric name). Required.</summary>
     public required string Name { get; init; }
@@ -24,6 +28,12 @@ internal sealed record LangfuseScore
 
     /// <summary>Gets the optional id of a specific observation within the trace to attach the score to.</summary>
     public string? ObservationId { get; init; }
+
+    /// <summary>Gets the optional id of a session to attach the score to (session-level scoring).</summary>
+    public string? SessionId { get; init; }
+
+    /// <summary>Gets the optional id of a dataset run to attach the score to (experiment-level scoring).</summary>
+    public string? DatasetRunId { get; init; }
 
     /// <summary>Gets the optional free-text comment that accompanies the score.</summary>
     public string? Comment { get; init; }

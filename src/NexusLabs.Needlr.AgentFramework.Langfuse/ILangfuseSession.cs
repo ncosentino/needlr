@@ -61,4 +61,51 @@ public interface ILangfuseSession : IDisposable
         string? userId = null,
         IEnumerable<string>? tags = null,
         IReadOnlyDictionary<string, string>? metadata = null);
+
+    /// <summary>
+    /// Gets the client for creating and populating Langfuse datasets (the eval cases experiment
+    /// runs are scored against). Inert when this session is disabled.
+    /// </summary>
+    ILangfuseDatasetClient Datasets { get; }
+
+    /// <summary>
+    /// Gets the client for idempotently registering Langfuse score configs so eval scores render
+    /// with defined data types, ranges, and category sets. Inert when this session is disabled.
+    /// </summary>
+    ILangfuseScoreConfigClient ScoreConfigs { get; }
+
+    /// <summary>
+    /// Begins a Langfuse experiment (dataset run). Each item begun on the returned run links its
+    /// trace to the run so the recorded scores aggregate into the experiment-comparison view.
+    /// </summary>
+    /// <param name="datasetName">
+    /// The dataset to score against. The dataset and its items must already exist — see
+    /// <see cref="Datasets"/>.
+    /// </param>
+    /// <param name="runName">
+    /// A caller-supplied run name (for example a git SHA or CI run id) so runs are comparable.
+    /// </param>
+    /// <param name="runDescription">An optional description applied to the run.</param>
+    /// <returns>
+    /// An <see cref="ILangfuseExperimentRun"/>. When this session is disabled the run is inert.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="datasetName"/> or <paramref name="runName"/> is <see langword="null"/> or whitespace.
+    /// </exception>
+    ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null);
+
+    /// <summary>
+    /// Attaches a comment to an existing trace — for example a CI run URL, git commit, or a failing
+    /// assertion message. No-op when this session is disabled.
+    /// </summary>
+    /// <remarks>
+    /// Call this <strong>after</strong> <see cref="Flush"/> and after the trace has been ingested:
+    /// unlike scores, Langfuse rejects a comment whose target trace does not yet exist. Comment
+    /// failures are non-fatal and are reported through <c>DiagnosticsCallback</c>.
+    /// </remarks>
+    /// <param name="traceId">The id of an existing Langfuse trace.</param>
+    /// <param name="content">The comment content (Langfuse limits this to 5000 characters).</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that completes once Langfuse has accepted the comment or the failure has been reported.</returns>
+    Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default);
 }

@@ -17,18 +17,27 @@ internal sealed class LangfuseEndpoints
     private const string OtelBasePath = "api/public/otel";
 
     private LangfuseEndpoints(
+        Uri baseUrl,
         Uri tracesEndpoint,
         Uri metricsEndpoint,
         Uri scoresEndpoint,
         string authorizationHeaderValue,
         string headers)
     {
+        BaseUrl = baseUrl;
         TracesEndpoint = tracesEndpoint;
         MetricsEndpoint = metricsEndpoint;
         ScoresEndpoint = scoresEndpoint;
         AuthorizationHeaderValue = authorizationHeaderValue;
         Headers = headers;
     }
+
+    /// <summary>
+    /// Gets the resolved Langfuse base URL with a trailing slash (for example
+    /// <c>https://cloud.langfuse.com/</c>). Public REST API paths such as
+    /// <c>api/public/dataset-run-items</c> are resolved relative to this.
+    /// </summary>
+    public Uri BaseUrl { get; }
 
     /// <summary>Gets the full OTLP/HTTP traces endpoint (<c>.../api/public/otel/v1/traces</c>).</summary>
     public Uri TracesEndpoint { get; }
@@ -78,6 +87,7 @@ internal sealed class LangfuseEndpoints
         var headers = $"Authorization={authorizationHeaderValue},x-langfuse-ingestion-version=4";
 
         return new LangfuseEndpoints(
+            baseUrl: baseUrl,
             tracesEndpoint: new Uri(baseUrl, $"{OtelBasePath}/v1/traces"),
             metricsEndpoint: new Uri(baseUrl, $"{OtelBasePath}/v1/metrics"),
             scoresEndpoint: new Uri(baseUrl, "api/public/scores"),

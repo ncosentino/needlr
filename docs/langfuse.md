@@ -144,6 +144,117 @@ depend on implicit inference:
     individual *observations* by `tags`/`metadata` is not supported — those live at the trace
     level, which matches the per-scenario grouping model.
 
+## Experiments (datasets and runs)
+
+Map each eval case to a Langfuse **dataset item**, then on every run link the trace it
+produces as a **dataset run item**. Langfuse's experiment-comparison view lines runs up
+side by side and shows how scores move across commits.
+
+```csharp
+// Once, at suite startup: ensure the dataset and its items exist.
+await langfuse.Datasets.EnsureDatasetAsync("trip-planner-evals");
+await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
+{
+    DatasetName = "trip-planner-evals",
+    Id = "nyc-tokyo",                 // stable id → re-running upserts, never duplicates
+    Input = new { from = "NYC", to = "Tokyo" },
+    ExpectedOutput = "a 3-stop itinerary",
+});
+
+// Per run: name it after something comparable (a git SHA, a CI run id).
+var run = langfuse.BeginExperimentRun("trip-planner-evals", runName: gitSha);
+
+foreach (var item in items)
+{
+    using var scenario = await run.BeginItemAsync(item.Id);
+    var result = await RunAndEvaluate(item);       // your agent + evaluators
+    await scenario.RecordEvaluationAsync(result);  // scores roll up into the run
+}
+```
+
+The dataset and its items must exist before the run links to them. Run-item link failures
+are non-fatal (surfaced via `DiagnosticsCallback`) so a Langfuse hiccup never crashes the
+eval.
+
+## Score configs
+
+By default, scores are sent untyped. Declaring a **score config** once gives a score a
+defined data type, numeric range, or category set, so the dashboard renders consistent
+ranges and colors and validates incoming values. Match the config name to the score name
+you record.
+
+```csharp
+await langfuse.ScoreConfigs.EnsureScoreConfigAsync(new LangfuseScoreConfig
+{
+    Name = "correctness",
+    DataType = LangfuseScoreDataType.Numeric,
+    MinValue = 0,
+    MaxValue = 1,
+});
+
+await langfuse.ScoreConfigs.EnsureScoreConfigAsync(new LangfuseScoreConfig
+{
+    Name = "verdict",
+    DataType = LangfuseScoreDataType.Categorical,
+    Categories = [new("pass", 1), new("fail", 0)],
+});
+```
+
+`EnsureScoreConfigAsync` is idempotent — it creates the config only when one of that name
+does not already exist — so it is safe to call on every run.
+
+## Observation- and session-level scores
+
+Beyond whole-trace scores, you can score a single observation (a specific generation or
+tool call) or a whole session (a multi-turn conversation spanning traces):
+
+```csharp
+// Score one observation within a trace (host path: you hold the ids).
+await scoreClient.RecordObservationScoreAsync(traceId, observationId, "tool_correct", true);
+
+// Score a whole session.
+await scoreClient.RecordSessionScoreAsync(sessionId, "resolved", 0.8);
+
+// From an eval scenario that was started with a sessionId:
+await scenario.RecordSessionScoreAsync("resolved", true);
+```
+
+## Trace context: environment, release, and more
+
+Set a deployment **environment** (e.g. `ci`, `staging`, `production`) and a **release**
+(e.g. a git SHA) once — they are propagated to every exported span, so Langfuse keeps CI
+eval noise out of production dashboards and lets you compare metrics across releases:
+
+```csharp
+var options = LangfuseOptions.FromEnvironment();
+options.Environment = "ci";
+options.Release = gitSha;
+```
+
+Per scenario you can also enrich the trace:
+
+```csharp
+scenario.SetInput(item.Input);       // trace-level input shown at the top of the trace
+scenario.SetOutput(finalAnswer);     // trace-level output (e.g. the agent's final answer)
+scenario.SetVersion("prompt-v7");    // langfuse.version
+scenario.SetTracePublic();           // shareable URL — handy for linking a failure in a PR
+```
+
+## Comments
+
+Attach context to a trace — a CI run URL, a git commit, the failing assertion message.
+**Comments are a post-flush operation:** unlike scores (which Langfuse can link to a trace
+that arrives later), Langfuse rejects a comment whose target trace does not yet exist. So
+add comments *after* the trace has been flushed and ingested, keyed by trace id:
+
+```csharp
+// after langfuse.Flush() and the trace has been ingested:
+await langfuse.AddTraceCommentAsync(traceId, $"CI run {ciUrl} — expected 3 stops, got 2");
+```
+
+Comments are non-fatal; a failure is reported through `DiagnosticsCallback` rather than
+thrown.
+
 ## Composing with MEAI OpenTelemetry
 
 Needlr's diagnostics middleware and MEAI's `OpenTelemetryChatClient` /
@@ -172,6 +283,8 @@ the `gen_ai.client.token.usage` histogram.
 | `Region` | _(unset)_ | Langfuse Cloud region: `Eu`, `Us`, `Jp`, `Hipaa`. Setting it is an explicit opt-in to cloud export. |
 | `Enabled` | `true` | Set `false` to force a no-op even with credentials. |
 | `ServiceName` | `needlr-agent` | OpenTelemetry `service.name` resource attribute. |
+| `Environment` | _(unset)_ | Deployment environment (e.g. `ci`, `production`), emitted as `langfuse.environment` on every span so Langfuse partitions the data. |
+| `Release` | _(unset)_ | Release identifier (e.g. a git SHA), emitted as `langfuse.release` for cross-release comparison. |
 | `IncludeMetrics` | `false` | Export Needlr's `gen_ai` metrics. Off by default — see note below. |
 | `ScoreFailureMode` | `NonFatal` | `NonFatal` records a failed score upload (counter + callback) without throwing; `Strict` throws. |
 | `ScoreErrorCallback` | _(none)_ | Invoked with a `LangfuseScoreError` when a score upload fails under `NonFatal`. |
@@ -232,6 +345,10 @@ public sealed class MyHandler(ILangfuseScoreClient scores)
 
 When Langfuse is not configured, a disabled no-op `ILangfuseScoreClient` is registered,
 so injection always succeeds and host code never needs to branch on configuration.
+
+`AddNeedlrLangfuse` also registers `ILangfuseDatasetClient` and `ILangfuseScoreConfigClient`
+(both disabled no-ops when unconfigured) for managing datasets and score configs from a host
+application.
 
 ## Langfuse Cloud vs self-hosted
 

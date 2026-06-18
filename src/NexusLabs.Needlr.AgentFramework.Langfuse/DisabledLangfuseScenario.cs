@@ -33,6 +33,38 @@ internal sealed class DisabledLangfuseScenario : ILangfuseScenario
         Task.CompletedTask;
 
     /// <inheritdoc />
+    public void SetTracePublic(bool isPublic = true)
+    {
+    }
+
+    /// <inheritdoc />
+    public void SetVersion(string version)
+    {
+    }
+
+    /// <inheritdoc />
+    public void SetInput(object input)
+    {
+    }
+
+    /// <inheritdoc />
+    public void SetOutput(object output)
+    {
+    }
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    /// <inheritdoc />
     public void Dispose()
     {
     }

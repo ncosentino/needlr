@@ -41,4 +41,28 @@ internal sealed class LangfuseScoreClient : ILangfuseScoreClient
     /// <inheritdoc />
     public Task RecordEvaluationAsync(string traceId, EvaluationResult result, CancellationToken cancellationToken = default) =>
         _recorder.RecordEvaluationAsync(traceId, result, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordObservationScoreAsync(string traceId, string observationId, string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordNumericAsync(LangfuseScoreTarget.Observation(traceId, observationId), name, value, comment, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordObservationScoreAsync(string traceId, string observationId, string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordBooleanAsync(LangfuseScoreTarget.Observation(traceId, observationId), name, value, comment, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordObservationScoreAsync(string traceId, string observationId, string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordCategoricalAsync(LangfuseScoreTarget.Observation(traceId, observationId), name, value, comment, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string sessionId, string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordNumericAsync(LangfuseScoreTarget.Session(sessionId), name, value, comment, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string sessionId, string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordBooleanAsync(LangfuseScoreTarget.Session(sessionId), name, value, comment, cancellationToken);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(string sessionId, string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+        _recorder.RecordCategoricalAsync(LangfuseScoreTarget.Session(sessionId), name, value, comment, cancellationToken);
 }

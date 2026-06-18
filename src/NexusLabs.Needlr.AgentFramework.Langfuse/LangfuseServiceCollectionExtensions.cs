@@ -45,6 +45,8 @@ public static class LangfuseServiceCollectionExtensions
         {
             LangfuseExportGuard.WarnIfCredentialsWithoutTarget(options);
             services.TryAddSingleton<ILangfuseScoreClient>(new DisabledLangfuseScoreClient());
+            services.TryAddSingleton<ILangfuseDatasetClient>(new DisabledLangfuseDatasetClient());
+            services.TryAddSingleton<ILangfuseScoreConfigClient>(new DisabledLangfuseScoreConfigClient());
             return services;
         }
 
@@ -67,7 +69,7 @@ public static class LangfuseServiceCollectionExtensions
                 .AddSource(LangfuseActivitySource.Name)
                 .AddSource(options.AgentActivitySourceName)
                 .AddSource([.. options.AdditionalActivitySources])
-                .AddProcessor(new LangfuseTraceAttributeProcessor())
+                .AddProcessor(new LangfuseTraceAttributeProcessor(options.Environment, options.Release))
                 .AddOtlpExporter(otlp => ConfigureOtlp(otlp, endpoints.TracesEndpoint, endpoints.Headers)));
 
         if (options.IncludeMetrics)
@@ -80,14 +82,20 @@ public static class LangfuseServiceCollectionExtensions
         }
 
         var httpClient = new HttpClient();
-        var apiClient = new LangfuseScoreApiClient(
+        var scoreApiClient = new LangfuseScoreApiClient(
             httpClient,
             endpoints.ScoresEndpoint,
             endpoints.AuthorizationHeaderValue);
+        var apiClient = new LangfuseApiClient(
+            httpClient,
+            endpoints.BaseUrl,
+            endpoints.AuthorizationHeaderValue);
         var failureSink = new LangfuseScoreFailureSink(options.ScoreFailureMode, options.ScoreErrorCallback);
-        var recorder = new LangfuseScoreRecorder(apiClient, failureSink, options.NormalizeScoreNames);
+        var recorder = new LangfuseScoreRecorder(scoreApiClient, failureSink, options.NormalizeScoreNames);
 
         services.TryAddSingleton<ILangfuseScoreClient>(new LangfuseScoreClient(recorder, failureSink));
+        services.TryAddSingleton<ILangfuseDatasetClient>(new LangfuseDatasetClient(apiClient));
+        services.TryAddSingleton<ILangfuseScoreConfigClient>(new LangfuseScoreConfigClient(apiClient));
 
         return services;
     }
