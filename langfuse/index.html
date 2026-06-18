@@ -1484,6 +1484,61 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#experiments-datasets-and-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiments (datasets and runs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#score-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Score configs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observation-and-session-level-scores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observation- and session-level scores
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trace-context-environment-release-and-more" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trace context: environment, release, and more
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#composing-with-meai-opentelemetry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4748,7 +4803,7 @@ evaluator metrics into Langfuse scores.</p>
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">runner</span><span class="p">.</span><span class="n">RunAsync</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">hooks</span><span class="p">,</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">inputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run</span><span class="p">.</span><span class="n">Diagnostics</span><span class="o">!</span><span class="p">.</span><span class="n">ToEvaluationInputs</span><span class="p">();</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EfficiencyEvaluator</span><span class="p">(</span><span class="n">tokenBudget</span><span class="p">:</span><span class="w"> </span><span class="m">200</span><span class="n">_000</span><span class="p">).</span><span class="n">EvaluateAsync</span><span class="p">(</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EfficiencyEvaluator</span><span class="p">(</span><span class="n">tokenBudget</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="n">_000</span><span class="p">).</span><span class="n">EvaluateAsync</span><span class="p">(</span>
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">        </span><span class="n">inputs</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">ModelResponse</span><span class="p">,</span><span class="w"> </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="k">new</span><span class="w"> </span><span class="n">AgentRunDiagnosticsContext</span><span class="p">(</span><span class="n">run</span><span class="p">.</span><span class="n">Diagnostics</span><span class="o">!</span><span class="p">)]);</span>
 </span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
 </span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="c1">// 3. Evaluator metrics become Langfuse scores on this trace.</span>
@@ -4769,7 +4824,7 @@ as a score, collapsing the per-test boilerplate:</p>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">inputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run</span><span class="p">.</span><span class="n">Diagnostics</span><span class="o">!</span><span class="p">.</span><span class="n">ToEvaluationInputs</span><span class="p">();</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">EvaluateAndRecordAsync</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">evaluators</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="k">new</span><span class="w"> </span><span class="n">EfficiencyEvaluator</span><span class="p">(</span><span class="n">tokenBudget</span><span class="p">:</span><span class="w"> </span><span class="m">200</span><span class="n">_000</span><span class="p">),</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterationCoherenceEvaluator</span><span class="p">(</span><span class="n">maxIterations</span><span class="p">:</span><span class="w"> </span><span class="m">20</span><span class="p">)],</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">evaluators</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="k">new</span><span class="w"> </span><span class="n">EfficiencyEvaluator</span><span class="p">(</span><span class="n">tokenBudget</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="n">_000</span><span class="p">),</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IterationCoherenceEvaluator</span><span class="p">(</span><span class="n">maxIterations</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">)],</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="n">messages</span><span class="p">:</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="n">modelResponse</span><span class="p">:</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">ModelResponse</span><span class="p">,</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="n">additionalContext</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="k">new</span><span class="w"> </span><span class="n">AgentRunDiagnosticsContext</span><span class="p">(</span><span class="n">run</span><span class="p">.</span><span class="n">Diagnostics</span><span class="o">!</span><span class="p">)]);</span>
@@ -4877,14 +4932,99 @@ propagated to child spans (via baggage) so you can filter observations by them. 
 individual <em>observations</em> by <code>tags</code>/<code>metadata</code> is not supported — those live at the trace
 level, which matches the per-scenario grouping model.</p>
 </div>
+<h2 id="experiments-datasets-and-runs">Experiments (datasets and runs)<a class="headerlink" href="#experiments-datasets-and-runs" title="Permanent link">&para;</a></h2>
+<p>Map each eval case to a Langfuse <strong>dataset item</strong>, then on every run link the trace it
+produces as a <strong>dataset run item</strong>. Langfuse's experiment-comparison view lines runs up
+side by side and shows how scores move across commits.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// Once, at suite startup: ensure the dataset and its items exist.</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">Datasets</span><span class="p">.</span><span class="n">EnsureDatasetAsync</span><span class="p">(</span><span class="s">&quot;trip-planner-evals&quot;</span><span class="p">);</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">Datasets</span><span class="p">.</span><span class="n">UpsertItemAsync</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">LangfuseDatasetItem</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">{</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">DatasetName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;trip-planner-evals&quot;</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="n">Id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;nyc-tokyo&quot;</span><span class="p">,</span><span class="w">                 </span><span class="c1">// stable id → re-running upserts, never duplicates</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="n">Input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;NYC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tokyo&quot;</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="n">ExpectedOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;a 3-stop itinerary&quot;</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">});</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1">// Per run: name it after something comparable (a git SHA, a CI run id).</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="kt">var</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">BeginExperimentRun</span><span class="p">(</span><span class="s">&quot;trip-planner-evals&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">runName</span><span class="p">:</span><span class="w"> </span><span class="n">gitSha</span><span class="p">);</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">items</span><span class="p">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="p">{</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">scenario</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">run</span><span class="p">.</span><span class="n">BeginItemAsync</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">Id</span><span class="p">);</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">RunAndEvaluate</span><span class="p">(</span><span class="n">item</span><span class="p">);</span><span class="w">       </span><span class="c1">// your agent + evaluators</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">RecordEvaluationAsync</span><span class="p">(</span><span class="n">result</span><span class="p">);</span><span class="w">  </span><span class="c1">// scores roll up into the run</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>The dataset and its items must exist before the run links to them. Run-item link failures
+are non-fatal (surfaced via <code>DiagnosticsCallback</code>) so a Langfuse hiccup never crashes the
+eval.</p>
+<h2 id="score-configs">Score configs<a class="headerlink" href="#score-configs" title="Permanent link">&para;</a></h2>
+<p>By default, scores are sent untyped. Declaring a <strong>score config</strong> once gives a score a
+defined data type, numeric range, or category set, so the dashboard renders consistent
+ranges and colors and validates incoming values. Match the config name to the score name
+you record.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">ScoreConfigs</span><span class="p">.</span><span class="n">EnsureScoreConfigAsync</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">LangfuseScoreConfig</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;correctness&quot;</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">DataType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LangfuseScoreDataType</span><span class="p">.</span><span class="n">Numeric</span><span class="p">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">MinValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">MaxValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">});</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">ScoreConfigs</span><span class="p">.</span><span class="n">EnsureScoreConfigAsync</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">LangfuseScoreConfig</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">{</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;verdict&quot;</span><span class="p">,</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">DataType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LangfuseScoreDataType</span><span class="p">.</span><span class="n">Categorical</span><span class="p">,</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="n">Categories</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="k">new</span><span class="p">(</span><span class="s">&quot;pass&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">new</span><span class="p">(</span><span class="s">&quot;fail&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)],</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">});</span>
+</span></code></pre></div>
+<p><code>EnsureScoreConfigAsync</code> is idempotent — it creates the config only when one of that name
+does not already exist — so it is safe to call on every run.</p>
+<h2 id="observation-and-session-level-scores">Observation- and session-level scores<a class="headerlink" href="#observation-and-session-level-scores" title="Permanent link">&para;</a></h2>
+<p>Beyond whole-trace scores, you can score a single observation (a specific generation or
+tool call) or a whole session (a multi-turn conversation spanning traces):</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">// Score one observation within a trace (host path: you hold the ids).</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">await</span><span class="w"> </span><span class="n">scoreClient</span><span class="p">.</span><span class="n">RecordObservationScoreAsync</span><span class="p">(</span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="n">observationId</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tool_correct&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">// Score a whole session.</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span><span class="w"> </span><span class="n">scoreClient</span><span class="p">.</span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="n">sessionId</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;resolved&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">);</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1">// From an eval scenario that was started with a sessionId:</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="s">&quot;resolved&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span></code></pre></div>
+<h2 id="trace-context-environment-release-and-more">Trace context: environment, release, and more<a class="headerlink" href="#trace-context-environment-release-and-more" title="Permanent link">&para;</a></h2>
+<p>Set a deployment <strong>environment</strong> (e.g. <code>ci</code>, <code>staging</code>, <code>production</code>) and a <strong>release</strong>
+(e.g. a git SHA) once — they are propagated to every exported span, so Langfuse keeps CI
+eval noise out of production dashboards and lets you compare metrics across releases:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LangfuseOptions</span><span class="p">.</span><span class="n">FromEnvironment</span><span class="p">();</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="p">.</span><span class="n">Environment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ci&quot;</span><span class="p">;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">options</span><span class="p">.</span><span class="n">Release</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gitSha</span><span class="p">;</span>
+</span></code></pre></div>
+<p>Per scenario you can also enrich the trace:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">scenario</span><span class="p">.</span><span class="n">SetInput</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">Input</span><span class="p">);</span><span class="w">       </span><span class="c1">// trace-level input shown at the top of the trace</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">scenario</span><span class="p">.</span><span class="n">SetOutput</span><span class="p">(</span><span class="n">finalAnswer</span><span class="p">);</span><span class="w">     </span><span class="c1">// trace-level output (e.g. the agent&#39;s final answer)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">scenario</span><span class="p">.</span><span class="n">SetVersion</span><span class="p">(</span><span class="s">&quot;prompt-v7&quot;</span><span class="p">);</span><span class="w">    </span><span class="c1">// langfuse.version</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">scenario</span><span class="p">.</span><span class="n">SetTracePublic</span><span class="p">();</span><span class="w">           </span><span class="c1">// shareable URL — handy for linking a failure in a PR</span>
+</span></code></pre></div>
+<h2 id="comments">Comments<a class="headerlink" href="#comments" title="Permanent link">&para;</a></h2>
+<p>Attach context to a trace — a CI run URL, a git commit, the failing assertion message.
+<strong>Comments are a post-flush operation:</strong> unlike scores (which Langfuse can link to a trace
+that arrives later), Langfuse rejects a comment whose target trace does not yet exist. So
+add comments <em>after</em> the trace has been flushed and ingested, keyed by trace id:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// after langfuse.Flush() and the trace has been ingested:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">AddTraceCommentAsync</span><span class="p">(</span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="s">$&quot;CI run {ciUrl} — expected 3 stops, got 2&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<p>Comments are non-fatal; a failure is reported through <code>DiagnosticsCallback</code> rather than
+thrown.</p>
 <h2 id="composing-with-meai-opentelemetry">Composing with MEAI OpenTelemetry<a class="headerlink" href="#composing-with-meai-opentelemetry" title="Permanent link">&para;</a></h2>
 <p>Needlr's diagnostics middleware and MEAI's <code>OpenTelemetryChatClient</code> /
 <code>UseOpenTelemetry()</code> can both create spans for the same chat call. To get the
 richest <code>gen_ai</code> spans without duplicates, enable MEAI's OpenTelemetry and set
 Needlr's chat-completion activity mode to enrich the parent span:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">.</span><span class="n">UsingAgentFramework</span><span class="p">(</span><span class="n">af</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">af</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">ChatCompletionActivityMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ChatCompletionActivityMode</span><span class="p">.</span><span class="n">EnrichParent</span><span class="p">)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingDiagnostics</span><span class="p">())</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">.</span><span class="n">UsingAgentFramework</span><span class="p">(</span><span class="n">af</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">af</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="p">.</span><span class="n">ConfigureMetrics</span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">ChatCompletionActivityMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ChatCompletionActivityMode</span><span class="p">.</span><span class="n">EnrichParent</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="p">.</span><span class="n">UsingDiagnostics</span><span class="p">())</span>
 </span></code></pre></div>
 <p>See <a href="../gen-ai-token-metrics/">GenAI Token Metrics</a> for how Needlr and MEAI share
 the <code>gen_ai.client.token.usage</code> histogram.</p>
@@ -4924,6 +5064,16 @@ the <code>gen_ai.client.token.usage</code> histogram.</p>
 <td><code>ServiceName</code></td>
 <td><code>needlr-agent</code></td>
 <td>OpenTelemetry <code>service.name</code> resource attribute.</td>
+</tr>
+<tr>
+<td><code>Environment</code></td>
+<td><em>(unset)</em></td>
+<td>Deployment environment (e.g. <code>ci</code>, <code>production</code>), emitted as <code>langfuse.environment</code> on every span so Langfuse partitions the data.</td>
+</tr>
+<tr>
+<td><code>Release</code></td>
+<td><em>(unset)</em></td>
+<td>Release identifier (e.g. a git SHA), emitted as <code>langfuse.release</code> for cross-release comparison.</td>
 </tr>
 <tr>
 <td><code>IncludeMetrics</code></td>
@@ -4994,28 +5144,31 @@ streams are exported.</p>
 <h3 id="aspnet-core-and-generic-hosts">ASP.NET Core and generic hosts<a class="headerlink" href="#aspnet-core-and-generic-hosts" title="Permanent link">&para;</a></h3>
 <p>For applications that already call <code>AddOpenTelemetry()</code>, register Langfuse export on
 the host pipeline instead of starting a standalone session:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddNeedlrLangfuse</span><span class="p">(</span><span class="n">options</span><span class="w"> </span><span class="o">=&gt;</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">{</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">options</span><span class="p">.</span><span class="n">ServiceName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;my-agent-service&quot;</span><span class="p">;</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">});</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddNeedlrLangfuse</span><span class="p">(</span><span class="n">options</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p">{</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">options</span><span class="p">.</span><span class="n">ServiceName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;my-agent-service&quot;</span><span class="p">;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">});</span>
 </span></code></pre></div>
 <p>This wires the OTLP exporter into the host's tracer and meter providers so they
 share the application lifecycle, and registers an <code>ILangfuseScoreClient</code> for scoring
 request traces by id:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nf">MyHandler</span><span class="p">(</span><span class="n">ILangfuseScoreClient</span><span class="w"> </span><span class="n">scores</span><span class="p">)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">HandleAsync</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">traceId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">Activity</span><span class="p">.</span><span class="n">Current</span><span class="o">?.</span><span class="n">TraceId</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">traceId</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">not</span><span class="w"> </span><span class="k">null</span><span class="p">)</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">            </span><span class="k">await</span><span class="w"> </span><span class="n">scores</span><span class="p">.</span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;helpfulness&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nf">MyHandler</span><span class="p">(</span><span class="n">ILangfuseScoreClient</span><span class="w"> </span><span class="n">scores</span><span class="p">)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="p">{</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">HandleAsync</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">traceId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">Activity</span><span class="p">.</span><span class="n">Current</span><span class="o">?.</span><span class="n">TraceId</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">traceId</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">)</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">            </span><span class="k">await</span><span class="w"> </span><span class="n">scores</span><span class="p">.</span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;helpfulness&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>When Langfuse is not configured, a disabled no-op <code>ILangfuseScoreClient</code> is registered,
 so injection always succeeds and host code never needs to branch on configuration.</p>
+<p><code>AddNeedlrLangfuse</code> also registers <code>ILangfuseDatasetClient</code> and <code>ILangfuseScoreConfigClient</code>
+(both disabled no-ops when unconfigured) for managing datasets and score configs from a host
+application.</p>
 <h2 id="langfuse-cloud-vs-self-hosted">Langfuse Cloud vs self-hosted<a class="headerlink" href="#langfuse-cloud-vs-self-hosted" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Cloud</strong>: leave <code>Host</code> unset and set <code>Region</code> explicitly (<code>Eu</code>, <code>Us</code>, <code>Jp</code>, or <code>Hipaa</code>).</li>
