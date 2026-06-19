@@ -19,6 +19,9 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
     public ILangfuseScoreConfigClient ScoreConfigs { get; } = new DisabledLangfuseScoreConfigClient();
 
     /// <inheritdoc />
+    public ILangfuseMetricsClient Metrics { get; } = new DisabledLangfuseMetricsClient();
+
+    /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null) => true;
 
     /// <inheritdoc />

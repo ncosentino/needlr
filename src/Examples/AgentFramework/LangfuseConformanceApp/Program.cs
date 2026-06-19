@@ -76,6 +76,13 @@ if (args.Length > 0 && string.Equals(args[0], "prompt-linking", StringComparison
     return await RunPromptLinkingCheckAsync();
 }
 
+// "metrics" mode proves read-back: record a uniquely-named numeric score, then query its
+// average back through the Metrics API (the loop a CI quality gate would run).
+if (args.Length > 0 && string.Equals(args[0], "metrics", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunMetricsCheckAsync();
+}
+
 var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
 var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
 var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
@@ -542,6 +549,94 @@ static async Task<int> RunExperimentsCheckAsync()
 }
 
 static string Mark(bool ok) => ok ? "PASS" : "FAIL";
+
+// ── Metrics mode: prove the Metrics API read-back loop end to end ────────────
+static async Task<int> RunMetricsCheckAsync()
+{
+    var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
+    var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
+    var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
+    if (string.IsNullOrWhiteSpace(publicKey) || string.IsNullOrWhiteSpace(secretKey))
+    {
+        Console.WriteLine("This check requires a LIVE Langfuse instance (set LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY).");
+        return 2;
+    }
+
+    Console.WriteLine($"[setup] Langfuse host: {host}");
+
+    // A unique score name makes the average deterministic (only this run's score matches).
+    var scoreName = $"needlr_metric_{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+    const double scoreValue = 0.42;
+    var runId = $"needlr-metrics-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}";
+
+    var options = new LangfuseOptions
+    {
+        PublicKey = publicKey,
+        SecretKey = secretKey,
+        Host = host,
+        ServiceName = "needlr-langfuse-metrics",
+        Environment = "needlr-metrics",
+        ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        DiagnosticsCallback = msg => Console.WriteLine($"[langfuse] {msg}"),
+    };
+
+    var serviceProvider = new Syringe()
+        .UsingReflection()
+        .UsingAgentFramework(af => af
+            .Configure(opts => opts.ChatClientFactory = _ => new MockChatClient())
+            .UsingDiagnostics())
+        .BuildServiceProvider(new ConfigurationBuilder().Build());
+    var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+    var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    if (!langfuse.IsEnabled)
+    {
+        Console.WriteLine("[error] Langfuse export did not enable — check keys/host.");
+        return 2;
+    }
+
+    using (var scenario = langfuse.BeginScenario("metrics: scored-run", sessionId: runId, tags: ["conformance"]))
+    {
+        await RunMockAsync(loop, diagnosticsAccessor, "metrics");
+        await scenario.RecordScoreAsync(scoreName, scoreValue, "metrics conformance");
+        Console.WriteLine($"[run] Recorded score '{scoreName}' = {scoreValue} on trace {scenario.TraceId}.");
+    }
+
+    langfuse.Flush(TimeSpan.FromSeconds(10));
+    Console.WriteLine("[run] Flushed. Querying the Metrics API for the average (allowing for ingestion lag)...");
+    Console.WriteLine();
+
+    var from = DateTimeOffset.UtcNow.AddHours(-1);
+    var to = DateTimeOffset.UtcNow.AddHours(1);
+
+    double? average = null;
+    for (var i = 1; i <= 30; i++)
+    {
+        average = await langfuse.Metrics.GetScoreAverageAsync(scoreName, from, to);
+        if (average is { } a && Math.Abs(a - scoreValue) < 0.0001)
+        {
+            Console.WriteLine($"[verify] metrics average matched (attempt {i}): {a}.");
+            break;
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(3));
+    }
+
+    Console.WriteLine();
+    var passed = average is { } value && Math.Abs(value - scoreValue) < 0.0001;
+    Console.WriteLine($"  metrics avg == recorded score: {Mark(passed)}  (expected {scoreValue}, got {(average.HasValue ? average.Value.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture) : "<null>")})");
+    Console.WriteLine();
+
+    if (passed)
+    {
+        Console.WriteLine("METRICS READ-BACK PASSED — the recorded score is queryable through the Metrics API.");
+        return 0;
+    }
+
+    Console.WriteLine("METRICS READ-BACK FAILED — see above. (Metrics ingestion can lag; increase the poll window.)");
+    return 1;
+}
 
 // ── Prompt-linking mode: prove SetPrompt links a generation to a managed prompt ──
 static async Task<int> RunPromptLinkingCheckAsync()

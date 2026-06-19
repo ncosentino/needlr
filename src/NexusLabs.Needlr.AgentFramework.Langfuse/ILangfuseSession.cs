@@ -75,6 +75,12 @@ public interface ILangfuseSession : IDisposable
     ILangfuseScoreConfigClient ScoreConfigs { get; }
 
     /// <summary>
+    /// Gets the client for reading aggregates back from Langfuse via the Metrics API — for example
+    /// to drive a CI quality gate from recorded eval scores. Inert when this session is disabled.
+    /// </summary>
+    ILangfuseMetricsClient Metrics { get; }
+
+    /// <summary>
     /// Begins a Langfuse experiment (dataset run). Each item begun on the returned run links its
     /// trace to the run so the recorded scores aggregate into the experiment-comparison view.
     /// </summary>
