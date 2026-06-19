@@ -83,6 +83,13 @@ if (args.Length > 0 && string.Equals(args[0], "metrics", StringComparison.Ordina
     return await RunMetricsCheckAsync();
 }
 
+// "model-pricing" mode proves that registering a model price lets Langfuse compute cost for a
+// generation whose model it would not otherwise price.
+if (args.Length > 0 && string.Equals(args[0], "model-pricing", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunModelPricingCheckAsync();
+}
+
 var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
 var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
 var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
@@ -550,6 +557,156 @@ static async Task<int> RunExperimentsCheckAsync()
 
 static string Mark(bool ok) => ok ? "PASS" : "FAIL";
 
+// ── Model-pricing mode: prove a registered price yields a computed cost ──────
+static async Task<int> RunModelPricingCheckAsync()
+{
+    var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
+    var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
+    var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
+    if (string.IsNullOrWhiteSpace(publicKey) || string.IsNullOrWhiteSpace(secretKey))
+    {
+        Console.WriteLine("This check requires a LIVE Langfuse instance (set LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY).");
+        return 2;
+    }
+
+    Console.WriteLine($"[setup] Langfuse host: {host}");
+
+    // Unique model name so the registered price is this run's, and a model Langfuse cannot price by default.
+    var modelId = $"needlr-mock-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+    var runId = $"needlr-pricing-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}";
+
+    var options = new LangfuseOptions
+    {
+        PublicKey = publicKey,
+        SecretKey = secretKey,
+        Host = host,
+        ServiceName = "needlr-langfuse-model-pricing",
+        Environment = "needlr-conformance",
+        ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        DiagnosticsCallback = msg => Console.WriteLine($"[langfuse] {msg}"),
+    };
+
+    var serviceProvider = new Syringe()
+        .UsingReflection()
+        .UsingAgentFramework(af => af
+            .Configure(opts => opts.ChatClientFactory = _ => new MockChatClient(modelId))
+            .UsingDiagnostics())
+        .BuildServiceProvider(new ConfigurationBuilder().Build());
+    var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+    var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    if (!langfuse.IsEnabled)
+    {
+        Console.WriteLine("[error] Langfuse export did not enable — check keys/host.");
+        return 2;
+    }
+
+    // Register the price BEFORE the generation is ingested so Langfuse computes cost at ingestion.
+    await langfuse.Models.EnsureModelPriceAsync(new LangfuseModelPrice
+    {
+        ModelName = modelId,
+        MatchPattern = $"(?i)^{modelId}$",
+        InputPrice = 0.000001,
+        OutputPrice = 0.000002,
+    });
+    Console.WriteLine($"[setup] Registered price for model '{modelId}' (input 1e-6, output 2e-6 / token).");
+
+    string? traceId;
+    using (var scenario = langfuse.BeginScenario("model-pricing: priced-run", sessionId: runId, tags: ["conformance"]))
+    {
+        traceId = scenario.TraceId;
+        await RunMockAsync(loop, diagnosticsAccessor, "model-pricing");
+        Console.WriteLine($"[run] trace {traceId}, generation model '{modelId}'.");
+    }
+
+    langfuse.Flush(TimeSpan.FromSeconds(10));
+    Console.WriteLine("[run] Flushed. Verifying the generation has a computed cost...");
+    Console.WriteLine();
+
+    if (string.IsNullOrEmpty(traceId))
+    {
+        Console.WriteLine("[error] No trace id was produced.");
+        return 2;
+    }
+
+    using var http = new HttpClient { BaseAddress = new Uri(host.TrimEnd('/') + "/") };
+    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{publicKey}:{secretKey}")));
+
+    var detail = string.Empty;
+    var priced = await PollAsync("generation cost", 20, TimeSpan.FromSeconds(3), async () =>
+    {
+        var (ok, d) = await CheckGenerationCostAsync(http, traceId);
+        detail = d;
+        return ok;
+    });
+
+    Console.WriteLine();
+    Console.WriteLine($"  generation cost computed: {Mark(priced)}  {detail}");
+    Console.WriteLine();
+
+    if (priced)
+    {
+        Console.WriteLine("MODEL PRICING PASSED — Langfuse computed a cost from the registered price.");
+        return 0;
+    }
+
+    Console.WriteLine("MODEL PRICING FAILED — see above.");
+    return 1;
+}
+
+static async Task<(bool Ok, string Detail)> CheckGenerationCostAsync(HttpClient http, string traceId)
+{
+    var body = await GetRawAsync(http, $"api/public/observations?traceId={Uri.EscapeDataString(traceId)}&limit=50");
+    if (body is null)
+    {
+        return (false, "(observations not found)");
+    }
+
+    using var json = JsonDocument.Parse(body);
+    if (!json.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Array)
+    {
+        return (false, "(no data)");
+    }
+
+    foreach (var obs in data.EnumerateArray())
+    {
+        if ((obs.TryGetProperty("type", out var t) ? t.GetString() : null) != "GENERATION")
+        {
+            continue;
+        }
+
+        var cost = ReadCost(obs);
+        return cost is { } c && c > 0
+            ? (true, $"(totalCost={c.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture)})")
+            : (false, $"(generation found, cost={(cost?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "<none>")})");
+    }
+
+    return (false, "(no GENERATION observation yet)");
+}
+
+static double? ReadCost(JsonElement observation)
+{
+    foreach (var key in new[] { "calculatedTotalCost", "totalCost" })
+    {
+        if (observation.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number)
+        {
+            return v.GetDouble();
+        }
+    }
+
+    if (observation.TryGetProperty("costDetails", out var cd)
+        && cd.ValueKind == JsonValueKind.Object
+        && cd.TryGetProperty("total", out var total)
+        && total.ValueKind == JsonValueKind.Number)
+    {
+        return total.GetDouble();
+    }
+
+    return null;
+}
+
 // ── Metrics mode: prove the Metrics API read-back loop end to end ────────────
 static async Task<int> RunMetricsCheckAsync()
 {
@@ -963,10 +1120,17 @@ static async Task<HashSet<string>> GetScoreNamesAsync(HttpClient http, string tr
 
 internal sealed class MockChatClient : IChatClient
 {
-    private readonly ChatClientMetadata _metadata = new(
-        providerName: "mock-provider",
-        providerUri: new Uri("https://api.example.com:443"),
-        defaultModelId: "mock-model");
+    private readonly string _modelId;
+    private readonly ChatClientMetadata _metadata;
+
+    public MockChatClient(string modelId = "mock-model")
+    {
+        _modelId = modelId;
+        _metadata = new ChatClientMetadata(
+            providerName: "mock-provider",
+            providerUri: new Uri("https://api.example.com:443"),
+            defaultModelId: modelId);
+    }
 
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -976,7 +1140,7 @@ internal sealed class MockChatClient : IChatClient
         var response = new ChatResponse(
             [new ChatMessage(ChatRole.Assistant, "Mock summary of the cached prompt content.")])
         {
-            ModelId = "mock-model",
+            ModelId = _modelId,
             Usage = new UsageDetails
             {
                 InputTokenCount = 4000,
