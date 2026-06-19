@@ -72,4 +72,19 @@ public sealed class LangfuseScenarioContextTests
         Assert.Equal("trip-planner", child.GetTagItem("langfuse.observation.prompt.name"));
         Assert.Equal(3, child.GetTagItem("langfuse.observation.prompt.version"));
     }
+
+    [Fact]
+    public void SetPrompt_WithFetchedPrompt_LinksByNameAndVersion()
+    {
+        using var listener = LangfuseTestFactory.StartListener();
+        using var scenario = new LangfuseScenario(LangfuseTestFactory.OkScoreRecorder(), "s", null, null, null, null);
+        scenario.SetPrompt(new LangfusePrompt { Name = "trip-planner", Version = 4, Type = "text" });
+
+        var processor = new LangfuseTraceAttributeProcessor();
+        using var child = LangfuseActivitySource.Source.StartActivity("agent.chat")!;
+        processor.OnStart(child);
+
+        Assert.Equal("trip-planner", child.GetTagItem("langfuse.observation.prompt.name"));
+        Assert.Equal(4, child.GetTagItem("langfuse.observation.prompt.version"));
+    }
 }

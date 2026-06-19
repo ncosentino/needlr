@@ -90,6 +90,13 @@ if (args.Length > 0 && string.Equals(args[0], "model-pricing", StringComparison.
     return await RunModelPricingCheckAsync();
 }
 
+// "prompt-fetching" mode proves the follow-up: create + fetch a managed prompt through Needlr,
+// use its text, and auto-link generations to the fetched version.
+if (args.Length > 0 && string.Equals(args[0], "prompt-fetching", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunPromptFetchingCheckAsync();
+}
+
 var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
 var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
 var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
@@ -557,6 +564,111 @@ static async Task<int> RunExperimentsCheckAsync()
 
 static string Mark(bool ok) => ok ? "PASS" : "FAIL";
 
+// ── Prompt-fetching mode: create + fetch a managed prompt, then auto-link ────
+static async Task<int> RunPromptFetchingCheckAsync()
+{
+    var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
+    var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
+    var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
+    if (string.IsNullOrWhiteSpace(publicKey) || string.IsNullOrWhiteSpace(secretKey))
+    {
+        Console.WriteLine("This check requires a LIVE Langfuse instance (set LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY).");
+        return 2;
+    }
+
+    Console.WriteLine($"[setup] Langfuse host: {host}");
+
+    var promptName = $"needlr-fetch-prompt-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+    const string promptText = "You are a concise summariser.";
+    var runId = $"needlr-fetch-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}";
+
+    var options = new LangfuseOptions
+    {
+        PublicKey = publicKey,
+        SecretKey = secretKey,
+        Host = host,
+        ServiceName = "needlr-langfuse-prompt-fetching",
+        Environment = "needlr-conformance",
+        ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        DiagnosticsCallback = msg => Console.WriteLine($"[langfuse] {msg}"),
+    };
+
+    var serviceProvider = new Syringe()
+        .UsingReflection()
+        .UsingAgentFramework(af => af
+            .Configure(opts => opts.ChatClientFactory = _ => new MockChatClient())
+            .UsingDiagnostics())
+        .BuildServiceProvider(new ConfigurationBuilder().Build());
+    var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+    var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    if (!langfuse.IsEnabled)
+    {
+        Console.WriteLine("[error] Langfuse export did not enable — check keys/host.");
+        return 2;
+    }
+
+    // Create the managed prompt via Needlr's prompt client, then fetch it back.
+    var created = await langfuse.Prompts.CreateTextPromptAsync(promptName, promptText, ["production"]);
+    Console.WriteLine($"[setup] Created prompt '{created.Name}' v{created.Version}.");
+
+    var fetched = await langfuse.Prompts.GetPromptAsync(promptName, label: "production");
+    if (fetched is null)
+    {
+        Console.WriteLine("[error] Fetch returned null.");
+        return 1;
+    }
+
+    var fetchOk = string.Equals(fetched.Text, promptText, StringComparison.Ordinal)
+        && string.Equals(fetched.Name, promptName, StringComparison.Ordinal);
+    Console.WriteLine($"[run] Fetched prompt '{fetched.Name}' v{fetched.Version}, text='{fetched.Text}'.");
+
+    string? traceId;
+    using (var scenario = langfuse.BeginScenario("prompt-fetching: summary", sessionId: runId, tags: ["conformance"]))
+    {
+        scenario.SetPrompt(fetched); // auto-link to the fetched version
+        traceId = scenario.TraceId;
+        await RunMockAsync(loop, diagnosticsAccessor, "prompt-fetching", instructions: fetched.Text ?? promptText);
+    }
+
+    langfuse.Flush(TimeSpan.FromSeconds(10));
+    Console.WriteLine("[run] Flushed. Verifying the generation links to the fetched prompt...");
+    Console.WriteLine();
+
+    if (string.IsNullOrEmpty(traceId))
+    {
+        Console.WriteLine("[error] No trace id was produced.");
+        return 2;
+    }
+
+    using var http = new HttpClient { BaseAddress = new Uri(host.TrimEnd('/') + "/") };
+    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{publicKey}:{secretKey}")));
+
+    var detail = string.Empty;
+    var linked = await PollAsync("prompt-linked generation", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var (ok, d) = await CheckGenerationPromptAsync(http, traceId, promptName, fetched.Version);
+        detail = d;
+        return ok;
+    });
+
+    Console.WriteLine();
+    Console.WriteLine($"  prompt created + fetched via Needlr: {Mark(fetchOk)}");
+    Console.WriteLine($"  generation linked to fetched version: {Mark(linked)}  {detail}");
+    Console.WriteLine();
+
+    if (fetchOk && linked)
+    {
+        Console.WriteLine("PROMPT FETCHING PASSED — created + fetched a managed prompt and auto-linked the generation.");
+        return 0;
+    }
+
+    Console.WriteLine("PROMPT FETCHING FAILED — see above.");
+    return 1;
+}
+
 // ── Model-pricing mode: prove a registered price yields a computed cost ──────
 static async Task<int> RunModelPricingCheckAsync()
 {
@@ -941,11 +1053,15 @@ static async Task<(bool Ok, string Detail)> CheckGenerationPromptAsync(HttpClien
     return (false, "(no linked GENERATION observation yet)");
 }
 
-static async Task<IAgentRunDiagnostics?> RunMockAsync(IIterativeAgentLoop loop, IAgentDiagnosticsAccessor accessor, string loopName)
+static async Task<IAgentRunDiagnostics?> RunMockAsync(
+    IIterativeAgentLoop loop,
+    IAgentDiagnosticsAccessor accessor,
+    string loopName,
+    string instructions = "You summarise cached prompt content.")
 {
     var loopOptions = new IterativeLoopOptions
     {
-        Instructions = "You summarise cached prompt content.",
+        Instructions = instructions,
         PromptFactory = _ => "Summarize the cached prompt content.",
         Tools = [],
         MaxIterations = 1,
