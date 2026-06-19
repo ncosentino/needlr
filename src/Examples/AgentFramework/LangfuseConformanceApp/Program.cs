@@ -69,6 +69,13 @@ if (args.Length > 0 && string.Equals(args[0], "experiments", StringComparison.Or
     return await RunExperimentsCheckAsync();
 }
 
+// "prompt-linking" mode proves that scenario.SetPrompt stamps a generation with the
+// managed-prompt name/version, readable back on the observation.
+if (args.Length > 0 && string.Equals(args[0], "prompt-linking", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunPromptLinkingCheckAsync();
+}
+
 var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
 var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
 var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
@@ -535,6 +542,152 @@ static async Task<int> RunExperimentsCheckAsync()
 }
 
 static string Mark(bool ok) => ok ? "PASS" : "FAIL";
+
+// ── Prompt-linking mode: prove SetPrompt links a generation to a managed prompt ──
+static async Task<int> RunPromptLinkingCheckAsync()
+{
+    var publicKey = Environment.GetEnvironmentVariable("LANGFUSE_PUBLIC_KEY");
+    var secretKey = Environment.GetEnvironmentVariable("LANGFUSE_SECRET_KEY");
+    var host = Environment.GetEnvironmentVariable("LANGFUSE_HOST") ?? "http://localhost:3000";
+    if (string.IsNullOrWhiteSpace(publicKey) || string.IsNullOrWhiteSpace(secretKey))
+    {
+        Console.WriteLine("This check requires a LIVE Langfuse instance (set LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY).");
+        return 2;
+    }
+
+    Console.WriteLine($"[setup] Langfuse host: {host}");
+
+    const string promptName = "needlr-conformance-prompt";
+    const int promptVersion = 1;
+    var runId = $"needlr-prompt-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}";
+
+    using var http = new HttpClient { BaseAddress = new Uri(host.TrimEnd('/') + "/") };
+    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{publicKey}:{secretKey}")));
+
+    // Link-only assumes managed prompts already exist; ensure one (version 1) via the raw
+    // prompt-management API so there is a prompt to link to.
+    await EnsureTextPromptAsync(http, promptName);
+    Console.WriteLine($"[setup] Ensured managed prompt '{promptName}'.");
+
+    var options = new LangfuseOptions
+    {
+        PublicKey = publicKey,
+        SecretKey = secretKey,
+        Host = host,
+        ServiceName = "needlr-langfuse-prompt-linking",
+        Environment = "needlr-conformance",
+        ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        DiagnosticsCallback = msg => Console.WriteLine($"[langfuse] {msg}"),
+    };
+
+    var serviceProvider = new Syringe()
+        .UsingReflection()
+        .UsingAgentFramework(af => af
+            .Configure(opts => opts.ChatClientFactory = _ => new MockChatClient())
+            .UsingDiagnostics())
+        .BuildServiceProvider(new ConfigurationBuilder().Build());
+    var loop = serviceProvider.GetRequiredService<IIterativeAgentLoop>();
+    var diagnosticsAccessor = serviceProvider.GetRequiredService<IAgentDiagnosticsAccessor>();
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    if (!langfuse.IsEnabled)
+    {
+        Console.WriteLine("[error] Langfuse export did not enable — check keys/host.");
+        return 2;
+    }
+
+    string? traceId;
+    using (var scenario = langfuse.BeginScenario("prompt-linking: summary", sessionId: runId, tags: ["conformance"]))
+    {
+        scenario.SetPrompt(promptName, promptVersion);
+        traceId = scenario.TraceId;
+        Console.WriteLine($"[run] trace {traceId}, linking prompt '{promptName}' v{promptVersion}.");
+        await RunMockAsync(loop, diagnosticsAccessor, "prompt-linking");
+    }
+
+    langfuse.Flush(TimeSpan.FromSeconds(10));
+    Console.WriteLine("[run] Flushed. Verifying the generation links to the prompt...");
+    Console.WriteLine();
+
+    if (string.IsNullOrEmpty(traceId))
+    {
+        Console.WriteLine("[error] No trace id was produced.");
+        return 2;
+    }
+
+    var detail = string.Empty;
+    var linked = await PollAsync("prompt-linked generation", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var (ok, d) = await CheckGenerationPromptAsync(http, traceId, promptName, promptVersion);
+        detail = d;
+        return ok;
+    });
+
+    Console.WriteLine();
+    Console.WriteLine($"  generation linked to prompt: {Mark(linked)}  {detail}");
+    Console.WriteLine();
+
+    if (linked)
+    {
+        Console.WriteLine("PROMPT LINKING PASSED — the generation references the managed prompt.");
+        return 0;
+    }
+
+    Console.WriteLine("PROMPT LINKING FAILED — see above.");
+    return 1;
+}
+
+static async Task EnsureTextPromptAsync(HttpClient http, string name)
+{
+    var payload = new { name, type = "text", prompt = "You are a concise summariser.", labels = new[] { "production" } };
+    using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+    using var response = await http.PostAsync("api/public/v2/prompts", content);
+    if (!response.IsSuccessStatusCode)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"[setup] prompt ensure returned {(int)response.StatusCode}: {body}");
+    }
+}
+
+static async Task<(bool Ok, string Detail)> CheckGenerationPromptAsync(HttpClient http, string traceId, string promptName, int promptVersion)
+{
+    var body = await GetRawAsync(http, $"api/public/observations?traceId={Uri.EscapeDataString(traceId)}&limit=50");
+    if (body is null)
+    {
+        return (false, "(observations not found)");
+    }
+
+    using var json = JsonDocument.Parse(body);
+    if (!json.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Array)
+    {
+        return (false, "(no data)");
+    }
+
+    foreach (var obs in data.EnumerateArray())
+    {
+        var type = obs.TryGetProperty("type", out var t) ? t.GetString() : null;
+        if (type != "GENERATION")
+        {
+            continue;
+        }
+
+        var name = obs.TryGetProperty("promptName", out var pn) && pn.ValueKind == JsonValueKind.String ? pn.GetString() : null;
+        var version = obs.TryGetProperty("promptVersion", out var pv) && pv.ValueKind == JsonValueKind.Number ? pv.GetInt32() : (int?)null;
+
+        if (string.Equals(name, promptName, StringComparison.Ordinal) && version == promptVersion)
+        {
+            return (true, $"(promptName={name}, promptVersion={version})");
+        }
+
+        if (name is not null)
+        {
+            return (false, $"(generation promptName={name}, promptVersion={version})");
+        }
+    }
+
+    return (false, "(no linked GENERATION observation yet)");
+}
 
 static async Task<IAgentRunDiagnostics?> RunMockAsync(IIterativeAgentLoop loop, IAgentDiagnosticsAccessor accessor, string loopName)
 {

@@ -106,6 +106,16 @@ public interface ILangfuseScenario : IDisposable
     void SetOutput(object output);
 
     /// <summary>
+    /// Links generations produced under this scenario to a versioned prompt managed in Langfuse, by
+    /// stamping <c>langfuse.observation.prompt.name</c> / <c>version</c> on the chat-completion
+    /// (generation) spans. Tool spans are unaffected. Call before running the agent. No-op when the
+    /// owning session is disabled.
+    /// </summary>
+    /// <param name="name">The managed prompt name (as it appears in Langfuse prompt management).</param>
+    /// <param name="version">The prompt version, or <see langword="null"/> to link by name only.</param>
+    void SetPrompt(string name, int? version = null);
+
+    /// <summary>
     /// Records a numeric score against the session this scenario belongs to (the session id passed
     /// when the scenario began), scoring the whole multi-turn conversation rather than this single
     /// trace. Surfaced as a non-fatal skip when the scenario has no session id.

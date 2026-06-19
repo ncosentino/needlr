@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 
 using OpenTelemetry;
@@ -39,6 +40,12 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
     private const string ChatStreamActivityName = "agent.chat.stream";
     private const string ToolActivityPrefix = "agent.tool";
 
+    // Baggage keys set by ILangfuseScenario.SetPrompt. Distinct from the Langfuse observation
+    // attribute keys so they can be propagated to children without being copied verbatim onto
+    // every span by CopyBaggageToTags — prompt linking is generation-only.
+    internal const string PromptNameBaggageKey = "langfuse.prompt.name";
+    internal const string PromptVersionBaggageKey = "langfuse.prompt.version";
+
     private readonly string? _environment;
     private readonly string? _release;
 
@@ -66,6 +73,7 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
 
         CopyBaggageToTags(data);
         SetObservationType(data);
+        SetPromptLink(data);
         SetContextAttributes(data);
     }
 
@@ -94,6 +102,11 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
     {
         foreach (var entry in data.Baggage)
         {
+            if (entry.Key is PromptNameBaggageKey or PromptVersionBaggageKey)
+            {
+                continue;
+            }
+
             if (entry.Value is not null && data.GetTagItem(entry.Key) is null)
             {
                 data.SetTag(entry.Key, entry.Value);
@@ -108,18 +121,41 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
             return;
         }
 
-        var type = data.OperationName switch
-        {
-            ChatActivityName or ChatStreamActivityName => "generation",
-            _ when data.OperationName.StartsWith(ToolActivityPrefix, StringComparison.Ordinal) => "span",
-            _ => null,
-        };
+        var type = IsGeneration(data)
+            ? "generation"
+            : data.OperationName.StartsWith(ToolActivityPrefix, StringComparison.Ordinal) ? "span" : null;
 
         if (type is not null)
         {
             data.SetTag("langfuse.observation.type", type);
         }
     }
+
+    private static void SetPromptLink(Activity data)
+    {
+        if (!IsGeneration(data) || data.GetTagItem("langfuse.observation.prompt.name") is not null)
+        {
+            return;
+        }
+
+        var name = data.GetBaggageItem(PromptNameBaggageKey);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        data.SetTag("langfuse.observation.prompt.name", name);
+
+        var version = data.GetBaggageItem(PromptVersionBaggageKey);
+        if (!string.IsNullOrWhiteSpace(version)
+            && int.TryParse(version, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        {
+            data.SetTag("langfuse.observation.prompt.version", parsed);
+        }
+    }
+
+    private static bool IsGeneration(Activity data) =>
+        data.OperationName is ChatActivityName or ChatStreamActivityName;
 
     private static void SetUsageDetails(Activity data)
     {
