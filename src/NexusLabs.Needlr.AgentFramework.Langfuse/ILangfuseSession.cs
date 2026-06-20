@@ -81,6 +81,12 @@ public interface ILangfuseSession : IDisposable
     ILangfuseMetricsClient Metrics { get; }
 
     /// <summary>
+    /// Gets the client for registering model price definitions so Langfuse can compute cost for
+    /// generations whose model it does not price by default. Inert when this session is disabled.
+    /// </summary>
+    ILangfuseModelClient Models { get; }
+
+    /// <summary>
     /// Begins a Langfuse experiment (dataset run). Each item begun on the returned run links its
     /// trace to the run so the recorded scores aggregate into the experiment-comparison view.
     /// </summary>

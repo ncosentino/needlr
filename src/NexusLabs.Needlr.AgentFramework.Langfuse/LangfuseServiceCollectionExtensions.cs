@@ -48,6 +48,7 @@ public static class LangfuseServiceCollectionExtensions
             services.TryAddSingleton<ILangfuseDatasetClient>(new DisabledLangfuseDatasetClient());
             services.TryAddSingleton<ILangfuseScoreConfigClient>(new DisabledLangfuseScoreConfigClient());
             services.TryAddSingleton<ILangfuseMetricsClient>(new DisabledLangfuseMetricsClient());
+            services.TryAddSingleton<ILangfuseModelClient>(new DisabledLangfuseModelClient());
             return services;
         }
 
@@ -98,6 +99,7 @@ public static class LangfuseServiceCollectionExtensions
         services.TryAddSingleton<ILangfuseDatasetClient>(new LangfuseDatasetClient(apiClient));
         services.TryAddSingleton<ILangfuseScoreConfigClient>(new LangfuseScoreConfigClient(apiClient));
         services.TryAddSingleton<ILangfuseMetricsClient>(new LangfuseMetricsClient(apiClient));
+        services.TryAddSingleton<ILangfuseModelClient>(new LangfuseModelClient(apiClient));
 
         return services;
     }

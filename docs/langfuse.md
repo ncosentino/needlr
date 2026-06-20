@@ -244,6 +244,25 @@ single aggregate row of an ungrouped query.
     local instance). Metrics API availability can vary by deployment version — verify against your
     target instance.
 
+## Model pricing
+
+Langfuse derives a generation's cost from a model-price table; models it does not recognise
+(mock or internal model names) come back with no cost. Register a price so cost populates:
+
+```csharp
+await langfuse.Models.EnsureModelPriceAsync(new LangfuseModelPrice
+{
+    ModelName = "my-internal-model",
+    MatchPattern = "(?i)^my-internal-model$",   // regex matched against the generation's model
+    InputPrice = 0.000001,                       // USD per input token
+    OutputPrice = 0.000002,                      // USD per output token
+});
+```
+
+`EnsureModelPriceAsync` is idempotent (it creates the definition only when a model of that name is
+absent). Register prices **before** the generations are ingested so Langfuse computes cost at
+ingestion time.
+
 ## Prompt linking
 
 Link the generations in a scenario to a versioned prompt managed in Langfuse, so you can
