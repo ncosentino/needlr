@@ -4566,6 +4566,10 @@
 <td style="text-align: left;">The result of a <a href="LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>. Each row is a dictionary of column name to value; aggregated columns are named <code>{Aggregation}_{Measure}</code> and dimension columns keep their field name.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseModelPrice/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseModelPrice">LangfuseModelPrice</a></td>
+<td style="text-align: left;">A model price definition registered with Langfuse so it can compute cost for generations whose model it does not price out of the box (for example mock or internal model names). Langfuse derives cost from token usage and these prices when a generation carries no explicit cost.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions">LangfuseOptions</a></td>
 <td style="text-align: left;">Configuration for exporting Needlr agent telemetry and evaluation scores to Langfuse.</td>
 </tr>
@@ -4610,6 +4614,10 @@
 <tr>
 <td style="text-align: left;"><a href="ILangfuseMetricsClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseMetricsClient">ILangfuseMetricsClient</a></td>
 <td style="text-align: left;">Reads aggregates back from Langfuse via the Metrics API, so recorded eval scores (and observation metrics) can drive CI quality gates and dashboards from Langfuse as the source of truth.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="ILangfuseModelClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseModelClient">ILangfuseModelClient</a></td>
+<td style="text-align: left;">Registers model price definitions with Langfuse so it can compute cost for generations whose model it does not price by default.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a></td>
