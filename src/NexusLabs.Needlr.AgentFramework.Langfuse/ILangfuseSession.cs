@@ -87,6 +87,13 @@ public interface ILangfuseSession : IDisposable
     ILangfuseModelClient Models { get; }
 
     /// <summary>
+    /// Gets the client for fetching and creating prompts in Langfuse prompt management, so an eval's
+    /// prompt lives in Langfuse and generations link to the version used. Inert when this session is
+    /// disabled.
+    /// </summary>
+    ILangfusePromptClient Prompts { get; }
+
+    /// <summary>
     /// Begins a Langfuse experiment (dataset run). Each item begun on the returned run links its
     /// trace to the run so the recorded scores aggregate into the experiment-comparison view.
     /// </summary>

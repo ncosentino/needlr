@@ -116,6 +116,13 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         }
     }
 
+    /// <inheritdoc />
+    public void SetPrompt(LangfusePrompt prompt)
+    {
+        ArgumentNullException.ThrowIfNull(prompt);
+        SetPrompt(prompt.Name, prompt.Version);
+    }
+
     private static string ToAttributeValue(object value) =>
         value as string ?? JsonSerializer.Serialize(value);
 

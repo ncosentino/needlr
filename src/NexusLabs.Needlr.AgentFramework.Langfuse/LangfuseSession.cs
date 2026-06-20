@@ -52,6 +52,7 @@ internal sealed class LangfuseSession : ILangfuseSession
         ScoreConfigs = new LangfuseScoreConfigClient(apiClient);
         Metrics = new LangfuseMetricsClient(apiClient);
         Models = new LangfuseModelClient(apiClient);
+        Prompts = new LangfusePromptClient(apiClient);
     }
 
     /// <inheritdoc />
@@ -71,6 +72,9 @@ internal sealed class LangfuseSession : ILangfuseSession
 
     /// <inheritdoc />
     public ILangfuseModelClient Models { get; }
+
+    /// <inheritdoc />
+    public ILangfusePromptClient Prompts { get; }
 
     /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null)

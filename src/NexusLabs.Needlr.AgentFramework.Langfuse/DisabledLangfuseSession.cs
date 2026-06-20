@@ -25,6 +25,9 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
     public ILangfuseModelClient Models { get; } = new DisabledLangfuseModelClient();
 
     /// <inheritdoc />
+    public ILangfusePromptClient Prompts { get; } = new DisabledLangfusePromptClient();
+
+    /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null) => true;
 
     /// <inheritdoc />

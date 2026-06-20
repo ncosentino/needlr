@@ -49,6 +49,7 @@ public static class LangfuseServiceCollectionExtensions
             services.TryAddSingleton<ILangfuseScoreConfigClient>(new DisabledLangfuseScoreConfigClient());
             services.TryAddSingleton<ILangfuseMetricsClient>(new DisabledLangfuseMetricsClient());
             services.TryAddSingleton<ILangfuseModelClient>(new DisabledLangfuseModelClient());
+            services.TryAddSingleton<ILangfusePromptClient>(new DisabledLangfusePromptClient());
             return services;
         }
 
@@ -100,6 +101,7 @@ public static class LangfuseServiceCollectionExtensions
         services.TryAddSingleton<ILangfuseScoreConfigClient>(new LangfuseScoreConfigClient(apiClient));
         services.TryAddSingleton<ILangfuseMetricsClient>(new LangfuseMetricsClient(apiClient));
         services.TryAddSingleton<ILangfuseModelClient>(new LangfuseModelClient(apiClient));
+        services.TryAddSingleton<ILangfusePromptClient>(new LangfusePromptClient(apiClient));
 
         return services;
     }

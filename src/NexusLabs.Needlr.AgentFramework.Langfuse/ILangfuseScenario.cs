@@ -116,6 +116,13 @@ public interface ILangfuseScenario : IDisposable
     void SetPrompt(string name, int? version = null);
 
     /// <summary>
+    /// Links generations under this scenario to a prompt fetched from Langfuse prompt management,
+    /// using its name and version. No-op when the owning session is disabled.
+    /// </summary>
+    /// <param name="prompt">The fetched prompt.</param>
+    void SetPrompt(LangfusePrompt prompt);
+
+    /// <summary>
     /// Records a numeric score against the session this scenario belongs to (the session id passed
     /// when the scenario began), scoring the whole multi-turn conversation rather than this single
     /// trace. Surfaced as a non-fatal skip when the scenario has no session id.

@@ -279,6 +279,25 @@ var result = await RunAndEvaluate(...);
 The prompt must already exist in Langfuse prompt management for the link to resolve. Pass
 `version: null` to link by name only.
 
+## Prompt management (fetching)
+
+Fetch the prompt an eval runs against from Langfuse, so the prompt lives in Langfuse and the
+generations link to the exact version used. `session.Prompts` (or a DI-injected
+`ILangfusePromptClient`) fetches and creates managed prompts:
+
+```csharp
+var prompt = await langfuse.Prompts.GetPromptAsync("trip-planner", label: "production");
+
+using var scenario = langfuse.BeginScenario("trip-planner");
+scenario.SetPrompt(prompt!);                          // auto-links to prompt.Name + prompt.Version
+var result = await RunAndEvaluate(prompt!.Text, ...); // use the fetched text as instructions
+```
+
+`GetPromptAsync(name, label?, version?)` returns `null` when the prompt is absent (or Langfuse is
+unconfigured) — `version` takes precedence over `label`, and with neither the `production` label is
+used. `CreateTextPromptAsync(name, text, labels?)` creates a new version. Passing the fetched
+`LangfusePrompt` to `SetPrompt` is the link-only feature applied automatically.
+
 ## Trace context: environment, release, and more
 
 Set a deployment **environment** (e.g. `ci`, `staging`, `production`) and a **release**
