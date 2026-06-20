@@ -219,6 +219,31 @@ await scoreClient.RecordSessionScoreAsync(sessionId, "resolved", 0.8);
 await scenario.RecordSessionScoreAsync("resolved", true);
 ```
 
+## Metrics read-back (CI quality gates)
+
+Read aggregates back from Langfuse via the Metrics API — for example to fail a CI run if the
+average eval score regressed. `session.Metrics` (or a DI-injected `ILangfuseMetricsClient`)
+exposes a typed query plus a convenience for the common case:
+
+```csharp
+// after recording scores and flushing (allow a few seconds for ingestion):
+var avg = await langfuse.Metrics.GetScoreAverageAsync(
+    "correctness", fromTimestamp: runStart, toTimestamp: DateTimeOffset.UtcNow, environment: "ci");
+
+if (avg is < 0.8)
+    throw new InvalidOperationException($"correctness regressed: {avg}");
+```
+
+For arbitrary aggregates, use `QueryAsync` with a `LangfuseMetricsQuery` (views `observations`,
+`scores-numeric`, `scores-categorical`; measures, dimensions, filters). Result columns are named
+`{aggregation}_{measure}` (e.g. `avg_value`), and `result.GetScalar("avg", "value")` reads the
+single aggregate row of an ungrouped query.
+
+!!! note "Ingestion is asynchronous"
+    Flush and allow a few seconds for ingestion before querying (this loop ingested in ~7s on a
+    local instance). Metrics API availability can vary by deployment version — verify against your
+    target instance.
+
 ## Prompt linking
 
 Link the generations in a scenario to a versioned prompt managed in Langfuse, so you can
