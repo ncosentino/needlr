@@ -233,6 +233,10 @@
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetricsQuery/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseDatasetItem/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
@@ -249,6 +253,10 @@
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetricsFilter/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreError/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
@@ -257,11 +265,19 @@
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetricsResult/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreConfigCategory/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseServiceCollectionExtensions/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetricsView/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
@@ -277,6 +293,10 @@
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetric/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseScenario/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
@@ -286,6 +306,10 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseEvaluationScoreExtensions/</loc>
+    <lastmod>2026-06-20</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseMetricsClient/</loc>
     <lastmod>2026-06-20</lastmod>
   </url>
   <url>
