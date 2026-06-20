@@ -57,4 +57,19 @@ public sealed class LangfuseScenarioContextTests
         Assert.NotNull(captured);
         Assert.Contains("no session id", captured!.Exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void SetPrompt_PropagatesToChildGenerationSpan()
+    {
+        using var listener = LangfuseTestFactory.StartListener();
+        using var scenario = new LangfuseScenario(LangfuseTestFactory.OkScoreRecorder(), "s", null, null, null, null);
+        scenario.SetPrompt("trip-planner", 3);
+
+        var processor = new LangfuseTraceAttributeProcessor();
+        using var child = LangfuseActivitySource.Source.StartActivity("agent.chat")!;
+        processor.OnStart(child);
+
+        Assert.Equal("trip-planner", child.GetTagItem("langfuse.observation.prompt.name"));
+        Assert.Equal(3, child.GetTagItem("langfuse.observation.prompt.version"));
+    }
 }

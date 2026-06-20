@@ -219,6 +219,22 @@ await scoreClient.RecordSessionScoreAsync(sessionId, "resolved", 0.8);
 await scenario.RecordSessionScoreAsync("resolved", true);
 ```
 
+## Prompt linking
+
+Link the generations in a scenario to a versioned prompt managed in Langfuse, so you can
+analyze scores **by prompt version** (prompt-regression tracking). Call `SetPrompt` before
+running the agent — Needlr stamps `langfuse.observation.prompt.name` / `version` on the
+chat-completion (generation) spans; tool spans are unaffected:
+
+```csharp
+using var scenario = langfuse.BeginScenario("trip-planner");
+scenario.SetPrompt("trip-planner", version: 7);   // link generations to a managed prompt + version
+var result = await RunAndEvaluate(...);
+```
+
+The prompt must already exist in Langfuse prompt management for the link to resolve. Pass
+`version: null` to link by name only.
+
 ## Trace context: environment, release, and more
 
 Set a deployment **environment** (e.g. `ci`, `staging`, `production`) and a **release**

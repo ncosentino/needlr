@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 
 using Microsoft.Extensions.AI.Evaluation;
@@ -93,6 +94,26 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     {
         ArgumentNullException.ThrowIfNull(output);
         _activity?.SetTag("langfuse.trace.output", ToAttributeValue(output));
+    }
+
+    /// <inheritdoc />
+    public void SetPrompt(string name, int? version = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        if (_activity is null)
+        {
+            return;
+        }
+
+        _activity.SetBaggage(LangfuseTraceAttributeProcessor.PromptNameBaggageKey, name);
+
+        if (version is { } v)
+        {
+            _activity.SetBaggage(
+                LangfuseTraceAttributeProcessor.PromptVersionBaggageKey,
+                v.ToString(CultureInfo.InvariantCulture));
+        }
     }
 
     private static string ToAttributeValue(object value) =>

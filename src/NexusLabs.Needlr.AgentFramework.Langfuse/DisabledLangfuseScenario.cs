@@ -53,6 +53,11 @@ internal sealed class DisabledLangfuseScenario : ILangfuseScenario
     }
 
     /// <inheritdoc />
+    public void SetPrompt(string name, int? version = null)
+    {
+    }
+
+    /// <inheritdoc />
     public Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
