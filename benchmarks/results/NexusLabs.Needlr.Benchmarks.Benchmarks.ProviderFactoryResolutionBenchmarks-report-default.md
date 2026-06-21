@@ -8,12 +8,12 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                              | Mean      | Error     | StdDev    | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
------------------------------------- |----------:|----------:|----------:|------:|--------:|-----:|-------:|----------:|------------:|
- ManualDI_FuncFactory_PreResolved    | 13.798 ns | 2.2993 ns | 0.5971 ns |  1.00 |    0.06 |    2 | 0.0019 |      32 B |        1.00 |
- ManualDI_FuncFactory_WithResolution | 19.926 ns | 1.4290 ns | 0.3711 ns |  1.45 |    0.06 |    2 | 0.0019 |      32 B |        1.00 |
- DirectFactory_PreResolved           | 13.315 ns | 3.9853 ns | 1.0350 ns |  0.97 |    0.08 |    2 | 0.0019 |      32 B |        1.00 |
- DirectFactory_WithResolution        | 22.604 ns | 0.2959 ns | 0.0458 ns |  1.64 |    0.06 |    2 | 0.0019 |      32 B |        1.00 |
- Provider_FactoryShorthand           |  7.843 ns | 0.5103 ns | 0.1325 ns |  0.57 |    0.02 |    1 | 0.0019 |      32 B |        1.00 |
- Provider_FactoryInterface           | 17.863 ns | 2.6524 ns | 0.4105 ns |  1.30 |    0.06 |    2 | 0.0019 |      32 B |        1.00 |
- Provider_MixedShorthand             | 15.965 ns | 2.6517 ns | 0.6886 ns |  1.16 |    0.06 |    2 | 0.0019 |      32 B |        1.00 |
+ Method                              | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
+------------------------------------ |---------:|---------:|---------:|------:|--------:|-----:|-------:|----------:|------------:|
+ ManualDI_FuncFactory_PreResolved    | 13.40 ns | 7.730 ns | 2.008 ns |  1.02 |    0.19 |    1 | 0.0019 |      32 B |        1.00 |
+ ManualDI_FuncFactory_WithResolution | 19.30 ns | 0.190 ns | 0.029 ns |  1.46 |    0.18 |    1 | 0.0019 |      32 B |        1.00 |
+ DirectFactory_PreResolved           | 12.92 ns | 3.725 ns | 0.967 ns |  0.98 |    0.14 |    1 | 0.0019 |      32 B |        1.00 |
+ DirectFactory_WithResolution        | 22.98 ns | 0.358 ns | 0.093 ns |  1.74 |    0.22 |    1 | 0.0019 |      32 B |        1.00 |
+ Provider_FactoryShorthand           | 15.59 ns | 1.961 ns | 0.509 ns |  1.18 |    0.15 |    1 | 0.0019 |      32 B |        1.00 |
+ Provider_FactoryInterface           | 17.73 ns | 3.100 ns | 0.805 ns |  1.34 |    0.18 |    1 | 0.0019 |      32 B |        1.00 |
+ Provider_MixedShorthand             | 17.66 ns | 9.535 ns | 2.476 ns |  1.34 |    0.24 |    1 | 0.0019 |      32 B |        1.00 |
