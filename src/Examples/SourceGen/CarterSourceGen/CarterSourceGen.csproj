@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Carter" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.AspNet\NexusLabs.Needlr.AspNet.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Carter\NexusLabs.Needlr.Carter.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Injection.SourceGen\NexusLabs.Needlr.Injection.SourceGen.csproj" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators\NexusLabs.Needlr.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\NexusLabs.Needlr.Generators.Attributes\NexusLabs.Needlr.Generators.Attributes.csproj" />
+  </ItemGroup>
+</Project>
