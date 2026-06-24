@@ -121,6 +121,11 @@ public sealed class CarterEndToEndTests
             builder, [], mockLogger.Object, mockPluginFactory.Object);
         builderPlugin.Configure(builderOptions);
 
+        // Option B contract: the Carter plugin disables Carter's own module scan, so Needlr's
+        // type registry is the sole registrar. This test does not run the Syringe registrar, so
+        // it registers the module directly to stand in for what Needlr would register.
+        builder.Services.AddSingleton<ICarterModule, TestCarterModule>();
+
         var app = builder.Build();
 
         // Configure routes via the Needlr plugin
@@ -166,6 +171,11 @@ public sealed class CarterEndToEndTests
         {
             plugin.Configure(builderOptions);
         }
+
+        // Option B contract: the Carter plugin disables Carter's own module scan, so Needlr's
+        // type registry is the sole registrar. This test does not run the Syringe registrar, so
+        // it registers the module directly to stand in for what Needlr would register.
+        builder.Services.AddSingleton<ICarterModule, TestCarterModule>();
 
         var app = builder.Build();
 

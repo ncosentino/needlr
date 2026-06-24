@@ -99,6 +99,7 @@
     <Project Path="NexusLabs.Needlr.AspNet/NexusLabs.Needlr.AspNet.csproj" />
   </Folder>
   <Folder Name="/Integrations/Carter/">
+    <Project Path="NexusLabs.Needlr.Carter.IntegrationTests/NexusLabs.Needlr.Carter.IntegrationTests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter.Tests/NexusLabs.Needlr.Carter.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Carter/NexusLabs.Needlr.Carter.csproj" />
   </Folder>
