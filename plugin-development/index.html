@@ -1735,6 +1735,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#carter-module-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Carter Module Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -5123,6 +5134,22 @@ include it explicitly:</p>
 </ol>
 <p>Missing step 2 is the most common mistake — the generator runs but produces
 no output because it has no <code>[GenerateTypeRegistry]</code> trigger.</p>
+<h4 id="carter-module-discovery">Carter Module Discovery<a class="headerlink" href="#carter-module-discovery" title="Permanent link">&para;</a></h4>
+<p>The <code>NexusLabs.Needlr.Carter</code> integration makes <strong>Needlr the single source of
+truth</strong> for <code>ICarterModule</code> registration. Its builder plugin calls
+<code>AddCarter(c =&gt; c.WithEmptyModules())</code>, which disables Carter's own assembly
+scan for modules. Needlr's type registry registers your modules, and Carter's
+<code>MapCarter()</code> maps whatever <code>ICarterModule</code> services are in the container.</p>
+<p>This avoids a double registration: a <code>public</code> module visible to <em>both</em> Carter's
+scan and Needlr's registry would otherwise be registered twice and mapped twice,
+producing an <code>AmbiguousMatchException</code> ("The request matched multiple endpoints")
+on every one of its routes at request time.</p>
+<p>The practical consequence: your Carter modules must be in Needlr's discovery
+scope. With the default <code>NexusLabs.Needlr.Build</code> tooling every project is scoped
+to its own <code>RootNamespace</code>, so modules are found automatically — <code>public</code> or
+<code>internal</code>. A module in an assembly that Needlr does not discover (no
+<code>[GenerateTypeRegistry]</code>, and not in the reflection scan set) will not be
+registered, because Carter no longer scans for it.</p>
 <h3 id="controlling-plugin-discovery">Controlling Plugin Discovery<a class="headerlink" href="#controlling-plugin-discovery" title="Permanent link">&para;</a></h3>
 <h4 id="assembly-filtering">Assembly Filtering<a class="headerlink" href="#assembly-filtering" title="Permanent link">&para;</a></h4>
 <p>Control which assemblies are scanned for plugins:</p>
