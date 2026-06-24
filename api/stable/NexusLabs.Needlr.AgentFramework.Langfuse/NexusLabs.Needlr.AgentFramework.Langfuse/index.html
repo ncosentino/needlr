@@ -4538,6 +4538,10 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetItem/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem">LangfuseDatasetItem</a></td>
+<td style="text-align: left;">A single Langfuse dataset item — one eval case. Upserted via <a href="../ILangfuseDatasetClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem, System.Threading.CancellationToken)">UpsertItemAsync(LangfuseDatasetItem, CancellationToken)</a> and later referenced by an experiment run.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfuseEvaluationScoreExtensions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreExtensions">LangfuseEvaluationScoreExtensions</a></td>
 <td style="text-align: left;">Convenience extensions for projecting <code>Microsoft.Extensions.AI.Evaluation</code> results onto a Langfuse scenario trace as scores.</td>
 </tr>
@@ -4546,8 +4550,40 @@
 <td style="text-align: left;">The exception thrown when a request to the Langfuse API fails.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../LangfuseMetric/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetric">LangfuseMetric</a></td>
+<td style="text-align: left;">One metric in a <a href="../LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>: a measure plus an aggregation. The result column is named <code>{Aggregation}_{Measure}</code> (for example <code>avg_value</code>, <code>sum_totalCost</code>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseMetricsFilter/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsFilter">LangfuseMetricsFilter</a></td>
+<td style="text-align: left;">One filter in a <a href="../LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a></td>
+<td style="text-align: left;">A query against the Langfuse Metrics API (<code>GET /api/public/metrics</code>). Use it to read aggregates back from Langfuse — for example to drive a CI quality gate from recorded eval scores.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseMetricsResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsResult">LangfuseMetricsResult</a></td>
+<td style="text-align: left;">The result of a <a href="../LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>. Each row is a dictionary of column name to value; aggregated columns are named <code>{Aggregation}_{Measure}</code> and dimension columns keep their field name.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseModelPrice/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseModelPrice">LangfuseModelPrice</a></td>
+<td style="text-align: left;">A model price definition registered with Langfuse so it can compute cost for generations whose model it does not price out of the box (for example mock or internal model names). Langfuse derives cost from token usage and these prices when a generation carries no explicit cost.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfuseOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions">LangfuseOptions</a></td>
 <td style="text-align: left;">Configuration for exporting Needlr agent telemetry and evaluation scores to Langfuse.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfusePrompt/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt">LangfusePrompt</a></td>
+<td style="text-align: left;">A prompt fetched from Langfuse prompt management. Use <a href="../LangfusePrompt/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text">Text</a> for a text prompt's content, and pass the prompt to <a href="../ILangfuseScenario/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)">SetPrompt(LangfusePrompt)</a> to link generations to the exact version that was used.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseScoreConfig/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig">LangfuseScoreConfig</a></td>
+<td style="text-align: left;">Declares the shape of a named Langfuse score so the dashboard renders consistent ranges, colors, and category sets and validates incoming values. Created via <a href="../ILangfuseScoreConfigClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient.EnsureScoreConfigAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient.EnsureScoreConfigAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig, System.Threading.CancellationToken)">EnsureScoreConfigAsync(LangfuseScoreConfig, CancellationToken)</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseScoreConfigCategory/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfigCategory">LangfuseScoreConfigCategory</a></td>
+<td style="text-align: left;">One allowed category for a <a href="../LangfuseScoreDataType/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreDataType.Categorical" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreDataType.Categorical">Categorical</a> score config.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseScoreError/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreError">LangfuseScoreError</a></td>
@@ -4572,12 +4608,36 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../ILangfuseDatasetClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient">ILangfuseDatasetClient</a></td>
+<td style="text-align: left;">Creates and populates Langfuse datasets — the named collections of eval cases that experiment runs are scored against.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ILangfuseExperimentRun/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun">ILangfuseExperimentRun</a></td>
+<td style="text-align: left;">Represents an in-progress Langfuse experiment (dataset run). Each call to <a href="../ILangfuseExperimentRun/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.BeginItemAsync(string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.BeginItemAsync(string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;, System.Threading.CancellationToken)">BeginItemAsync(string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;, CancellationToken)</a> starts a trace for one dataset item and links it to this run, so the scores recorded on that trace roll up into the run's experiment-comparison view.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ILangfuseMetricsClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseMetricsClient">ILangfuseMetricsClient</a></td>
+<td style="text-align: left;">Reads aggregates back from Langfuse via the Metrics API, so recorded eval scores (and observation metrics) can drive CI quality gates and dashboards from Langfuse as the source of truth.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ILangfuseModelClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseModelClient">ILangfuseModelClient</a></td>
+<td style="text-align: left;">Registers model price definitions with Langfuse so it can compute cost for generations whose model it does not price by default.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ILangfusePromptClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfusePromptClient">ILangfusePromptClient</a></td>
+<td style="text-align: left;">Fetches and creates prompts in Langfuse prompt management, so the prompt an eval runs against lives in Langfuse and the generations link to the exact version that was used.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a></td>
 <td style="text-align: left;">Represents a single Langfuse trace scoped to one eval scenario or agent run. Created via <a href="../ILangfuseSession/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseScoreClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreClient">ILangfuseScoreClient</a></td>
 <td style="text-align: left;">Records Langfuse scores against a known trace id. Registered in dependency injection by <a href="../LangfuseServiceCollectionExtensions/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions.AddNeedlrLangfuse(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection,System.Action_NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions.AddNeedlrLangfuse(this Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action\&lt;NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions&gt;)">AddNeedlrLangfuse(this IServiceCollection, Action&lt;LangfuseOptions&gt;)</a> for ASP.NET Core and generic-host applications that score their own request traces.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ILangfuseScoreConfigClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient">ILangfuseScoreConfigClient</a></td>
+<td style="text-align: left;">Idempotently registers Langfuse score configs so eval scores appear on the dashboard with defined data types, ranges, and category sets.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseSession/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession">ILangfuseSession</a></td>
@@ -4593,6 +4653,10 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseMetricsView/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsView">LangfuseMetricsView</a></td>
+<td style="text-align: left;">The Langfuse Metrics API view to query. Determines which measures and dimensions are available.</td>
+</tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseRegion/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseRegion">LangfuseRegion</a></td>
 <td style="text-align: left;">Identifies the Langfuse deployment that traces and scores are sent to. Used to derive the base URL of the OTLP ingestion endpoint when <a href="../LangfuseOptions/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.Host" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.Host">Host</a> is not set explicitly.</td>

@@ -165,6 +165,14 @@
     <lastmod>2026-06-24</lastmod>
   </url>
   <url>
+    <loc>https://github.devleader.ca/needlr/adr/adr-0002-build-scriptedchatclient-locally/</loc>
+    <lastmod>2026-06-24</lastmod>
+  </url>
+  <url>
+    <loc>https://github.devleader.ca/needlr/adr/adr-0001-dag-graph-workflow-support/</loc>
+    <lastmod>2026-06-24</lastmod>
+  </url>
+  <url>
     <loc>https://github.devleader.ca/needlr/analyzers/NDLRMAF006/</loc>
     <lastmod>2026-06-24</lastmod>
   </url>
@@ -454,14 +462,6 @@
   </url>
   <url>
     <loc>https://github.devleader.ca/needlr/analyzers/NDLRCOR010/</loc>
-    <lastmod>2026-06-24</lastmod>
-  </url>
-  <url>
-    <loc>https://github.devleader.ca/needlr/adr/adr-0002-build-scriptedchatclient-locally/</loc>
-    <lastmod>2026-06-24</lastmod>
-  </url>
-  <url>
-    <loc>https://github.devleader.ca/needlr/adr/adr-0001-dag-graph-workflow-support/</loc>
     <lastmod>2026-06-24</lastmod>
   </url>
 </urlset>
