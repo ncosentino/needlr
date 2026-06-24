@@ -9,10 +9,6 @@ dotnet build src/NexusLabs.Needlr.slnx
 dotnet test src/NexusLabs.Needlr.slnx
 ```
 
-## Testing
-
-- **xUnit1051** ("methods which accept `CancellationToken` should use `TestContext.Current.CancellationToken`") must be honoured, not blanket-suppressed. Thread `TestContext.Current.CancellationToken` through every async call that accepts one (e.g. `StartAsync`/`StopAsync`/`GetAsync`/`ReadAsStringAsync`). Only suppress the rule when *not* passing the token is the point — either because the call surface is synchronous and has no meaningful async cancellation (e.g. in-memory Roslyn compilation in generator tests) or because the token semantics are themselves under test (e.g. passing `CancellationToken.None` to assert caller-vs-timeout cancellation behaviour). When you do suppress it, the comment must state that real reason, never restate the rule title.
-
 ## File Conventions
 
 - **One type per file.** Never put multiple classes, structs, or enums in the same `.cs` file.

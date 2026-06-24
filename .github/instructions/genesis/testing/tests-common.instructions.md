@@ -66,6 +66,12 @@ internal sealed class ThrowingSink : IDiagnosticsSink { ... }
   - It is permissable to make your own cancellation token source, but it must be linked to the test context one.
   - Assign the test context's token ONCE as an instance field. DO NOT assign it as a variable needlessly in every test -- it's extra lines for no reason.
 
+## xUnit1051 (cancellation token threading)
+
+- DO pass `TestContext.Current.CancellationToken` to every call that accepts a `CancellationToken` (e.g. `StartAsync`/`StopAsync`/`GetAsync`/`ReadAsStringAsync`).
+- DO NOT suppress `xUnit1051` just to skip threading the token.
+- ONLY suppress when not passing a token is the point: a synchronous API with no real async cancellation surface (e.g. in-memory Roslyn compilation), or when token semantics are themselves under test. The pragma comment MUST state that real reason — NEVER restate the rule title.
+
 ## NullLogger
 
 - For `ILogger<T>` dependencies that are not being verified, use `NullLogger<T>.Instance` — NEVER `new Mock<ILogger<T>>()`.
