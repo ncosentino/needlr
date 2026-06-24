@@ -9,8 +9,6 @@ using Microsoft.Extensions.Hosting;
 
 using Xunit;
 
-#pragma warning disable xUnit1051 // TestContext.Current.CancellationToken not used - not applicable for integration tests
-
 namespace NexusLabs.Needlr.Carter.Tests;
 
 /// <summary>
@@ -40,15 +38,16 @@ public sealed class CarterEndToEndTests
     public async Task CarterModule_GetRequest_ReturnsOk()
     {
         // Arrange
-        var host = await CreateTestHostAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var host = await CreateTestHostAsync(cancellationToken);
         var client = host.GetTestClient();
 
         // Act
-        var response = await client.GetAsync("/api/test");
+        var response = await client.GetAsync("/api/test", cancellationToken);
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
         Assert.Contains("Hello from Carter!", content);
     }
 
@@ -56,15 +55,16 @@ public sealed class CarterEndToEndTests
     public async Task CarterModule_GetWithParameter_ReturnsOk()
     {
         // Arrange
-        var host = await CreateTestHostAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var host = await CreateTestHostAsync(cancellationToken);
         var client = host.GetTestClient();
 
         // Act
-        var response = await client.GetAsync("/api/test/42");
+        var response = await client.GetAsync("/api/test/42", cancellationToken);
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
         Assert.Contains("42", content);
         Assert.Contains("Got item 42", content);
     }
@@ -73,7 +73,8 @@ public sealed class CarterEndToEndTests
     public async Task CarterModule_PostRequest_ReturnsCreated()
     {
         // Arrange
-        var host = await CreateTestHostAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var host = await CreateTestHostAsync(cancellationToken);
         var client = host.GetTestClient();
         var request = new TestRequest(123, "Test Item");
         var jsonContent = new StringContent(
@@ -82,7 +83,7 @@ public sealed class CarterEndToEndTests
             "application/json");
 
         // Act
-        var response = await client.PostAsync("/api/test", jsonContent);
+        var response = await client.PostAsync("/api/test", jsonContent, cancellationToken);
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
@@ -93,17 +94,18 @@ public sealed class CarterEndToEndTests
     public async Task CarterModule_NonExistentRoute_Returns404()
     {
         // Arrange
-        var host = await CreateTestHostAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var host = await CreateTestHostAsync(cancellationToken);
         var client = host.GetTestClient();
 
         // Act
-        var response = await client.GetAsync("/api/nonexistent");
+        var response = await client.GetAsync("/api/nonexistent", cancellationToken);
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private static async Task<IHost> CreateTestHostAsync()
+    private static async Task<IHost> CreateTestHostAsync(CancellationToken cancellationToken)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -115,7 +117,7 @@ public sealed class CarterEndToEndTests
 
         app.MapCarter();
 
-        await app.StartAsync();
+        await app.StartAsync(cancellationToken);
 
         return app;
     }

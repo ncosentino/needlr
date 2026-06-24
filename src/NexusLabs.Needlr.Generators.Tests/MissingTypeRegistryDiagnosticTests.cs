@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 using Xunit;
 
-#pragma warning disable xUnit1051 // Calls to methods which accept CancellationToken
+#pragma warning disable xUnit1051 // Synchronous in-memory Roslyn compilation; no async cancellation surface worth wiring a test token through
 
 namespace NexusLabs.Needlr.Generators.Tests;
 
