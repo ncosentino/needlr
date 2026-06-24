@@ -275,6 +275,26 @@ If you're building a Needlr integration package that ships plugins:
 Missing step 2 is the most common mistake — the generator runs but produces
 no output because it has no `[GenerateTypeRegistry]` trigger.
 
+#### Carter Module Discovery
+
+The `NexusLabs.Needlr.Carter` integration makes **Needlr the single source of
+truth** for `ICarterModule` registration. Its builder plugin calls
+`AddCarter(c => c.WithEmptyModules())`, which disables Carter's own assembly
+scan for modules. Needlr's type registry registers your modules, and Carter's
+`MapCarter()` maps whatever `ICarterModule` services are in the container.
+
+This avoids a double registration: a `public` module visible to *both* Carter's
+scan and Needlr's registry would otherwise be registered twice and mapped twice,
+producing an `AmbiguousMatchException` ("The request matched multiple endpoints")
+on every one of its routes at request time.
+
+The practical consequence: your Carter modules must be in Needlr's discovery
+scope. With the default `NexusLabs.Needlr.Build` tooling every project is scoped
+to its own `RootNamespace`, so modules are found automatically — `public` or
+`internal`. A module in an assembly that Needlr does not discover (no
+`[GenerateTypeRegistry]`, and not in the reflection scan set) will not be
+registered, because Carter no longer scans for it.
+
 ### Controlling Plugin Discovery
 
 #### Assembly Filtering
