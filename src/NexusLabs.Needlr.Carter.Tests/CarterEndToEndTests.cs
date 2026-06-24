@@ -6,11 +6,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-using NexusLabs.Needlr.AspNet;
-using NexusLabs.Needlr.Injection;
-using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
 
 using Xunit;
 
@@ -19,8 +14,10 @@ using Xunit;
 namespace NexusLabs.Needlr.Carter.Tests;
 
 /// <summary>
-/// End-to-end tests that verify Carter modules actually handle HTTP requests
-/// when configured through the Needlr plugin system.
+/// Baseline end-to-end tests that verify Carter modules handle HTTP requests using
+/// Carter's own <c>AddCarter()</c>/<c>MapCarter()</c>. The full Needlr source-gen
+/// composition — where Needlr discovers and registers the modules — is covered by
+/// <c>NexusLabs.Needlr.Carter.IntegrationTests</c>.
 /// </summary>
 public sealed class CarterEndToEndTests
 {
@@ -104,105 +101,6 @@ public sealed class CarterEndToEndTests
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task CarterModule_ConfiguredViaPluginSystem_WorksEndToEnd()
-    {
-        // Arrange - use plugin system to configure Carter
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-
-        // Configure Carter via the Needlr plugin
-        var builderPlugin = new CarterWebApplicationBuilderPlugin();
-        var mockLogger = new Moq.Mock<ILogger>();
-        var mockPluginFactory = new Moq.Mock<IPluginFactory>();
-        var builderOptions = new WebApplicationBuilderPluginOptions(
-            builder, [], mockLogger.Object, mockPluginFactory.Object);
-        builderPlugin.Configure(builderOptions);
-
-        // Option B contract: the Carter plugin disables Carter's own module scan, so Needlr's
-        // type registry is the sole registrar. This test does not run the Syringe registrar, so
-        // it registers the module directly to stand in for what Needlr would register.
-        builder.Services.AddSingleton<ICarterModule, TestCarterModule>();
-
-        var app = builder.Build();
-
-        // Configure routes via the Needlr plugin
-        var appPlugin = new CarterWebApplicationPlugin();
-        var appOptions = new WebApplicationPluginOptions(app, [], mockPluginFactory.Object);
-        appPlugin.Configure(appOptions);
-
-        await app.StartAsync();
-
-        var client = app.GetTestClient();
-
-        // Act
-        var response = await client.GetAsync("/api/test");
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Hello from Carter!", content);
-
-        await app.StopAsync();
-    }
-
-    [Fact]
-    public async Task CarterModule_WithSourceGenPluginFactory_WorksEndToEnd()
-    {
-        // Arrange - use source-generated plugin factory
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-
-        // Use the REAL source-generated plugin factory from Needlr.Carter
-        var pluginFactory = new GeneratedPluginFactory(
-            Generated.TypeRegistry.GetPluginTypes);
-
-        var mockLogger = new Moq.Mock<ILogger>();
-        var builderOptions = new WebApplicationBuilderPluginOptions(
-            builder, [typeof(CarterWebApplicationBuilderPlugin).Assembly], mockLogger.Object, pluginFactory);
-
-        // Get plugins via the source-generated factory
-        var builderPlugins = pluginFactory.CreatePluginsFromAssemblies<IWebApplicationBuilderPlugin>(
-            [typeof(CarterWebApplicationBuilderPlugin).Assembly]);
-
-        foreach (var plugin in builderPlugins)
-        {
-            plugin.Configure(builderOptions);
-        }
-
-        // Option B contract: the Carter plugin disables Carter's own module scan, so Needlr's
-        // type registry is the sole registrar. This test does not run the Syringe registrar, so
-        // it registers the module directly to stand in for what Needlr would register.
-        builder.Services.AddSingleton<ICarterModule, TestCarterModule>();
-
-        var app = builder.Build();
-
-        var appOptions = new WebApplicationPluginOptions(
-            app, [typeof(CarterWebApplicationPlugin).Assembly], pluginFactory);
-
-        var appPlugins = pluginFactory.CreatePluginsFromAssemblies<IWebApplicationPlugin>(
-            [typeof(CarterWebApplicationPlugin).Assembly]);
-
-        foreach (var plugin in appPlugins)
-        {
-            plugin.Configure(appOptions);
-        }
-
-        await app.StartAsync();
-
-        var client = app.GetTestClient();
-
-        // Act
-        var response = await client.GetAsync("/api/test");
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Hello from Carter!", content);
-
-        await app.StopAsync();
     }
 
     private static async Task<IHost> CreateTestHostAsync()
