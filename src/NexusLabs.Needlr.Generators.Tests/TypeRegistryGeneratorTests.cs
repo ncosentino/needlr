@@ -703,7 +703,7 @@ namespace TestApp
         Assert.DoesNotContain("sp => new global::TestApp.EngageFeedCacheProvider()", generatedCode);
     }
 
-#pragma warning disable xUnit1051 // Using CancellationToken with synchronous compilation methods
+#pragma warning disable xUnit1051 // Synchronous in-memory Roslyn compilation; no async cancellation surface worth wiring a test token through
     [Fact]
     public void Generator_WithDeferToContainerFromReferencedAssembly_UsesAttributeParameterTypes()
     {
