@@ -69,6 +69,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 discoveryResult.HttpClients.Count == 0 &&
                 discoveryResult.HostedServices.Count == 0 &&
                 discoveryResult.Providers.Count == 0 &&
+                discoveryResult.ComposedRegistrations.Count == 0 &&
                 discoveryResult.InaccessibleTypes.Count == 0 &&
                 discoveryResult.MissingTypeRegistryPlugins.Count == 0 &&
                 referencedAssemblies.Count == 0;
@@ -126,6 +127,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
 
             // NDLRGEN022: Detect disposable captive dependencies using inferred lifetimes
             CaptiveDependencyAnalyzer.ReportDisposableCaptiveDependencies(spc, discoveryResult);
+
+            // NDLRGEN038: Report skipped composition registrations whose discovered type argument(s)
+            // violate the composition's generic constraints.
+            foreach (var violation in discoveryResult.ComposedConstraintViolations)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ComposedTypeArgumentViolatesConstraints,
+                    Location.None,
+                    violation.CompositionTypeName,
+                    violation.TypeArgumentName,
+                    violation.SourceInterfaceName));
+            }
 
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
             spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
@@ -361,6 +374,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         var pluginTypes = new List<DiscoveredPlugin>();
         var decorators = new List<DiscoveredDecorator>();
         var openDecorators = new List<DiscoveredOpenDecorator>();
+        var composedMarkers = new List<DiscoveredComposedMarker>();
+        var composedCandidateTypes = new List<INamedTypeSymbol>();
         var interceptedServices = new List<DiscoveredInterceptedService>();
         var factories = new List<DiscoveredFactory>();
         var options = new List<DiscoveredOptions>();
@@ -379,7 +394,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         // Collect types from the current compilation if includeSelf is true
         if (includeSelf)
         {
-            CollectTypesFromAssembly(compilation.Assembly, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: true, generatedNamespace);
+            CollectTypesFromAssembly(compilation.Assembly, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, composedMarkers, composedCandidateTypes, compilation, isCurrentAssembly: true, generatedNamespace);
         }
 
         // Collect types from all referenced assemblies
@@ -397,7 +412,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // For referenced assemblies, they use their own generated namespace
                 var refSafeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblySymbol.Name);
                 var refGeneratedNamespace = $"{refSafeAssemblyName}.Generated";
-                CollectTypesFromAssembly(assemblySymbol, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
+                CollectTypesFromAssembly(assemblySymbol, prefixList, excludePrefixList, injectableTypes, pluginTypes, decorators, openDecorators, interceptedServices, factories, options, hostedServices, providers, httpClients, inaccessibleTypes, composedMarkers, composedCandidateTypes, compilation, isCurrentAssembly: false, refGeneratedNamespace);
             }
         }
 
@@ -405,6 +420,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (openDecorators.Count > 0)
         {
             CodeGen.DecoratorsCodeGenerator.ExpandOpenDecorators(injectableTypes, openDecorators, decorators);
+        }
+
+        // Expand [RegisterClosedOverImplementationsOf] markers into closed composition registrations.
+        var composedRegistrations = new List<DiscoveredComposedRegistration>();
+        var composedConstraintViolations = new List<ComposedConstraintViolation>();
+        if (composedMarkers.Count > 0)
+        {
+            ComposedRegistrationDiscoveryHelper.Expand(
+                composedMarkers,
+                composedCandidateTypes,
+                composedRegistrations,
+                composedConstraintViolations);
         }
 
         // Filter out nested options types (types used as properties in other options types)
@@ -439,7 +466,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
         }
 
-        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices, providers, httpClients);
+        return new DiscoveryResult(injectableTypes, pluginTypes, decorators, inaccessibleTypes, missingTypeRegistryPlugins, interceptedServices, factories, options, hostedServices, providers, httpClients, composedRegistrations, composedConstraintViolations);
     }
 
     private static void CollectTypesFromAssembly(
@@ -457,6 +484,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         List<DiscoveredProvider> providers,
         List<DiscoveredHttpClient> httpClients,
         List<InaccessibleType> inaccessibleTypes,
+        List<DiscoveredComposedMarker> composedMarkers,
+        List<INamedTypeSymbol> composedCandidateTypes,
         Compilation compilation,
         bool isCurrentAssembly,
         string generatedNamespace)
@@ -623,6 +652,20 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     sourceFilePath));
             }
 
+            // Check for RegisterClosedOverImplementationsOf attributes (source-gen only composition markers)
+            var composedMarkerInfos = ComposedRegistrationDiscoveryHelper.GetComposedMarkers(typeSymbol);
+            foreach (var composedMarkerInfo in composedMarkerInfos)
+            {
+                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+                composedMarkers.Add(new DiscoveredComposedMarker(
+                    composedMarkerInfo.CompositionType,
+                    composedMarkerInfo.SourceOpenGenericInterface,
+                    composedMarkerInfo.AsServiceType,
+                    composedMarkerInfo.Lifetime,
+                    assembly.Name,
+                    sourceFilePath));
+            }
+
             // Check for Intercept attributes and collect intercepted services
             if (InterceptorDiscoveryHelper.HasInterceptAttributes(typeSymbol))
             {
@@ -705,6 +748,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var isDisposable = TypeDiscoveryHelper.IsDisposableType(typeSymbol);
 
                     injectableTypes.Add(new DiscoveredType(typeName, interfaceNames, assembly.Name, lifetime.Value, constructorParams, serviceKeys, sourceFilePath, sourceLine, isDisposable, interfaceInfos));
+
+                    // Every injectable type is a candidate implementation for [RegisterClosedOverImplementationsOf]
+                    // expansion. Tying collection to the injectable-registration site means a composition composes
+                    // over exactly the set Needlr registers — current assembly plus referenced libraries — so
+                    // cross-assembly definitions are handled the same way decorators expand over injectable types.
+                    composedCandidateTypes.Add(typeSymbol);
                 }
             }
 
@@ -824,7 +873,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine();
-        CodeGen.DecoratorsCodeGenerator.GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
+        CodeGen.DecoratorsCodeGenerator.GenerateApplyDecoratorsMethod(builder, discoveryResult.Decorators, discoveryResult.InterceptedServices.Count > 0, discoveryResult.HostedServices.Count > 0, discoveryResult.ComposedRegistrations.Count > 0, safeAssemblyName, breadcrumbs, projectDirectory);
+
+        if (discoveryResult.ComposedRegistrations.Count > 0)
+        {
+            builder.AppendLine();
+            CodeGen.ComposedRegistrationsCodeGenerator.GenerateRegisterComposedTypesMethod(builder, discoveryResult.ComposedRegistrations, breadcrumbs, projectDirectory);
+        }
 
         if (discoveryResult.HostedServices.Count > 0)
         {

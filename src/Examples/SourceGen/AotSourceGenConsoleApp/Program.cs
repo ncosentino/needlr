@@ -283,3 +283,24 @@ Console.WriteLine($"Concrete type: {fileService.GetType().Name}");
 Console.WriteLine($"Via concrete - Read: {fileService.ReadFile("/data/users.json")}");
 fileService.WriteFile("/logs/app.log", "Application started");
 Console.WriteLine();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPOSE-AND-EXPOSE DEMO ([RegisterClosedOverImplementationsOf])
+// ─────────────────────────────────────────────────────────────────────────────
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine("COMPOSE-AND-EXPOSE DEMO");
+Console.WriteLine("═══════════════════════════════════════════════════════════════════════════════");
+Console.WriteLine();
+
+// BlockTypeCore<TData> carries [RegisterClosedOverImplementationsOf(typeof(IBlockTypeDefinition<>), As = typeof(IBlockType))].
+// The generator discovered every IBlockTypeDefinition<> implementation and registered one closed
+// BlockTypeCore<TData> per definition as IBlockType. Adding a new definition auto-wires here with no
+// extra registration — the host just enumerates IEnumerable<IBlockType>.
+Console.WriteLine("── Each discovered block definition is composed behind IBlockType ──");
+var blockTypes = provider.GetServices<IBlockType>().ToList();
+Console.WriteLine($"IBlockType registrations: {blockTypes.Count}");
+foreach (var blockType in blockTypes.OrderBy(b => b.Discriminator))
+{
+    Console.WriteLine($"  {blockType.Discriminator,-6} → {blockType.GetType().Name}");
+}
+Console.WriteLine();

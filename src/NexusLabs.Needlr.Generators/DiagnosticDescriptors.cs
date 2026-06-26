@@ -344,6 +344,67 @@ internal static class DiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRGEN034.md");
 
     // ============================================================================
+    // Composition Analyzers (NDLRGEN035-038)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN035: [RegisterClosedOverImplementationsOf] source type must be an open generic interface.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ComposedSourceNotOpenGenericInterface = new(
+        id: "NDLRGEN035",
+        title: "[RegisterClosedOverImplementationsOf] source type must be an open generic interface",
+        messageFormat: "Source type argument '{0}' in [RegisterClosedOverImplementationsOf] is not an open generic interface: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [RegisterClosedOverImplementationsOf] attribute requires an open generic interface type whose concrete closed implementations drive registration. Use typeof(IInterface<>) syntax, not a closed generic like typeof(IInterface<string>) or a non-generic type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN035.md");
+
+    /// <summary>
+    /// NDLRGEN036: [RegisterClosedOverImplementationsOf] composition class must be an open generic with matching arity.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ComposedClassNotOpenGeneric = new(
+        id: "NDLRGEN036",
+        title: "[RegisterClosedOverImplementationsOf] composition must be an open generic class",
+        messageFormat: "Class '{0}' with [RegisterClosedOverImplementationsOf({1})] must be an open generic class with {2} type parameter(s)",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "When using [RegisterClosedOverImplementationsOf(typeof(IInterface<>))], the annotated composition class must be an open generic with the same number of type parameters so it can be closed over each discovered implementation's type argument(s).",
+        helpLinkUri: HelpLinkBase + "NDLRGEN036.md");
+
+    /// <summary>
+    /// NDLRGEN037: [RegisterClosedOverImplementationsOf] composition class must implement the As service type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ComposedClassNotImplementingAs = new(
+        id: "NDLRGEN037",
+        title: "[RegisterClosedOverImplementationsOf] composition must implement the As service type",
+        messageFormat: "Class '{0}' must implement the 'As' service type specified by [RegisterClosedOverImplementationsOf]",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Each closed composition is registered as the service type named by 'As', so the annotated class must specify an 'As' type and implement it (directly or transitively). Set As = typeof(IFacade) where the composition implements IFacade.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN037.md");
+
+    /// <summary>
+    /// NDLRGEN038: A discovered type argument cannot legally close the composition type.
+    /// </summary>
+    /// <remarks>
+    /// Emitted by the generator (not the per-attribute analyzer) because only the generator knows the
+    /// full set of discovered implementations. The offending registration is skipped rather than emitting
+    /// code that fails to compile, turning a would-be runtime absence into a build-time signal.
+    /// </remarks>
+    public static readonly DiagnosticDescriptor ComposedTypeArgumentViolatesConstraints = new(
+        id: "NDLRGEN038",
+        title: "[RegisterClosedOverImplementationsOf] discovered type argument violates composition constraints",
+        messageFormat: "Composition '{0}' cannot be closed over type argument(s) '{1}' from an implementation of '{2}' because they violate its generic constraints; the registration was skipped",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "An implementation of the designated open generic interface was discovered whose type argument(s) do not satisfy the composition type's generic constraints. Relax the composition's constraints, constrain the source interface so such implementations cannot exist, or exclude the implementation. The registration is skipped to avoid emitting code that would fail to compile.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN038.md");
+
+    // ============================================================================
     // HttpClient Analyzers (NDLRHTTP001-006)
     // ============================================================================
 

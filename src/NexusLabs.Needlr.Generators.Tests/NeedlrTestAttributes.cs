@@ -219,6 +219,28 @@ namespace NexusLabs.Needlr.Generators
 }";
 
     /// <summary>
+    /// Open generic composition attribute (source-gen only).
+    /// </summary>
+    public const string ComposedRegistration = @"
+namespace NexusLabs.Needlr.Generators
+{
+    public enum InjectableLifetime { Singleton = 0, Scoped = 1, Transient = 2 }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public sealed class RegisterClosedOverImplementationsOfAttribute : System.Attribute
+    {
+        public RegisterClosedOverImplementationsOfAttribute(System.Type sourceOpenGenericInterface)
+        {
+            SourceOpenGenericInterface = sourceOpenGenericInterface;
+        }
+
+        public System.Type SourceOpenGenericInterface { get; }
+        public System.Type As { get; set; }
+        public InjectableLifetime Lifetime { get; set; } = InjectableLifetime.Singleton;
+    }
+}";
+
+    /// <summary>
     /// Core attributes plus interceptors (for interceptor tests).
     /// </summary>
     public const string CoreWithInterceptors = Core + Interceptors;
@@ -242,4 +264,9 @@ namespace NexusLabs.Needlr.Generators
     /// All attributes including provider (Core + Interceptors + Decorators + Provider).
     /// </summary>
     public const string AllWithProvider = Core + Interceptors + Decorators + Provider;
+
+    /// <summary>
+    /// All attributes including composition (Core + Interceptors + Decorators + ComposedRegistration).
+    /// </summary>
+    public const string AllWithComposed = Core + Interceptors + Decorators + ComposedRegistration;
 }

@@ -518,3 +518,91 @@ public sealed class FileService : IFileReader, IFileWriter, IFileDeleter
     public void DeleteFile(string path) 
         => Console.WriteLine($"[{_timeProvider.GetNow():HH:mm:ss}] Deleted '{path}'");
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPOSE-AND-EXPOSE DEMO ([RegisterClosedOverImplementationsOf])
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Each "block type" is a pure definition implementing IBlockTypeDefinition<TData> and is
+// auto-discovered by Needlr. A single reusable open generic BlockTypeCore<TData> composes a
+// definition with a per-type store and is exposed as the non-generic facade IBlockType. The
+// [RegisterClosedOverImplementationsOf] marker makes the generator register one closed
+// BlockTypeCore<TData> per discovered definition — adding a new block type means adding ONE
+// definition, with no per-type wiring to keep in sync.
+
+/// <summary>A typed block definition. Concrete implementations are auto-discovered.</summary>
+public interface IBlockTypeDefinition<TData>
+    where TData : class
+{
+    string Discriminator { get; }
+}
+
+/// <summary>Per-type instance store, registered as an open generic by <see cref="BlockTypesPlugin"/>.</summary>
+public interface IBlockInstanceStore<TData>
+    where TData : class
+{
+    int Count { get; }
+}
+
+/// <summary>Default open-generic store implementation.</summary>
+public sealed class DefaultBlockInstanceStore<TData> : IBlockInstanceStore<TData>
+    where TData : class
+{
+    public int Count => 0;
+}
+
+/// <summary>Non-generic facade the host consumes as IEnumerable&lt;IBlockType&gt;.</summary>
+public interface IBlockType
+{
+    string Discriminator { get; }
+}
+
+/// <summary>Block payload shapes (pure data).</summary>
+public sealed class VideoBlockData;
+
+/// <summary>Block payload shapes (pure data).</summary>
+public sealed class LeadBlockData;
+
+/// <summary>A block definition — concrete, unattributed, auto-registered as IBlockTypeDefinition&lt;VideoBlockData&gt;.</summary>
+public sealed class VideoBlockDefinition : IBlockTypeDefinition<VideoBlockData>
+{
+    public string Discriminator => "video";
+}
+
+/// <summary>A block definition — concrete, unattributed, auto-registered as IBlockTypeDefinition&lt;LeadBlockData&gt;.</summary>
+public sealed class LeadBlockDefinition : IBlockTypeDefinition<LeadBlockData>
+{
+    public string Discriminator => "lead";
+}
+
+/// <summary>
+/// Reusable composition closed per discovered TData and exposed as IBlockType. Composed (no inheritance)
+/// from a definition and a per-type store. The generator emits one IBlockType registration per discovered
+/// IBlockTypeDefinition&lt;&gt; implementation, resolving the constructor dependencies from DI.
+/// </summary>
+[RegisterClosedOverImplementationsOf(typeof(IBlockTypeDefinition<>), As = typeof(IBlockType))]
+public sealed class BlockTypeCore<TData> : IBlockType
+    where TData : class
+{
+    private readonly IBlockTypeDefinition<TData> _definition;
+
+    public BlockTypeCore(IBlockTypeDefinition<TData> definition, IBlockInstanceStore<TData> store)
+    {
+        _definition = definition;
+        _ = store;
+    }
+
+    public string Discriminator => _definition.Discriminator;
+}
+
+/// <summary>
+/// Registers only the open-generic store. The per-type IBlockType registrations are emitted by the
+/// generator from the [RegisterClosedOverImplementationsOf] marker — there is no per-type list here.
+/// </summary>
+internal sealed class BlockTypesPlugin : IServiceCollectionPlugin
+{
+    public void Configure(ServiceCollectionPluginOptions options)
+    {
+        options.Services.AddSingleton(typeof(IBlockInstanceStore<>), typeof(DefaultBlockInstanceStore<>));
+    }
+}

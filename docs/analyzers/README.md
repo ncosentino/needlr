@@ -110,6 +110,10 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN032](NDLRGEN032.md) | Error | [Provider] interface has invalid member |
 | [NDLRGEN033](NDLRGEN033.md) | Warning | [Provider] property uses concrete type |
 | [NDLRGEN034](NDLRGEN034.md) | Error | [Provider] circular dependency detected |
+| [NDLRGEN035](NDLRGEN035.md) | Error | [RegisterClosedOverImplementationsOf] source must be an open generic interface |
+| [NDLRGEN036](NDLRGEN036.md) | Error | [RegisterClosedOverImplementationsOf] composition must be an open generic class |
+| [NDLRGEN037](NDLRGEN037.md) | Error | [RegisterClosedOverImplementationsOf] composition must implement the As service type |
+| [NDLRGEN038](NDLRGEN038.md) | Warning | [RegisterClosedOverImplementationsOf] discovered type argument violates composition constraints |
 
 ## HttpClient Diagnostics (NexusLabs.Needlr.Generators)
 

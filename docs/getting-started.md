@@ -396,6 +396,7 @@ var webApplication = new Syringe()
 - Explore [Plugin Development](plugin-development.md) to extend functionality
 - Discover [Factory Delegates](factories.md) for types with runtime parameters
 - Read about [Interceptors](interceptors.md) for cross-cutting concerns
+- Compose typed plugins behind a uniform facade with [Compose and Expose Closed Generics](composed-closed-generics.md)
 - See [Advanced Usage](advanced-usage.md) for complex scenarios
 - Track agent execution in real-time with [Progress Reporting](progress-reporting.md)
 - Run multi-step agentic workloads with O(n) token cost via [Iterative Agent Loop](iterative-agent-loop.md)

@@ -18,7 +18,9 @@ internal readonly struct DiscoveryResult
         IReadOnlyList<DiscoveredOptions> options,
         IReadOnlyList<DiscoveredHostedService> hostedServices,
         IReadOnlyList<DiscoveredProvider> providers,
-        IReadOnlyList<DiscoveredHttpClient> httpClients)
+        IReadOnlyList<DiscoveredHttpClient> httpClients,
+        IReadOnlyList<DiscoveredComposedRegistration> composedRegistrations,
+        IReadOnlyList<ComposedConstraintViolation> composedConstraintViolations)
     {
         InjectableTypes = injectableTypes;
         PluginTypes = pluginTypes;
@@ -31,6 +33,8 @@ internal readonly struct DiscoveryResult
         HostedServices = hostedServices;
         Providers = providers;
         HttpClients = httpClients;
+        ComposedRegistrations = composedRegistrations;
+        ComposedConstraintViolations = composedConstraintViolations;
     }
 
     public IReadOnlyList<DiscoveredType> InjectableTypes { get; }
@@ -44,4 +48,6 @@ internal readonly struct DiscoveryResult
     public IReadOnlyList<DiscoveredHostedService> HostedServices { get; }
     public IReadOnlyList<DiscoveredProvider> Providers { get; }
     public IReadOnlyList<DiscoveredHttpClient> HttpClients { get; }
+    public IReadOnlyList<DiscoveredComposedRegistration> ComposedRegistrations { get; }
+    public IReadOnlyList<ComposedConstraintViolation> ComposedConstraintViolations { get; }
 }
