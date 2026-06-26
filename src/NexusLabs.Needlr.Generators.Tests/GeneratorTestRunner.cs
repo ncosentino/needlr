@@ -741,6 +741,54 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Inline attribute definitions for [RegisterClosedOverImplementationsOf] composition tests.
+    /// </summary>
+    public const string InlineComposedDefinitions = """
+        namespace NexusLabs.Needlr
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class DoNotAutoRegisterAttribute : System.Attribute { }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class SingletonAttribute : System.Attribute { }
+        }
+
+        namespace NexusLabs.Needlr.Generators
+        {
+            [System.AttributeUsage(System.AttributeTargets.Assembly)]
+            public sealed class GenerateTypeRegistryAttribute : System.Attribute
+            {
+                public string[]? IncludeNamespacePrefixes { get; set; }
+                public bool IncludeSelf { get; set; } = true;
+            }
+
+            public enum InjectableLifetime { Singleton = 0, Scoped = 1, Transient = 2 }
+
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+            public sealed class RegisterClosedOverImplementationsOfAttribute : System.Attribute
+            {
+                public RegisterClosedOverImplementationsOfAttribute(System.Type sourceOpenGenericInterface)
+                {
+                    SourceOpenGenericInterface = sourceOpenGenericInterface;
+                }
+
+                public System.Type SourceOpenGenericInterface { get; }
+                public System.Type? As { get; set; }
+                public InjectableLifetime Lifetime { get; set; } = InjectableLifetime.Singleton;
+            }
+        }
+        """;
+
+    /// <summary>
+    /// Creates a runner for composition (RegisterClosedOverImplementationsOf) tests with inline type definitions.
+    /// </summary>
+    public static GeneratorTestRunner ForComposedWithInlineTypes()
+    {
+        return new GeneratorTestRunner()
+            .WithSource(InlineComposedDefinitions);
+    }
+
+    /// <summary>
     /// Creates a runner for interceptor tests with inline type definitions.
     /// </summary>
     public static GeneratorTestRunner ForInterceptorWithInlineTypes()

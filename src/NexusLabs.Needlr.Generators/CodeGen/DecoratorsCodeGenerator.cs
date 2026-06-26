@@ -20,7 +20,7 @@ internal static class DecoratorsCodeGenerator
     /// <summary>
     /// Emits the <c>ApplyDecorators(IServiceCollection)</c> method body into the TypeRegistry class.
     /// </summary>
-    internal static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, bool hasHostedServices, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    internal static void GenerateApplyDecoratorsMethod(StringBuilder builder, IReadOnlyList<DiscoveredDecorator> decorators, bool hasInterceptors, bool hasHostedServices, bool hasComposedRegistrations, string safeAssemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Applies all discovered decorators, interceptors, and hosted services to the service collection.");
@@ -34,6 +34,14 @@ internal static class DecoratorsCodeGenerator
         breadcrumbs.WriteInlineComment(builder, "        ", "Register service catalog for DI resolution");
         builder.AppendLine($"        services.AddSingleton<global::NexusLabs.Needlr.Catalog.IServiceCatalog, global::{safeAssemblyName}.Generated.ServiceCatalog>();");
         builder.AppendLine();
+
+        // Register composed (closed-over-implementations) registrations before decorators apply.
+        if (hasComposedRegistrations)
+        {
+            breadcrumbs.WriteInlineComment(builder, "        ", "Register composed closed-generic types");
+            builder.AppendLine("        RegisterComposedTypes(services);");
+            builder.AppendLine();
+        }
 
         // Register hosted services first (before decorators apply)
         if (hasHostedServices)

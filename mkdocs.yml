@@ -70,6 +70,7 @@ nav:
     - Tiered Provider Selector: tiered-provider-selector.md
     - Interceptors: interceptors.md
     - Open Generic Decorators: open-generic-decorators.md
+    - Compose and Expose Closed Generics: composed-closed-generics.md
     - Cancellation-Aware Logging: cancellation-aware-logging.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
@@ -134,6 +135,10 @@ nav:
       - NDLRGEN032: analyzers/NDLRGEN032.md
       - NDLRGEN033: analyzers/NDLRGEN033.md
       - NDLRGEN034: analyzers/NDLRGEN034.md
+      - NDLRGEN035: analyzers/NDLRGEN035.md
+      - NDLRGEN036: analyzers/NDLRGEN036.md
+      - NDLRGEN037: analyzers/NDLRGEN037.md
+      - NDLRGEN038: analyzers/NDLRGEN038.md
     - MAF Analyzers:
       - NDLRMAF001: analyzers/NDLRMAF001.md
       - NDLRMAF002: analyzers/NDLRMAF002.md
