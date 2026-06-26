@@ -274,9 +274,12 @@ internal static class ComposedRegistrationDiscoveryHelper
 
         foreach (var constraintType in typeParameter.ConstraintTypes)
         {
-            // A constraint that references another type parameter (e.g. where T : IComparable<T>) cannot be
-            // checked without full substitution; treat conservatively as satisfied for v1.
-            if (ContainsTypeParameter(constraintType))
+            // Only non-generic constraint types are validated here: exact-match assignability is
+            // variance-immune and reliable for them. Generic constraint types — whether self-referential
+            // (where T : IComparable<T>), variant (where T : IProducer<Animal>), or invariant — are
+            // deferred to the C# compiler so a variance/substitution subtlety can never skip a valid
+            // registration. A bare type-parameter constraint (where T : U) is likewise deferred.
+            if (constraintType is INamedTypeSymbol { IsGenericType: true } || ContainsTypeParameter(constraintType))
                 continue;
 
             if (!IsAssignableTo(typeArgument, constraintType))

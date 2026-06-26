@@ -420,4 +420,45 @@ public sealed class RegisterClosedOverImplementationsOfGeneratorTests
         Assert.Equal(1, registrationCount);
         Assert.Contains(diagnostics, d => d.Id == "NDLRGEN038");
     }
+
+    [Fact]
+    public void Composition_CovariantConstraintSatisfiedByVariance_IsNotFalseSkipped()
+    {
+        // Regression guard: a fixed covariant generic constraint must NOT skip a type that satisfies it via
+        // variance. DogProducer : IProducer<Dog> satisfies `where TData : IProducer<Animal>` because
+        // IProducer is covariant, so the registration must be emitted with no NDLRGEN038.
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "TestNamespace" })]
+
+            namespace TestNamespace
+            {
+                public interface IProducer<out T> { }
+                public class Animal { }
+                public sealed class Dog : Animal { }
+                public sealed class DogProducer : IProducer<Dog> { }
+
+                public interface IVarDefinition<TData> { }
+                public sealed class VarHolder : IVarDefinition<DogProducer> { }
+                public interface IVar { }
+
+                [RegisterClosedOverImplementationsOf(typeof(IVarDefinition<>), As = typeof(IVar))]
+                public sealed class VarCore<TData> : IVar where TData : IProducer<Animal>
+                {
+                    public VarCore(IVarDefinition<TData> definition) { }
+                }
+            }
+            """;
+
+        var generatedCode = GeneratorTestRunner.ForComposedWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+        var diagnostics = GeneratorTestRunner.ForComposedWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGeneratorDiagnostics();
+
+        Assert.Contains("new global::TestNamespace.VarCore<global::TestNamespace.DogProducer>", generatedCode);
+        Assert.DoesNotContain(diagnostics, d => d.Id == "NDLRGEN038");
+    }
 }
