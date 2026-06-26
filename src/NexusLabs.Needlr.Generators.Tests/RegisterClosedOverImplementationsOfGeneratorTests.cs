@@ -381,4 +381,43 @@ public sealed class RegisterClosedOverImplementationsOfGeneratorTests
         Assert.Contains("AddSingleton<global::TestNamespace.IMultiA>", generatedCode);
         Assert.Contains("AddSingleton<global::TestNamespace.IMultiB>", generatedCode);
     }
+
+    [Fact]
+    public void Composition_NullableValueTypeArgumentViolatesNotNullConstraint_ReportsDiagnosticAndSkips()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "TestNamespace" })]
+
+            namespace TestNamespace
+            {
+                public interface INnDefinition<TData> { }
+                public sealed class RefData { }
+                public sealed class RefHolder : INnDefinition<RefData> { }
+                public sealed class NullableHolder : INnDefinition<int?> { }
+                public interface INn { }
+
+                [RegisterClosedOverImplementationsOf(typeof(INnDefinition<>), As = typeof(INn))]
+                public sealed class NnCore<TData> : INn where TData : notnull
+                {
+                    public NnCore(INnDefinition<TData> definition) { }
+                }
+            }
+            """;
+
+        var generatedCode = GeneratorTestRunner.ForComposedWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGenerator();
+        var diagnostics = GeneratorTestRunner.ForComposedWithInlineTypes()
+            .WithSource(source)
+            .RunTypeRegistryGeneratorDiagnostics();
+
+        // The non-nullable reference type registers; the nullable value type (int?) is skipped + diagnosed.
+        Assert.Contains("new global::TestNamespace.NnCore<global::TestNamespace.RefData>", generatedCode);
+        var registrationCount = System.Text.RegularExpressions.Regex
+            .Matches(generatedCode, "new global::TestNamespace.NnCore<").Count;
+        Assert.Equal(1, registrationCount);
+        Assert.Contains(diagnostics, d => d.Id == "NDLRGEN038");
+    }
 }

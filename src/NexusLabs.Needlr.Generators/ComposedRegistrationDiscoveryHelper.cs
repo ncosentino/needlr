@@ -263,6 +263,9 @@ internal static class ComposedRegistrationDiscoveryHelper
             (!typeArgument.IsValueType || IsNullableValueType(typeArgument)))
             return false;
 
+        if (typeParameter.HasNotNullConstraint && IsNullableValueType(typeArgument))
+            return false;
+
         if (typeParameter.HasUnmanagedTypeConstraint && !typeArgument.IsUnmanagedType)
             return false;
 
