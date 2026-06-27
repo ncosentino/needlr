@@ -29,6 +29,10 @@ NDLRGEN031 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, [P
 NDLRGEN032 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, [Provider] interface has invalid member
 NDLRGEN033 | NexusLabs.Needlr.Generators | Warning | ProviderAttributeAnalyzer, Provider property uses concrete type
 NDLRGEN034 | NexusLabs.Needlr.Generators | Error | ProviderAttributeAnalyzer, Circular provider dependency detected
+NDLRGEN035 | NexusLabs.Needlr.Generators | Error | RegisterClosedOverImplementationsOfAttributeAnalyzer, [RegisterClosedOverImplementationsOf] source must be an open generic interface
+NDLRGEN036 | NexusLabs.Needlr.Generators | Error | RegisterClosedOverImplementationsOfAttributeAnalyzer, [RegisterClosedOverImplementationsOf] composition must be an open generic class
+NDLRGEN037 | NexusLabs.Needlr.Generators | Error | RegisterClosedOverImplementationsOfAttributeAnalyzer, [RegisterClosedOverImplementationsOf] composition must implement the As service type
+NDLRGEN038 | NexusLabs.Needlr.Generators | Warning | TypeRegistryGenerator, [RegisterClosedOverImplementationsOf] discovered type argument violates composition constraints
 NDLRHTTP001 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, [HttpClientOptions] target must implement INamedHttpClientOptions
 NDLRHTTP002 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, HttpClient name sources conflict
 NDLRHTTP003 | NexusLabs.Needlr.Generators | Error | HttpClientOptionsAnalyzer, ClientName property body is not a literal expression
