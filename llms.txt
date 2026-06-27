@@ -23,6 +23,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Tiered Provider Selector](https://github.devleader.ca/needlr/tiered-provider-selector/) -- Configure how TieredProviderSelector reacts to provider exceptions — match exception kinds, skip failing providers for a duration, run a callback on hit. Replaces the hardcoded ProviderUnavailableException catch with declarative, per-instance policies.
 - [Interceptors](https://github.devleader.ca/needlr/interceptors/) -- Add cross-cutting concerns to .NET services using Needlr interceptors -- intercept method calls with a single implementation that works across any service without modifying business logic.
 - [Open Generic Decorators](https://github.devleader.ca/needlr/open-generic-decorators/) -- Define a single decorator class that automatically wraps all closed implementations of an open generic interface in .NET using Needlr's open generic decorator support -- source generation only.
+- [Compose and Expose Closed Generics](https://github.devleader.ca/needlr/composed-closed-generics/) -- Source-generate a registration of an open generic composition type closed over the type argument of every discovered implementation of another open generic interface, exposed as a non-generic facade -- source generation only.
 - [Cancellation-Aware Logging](https://github.devleader.ca/needlr/cancellation-aware-logging/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Service Catalog](https://github.devleader.ca/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Breadcrumbs](https://github.devleader.ca/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
@@ -94,6 +95,10 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [NDLRGEN032](https://github.devleader.ca/needlr/analyzers/NDLRGEN032/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN033](https://github.devleader.ca/needlr/analyzers/NDLRGEN033/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN034](https://github.devleader.ca/needlr/analyzers/NDLRGEN034/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN035](https://github.devleader.ca/needlr/analyzers/NDLRGEN035/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN036](https://github.devleader.ca/needlr/analyzers/NDLRGEN036/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN037](https://github.devleader.ca/needlr/analyzers/NDLRGEN037/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN038](https://github.devleader.ca/needlr/analyzers/NDLRGEN038/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## MAF Analyzers
 
