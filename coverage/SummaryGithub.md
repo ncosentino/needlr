@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 06/27/2026 - 00:02:46 |
-| Coverage date: | 06/26/2026 - 23:59:48 - 06/27/2026 - 00:02:40 |
+| Generated on: | 06/27/2026 - 02:49:28 |
+| Coverage date: | 06/27/2026 - 02:46:22 - 06/27/2026 - 02:49:23 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
 | Classes: | 614 |
 | Files: | 603 |
-| **Line coverage:** | 86.3% (24498 of 28386) |
-| Covered lines: | 24498 |
-| Uncovered lines: | 3888 |
+| **Line coverage:** | 86.2% (24496 of 28386) |
+| Covered lines: | 24496 |
+| Uncovered lines: | 3890 |
 | Coverable lines: | 28386 |
 | Total lines: | 69671 |
-| **Branch coverage:** | 75.3% (9458 of 12556) |
-| Covered branches: | 9458 |
+| **Branch coverage:** | 75.3% (9457 of 12556) |
+| Covered branches: | 9457 |
 | Total branches: | 12556 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -208,7 +208,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.2%|69.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81%|69.9%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
@@ -644,17 +644,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**38.5%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|50%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
