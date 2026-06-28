@@ -8,9 +8,9 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
- Method                          | Mean        | Error     | StdDev    | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
--------------------------------- |------------:|----------:|----------:|------:|--------:|-----:|-------:|----------:|------------:|
- Reflection_AssemblyListProvided | 11,777.4 ns | 465.47 ns | 120.88 ns |  1.00 |    0.01 |    2 | 0.1678 |    3005 B |        1.00 |
- SourceGen_AssemblyListProvided  | 26,472.6 ns | 558.07 ns | 144.93 ns |  2.25 |    0.02 |    3 | 1.5564 |   26528 B |        8.83 |
- SourceGen_EmptyAssemblyList     | 24,811.3 ns | 450.97 ns | 117.12 ns |  2.11 |    0.02 |    3 | 1.5259 |   25528 B |        8.50 |
- SourceGen_ParameterlessOverload |    479.0 ns |   7.17 ns |   1.86 ns |  0.04 |    0.00 |    1 | 0.0257 |     440 B |        0.15 |
+ Method                          | Mean        | Error     | StdDev    | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
+-------------------------------- |------------:|----------:|----------:|------:|-----:|-------:|----------:|------------:|
+ Reflection_AssemblyListProvided | 11,987.9 ns | 165.64 ns |  43.02 ns |  1.00 |    2 | 0.1678 |    3005 B |        1.00 |
+ SourceGen_AssemblyListProvided  | 25,483.4 ns | 564.77 ns | 146.67 ns |  2.13 |    3 | 1.5564 |   26528 B |        8.83 |
+ SourceGen_EmptyAssemblyList     | 25,153.4 ns | 476.16 ns | 123.66 ns |  2.10 |    3 | 1.5259 |   25528 B |        8.50 |
+ SourceGen_ParameterlessOverload |    478.6 ns |  19.36 ns |   5.03 ns |  0.04 |    1 | 0.0257 |     440 B |        0.15 |

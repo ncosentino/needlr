@@ -10,7 +10,7 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 
  Method                             | Mean     | Error     | StdDev    | Ratio | RatioSD | Rank | Allocated  | Alloc Ratio |
 ----------------------------------- |---------:|----------:|----------:|------:|--------:|-----:|-----------:|------------:|
- ManualDI_BuildHost                 | 2.110 ms | 0.0921 ms | 0.0143 ms |  1.00 |    0.01 |    1 |  318.14 KB |        1.00 |
- Needlr_Reflection_BuildHost        | 8.202 ms | 0.2013 ms | 0.0523 ms |  3.89 |    0.03 |    3 | 1557.34 KB |        4.90 |
- Needlr_SourceGen_BuildHost         | 2.863 ms | 0.1002 ms | 0.0155 ms |  1.36 |    0.01 |    2 |  584.39 KB |        1.84 |
- Needlr_SourceGenExplicit_BuildHost | 2.755 ms | 0.0795 ms | 0.0206 ms |  1.31 |    0.01 |    2 |  507.34 KB |        1.59 |
+ ManualDI_BuildHost                 | 2.203 ms | 0.4424 ms | 0.0685 ms |  1.00 |    0.04 |    1 |  318.03 KB |        1.00 |
+ Needlr_Reflection_BuildHost        | 8.508 ms | 0.5087 ms | 0.0787 ms |  3.86 |    0.11 |    3 | 1557.18 KB |        4.90 |
+ Needlr_SourceGen_BuildHost         | 2.934 ms | 0.2985 ms | 0.0775 ms |  1.33 |    0.05 |    2 |  584.23 KB |        1.84 |
+ Needlr_SourceGenExplicit_BuildHost | 2.851 ms | 0.3406 ms | 0.0885 ms |  1.30 |    0.05 |    2 |  507.17 KB |        1.59 |

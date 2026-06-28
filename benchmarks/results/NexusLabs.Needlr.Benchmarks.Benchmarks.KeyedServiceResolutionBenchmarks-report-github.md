@@ -12,9 +12,9 @@ WarmupCount=3
 ```
 | Method                         | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
 |------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
-| ManualDI_ResolveKeyed          | 21.90 ns | 0.264 ns | 0.041 ns |  1.00 |    0.00 |    1 |         - |          NA |
+| ManualDI_ResolveKeyed          | 22.52 ns | 0.036 ns | 0.006 ns |  1.00 |    0.00 |    1 |         - |          NA |
 | Needlr_Reflection_ResolveKeyed |       NA |       NA |       NA |     ? |       ? |    ? |        NA |           ? |
-| Needlr_SourceGen_ResolveKeyed  | 22.46 ns | 0.156 ns | 0.041 ns |  1.03 |    0.00 |    1 |         - |          NA |
+| Needlr_SourceGen_ResolveKeyed  | 21.94 ns | 0.170 ns | 0.026 ns |  0.97 |    0.00 |    1 |         - |          NA |
 
 Benchmarks with issues:
   KeyedServiceResolutionBenchmarks.Needlr_Reflection_ResolveKeyed: ShortRun(IterationCount=5, LaunchCount=1, WarmupCount=3)

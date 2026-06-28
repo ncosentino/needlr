@@ -10,12 +10,12 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                              | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
-|------------------------------------ |---------:|---------:|---------:|------:|--------:|-----:|-------:|----------:|------------:|
-| ManualDI_FuncFactory_PreResolved    | 13.40 ns | 7.730 ns | 2.008 ns |  1.02 |    0.19 |    1 | 0.0019 |      32 B |        1.00 |
-| ManualDI_FuncFactory_WithResolution | 19.30 ns | 0.190 ns | 0.029 ns |  1.46 |    0.18 |    1 | 0.0019 |      32 B |        1.00 |
-| DirectFactory_PreResolved           | 12.92 ns | 3.725 ns | 0.967 ns |  0.98 |    0.14 |    1 | 0.0019 |      32 B |        1.00 |
-| DirectFactory_WithResolution        | 22.98 ns | 0.358 ns | 0.093 ns |  1.74 |    0.22 |    1 | 0.0019 |      32 B |        1.00 |
-| Provider_FactoryShorthand           | 15.59 ns | 1.961 ns | 0.509 ns |  1.18 |    0.15 |    1 | 0.0019 |      32 B |        1.00 |
-| Provider_FactoryInterface           | 17.73 ns | 3.100 ns | 0.805 ns |  1.34 |    0.18 |    1 | 0.0019 |      32 B |        1.00 |
-| Provider_MixedShorthand             | 17.66 ns | 9.535 ns | 2.476 ns |  1.34 |    0.24 |    1 | 0.0019 |      32 B |        1.00 |
+| Method                              | Mean      | Error     | StdDev    | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
+|------------------------------------ |----------:|----------:|----------:|------:|--------:|-----:|-------:|----------:|------------:|
+| ManualDI_FuncFactory_PreResolved    |  8.843 ns | 0.2633 ns | 0.0407 ns |  1.00 |    0.01 |    1 | 0.0019 |      32 B |        1.00 |
+| ManualDI_FuncFactory_WithResolution | 19.563 ns | 0.3263 ns | 0.0505 ns |  2.21 |    0.01 |    2 | 0.0019 |      32 B |        1.00 |
+| DirectFactory_PreResolved           | 10.087 ns | 1.8640 ns | 0.4841 ns |  1.14 |    0.05 |    1 | 0.0019 |      32 B |        1.00 |
+| DirectFactory_WithResolution        | 22.820 ns | 0.1490 ns | 0.0231 ns |  2.58 |    0.01 |    2 | 0.0019 |      32 B |        1.00 |
+| Provider_FactoryShorthand           |  7.923 ns | 0.2280 ns | 0.0353 ns |  0.90 |    0.01 |    1 | 0.0019 |      32 B |        1.00 |
+| Provider_FactoryInterface           | 19.920 ns | 1.8507 ns | 0.4806 ns |  2.25 |    0.05 |    2 | 0.0019 |      32 B |        1.00 |
+| Provider_MixedShorthand             | 16.380 ns | 1.5895 ns | 0.4128 ns |  1.85 |    0.04 |    2 | 0.0019 |      32 B |        1.00 |

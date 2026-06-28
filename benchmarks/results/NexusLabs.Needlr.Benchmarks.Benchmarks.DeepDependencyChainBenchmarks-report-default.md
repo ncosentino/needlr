@@ -10,6 +10,6 @@ WarmupCount=3
 
  Method                             | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
 ----------------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
- ManualDI_ResolveDeepChain          | 15.25 ns | 0.052 ns | 0.008 ns |  1.00 |    1 |         - |          NA |
- Needlr_Reflection_ResolveDeepChain | 15.33 ns | 0.011 ns | 0.003 ns |  1.01 |    1 |         - |          NA |
- Needlr_SourceGen_ResolveDeepChain  | 15.40 ns | 0.603 ns | 0.157 ns |  1.01 |    1 |         - |          NA |
+ ManualDI_ResolveDeepChain          | 15.25 ns | 0.070 ns | 0.018 ns |  1.00 |    1 |         - |          NA |
+ Needlr_Reflection_ResolveDeepChain | 15.55 ns | 0.720 ns | 0.187 ns |  1.02 |    1 |         - |          NA |
+ Needlr_SourceGen_ResolveDeepChain  | 15.29 ns | 0.211 ns | 0.033 ns |  1.00 |    1 |         - |          NA |

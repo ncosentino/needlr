@@ -10,8 +10,8 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                             | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
-|----------------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
-| ManualDI_ResolveDecorated          | 15.74 ns | 0.028 ns | 0.007 ns |  1.00 |    1 |         - |          NA |
-| Needlr_Reflection_ResolveDecorated | 15.02 ns | 0.020 ns | 0.005 ns |  0.95 |    1 |         - |          NA |
-| Needlr_SourceGen_ResolveDecorated  | 15.74 ns | 0.725 ns | 0.188 ns |  1.00 |    1 |         - |          NA |
+| Method                             | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Allocated | Alloc Ratio |
+|----------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|----------:|------------:|
+| ManualDI_ResolveDecorated          | 15.06 ns | 0.708 ns | 0.184 ns |  1.00 |    0.02 |    1 |         - |          NA |
+| Needlr_Reflection_ResolveDecorated | 16.03 ns | 0.509 ns | 0.132 ns |  1.06 |    0.01 |    1 |         - |          NA |
+| Needlr_SourceGen_ResolveDecorated  | 15.51 ns | 1.129 ns | 0.175 ns |  1.03 |    0.02 |    1 |         - |          NA |
