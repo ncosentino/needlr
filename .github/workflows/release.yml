@@ -247,6 +247,23 @@ jobs:
         publish_dir: ./site
         keep_files: true
 
+    # gh-pages now holds the complete merged site (this run's own paths plus
+    # whatever ci.yml last wrote to /api/dev, preserved by keep_files above)
+    # -- check it out fresh and mirror that whole tree to Cloudflare Pages,
+    # rather than deploying our own partial ./site/.
+    - name: Checkout gh-pages for Cloudflare mirror
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages-mirror
+
+    - name: Deploy Documentation to Cloudflare Pages
+      uses: cloudflare/wrangler-action@v4
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main
+
     # NOTE: the "Commit Stable API Docs to Main" step that used to live
     # after Deploy Documentation has been deleted. It tried to commit
     # generated API docs back to main, but .gitignore blocks

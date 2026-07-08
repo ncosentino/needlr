@@ -204,6 +204,25 @@ jobs:
         publish_dir: ./site
         keep_files: true
 
+    # gh-pages now holds the complete merged site (this run's own paths plus
+    # whatever release.yml last wrote to /api/stable and /api/v*, preserved
+    # by keep_files above) -- check it out fresh and mirror that whole tree
+    # to Cloudflare Pages, rather than deploying our own partial ./site/.
+    - name: Checkout gh-pages for Cloudflare mirror
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages-mirror
+
+    - name: Deploy Documentation to Cloudflare Pages
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: cloudflare/wrangler-action@v4
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main
+
   package-validation:
     runs-on: ubuntu-latest
     # Runs in parallel with build-and-test (no 'needs')
