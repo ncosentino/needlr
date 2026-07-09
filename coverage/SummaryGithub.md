@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/09/2026 - 00:29:33 |
-| Coverage date: | 07/09/2026 - 00:26:39 - 07/09/2026 - 00:29:28 |
+| Generated on: | 07/09/2026 - 01:48:12 |
+| Coverage date: | 07/09/2026 - 01:45:05 - 07/09/2026 - 01:48:06 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
 | Classes: | 614 |
 | Files: | 603 |
-| **Line coverage:** | 86.2% (24496 of 28386) |
-| Covered lines: | 24496 |
-| Uncovered lines: | 3890 |
+| **Line coverage:** | 86.2% (24495 of 28386) |
+| Covered lines: | 24495 |
+| Uncovered lines: | 3891 |
 | Coverable lines: | 28386 |
 | Total lines: | 69671 |
-| **Branch coverage:** | 75.3% (9456 of 12556) |
-| Covered branches: | 9456 |
+| **Branch coverage:** | 75.2% (9454 of 12556) |
+| Covered branches: | 9454 |
 | Total branches: | 12556 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -644,17 +644,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -709,8 +709,8 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
