@@ -21,21 +21,23 @@ Rationale:
         /sitemap-main.xml                    (home, features, articles...)
         /api/dev/sitemap.xml                 (dev API reference slice)
         /api/stable/sitemap.xml              (stable API reference slice)
-        /api/v<version>/sitemap.xml          (each preserved version)
 
     The index references every sub-sitemap:
       - local ones just written from the current build's ./site/
-      - remote ones that exist on gh-pages (discovered via the GitHub
-        contents API, matching the logic in versions.json generation)
-      - the version being released right now (passed as --current-release),
-        whose sub-sitemap is created by THIS invocation inside ./site/
-        even though it doesn't yet exist on gh-pages
+      - the counterpart dev/stable slice that exists on gh-pages but not in
+        this build (discovered via the GitHub contents API), preserved by
+        peaceiris keep_files:true
+
+    The per-version /api/v<version>/ archives are intentionally excluded
+    from the sitemap: they exceed the canonical host's per-deployment file
+    limit and are served only from GitHub Pages, so they are not part of
+    the canonical site's URL set.
 
     Both ci.yml and release.yml invoke this. Neither touches the other's
     sub-sitemaps because of peaceiris keep_files:true + existing rm -rf
     steps that enforce slice ownership. Both can freely overwrite
     /sitemap.xml because the index content is deterministic from
-    gh-pages + current-release state.
+    gh-pages + build state.
 """
 from __future__ import annotations
 
@@ -48,7 +50,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-SITE_URL = 'https://github.devleader.ca/needlr'
+SITE_URL = 'https://www.devleader.ca/projects/needlr'
 GH_PAGES_API = 'https://api.github.com/repos/ncosentino/needlr/contents/api?ref=gh-pages'
 
 # Files in ./site/ that should NOT appear in any sitemap
@@ -78,9 +80,6 @@ EXCLUDE_URL_PREFIXES = (
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('site_dir', type=Path, help='Path to the mkdocs ./site/ directory')
-    p.add_argument('--current-release', default=None,
-                   help='Version tag for release.yml invocations (e.g. "0.0.2-alpha.27"); '
-                        'ensures the sub-sitemap we are about to deploy is referenced in the index')
     return p.parse_args()
 
 
@@ -205,44 +204,31 @@ def main() -> int:
     urls = walk_html_urls(site_dir)
     print(f'Found {len(urls)} URLs')
 
-    static, versions = categorize(urls)
+    static, _versions = categorize(urls)
     print(f'  main:    {len(static["main"])}')
     print(f'  dev:     {len(static["dev"])}')
     print(f'  stable:  {len(static["stable"])}')
-    for v in sorted(versions):
-        print(f'  {v}: {len(versions[v])}')
 
     # Write per-slice sub-sitemaps into ./site/
     write_sitemap(site_dir / 'sitemap-main.xml',        static['main'])
     write_sitemap(site_dir / 'api' / 'dev'    / 'sitemap.xml', static['dev'])
     write_sitemap(site_dir / 'api' / 'stable' / 'sitemap.xml', static['stable'])
-    for v, entries in versions.items():
-        write_sitemap(site_dir / 'api' / v / 'sitemap.xml', entries)
 
-    # Build the sitemap index content. Start with slices we JUST wrote.
+    # Build the sitemap index. Only the main/dev/stable slices are referenced;
+    # the per-version api/v* archives are excluded from the canonical site.
     local_subs: list[str] = []
     if static['main']:   local_subs.append('sitemap-main.xml')
     if static['dev']:    local_subs.append('api/dev/sitemap.xml')
     if static['stable']: local_subs.append('api/stable/sitemap.xml')
-    for v in versions:
-        local_subs.append(f'api/{v}/sitemap.xml')
 
-    # Add sub-sitemaps that already exist on gh-pages and we're preserving
-    # via keep_files:true. Discovered via the contents API.
+    # dev and stable are written by different workflows (ci.yml vs release.yml);
+    # whichever slice this build did not produce still exists on gh-pages,
+    # preserved via keep_files:true. Discover it so the index stays complete.
     remote_dirs = fetch_gh_pages_api_dirs()
     for d in remote_dirs:
-        if d in ('dev', 'stable'):
-            sub = f'api/{d}/sitemap.xml'
-        elif d.startswith('v'):
-            sub = f'api/{d}/sitemap.xml'
-        else:
+        if d not in ('dev', 'stable'):
             continue
-        if sub not in local_subs:
-            local_subs.append(sub)
-
-    # Include the version being released right now (release.yml path).
-    if args.current_release:
-        sub = f'api/v{args.current_release}/sitemap.xml'
+        sub = f'api/{d}/sitemap.xml'
         if sub not in local_subs:
             local_subs.append(sub)
 
