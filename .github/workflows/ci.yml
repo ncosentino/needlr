@@ -215,13 +215,21 @@ jobs:
         ref: gh-pages
         path: gh-pages-mirror
 
+    # Cloudflare Pages allows at most 20,000 files per deployment; the
+    # per-version API doc archives under api/v* exceed that on their own, so
+    # they are excluded from this deploy (versions.json is preserved).
+    # Removing the checkout's .git also keeps git internals out of the upload.
+    - name: Trim mirror before Cloudflare deploy
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: rm -rf gh-pages-mirror/.git gh-pages-mirror/api/v[0-9]*
+
     - name: Deploy Documentation to Cloudflare Pages
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: cloudflare/wrangler-action@v4
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main
+        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main --commit-dirty=true
 
   package-validation:
     runs-on: ubuntu-latest
