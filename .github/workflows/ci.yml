@@ -215,13 +215,13 @@ jobs:
         ref: gh-pages
         path: gh-pages-mirror
 
-    # Cloudflare Pages allows at most 20,000 files per deployment; the
-    # per-version API doc archives under api/v* exceed that on their own, so
-    # they are excluded from this deploy (versions.json is preserved).
-    # Removing the checkout's .git also keeps git internals out of the upload.
+    # Cloudflare Pages allows at most 20,000 files per deployment. Keep only
+    # the newest API version archives (and rewrite versions.json to match);
+    # older archives stay in gh-pages history but are not published here.
+    # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: rm -rf gh-pages-mirror/.git gh-pages-mirror/api/v[0-9]*
+      run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
 
     - name: Deploy Documentation to Cloudflare Pages
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
