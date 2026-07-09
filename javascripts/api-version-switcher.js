@@ -22,6 +22,11 @@
 
     const ALREADY_RENDERED_ID = 'needlr-api-version-switcher';
     const API_SEGMENT = '/api/';
+    // Immutable per-version API snapshots (v0.0.x-alpha.N) are served only from
+    // GitHub Pages; the canonical docs host excludes them due to a per-deploy
+    // file-count limit. Selecting one from the canonical site must therefore
+    // jump to this base. dev/stable live on the canonical host.
+    const ARCHIVE_API_BASE = 'https://github.devleader.ca/needlr/api/';
 
     function init() {
         const path = window.location.pathname;
@@ -94,8 +99,12 @@
         }
 
         select.addEventListener('change', function () {
-            const target = apiRoot + this.value + '/' + tail;
-            window.location.href = target;
+            // Archived snapshots live only on GitHub Pages, so route to them
+            // there regardless of which host the switcher is rendered on;
+            // dev/stable resolve against the current apiRoot (canonical host).
+            const isArchived = /^v\d/.test(this.value);
+            const base = isArchived ? ARCHIVE_API_BASE : apiRoot;
+            window.location.href = base + this.value + '/' + tail;
         });
 
         container.appendChild(label);

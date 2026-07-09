@@ -3,15 +3,15 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/09/2026 - 01:48:12 |
-| Coverage date: | 07/09/2026 - 01:45:05 - 07/09/2026 - 01:48:06 |
+| Generated on: | 07/09/2026 - 04:35:16 |
+| Coverage date: | 07/09/2026 - 04:32:16 - 07/09/2026 - 04:35:10 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
 | Classes: | 614 |
 | Files: | 603 |
-| **Line coverage:** | 86.2% (24495 of 28386) |
-| Covered lines: | 24495 |
-| Uncovered lines: | 3891 |
+| **Line coverage:** | 86.2% (24496 of 28386) |
+| Covered lines: | 24496 |
+| Uncovered lines: | 3890 |
 | Coverable lines: | 28386 |
 | Total lines: | 69671 |
 | **Branch coverage:** | 75.2% (9454 of 12556) |
@@ -208,7 +208,7 @@
 |NexusLabs.Needlr.AgentFramework.Tools.ToolError|100%||
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Tools.ToolResult`2|100%||
-|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81%|69.9%|
+|NexusLabs.Needlr.AgentFramework.WorkflowFactory|81.2%|69.9%|
 |NexusLabs.Needlr.AgentFramework.WorkflowRunTerminationConditionAttribute|0%|0%|
 |NexusLabs.Needlr.AgentFramework.Workspace.CompareExchangeResult|100%||
 |NexusLabs.Needlr.AgentFramework.Workspace.InMemoryWorkspace|100%|95.2%|
