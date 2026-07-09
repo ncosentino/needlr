@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/08/2026 - 14:31:16 |
-| Coverage date: | 07/08/2026 - 14:28:27 - 07/08/2026 - 14:31:11 |
+| Generated on: | 07/09/2026 - 00:29:33 |
+| Coverage date: | 07/09/2026 - 00:26:39 - 07/09/2026 - 00:29:28 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
 | Classes: | 614 |
 | Files: | 603 |
-| **Line coverage:** | 86.2% (24494 of 28386) |
-| Covered lines: | 24494 |
-| Uncovered lines: | 3892 |
+| **Line coverage:** | 86.2% (24496 of 28386) |
+| Covered lines: | 24496 |
+| Uncovered lines: | 3890 |
 | Coverable lines: | 28386 |
 | Total lines: | 69671 |
-| **Branch coverage:** | 75.3% (9461 of 12556) |
-| Covered branches: | 9461 |
+| **Branch coverage:** | 75.3% (9456 of 12556) |
+| Covered branches: | 9456 |
 | Total branches: | 12556 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -400,18 +400,18 @@
 |NexusLabs.Needlr.AgentFramework.Testing.ToolInvocationRunner|75.8%|61.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 84%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Workflows - 84.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Workflows**|**84%**|**73.7%**|
+|**NexusLabs.Needlr.AgentFramework.Workflows**|**84.1%**|**73%**|
 |NexusLabs.Needlr.AgentFramework.Workflows.AgentFactoryWorkflowExtensions|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.ContextWindowGuardMiddlewa<br/>re|89.2%|68.3%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetChatMiddleware|100%|78.5%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenBudgetExtensions|100%|60%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Budget.TokenUsageRecordingMiddlew<br/>are|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.AgentDiagnosticsPlugi<br/>n|100%||
-|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|96%|75.6%|
+|NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsAgentRunMi<br/>ddleware|96%|64.8%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsExtensions|100%|62.5%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.DiagnosticsFunctionCa<br/>llingMiddleware|26%|0%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics.PipelineRunExtensions|73.4%|63.7%|
@@ -420,7 +420,7 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeRouter|97.4%|85.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopology|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|97.6%|100%|
-|NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.3%|67.7%|
+|NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.4%|68.1%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowServiceExtensions|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition|100%|80%|
 |NexusLabs.Needlr.AgentFramework.Workflows.Middleware.AgentResiliencePlugin|100%||
@@ -644,17 +644,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -709,8 +709,8 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
