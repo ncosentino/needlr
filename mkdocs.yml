@@ -190,6 +190,7 @@ nav:
   - Architecture Decisions:
     - ADR-0001 DAG Workflow Support: adr/adr-0001-dag-graph-workflow-support.md
     - ADR-0002 ScriptedChatClient Build Decision: adr/adr-0002-build-scriptedchatclient-locally.md
+    - ADR-0003 Provider-neutral Experiment Runner: adr/adr-0003-provider-neutral-experiment-runner.md
 
 plugins:
   - search
