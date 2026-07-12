@@ -15,12 +15,8 @@ internal sealed class LangfuseSession : ILangfuseSession
 {
     private readonly TracerProvider _tracerProvider;
     private readonly MeterProvider? _meterProvider;
-    private readonly HttpClient _httpClient;
-    private readonly LangfuseScoreRecorder _recorder;
-    private readonly LangfuseScoreFailureSink _failureSink;
-    private readonly LangfuseCommentRecorder _commentRecorder;
-    private readonly LangfuseApiClient _apiClient;
-    private readonly Action<string>? _diagnostics;
+    private readonly ILangfuseClient _client;
+    private readonly LangfuseHttpTransport _transport;
     private readonly int _defaultShutdownTimeoutMilliseconds;
     private LangfuseShutdownOutcome? _shutdownOutcome;
     private int _shutdownState;
@@ -33,58 +29,44 @@ internal sealed class LangfuseSession : ILangfuseSession
     public LangfuseSession(
         TracerProvider tracerProvider,
         MeterProvider? meterProvider,
-        HttpClient httpClient,
-        LangfuseScoreRecorder recorder,
-        LangfuseScoreFailureSink failureSink,
-        LangfuseCommentRecorder commentRecorder,
-        LangfuseApiClient apiClient,
-        Action<string>? diagnostics,
+        LangfuseHttpTransport transport,
+        ILangfuseClient client,
         TimeSpan defaultShutdownTimeout)
     {
         ArgumentNullException.ThrowIfNull(tracerProvider);
-        ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(recorder);
-        ArgumentNullException.ThrowIfNull(failureSink);
-        ArgumentNullException.ThrowIfNull(commentRecorder);
-        ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(transport);
+        ArgumentNullException.ThrowIfNull(client);
 
         _tracerProvider = tracerProvider;
         _meterProvider = meterProvider;
-        _httpClient = httpClient;
-        _recorder = recorder;
-        _failureSink = failureSink;
-        _commentRecorder = commentRecorder;
-        _apiClient = apiClient;
-        _diagnostics = diagnostics;
+        _transport = transport;
+        _client = client;
         _defaultShutdownTimeoutMilliseconds = LangfuseTimeout.ToShutdownMilliseconds(defaultShutdownTimeout);
-
-        Datasets = new LangfuseDatasetClient(apiClient);
-        ScoreConfigs = new LangfuseScoreConfigClient(apiClient);
-        Metrics = new LangfuseMetricsClient(apiClient);
-        Models = new LangfuseModelClient(apiClient);
-        Prompts = new LangfusePromptClient(apiClient);
     }
 
     /// <inheritdoc />
-    public bool IsEnabled => true;
+    public bool IsEnabled => _client.IsEnabled;
 
     /// <inheritdoc />
-    public int ScoresFailed => _failureSink.FailedCount;
+    public int ScoresFailed => _client.ScoresFailed;
 
     /// <inheritdoc />
-    public ILangfuseDatasetClient Datasets { get; }
+    public ILangfuseScoreClient Scores => _client.Scores;
 
     /// <inheritdoc />
-    public ILangfuseScoreConfigClient ScoreConfigs { get; }
+    public ILangfuseDatasetClient Datasets => _client.Datasets;
 
     /// <inheritdoc />
-    public ILangfuseMetricsClient Metrics { get; }
+    public ILangfuseScoreConfigClient ScoreConfigs => _client.ScoreConfigs;
 
     /// <inheritdoc />
-    public ILangfuseModelClient Models { get; }
+    public ILangfuseMetricsClient Metrics => _client.Metrics;
 
     /// <inheritdoc />
-    public ILangfusePromptClient Prompts { get; }
+    public ILangfuseModelClient Models => _client.Models;
+
+    /// <inheritdoc />
+    public ILangfusePromptClient Prompts => _client.Prompts;
 
     /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null)
@@ -110,30 +92,21 @@ internal sealed class LangfuseSession : ILangfuseSession
         IReadOnlyDictionary<string, string>? metadata = null)
     {
         ThrowIfShutdownStarted();
-        return new LangfuseScenario(_recorder, name, sessionId, userId, tags, metadata);
+        return _client.BeginScenario(name, sessionId, userId, tags, metadata);
     }
 
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null)
     {
         ThrowIfShutdownStarted();
-        ArgumentException.ThrowIfNullOrWhiteSpace(datasetName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(runName);
-
-        return new LangfuseExperimentRun(
-            _apiClient,
-            _recorder,
-            datasetName,
-            runName,
-            runDescription,
-            _diagnostics);
+        return _client.BeginExperimentRun(datasetName, runName, runDescription);
     }
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default)
     {
         ThrowIfShutdownStarted();
-        return _commentRecorder.AddTraceCommentAsync(traceId, content, cancellationToken);
+        return _client.AddTraceCommentAsync(traceId, content, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -228,7 +201,7 @@ internal sealed class LangfuseSession : ILangfuseSession
             }
             finally
             {
-                _httpClient.Dispose();
+                _transport.Dispose();
             }
         }
     }

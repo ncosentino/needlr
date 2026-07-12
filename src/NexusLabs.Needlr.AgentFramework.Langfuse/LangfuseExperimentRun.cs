@@ -10,6 +10,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
 {
     private readonly LangfuseApiClient _apiClient;
     private readonly LangfuseScoreRecorder _recorder;
+    private readonly ILangfuseScoreClient _scores;
     private readonly string? _runDescription;
     private readonly Action<string>? _diagnostics;
 
@@ -20,18 +21,45 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         string runName,
         string? runDescription,
         Action<string>? diagnostics)
+        : this(
+            apiClient,
+            CreateScoreClient(recorder),
+            recorder,
+            datasetName,
+            runName,
+            runDescription,
+            diagnostics)
+    {
+    }
+
+    public LangfuseExperimentRun(
+        LangfuseApiClient apiClient,
+        ILangfuseScoreClient scores,
+        LangfuseScoreRecorder recorder,
+        string datasetName,
+        string runName,
+        string? runDescription,
+        Action<string>? diagnostics)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(scores);
         ArgumentNullException.ThrowIfNull(recorder);
         ArgumentException.ThrowIfNullOrWhiteSpace(datasetName);
         ArgumentException.ThrowIfNullOrWhiteSpace(runName);
 
         _apiClient = apiClient;
+        _scores = scores;
         _recorder = recorder;
         _runDescription = runDescription;
         _diagnostics = diagnostics;
         DatasetName = datasetName;
         RunName = runName;
+    }
+
+    private static ILangfuseScoreClient CreateScoreClient(LangfuseScoreRecorder recorder)
+    {
+        ArgumentNullException.ThrowIfNull(recorder);
+        return new LangfuseScoreClient(recorder, recorder.FailureSink);
     }
 
     /// <inheritdoc />
@@ -56,6 +84,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             : scenarioName;
 
         var scenario = new LangfuseScenario(
+            _scores,
             _recorder,
             name,
             sessionId: null,

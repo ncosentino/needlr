@@ -33,6 +33,8 @@ internal sealed class LangfuseScoreRecorder
         _normalizeNames = normalizeNames;
     }
 
+    public LangfuseScoreFailureSink FailureSink => _failureSink;
+
     public Task RecordNumericAsync(string traceId, string name, double value, string? comment, CancellationToken cancellationToken) =>
         RecordNumericAsync(LangfuseScoreTarget.Trace(traceId), name, value, comment, cancellationToken);
 

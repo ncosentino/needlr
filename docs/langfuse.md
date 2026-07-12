@@ -8,7 +8,8 @@ Needlr already emits OpenTelemetry traces and metrics using the GenAI semantic
 conventions (`gen_ai.*`), which Langfuse understands natively. The
 `NexusLabs.Needlr.AgentFramework.Langfuse` package adds the missing piece: an OTLP
 exporter pointed at Langfuse, per-scenario trace grouping, and a bridge that turns
-evaluator metrics into Langfuse scores.
+evaluator metrics into Langfuse scores. It supports both exporter-owning standalone
+sessions and a complete non-owning facade for dependency-injection-based hosts.
 
 ## Quick Start
 
@@ -89,7 +90,9 @@ using (var scenario = langfuse.BeginScenario("trip-planner", sessionId: runId))
 Two runnable examples live under `src/Examples/AgentFramework/`:
 
 - `LangfuseEvaluationApp` — the full flow with no LLM or Langfuse credentials required (no-ops cleanly without keys).
-- `LangfuseConformanceApp` — a small Langfuse-supported eval that **reads the trace and scores back** from a live Langfuse (local Docker by default) to prove ingestion. Not part of CI; run it by hand after standing Langfuse up. Run it with the `resiliency` argument to instead prove **graceful degradation when Langfuse is unreachable** (no server required): the eval still passes and every dropped score is surfaced.
+- `LangfuseConformanceApp` — a small Langfuse-supported eval that **reads the trace and scores back** from a live Langfuse (local Docker by default) to prove ingestion. It also has no-server modes:
+  - `resiliency` proves cancellation, safe context propagation, score-failure reporting, and bounded shutdown while Langfuse is unreachable.
+  - `dependency-injection` proves `ILangfuseClient` exposes the complete evaluation surface through one host-owned telemetry pipeline without registering a standalone session.
 
 ## What appears in Langfuse
 
@@ -424,29 +427,68 @@ builder.Services.AddNeedlrLangfuse(options =>
 ```
 
 This wires the OTLP exporter into the host's tracer and meter providers so they
-share the application lifecycle, and registers an `ILangfuseScoreClient` for scoring
-request traces by id:
+share the application lifecycle, and registers the complete non-owning
+`ILangfuseClient` facade:
 
 ```csharp
-public sealed class MyHandler(ILangfuseScoreClient scores)
+public sealed class MyEvalRunner(ILangfuseClient langfuse)
 {
-    public async Task HandleAsync(/* ... */)
+    public async Task RunAsync(CancellationToken cancellationToken)
     {
-        var traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
-        if (traceId is not null)
+        using var scenario = langfuse.BeginScenario(
+            "support-agent: refund",
+            sessionId: "ci-run-42",
+            tags: ["regression"]);
+
+        var response = await RunAgentAsync(cancellationToken);
+        await scenario.RecordScoreAsync(
+            "resolved",
+            response.Resolved,
+            cancellationToken: cancellationToken);
+
+        var experiment = langfuse.BeginExperimentRun(
+            "support-agent-regression",
+            "commit-abc123");
+        using var item = await experiment.BeginItemAsync(
+            "refund-case",
+            cancellationToken: cancellationToken);
+
+        if (item.TraceId is { } traceId)
         {
-            await scores.RecordScoreAsync(traceId, "helpfulness", value: true);
+            await langfuse.Scores.RecordScoreAsync(
+                traceId,
+                "reviewed",
+                value: true,
+                cancellationToken: cancellationToken);
         }
     }
 }
 ```
 
-When Langfuse is not configured, a disabled no-op `ILangfuseScoreClient` is registered,
-so injection always succeeds and host code never needs to branch on configuration.
+`ILangfuseClient` deliberately does not implement `IDisposable` and exposes no flush or
+shutdown methods. The host owns the `TracerProvider`, optional `MeterProvider`, and shared
+HTTP transport; disposing the host releases them in the correct order. No
+`ILangfuseSession` is registered in dependency injection.
 
-`AddNeedlrLangfuse` also registers `ILangfuseDatasetClient` and `ILangfuseScoreConfigClient`
-(both disabled no-ops when unconfigured) for managing datasets and score configs from a host
-application.
+Every specialized interface (`ILangfuseScoreClient`, `ILangfuseDatasetClient`,
+`ILangfuseScoreConfigClient`, `ILangfuseMetricsClient`, `ILangfuseModelClient`, and
+`ILangfusePromptClient`) resolves to the exact instance exposed by the facade. When Langfuse
+is not configured, the facade and all specialized interfaces are one coherent set of disabled
+no-ops, so host code does not branch on credentials.
+
+!!! note "DI override ownership"
+    A custom unkeyed `ILangfuseClient` must be registered as a singleton **instance** before
+    `AddNeedlrLangfuse`; its specialized clients are then exposed as externally owned instance
+    aliases. Alternatively, individual specialized interfaces may be overridden as singletons
+    and are composed into Needlr's facade. Scoped and transient overrides are rejected because a
+    singleton facade cannot safely capture them. Keyed registrations are independent and remain
+    untouched.
+
+Run the no-server ownership check:
+
+```bash
+dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- dependency-injection
+```
 
 ## Langfuse Cloud vs self-hosted
 

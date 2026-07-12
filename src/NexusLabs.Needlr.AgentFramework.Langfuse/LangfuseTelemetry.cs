@@ -25,7 +25,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <example>
 /// <code>
 /// using var langfuse = LangfuseTelemetry.Start(LangfuseOptions.FromEnvironment());
-/// using (LangfuseTrace.BeginScenario("trip-planner: NYC -> Tokyo", sessionId: runId))
+/// using (langfuse.BeginScenario("trip-planner: NYC -> Tokyo", sessionId: runId))
 /// {
 ///     var run = await runner.RunAsync(...);
 ///     // ... evaluate and record scores ...
@@ -84,29 +84,14 @@ public static class LangfuseTelemetry
                 .Build();
         }
 
-        var httpClient = new HttpClient();
-        var scoreApiClient = new LangfuseScoreApiClient(
-            httpClient,
-            endpoints.ScoresEndpoint,
-            endpoints.AuthorizationHeaderValue);
-        var apiClient = new LangfuseApiClient(
-            httpClient,
-            endpoints.BaseUrl,
-            endpoints.AuthorizationHeaderValue);
-
-        var failureSink = new LangfuseScoreFailureSink(options.ScoreFailureMode, options.ScoreErrorCallback);
-        var recorder = new LangfuseScoreRecorder(scoreApiClient, failureSink, options.NormalizeScoreNames);
-        var commentRecorder = new LangfuseCommentRecorder(apiClient, options.DiagnosticsCallback);
+        var transport = new LangfuseHttpTransport();
+        var client = new LangfuseClient(transport, endpoints, options);
 
         return new LangfuseSession(
             tracerProvider,
             meterProvider,
-            httpClient,
-            recorder,
-            failureSink,
-            commentRecorder,
-            apiClient,
-            options.DiagnosticsCallback,
+            transport,
+            client,
             options.ShutdownTimeout);
     }
 

@@ -6,31 +6,47 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// </summary>
 internal sealed class DisabledLangfuseSession : ILangfuseSession
 {
+    private readonly ILangfuseClient _client;
+
     private static readonly LangfuseShutdownOutcome ShutdownOutcome = new(
         isFinal: true,
         LangfuseProviderShutdownStatus.NotConfigured,
         LangfuseProviderShutdownStatus.NotConfigured);
 
-    /// <inheritdoc />
-    public bool IsEnabled => false;
+    public DisabledLangfuseSession()
+        : this(new DisabledLangfuseClient())
+    {
+    }
+
+    public DisabledLangfuseSession(ILangfuseClient client)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        _client = client;
+    }
 
     /// <inheritdoc />
-    public int ScoresFailed => 0;
+    public bool IsEnabled => _client.IsEnabled;
 
     /// <inheritdoc />
-    public ILangfuseDatasetClient Datasets { get; } = new DisabledLangfuseDatasetClient();
+    public int ScoresFailed => _client.ScoresFailed;
 
     /// <inheritdoc />
-    public ILangfuseScoreConfigClient ScoreConfigs { get; } = new DisabledLangfuseScoreConfigClient();
+    public ILangfuseScoreClient Scores => _client.Scores;
 
     /// <inheritdoc />
-    public ILangfuseMetricsClient Metrics { get; } = new DisabledLangfuseMetricsClient();
+    public ILangfuseDatasetClient Datasets => _client.Datasets;
 
     /// <inheritdoc />
-    public ILangfuseModelClient Models { get; } = new DisabledLangfuseModelClient();
+    public ILangfuseScoreConfigClient ScoreConfigs => _client.ScoreConfigs;
 
     /// <inheritdoc />
-    public ILangfusePromptClient Prompts { get; } = new DisabledLangfusePromptClient();
+    public ILangfuseMetricsClient Metrics => _client.Metrics;
+
+    /// <inheritdoc />
+    public ILangfuseModelClient Models => _client.Models;
+
+    /// <inheritdoc />
+    public ILangfusePromptClient Prompts => _client.Prompts;
 
     /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null) => true;
@@ -49,15 +65,15 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
         string? userId = null,
         IEnumerable<string>? tags = null,
         IReadOnlyDictionary<string, string>? metadata = null) =>
-        new DisabledLangfuseScenario();
+        _client.BeginScenario(name, sessionId, userId, tags, metadata);
 
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null) =>
-        new DisabledLangfuseExperimentRun(datasetName, runName);
+        _client.BeginExperimentRun(datasetName, runName, runDescription);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>
-        Task.CompletedTask;
+        _client.AddTraceCommentAsync(traceId, content, cancellationToken);
 
     /// <inheritdoc />
     public void Dispose()

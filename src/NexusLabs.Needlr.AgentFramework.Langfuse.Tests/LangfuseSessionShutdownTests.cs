@@ -219,34 +219,24 @@ public sealed class LangfuseSessionShutdownTests
         }
 
         var handler = new TrackingHttpMessageHandler();
-        var httpClient = new HttpClient(handler, disposeHandler: true);
-        var scoreApiClient = new LangfuseScoreApiClient(
-            httpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
-        var apiClient = new LangfuseApiClient(
-            httpClient,
-            new Uri("https://lf.example"),
-            "Basic x");
-        var failureSink = new LangfuseScoreFailureSink(
-            LangfuseScoreFailureMode.Strict,
-            callback: null);
-        var recorder = new LangfuseScoreRecorder(
-            scoreApiClient,
-            failureSink,
-            normalizeNames: false);
-        var commentRecorder = new LangfuseCommentRecorder(
-            apiClient,
-            diagnostics: null);
+        var transport = new LangfuseHttpTransport(
+            new HttpClient(handler, disposeHandler: true));
+        var options = new LangfuseOptions
+        {
+            PublicKey = "pk",
+            SecretKey = "sk",
+            Host = "https://lf.example",
+            ScoreFailureMode = LangfuseScoreFailureMode.Strict,
+        };
+        var client = new LangfuseClient(
+            transport,
+            LangfuseEndpoints.Resolve(options),
+            options);
         var session = new LangfuseSession(
             tracerProvider,
             meterProvider,
-            httpClient,
-            recorder,
-            failureSink,
-            commentRecorder,
-            apiClient,
-            diagnostics: null,
+            transport,
+            client,
             defaultShutdownTimeout);
 
         return (session, traceExporter, metricExporter, handler);
