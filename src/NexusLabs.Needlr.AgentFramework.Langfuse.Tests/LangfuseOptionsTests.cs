@@ -39,6 +39,7 @@ public sealed class LangfuseOptionsTests
         Assert.False(options.NormalizeScoreNames);
         Assert.Equal(LangfuseScoreFailureMode.NonFatal, options.ScoreFailureMode);
         Assert.Equal(1.0, options.SamplingRatio);
+        Assert.Equal(TimeSpan.FromSeconds(5), options.ShutdownTimeout);
     }
 
     [Fact]

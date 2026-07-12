@@ -6,6 +6,11 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// </summary>
 internal sealed class DisabledLangfuseSession : ILangfuseSession
 {
+    private static readonly LangfuseShutdownOutcome ShutdownOutcome = new(
+        isFinal: true,
+        LangfuseProviderShutdownStatus.NotConfigured,
+        LangfuseProviderShutdownStatus.NotConfigured);
+
     /// <inheritdoc />
     public bool IsEnabled => false;
 
@@ -29,6 +34,13 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
 
     /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null) => true;
+
+    /// <inheritdoc />
+    public LangfuseShutdownOutcome Shutdown(TimeSpan timeout)
+    {
+        _ = LangfuseTimeout.ToShutdownMilliseconds(timeout);
+        return ShutdownOutcome;
+    }
 
     /// <inheritdoc />
     public ILangfuseScenario BeginScenario(

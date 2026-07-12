@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Added
+
+- **`NexusLabs.Needlr.AgentFramework.Langfuse` now exposes bounded final shutdown for standalone sessions.** `ILangfuseSession.Shutdown(timeout)` shares one timeout budget across trace and metric providers, returns a structured `LangfuseShutdownOutcome`, releases all owned resources, and is idempotent across repeated callers. `LangfuseOptions.ShutdownTimeout` controls the bounded best-effort shutdown performed by `Dispose()` and defaults to five seconds; `Timeout.InfiniteTimeSpan` remains available as an explicit opt-in. The result describes local OpenTelemetry provider drain only and does not claim durable Langfuse ingestion. (#29)
+
+### Fixed
+
+- **Standalone Langfuse session disposal can no longer block indefinitely by default.** Disposal previously performed an unbounded `ForceFlush` before releasing the OpenTelemetry providers and HTTP resources. It now performs final provider shutdown within the configured timeout and releases resources even when the drain is incomplete. Enabled-session tests cover successful, timed-out, repeated, concurrent, and explicit-infinite shutdown. (#29)
+- **Caller cancellation now propagates through every Langfuse REST publication path.** `LangfuseApiClient` and `LangfuseScoreApiClient` no longer translate caller-requested cancellation into `LangfuseException`; nonfatal score, comment, and experiment-link policies therefore cannot swallow cancellation. Cancelling an experiment-item link also disposes the scenario activity before propagating the exception. Transport timeouts remain Langfuse failures. (#30)
+- **Langfuse span enrichment no longer exports arbitrary inherited OpenTelemetry baggage.** Needlr now propagates only the supported trace name, tags, metadata, version, session id, user id, and internal prompt-link context to in-process child spans without placing scenario data in W3C baggage. This is a privacy-hardening behavior change for consumers that relied on unrelated baggage becoming Langfuse attributes; pass filterable values through the scenario's explicit context APIs instead. Parallel and nested propagation, distinct scenario trace IDs, sensitive-baggage exclusion, and ambient-context restoration are covered by regression tests and the no-server conformance example. (#31)
+
 ## [0.0.2-alpha.66] - 2026-06-26
 
 ### Added

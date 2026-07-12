@@ -134,6 +134,10 @@ internal sealed class LangfuseApiClient
         {
             response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             throw new LangfuseException($"Langfuse request {method} '{uri}' failed.", ex);

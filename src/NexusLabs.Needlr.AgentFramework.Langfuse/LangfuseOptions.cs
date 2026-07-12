@@ -156,6 +156,17 @@ public sealed class LangfuseOptions
     public double SamplingRatio { get; set; } = 1.0;
 
     /// <summary>
+    /// Gets or sets the total timeout budget used by <see cref="System.IDisposable.Dispose"/> for
+    /// final local trace and metric provider shutdown. Defaults to five seconds.
+    /// </summary>
+    /// <remarks>
+    /// Set this to <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> only when an unbounded
+    /// disposal wait is explicitly desired. Other negative values are invalid for an enabled
+    /// standalone session.
+    /// </remarks>
+    public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
     /// Gets or sets the name of Needlr's agent <see cref="System.Diagnostics.ActivitySource"/>
     /// to export. Defaults to <see cref="AgentFrameworkMetricsOptions.MeterName"/>'s default.
     /// </summary>

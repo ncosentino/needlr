@@ -2,12 +2,12 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
 /// Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers
-/// that forward Needlr agent telemetry to Langfuse and flushes pending telemetry on disposal.
+/// that forward Needlr agent telemetry to Langfuse and performs bounded final shutdown on disposal.
 /// </summary>
 /// <remarks>
 /// Obtain an instance from <see cref="LangfuseTelemetry.Start(LangfuseOptions)"/>. Keep it alive
 /// for the lifetime over which agent runs and evaluations should be captured (for example, an
-/// xUnit collection fixture), then dispose it to force a final flush.
+/// xUnit collection fixture), then dispose it to perform a bounded, best-effort final drain.
 /// </remarks>
 public interface ILangfuseSession : IDisposable
 {
@@ -36,6 +36,40 @@ public interface ILangfuseSession : IDisposable
     /// </param>
     /// <returns><see langword="true"/> if the flush succeeded; otherwise <see langword="false"/>.</returns>
     bool Flush(TimeSpan? timeout = null);
+
+    /// <summary>
+    /// Performs final local OpenTelemetry provider shutdown and releases all resources owned by the
+    /// session.
+    /// </summary>
+    /// <param name="timeout">
+    /// The total timeout budget shared by trace and metric provider shutdown, or
+    /// <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> to explicitly wait indefinitely.
+    /// </param>
+    /// <returns>
+    /// An outcome describing whether local trace and metric provider shutdown completed. This does
+    /// not guarantee durable ingestion by Langfuse.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// Exactly one caller performs final shutdown. Concurrent callers return immediately with
+    /// <see cref="LangfuseShutdownOutcome.IsFinal"/> equal to <see langword="false"/>. Calls made
+    /// after shutdown completes return the same cached final outcome.
+    /// </para>
+    /// <para>
+    /// Once shutdown begins, an enabled session rejects new operations with
+    /// <see cref="ObjectDisposedException"/>.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="timeout"/> is negative and is not
+    /// <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The session implementation predates explicit shutdown and does not override this member.
+    /// </exception>
+    LangfuseShutdownOutcome Shutdown(TimeSpan timeout) =>
+        throw new NotSupportedException(
+            "This ILangfuseSession implementation does not support explicit final shutdown.");
 
     /// <summary>
     /// Begins a Langfuse trace scoped to a single eval scenario or agent run. Agent telemetry

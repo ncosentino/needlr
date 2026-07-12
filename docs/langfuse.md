@@ -17,8 +17,8 @@ Install the package and start a session from environment variables:
 ```bash
 export LANGFUSE_PUBLIC_KEY="pk-lf-..."
 export LANGFUSE_SECRET_KEY="sk-lf-..."
-# Optional — defaults to Langfuse Cloud (EU). Set for self-hosted or other regions:
-# export LANGFUSE_HOST="http://localhost:3000"
+# Required unless Region is configured in code:
+export LANGFUSE_HOST="http://localhost:3000"
 ```
 
 ```csharp
@@ -45,12 +45,27 @@ using (var scenario = langfuse.BeginScenario(
     await result.RecordLangfuseScoresAsync(scenario);
 }
 
-langfuse.Flush();
+var shutdown = langfuse.Shutdown(TimeSpan.FromSeconds(5));
+Console.WriteLine($"traces={shutdown.Traces}, metrics={shutdown.Metrics}");
 ```
 
 That is the entire integration. When `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`
 are not set (or no `Host`/`Region` target is chosen), the session is disabled and
 every call becomes a no-op, so the same code runs unchanged in credential-less CI.
+
+### Flush versus final shutdown
+
+`Flush(timeout)` asks the active session to export telemetry buffered before the call and
+keeps the session open. Use an explicit timeout when flushing before read-back operations.
+
+`Shutdown(timeout)` is final: it shares one timeout budget across trace and metric providers,
+releases every resource owned by the standalone session, and rejects new session operations.
+It returns a `LangfuseShutdownOutcome` with separate trace and metric statuses. Those statuses
+describe the local OpenTelemetry drain only—they do **not** guarantee durable Langfuse ingestion.
+
+`Dispose()` performs the same final shutdown with `LangfuseOptions.ShutdownTimeout`, which
+defaults to five seconds. Set `Timeout.InfiniteTimeSpan` only when an unbounded process-exit wait
+is explicitly required.
 
 ### Even shorter: evaluate and record in one call
 
@@ -116,6 +131,9 @@ verdict, so a transient Langfuse outage must not turn a green eval red. By defau
 and invokes `ScoreErrorCallback` (wire it to your logger) but does **not** throw. Set
 `ScoreFailureMode.Strict` if a missing score should hard-fail the caller.
 
+Caller-requested cancellation is never converted into a non-fatal score or publication
+failure. An `OperationCanceledException` propagates so a cancelled evaluation stops promptly.
+
 ```csharp
 var options = LangfuseOptions.FromEnvironment();
 options.ScoreErrorCallback = e => logger.LogWarning(e.Exception, "Langfuse score {Name} not recorded", e.ScoreName);
@@ -137,12 +155,12 @@ depend on implicit inference:
   provider/SDK model names such as Copilot's will not match Langfuse's built-in table,
   so `costDetails` stays empty until you add a custom model definition.)
 
-!!! note "Trace-level filtering is by trace, not by observation"
-    Trace-level attributes (`name`, `tags`, `metadata`) are set on the scenario root span,
-    which is what Langfuse uses to build the trace. `session.id` and `user.id` are also
-    propagated to child spans (via baggage) so you can filter observations by them. Filtering
-    individual *observations* by `tags`/`metadata` is not supported — those live at the trace
-    level, which matches the per-scenario grouping model.
+!!! note "Trace context is propagated through an allowlist"
+    Needlr propagates the scenario name, tags, metadata, version, session id, and user id to
+    in-process child spans so Langfuse can filter and aggregate observations reliably. Scenario
+    context is not stored in W3C baggage, and arbitrary inherited OpenTelemetry baggage is **not**
+    copied into exported span attributes. This prevents unrelated, sensitive, or high-cardinality
+    application context from being sent to Langfuse or downstream services accidentally.
 
 ## Experiments (datasets and runs)
 
@@ -370,6 +388,7 @@ the `gen_ai.client.token.usage` histogram.
 | `NormalizeScoreNames` | `false` | When `true`, score names are normalised to `snake_case` for consistent dashboard filtering. |
 | `DiagnosticsCallback` | _(none)_ | Receives library diagnostic messages (e.g. the "no export target" warning). Wire to your logger. |
 | `SamplingRatio` | `1.0` | Head-based trace sampling ratio (eval workloads want `1.0`). |
+| `ShutdownTimeout` | `5 seconds` | Total trace + metric timeout budget used by standalone-session disposal. |
 | `AgentActivitySourceName` | `NexusLabs.Needlr.AgentFramework` | Needlr agent span source to export. |
 | `GenAiMeterName` | `Experimental.Microsoft.Extensions.AI` | Meter owning `gen_ai.client.token.usage`. |
 | `AdditionalActivitySources` / `AdditionalMeters` | _(empty)_ | Extra sources/meters to export. |

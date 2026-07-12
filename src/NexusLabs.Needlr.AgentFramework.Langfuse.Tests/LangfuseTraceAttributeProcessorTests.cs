@@ -6,17 +6,45 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 public sealed class LangfuseTraceAttributeProcessorTests
 {
     [Fact]
-    public void OnStart_CopiesBaggageToTags_WithoutOverwritingExistingTags()
+    public void OnStart_AppliesTraceContextWithoutOverwritingExistingTags()
     {
         using var scope = StartActivity("op", out var activity);
-        activity.SetBaggage("session.id", "run-9");
         activity.SetTag("user.id", "preset");
-        activity.SetBaggage("user.id", "from-baggage");
+        activity.SetCustomProperty(
+            LangfuseTraceContext.ActivityPropertyName,
+            new LangfuseTraceContext
+            {
+                Name = "scenario",
+                SessionId = "run-9",
+                UserId = "from-context",
+                Version = "v3",
+                Tags = ["regression", "parallel"],
+                Metadata = new Dictionary<string, string> { ["dataset"] = "regression" },
+            });
 
         new LangfuseTraceAttributeProcessor().OnStart(activity);
 
         Assert.Equal("run-9", activity.GetTagItem("session.id"));
         Assert.Equal("preset", activity.GetTagItem("user.id"));
+        Assert.Equal("v3", activity.GetTagItem("langfuse.version"));
+        Assert.Equal("scenario", activity.GetTagItem("langfuse.trace.name"));
+        Assert.Equal(
+            ["regression", "parallel"],
+            Assert.IsType<string[]>(activity.GetTagItem("langfuse.trace.tags")));
+        Assert.Equal("regression", activity.GetTagItem("langfuse.trace.metadata.dataset"));
+    }
+
+    [Fact]
+    public void OnStart_DoesNotExportUnrecognizedBaggage()
+    {
+        using var scope = StartActivity("op", out var activity);
+        activity.SetBaggage("authorization", "secret");
+        activity.SetBaggage("tenant.internal.routing-key", "route-7");
+
+        new LangfuseTraceAttributeProcessor().OnStart(activity);
+
+        Assert.Null(activity.GetTagItem("authorization"));
+        Assert.Null(activity.GetTagItem("tenant.internal.routing-key"));
     }
 
     [Theory]
