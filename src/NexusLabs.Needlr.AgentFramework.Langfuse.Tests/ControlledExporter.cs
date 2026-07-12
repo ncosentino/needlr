@@ -8,10 +8,18 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 internal sealed class ControlledExporter<T> : BaseExporter<T>
     where T : class
 {
+    private readonly Func<int>? _getDependencyDisposeCalls;
     private readonly ManualResetEventSlim _shutdownEntered = new(initialState: false);
     private readonly ManualResetEventSlim _shutdownRelease = new(initialState: true);
     private int _disposeCalls;
     private int _shutdownCalls;
+
+    public ControlledExporter(Func<int>? getDependencyDisposeCalls = null)
+    {
+        _getDependencyDisposeCalls = getDependencyDisposeCalls;
+    }
+
+    public int? DependencyDisposeCallsAtDispose { get; private set; }
 
     public bool ShutdownSucceeds { get; set; } = true;
 
@@ -52,6 +60,7 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
     {
         if (disposing)
         {
+            DependencyDisposeCallsAtDispose ??= _getDependencyDisposeCalls?.Invoke();
             Interlocked.Increment(ref _disposeCalls);
             _shutdownEntered.Dispose();
             _shutdownRelease.Dispose();

@@ -9,21 +9,22 @@ using OpenTelemetry.Trace;
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Registers Langfuse OTLP export on an <see cref="IServiceCollection"/> for ASP.NET Core and
-/// generic-host applications.
+/// Registers Langfuse OTLP export and a complete non-owning <see cref="ILangfuseClient"/> facade
+/// on an <see cref="IServiceCollection"/> for dependency-injection-based applications.
 /// </summary>
 /// <remarks>
 /// Unlike <see cref="LangfuseTelemetry.Start(LangfuseOptions)"/> — which builds standalone
 /// providers for evals and console apps — this integrates with the host's
 /// <c>AddOpenTelemetry()</c> pipeline so the tracer and meter providers share the application
-/// lifecycle. When the supplied options are not configured (for example, missing credentials),
-/// registration is skipped and the application starts normally without exporting.
+/// lifecycle. The registered facade can create scenarios and experiment runs without constructing
+/// a standalone <see cref="ILangfuseSession"/>. When options are not configured, the same facade
+/// and specialized interfaces are registered as coherent no-ops.
 /// </remarks>
 public static class LangfuseServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Langfuse OTLP/HTTP export of Needlr agent telemetry to the host's OpenTelemetry
-    /// pipeline.
+    /// Adds Langfuse OTLP/HTTP export to the host's OpenTelemetry pipeline and registers the
+    /// non-owning <see cref="ILangfuseClient"/> facade plus all specialized client interfaces.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configure">
@@ -44,16 +45,52 @@ public static class LangfuseServiceCollectionExtensions
         if (!options.IsConfigured)
         {
             LangfuseExportGuard.WarnIfCredentialsWithoutTarget(options);
-            services.TryAddSingleton<ILangfuseScoreClient>(new DisabledLangfuseScoreClient());
-            services.TryAddSingleton<ILangfuseDatasetClient>(new DisabledLangfuseDatasetClient());
-            services.TryAddSingleton<ILangfuseScoreConfigClient>(new DisabledLangfuseScoreConfigClient());
-            services.TryAddSingleton<ILangfuseMetricsClient>(new DisabledLangfuseMetricsClient());
-            services.TryAddSingleton<ILangfuseModelClient>(new DisabledLangfuseModelClient());
-            services.TryAddSingleton<ILangfusePromptClient>(new DisabledLangfusePromptClient());
+            var client = new DisabledLangfuseClient();
+            RegisterDisabledClient(services, client);
             return services;
         }
 
         var endpoints = LangfuseEndpoints.Resolve(options);
+        var existingClient = services.LastOrDefault(
+            descriptor =>
+                descriptor.ServiceType == typeof(ILangfuseClient)
+                && descriptor.ServiceKey is null);
+        var usesBuiltInClient = existingClient is null;
+        if (usesBuiltInClient)
+        {
+            ValidateSpecializedClientLifetimes(services);
+            services.TryAddSingleton(_ => new LangfuseHttpTransport());
+            services.TryAddSingleton(sp => new LangfuseClientComposition(
+                sp.GetRequiredService<LangfuseHttpTransport>(),
+                endpoints,
+                options));
+            RegisterSpecializedClients(services);
+            services.TryAddSingleton(sp =>
+            {
+                _ = sp.GetRequiredService<TracerProvider>();
+                return new LangfuseClient(
+                    sp.GetRequiredService<LangfuseClientComposition>(),
+                    sp.GetRequiredService<ILangfuseScoreClient>(),
+                    sp.GetRequiredService<ILangfuseDatasetClient>(),
+                    sp.GetRequiredService<ILangfuseScoreConfigClient>(),
+                    sp.GetRequiredService<ILangfuseMetricsClient>(),
+                    sp.GetRequiredService<ILangfuseModelClient>(),
+                    sp.GetRequiredService<ILangfusePromptClient>());
+            });
+            services.TryAddSingleton<ILangfuseClient>(
+                sp => sp.GetRequiredService<LangfuseClient>());
+        }
+        else
+        {
+            ValidateSingleton(existingClient!, typeof(ILangfuseClient));
+            if (existingClient!.ImplementationInstance is not ILangfuseClient client)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(ILangfuseClient)} overrides must be registered as singleton instances.");
+            }
+
+            RegisterSpecializedClientsFromFacade(services, client);
+        }
 
         var otelBuilder = services
             .AddOpenTelemetry()
@@ -75,6 +112,14 @@ public static class LangfuseServiceCollectionExtensions
                 .AddProcessor(new LangfuseTraceAttributeProcessor(options.Environment, options.Release))
                 .AddOtlpExporter(otlp => ConfigureOtlp(otlp, endpoints.TracesEndpoint, endpoints.Headers)));
 
+        if (usesBuiltInClient)
+        {
+            services.ConfigureOpenTelemetryTracerProvider((serviceProvider, tracing) =>
+            {
+                _ = serviceProvider.GetRequiredService<LangfuseHttpTransport>();
+            });
+        }
+
         if (options.IncludeMetrics)
         {
             otelBuilder.WithMetrics(metrics => metrics
@@ -82,28 +127,103 @@ public static class LangfuseServiceCollectionExtensions
                 .AddMeter(options.GenAiMeterName)
                 .AddMeter([.. options.AdditionalMeters])
                 .AddOtlpExporter(otlp => ConfigureOtlp(otlp, endpoints.MetricsEndpoint, endpoints.Headers)));
+            if (usesBuiltInClient)
+            {
+                services.ConfigureOpenTelemetryMeterProvider((serviceProvider, metrics) =>
+                {
+                    _ = serviceProvider.GetRequiredService<LangfuseHttpTransport>();
+                });
+            }
         }
 
-        var httpClient = new HttpClient();
-        var scoreApiClient = new LangfuseScoreApiClient(
-            httpClient,
-            endpoints.ScoresEndpoint,
-            endpoints.AuthorizationHeaderValue);
-        var apiClient = new LangfuseApiClient(
-            httpClient,
-            endpoints.BaseUrl,
-            endpoints.AuthorizationHeaderValue);
-        var failureSink = new LangfuseScoreFailureSink(options.ScoreFailureMode, options.ScoreErrorCallback);
-        var recorder = new LangfuseScoreRecorder(scoreApiClient, failureSink, options.NormalizeScoreNames);
-
-        services.TryAddSingleton<ILangfuseScoreClient>(new LangfuseScoreClient(recorder, failureSink));
-        services.TryAddSingleton<ILangfuseDatasetClient>(new LangfuseDatasetClient(apiClient));
-        services.TryAddSingleton<ILangfuseScoreConfigClient>(new LangfuseScoreConfigClient(apiClient));
-        services.TryAddSingleton<ILangfuseMetricsClient>(new LangfuseMetricsClient(apiClient));
-        services.TryAddSingleton<ILangfuseModelClient>(new LangfuseModelClient(apiClient));
-        services.TryAddSingleton<ILangfusePromptClient>(new LangfusePromptClient(apiClient));
-
         return services;
+    }
+
+    private static void RegisterDisabledClient(
+        IServiceCollection services,
+        DisabledLangfuseClient client)
+    {
+        services.RemoveAll<ILangfuseClient>();
+        services.RemoveAll<ILangfuseScoreClient>();
+        services.RemoveAll<ILangfuseDatasetClient>();
+        services.RemoveAll<ILangfuseScoreConfigClient>();
+        services.RemoveAll<ILangfuseMetricsClient>();
+        services.RemoveAll<ILangfuseModelClient>();
+        services.RemoveAll<ILangfusePromptClient>();
+
+        services.AddSingleton<ILangfuseClient>(client);
+        services.AddSingleton<ILangfuseScoreClient>(client.Scores);
+        services.AddSingleton<ILangfuseDatasetClient>(client.Datasets);
+        services.AddSingleton<ILangfuseScoreConfigClient>(client.ScoreConfigs);
+        services.AddSingleton<ILangfuseMetricsClient>(client.Metrics);
+        services.AddSingleton<ILangfuseModelClient>(client.Models);
+        services.AddSingleton<ILangfusePromptClient>(client.Prompts);
+    }
+
+    private static void RegisterSpecializedClientsFromFacade(
+        IServiceCollection services,
+        ILangfuseClient client)
+    {
+        services.RemoveAll<ILangfuseScoreClient>();
+        services.RemoveAll<ILangfuseDatasetClient>();
+        services.RemoveAll<ILangfuseScoreConfigClient>();
+        services.RemoveAll<ILangfuseMetricsClient>();
+        services.RemoveAll<ILangfuseModelClient>();
+        services.RemoveAll<ILangfusePromptClient>();
+
+        services.AddSingleton(client.Scores);
+        services.AddSingleton(client.Datasets);
+        services.AddSingleton(client.ScoreConfigs);
+        services.AddSingleton(client.Metrics);
+        services.AddSingleton(client.Models);
+        services.AddSingleton(client.Prompts);
+    }
+
+    private static void RegisterSpecializedClients(IServiceCollection services)
+    {
+        services.TryAddSingleton<ILangfuseScoreClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().Scores);
+        services.TryAddSingleton<ILangfuseDatasetClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().Datasets);
+        services.TryAddSingleton<ILangfuseScoreConfigClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().ScoreConfigs);
+        services.TryAddSingleton<ILangfuseMetricsClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().Metrics);
+        services.TryAddSingleton<ILangfuseModelClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().Models);
+        services.TryAddSingleton<ILangfusePromptClient>(
+            sp => sp.GetRequiredService<LangfuseClientComposition>().Prompts);
+    }
+
+    private static void ValidateSpecializedClientLifetimes(IServiceCollection services)
+    {
+        ValidateSingletonOverride<ILangfuseScoreClient>(services);
+        ValidateSingletonOverride<ILangfuseDatasetClient>(services);
+        ValidateSingletonOverride<ILangfuseScoreConfigClient>(services);
+        ValidateSingletonOverride<ILangfuseMetricsClient>(services);
+        ValidateSingletonOverride<ILangfuseModelClient>(services);
+        ValidateSingletonOverride<ILangfusePromptClient>(services);
+    }
+
+    private static void ValidateSingletonOverride<TService>(IServiceCollection services)
+    {
+        var descriptor = services.LastOrDefault(
+            candidate =>
+                candidate.ServiceType == typeof(TService)
+                && candidate.ServiceKey is null);
+        if (descriptor is not null)
+        {
+            ValidateSingleton(descriptor, typeof(TService));
+        }
+    }
+
+    private static void ValidateSingleton(ServiceDescriptor descriptor, Type serviceType)
+    {
+        if (descriptor.Lifetime != ServiceLifetime.Singleton)
+        {
+            throw new InvalidOperationException(
+                $"{serviceType.Name} must be registered as a singleton before AddNeedlrLangfuse.");
+        }
     }
 
     private static void ConfigureOtlp(OtlpExporterOptions otlp, Uri endpoint, string headers)

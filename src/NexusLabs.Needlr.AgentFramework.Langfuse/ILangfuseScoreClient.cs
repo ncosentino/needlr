@@ -10,8 +10,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <remarks>
 /// In a host application the OTLP exporter assigns each operation an OpenTelemetry trace id
 /// (<c>Activity.Current?.TraceId</c>). Pass that id here to attach evaluation scores to the
-/// corresponding Langfuse trace. For the eval/console flow, prefer
-/// <see cref="ILangfuseSession.BeginScenario"/>, which manages the trace for you.
+/// corresponding Langfuse trace. When creating a new trace, prefer
+/// <see cref="ILangfuseClient.BeginScenario"/>, which manages the trace for you.
 /// </remarks>
 public interface ILangfuseScoreClient
 {

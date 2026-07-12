@@ -2,7 +2,13 @@
 
 ### Added
 
+- **`NexusLabs.Needlr.AgentFramework.Langfuse` now exposes a complete non-owning `ILangfuseClient` facade through dependency injection.** `AddNeedlrLangfuse(...)` registers scenario creation, experiment runs, known-trace scoring, datasets, score configs, metrics, model pricing, prompts, comments, enabled state, and score-failure health without creating or exposing an exporter-owning `ILangfuseSession`. The facade and every individually resolved specialized interface share the exact same instances, while the host owns the single OpenTelemetry provider pipeline and DI owns the REST transport. Standalone `ILangfuseSession` now composes the same internal client implementation and adds only flush/shutdown/disposal ownership. Enabled, disabled, custom-facade, custom-specialized-client, keyed-registration, sampler, transport-disposal, and experiment-linking paths are covered by tests and a new no-server `LangfuseConformanceApp -- dependency-injection` mode. (#32)
 - **`NexusLabs.Needlr.AgentFramework.Langfuse` now exposes bounded final shutdown for standalone sessions.** `ILangfuseSession.Shutdown(timeout)` shares one timeout budget across trace and metric providers, returns a structured `LangfuseShutdownOutcome`, releases all owned resources, and is idempotent across repeated callers. `LangfuseOptions.ShutdownTimeout` controls the bounded best-effort shutdown performed by `Dispose()` and defaults to five seconds; `Timeout.InfiniteTimeSpan` remains available as an explicit opt-in. The result describes local OpenTelemetry provider drain only and does not claim durable Langfuse ingestion. (#29)
+
+### Changed
+
+- **Unkeyed Langfuse DI overrides must preserve singleton facade identity.** A pre-registered `ILangfuseClient` override must be a singleton instance; its specialized clients become the authoritative unkeyed registrations without transferring disposal ownership to DI. Individual specialized-client overrides are supported only as singletons because the hosted facade is singleton. Disabled registration replaces all unkeyed facade/specialized overrides with one coherent no-op composition, while keyed registrations remain untouched. (#32)
+- **BREAKING (alpha): custom `ILangfuseSession` implementations must implement the new `ILangfuseClient` contract directly.** Needlr intentionally does not carry a default-interface compatibility shim for the previous session member layout; alpha consumers should update implementations to provide `Scores` and the inherited facade members rather than imposing permanent dispatch and documentation duplication on the stable API. (#32)
 
 ### Fixed
 

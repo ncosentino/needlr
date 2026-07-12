@@ -28,6 +28,9 @@
 // score is surfaced via ScoresFailed + ScoreErrorCallback:
 //
 //     dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- resiliency
+//
+// Run with `dependency-injection` to prove that AddNeedlrLangfuse registers a
+// complete non-owning facade backed by one host-owned OpenTelemetry pipeline.
 // =============================================================================
 
 using System.Diagnostics;
@@ -39,6 +42,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using OpenTelemetry.Trace;
 
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
@@ -59,6 +64,11 @@ Console.WriteLine();
 if (args.Length > 0 && string.Equals(args[0], "resiliency", StringComparison.OrdinalIgnoreCase))
 {
     return await RunResiliencyCheckAsync();
+}
+
+if (args.Length > 0 && string.Equals(args[0], "dependency-injection", StringComparison.OrdinalIgnoreCase))
+{
+    return RunDependencyInjectionCheck();
 }
 
 // "experiments" mode exercises the dataset/experiment, score-config, comment,
@@ -407,6 +417,78 @@ static async Task<int> RunResiliencyCheckAsync()
     }
 
     Console.WriteLine("RESILIENCY FAILED — failures were not surfaced as expected.");
+    return 1;
+}
+
+static int RunDependencyInjectionCheck()
+{
+    Console.WriteLine("[mode] Dependency injection: complete non-owning Langfuse facade.");
+    Console.WriteLine();
+
+    var services = new ServiceCollection();
+    services.AddNeedlrLangfuse(options =>
+    {
+        options.PublicKey = "pk-lf-di-conformance";
+        options.SecretKey = "sk-lf-di-conformance";
+        options.Host = "http://127.0.0.1:1";
+        options.ServiceName = "needlr-langfuse-di-conformance";
+    });
+
+    var provider = services.BuildServiceProvider();
+    var passed = false;
+    try
+    {
+        var client = provider.GetRequiredService<ILangfuseClient>();
+        var tracerProviders = provider.GetServices<TracerProvider>().ToArray();
+        using var scenario = client.BeginScenario(
+            "di: hosted-scenario",
+            sessionId: "di-run",
+            tags: ["dependency-injection"]);
+        var experiment = client.BeginExperimentRun("di-dataset", "di-experiment");
+
+        var identitiesMatch =
+            ReferenceEquals(client.Scores, provider.GetRequiredService<ILangfuseScoreClient>()) &&
+            ReferenceEquals(client.Datasets, provider.GetRequiredService<ILangfuseDatasetClient>()) &&
+            ReferenceEquals(client.ScoreConfigs, provider.GetRequiredService<ILangfuseScoreConfigClient>()) &&
+            ReferenceEquals(client.Metrics, provider.GetRequiredService<ILangfuseMetricsClient>()) &&
+            ReferenceEquals(client.Models, provider.GetRequiredService<ILangfuseModelClient>()) &&
+            ReferenceEquals(client.Prompts, provider.GetRequiredService<ILangfusePromptClient>());
+
+        passed =
+            client.IsEnabled &&
+            client is not IDisposable &&
+            provider.GetService<ILangfuseSession>() is null &&
+            tracerProviders.Length == 1 &&
+            scenario.TraceId is { Length: > 0 } &&
+            experiment.DatasetName == "di-dataset" &&
+            experiment.RunName == "di-experiment" &&
+            identitiesMatch;
+
+        Console.WriteLine($"  facade enabled:            {client.IsEnabled}");
+        Console.WriteLine($"  facade owns lifecycle:     {client is IDisposable}");
+        Console.WriteLine($"  ILangfuseSession in DI:    {provider.GetService<ILangfuseSession>() is not null}");
+        Console.WriteLine($"  TracerProvider count:      {tracerProviders.Length}");
+        Console.WriteLine($"  scenario trace id:         {scenario.TraceId}");
+        Console.WriteLine($"  experiment:                {experiment.DatasetName}/{experiment.RunName}");
+        Console.WriteLine($"  specialized identities:    {(identitiesMatch ? "shared" : "MISMATCH")}");
+    }
+    finally
+    {
+        var disposalStopwatch = Stopwatch.StartNew();
+        provider.Dispose();
+        disposalStopwatch.Stop();
+        Console.WriteLine($"  provider disposal:         {disposalStopwatch.Elapsed.TotalMilliseconds:F0} ms");
+    }
+
+    Console.WriteLine();
+    if (passed)
+    {
+        Console.WriteLine("DEPENDENCY INJECTION PASSED — one host telemetry pipeline owns lifecycle,");
+        Console.WriteLine("while ILangfuseClient provides the complete non-owning evaluation surface.");
+        return 0;
+    }
+
+    Console.WriteLine("DEPENDENCY INJECTION FAILED — hosted facade ownership or identity was incorrect.");
     return 1;
 }
 

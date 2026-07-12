@@ -6,7 +6,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
 /// Represents a single Langfuse trace scoped to one eval scenario or agent run. Created via
-/// <see cref="ILangfuseSession.BeginScenario"/>.
+/// <see cref="ILangfuseClient.BeginScenario"/>.
 /// </summary>
 /// <remarks>
 /// <para>

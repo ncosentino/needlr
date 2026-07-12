@@ -14,6 +14,7 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     private readonly Activity? _activity;
     private readonly Activity? _previousActivity;
     private readonly LangfuseScoreRecorder _recorder;
+    private readonly ILangfuseScoreClient _scores;
     private readonly string? _sessionId;
     private LangfuseTraceContext _traceContext;
     private int _disposed;
@@ -25,10 +26,31 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         string? userId,
         IEnumerable<string>? tags,
         IReadOnlyDictionary<string, string>? metadata)
+        : this(
+            CreateScoreClient(recorder),
+            recorder,
+            name,
+            sessionId,
+            userId,
+            tags,
+            metadata)
     {
+    }
+
+    public LangfuseScenario(
+        ILangfuseScoreClient scores,
+        LangfuseScoreRecorder recorder,
+        string name,
+        string? sessionId,
+        string? userId,
+        IEnumerable<string>? tags,
+        IReadOnlyDictionary<string, string>? metadata)
+    {
+        ArgumentNullException.ThrowIfNull(scores);
         ArgumentNullException.ThrowIfNull(recorder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
+        _scores = scores;
         _recorder = recorder;
         _sessionId = sessionId;
         _traceContext = CreateTraceContext(name, sessionId, userId, tags, metadata);
@@ -52,6 +74,12 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         LangfuseTraceContext.Attach(_activity, _traceContext);
     }
 
+    private static ILangfuseScoreClient CreateScoreClient(LangfuseScoreRecorder recorder)
+    {
+        ArgumentNullException.ThrowIfNull(recorder);
+        return new LangfuseScoreClient(recorder, recorder.FailureSink);
+    }
+
     /// <inheritdoc />
     public string? TraceId => _activity?.TraceId.ToString();
 
@@ -61,19 +89,19 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     /// <inheritdoc />
     public Task RecordScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _recorder.RecordNumericAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
     public Task RecordScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _recorder.RecordBooleanAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
     public Task RecordScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _recorder.RecordCategoricalAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
@@ -82,7 +110,7 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         ArgumentNullException.ThrowIfNull(result);
 
         return TraceId is { Length: > 0 } id
-            ? _recorder.RecordEvaluationAsync(id, result, cancellationToken)
+            ? _scores.RecordEvaluationAsync(id, result, cancellationToken)
             : _recorder.RecordSkippedAsync("evaluation", cancellationToken);
     }
 
@@ -150,19 +178,19 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     /// <inheritdoc />
     public Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _recorder.RecordNumericAsync(LangfuseScoreTarget.Session(sid), name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     /// <inheritdoc />
     public Task RecordSessionScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _recorder.RecordBooleanAsync(LangfuseScoreTarget.Session(sid), name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     /// <inheritdoc />
     public Task RecordSessionScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _recorder.RecordCategoricalAsync(LangfuseScoreTarget.Session(sid), name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     private Task SkipSessionScore(string name, CancellationToken cancellationToken) =>
