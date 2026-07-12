@@ -4734,6 +4734,10 @@
 <td style="text-align: left;">Registers Langfuse OTLP export on an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> for ASP.NET Core and generic-host applications.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseShutdownOutcome/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome">LangfuseShutdownOutcome</a></td>
+<td style="text-align: left;">Reports whether local OpenTelemetry trace and metric provider shutdown completed.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseTelemetry/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry">LangfuseTelemetry</a></td>
 <td style="text-align: left;">Entry point for exporting Needlr agent telemetry to Langfuse without requiring a generic host. Designed for evals, console apps, and test fixtures that build telemetry by hand.</td>
 </tr>
@@ -4781,7 +4785,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="ILangfuseSession/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession">ILangfuseSession</a></td>
-<td style="text-align: left;">Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers that forward Needlr agent telemetry to Langfuse and flushes pending telemetry on disposal.</td>
+<td style="text-align: left;">Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers that forward Needlr agent telemetry to Langfuse and performs bounded final shutdown on disposal.</td>
 </tr>
 </tbody>
 </table>
@@ -4796,6 +4800,10 @@
 <tr>
 <td style="text-align: left;"><a href="LangfuseMetricsView/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsView">LangfuseMetricsView</a></td>
 <td style="text-align: left;">The Langfuse Metrics API view to query. Determines which measures and dimensions are available.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseProviderShutdownStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseProviderShutdownStatus">LangfuseProviderShutdownStatus</a></td>
+<td style="text-align: left;">Describes the local OpenTelemetry shutdown state for one telemetry provider.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="LangfuseRegion/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseRegion">LangfuseRegion</a></td>

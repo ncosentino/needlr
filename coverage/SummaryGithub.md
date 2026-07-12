@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/09/2026 - 14:06:15 |
-| Coverage date: | 07/09/2026 - 14:03:17 - 07/09/2026 - 14:06:09 |
+| Generated on: | 07/12/2026 - 18:34:50 |
+| Coverage date: | 07/12/2026 - 18:31:44 - 07/12/2026 - 18:34:44 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
-| Classes: | 614 |
-| Files: | 603 |
-| **Line coverage:** | 86.2% (24496 of 28386) |
-| Covered lines: | 24496 |
-| Uncovered lines: | 3890 |
-| Coverable lines: | 28386 |
-| Total lines: | 69671 |
-| **Branch coverage:** | 75.3% (9455 of 12556) |
-| Covered branches: | 9455 |
-| Total branches: | 12556 |
+| Classes: | 618 |
+| Files: | 607 |
+| **Line coverage:** | 86.4% (24679 of 28532) |
+| Covered lines: | 24679 |
+| Uncovered lines: | 3853 |
+| Coverable lines: | 28532 |
+| Total lines: | 70149 |
+| **Branch coverage:** | 75.3% (9490 of 12594) |
+| Covered branches: | 9490 |
+| Total branches: | 12594 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -311,11 +311,11 @@
 |NexusLabs.Needlr.AgentFramework.Generators.TopologyGraphCodeGenerator|75%|69.2%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Langfuse - 79.3%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Langfuse - 84.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Langfuse**|**79.3%**|**69.8%**|
+|**NexusLabs.Needlr.AgentFramework.Langfuse**|**84.5%**|**72.1%**|
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseDatasetClient|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseExperimentRun|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseMetricsClient|0%||
@@ -324,9 +324,10 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScenario|37.5%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScoreClient|25%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScoreConfigClient|0%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseSession|75%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseSession|83.3%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseActivitySource|100%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseApiClient|95.1%|88.8%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseApiClient|98.4%|88.8%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCommentRecorder|90%|50%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCommentRequest|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateDatasetItemRequest|100%||
@@ -339,8 +340,8 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetRef|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEndpoints|98.2%|90.4%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreExtensions|84.2%|66.6%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseException|50%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRun|94.4%|40%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseException|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRun|94.8%|40%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExportGuard|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetric|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsClient|97.3%|66.6%|
@@ -361,9 +362,9 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt|100%|50%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePromptClient|96.5%|75%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePromptDto|100%|100%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario|87%|54.8%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario|88.7%|58.5%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScore|100%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreApiClient|91.8%|83.3%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreApiClient|100%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreClient|50%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfigCategory|100%||
@@ -377,9 +378,12 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecorder|90.4%|96.4%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreTarget|93.7%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtension<br/>s|88.3%|66.6%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseSession|0%|0%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry|6.8%|10%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceAttributeProcessor|89.8%|85.3%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseSession|80.3%|69.2%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry|8.3%|20%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTimeout|62.5%|40%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceAttributeProcessor|90.9%|85.3%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceContext|100%|100%|
 
 </details>
 <details><summary>NexusLabs.Needlr.AgentFramework.Testing - 86.4%</summary>
@@ -644,17 +648,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**37.1%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72%**|**35.7%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|

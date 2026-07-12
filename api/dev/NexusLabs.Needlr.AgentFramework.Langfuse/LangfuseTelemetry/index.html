@@ -4678,8 +4678,8 @@ host. Designed for evals, console apps, and test fixtures that build telemetry b
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p><a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)">Start(LangfuseOptions)</a> constructs standalone OpenTelemetry tracer and meter
             providers that subscribe to Needlr's <code>gen_ai</code> activity source and meters and export them
-            to Langfuse over OTLP/HTTP. Dispose the returned <a href="../ILangfuseSession/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession">ILangfuseSession</a> to flush and
-            tear them down.</p>
+            to Langfuse over OTLP/HTTP. Dispose the returned <a href="../ILangfuseSession/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession">ILangfuseSession</a> to perform
+            bounded final shutdown using <a href="../LangfuseOptions/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.ShutdownTimeout" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.ShutdownTimeout">ShutdownTimeout</a>.</p>
 <p>For ASP.NET Core / generic-host applications that already call <code>AddOpenTelemetry()</code>, use
 <a href="../LangfuseServiceCollectionExtensions/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions.AddNeedlrLangfuse(thisMicrosoft.Extensions.DependencyInjection.IServiceCollection,System.Action_NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions.AddNeedlrLangfuse(this Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action\&lt;NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions&gt;)">AddNeedlrLangfuse(this IServiceCollection, Action&lt;LangfuseOptions&gt;)</a>
 instead so the providers participate in the host lifecycle.\&lt;example&gt;

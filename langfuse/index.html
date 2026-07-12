@@ -1446,6 +1446,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#flush-versus-final-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flush versus final shutdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#even-shorter-evaluate-and-record-in-one-call" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4968,8 +4979,8 @@ evaluator metrics into Langfuse scores.</p>
 <p>Install the package and start a session from environment variables:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_PUBLIC_KEY</span><span class="o">=</span><span class="s2">&quot;pk-lf-...&quot;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;sk-lf-...&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Optional — defaults to Langfuse Cloud (EU). Set for self-hosted or other regions:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># export LANGFUSE_HOST=&quot;http://localhost:3000&quot;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Required unless Region is configured in code:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_HOST</span><span class="o">=</span><span class="s2">&quot;http://localhost:3000&quot;</span>
 </span></code></pre></div>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Evaluation</span><span class="p">;</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Langfuse</span><span class="p">;</span>
@@ -4994,11 +5005,22 @@ evaluator metrics into Langfuse scores.</p>
 </span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">RecordLangfuseScoresAsync</span><span class="p">(</span><span class="n">scenario</span><span class="p">);</span>
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="p">}</span>
 </span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="n">langfuse</span><span class="p">.</span><span class="n">Flush</span><span class="p">();</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="kt">var</span><span class="w"> </span><span class="n">shutdown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">Shutdown</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="n">FromSeconds</span><span class="p">(</span><span class="mi">5</span><span class="p">));</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;traces={shutdown.Traces}, metrics={shutdown.Metrics}&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 <p>That is the entire integration. When <code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code>
 are not set (or no <code>Host</code>/<code>Region</code> target is chosen), the session is disabled and
 every call becomes a no-op, so the same code runs unchanged in credential-less CI.</p>
+<h3 id="flush-versus-final-shutdown">Flush versus final shutdown<a class="headerlink" href="#flush-versus-final-shutdown" title="Permanent link">&para;</a></h3>
+<p><code>Flush(timeout)</code> asks the active session to export telemetry buffered before the call and
+keeps the session open. Use an explicit timeout when flushing before read-back operations.</p>
+<p><code>Shutdown(timeout)</code> is final: it shares one timeout budget across trace and metric providers,
+releases every resource owned by the standalone session, and rejects new session operations.
+It returns a <code>LangfuseShutdownOutcome</code> with separate trace and metric statuses. Those statuses
+describe the local OpenTelemetry drain only—they do <strong>not</strong> guarantee durable Langfuse ingestion.</p>
+<p><code>Dispose()</code> performs the same final shutdown with <code>LangfuseOptions.ShutdownTimeout</code>, which
+defaults to five seconds. Set <code>Timeout.InfiniteTimeSpan</code> only when an unbounded process-exit wait
+is explicitly required.</p>
 <h3 id="even-shorter-evaluate-and-record-in-one-call">Even shorter: evaluate and record in one call<a class="headerlink" href="#even-shorter-evaluate-and-record-in-one-call" title="Permanent link">&para;</a></h3>
 <p><code>EvaluateAndRecordAsync</code> runs a set of evaluators and records every resulting metric
 as a score, collapsing the per-test boilerplate:</p>
@@ -5090,6 +5112,8 @@ verdict, so a transient Langfuse outage must not turn a green eval red. By defau
 (<code>ScoreFailureMode.NonFatal</code>) a failed upload increments <code>ILangfuseSession.ScoresFailed</code>
 and invokes <code>ScoreErrorCallback</code> (wire it to your logger) but does <strong>not</strong> throw. Set
 <code>ScoreFailureMode.Strict</code> if a missing score should hard-fail the caller.</p>
+<p>Caller-requested cancellation is never converted into a non-fatal score or publication
+failure. An <code>OperationCanceledException</code> propagates so a cancelled evaluation stops promptly.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LangfuseOptions</span><span class="p">.</span><span class="n">FromEnvironment</span><span class="p">();</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">options</span><span class="p">.</span><span class="n">ScoreErrorCallback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">logger</span><span class="p">.</span><span class="n">LogWarning</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">Exception</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Langfuse score {Name} not recorded&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">ScoreName</span><span class="p">);</span>
 </span></code></pre></div>
@@ -5109,12 +5133,12 @@ depend on implicit inference:</p>
   so <code>costDetails</code> stays empty until you add a custom model definition.)</li>
 </ul>
 <div class="admonition note">
-<p class="admonition-title">Trace-level filtering is by trace, not by observation</p>
-<p>Trace-level attributes (<code>name</code>, <code>tags</code>, <code>metadata</code>) are set on the scenario root span,
-which is what Langfuse uses to build the trace. <code>session.id</code> and <code>user.id</code> are also
-propagated to child spans (via baggage) so you can filter observations by them. Filtering
-individual <em>observations</em> by <code>tags</code>/<code>metadata</code> is not supported — those live at the trace
-level, which matches the per-scenario grouping model.</p>
+<p class="admonition-title">Trace context is propagated through an allowlist</p>
+<p>Needlr propagates the scenario name, tags, metadata, version, session id, and user id to
+in-process child spans so Langfuse can filter and aggregate observations reliably. Scenario
+context is not stored in W3C baggage, and arbitrary inherited OpenTelemetry baggage is <strong>not</strong>
+copied into exported span attributes. This prevents unrelated, sensitive, or high-cardinality
+application context from being sent to Langfuse or downstream services accidentally.</p>
 </div>
 <h2 id="experiments-datasets-and-runs">Experiments (datasets and runs)<a class="headerlink" href="#experiments-datasets-and-runs" title="Permanent link">&para;</a></h2>
 <p>Map each eval case to a Langfuse <strong>dataset item</strong>, then on every run link the trace it
@@ -5348,6 +5372,11 @@ the <code>gen_ai.client.token.usage</code> histogram.</p>
 <td><code>SamplingRatio</code></td>
 <td><code>1.0</code></td>
 <td>Head-based trace sampling ratio (eval workloads want <code>1.0</code>).</td>
+</tr>
+<tr>
+<td><code>ShutdownTimeout</code></td>
+<td><code>5 seconds</code></td>
+<td>Total trace + metric timeout budget used by standalone-session disposal.</td>
 </tr>
 <tr>
 <td><code>AgentActivitySourceName</code></td>

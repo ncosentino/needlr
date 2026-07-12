@@ -4671,14 +4671,14 @@
 <h3 id="nexuslabsneedlragentframeworklangfuse"><a href="../NexusLabs.Needlr.AgentFramework.Langfuse/" title="NexusLabs.Needlr.AgentFramework.Langfuse">NexusLabs.Needlr.AgentFramework.Langfuse</a><a class="headerlink" href="#nexuslabsneedlragentframeworklangfuse" title="Permanent link">&para;</a></h3>
 <h2 id="ilangfusesession-interface">ILangfuseSession Interface<a class="headerlink" href="#ilangfusesession-interface" title="Permanent link">&para;</a></h2>
 <p>Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers
-that forward Needlr agent telemetry to Langfuse and flushes pending telemetry on disposal.</p>
+that forward Needlr agent telemetry to Langfuse and performs bounded final shutdown on disposal.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">ILangfuseSession</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span>
 </span></code></pre></div>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>Obtain an instance from <a href="../LangfuseTelemetry/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)">Start(LangfuseOptions)</a>. Keep it alive
 for the lifetime over which agent runs and evaluations should be captured (for example, an
-xUnit collection fixture), then dispose it to force a final flush.</p>
+xUnit collection fixture), then dispose it to perform a bounded, best-effort final drain.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Datasets'></a></p>
 <h2 id="ilangfusesessiondatasets-property">ILangfuseSession.Datasets Property<a class="headerlink" href="#ilangfusesessiondatasets-property" title="Permanent link">&para;</a></h2>
@@ -4832,6 +4832,33 @@ to wait indefinitely. When <a href="https://docs.microsoft.com/en-us/dotnet/csha
 <h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a><br />
 <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the flush succeeded; otherwise <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan)'></a></p>
+<h2 id="ilangfusesessionshutdowntimespan-method">ILangfuseSession.Shutdown(TimeSpan) Method<a class="headerlink" href="#ilangfusesessionshutdowntimespan-method" title="Permanent link">&para;</a></h2>
+<p>Performs final local OpenTelemetry provider shutdown and releases all resources owned by the
+session.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseShutdownOutcome</span><span class="w"> </span><span class="n">Shutdown</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout'></a></p>
+<p><code>timeout</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
+<p>The total timeout budget shared by trace and metric provider shutdown, or
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a> to explicitly wait indefinitely.</p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<p><a href="../LangfuseShutdownOutcome/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome">LangfuseShutdownOutcome</a><br />
+An outcome describing whether local trace and metric provider shutdown completed. This does
+not guarantee durable ingestion by Langfuse.</p>
+<h4 id="exceptions_2">Exceptions<a class="headerlink" href="#exceptions_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception" title="System.ArgumentOutOfRangeException">System.ArgumentOutOfRangeException</a><br />
+<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout">timeout</a> is negative and is not
+            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a>.</p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.notsupportedexception" title="System.NotSupportedException">System.NotSupportedException</a><br />
+The session implementation predates explicit shutdown and does not override this member.</p>
+<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
+<p>Exactly one caller performs final shutdown. Concurrent callers return immediately with
+<a href="../LangfuseShutdownOutcome/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome.IsFinal" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome.IsFinal">IsFinal</a> equal to <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>. Calls made
+after shutdown completes return the same cached final outcome.</p>
+<p>Once shutdown begins, an enabled session rejects new operations with
+<a href="https://learn.microsoft.com/en-us/dotnet/api/system.objectdisposedexception" title="System.ObjectDisposedException">System.ObjectDisposedException</a>.</p>
 
 
 
