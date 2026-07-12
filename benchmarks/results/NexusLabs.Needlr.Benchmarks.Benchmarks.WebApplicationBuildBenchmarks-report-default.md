@@ -10,7 +10,7 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 
  Method                               | Mean     | Error     | StdDev    | Ratio | RatioSD | Rank | Allocated  | Alloc Ratio |
 ------------------------------------- |---------:|----------:|----------:|------:|--------:|-----:|-----------:|------------:|
- ManualDI_BuildWebApp                 | 2.777 ms | 0.0855 ms | 0.0132 ms |  1.00 |    0.01 |    1 |  519.34 KB |        1.00 |
- Needlr_Reflection_BuildWebApp        | 8.911 ms | 0.2438 ms | 0.0377 ms |  3.21 |    0.02 |    3 | 1776.68 KB |        3.42 |
- Needlr_SourceGen_BuildWebApp         | 3.545 ms | 0.1017 ms | 0.0264 ms |  1.28 |    0.01 |    2 |  812.28 KB |        1.56 |
- Needlr_SourceGenExplicit_BuildWebApp | 3.483 ms | 0.1715 ms | 0.0445 ms |  1.25 |    0.02 |    2 |  734.22 KB |        1.41 |
+ ManualDI_BuildWebApp                 | 2.892 ms | 0.3440 ms | 0.0893 ms |  1.00 |    0.04 |    1 |  519.05 KB |        1.00 |
+ Needlr_Reflection_BuildWebApp        | 9.518 ms | 0.4510 ms | 0.1171 ms |  3.29 |    0.10 |    2 | 1776.68 KB |        3.42 |
+ Needlr_SourceGen_BuildWebApp         | 3.645 ms | 0.1335 ms | 0.0347 ms |  1.26 |    0.04 |    1 |  812.28 KB |        1.56 |
+ Needlr_SourceGenExplicit_BuildWebApp | 3.573 ms | 0.1897 ms | 0.0493 ms |  1.24 |    0.04 |    1 |  734.22 KB |        1.41 |

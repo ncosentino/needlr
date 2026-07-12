@@ -10,9 +10,9 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                                        | Mean         | Error       | StdDev     | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-|---------------------------------------------- |-------------:|------------:|-----------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_BuildServiceProvider                 |     1.298 μs |   0.0263 μs |  0.0041 μs |     1.00 |    0.00 |    1 |  0.2785 | 0.0916 |   4.56 KB |        1.00 |
-| Needlr_Reflection_BuildServiceProvider        | 2,142.248 μs | 110.1584 μs | 17.0471 μs | 1,650.94 |   12.63 |    4 | 54.6875 | 7.8125 | 923.35 KB |      202.38 |
-| Needlr_SourceGenExplicit_BuildServiceProvider |    82.435 μs |   1.4484 μs |  0.3761 μs |    63.53 |    0.32 |    2 |  6.4697 | 0.8545 | 106.41 KB |       23.32 |
-| Needlr_SourceGenImplicit_BuildServiceProvider |   112.252 μs |   1.3013 μs |  0.2014 μs |    86.51 |    0.28 |    3 | 10.7422 | 0.9766 | 183.42 KB |       40.20 |
+| Method                                        | Mean         | Error      | StdDev    | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|---------------------------------------------- |-------------:|-----------:|----------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
+| ManualDI_BuildServiceProvider                 |     1.391 μs |  0.1074 μs | 0.0279 μs |     1.00 |    0.03 |    1 |  0.2785 | 0.0916 |   4.56 KB |        1.00 |
+| Needlr_Reflection_BuildServiceProvider        | 2,287.449 μs | 41.8966 μs | 6.4835 μs | 1,645.05 |   30.44 |    4 | 54.6875 | 7.8125 | 923.19 KB |      202.34 |
+| Needlr_SourceGenExplicit_BuildServiceProvider |    85.815 μs |  2.4662 μs | 0.6405 μs |    61.71 |    1.20 |    2 |  6.3477 | 0.4883 |  109.7 KB |       24.04 |
+| Needlr_SourceGenImplicit_BuildServiceProvider |   115.840 μs |  3.9331 μs | 1.0214 μs |    83.31 |    1.66 |    3 | 10.7422 | 0.9766 | 183.41 KB |       40.20 |

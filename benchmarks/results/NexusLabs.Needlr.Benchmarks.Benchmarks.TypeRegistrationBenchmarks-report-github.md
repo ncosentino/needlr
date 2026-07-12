@@ -10,8 +10,8 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                          | Mean            | Error            | StdDev         | Ratio     | RatioSD  | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-|-------------------------------- |----------------:|-----------------:|---------------:|----------:|---------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_RegisterTypes          |        98.09 ns |         3.832 ns |       0.995 ns |      1.00 |     0.01 |    1 |  0.0315 |      - |     528 B |        1.00 |
-| Needlr_Reflection_RegisterTypes | 1,923,424.53 ns | 2,507,997.573 ns | 651,319.007 ns | 19,610.03 | 6,064.89 |    3 | 31.2500 |      - |  589831 B |    1,117.10 |
-| Needlr_SourceGen_RegisterTypes  |    17,939.39 ns |       144.705 ns |      37.580 ns |    182.90 |     1.74 |    2 |  1.8005 | 0.1221 |   30440 B |       57.65 |
+| Method                          | Mean           | Error           | StdDev        | Ratio     | RatioSD  | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|-------------------------------- |---------------:|----------------:|--------------:|----------:|---------:|-----:|--------:|-------:|----------:|------------:|
+| ManualDI_RegisterTypes          |       104.7 ns |         8.85 ns |       2.30 ns |      1.00 |     0.03 |    1 |  0.0315 |      - |     528 B |        1.00 |
+| Needlr_Reflection_RegisterTypes | 1,741,748.8 ns | 2,290,793.91 ns | 594,911.91 ns | 16,649.04 | 5,202.78 |    3 | 31.2500 |      - |  589831 B |    1,117.10 |
+| Needlr_SourceGen_RegisterTypes  |    17,792.5 ns |       649.60 ns |     168.70 ns |    170.08 |     3.70 |    2 |  1.8005 | 0.1221 |   30440 B |       57.65 |
