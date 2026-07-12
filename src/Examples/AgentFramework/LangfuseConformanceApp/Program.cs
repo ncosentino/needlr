@@ -23,13 +23,14 @@
 //
 // ── RESILIENCY MODE (no server required) ─────────────────────────────────────
 // Run with the argument `resiliency` to prove the opposite case: that an eval
-// still PASSES when Langfuse is unreachable. It points the exporter + score
-// client at a dead port, runs a scenario, and asserts the run completes (exit 0)
-// while every dropped score is surfaced via ScoresFailed + ScoreErrorCallback:
+// still PASSES when Langfuse is unreachable. It proves cancellation propagates,
+// unrelated baggage is not exported, final shutdown is bounded, and every failed
+// score is surfaced via ScoresFailed + ScoreErrorCallback:
 //
 //     dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- resiliency
 // =============================================================================
 
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -54,8 +55,7 @@ Console.WriteLine();
 
 // Two modes:
 //   (default)      live read-back conformance — requires a running Langfuse.
-//   "resiliency"   Langfuse-down resiliency — points at a dead port, needs NO server,
-//                  and proves an eval still passes when score uploads fail.
+//   "resiliency"   Langfuse-down lifecycle and resiliency checks — needs NO server.
 if (args.Length > 0 && string.Equals(args[0], "resiliency", StringComparison.OrdinalIgnoreCase))
 {
     return await RunResiliencyCheckAsync();
@@ -251,10 +251,9 @@ if (passed)
 Console.WriteLine("CONFORMANCE FAILED — see above. (Increase the poll window if your instance is slow.)");
 return 1;
 
-// ── Resiliency mode: prove an eval survives Langfuse being unreachable ───────
-// Points the exporter and score client at a dead local port (no server needed),
-// runs a real scenario, and asserts the eval completes (exit 0) while the score
-// failures are surfaced via ScoresFailed + ScoreErrorCallback (never swallowed).
+// ── Resiliency mode: prove safe behavior when Langfuse is unreachable ────────
+// Exercises cancellation, trace-context propagation, score failure reporting,
+// and bounded final shutdown against a dead local port (no server required).
 static async Task<int> RunResiliencyCheckAsync()
 {
     Console.WriteLine("[mode] Resiliency: simulating Langfuse DOWN (dead port, no server required).");
@@ -272,6 +271,8 @@ static async Task<int> RunResiliencyCheckAsync()
         ScoreFailureMode = LangfuseScoreFailureMode.NonFatal,
         ScoreErrorCallback = _ => Interlocked.Increment(ref callbackFired),
     };
+    using var contextProbeSource = new ActivitySource("Needlr.Langfuse.Conformance.ContextProbe");
+    options.AdditionalActivitySources.Add(contextProbeSource.Name);
 
     var serviceProvider = new Syringe()
         .UsingReflection()
@@ -290,9 +291,50 @@ static async Task<int> RunResiliencyCheckAsync()
         return 1;
     }
 
-    var recordedScores = 0;
-    using (var scenario = langfuse.BeginScenario("resiliency: cached-summary", sessionId: "resiliency-run", tags: ["resiliency"]))
+    var cancellationPropagated = false;
+    using (var cancellation = new CancellationTokenSource())
     {
+        cancellation.Cancel();
+        try
+        {
+            await langfuse.Datasets.EnsureDatasetAsync("cancelled-operation", cancellationToken: cancellation.Token);
+        }
+        catch (OperationCanceledException exception) when (exception.CancellationToken == cancellation.Token)
+        {
+            cancellationPropagated = true;
+        }
+    }
+
+    var recordedScores = 0;
+    var contextPropagationSafe = false;
+    using (var externalContext = new Activity("resiliency-parent").Start())
+    {
+        externalContext.SetBaggage("authorization", "must-not-export");
+        using var scenario = langfuse.BeginScenario(
+            "resiliency: cached-summary",
+            sessionId: "resiliency-run",
+            userId: "resiliency-user",
+            tags: ["resiliency", "offline"],
+            metadata: new Dictionary<string, string> { ["suite"] = "conformance" });
+        scenario.SetVersion("resiliency-v1");
+
+        using var contextProbe = contextProbeSource.StartActivity("context-probe");
+        if (contextProbe is null)
+        {
+            Console.WriteLine("[error] Context probe activity was not sampled.");
+            return 1;
+        }
+
+        contextPropagationSafe =
+            Equals(contextProbe.GetTagItem("langfuse.trace.name"), "resiliency: cached-summary") &&
+            Equals(contextProbe.GetTagItem("session.id"), "resiliency-run") &&
+            Equals(contextProbe.GetTagItem("user.id"), "resiliency-user") &&
+            Equals(contextProbe.GetTagItem("langfuse.version"), "resiliency-v1") &&
+            Equals(contextProbe.GetTagItem("langfuse.trace.metadata.suite"), "conformance") &&
+            contextProbe.GetTagItem("langfuse.trace.tags") is string[] tags &&
+            tags.SequenceEqual(["resiliency", "offline"]) &&
+            contextProbe.GetTagItem("authorization") is null;
+
         var loopOptions = new IterativeLoopOptions
         {
             Instructions = "You summarise cached prompt content.",
@@ -329,25 +371,38 @@ static async Task<int> RunResiliencyCheckAsync()
         recordedScores = results.SelectMany(r => r.Metrics.Values).Count(HasValue);
     }
 
-    langfuse.Flush(TimeSpan.FromSeconds(2));
+    var shutdownTimeout = TimeSpan.FromSeconds(2);
+    var shutdownStopwatch = Stopwatch.StartNew();
+    var shutdown = langfuse.Shutdown(shutdownTimeout);
+    shutdownStopwatch.Stop();
+    var shutdownBounded =
+        shutdownStopwatch.Elapsed <= shutdownTimeout + TimeSpan.FromSeconds(3);
 
-    // The eval reached this point without throwing — that alone proves NonFatal worked.
-    // The failures must still be surfaced (not silently swallowed): counter + callback.
     var resilient =
+        cancellationPropagated &&
+        contextPropagationSafe &&
         recordedScores > 0 &&
         langfuse.ScoresFailed == recordedScores &&
-        callbackFired == recordedScores;
+        callbackFired == recordedScores &&
+        shutdown.IsFinal &&
+        shutdownBounded &&
+        shutdown.Metrics == LangfuseProviderShutdownStatus.NotConfigured;
 
     Console.WriteLine();
+    Console.WriteLine($"  caller cancellation:       {(cancellationPropagated ? "propagated" : "FAILED")}");
+    Console.WriteLine($"  trace context allowlist:   {(contextPropagationSafe ? "safe" : "FAILED")}");
     Console.WriteLine($"  scores attempted:          {recordedScores}");
     Console.WriteLine($"  ScoresFailed (session):    {langfuse.ScoresFailed}");
     Console.WriteLine($"  ScoreErrorCallback fired:  {callbackFired}");
+    Console.WriteLine($"  trace shutdown:            {shutdown.Traces}");
+    Console.WriteLine($"  metric shutdown:           {shutdown.Metrics}");
+    Console.WriteLine($"  shutdown elapsed:          {shutdownStopwatch.Elapsed.TotalMilliseconds:F0} ms");
     Console.WriteLine();
 
     if (resilient)
     {
-        Console.WriteLine("RESILIENCY PASSED — the eval completed despite Langfuse being down,");
-        Console.WriteLine("and every dropped score was surfaced (counter + callback), not swallowed.");
+        Console.WriteLine("RESILIENCY PASSED — cancellation propagated, trace context was safely");
+        Console.WriteLine("allowlisted, score failures were surfaced, and final shutdown was bounded.");
         return 0;
     }
 

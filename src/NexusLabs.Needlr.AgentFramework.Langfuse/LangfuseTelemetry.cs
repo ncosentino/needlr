@@ -14,8 +14,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <para>
 /// <see cref="Start(LangfuseOptions)"/> constructs standalone OpenTelemetry tracer and meter
 /// providers that subscribe to Needlr's <c>gen_ai</c> activity source and meters and export them
-/// to Langfuse over OTLP/HTTP. Dispose the returned <see cref="ILangfuseSession"/> to flush and
-/// tear them down.
+/// to Langfuse over OTLP/HTTP. Dispose the returned <see cref="ILangfuseSession"/> to perform
+/// bounded final shutdown using <see cref="LangfuseOptions.ShutdownTimeout"/>.
 /// </para>
 /// <para>
 /// For ASP.NET Core / generic-host applications that already call <c>AddOpenTelemetry()</c>, use
@@ -56,6 +56,8 @@ public static class LangfuseTelemetry
             LangfuseExportGuard.WarnIfCredentialsWithoutTarget(options);
             return new DisabledLangfuseSession();
         }
+
+        _ = LangfuseTimeout.ToShutdownMilliseconds(options.ShutdownTimeout);
 
         var endpoints = LangfuseEndpoints.Resolve(options);
         var resource = BuildResource(options);
@@ -104,7 +106,8 @@ public static class LangfuseTelemetry
             failureSink,
             commentRecorder,
             apiClient,
-            options.DiagnosticsCallback);
+            options.DiagnosticsCallback,
+            options.ShutdownTimeout);
     }
 
     private static ResourceBuilder BuildResource(LangfuseOptions options)

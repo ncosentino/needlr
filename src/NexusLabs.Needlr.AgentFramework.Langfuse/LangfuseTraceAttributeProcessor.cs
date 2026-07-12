@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Text.Json;
 
 using OpenTelemetry;
@@ -12,8 +11,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <remarks>
 /// <list type="bullet">
 /// <item>
-/// Copies <see cref="Activity.Baggage"/> entries (trace-level <c>session.id</c> / <c>user.id</c>
-/// set on the scenario root) onto each span's tags so per-observation filtering works.
+/// Copies the nearest scenario's explicit Langfuse trace context onto each in-process child span
+/// so per-observation filtering works without using cross-process baggage.
 /// </item>
 /// <item>
 /// Sets <c>langfuse.observation.type</c> explicitly — <c>generation</c> for chat-completion spans
@@ -40,12 +39,6 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
     private const string ChatStreamActivityName = "agent.chat.stream";
     private const string ToolActivityPrefix = "agent.tool";
 
-    // Baggage keys set by ILangfuseScenario.SetPrompt. Distinct from the Langfuse observation
-    // attribute keys so they can be propagated to children without being copied verbatim onto
-    // every span by CopyBaggageToTags — prompt linking is generation-only.
-    internal const string PromptNameBaggageKey = "langfuse.prompt.name";
-    internal const string PromptVersionBaggageKey = "langfuse.prompt.version";
-
     private readonly string? _environment;
     private readonly string? _release;
 
@@ -71,9 +64,10 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        CopyBaggageToTags(data);
+        var traceContext = LangfuseTraceContext.FindNearest(data);
+        ApplyTraceContext(data, traceContext);
         SetObservationType(data);
-        SetPromptLink(data);
+        SetPromptLink(data, traceContext);
         SetContextAttributes(data);
     }
 
@@ -98,19 +92,34 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
         }
     }
 
-    private static void CopyBaggageToTags(Activity data)
+    private static void ApplyTraceContext(Activity data, LangfuseTraceContext? context)
     {
-        foreach (var entry in data.Baggage)
+        if (context is null)
         {
-            if (entry.Key is PromptNameBaggageKey or PromptVersionBaggageKey)
-            {
-                continue;
-            }
+            return;
+        }
 
-            if (entry.Value is not null && data.GetTagItem(entry.Key) is null)
-            {
-                data.SetTag(entry.Key, entry.Value);
-            }
+        SetTagIfMissing(data, "langfuse.trace.name", context.Name);
+        SetTagIfMissing(data, "session.id", context.SessionId);
+        SetTagIfMissing(data, "user.id", context.UserId);
+        SetTagIfMissing(data, "langfuse.version", context.Version);
+
+        if (context.Tags.Count > 0 && data.GetTagItem("langfuse.trace.tags") is null)
+        {
+            data.SetTag("langfuse.trace.tags", context.Tags.ToArray());
+        }
+
+        foreach (var entry in context.Metadata)
+        {
+            SetTagIfMissing(data, $"langfuse.trace.metadata.{entry.Key}", entry.Value);
+        }
+    }
+
+    private static void SetTagIfMissing(Activity data, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value) && data.GetTagItem(key) is null)
+        {
+            data.SetTag(key, value);
         }
     }
 
@@ -131,26 +140,21 @@ internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
         }
     }
 
-    private static void SetPromptLink(Activity data)
+    private static void SetPromptLink(Activity data, LangfuseTraceContext? context)
     {
-        if (!IsGeneration(data) || data.GetTagItem("langfuse.observation.prompt.name") is not null)
+        if (!IsGeneration(data)
+            || context is null
+            || string.IsNullOrWhiteSpace(context.PromptName)
+            || data.GetTagItem("langfuse.observation.prompt.name") is not null)
         {
             return;
         }
 
-        var name = data.GetBaggageItem(PromptNameBaggageKey);
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return;
-        }
+        data.SetTag("langfuse.observation.prompt.name", context.PromptName);
 
-        data.SetTag("langfuse.observation.prompt.name", name);
-
-        var version = data.GetBaggageItem(PromptVersionBaggageKey);
-        if (!string.IsNullOrWhiteSpace(version)
-            && int.TryParse(version, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        if (context.PromptVersion is { } version)
         {
-            data.SetTag("langfuse.observation.prompt.version", parsed);
+            data.SetTag("langfuse.observation.prompt.version", version);
         }
     }
 

@@ -4,10 +4,11 @@
 // Demonstrates how little code it takes to send Needlr agent telemetry AND
 // Microsoft.Extensions.AI.Evaluation scores to Langfuse.
 //
-// The Langfuse integration is just three calls:
+// The Langfuse integration is four calls:
 //   1. LangfuseTelemetry.Start(...)        -> exports gen_ai traces/metrics
 //   2. session.BeginScenario(...)          -> one Langfuse trace per eval scenario
 //   3. scenario.RecordEvaluationAsync(...) -> evaluator metrics become Langfuse scores
+//   4. session.Shutdown(...)                -> bounded final drain + resource release
 //
 // Everything else here is an ordinary Needlr agent run + evaluation. A mock
 // chat client is used so the example runs with no LLM credentials, and the
@@ -143,8 +144,9 @@ using (var scenario = langfuse.BeginScenario(
     }
 }
 
-// Scenario disposed (root span ended); flush so the completed trace is exported.
-langfuse.Flush();
+// Scenario disposed (root span ended); perform one bounded final drain.
+var shutdown = langfuse.Shutdown(langfuseOptions.ShutdownTimeout);
+Console.WriteLine($"[langfuse] Shutdown: traces={shutdown.Traces}, metrics={shutdown.Metrics}");
 
 Console.WriteLine();
 Console.WriteLine("Done. With credentials set, open Langfuse and find the trace named");

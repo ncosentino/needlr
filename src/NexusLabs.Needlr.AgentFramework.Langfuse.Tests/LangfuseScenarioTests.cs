@@ -36,8 +36,8 @@ public sealed class LangfuseScenarioTests
         var tags = Assert.IsType<string[]>(activity.GetTagItem("langfuse.trace.tags"));
         Assert.Equal(["happy-path", "regression"], tags);
 
-        Assert.Equal("run-1", activity.GetBaggageItem("session.id"));
-        Assert.Equal("user-9", activity.GetBaggageItem("user.id"));
+        Assert.Null(activity.GetBaggageItem("session.id"));
+        Assert.Null(activity.GetBaggageItem("user.id"));
         Assert.False(string.IsNullOrEmpty(scenario.TraceId));
     }
 
@@ -132,25 +132,30 @@ public sealed class LangfuseScenarioTests
         using var listener = StartListener();
         var recorder = new LangfuseScoreRecorder(CreateApiClient(out _), StrictSink(), normalizeNames: false);
         var processor = new LangfuseTraceAttributeProcessor();
+        var scenarioAReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scenarioBReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        async Task<(string? Session, string? User)> RunScenario(string id)
+        async Task<(string? Session, string? User)> RunScenario(
+            string id,
+            TaskCompletionSource ownReady,
+            Task otherReady)
         {
-            await Task.Yield();
             using var scenario = new LangfuseScenario(
                 recorder, $"scenario-{id}", sessionId: id, userId: $"user-{id}", tags: null, metadata: null);
 
-            await Task.Delay(15);
+            ownReady.SetResult();
+            await otherReady.WaitAsync(TestContext.Current.CancellationToken);
             using var child = LangfuseActivitySource.Source.StartActivity("agent.tool work")!;
             processor.OnStart(child);
-            await Task.Delay(15);
 
             return (child.GetTagItem("session.id") as string, child.GetTagItem("user.id") as string);
         }
 
-        var results = await Task.WhenAll(RunScenario("A"), RunScenario("B"));
+        var results = await Task.WhenAll(
+            RunScenario("A", scenarioAReady, scenarioBReady.Task),
+            RunScenario("B", scenarioBReady, scenarioAReady.Task));
 
-        Assert.Contains(("A", "user-A"), results);
-        Assert.Contains(("B", "user-B"), results);
+        Assert.Equal([("A", "user-A"), ("B", "user-B")], results);
     }
 
     private static LangfuseScoreFailureSink StrictSink() => new(LangfuseScoreFailureMode.Strict, null);

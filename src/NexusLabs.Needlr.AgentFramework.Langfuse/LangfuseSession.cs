@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading;
 
 using OpenTelemetry;
@@ -20,7 +21,14 @@ internal sealed class LangfuseSession : ILangfuseSession
     private readonly LangfuseCommentRecorder _commentRecorder;
     private readonly LangfuseApiClient _apiClient;
     private readonly Action<string>? _diagnostics;
-    private int _disposed;
+    private readonly int _defaultShutdownTimeoutMilliseconds;
+    private LangfuseShutdownOutcome? _shutdownOutcome;
+    private int _shutdownState;
+
+    private static readonly LangfuseShutdownOutcome ShutdownInProgressOutcome = new(
+        isFinal: false,
+        LangfuseProviderShutdownStatus.NotAttempted,
+        LangfuseProviderShutdownStatus.NotAttempted);
 
     public LangfuseSession(
         TracerProvider tracerProvider,
@@ -30,7 +38,8 @@ internal sealed class LangfuseSession : ILangfuseSession
         LangfuseScoreFailureSink failureSink,
         LangfuseCommentRecorder commentRecorder,
         LangfuseApiClient apiClient,
-        Action<string>? diagnostics)
+        Action<string>? diagnostics,
+        TimeSpan defaultShutdownTimeout)
     {
         ArgumentNullException.ThrowIfNull(tracerProvider);
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -47,6 +56,7 @@ internal sealed class LangfuseSession : ILangfuseSession
         _commentRecorder = commentRecorder;
         _apiClient = apiClient;
         _diagnostics = diagnostics;
+        _defaultShutdownTimeoutMilliseconds = LangfuseTimeout.ToShutdownMilliseconds(defaultShutdownTimeout);
 
         Datasets = new LangfuseDatasetClient(apiClient);
         ScoreConfigs = new LangfuseScoreConfigClient(apiClient);
@@ -79,11 +89,17 @@ internal sealed class LangfuseSession : ILangfuseSession
     /// <inheritdoc />
     public bool Flush(TimeSpan? timeout = null)
     {
-        var timeoutMs = ToTimeoutMilliseconds(timeout);
+        ThrowIfShutdownStarted();
+
+        var timeoutMs = LangfuseTimeout.ToFlushMilliseconds(timeout);
         var traces = _tracerProvider.ForceFlush(timeoutMs);
         var metrics = _meterProvider?.ForceFlush(timeoutMs) ?? true;
         return traces && metrics;
     }
+
+    /// <inheritdoc />
+    public LangfuseShutdownOutcome Shutdown(TimeSpan timeout) =>
+        Shutdown(LangfuseTimeout.ToShutdownMilliseconds(timeout));
 
     /// <inheritdoc />
     public ILangfuseScenario BeginScenario(
@@ -91,12 +107,16 @@ internal sealed class LangfuseSession : ILangfuseSession
         string? sessionId = null,
         string? userId = null,
         IEnumerable<string>? tags = null,
-        IReadOnlyDictionary<string, string>? metadata = null) =>
-        new LangfuseScenario(_recorder, name, sessionId, userId, tags, metadata);
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        ThrowIfShutdownStarted();
+        return new LangfuseScenario(_recorder, name, sessionId, userId, tags, metadata);
+    }
 
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null)
     {
+        ThrowIfShutdownStarted();
         ArgumentException.ThrowIfNullOrWhiteSpace(datasetName);
         ArgumentException.ThrowIfNullOrWhiteSpace(runName);
 
@@ -110,36 +130,114 @@ internal sealed class LangfuseSession : ILangfuseSession
     }
 
     /// <inheritdoc />
-    public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>
-        _commentRecorder.AddTraceCommentAsync(traceId, content, cancellationToken);
-
-    /// <inheritdoc />
-    public void Dispose()
+    public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default)
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
-
-        Flush();
-        _tracerProvider.Dispose();
-        _meterProvider?.Dispose();
-        _httpClient.Dispose();
+        ThrowIfShutdownStarted();
+        return _commentRecorder.AddTraceCommentAsync(traceId, content, cancellationToken);
     }
 
-    private static int ToTimeoutMilliseconds(TimeSpan? timeout)
+    /// <inheritdoc />
+    public void Dispose() => _ = Shutdown(_defaultShutdownTimeoutMilliseconds);
+
+    private LangfuseShutdownOutcome Shutdown(int timeoutMilliseconds)
     {
-        if (timeout is null)
+        if (Interlocked.CompareExchange(ref _shutdownState, 1, 0) != 0)
+        {
+            return Volatile.Read(ref _shutdownOutcome) ?? ShutdownInProgressOutcome;
+        }
+
+        LangfuseShutdownOutcome? outcome = null;
+        try
+        {
+            var stopwatch = timeoutMilliseconds == Timeout.Infinite
+                ? null
+                : Stopwatch.StartNew();
+            var tracesCompleted = _tracerProvider.Shutdown(timeoutMilliseconds);
+            var traceStatus = tracesCompleted
+                ? LangfuseProviderShutdownStatus.Completed
+                : LangfuseProviderShutdownStatus.Incomplete;
+
+            LangfuseProviderShutdownStatus metricStatus;
+            if (_meterProvider is null)
+            {
+                metricStatus = LangfuseProviderShutdownStatus.NotConfigured;
+            }
+            else
+            {
+                var remainingTimeoutMilliseconds = GetRemainingTimeoutMilliseconds(
+                    timeoutMilliseconds,
+                    stopwatch);
+                var metricsCompleted = _meterProvider.Shutdown(remainingTimeoutMilliseconds);
+                metricStatus = metricsCompleted
+                    ? LangfuseProviderShutdownStatus.Completed
+                    : LangfuseProviderShutdownStatus.Incomplete;
+            }
+
+            outcome = new LangfuseShutdownOutcome(
+                isFinal: true,
+                traceStatus,
+                metricStatus);
+            return outcome;
+        }
+        finally
+        {
+            try
+            {
+                DisposeOwnedResources();
+            }
+            finally
+            {
+                outcome ??= new LangfuseShutdownOutcome(
+                    isFinal: true,
+                    LangfuseProviderShutdownStatus.Incomplete,
+                    _meterProvider is null
+                        ? LangfuseProviderShutdownStatus.NotConfigured
+                        : LangfuseProviderShutdownStatus.Incomplete);
+                Volatile.Write(ref _shutdownOutcome, outcome);
+                Volatile.Write(ref _shutdownState, 2);
+            }
+        }
+    }
+
+    private static int GetRemainingTimeoutMilliseconds(
+        int timeoutMilliseconds,
+        Stopwatch? stopwatch)
+    {
+        if (timeoutMilliseconds == Timeout.Infinite)
         {
             return Timeout.Infinite;
         }
 
-        if (timeout.Value == Timeout.InfiniteTimeSpan)
-        {
-            return Timeout.Infinite;
-        }
+        var elapsedMilliseconds = stopwatch is null
+            ? 0
+            : (long)Math.Ceiling(stopwatch.Elapsed.TotalMilliseconds);
+        return (int)Math.Max(timeoutMilliseconds - elapsedMilliseconds, 0);
+    }
 
-        var ms = (long)timeout.Value.TotalMilliseconds;
-        return ms < 0 ? Timeout.Infinite : (int)Math.Min(ms, int.MaxValue);
+    private void DisposeOwnedResources()
+    {
+        try
+        {
+            _tracerProvider.Dispose();
+        }
+        finally
+        {
+            try
+            {
+                _meterProvider?.Dispose();
+            }
+            finally
+            {
+                _httpClient.Dispose();
+            }
+        }
+    }
+
+    private void ThrowIfShutdownStarted()
+    {
+        if (Volatile.Read(ref _shutdownState) != 0)
+        {
+            throw new ObjectDisposedException(nameof(LangfuseSession));
+        }
     }
 }

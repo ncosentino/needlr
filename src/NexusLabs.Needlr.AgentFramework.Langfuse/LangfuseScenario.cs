@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Text.Json;
 
 using Microsoft.Extensions.AI.Evaluation;
@@ -13,8 +12,11 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 internal sealed class LangfuseScenario : ILangfuseScenario
 {
     private readonly Activity? _activity;
+    private readonly Activity? _previousActivity;
     private readonly LangfuseScoreRecorder _recorder;
     private readonly string? _sessionId;
+    private LangfuseTraceContext _traceContext;
+    private int _disposed;
 
     public LangfuseScenario(
         LangfuseScoreRecorder recorder,
@@ -29,9 +31,25 @@ internal sealed class LangfuseScenario : ILangfuseScenario
 
         _recorder = recorder;
         _sessionId = sessionId;
-        _activity = LangfuseActivitySource.Source.StartActivity(name, ActivityKind.Internal);
+        _traceContext = CreateTraceContext(name, sessionId, userId, tags, metadata);
+        _previousActivity = Activity.Current;
+        Activity? activity = null;
+        Activity.Current = null;
+        try
+        {
+            activity = LangfuseActivitySource.Source.StartActivity(name, ActivityKind.Internal);
+        }
+        finally
+        {
+            if (activity is null)
+            {
+                Activity.Current = _previousActivity;
+            }
+        }
+        _activity = activity;
 
-        ApplyTraceAttributes(_activity, name, sessionId, userId, tags, metadata);
+        ApplyTraceAttributes(_activity, _traceContext);
+        LangfuseTraceContext.Attach(_activity, _traceContext);
     }
 
     /// <inheritdoc />
@@ -69,7 +87,20 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     }
 
     /// <inheritdoc />
-    public void Dispose() => _activity?.Dispose();
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        var restorePreviousActivity = ReferenceEquals(Activity.Current, _activity);
+        _activity?.Dispose();
+        if (restorePreviousActivity)
+        {
+            Activity.Current = _previousActivity;
+        }
+    }
 
     /// <inheritdoc />
     public void SetTracePublic(bool isPublic = true) =>
@@ -80,6 +111,8 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(version);
         _activity?.SetTag("langfuse.version", version);
+        _traceContext = _traceContext with { Version = version };
+        LangfuseTraceContext.Attach(_activity, _traceContext);
     }
 
     /// <inheritdoc />
@@ -100,20 +133,8 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     public void SetPrompt(string name, int? version = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-        if (_activity is null)
-        {
-            return;
-        }
-
-        _activity.SetBaggage(LangfuseTraceAttributeProcessor.PromptNameBaggageKey, name);
-
-        if (version is { } v)
-        {
-            _activity.SetBaggage(
-                LangfuseTraceAttributeProcessor.PromptVersionBaggageKey,
-                v.ToString(CultureInfo.InvariantCulture));
-        }
+        _traceContext = _traceContext with { PromptName = name, PromptVersion = version };
+        LangfuseTraceContext.Attach(_activity, _traceContext);
     }
 
     /// <inheritdoc />
@@ -151,51 +172,58 @@ internal sealed class LangfuseScenario : ILangfuseScenario
             "Pass a sessionId when beginning the scenario to enable session-level scoring.",
             cancellationToken);
 
-    private static void ApplyTraceAttributes(
-        Activity? activity,
+    private static LangfuseTraceContext CreateTraceContext(
         string name,
         string? sessionId,
         string? userId,
         IEnumerable<string>? tags,
         IReadOnlyDictionary<string, string>? metadata)
     {
+        var tagArray = tags?
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .ToArray() ?? [];
+        var metadataCopy = metadata?
+            .Where(entry => !string.IsNullOrWhiteSpace(entry.Key))
+            .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal)
+            ?? new Dictionary<string, string>(StringComparer.Ordinal);
+
+        return new LangfuseTraceContext
+        {
+            Name = name,
+            SessionId = string.IsNullOrWhiteSpace(sessionId) ? null : sessionId,
+            UserId = string.IsNullOrWhiteSpace(userId) ? null : userId,
+            Tags = tagArray,
+            Metadata = metadataCopy,
+        };
+    }
+
+    private static void ApplyTraceAttributes(Activity? activity, LangfuseTraceContext context)
+    {
         if (activity is null)
         {
             return;
         }
 
-        activity.SetTag("langfuse.trace.name", name);
+        activity.SetTag("langfuse.trace.name", context.Name);
 
-        if (!string.IsNullOrWhiteSpace(sessionId))
+        if (context.SessionId is not null)
         {
-            activity.SetTag("langfuse.session.id", sessionId);
-            activity.SetBaggage("session.id", sessionId);
+            activity.SetTag("langfuse.session.id", context.SessionId);
         }
 
-        if (!string.IsNullOrWhiteSpace(userId))
+        if (context.UserId is not null)
         {
-            activity.SetTag("langfuse.user.id", userId);
-            activity.SetBaggage("user.id", userId);
+            activity.SetTag("langfuse.user.id", context.UserId);
         }
 
-        if (tags is not null)
+        if (context.Tags.Count > 0)
         {
-            var tagArray = tags.Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
-            if (tagArray.Length > 0)
-            {
-                activity.SetTag("langfuse.trace.tags", tagArray);
-            }
+            activity.SetTag("langfuse.trace.tags", context.Tags.ToArray());
         }
 
-        if (metadata is not null)
+        foreach (var entry in context.Metadata)
         {
-            foreach (var entry in metadata)
-            {
-                if (!string.IsNullOrWhiteSpace(entry.Key))
-                {
-                    activity.SetTag($"langfuse.trace.metadata.{entry.Key}", entry.Value);
-                }
-            }
+            activity.SetTag($"langfuse.trace.metadata.{entry.Key}", entry.Value);
         }
     }
 }

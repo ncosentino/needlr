@@ -9,6 +9,14 @@ public sealed class LangfuseTelemetryDisabledTests
 
         Assert.False(session.IsEnabled);
         Assert.True(session.Flush());
+
+        var first = session.Shutdown(TimeSpan.Zero);
+        var second = session.Shutdown(TimeSpan.Zero);
+
+        Assert.True(first.IsFinal, "Expected disabled shutdown to complete synchronously.");
+        Assert.Equal(LangfuseProviderShutdownStatus.NotConfigured, first.Traces);
+        Assert.Equal(LangfuseProviderShutdownStatus.NotConfigured, first.Metrics);
+        Assert.Same(first, second);
     }
 
     [Fact]

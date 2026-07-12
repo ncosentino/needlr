@@ -38,6 +38,8 @@ public sealed class LangfuseServiceCollectionExtensionsTests
         {
             o.PublicKey = "pk-lf-1";
             o.SecretKey = "sk-lf-2";
+            o.Host = null;
+            o.Region = null;
         });
 
         using var provider = services.BuildServiceProvider();

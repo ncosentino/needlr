@@ -53,20 +53,16 @@ public sealed class LangfuseProcessorContextTests
     }
 
     [Fact]
-    public void OnStart_GenerationSpanWithPromptBaggage_StampsObservationPrompt()
+    public void OnStart_GenerationSpanWithPromptContext_StampsObservationPrompt()
     {
         var processor = new LangfuseTraceAttributeProcessor();
         using var activity = new Activity("agent.chat");
-        activity.SetBaggage("langfuse.prompt.name", "trip-planner");
-        activity.SetBaggage("langfuse.prompt.version", "7");
+        SetPromptContext(activity, "trip-planner", 7);
 
         processor.OnStart(activity);
 
         Assert.Equal("trip-planner", activity.GetTagItem("langfuse.observation.prompt.name"));
         Assert.Equal(7, activity.GetTagItem("langfuse.observation.prompt.version"));
-        // The raw prompt baggage keys are NOT copied verbatim as tags (prompt is generation-only).
-        Assert.Null(activity.GetTagItem("langfuse.prompt.name"));
-        Assert.Null(activity.GetTagItem("langfuse.prompt.version"));
     }
 
     [Fact]
@@ -74,7 +70,7 @@ public sealed class LangfuseProcessorContextTests
     {
         var processor = new LangfuseTraceAttributeProcessor();
         using var activity = new Activity("agent.chat");
-        activity.SetBaggage("langfuse.prompt.name", "trip-planner");
+        SetPromptContext(activity, "trip-planner", version: null);
 
         processor.OnStart(activity);
 
@@ -83,14 +79,24 @@ public sealed class LangfuseProcessorContextTests
     }
 
     [Fact]
-    public void OnStart_ToolSpanWithPromptBaggage_DoesNotStampPrompt()
+    public void OnStart_ToolSpanWithPromptContext_DoesNotStampPrompt()
     {
         var processor = new LangfuseTraceAttributeProcessor();
         using var activity = new Activity("agent.tool search");
-        activity.SetBaggage("langfuse.prompt.name", "trip-planner");
+        SetPromptContext(activity, "trip-planner", version: null);
 
         processor.OnStart(activity);
 
         Assert.Null(activity.GetTagItem("langfuse.observation.prompt.name"));
     }
+
+    private static void SetPromptContext(Activity activity, string name, int? version) =>
+        activity.SetCustomProperty(
+            LangfuseTraceContext.ActivityPropertyName,
+            new LangfuseTraceContext
+            {
+                Name = "scenario",
+                PromptName = name,
+                PromptVersion = version,
+            });
 }

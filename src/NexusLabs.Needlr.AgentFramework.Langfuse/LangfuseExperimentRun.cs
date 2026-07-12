@@ -49,6 +49,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(datasetItemId);
+        cancellationToken.ThrowIfCancellationRequested();
 
         var name = string.IsNullOrWhiteSpace(scenarioName)
             ? $"{DatasetName}: {datasetItemId}"
@@ -62,18 +63,26 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             tags,
             metadata);
 
-        if (scenario.TraceId is { Length: > 0 } traceId)
+        try
         {
-            await LinkRunItemAsync(datasetItemId, traceId, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            _diagnostics?.Invoke(
-                $"Langfuse dataset run item skipped for item '{datasetItemId}' in run '{RunName}': " +
-                "no sampled trace was available to link.");
-        }
+            if (scenario.TraceId is { Length: > 0 } traceId)
+            {
+                await LinkRunItemAsync(datasetItemId, traceId, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                _diagnostics?.Invoke(
+                    $"Langfuse dataset run item skipped for item '{datasetItemId}' in run '{RunName}': " +
+                    "no sampled trace was available to link.");
+            }
 
-        return scenario;
+            return scenario;
+        }
+        catch
+        {
+            scenario.Dispose();
+            throw;
+        }
     }
 
     private async Task LinkRunItemAsync(string datasetItemId, string traceId, CancellationToken cancellationToken)
