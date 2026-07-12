@@ -273,6 +273,10 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
 
     - name: Publish AOT Console App
+      env:
+        GITHUB_ENV: /tmp/discard-aot-console-env
+        GITHUB_OUTPUT: /tmp/discard-aot-console-output
+        GITHUB_STEP_SUMMARY: /tmp/discard-aot-console-summary
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj \
           -c Release \
@@ -307,6 +311,10 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
 
     - name: Publish AOT Web App
+      env:
+        GITHUB_ENV: /tmp/discard-aot-web-env
+        GITHUB_OUTPUT: /tmp/discard-aot-web-output
+        GITHUB_STEP_SUMMARY: /tmp/discard-aot-web-summary
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj \
           -c Release \
@@ -338,6 +346,10 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
 
     - name: Publish AOT Agent Framework App
+      env:
+        GITHUB_ENV: /tmp/discard-aot-agent-env
+        GITHUB_OUTPUT: /tmp/discard-aot-agent-output
+        GITHUB_STEP_SUMMARY: /tmp/discard-aot-agent-summary
       run: |
         dotnet publish src/Examples/AgentFramework/AotAgentFrameworkApp/AotAgentFrameworkApp.csproj \
           -c Release \
