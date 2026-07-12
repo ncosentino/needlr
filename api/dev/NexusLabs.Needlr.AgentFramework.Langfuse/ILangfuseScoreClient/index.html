@@ -4678,8 +4678,8 @@ generic-host applications that score their own request traces.</p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>In a host application the OTLP exporter assigns each operation an OpenTelemetry trace id
 (<code>Activity.Current?.TraceId</code>). Pass that id here to attach evaluation scores to the
-corresponding Langfuse trace. For the eval/console flow, prefer
-<a href="../ILangfuseSession/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>, which manages the trace for you.</p>
+corresponding Langfuse trace. When creating a new trace, prefer
+<a href="../ILangfuseClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>, which manages the trace for you.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreClient.IsEnabled'></a></p>
 <h2 id="ilangfusescoreclientisenabled-property">ILangfuseScoreClient.IsEnabled Property<a class="headerlink" href="#ilangfusescoreclientisenabled-property" title="Permanent link">&para;</a></h2>

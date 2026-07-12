@@ -4731,7 +4731,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseServiceCollectionExtensions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions">LangfuseServiceCollectionExtensions</a></td>
-<td style="text-align: left;">Registers Langfuse OTLP export on an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> for ASP.NET Core and generic-host applications.</td>
+<td style="text-align: left;">Registers Langfuse OTLP export and a complete non-owning <a href="../ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a> facade on an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> for dependency-injection-based applications.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseShutdownOutcome/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome">LangfuseShutdownOutcome</a></td>
@@ -4751,6 +4751,10 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align: left;"><a href="../ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a></td>
+<td style="text-align: left;">Provides the complete non-owning Langfuse client surface for scenarios, experiments, datasets, score configuration, metrics, model pricing, prompts, comments, and known-trace scoring.</td>
+</tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseDatasetClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient">ILangfuseDatasetClient</a></td>
 <td style="text-align: left;">Creates and populates Langfuse datasets — the named collections of eval cases that experiment runs are scored against.</td>
@@ -4773,7 +4777,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a></td>
-<td style="text-align: left;">Represents a single Langfuse trace scoped to one eval scenario or agent run. Created via <a href="../ILangfuseSession/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>.</td>
+<td style="text-align: left;">Represents a single Langfuse trace scoped to one eval scenario or agent run. Created via <a href="../ILangfuseClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseScoreClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreClient">ILangfuseScoreClient</a></td>
@@ -4785,7 +4789,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseSession/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession">ILangfuseSession</a></td>
-<td style="text-align: left;">Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers that forward Needlr agent telemetry to Langfuse and performs bounded final shutdown on disposal.</td>
+<td style="text-align: left;">Represents a standalone Langfuse export owner. Extends the non-owning <a href="../ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a> facade with explicit flush, shutdown, and disposal lifecycle.</td>
 </tr>
 </tbody>
 </table>

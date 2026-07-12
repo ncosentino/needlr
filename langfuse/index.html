@@ -4974,7 +4974,8 @@ dashboard — with a single call.</p>
 conventions (<code>gen_ai.*</code>), which Langfuse understands natively. The
 <code>NexusLabs.Needlr.AgentFramework.Langfuse</code> package adds the missing piece: an OTLP
 exporter pointed at Langfuse, per-scenario trace grouping, and a bridge that turns
-evaluator metrics into Langfuse scores.</p>
+evaluator metrics into Langfuse scores. It supports both exporter-owning standalone
+sessions and a complete non-owning facade for dependency-injection-based hosts.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <p>Install the package and start a session from environment variables:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_PUBLIC_KEY</span><span class="o">=</span><span class="s2">&quot;pk-lf-...&quot;</span>
@@ -5039,7 +5040,9 @@ as a score, collapsing the per-test boilerplate:</p>
 <p>Two runnable examples live under <code>src/Examples/AgentFramework/</code>:</p>
 <ul>
 <li><code>LangfuseEvaluationApp</code> — the full flow with no LLM or Langfuse credentials required (no-ops cleanly without keys).</li>
-<li><code>LangfuseConformanceApp</code> — a small Langfuse-supported eval that <strong>reads the trace and scores back</strong> from a live Langfuse (local Docker by default) to prove ingestion. Not part of CI; run it by hand after standing Langfuse up. Run it with the <code>resiliency</code> argument to instead prove <strong>graceful degradation when Langfuse is unreachable</strong> (no server required): the eval still passes and every dropped score is surfaced.</li>
+<li><code>LangfuseConformanceApp</code> — a small Langfuse-supported eval that <strong>reads the trace and scores back</strong> from a live Langfuse (local Docker by default) to prove ingestion. It also has no-server modes:</li>
+<li><code>resiliency</code> proves cancellation, safe context propagation, score-failure reporting, and bounded shutdown while Langfuse is unreachable.</li>
+<li><code>dependency-injection</code> proves <code>ILangfuseClient</code> exposes the complete evaluation surface through one host-owned telemetry pipeline without registering a standalone session.</li>
 </ul>
 <h2 id="what-appears-in-langfuse">What appears in Langfuse<a class="headerlink" href="#what-appears-in-langfuse" title="Permanent link">&para;</a></h2>
 <table>
@@ -5423,25 +5426,62 @@ the host pipeline instead of starting a standalone session:</p>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="p">});</span>
 </span></code></pre></div>
 <p>This wires the OTLP exporter into the host's tracer and meter providers so they
-share the application lifecycle, and registers an <code>ILangfuseScoreClient</code> for scoring
-request traces by id:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nf">MyHandler</span><span class="p">(</span><span class="n">ILangfuseScoreClient</span><span class="w"> </span><span class="n">scores</span><span class="p">)</span>
+share the application lifecycle, and registers the complete non-owning
+<code>ILangfuseClient</code> facade:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nf">MyEvalRunner</span><span class="p">(</span><span class="n">ILangfuseClient</span><span class="w"> </span><span class="n">langfuse</span><span class="p">)</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="p">{</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">HandleAsync</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">RunAsync</span><span class="p">(</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">)</span>
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">traceId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">Activity</span><span class="p">.</span><span class="n">Current</span><span class="o">?.</span><span class="n">TraceId</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">traceId</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">)</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">            </span><span class="k">await</span><span class="w"> </span><span class="n">scores</span><span class="p">.</span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;helpfulness&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="p">}</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">scenario</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">BeginScenario</span><span class="p">(</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">            </span><span class="s">&quot;support-agent: refund&quot;</span><span class="p">,</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">            </span><span class="n">sessionId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ci-run-42&quot;</span><span class="p">,</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">            </span><span class="n">tags</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;regression&quot;</span><span class="p">]);</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">RunAgentAsync</span><span class="p">(</span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">RecordScoreAsync</span><span class="p">(</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">            </span><span class="s">&quot;resolved&quot;</span><span class="p">,</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">            </span><span class="n">response</span><span class="p">.</span><span class="n">Resolved</span><span class="p">,</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">            </span><span class="n">cancellationToken</span><span class="p">:</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">experiment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">BeginExperimentRun</span><span class="p">(</span>
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="w">            </span><span class="s">&quot;support-agent-regression&quot;</span><span class="p">,</span>
+</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="w">            </span><span class="s">&quot;commit-abc123&quot;</span><span class="p">);</span>
+</span><span id="__span-16-19"><a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="w">        </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">experiment</span><span class="p">.</span><span class="n">BeginItemAsync</span><span class="p">(</span>
+</span><span id="__span-16-20"><a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="w">            </span><span class="s">&quot;refund-case&quot;</span><span class="p">,</span>
+</span><span id="__span-16-21"><a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="w">            </span><span class="n">cancellationToken</span><span class="p">:</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-16-22"><a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
+</span><span id="__span-16-23"><a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">TraceId</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">traceId</span><span class="p">)</span>
+</span><span id="__span-16-24"><a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-16-25"><a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="w">            </span><span class="k">await</span><span class="w"> </span><span class="n">langfuse</span><span class="p">.</span><span class="n">Scores</span><span class="p">.</span><span class="n">RecordScoreAsync</span><span class="p">(</span>
+</span><span id="__span-16-26"><a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="w">                </span><span class="n">traceId</span><span class="p">,</span>
+</span><span id="__span-16-27"><a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="w">                </span><span class="s">&quot;reviewed&quot;</span><span class="p">,</span>
+</span><span id="__span-16-28"><a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a><span class="w">                </span><span class="k">value</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
+</span><span id="__span-16-29"><a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="w">                </span><span class="n">cancellationToken</span><span class="p">:</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-16-30"><a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-16-31"><a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-16-32"><a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>When Langfuse is not configured, a disabled no-op <code>ILangfuseScoreClient</code> is registered,
-so injection always succeeds and host code never needs to branch on configuration.</p>
-<p><code>AddNeedlrLangfuse</code> also registers <code>ILangfuseDatasetClient</code> and <code>ILangfuseScoreConfigClient</code>
-(both disabled no-ops when unconfigured) for managing datasets and score configs from a host
-application.</p>
+<p><code>ILangfuseClient</code> deliberately does not implement <code>IDisposable</code> and exposes no flush or
+shutdown methods. The host owns the <code>TracerProvider</code>, optional <code>MeterProvider</code>, and shared
+HTTP transport; disposing the host releases them in the correct order. No
+<code>ILangfuseSession</code> is registered in dependency injection.</p>
+<p>Every specialized interface (<code>ILangfuseScoreClient</code>, <code>ILangfuseDatasetClient</code>,
+<code>ILangfuseScoreConfigClient</code>, <code>ILangfuseMetricsClient</code>, <code>ILangfuseModelClient</code>, and
+<code>ILangfusePromptClient</code>) resolves to the exact instance exposed by the facade. When Langfuse
+is not configured, the facade and all specialized interfaces are one coherent set of disabled
+no-ops, so host code does not branch on credentials.</p>
+<div class="admonition note">
+<p class="admonition-title">DI override ownership</p>
+<p>A custom unkeyed <code>ILangfuseClient</code> must be registered as a singleton <strong>instance</strong> before
+<code>AddNeedlrLangfuse</code>; its specialized clients are then exposed as externally owned instance
+aliases. Alternatively, individual specialized interfaces may be overridden as singletons
+and are composed into Needlr's facade. Scoped and transient overrides are rejected because a
+singleton facade cannot safely capture them. Keyed registrations are independent and remain
+untouched.</p>
+</div>
+<p>Run the no-server ownership check:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/LangfuseConformanceApp<span class="w"> </span>--<span class="w"> </span>dependency-injection
+</span></code></pre></div>
 <h2 id="langfuse-cloud-vs-self-hosted">Langfuse Cloud vs self-hosted<a class="headerlink" href="#langfuse-cloud-vs-self-hosted" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Cloud</strong>: leave <code>Host</code> unset and set <code>Region</code> explicitly (<code>Eu</code>, <code>Us</code>, <code>Jp</code>, or <code>Hipaa</code>).</li>

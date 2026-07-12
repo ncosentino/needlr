@@ -4685,7 +4685,7 @@ host. Designed for evals, console apps, and test fixtures that build telemetry b
 instead so the providers participate in the host lifecycle.\&lt;example&gt;
   \&lt;code&gt;
             using var langfuse = LangfuseTelemetry.Start(LangfuseOptions.FromEnvironment());
-            using (LangfuseTrace.BeginScenario("trip-planner: NYC -&gt; Tokyo", sessionId: runId))
+            using (langfuse.BeginScenario("trip-planner: NYC -&gt; Tokyo", sessionId: runId))
             {
                 var run = await runner.RunAsync(...);
                 // ... evaluate and record scores ...

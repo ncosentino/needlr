@@ -4670,195 +4670,50 @@
 
 <h3 id="nexuslabsneedlragentframeworklangfuse"><a href="../NexusLabs.Needlr.AgentFramework.Langfuse/" title="NexusLabs.Needlr.AgentFramework.Langfuse">NexusLabs.Needlr.AgentFramework.Langfuse</a><a class="headerlink" href="#nexuslabsneedlragentframeworklangfuse" title="Permanent link">&para;</a></h3>
 <h2 id="ilangfusesession-interface">ILangfuseSession Interface<a class="headerlink" href="#ilangfusesession-interface" title="Permanent link">&para;</a></h2>
-<p>Represents an active Langfuse export session. Owns the OpenTelemetry tracer/meter providers
-that forward Needlr agent telemetry to Langfuse and performs bounded final shutdown on disposal.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">ILangfuseSession</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span>
+<p>Represents a standalone Langfuse export owner. Extends the non-owning
+<a href="../ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a> facade with explicit flush, shutdown, and disposal lifecycle.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">ILangfuseSession</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseClient</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">IDisposable</span>
 </span></code></pre></div>
-<p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>
+<p>Implements <a href="../ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a>, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.idisposable" title="System.IDisposable">System.IDisposable</a></p>
 <h3 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">&para;</a></h3>
 <p>Obtain an instance from <a href="../LangfuseTelemetry/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry.Start(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions)">Start(LangfuseOptions)</a>. Keep it alive
-for the lifetime over which agent runs and evaluations should be captured (for example, an
-xUnit collection fixture), then dispose it to perform a bounded, best-effort final drain.</p>
-<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Datasets'></a></p>
-<h2 id="ilangfusesessiondatasets-property">ILangfuseSession.Datasets Property<a class="headerlink" href="#ilangfusesessiondatasets-property" title="Permanent link">&para;</a></h2>
-<p>Gets the client for creating and populating Langfuse datasets (the eval cases experiment
-runs are scored against). Inert when this session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseDatasetClient</span><span class="w"> </span><span class="n">Datasets</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseDatasetClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient">ILangfuseDatasetClient</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.IsEnabled'></a></p>
-<h2 id="ilangfusesessionisenabled-property">ILangfuseSession.IsEnabled Property<a class="headerlink" href="#ilangfusesessionisenabled-property" title="Permanent link">&para;</a></h2>
-<p>Gets a value indicating whether this session is exporting telemetry. <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>
-when the supplied <a href="../LangfuseOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions">LangfuseOptions</a> were not configured (for example, missing
-credentials), in which case the session is an inert no-op.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">bool</span><span class="w"> </span><span class="n">IsEnabled</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Metrics'></a></p>
-<h2 id="ilangfusesessionmetrics-property">ILangfuseSession.Metrics Property<a class="headerlink" href="#ilangfusesessionmetrics-property" title="Permanent link">&para;</a></h2>
-<p>Gets the client for reading aggregates back from Langfuse via the Metrics API — for example
-to drive a CI quality gate from recorded eval scores. Inert when this session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseMetricsClient</span><span class="w"> </span><span class="n">Metrics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseMetricsClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseMetricsClient">ILangfuseMetricsClient</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Models'></a></p>
-<h2 id="ilangfusesessionmodels-property">ILangfuseSession.Models Property<a class="headerlink" href="#ilangfusesessionmodels-property" title="Permanent link">&para;</a></h2>
-<p>Gets the client for registering model price definitions so Langfuse can compute cost for
-generations whose model it does not price by default. Inert when this session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseModelClient</span><span class="w"> </span><span class="n">Models</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseModelClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseModelClient">ILangfuseModelClient</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Prompts'></a></p>
-<h2 id="ilangfusesessionprompts-property">ILangfuseSession.Prompts Property<a class="headerlink" href="#ilangfusesessionprompts-property" title="Permanent link">&para;</a></h2>
-<p>Gets the client for fetching and creating prompts in Langfuse prompt management, so an eval's
-prompt lives in Langfuse and generations link to the version used. Inert when this session is
-disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfusePromptClient</span><span class="w"> </span><span class="n">Prompts</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfusePromptClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfusePromptClient">ILangfusePromptClient</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.ScoreConfigs'></a></p>
-<h2 id="ilangfusesessionscoreconfigs-property">ILangfuseSession.ScoreConfigs Property<a class="headerlink" href="#ilangfusesessionscoreconfigs-property" title="Permanent link">&para;</a></h2>
-<p>Gets the client for idempotently registering Langfuse score configs so eval scores render
-with defined data types, ranges, and category sets. Inert when this session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseScoreConfigClient</span><span class="w"> </span><span class="n">ScoreConfigs</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_5">Property Value<a class="headerlink" href="#property-value_5" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseScoreConfigClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient">ILangfuseScoreConfigClient</a></p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.ScoresFailed'></a></p>
-<h2 id="ilangfusesessionscoresfailed-property">ILangfuseSession.ScoresFailed Property<a class="headerlink" href="#ilangfusesessionscoresfailed-property" title="Permanent link">&para;</a></h2>
-<p>Gets the cumulative number of evaluation-score uploads that have failed across all scenarios
-created from this session. Always <code>0</code> under
-<a href="../LangfuseScoreFailureMode/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureMode.Strict" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureMode.Strict">Strict</a> (failures throw instead) and for a disabled
-session. Useful as an assertion target or a health indicator.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">ScoresFailed</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h4 id="property-value_6">Property Value<a class="headerlink" href="#property-value_6" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+for the lifetime over which agent runs and evaluations should be captured, then dispose it to
+perform a bounded, best-effort final drain.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.AddTraceCommentAsync(string,string,System.Threading.CancellationToken)'></a></p>
-<h2 id="ilangfusesessionaddtracecommentasyncstring-string-cancellationtoken-method">ILangfuseSession.AddTraceCommentAsync(string, string, CancellationToken) Method<a class="headerlink" href="#ilangfusesessionaddtracecommentasyncstring-string-cancellationtoken-method" title="Permanent link">&para;</a></h2>
-<p>Attaches a comment to an existing trace — for example a CI run URL, git commit, or a failing
-assertion message. No-op when this session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">AddTraceCommentAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">traceId</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
-</span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.AddTraceCommentAsync(string,string,System.Threading.CancellationToken).traceId'></a></p>
-<p><code>traceId</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>The id of an existing Langfuse trace.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.AddTraceCommentAsync(string,string,System.Threading.CancellationToken).content'></a></p>
-<p><code>content</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>The comment content (Langfuse limits this to 5000 characters).</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.AddTraceCommentAsync(string,string,System.Threading.CancellationToken).cancellationToken'></a></p>
-<p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
-<p>A cancellation token.</p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
-A task that completes once Langfuse has accepted the comment or the failure has been reported.</p>
-<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
-<p>Call this \&lt;strong&gt;after\&lt;/strong&gt;<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Flush(System.Nullable_System.TimeSpan_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Flush(System.Nullable\&lt;System.TimeSpan&gt;)">Flush(Nullable&lt;TimeSpan&gt;)</a> and after the trace has been ingested:
-unlike scores, Langfuse rejects a comment whose target trace does not yet exist. Comment
-failures are non-fatal and are reported through <code>DiagnosticsCallback</code>.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string)'></a></p>
-<h2 id="ilangfusesessionbeginexperimentrunstring-string-string-method">ILangfuseSession.BeginExperimentRun(string, string, string) Method<a class="headerlink" href="#ilangfusesessionbeginexperimentrunstring-string-string-method" title="Permanent link">&para;</a></h2>
-<p>Begins a Langfuse experiment (dataset run). Each item begun on the returned run links its
-trace to the run so the recorded scores aggregate into the experiment-comparison view.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseExperimentRun</span><span class="w"> </span><span class="n">BeginExperimentRun</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">datasetName</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">runName</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">runDescription</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
-</span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string).datasetName'></a></p>
-<p><code>datasetName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>The dataset to score against. The dataset and its items must already exist — see
-<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Datasets" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Datasets">Datasets</a>.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string).runName'></a></p>
-<p><code>runName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>A caller-supplied run name (for example a git SHA or CI run id) so runs are comparable.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string).runDescription'></a></p>
-<p><code>runDescription</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>An optional description applied to the run.</p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseExperimentRun/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun">ILangfuseExperimentRun</a><br />
-An <a href="../ILangfuseExperimentRun/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun">ILangfuseExperimentRun</a>. When this session is disabled the run is inert.</p>
-<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a><br />
-<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string).datasetName" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string, string, string).datasetName">datasetName</a> or <a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string,string,string).runName" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginExperimentRun(string, string, string).runName">runName</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)'></a></p>
-<h2 id="ilangfusesessionbeginscenariostring-string-string-ienumerablestring-ireadonlydictionarystringstring-method">ILangfuseSession.BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;) Method<a class="headerlink" href="#ilangfusesessionbeginscenariostring-string-string-ienumerablestring-ireadonlydictionarystringstring-method" title="Permanent link">&para;</a></h2>
-<p>Begins a Langfuse trace scoped to a single eval scenario or agent run. Agent telemetry
-produced while the returned scenario is active nests under its trace, and evaluation scores
-can be attached to it.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">ILangfuseScenario</span><span class="w"> </span><span class="n">BeginScenario</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">sessionId</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IEnumerable</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">tags</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Collections</span><span class="p">.</span><span class="n">Generic</span><span class="p">.</span><span class="n">IReadOnlyDictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">metadata</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
-</span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).name'></a></p>
-<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>The trace name shown in Langfuse (for example the eval scenario name).</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).sessionId'></a></p>
-<p><code>sessionId</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>An optional Langfuse session id used to group related traces (for example multiple
-iterations of one scenario).</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).userId'></a></p>
-<p><code>userId</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
-<p>An optional end-user identifier associated with the trace.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).tags'></a></p>
-<p><code>tags</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">System.Collections.Generic.IEnumerable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1" title="System.Collections.Generic.IEnumerable`1">&gt;</a></p>
-<p>Optional tags used to categorize the trace in Langfuse.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).metadata'></a></p>
-<p><code>metadata</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">System.Collections.Generic.IReadOnlyDictionary&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">,</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ireadonlydictionary-2" title="System.Collections.Generic.IReadOnlyDictionary`2">&gt;</a></p>
-<p>Optional filterable key/value metadata attached to the trace.</p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
-<p><a href="../ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a><br />
-An <a href="../ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a> to dispose when the scenario completes. When this session
-is disabled the returned scenario is an inert no-op.</p>
-<h4 id="exceptions_1">Exceptions<a class="headerlink" href="#exceptions_1" title="Permanent link">&para;</a></h4>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a><br />
-<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_).name" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;).name">name</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Flush(System.Nullable_System.TimeSpan_)'></a></p>
 <h2 id="ilangfusesessionflushnullabletimespan-method">ILangfuseSession.Flush(Nullable&lt;TimeSpan&gt;) Method<a class="headerlink" href="#ilangfusesessionflushnullabletimespan-method" title="Permanent link">&para;</a></h2>
-<p>Flushes any buffered telemetry to Langfuse. Useful before reading results or at the end of
-a test run. No-op when <a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.IsEnabled" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.IsEnabled">IsEnabled</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">Flush</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="o">&gt;</span><span class="w"> </span><span class="n">timeout</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<p>Flushes buffered telemetry to Langfuse.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">Flush</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="o">&gt;</span><span class="w"> </span><span class="n">timeout</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Flush(System.Nullable_System.TimeSpan_).timeout'></a></p>
 <p><code>timeout</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">System.Nullable&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1" title="System.Nullable`1">&gt;</a></p>
-<p>Maximum time to wait for the flush to complete, or <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a>
-to wait indefinitely. When <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, a provider default is used.</p>
-<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p>Maximum time to wait, or <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a> to wait
+indefinitely. A provider default is used when <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a><br />
 <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the flush succeeded; otherwise <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan)'></a></p>
 <h2 id="ilangfusesessionshutdowntimespan-method">ILangfuseSession.Shutdown(TimeSpan) Method<a class="headerlink" href="#ilangfusesessionshutdowntimespan-method" title="Permanent link">&para;</a></h2>
 <p>Performs final local OpenTelemetry provider shutdown and releases all resources owned by the
 session.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseShutdownOutcome</span><span class="w"> </span><span class="n">Shutdown</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseShutdownOutcome</span><span class="w"> </span><span class="n">Shutdown</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout'></a></p>
 <p><code>timeout</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p>The total timeout budget shared by trace and metric provider shutdown, or
 <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a> to explicitly wait indefinitely.</p>
-<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="../LangfuseShutdownOutcome/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome">LangfuseShutdownOutcome</a><br />
-An outcome describing whether local trace and metric provider shutdown completed. This does
-not guarantee durable ingestion by Langfuse.</p>
-<h4 id="exceptions_2">Exceptions<a class="headerlink" href="#exceptions_2" title="Permanent link">&para;</a></h4>
+An outcome describing whether local trace and metric provider shutdown completed.</p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception" title="System.ArgumentOutOfRangeException">System.ArgumentOutOfRangeException</a><br />
 <a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseSession.Shutdown(System.TimeSpan).timeout">timeout</a> is negative and is not
             <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.timeout.infinitetimespan" title="System.Threading.Timeout.InfiniteTimeSpan">System.Threading.Timeout.InfiniteTimeSpan</a>.</p>
-<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.notsupportedexception" title="System.NotSupportedException">System.NotSupportedException</a><br />
-The session implementation predates explicit shutdown and does not override this member.</p>
-<h3 id="remarks_2">Remarks<a class="headerlink" href="#remarks_2" title="Permanent link">&para;</a></h3>
-<p>Exactly one caller performs final shutdown. Concurrent callers return immediately with
-<a href="../LangfuseShutdownOutcome/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome.IsFinal" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome.IsFinal">IsFinal</a> equal to <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">false</a>. Calls made
-after shutdown completes return the same cached final outcome.</p>
-<p>Once shutdown begins, an enabled session rejects new operations with
-<a href="https://learn.microsoft.com/en-us/dotnet/api/system.objectdisposedexception" title="System.ObjectDisposedException">System.ObjectDisposedException</a>.</p>
+<h3 id="remarks_1">Remarks<a class="headerlink" href="#remarks_1" title="Permanent link">&para;</a></h3>
+<p>Exactly one caller performs final shutdown. Concurrent callers return a non-final outcome,
+and calls made after completion return the cached final outcome.</p>
 
 
 
