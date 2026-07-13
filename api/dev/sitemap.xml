@@ -233,6 +233,10 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseHttpOptions/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreFailureMode/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
@@ -277,11 +281,23 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseDrainHealth/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfusePublicationHealthSnapshot/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseShutdownOutcome/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreDataType/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfusePublicationOperationHealth/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -293,7 +309,15 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseInProcessResourceLockProvider/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseModelClient/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseEvaluationScoreOptions/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -329,6 +353,10 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreOptions/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseDatasetRunIdentityStatus/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
@@ -353,6 +381,14 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseTraceExportHealth/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfusePublicationHealth/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseScoreConfig/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
@@ -366,6 +402,10 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseScenario/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseRetryHealth/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -389,6 +429,10 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseDrainStatus/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunScoreCounts/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
@@ -397,11 +441,19 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseTraceExportOptions/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/NexusLabs.Needlr.AgentFramework.Langfuse/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseDatasetClient/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseResourceLockProvider/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>

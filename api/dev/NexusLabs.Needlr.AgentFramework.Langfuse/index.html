@@ -4717,8 +4717,16 @@
 <td style="text-align: left;">A single Langfuse dataset item — one eval case. Upserted via <a href="ILangfuseDatasetClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem, System.Threading.CancellationToken)">UpsertItemAsync(LangfuseDatasetItem, CancellationToken)</a> and later referenced by an experiment run.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseDrainHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDrainHealth">LangfuseDrainHealth</a></td>
+<td style="text-align: left;">Describes the latest local flush or shutdown drain.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseEvaluationScoreExtensions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreExtensions">LangfuseEvaluationScoreExtensions</a></td>
 <td style="text-align: left;">Convenience extensions for projecting <code>Microsoft.Extensions.AI.Evaluation</code> results onto a Langfuse scenario trace as scores.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseEvaluationScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions">LangfuseEvaluationScoreOptions</a></td>
+<td style="text-align: left;">Configures score identities when projecting an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a> to Langfuse.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="LangfuseException/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseException">LangfuseException</a></td>
@@ -4757,6 +4765,14 @@
 <td style="text-align: left;">Describes the publication outcome for one score against a Langfuse dataset run.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseHttpOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseHttpOptions">LangfuseHttpOptions</a></td>
+<td style="text-align: left;">Configures bounded timeout and retry behavior for Langfuse REST API requests.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseInProcessResourceLockProvider/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider">LangfuseInProcessResourceLockProvider</a></td>
+<td style="text-align: left;">Coordinates Langfuse resource creation within one process.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseMetric/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetric">LangfuseMetric</a></td>
 <td style="text-align: left;">One metric in a <a href="LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>: a measure plus an aggregation. The result column is named <code>{Aggregation}_{Measure}</code> (for example <code>avg_value</code>, <code>sum_totalCost</code>).</td>
 </tr>
@@ -4789,6 +4805,22 @@
 <td style="text-align: left;">Describes why a Langfuse publication operation did not complete.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfusePublicationHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationHealth">LangfusePublicationHealth</a></td>
+<td style="text-align: left;">Collects thread-safe Langfuse publication-health counters.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfusePublicationHealthSnapshot/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationHealthSnapshot">LangfusePublicationHealthSnapshot</a></td>
+<td style="text-align: left;">Provides an immutable point-in-time view of Langfuse publication health.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfusePublicationOperationHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationOperationHealth">LangfusePublicationOperationHealth</a></td>
+<td style="text-align: left;">Describes direct REST publication outcomes for one operation category.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseRetryHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseRetryHealth">LangfuseRetryHealth</a></td>
+<td style="text-align: left;">Describes bounded Langfuse REST retry attempts by cause.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseScoreConfig/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig">LangfuseScoreConfig</a></td>
 <td style="text-align: left;">Declares the shape of a named Langfuse score so the dashboard renders consistent ranges, colors, and category sets and validates incoming values. Created via <a href="ILangfuseScoreConfigClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient.EnsureScoreConfigAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScoreConfigClient.EnsureScoreConfigAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig, System.Threading.CancellationToken)">EnsureScoreConfigAsync(LangfuseScoreConfig, CancellationToken)</a>.</td>
 </tr>
@@ -4801,6 +4833,10 @@
 <td style="text-align: left;">Describes a single failed attempt to upload an evaluation score to Langfuse. Passed to <a href="LangfuseOptions/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.ScoreErrorCallback" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseOptions.ScoreErrorCallback">ScoreErrorCallback</a> when <a href="LangfuseScoreFailureMode/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureMode.NonFatal" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureMode.NonFatal">NonFatal</a> is in effect, so callers can log the loss with their own logger.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></td>
+<td style="text-align: left;">Configures one score publication to Langfuse.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseServiceCollectionExtensions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtensions">LangfuseServiceCollectionExtensions</a></td>
 <td style="text-align: left;">Registers Langfuse OTLP export and a complete non-owning <a href="ILangfuseClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient">ILangfuseClient</a> facade on an <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" title="Microsoft.Extensions.DependencyInjection.IServiceCollection">Microsoft.Extensions.DependencyInjection.IServiceCollection</a> for dependency-injection-based applications.</td>
 </tr>
@@ -4811,6 +4847,14 @@
 <tr>
 <td style="text-align: left;"><a href="LangfuseTelemetry/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTelemetry">LangfuseTelemetry</a></td>
 <td style="text-align: left;">Entry point for exporting Needlr agent telemetry to Langfuse without requiring a generic host. Designed for evals, console apps, and test fixtures that build telemetry by hand.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseTraceExportHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceExportHealth">LangfuseTraceExportHealth</a></td>
+<td style="text-align: left;">Describes local trace queue and exporter outcomes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseTraceExportOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseTraceExportOptions">LangfuseTraceExportOptions</a></td>
+<td style="text-align: left;">Configures bounded local batching for Langfuse trace export.</td>
 </tr>
 </tbody>
 </table>
@@ -4847,6 +4891,10 @@
 <td style="text-align: left;">Fetches and creates prompts in Langfuse prompt management, so the prompt an eval runs against lives in Langfuse and the generations link to the exact version that was used.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="ILangfuseResourceLockProvider/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider">ILangfuseResourceLockProvider</a></td>
+<td style="text-align: left;">Coordinates project-resource creation across Langfuse client instances.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="ILangfuseScenario/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario">ILangfuseScenario</a></td>
 <td style="text-align: left;">Represents a single Langfuse trace scoped to one eval scenario or agent run. Created via <a href="ILangfuseClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string,string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseClient.BeginScenario(string, string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;)">BeginScenario(string, string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;)</a>.</td>
 </tr>
@@ -4875,6 +4923,10 @@
 <tr>
 <td style="text-align: left;"><a href="LangfuseDatasetRunIdentityStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetRunIdentityStatus">LangfuseDatasetRunIdentityStatus</a></td>
 <td style="text-align: left;">Describes whether a Langfuse experiment run has one authoritative dataset-run id.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseDrainStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDrainStatus">LangfuseDrainStatus</a></td>
+<td style="text-align: left;">Describes the most recent local telemetry drain attempt.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="LangfuseExperimentApiPublicationStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentApiPublicationStatus">LangfuseExperimentApiPublicationStatus</a></td>
