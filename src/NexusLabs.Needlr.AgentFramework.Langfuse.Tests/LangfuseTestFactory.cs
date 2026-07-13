@@ -6,12 +6,16 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 /// <summary>Shared construction helpers for tests that exercise scenarios and experiment runs.</summary>
 internal static class LangfuseTestFactory
 {
-    public static ActivityListener StartListener()
+    public static ActivityListener StartListener(
+        Action<Activity>? onStarted = null,
+        Action<Activity>? onStopped = null)
     {
         var listener = new ActivityListener
         {
             ShouldListenTo = source => source.Name == LangfuseActivitySource.Name,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStarted = onStarted,
+            ActivityStopped = onStopped,
         };
         ActivitySource.AddActivityListener(listener);
         return listener;

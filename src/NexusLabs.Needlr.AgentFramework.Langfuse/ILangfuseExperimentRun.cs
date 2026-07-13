@@ -2,8 +2,9 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
 /// Represents an in-progress Langfuse experiment (dataset run). Each call to
-/// <see cref="BeginItemAsync"/> starts a trace for one dataset item and links it to this run, so
-/// the scores recorded on that trace roll up into the run's experiment-comparison view.
+/// <see cref="RunItemAsync{T}(string, Func{ILangfuseScenario, CancellationToken, Task{T}}, LangfuseExperimentItemOptions?, CancellationToken)"/>
+/// executes one dataset item inside an active scenario trace and links it to this run, so scores
+/// recorded on that trace roll up into the experiment-comparison view.
 /// </summary>
 /// <remarks>
 /// The referenced dataset and its items must already exist (see
@@ -20,22 +21,41 @@ public interface ILangfuseExperimentRun
     string RunName { get; }
 
     /// <summary>
-    /// Begins a scenario for one dataset item and links its trace to this run as a dataset-run-item.
-    /// Run your agent under the returned scenario and record scores on it as usual; they aggregate
-    /// into the experiment view for this run.
+    /// Executes a callback while one dataset item's scenario is active and links the scenario trace
+    /// to this run as a dataset-run-item.
     /// </summary>
+    /// <remarks>
+    /// The scenario is valid only for the callback lifetime and must not be retained. Callback
+    /// exceptions and caller-requested cancellation propagate unchanged after the scenario is
+    /// disposed and the previous ambient activity is restored.
+    /// </remarks>
+    /// <typeparam name="T">The callback result type.</typeparam>
     /// <param name="datasetItemId">The id of the dataset item being evaluated.</param>
-    /// <param name="scenarioName">
-    /// An optional trace name. Defaults to a name derived from the dataset and item id.
+    /// <param name="callback">
+    /// The item work to execute. The supplied scenario is active as <see cref="System.Diagnostics.Activity.Current"/>
+    /// for the callback lifetime and is disposed before this method completes.
     /// </param>
-    /// <param name="tags">Optional trace tags.</param>
-    /// <param name="metadata">Optional filterable trace metadata.</param>
+    /// <param name="options">Optional scenario and dataset-link behavior.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    /// <returns>The scenario for this item. Dispose it when the item run completes.</returns>
-    Task<ILangfuseScenario> BeginItemAsync(
+    /// <returns>
+    /// The callback value, trace id, and structured dataset-link status.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="datasetItemId"/> is <see langword="null"/> or whitespace.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="callback"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <see cref="LangfuseExperimentItemOptions.LinkFailureMode"/> is not defined.
+    /// </exception>
+    /// <exception cref="LangfuseException">
+    /// Langfuse could not link the item and strict link-failure mode was selected.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// <paramref name="cancellationToken"/> was canceled before or during linking or callback execution.
+    /// </exception>
+    Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
         string datasetItemId,
-        string? scenarioName = null,
-        IEnumerable<string>? tags = null,
-        IReadOnlyDictionary<string, string>? metadata = null,
+        Func<ILangfuseScenario, CancellationToken, Task<T>> callback,
+        LangfuseExperimentItemOptions? options = null,
         CancellationToken cancellationToken = default);
 }

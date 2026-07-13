@@ -1,10 +1,8 @@
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Default <see cref="ILangfuseExperimentRun"/>. Starts a scenario per dataset item and links its
-/// trace to the run via <c>POST /api/public/dataset-run-items</c>. Link failures are non-fatal —
-/// routed to the diagnostics callback — so a Langfuse hiccup does not crash the eval; the gap is
-/// surfaced rather than silently swallowed.
+/// Default <see cref="ILangfuseExperimentRun"/>. Executes each dataset item inside an active
+/// scenario and links its trace to the run via <c>POST /api/public/dataset-run-items</c>.
 /// </summary>
 internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
 {
@@ -69,19 +67,22 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
     public string RunName { get; }
 
     /// <inheritdoc />
-    public async Task<ILangfuseScenario> BeginItemAsync(
+    public async Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
         string datasetItemId,
-        string? scenarioName = null,
-        IEnumerable<string>? tags = null,
-        IReadOnlyDictionary<string, string>? metadata = null,
+        Func<ILangfuseScenario, CancellationToken, Task<T>> callback,
+        LangfuseExperimentItemOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(datasetItemId);
+        ArgumentNullException.ThrowIfNull(callback);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var name = string.IsNullOrWhiteSpace(scenarioName)
+        options ??= new LangfuseExperimentItemOptions();
+        options.Validate();
+
+        var name = string.IsNullOrWhiteSpace(options.ScenarioName)
             ? $"{DatasetName}: {datasetItemId}"
-            : scenarioName;
+            : options.ScenarioName;
 
         var scenario = new LangfuseScenario(
             _scores,
@@ -89,32 +90,45 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             name,
             sessionId: null,
             userId: null,
-            tags,
-            metadata);
+            options.Tags,
+            options.Metadata);
 
         try
         {
-            if (scenario.TraceId is { Length: > 0 } traceId)
+            var recordedTraceId = scenario.Activity?.Recorded == true
+                ? scenario.TraceId
+                : null;
+            LangfuseExperimentItemLinkStatus linkStatus;
+            if (recordedTraceId is { Length: > 0 } traceId)
             {
-                await LinkRunItemAsync(datasetItemId, traceId, cancellationToken).ConfigureAwait(false);
+                linkStatus = await LinkRunItemAsync(
+                    datasetItemId,
+                    traceId,
+                    options.LinkFailureMode,
+                    cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 _diagnostics?.Invoke(
                     $"Langfuse dataset run item skipped for item '{datasetItemId}' in run '{RunName}': " +
                     "no sampled trace was available to link.");
+                linkStatus = LangfuseExperimentItemLinkStatus.NotSampled;
             }
 
-            return scenario;
+            var value = await callback(scenario, cancellationToken).ConfigureAwait(false);
+            return new LangfuseExperimentItemResult<T>(value, recordedTraceId, linkStatus);
         }
-        catch
+        finally
         {
             scenario.Dispose();
-            throw;
         }
     }
 
-    private async Task LinkRunItemAsync(string datasetItemId, string traceId, CancellationToken cancellationToken)
+    private async Task<LangfuseExperimentItemLinkStatus> LinkRunItemAsync(
+        string datasetItemId,
+        string traceId,
+        LangfuseExperimentItemLinkFailureMode failureMode,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -129,11 +143,14 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             await _apiClient
                 .PostAsync("api/public/dataset-run-items", request, cancellationToken)
                 .ConfigureAwait(false);
+            return LangfuseExperimentItemLinkStatus.Linked;
         }
         catch (LangfuseException ex)
+            when (failureMode is LangfuseExperimentItemLinkFailureMode.BestEffort)
         {
             _diagnostics?.Invoke(
                 $"Langfuse dataset run item link failed for item '{datasetItemId}' in run '{RunName}': {ex.Message}");
+            return LangfuseExperimentItemLinkStatus.Failed;
         }
     }
 }
