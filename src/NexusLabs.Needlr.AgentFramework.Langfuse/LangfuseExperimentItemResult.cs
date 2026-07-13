@@ -11,15 +11,16 @@ public sealed class LangfuseExperimentItemResult<T>
     /// </summary>
     /// <param name="value">The value returned by the item callback.</param>
     /// <param name="traceId">The Langfuse trace id, or <see langword="null"/> when unavailable.</param>
-    /// <param name="linkStatus">The dataset-run-item link outcome.</param>
+    /// <param name="link">The dataset-run-item link outcome.</param>
     public LangfuseExperimentItemResult(
         T value,
         string? traceId,
-        LangfuseExperimentItemLinkStatus linkStatus)
+        LangfuseExperimentItemLinkResult link)
     {
+        ArgumentNullException.ThrowIfNull(link);
         Value = value;
         TraceId = traceId;
-        LinkStatus = linkStatus;
+        Link = link;
     }
 
     /// <summary>
@@ -35,5 +36,5 @@ public sealed class LangfuseExperimentItemResult<T>
     /// <summary>
     /// Gets the outcome of linking the item trace to the Langfuse dataset run.
     /// </summary>
-    public LangfuseExperimentItemLinkStatus LinkStatus { get; }
+    public LangfuseExperimentItemLinkResult Link { get; }
 }

@@ -96,10 +96,13 @@ internal sealed class LangfuseSession : ILangfuseSession
     }
 
     /// <inheritdoc />
-    public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null)
+    public ILangfuseExperimentRun BeginExperimentRun(
+        string datasetName,
+        string runName,
+        LangfuseExperimentRunOptions? options = null)
     {
         ThrowIfShutdownStarted();
-        return _client.BeginExperimentRun(datasetName, runName, runDescription);
+        return _client.BeginExperimentRun(datasetName, runName, options);
     }
 
     /// <inheritdoc />

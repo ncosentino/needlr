@@ -68,8 +68,11 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
         _client.BeginScenario(name, sessionId, userId, tags, metadata);
 
     /// <inheritdoc />
-    public ILangfuseExperimentRun BeginExperimentRun(string datasetName, string runName, string? runDescription = null) =>
-        _client.BeginExperimentRun(datasetName, runName, runDescription);
+    public ILangfuseExperimentRun BeginExperimentRun(
+        string datasetName,
+        string runName,
+        LangfuseExperimentRunOptions? options = null) =>
+        _client.BeginExperimentRun(datasetName, runName, options);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>

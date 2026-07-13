@@ -24,4 +24,10 @@ public enum LangfuseExperimentItemLinkStatus
     /// Langfuse was disabled, so no link was attempted.
     /// </summary>
     Disabled = 3,
+
+    /// <summary>
+    /// Langfuse accepted the item link but returned a dataset-run id that conflicts with another
+    /// successful link observed by this run instance.
+    /// </summary>
+    Inconsistent = 4,
 }

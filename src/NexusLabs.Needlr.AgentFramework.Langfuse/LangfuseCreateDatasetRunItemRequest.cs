@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
@@ -10,8 +12,11 @@ internal sealed record LangfuseCreateDatasetRunItemRequest
     /// <summary>Gets the run name. Langfuse creates the run on first use.</summary>
     public required string RunName { get; init; }
 
-    /// <summary>Gets the optional run description (updates the run if it already exists).</summary>
+    /// <summary>Gets the optional run description submitted with the item link.</summary>
     public string? RunDescription { get; init; }
+
+    /// <summary>Gets optional structured metadata submitted for the dataset run.</summary>
+    public JsonElement? Metadata { get; init; }
 
     /// <summary>Gets the id of the dataset item being evaluated.</summary>
     public required string DatasetItemId { get; init; }

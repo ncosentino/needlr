@@ -52,8 +52,8 @@ internal sealed class DisabledLangfuseClient : ILangfuseClient
     public ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
         string runName,
-        string? runDescription = null) =>
-        new DisabledLangfuseExperimentRun(datasetName, runName);
+        LangfuseExperimentRunOptions? options = null) =>
+        new DisabledLangfuseExperimentRun(datasetName, runName, options);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(

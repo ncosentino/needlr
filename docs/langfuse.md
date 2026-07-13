@@ -183,7 +183,18 @@ await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
 });
 
 // Per run: name it after something comparable (a git SHA, a CI run id).
-var run = langfuse.BeginExperimentRun("trip-planner-evals", runName: gitSha);
+var run = langfuse.BeginExperimentRun(
+    "trip-planner-evals",
+    runName: gitSha,
+    options: new LangfuseExperimentRunOptions
+    {
+        Description = "Trip planner regression suite",
+        Metadata = new
+        {
+            candidate = new { model = "gpt-5", promptVersion = 7 },
+            baseline = "main",
+        },
+    });
 
 foreach (var item in items)
 {
@@ -197,8 +208,21 @@ foreach (var item in items)
         },
         cancellationToken: cancellationToken);
 
-    Console.WriteLine($"{item.Id}: {itemResult.LinkStatus}");
+    Console.WriteLine(
+        $"{item.Id}: {itemResult.Link.Status}, run {itemResult.Link.DatasetRunId}");
 }
+
+if (run.DatasetRunId is { } datasetRunId)
+{
+    await run.RecordScoreAsync("average_correctness", 0.94, cancellationToken: cancellationToken);
+    await run.RecordScoreAsync("passed", true, cancellationToken: cancellationToken);
+    await run.RecordScoreAsync("verdict", "acceptable", cancellationToken: cancellationToken);
+}
+
+var publication = run.GetPublicationSnapshot();
+Console.WriteLine(
+    $"REST publication: {publication.ApiPublicationStatus}; " +
+    $"trace ingestion verified: no");
 ```
 
 `RunItemAsync` creates the scenario, links it, executes the callback while the scenario remains
@@ -229,6 +253,44 @@ var itemResult = await run.RunItemAsync(
 
 Strict mode propagates `LangfuseException` and does not invoke the callback when an attempted link
 fails. `NotSampled` and `Disabled` remain explicit statuses and still execute the callback.
+
+Each successful item-link response supplies the authoritative Langfuse dataset-run id. The first
+successful response resolves `run.DatasetRunId`; subsequent and parallel responses must agree.
+Conflicting ids move `run.IdentityStatus` to `Inconsistent`, clear the aggregate `DatasetRunId`,
+and make later run-level scores `NotAttempted` (or throw under strict score-failure mode). Every
+item retains the id returned for its own remote link in `itemResult.Link.DatasetRunId`.
+
+`LangfuseExperimentRunOptions.Metadata` is serialized once when the run is created and submitted
+with every item link. This guarantees that whichever parallel request creates the remote run
+receives the same metadata. `run.Metadata` exposes that frozen requested value; it does not claim
+that an already-existing remote run was overwritten.
+
+Run-level numeric, boolean, categorical, and MEAI evaluation scores target the resolved
+`DatasetRunId`:
+
+```csharp
+await run.RecordScoreAsync("average_accuracy", 0.94, cancellationToken: cancellationToken);
+await run.RecordScoreAsync("passed", true, cancellationToken: cancellationToken);
+await run.RecordScoreAsync("verdict", "acceptable", cancellationToken: cancellationToken);
+
+IReadOnlyList<LangfuseExperimentRunScoreResult> results =
+    await run.RecordEvaluationAsync(aggregateEvaluation, cancellationToken);
+```
+
+The methods return `Accepted`, `Failed`, `NotAttempted`, `Skipped`, or `Disabled`. `Accepted`
+means the Scores REST API accepted the request; it is not a durable read-back acknowledgement.
+
+`GetPublicationSnapshot()` provides coherent item-link and run-score counts plus an aggregate
+direct-API status. It deliberately does not claim that OpenTelemetry traces were ingested:
+
+```csharp
+LangfuseExperimentRunPublicationSnapshot snapshot = run.GetPublicationSnapshot();
+
+Console.WriteLine(snapshot.IdentityStatus);
+Console.WriteLine(snapshot.ItemLinks.Linked);
+Console.WriteLine(snapshot.RunScores.Accepted);
+Console.WriteLine(snapshot.ApiPublicationStatus);
+```
 
 ## Score configs
 
@@ -481,7 +543,11 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
 
         var experiment = langfuse.BeginExperimentRun(
             "support-agent-regression",
-            "commit-abc123");
+            "commit-abc123",
+            new LangfuseExperimentRunOptions
+            {
+                Metadata = new { branch = "feature/refunds" },
+            });
         var item = await experiment.RunItemAsync(
             "refund-case",
             async (scenario, token) =>
@@ -502,6 +568,9 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                 value: true,
                 cancellationToken: cancellationToken);
         }
+
+        Console.WriteLine(item.Link.Status);
+        Console.WriteLine(experiment.GetPublicationSnapshot().ApiPublicationStatus);
     }
 }
 ```
