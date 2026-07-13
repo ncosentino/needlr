@@ -85,14 +85,14 @@ internal sealed class LangfuseClient : ILangfuseClient
     public ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
         string runName,
-        string? runDescription = null) =>
+        LangfuseExperimentRunOptions? options = null) =>
         new LangfuseExperimentRun(
             _composition.ApiClient,
             Scores,
             _composition.Recorder,
             datasetName,
             runName,
-            runDescription,
+            options,
             _composition.Diagnostics);
 
     /// <inheritdoc />

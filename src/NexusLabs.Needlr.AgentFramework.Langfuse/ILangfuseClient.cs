@@ -85,7 +85,7 @@ public interface ILangfuseClient
     /// </summary>
     /// <param name="datasetName">The existing dataset to score against.</param>
     /// <param name="runName">A caller-supplied run name used for experiment comparison.</param>
-    /// <param name="runDescription">An optional description applied to the run.</param>
+    /// <param name="options">Optional description and structured metadata for the run.</param>
     /// <returns>
     /// An <see cref="ILangfuseExperimentRun"/>. A disabled client returns an inert no-op run.
     /// </returns>
@@ -95,7 +95,7 @@ public interface ILangfuseClient
     ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
         string runName,
-        string? runDescription = null);
+        LangfuseExperimentRunOptions? options = null);
 
     /// <summary>
     /// Attaches a comment to an existing Langfuse trace.

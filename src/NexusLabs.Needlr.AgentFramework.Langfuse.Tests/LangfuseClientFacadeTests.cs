@@ -253,12 +253,24 @@ public sealed class LangfuseClientFacadeTests
     [Fact]
     public async Task AddNeedlrLangfuse_Configured_FacadeBeginsAndLinksExperimentRun()
     {
-        var handler = new TrackingHttpMessageHandler();
+        var handler = new TrackingHttpMessageHandler(request =>
+            request.Uri.AbsolutePath.EndsWith("/dataset-run-items", StringComparison.Ordinal)
+                ? LangfuseDatasetRunItemHttpStub.CreateResponse(
+                    request,
+                    "dataset-run-item-7",
+                    "dataset-run-42")
+                : new HttpResponseMessage(HttpStatusCode.OK));
         var services = CreateConfiguredServices(handler);
 
         using var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<ILangfuseClient>();
-        var run = client.BeginExperimentRun("dataset-a", "run-42", "facade run");
+        var run = client.BeginExperimentRun(
+            "dataset-a",
+            "run-42",
+            new LangfuseExperimentRunOptions
+            {
+                Description = "facade run",
+            });
 
         var result = await run.RunItemAsync(
             "item-7",
@@ -276,7 +288,8 @@ public sealed class LangfuseClientFacadeTests
         Assert.Contains("\"datasetItemId\":\"item-7\"", request.Body, StringComparison.Ordinal);
         Assert.Contains($"\"traceId\":\"{result.TraceId}\"", request.Body, StringComparison.Ordinal);
         Assert.Equal(result.TraceId, result.Value);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.Linked, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Linked, result.Link.Status);
+        Assert.Equal("dataset-run-42", result.Link.DatasetRunId);
     }
 
     [Fact]
@@ -315,7 +328,7 @@ public sealed class LangfuseClientFacadeTests
 
         Assert.Null(scenario.TraceId);
         Assert.Null(item.TraceId);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, item.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, item.Link.Status);
         Assert.Equal("disabled", item.Value);
         Assert.Empty(provider.GetServices<TracerProvider>());
     }

@@ -412,7 +412,7 @@ static async Task<int> RunResiliencyCheckAsync()
             CancellationToken.None);
 
         experimentItemContextRestored = ReferenceEquals(Activity.Current, externalContext);
-        experimentItemLinkStatus = itemResult.LinkStatus;
+        experimentItemLinkStatus = itemResult.Link.Status;
     }
 
     var shutdownTimeout = TimeSpan.FromSeconds(2);
@@ -614,7 +614,22 @@ static async Task<int> RunExperimentsCheckAsync()
     Console.WriteLine($"[setup] Ensured dataset '{datasetName}' with {items.Length} items.");
 
     // P1 — experiment run: a trace per item, linked as a dataset-run-item
-    var run = langfuse.BeginExperimentRun(datasetName, runId, "Needlr conformance run.");
+    var run = langfuse.BeginExperimentRun(
+        datasetName,
+        runId,
+        new LangfuseExperimentRunOptions
+        {
+            Description = "Needlr conformance run.",
+            Metadata = new
+            {
+                suite = "needlr-conformance",
+                candidate = new
+                {
+                    name = "mock-agent",
+                    version = "prompt-v1",
+                },
+            },
+        });
     var itemTraceIds = new Dictionary<string, string>(StringComparer.Ordinal);
 
     foreach (var id in items)
@@ -666,22 +681,70 @@ static async Task<int> RunExperimentsCheckAsync()
             },
             CancellationToken.None);
 
-        if (itemResult.LinkStatus != LangfuseExperimentItemLinkStatus.Linked)
+        if (itemResult.Link.Status != LangfuseExperimentItemLinkStatus.Linked)
         {
-            Console.WriteLine($"[error] Item '{id}' link status was {itemResult.LinkStatus}.");
+            Console.WriteLine($"[error] Item '{id}' link status was {itemResult.Link.Status}.");
             return 2;
         }
 
         var traceId = itemResult.TraceId;
-        if (string.IsNullOrEmpty(traceId) || string.IsNullOrEmpty(itemResult.Value))
+        if (string.IsNullOrEmpty(traceId)
+            || string.IsNullOrEmpty(itemResult.Value)
+            || string.IsNullOrEmpty(itemResult.Link.DatasetRunId))
         {
-            Console.WriteLine($"[error] No trace id for item '{id}'.");
+            Console.WriteLine($"[error] Missing trace or dataset-run identity for item '{id}'.");
+            return 2;
+        }
+
+        if (!string.Equals(itemResult.Link.DatasetRunId, run.DatasetRunId, StringComparison.Ordinal))
+        {
+            Console.WriteLine($"[error] Item '{id}' disagreed with the run's dataset-run id.");
             return 2;
         }
 
         itemTraceIds[id] = traceId;
     }
-    Console.WriteLine($"[run] Linked {itemTraceIds.Count} run item(s) to experiment '{runId}'.");
+    if (run.IdentityStatus != LangfuseDatasetRunIdentityStatus.Resolved
+        || string.IsNullOrWhiteSpace(run.DatasetRunId))
+    {
+        Console.WriteLine($"[error] Dataset-run identity was {run.IdentityStatus}.");
+        return 2;
+    }
+
+    Console.WriteLine(
+        $"[run] Linked {itemTraceIds.Count} item(s) to dataset run {run.DatasetRunId}.");
+
+    var numericRunScore = await run.RecordScoreAsync(
+        configName,
+        1.0,
+        "All conformance items linked.");
+    var booleanRunScore = await run.RecordScoreAsync(
+        "needlr_run_passed",
+        true,
+        "Every required run check passed before read-back.");
+    var categoricalRunScore = await run.RecordScoreAsync(
+        "needlr_run_verdict",
+        "passed");
+    var evaluationRunScores = await run.RecordEvaluationAsync(
+        new EvaluationResult(new NumericMetric("needlr_run_item_count", itemTraceIds.Count)));
+    LangfuseExperimentRunScoreResult[] runScoreResults =
+    [
+        numericRunScore,
+        booleanRunScore,
+        categoricalRunScore,
+        .. evaluationRunScores,
+    ];
+    if (runScoreResults.Any(result => result.Status != LangfuseExperimentRunScoreStatus.Accepted))
+    {
+        Console.WriteLine("[error] One or more dataset-run scores were not accepted.");
+        return 2;
+    }
+
+    var publicationSnapshot = run.GetPublicationSnapshot();
+    Console.WriteLine(
+        $"[run] API publication {publicationSnapshot.ApiPublicationStatus}: " +
+        $"{publicationSnapshot.ItemLinks.Linked} link(s), " +
+        $"{publicationSnapshot.RunScores.Accepted} run score(s).");
 
     // P3 — session-level scoring (separate scenario carrying a session id)
     using (var sessionScenario = langfuse.BeginScenario("exp: session-scored", sessionId: sessionId, tags: ["conformance"]))
@@ -710,11 +773,36 @@ static async Task<int> RunExperimentsCheckAsync()
         await langfuse.AddTraceCommentAsync(firstTraceId, $"Needlr conformance run {runId} — item {items[0]}.");
     }
 
-    // CHECK — P1: the experiment run read-back references every item's trace.
+    // CHECK — P1: the experiment run read-back references every item's trace and requested metadata.
     var runReadBack = await PollAsync("experiment run items", 15, TimeSpan.FromSeconds(2), async () =>
     {
         var body = await GetRawAsync(http, $"api/public/datasets/{Uri.EscapeDataString(datasetName)}/runs/{Uri.EscapeDataString(runId)}");
-        return body is not null && itemTraceIds.Values.All(body.Contains);
+        if (body is null)
+        {
+            return false;
+        }
+
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+        return string.Equals(root.GetProperty("id").GetString(), run.DatasetRunId, StringComparison.Ordinal)
+            && string.Equals(root.GetProperty("description").GetString(), "Needlr conformance run.", StringComparison.Ordinal)
+            && string.Equals(root.GetProperty("metadata").GetProperty("suite").GetString(), "needlr-conformance", StringComparison.Ordinal)
+            && string.Equals(
+                root.GetProperty("metadata").GetProperty("candidate").GetProperty("version").GetString(),
+                "prompt-v1",
+                StringComparison.Ordinal)
+            && itemTraceIds.Values.All(body.Contains);
+    });
+
+    var expectedRunScoreNames = runScoreResults
+        .Select(result => result.Name)
+        .ToHashSet(StringComparer.Ordinal);
+    var runScoresReadBack = await PollAsync("dataset run scores", 15, TimeSpan.FromSeconds(2), async () =>
+    {
+        var names = await GetScoreNamesByQueryAsync(
+            http,
+            $"experimentId={Uri.EscapeDataString(run.DatasetRunId!)}");
+        return expectedRunScoreNames.IsSubsetOf(names);
     });
 
     // CHECK — P2: the score config is readable by name.
@@ -747,6 +835,8 @@ static async Task<int> RunExperimentsCheckAsync()
     Console.WriteLine();
     Console.WriteLine("── Results ──────────────────────────────────────────────");
     Console.WriteLine($"  P1 experiment run-items linked:   {Mark(runReadBack)}");
+    Console.WriteLine($"  P1 dataset-run scores readable:   {Mark(runScoresReadBack)}");
+    Console.WriteLine($"  P1 API publication snapshot:      {publicationSnapshot.ApiPublicationStatus}");
     Console.WriteLine($"  P2 score config readable:         {Mark(configReadBack)}");
     Console.WriteLine($"  P11 trace comment readable:       {Mark(commentReadBack)}");
     Console.WriteLine($"  P4/P6 trace context:              {Mark(contextReadBack)}  {contextDetail}");
@@ -754,7 +844,8 @@ static async Task<int> RunExperimentsCheckAsync()
     Console.WriteLine($"  P3 session score readable:        {Mark(sessionScoreReadBack)}");
     Console.WriteLine();
 
-    var passed = runReadBack && configReadBack && commentReadBack && contextReadBack
+    var passed = runReadBack && runScoresReadBack && configReadBack && commentReadBack && contextReadBack
+        && publicationSnapshot.ApiPublicationStatus == LangfuseExperimentApiPublicationStatus.Complete
         && traceScores.Count > 0 && sessionScoreReadBack;
 
     if (passed)

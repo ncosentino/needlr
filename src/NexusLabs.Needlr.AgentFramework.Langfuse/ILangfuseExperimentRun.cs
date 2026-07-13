@@ -1,3 +1,7 @@
+using System.Text.Json;
+
+using Microsoft.Extensions.AI.Evaluation;
+
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
@@ -20,6 +24,20 @@ public interface ILangfuseExperimentRun
     /// <summary>Gets the run name (for example a git SHA or CI run id).</summary>
     string RunName { get; }
 
+    /// <summary>Gets the requested run description.</summary>
+    string? Description { get; }
+
+    /// <summary>Gets the frozen structured metadata submitted with item links.</summary>
+    JsonElement? Metadata { get; }
+
+    /// <summary>
+    /// Gets the authoritative dataset-run id after successful links agree on one identity.
+    /// </summary>
+    string? DatasetRunId { get; }
+
+    /// <summary>Gets the aggregate dataset-run identity status.</summary>
+    LangfuseDatasetRunIdentityStatus IdentityStatus { get; }
+
     /// <summary>
     /// Executes a callback while one dataset item's scenario is active and links the scenario trace
     /// to this run as a dataset-run-item.
@@ -38,7 +56,7 @@ public interface ILangfuseExperimentRun
     /// <param name="options">Optional scenario and dataset-link behavior.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>
-    /// The callback value, trace id, and structured dataset-link status.
+    /// The callback value, trace id, and structured dataset-link result.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// <paramref name="datasetItemId"/> is <see langword="null"/> or whitespace.
@@ -58,4 +76,78 @@ public interface ILangfuseExperimentRun
         Func<ILangfuseScenario, CancellationToken, Task<T>> callback,
         LangfuseExperimentItemOptions? options = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Records a numeric score against the resolved dataset run.</summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The numeric value.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The direct score-publication outcome.</returns>
+    /// <exception cref="LangfuseException">
+    /// The dataset-run identity is unavailable or score publication failed while strict score mode
+    /// is configured.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        double value,
+        string? comment = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Records a boolean score against the resolved dataset run.</summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The boolean value.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The direct score-publication outcome.</returns>
+    /// <exception cref="LangfuseException">
+    /// The dataset-run identity is unavailable or score publication failed while strict score mode
+    /// is configured.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        bool value,
+        string? comment = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Records a categorical score against the resolved dataset run.</summary>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The category label.</param>
+    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The direct score-publication outcome.</returns>
+    /// <exception cref="LangfuseException">
+    /// The dataset-run identity is unavailable or score publication failed while strict score mode
+    /// is configured.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        string value,
+        string? comment = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Projects every metric in <paramref name="result"/> to a score against the resolved dataset
+    /// run.
+    /// </summary>
+    /// <param name="result">The evaluation result to project.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>One structured score result per evaluation metric.</returns>
+    /// <exception cref="LangfuseException">
+    /// The dataset-run identity is unavailable or score publication failed while strict score mode
+    /// is configured.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
+        EvaluationResult result,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets an immutable snapshot of direct item-link and run-score API outcomes observed by this
+    /// run instance.
+    /// </summary>
+    /// <returns>The current publication snapshot.</returns>
+    LangfuseExperimentRunPublicationSnapshot GetPublicationSnapshot();
 }

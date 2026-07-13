@@ -121,7 +121,7 @@ public sealed class LangfuseCancellationTests
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-1",
-            runDescription: null,
+            options: null,
             diagnostics: message => diagnostic = message);
 
         var callbackInvoked = false;
@@ -160,7 +160,7 @@ public sealed class LangfuseCancellationTests
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-1",
-            runDescription: null,
+            options: null,
             diagnostics: null);
 
         var runTask = run.RunItemAsync(
@@ -196,7 +196,7 @@ public sealed class LangfuseCancellationTests
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-1",
-            runDescription: null,
+            options: null,
             diagnostics: null);
         var callbackInvoked = false;
 
@@ -220,7 +220,7 @@ public sealed class LangfuseCancellationTests
     public async Task DisabledExperimentRunItemAsync_WithPreCanceledToken_DoesNotInvokeCallback()
     {
         using var cancellation = CreateCanceledTokenSource();
-        var run = new DisabledLangfuseExperimentRun("evals", "run-1");
+        var run = new DisabledLangfuseExperimentRun("evals", "run-1", options: null);
         var callbackInvoked = false;
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>

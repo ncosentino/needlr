@@ -18,22 +18,16 @@ public sealed class LangfuseExperimentRunTests
     {
         using var listener = LangfuseTestFactory.StartListener();
         var captured = new List<CapturedRequest>();
-        using var httpClient = new HttpClient(new DelegateHttpMessageHandler(async (request, cancellationToken) =>
-        {
-            var body = request.Content is null
-                ? null
-                : await request.Content.ReadAsStringAsync(cancellationToken);
-            captured.Add(new CapturedRequest(request.Method, request.RequestUri!, body));
-            await Task.Yield();
-            return new HttpResponseMessage(HttpStatusCode.OK);
-        }));
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create(
+            "dataset-run-1",
+            captured);
         var apiClient = new LangfuseApiClient(httpClient, BaseUrl, "Basic x");
         var run = new LangfuseExperimentRun(
             apiClient,
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-abc",
-            runDescription: null,
+            options: null,
             diagnostics: null);
 
         var result = await run.RunItemAsync(
@@ -61,14 +55,14 @@ public sealed class LangfuseExperimentRunTests
         Assert.Equal("case-1", json.RootElement.GetProperty("datasetItemId").GetString());
         Assert.Equal(result.TraceId, json.RootElement.GetProperty("traceId").GetString());
         Assert.Equal("callback-result", result.Value);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.Linked, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Linked, result.Link.Status);
     }
 
     [Fact]
     public async Task RunItemAsync_ChildActivityUsesScenarioAsParent()
     {
         using var listener = LangfuseTestFactory.StartListener();
-        using var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", []);
         var run = CreateRun(httpClient);
 
         var result = await run.RunItemAsync(
@@ -92,7 +86,7 @@ public sealed class LangfuseExperimentRunTests
         using var listener = LangfuseTestFactory.StartListener(
             onStopped: _ => Interlocked.Increment(ref stoppedActivities));
         using var caller = new Activity("caller").Start();
-        using var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", []);
         var run = CreateRun(httpClient);
 
         var result = await run.RunItemAsync(
@@ -116,7 +110,7 @@ public sealed class LangfuseExperimentRunTests
         using var listener = LangfuseTestFactory.StartListener(
             onStopped: _ => Interlocked.Increment(ref stoppedActivities));
         using var caller = new Activity("caller").Start();
-        using var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", []);
         var run = CreateRun(httpClient);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -140,8 +134,8 @@ public sealed class LangfuseExperimentRunTests
     {
         using var listener = LangfuseTestFactory.StartListener();
         using var caller = new Activity("caller").Start();
-        var handler = new TrackingHttpMessageHandler();
-        using var httpClient = new HttpClient(handler);
+        var captured = new List<CapturedRequest>();
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", captured);
         var run = CreateRun(httpClient);
         var bothEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var entered = 0;
@@ -168,15 +162,15 @@ public sealed class LangfuseExperimentRunTests
         Assert.Equal(results[0].TraceId, results[0].Value);
         Assert.Equal(results[1].TraceId, results[1].Value);
         Assert.Same(caller, Activity.Current);
-        Assert.Equal(2, handler.CapturedRequests.Count);
+        Assert.Equal(2, captured.Count);
     }
 
     [Fact]
     public async Task RunItemAsync_NestedItemRestoresOuterActivity()
     {
         using var listener = LangfuseTestFactory.StartListener();
-        var handler = new TrackingHttpMessageHandler();
-        using var httpClient = new HttpClient(handler);
+        var captured = new List<CapturedRequest>();
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", captured);
         var run = CreateRun(httpClient);
         string? outerTraceId = null;
 
@@ -204,7 +198,7 @@ public sealed class LangfuseExperimentRunTests
 
         Assert.Equal(outerTraceId, outerResult.TraceId);
         Assert.NotEqual(outerResult.TraceId, outerResult.Value);
-        Assert.Equal(2, handler.CapturedRequests.Count);
+        Assert.Equal(2, captured.Count);
     }
 
     [Fact]
@@ -222,7 +216,7 @@ public sealed class LangfuseExperimentRunTests
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-abc",
-            runDescription: null,
+            options: null,
             diagnostics: d => diagnostic = d);
 
         var callbackInvoked = false;
@@ -239,7 +233,7 @@ public sealed class LangfuseExperimentRunTests
         Assert.True(callbackInvoked, "Expected best-effort link failure to continue into the callback.");
         Assert.Equal("continued", result.Value);
         Assert.NotNull(result.TraceId);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.Failed, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Failed, result.Link.Status);
         Assert.NotNull(diagnostic);
         Assert.Contains("missing", diagnostic!, StringComparison.Ordinal);
     }
@@ -293,7 +287,7 @@ public sealed class LangfuseExperimentRunTests
 
         Assert.Equal("not sampled", result.Value);
         Assert.Null(result.TraceId);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.Link.Status);
         Assert.Empty(handler.CapturedRequests);
     }
 
@@ -314,7 +308,7 @@ public sealed class LangfuseExperimentRunTests
             _cancellationToken);
 
         Assert.Equal("continued", result.Value);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.Link.Status);
         Assert.Empty(handler.CapturedRequests);
     }
 
@@ -342,7 +336,7 @@ public sealed class LangfuseExperimentRunTests
 
         Assert.NotNull(result.Value);
         Assert.Null(result.TraceId);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.NotSampled, result.Link.Status);
         Assert.Empty(handler.CapturedRequests);
     }
 
@@ -380,14 +374,14 @@ public sealed class LangfuseExperimentRunTests
     public async Task RunItemAsync_CallbackLangfuseExceptionIsNotTreatedAsLinkFailure()
     {
         using var listener = LangfuseTestFactory.StartListener();
-        using var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
+        using var httpClient = LangfuseDatasetRunItemHttpStub.Create("dataset-run-1", []);
         string? diagnostic = null;
         var run = new LangfuseExperimentRun(
             new LangfuseApiClient(httpClient, BaseUrl, "Basic x"),
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-abc",
-            runDescription: null,
+            options: null,
             diagnostics: message => diagnostic = message);
 
         var exception = await Assert.ThrowsAsync<LangfuseException>(() =>
@@ -403,7 +397,7 @@ public sealed class LangfuseExperimentRunTests
     [Fact]
     public async Task DisabledRunItemAsync_InvokesCallbackAndReturnsDisabled()
     {
-        var run = new DisabledLangfuseExperimentRun("evals", "run-abc");
+        var run = new DisabledLangfuseExperimentRun("evals", "run-abc", options: null);
 
         var result = await run.RunItemAsync(
             "case-1",
@@ -418,7 +412,7 @@ public sealed class LangfuseExperimentRunTests
 
         Assert.Equal(42, result.Value);
         Assert.Null(result.TraceId);
-        Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, result.LinkStatus);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, result.Link.Status);
     }
 
     private static LangfuseExperimentRun CreateRun(HttpClient httpClient) =>
@@ -427,6 +421,6 @@ public sealed class LangfuseExperimentRunTests
             LangfuseTestFactory.OkScoreRecorder(),
             datasetName: "evals",
             runName: "run-abc",
-            runDescription: null,
+            options: null,
             diagnostics: null);
 }

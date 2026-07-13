@@ -8,7 +8,14 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 internal sealed class TrackingHttpMessageHandler : HttpMessageHandler
 {
     private readonly List<CapturedRequest> _capturedRequests = [];
+    private readonly Func<CapturedRequest, HttpResponseMessage>? _responder;
     private int _disposeCalls;
+
+    public TrackingHttpMessageHandler(
+        Func<CapturedRequest, HttpResponseMessage>? responder = null)
+    {
+        _responder = responder;
+    }
 
     public IReadOnlyList<CapturedRequest> CapturedRequests
     {
@@ -30,15 +37,17 @@ internal sealed class TrackingHttpMessageHandler : HttpMessageHandler
         var body = request.Content is null
             ? null
             : await request.Content.ReadAsStringAsync(cancellationToken);
+        var capturedRequest = new CapturedRequest(
+            request.Method,
+            request.RequestUri!,
+            body);
         lock (_capturedRequests)
         {
-            _capturedRequests.Add(new CapturedRequest(
-                request.Method,
-                request.RequestUri!,
-                body));
+            _capturedRequests.Add(capturedRequest);
         }
 
-        return new HttpResponseMessage(HttpStatusCode.OK);
+        return _responder?.Invoke(capturedRequest)
+            ?? new HttpResponseMessage(HttpStatusCode.OK);
     }
 
     protected override void Dispose(bool disposing)

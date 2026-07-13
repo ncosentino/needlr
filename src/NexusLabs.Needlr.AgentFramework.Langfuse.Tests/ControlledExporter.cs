@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using OpenTelemetry;
 
 namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
@@ -51,7 +53,7 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
 
         var released = timeoutMilliseconds == Timeout.Infinite
             ? WaitIndefinitely()
-            : _shutdownRelease.Wait(timeoutMilliseconds);
+            : WaitForRelease(timeoutMilliseconds);
 
         return released && ShutdownSucceeds;
     }
@@ -73,5 +75,29 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
     {
         _shutdownRelease.Wait();
         return true;
+    }
+
+    private bool WaitForRelease(int timeoutMilliseconds)
+    {
+        if (timeoutMilliseconds <= 0)
+        {
+            return _shutdownRelease.IsSet;
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+        while (true)
+        {
+            var remainingMilliseconds =
+                timeoutMilliseconds - (int)Math.Ceiling(stopwatch.Elapsed.TotalMilliseconds);
+            if (remainingMilliseconds <= 0)
+            {
+                return _shutdownRelease.IsSet;
+            }
+
+            if (_shutdownRelease.Wait(remainingMilliseconds))
+            {
+                return true;
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// </remarks>
 internal sealed class LangfuseApiClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -25,6 +25,14 @@ internal sealed class LangfuseApiClient
 
     private readonly HttpClient _httpClient;
     private readonly Uri _baseUrl;
+
+    internal static JsonElement SerializeToElement(object value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return value is JsonElement element
+            ? element.Clone()
+            : JsonSerializer.SerializeToElement(value, value.GetType(), SerializerOptions);
+    }
 
     public LangfuseApiClient(HttpClient httpClient, Uri baseUrl, string authorizationHeaderValue)
     {

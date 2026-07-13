@@ -1,3 +1,7 @@
+using System.Text.Json;
+
+using Microsoft.Extensions.AI.Evaluation;
+
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
@@ -6,10 +10,21 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// </summary>
 internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 {
-    public DisabledLangfuseExperimentRun(string datasetName, string runName)
+    private readonly LangfuseExperimentRunState _state = new(disabled: true);
+
+    public DisabledLangfuseExperimentRun(
+        string datasetName,
+        string runName,
+        LangfuseExperimentRunOptions? options)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(datasetName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runName);
+
         DatasetName = datasetName;
         RunName = runName;
+        options ??= new LangfuseExperimentRunOptions();
+        Description = options.NormalizeDescription();
+        Metadata = options.FreezeMetadata();
     }
 
     /// <inheritdoc />
@@ -17,6 +32,19 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 
     /// <inheritdoc />
     public string RunName { get; }
+
+    /// <inheritdoc />
+    public string? Description { get; }
+
+    /// <inheritdoc />
+    public JsonElement? Metadata { get; }
+
+    /// <inheritdoc />
+    public string? DatasetRunId => null;
+
+    /// <inheritdoc />
+    public LangfuseDatasetRunIdentityStatus IdentityStatus =>
+        LangfuseDatasetRunIdentityStatus.Disabled;
 
     /// <inheritdoc />
     public async Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
@@ -34,9 +62,93 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 
         using var scenario = new DisabledLangfuseScenario();
         var value = await callback(scenario, cancellationToken).ConfigureAwait(false);
+        var link = new LangfuseExperimentItemLinkResult(
+            LangfuseExperimentItemLinkStatus.Disabled,
+            datasetRunItemId: null,
+            datasetRunId: null,
+            failure: null);
+        _state.RecordItemLink(link.Status);
         return new LangfuseExperimentItemResult<T>(
             value,
             traceId: null,
-            LangfuseExperimentItemLinkStatus.Disabled);
+            link);
+    }
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        double value,
+        string? comment = null,
+        CancellationToken cancellationToken = default) =>
+        RecordDisabledScoreAsync(name, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        bool value,
+        string? comment = null,
+        CancellationToken cancellationToken = default) =>
+        RecordDisabledScoreAsync(name, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        string value,
+        string? comment = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return RecordDisabledScoreAsync(name, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
+        EvaluationResult result,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var outcomes = result.Metrics.Values
+            .Select(metric => LangfuseScoreRecorder.HasPublishableValue(metric)
+                ? CreateDisabledScore(metric.Name)
+                : CreateSkippedScore(metric.Name))
+            .ToArray();
+        return Task.FromResult<IReadOnlyList<LangfuseExperimentRunScoreResult>>(outcomes);
+    }
+
+    /// <inheritdoc />
+    public LangfuseExperimentRunPublicationSnapshot GetPublicationSnapshot() =>
+        _state.GetSnapshot();
+
+    private Task<LangfuseExperimentRunScoreResult> RecordDisabledScoreAsync(
+        string name,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(CreateDisabledScore(name));
+    }
+
+    private LangfuseExperimentRunScoreResult CreateDisabledScore(string name)
+    {
+        var result = new LangfuseExperimentRunScoreResult(
+            name,
+            LangfuseExperimentRunScoreStatus.Disabled,
+            datasetRunId: null,
+            failure: null);
+        _state.RecordRunScore(result.Status);
+        return result;
+    }
+
+    private LangfuseExperimentRunScoreResult CreateSkippedScore(string name)
+    {
+        var result = new LangfuseExperimentRunScoreResult(
+            name,
+            LangfuseExperimentRunScoreStatus.Skipped,
+            datasetRunId: null,
+            failure: null);
+        _state.RecordRunScore(result.Status);
+        return result;
     }
 }
