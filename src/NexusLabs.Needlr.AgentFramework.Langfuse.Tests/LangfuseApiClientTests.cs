@@ -99,7 +99,7 @@ public sealed class LangfuseApiClientTests
 
         var client = new LangfuseApiClient(httpClient, new Uri("https://lf.example/"), "Basic x");
 
-        var ex = await Assert.ThrowsAsync<LangfuseException>(() => client.PostAsync(
+        var ex = await Assert.ThrowsAnyAsync<LangfuseException>(() => client.PostAsync(
             "api/public/dataset-run-items",
             new SamplePayload("n", 1),
             TestContext.Current.CancellationToken));

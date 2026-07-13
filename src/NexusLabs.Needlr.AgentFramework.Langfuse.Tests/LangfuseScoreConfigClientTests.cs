@@ -17,7 +17,7 @@ public sealed class LangfuseScoreConfigClientTests
                 : new HttpResponseMessage(HttpStatusCode.OK),
             captured);
 
-        var client = new LangfuseScoreConfigClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
+        var client = CreateClient(httpClient);
 
         await client.EnsureScoreConfigAsync(
             new LangfuseScoreConfig
@@ -46,11 +46,13 @@ public sealed class LangfuseScoreConfigClientTests
         var captured = new List<CapturedRequest>();
         using var httpClient = LangfuseHttpStub.Create(
             request => request.Method == HttpMethod.Get
-                ? LangfuseHttpStub.Json(HttpStatusCode.OK, "{\"data\":[{\"name\":\"correctness\"}],\"meta\":{\"totalPages\":1}}")
+                ? LangfuseHttpStub.Json(
+                    HttpStatusCode.OK,
+                    "{\"data\":[{\"name\":\"correctness\",\"dataType\":\"NUMERIC\"}],\"meta\":{\"totalPages\":1}}")
                 : new HttpResponseMessage(HttpStatusCode.OK),
             captured);
 
-        var client = new LangfuseScoreConfigClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
+        var client = CreateClient(httpClient);
 
         await client.EnsureScoreConfigAsync(
             new LangfuseScoreConfig { Name = "correctness", DataType = LangfuseScoreDataType.Numeric },
@@ -69,7 +71,7 @@ public sealed class LangfuseScoreConfigClientTests
                 : new HttpResponseMessage(HttpStatusCode.OK),
             captured);
 
-        var client = new LangfuseScoreConfigClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
+        var client = CreateClient(httpClient);
 
         await client.EnsureScoreConfigAsync(
             new LangfuseScoreConfig
@@ -93,4 +95,10 @@ public sealed class LangfuseScoreConfigClientTests
         Assert.False(json.RootElement.TryGetProperty("minValue", out _));
         Assert.False(json.RootElement.TryGetProperty("maxValue", out _));
     }
+
+    private static LangfuseScoreConfigClient CreateClient(HttpClient httpClient) =>
+        new(
+            new LangfuseApiClient(httpClient, BaseUrl, "Basic x"),
+            new LangfuseInProcessResourceLockProvider(),
+            "project");
 }

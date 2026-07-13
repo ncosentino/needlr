@@ -23,6 +23,10 @@ public sealed class LangfuseServiceCollectionExtensionsTests
         var scoreClient = provider.GetService<ILangfuseScoreClient>();
         Assert.NotNull(scoreClient);
         Assert.True(scoreClient!.IsEnabled);
+        var client = provider.GetRequiredService<ILangfuseClient>();
+        Assert.Same(
+            client.PublicationHealth,
+            provider.GetRequiredService<LangfusePublicationHealth>());
 
         // AddOpenTelemetry registers a TracerProvider when tracing is configured.
         Assert.NotNull(provider.GetService<TracerProvider>());
@@ -47,6 +51,10 @@ public sealed class LangfuseServiceCollectionExtensionsTests
         var scoreClient = provider.GetService<ILangfuseScoreClient>();
         Assert.NotNull(scoreClient);
         Assert.False(scoreClient!.IsEnabled);
+        var client = provider.GetRequiredService<ILangfuseClient>();
+        Assert.Same(
+            client.PublicationHealth,
+            provider.GetRequiredService<LangfusePublicationHealth>());
     }
 
     [Fact]
@@ -57,8 +65,64 @@ public sealed class LangfuseServiceCollectionExtensionsTests
 
         using var provider = services.BuildServiceProvider();
         var scoreClient = provider.GetRequiredService<ILangfuseScoreClient>();
+        var client = provider.GetRequiredService<ILangfuseClient>();
 
         await scoreClient.RecordScoreAsync("trace", "name", 1.0, cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal(0, scoreClient.ScoresFailed);
+        Assert.False(client.PublicationHealth.GetSnapshot().IsEnabled);
+        Assert.Equal(0, client.PublicationHealth.GetSnapshot().ScoreUploads.Total);
+    }
+
+    [Fact]
+    public async Task AddNeedlrLangfuse_Configured_UsesNamedHttpClientPipelineForRestCalls()
+    {
+        var handler = new TrackingHttpMessageHandler(request =>
+            LangfuseHttpStub.Json(
+                System.Net.HttpStatusCode.OK,
+                """{"id":"score-1"}"""));
+        var services = new ServiceCollection();
+        services
+            .AddHttpClient(LangfuseServiceCollectionExtensions.HttpClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddNeedlrLangfuse(options =>
+        {
+            options.PublicKey = "pk-lf-1";
+            options.SecretKey = "sk-lf-2";
+            options.Host = "http://localhost:3000";
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var scoreClient = provider.GetRequiredService<ILangfuseScoreClient>();
+        var client = provider.GetRequiredService<ILangfuseClient>();
+
+        await scoreClient.RecordScoreAsync(
+            "trace-1",
+            "quality",
+            1,
+            new LangfuseScoreOptions { Id = "score-1" },
+            TestContext.Current.CancellationToken);
+
+        var request = Assert.Single(handler.CapturedRequests);
+        Assert.Equal("/api/public/scores", request.Uri.AbsolutePath);
+        Assert.Equal(1, client.PublicationHealth.GetSnapshot().ScoreUploads.Succeeded);
+    }
+
+    [Fact]
+    public void AddNeedlrLangfuse_Configured_PreservesPreRegisteredResourceLockProvider()
+    {
+        var resourceLocks = new LangfuseInProcessResourceLockProvider();
+        var services = new ServiceCollection();
+        services.AddSingleton<ILangfuseResourceLockProvider>(resourceLocks);
+        services.AddNeedlrLangfuse(options =>
+        {
+            options.PublicKey = "pk-lf-1";
+            options.SecretKey = "sk-lf-2";
+            options.Host = "http://localhost:3000";
+        });
+
+        using var provider = services.BuildServiceProvider();
+
+        Assert.Same(
+            resourceLocks,
+            provider.GetRequiredService<ILangfuseResourceLockProvider>());
     }
 }

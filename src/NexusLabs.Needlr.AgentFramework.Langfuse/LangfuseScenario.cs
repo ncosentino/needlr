@@ -87,30 +87,33 @@ internal sealed class LangfuseScenario : ILangfuseScenario
     public Activity? Activity => _activity;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, options, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, options, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         TraceId is { Length: > 0 } id
-            ? _scores.RecordScoreAsync(id, name, value, comment, cancellationToken)
+            ? _scores.RecordScoreAsync(id, name, value, options, cancellationToken)
             : _recorder.RecordSkippedAsync(name, cancellationToken);
 
     /// <inheritdoc />
-    public Task RecordEvaluationAsync(EvaluationResult result, CancellationToken cancellationToken = default)
+    public Task RecordEvaluationAsync(
+        EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(result);
 
         return TraceId is { Length: > 0 } id
-            ? _scores.RecordEvaluationAsync(id, result, cancellationToken)
+            ? _scores.RecordEvaluationAsync(id, result, options, cancellationToken)
             : _recorder.RecordSkippedAsync("evaluation", cancellationToken);
     }
 
@@ -176,21 +179,21 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         value as string ?? JsonSerializer.Serialize(value);
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, options, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, options, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         _sessionId is { Length: > 0 } sid
-            ? _scores.RecordSessionScoreAsync(sid, name, value, comment, cancellationToken)
+            ? _scores.RecordSessionScoreAsync(sid, name, value, options, cancellationToken)
             : SkipSessionScore(name, cancellationToken);
 
     private Task SkipSessionScore(string name, CancellationToken cancellationToken) =>

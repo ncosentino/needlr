@@ -26,9 +26,9 @@ public interface ILangfuseClient
     bool IsEnabled { get; }
 
     /// <summary>
-    /// Gets the cumulative number of evaluation-score uploads that failed in non-fatal mode.
+    /// Gets structured trace, REST publication, retry, and local-drain health.
     /// </summary>
-    int ScoresFailed { get; }
+    LangfusePublicationHealth PublicationHealth { get; }
 
     /// <summary>
     /// Gets the client for recording scores against known trace, observation, and session ids.

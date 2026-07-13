@@ -7,6 +7,7 @@ internal sealed class DisabledLangfuseClient : ILangfuseClient
 {
     public DisabledLangfuseClient()
     {
+        PublicationHealth = new LangfusePublicationHealth(isEnabled: false);
         Scores = new DisabledLangfuseScoreClient();
         Datasets = new DisabledLangfuseDatasetClient();
         ScoreConfigs = new DisabledLangfuseScoreConfigClient();
@@ -19,7 +20,7 @@ internal sealed class DisabledLangfuseClient : ILangfuseClient
     public bool IsEnabled => false;
 
     /// <inheritdoc />
-    public int ScoresFailed => 0;
+    public LangfusePublicationHealth PublicationHealth { get; }
 
     /// <inheritdoc />
     public ILangfuseScoreClient Scores { get; }

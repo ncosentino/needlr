@@ -32,6 +32,10 @@ public sealed class LangfuseSessionShutdownTests
         Assert.Equal(1, traceExporter.DisposeCalls);
         Assert.Equal(1, metricExporter.DisposeCalls);
         Assert.Equal(1, handler.DisposeCalls);
+        var drain = session.PublicationHealth.GetSnapshot().Drain;
+        Assert.Equal(1, drain.Attempts);
+        Assert.Equal(LangfuseDrainStatus.Completed, drain.Status);
+        Assert.NotNull(drain.Duration);
     }
 
     [Fact]
@@ -64,6 +68,71 @@ public sealed class LangfuseSessionShutdownTests
         Assert.True(outcome.IsFinal, "Expected provider-specific statuses in the final outcome.");
         Assert.Equal(LangfuseProviderShutdownStatus.Completed, outcome.Traces);
         Assert.Equal(LangfuseProviderShutdownStatus.Incomplete, outcome.Metrics);
+        Assert.Equal(
+            LangfuseDrainStatus.Incomplete,
+            session.PublicationHealth.GetSnapshot().Drain.Status);
+    }
+
+    [Fact]
+    public async Task Shutdown_WhileTraceExportIsActive_IsBoundedAndReportsIncompleteDrain()
+    {
+        const string sourceName = "LangfuseSessionShutdownTests.ActiveExport";
+        var health = new LangfusePublicationHealth(isEnabled: true);
+        var exporter = new ControlledExporter<Activity>();
+        exporter.BlockExport();
+        var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddProcessor(new LangfuseBatchActivityExportProcessor(
+                exporter,
+                health,
+                maxQueueSize: 4,
+                scheduledDelayMilliseconds: 1,
+                maxExportBatchSize: 1))
+            .Build();
+        var handler = new TrackingHttpMessageHandler();
+        var transport = new LangfuseHttpTransport(
+            new HttpClient(handler, disposeHandler: true));
+        var options = new LangfuseOptions
+        {
+            PublicKey = "pk",
+            SecretKey = "sk",
+            Host = "https://lf.example",
+        };
+        var composition = new LangfuseClientComposition(
+            transport,
+            LangfuseEndpoints.Resolve(options),
+            options,
+            options.ResourceLockProvider,
+            health);
+        var session = new LangfuseSession(
+            tracerProvider,
+            meterProvider: null,
+            transport,
+            new LangfuseClient(composition),
+            options.ShutdownTimeout);
+        using var source = new ActivitySource(sourceName);
+        using (var activity = source.StartActivity("active-export"))
+        {
+            Assert.NotNull(activity);
+        }
+        exporter.WaitForExport(_cancellationToken);
+
+        var outcome = session.Shutdown(TimeSpan.FromMilliseconds(20));
+
+        Assert.Equal(LangfuseProviderShutdownStatus.Incomplete, outcome.Traces);
+        var drain = session.PublicationHealth.GetSnapshot().Drain;
+        Assert.Equal(LangfuseDrainStatus.Incomplete, drain.Status);
+        Assert.NotNull(drain.Duration);
+
+        exporter.ReleaseExport();
+        while (exporter.DisposeCalls == 0)
+        {
+            _cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+        }
+
+        Assert.Equal(1, exporter.DisposeCalls);
+        Assert.Equal(1, handler.DisposeCalls);
     }
 
     [Fact]

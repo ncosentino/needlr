@@ -7,11 +7,8 @@ public sealed class LangfuseScoreClientTargetTests
 {
     private static LangfuseScoreClient CreateClient(List<CapturedRequest> captured)
     {
-        var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), captured);
-        var apiClient = new LangfuseScoreApiClient(
-            httpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
+        var httpClient = LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, captured);
+        var apiClient = LangfuseTestFactory.CreateScoreApiClient(httpClient);
         var sink = new LangfuseScoreFailureSink(LangfuseScoreFailureMode.Strict, null);
         var recorder = new LangfuseScoreRecorder(apiClient, sink, normalizeNames: false);
         return new LangfuseScoreClient(recorder, sink);
@@ -23,7 +20,13 @@ public sealed class LangfuseScoreClientTargetTests
         var captured = new List<CapturedRequest>();
         var client = CreateClient(captured);
 
-        await client.RecordObservationScoreAsync("trace-1", "obs-2", "tool_correct", true, "ok", TestContext.Current.CancellationToken);
+        await client.RecordObservationScoreAsync(
+            "trace-1",
+            "obs-2",
+            "tool_correct",
+            true,
+            new LangfuseScoreOptions { Comment = "ok" },
+            TestContext.Current.CancellationToken);
 
         using var json = JsonDocument.Parse(Assert.Single(captured).Body!);
         Assert.Equal("trace-1", json.RootElement.GetProperty("traceId").GetString());

@@ -17,19 +17,19 @@ internal sealed class DisabledLangfuseScenario : ILangfuseScenario
     public Activity? Activity => null;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordEvaluationAsync(EvaluationResult result, CancellationToken cancellationToken = default) =>
+    public Task RecordEvaluationAsync(EvaluationResult result, LangfuseEvaluationScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
@@ -63,15 +63,15 @@ internal sealed class DisabledLangfuseScenario : ILangfuseScenario
     }
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, double value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, bool value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, string value, string? comment = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     /// <inheritdoc />

@@ -22,23 +22,38 @@ internal sealed class LangfuseDatasetClient : ILangfuseDatasetClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        var existing = await _apiClient
-            .GetOrDefaultAsync<LangfuseDatasetRef>(
-                $"api/public/v2/datasets/{Uri.EscapeDataString(name)}",
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (existing is not null)
+        var request = new LangfuseCreateDatasetRequest
         {
-            return;
-        }
+            Name = name,
+            Description = description,
+        };
 
-        await _apiClient
-            .PostAsync(
-                "api/public/v2/datasets",
-                new LangfuseCreateDatasetRequest { Name = name, Description = description },
-                cancellationToken)
-            .ConfigureAwait(false);
+        try
+        {
+            await _apiClient
+                .PostIdempotentAsync(
+                    "api/public/v2/datasets",
+                    request,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (LangfuseHttpException ex)
+            when (ex.StatusCode is System.Net.HttpStatusCode.Conflict)
+        {
+            var existing = await _apiClient
+                .GetOrDefaultAsync<LangfuseDatasetRef>(
+                    $"api/public/v2/datasets/{Uri.EscapeDataString(name)}",
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (existing is not null
+                && string.Equals(existing.Name, name, StringComparison.Ordinal)
+                && string.Equals(existing.Description, description, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            throw;
+        }
     }
 
     /// <inheritdoc />

@@ -15,6 +15,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
     private readonly ILangfuseScoreClient _scores;
     private readonly LangfuseExperimentRunState _state;
     private readonly Action<string>? _diagnostics;
+    private readonly LangfusePublicationHealth _health;
 
     public LangfuseExperimentRun(
         LangfuseApiClient apiClient,
@@ -22,7 +23,8 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         string datasetName,
         string runName,
         LangfuseExperimentRunOptions? options,
-        Action<string>? diagnostics)
+        Action<string>? diagnostics,
+        LangfusePublicationHealth? health = null)
         : this(
             apiClient,
             CreateScoreClient(recorder),
@@ -30,7 +32,8 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             datasetName,
             runName,
             options,
-            diagnostics)
+            diagnostics,
+            health)
     {
     }
 
@@ -41,7 +44,8 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         string datasetName,
         string runName,
         LangfuseExperimentRunOptions? options,
-        Action<string>? diagnostics)
+        Action<string>? diagnostics,
+        LangfusePublicationHealth? health = null)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
         ArgumentNullException.ThrowIfNull(scores);
@@ -54,6 +58,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         _recorder = recorder;
         _state = new LangfuseExperimentRunState(disabled: false);
         _diagnostics = diagnostics;
+        _health = health ?? new LangfusePublicationHealth(isEnabled: true);
         DatasetName = datasetName;
         RunName = runName;
         options ??= new LangfuseExperimentRunOptions();
@@ -152,7 +157,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         double value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default) =>
         RecordScoreAsync(
             name,
@@ -160,16 +165,17 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 target,
                 name,
                 value,
-                comment,
+                options,
                 observer,
                 token),
+            options,
             cancellationToken);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         bool value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default) =>
         RecordScoreAsync(
             name,
@@ -177,16 +183,17 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 target,
                 name,
                 value,
-                comment,
+                options,
                 observer,
                 token),
+            options,
             cancellationToken);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         string value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -196,15 +203,17 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 target,
                 name,
                 value,
-                comment,
+                options,
                 observer,
                 token),
+            options,
             cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -220,6 +229,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 if (!LangfuseScoreRecorder.HasPublishableValue(metric))
                 {
                     var skipped = new LangfuseExperimentRunScoreResult(
+                        GetEvaluationScoreId(metric, options),
                         metric.Name,
                         LangfuseExperimentRunScoreStatus.Skipped,
                         datasetRunId: null,
@@ -230,7 +240,10 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 }
 
                 unavailable.Add(
-                    await RecordUnavailableScoreAsync(metric.Name, cancellationToken).ConfigureAwait(false));
+                    await RecordUnavailableScoreAsync(
+                        metric.Name,
+                        GetEvaluationScoreId(metric, options),
+                        cancellationToken).ConfigureAwait(false));
             }
 
             return unavailable;
@@ -243,6 +256,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             await _recorder.RecordEvaluationResultsAsync(
                 LangfuseScoreTarget.DatasetRun(datasetRunId),
                 result,
+                options,
                 scoreResult =>
                 {
                     var outcome = ToRunScoreResult(scoreResult, datasetRunId);
@@ -281,6 +295,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             };
 
             LangfuseCreateDatasetRunItemResponse? response;
+            _health.BeginItemLink();
             try
             {
                 response = await _apiClient
@@ -290,8 +305,14 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                         cancellationToken)
                     .ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                _health.CancelItemLink();
+                throw;
+            }
             catch (JsonException ex)
             {
+                _health.CompleteItemLink(succeeded: false);
                 return HandleLinkFailure(
                     datasetItemId,
                     traceId,
@@ -301,6 +322,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             }
             catch (LangfuseException ex)
             {
+                _health.CompleteItemLink(succeeded: false);
                 return HandleLinkFailure(
                     datasetItemId,
                     traceId,
@@ -312,6 +334,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             var validationFailure = ValidateLinkResponse(response, datasetItemId, traceId);
             if (validationFailure is not null)
             {
+                _health.CompleteItemLink(succeeded: false);
                 return HandleLinkFailure(
                     datasetItemId,
                     traceId,
@@ -323,6 +346,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             var status = _state.ObserveDatasetRunId(response!.DatasetRunId);
             if (status is LangfuseExperimentItemLinkStatus.Inconsistent)
             {
+                _health.CompleteItemLink(succeeded: false);
                 var failure = new LangfusePublicationFailure(
                     LangfusePublicationFailureCode.InconsistentDatasetRunIdentity,
                     $"Langfuse returned dataset run '{response.DatasetRunId}' for item '{datasetItemId}', " +
@@ -348,6 +372,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 response.DatasetRunId,
                 failure: null);
             _state.RecordItemLink(linked.Status);
+            _health.CompleteItemLink(succeeded: true);
             return linked;
         }
         finally
@@ -408,16 +433,18 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             Action<LangfuseScoreRecordResult>,
             CancellationToken,
             Task<LangfuseScoreRecordResult>> recordScore,
+        LangfuseScoreOptions? options,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(recordScore);
         cancellationToken.ThrowIfCancellationRequested();
+        var scoreId = GetScoreId(options);
 
         var datasetRunId = DatasetRunId;
         if (datasetRunId is null)
         {
-            return await RecordUnavailableScoreAsync(name, cancellationToken).ConfigureAwait(false);
+            return await RecordUnavailableScoreAsync(name, scoreId, cancellationToken).ConfigureAwait(false);
         }
 
         LangfuseExperimentRunScoreResult? observed = null;
@@ -442,6 +469,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
 
     private async Task<LangfuseExperimentRunScoreResult> RecordUnavailableScoreAsync(
         string name,
+        string? scoreId,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -457,6 +485,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 : $"Cannot record dataset-run score '{name}': no successful item link has resolved the dataset-run id.";
             var failure = new LangfusePublicationFailure(failureCode, message);
             var result = new LangfuseExperimentRunScoreResult(
+                scoreId,
                 name,
                 LangfuseExperimentRunScoreStatus.NotAttempted,
                 datasetRunId: null,
@@ -493,9 +522,33 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 LangfusePublicationFailureCode.ApiRejected,
                 result.Failure.Message);
         return new LangfuseExperimentRunScoreResult(
+            result.ScoreId,
             result.Name,
             status,
             datasetRunId,
             failure);
+    }
+
+    private static string? GetScoreId(LangfuseScoreOptions? options)
+    {
+        if (options?.Id is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.Id);
+        }
+
+        return options?.Id;
+    }
+
+    private static string? GetEvaluationScoreId(
+        EvaluationMetric metric,
+        LangfuseEvaluationScoreOptions? options)
+    {
+        var scoreId = options?.ScoreIdProvider?.Invoke(metric);
+        if (scoreId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(scoreId);
+        }
+
+        return scoreId;
     }
 }

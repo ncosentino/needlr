@@ -11,9 +11,12 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
     where T : class
 {
     private readonly Func<int>? _getDependencyDisposeCalls;
+    private readonly ManualResetEventSlim _exportEntered = new(initialState: false);
+    private readonly ManualResetEventSlim _exportRelease = new(initialState: true);
     private readonly ManualResetEventSlim _shutdownEntered = new(initialState: false);
     private readonly ManualResetEventSlim _shutdownRelease = new(initialState: true);
     private int _disposeCalls;
+    private int _exportCalls;
     private int _shutdownCalls;
 
     public ControlledExporter(Func<int>? getDependencyDisposeCalls = null)
@@ -27,11 +30,28 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
 
     public int DisposeCalls => Volatile.Read(ref _disposeCalls);
 
+    public int ExportCalls => Volatile.Read(ref _exportCalls);
+
+    public ExportResult ExportResult { get; set; } = ExportResult.Success;
+
     public int ShutdownCalls => Volatile.Read(ref _shutdownCalls);
 
     public int? LastShutdownTimeoutMilliseconds { get; private set; }
 
-    public override ExportResult Export(in Batch<T> batch) => ExportResult.Success;
+    public override ExportResult Export(in Batch<T> batch)
+    {
+        Interlocked.Increment(ref _exportCalls);
+        _exportEntered.Set();
+        _exportRelease.Wait();
+        return ExportResult;
+    }
+
+    public void BlockExport() => _exportRelease.Reset();
+
+    public void ReleaseExport() => _exportRelease.Set();
+
+    public void WaitForExport(CancellationToken cancellationToken) =>
+        _exportEntered.Wait(cancellationToken);
 
     public void BlockShutdown() => _shutdownRelease.Reset();
 
@@ -64,6 +84,8 @@ internal sealed class ControlledExporter<T> : BaseExporter<T>
         {
             DependencyDisposeCallsAtDispose ??= _getDependencyDisposeCalls?.Invoke();
             Interlocked.Increment(ref _disposeCalls);
+            _exportEntered.Dispose();
+            _exportRelease.Dispose();
             _shutdownEntered.Dispose();
             _shutdownRelease.Dispose();
         }

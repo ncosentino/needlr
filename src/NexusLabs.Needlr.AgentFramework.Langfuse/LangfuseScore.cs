@@ -40,4 +40,5 @@ internal sealed record LangfuseScore
 
     /// <summary>Gets the optional client-supplied id used as an idempotency key.</summary>
     public string? Id { get; init; }
+
 }

@@ -58,9 +58,11 @@ public static class LangfuseTelemetry
         }
 
         _ = LangfuseTimeout.ToShutdownMilliseconds(options.ShutdownTimeout);
+        options.TraceExport.Validate();
 
         var endpoints = LangfuseEndpoints.Resolve(options);
         var resource = BuildResource(options);
+        var publicationHealth = new LangfusePublicationHealth(isEnabled: true);
 
         var tracerProvider = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
@@ -69,7 +71,10 @@ public static class LangfuseTelemetry
             .AddSource(options.AgentActivitySourceName)
             .AddSource([.. options.AdditionalActivitySources])
             .AddProcessor(new LangfuseTraceAttributeProcessor(options.Environment, options.Release))
-            .AddOtlpExporter(otlp => ConfigureOtlp(otlp, endpoints.TracesEndpoint, endpoints.Headers))
+            .AddProcessor(LangfuseTraceExport.CreateProcessor(
+                endpoints,
+                options.TraceExport,
+                publicationHealth))
             .Build();
 
         MeterProvider? meterProvider = null;
@@ -85,7 +90,13 @@ public static class LangfuseTelemetry
         }
 
         var transport = new LangfuseHttpTransport();
-        var client = new LangfuseClient(transport, endpoints, options);
+        var composition = new LangfuseClientComposition(
+            transport,
+            endpoints,
+            options,
+            options.ResourceLockProvider,
+            publicationHealth);
+        var client = new LangfuseClient(composition);
 
         return new LangfuseSession(
             tracerProvider,

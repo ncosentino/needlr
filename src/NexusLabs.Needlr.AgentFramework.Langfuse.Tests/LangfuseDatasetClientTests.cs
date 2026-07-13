@@ -8,21 +8,16 @@ public sealed class LangfuseDatasetClientTests
     private static readonly Uri BaseUrl = new("https://lf.example/");
 
     [Fact]
-    public async Task EnsureDatasetAsync_WhenMissing_CreatesDataset()
+    public async Task EnsureDatasetAsync_UpsertsDataset()
     {
         var captured = new List<CapturedRequest>();
         using var httpClient = LangfuseHttpStub.Create(
-            request => request.Method == HttpMethod.Get
-                ? new HttpResponseMessage(HttpStatusCode.NotFound)
-                : LangfuseHttpStub.Json(HttpStatusCode.OK, "{\"name\":\"evals\"}"),
+            _ => LangfuseHttpStub.Json(HttpStatusCode.OK, "{\"name\":\"evals\"}"),
             captured);
 
         var client = new LangfuseDatasetClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
 
         await client.EnsureDatasetAsync("evals", "regression suite", TestContext.Current.CancellationToken);
-
-        var get = Assert.Single(captured, c => c.Method == HttpMethod.Get);
-        Assert.EndsWith("/api/public/v2/datasets/evals", get.Uri.AbsolutePath, StringComparison.Ordinal);
 
         var post = Assert.Single(captured, c => c.Method == HttpMethod.Post);
         Assert.EndsWith("/api/public/v2/datasets", post.Uri.AbsolutePath, StringComparison.Ordinal);
@@ -32,7 +27,7 @@ public sealed class LangfuseDatasetClientTests
     }
 
     [Fact]
-    public async Task EnsureDatasetAsync_WhenPresent_DoesNotCreate()
+    public async Task EnsureDatasetAsync_WhenRepeated_UsesTheSameIdempotentUpsert()
     {
         var captured = new List<CapturedRequest>();
         using var httpClient = LangfuseHttpStub.Create(
@@ -43,7 +38,9 @@ public sealed class LangfuseDatasetClientTests
 
         await client.EnsureDatasetAsync("evals", cancellationToken: TestContext.Current.CancellationToken);
 
-        Assert.DoesNotContain(captured, c => c.Method == HttpMethod.Post);
+        var post = Assert.Single(captured);
+        Assert.Equal(HttpMethod.Post, post.Method);
+        Assert.EndsWith("/api/public/v2/datasets", post.Uri.AbsolutePath, StringComparison.Ordinal);
     }
 
     [Fact]

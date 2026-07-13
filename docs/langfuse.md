@@ -43,11 +43,21 @@ using (var scenario = langfuse.BeginScenario(
         inputs.Messages, inputs.ModelResponse, additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)]);
 
     // 3. Evaluator metrics become Langfuse scores on this trace.
-    await result.RecordLangfuseScoresAsync(scenario);
+    await result.RecordLangfuseScoresAsync(
+        scenario,
+        new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+        });
 }
 
 var shutdown = langfuse.Shutdown(TimeSpan.FromSeconds(5));
+var publication = langfuse.PublicationHealth.GetSnapshot();
 Console.WriteLine($"traces={shutdown.Traces}, metrics={shutdown.Metrics}");
+Console.WriteLine(
+    $"trace dropped={publication.TraceExport.Dropped}, " +
+    $"score failed={publication.ScoreUploads.Failed}, " +
+    $"retries={publication.Retries.Total}, drain={publication.Drain.Status}");
 ```
 
 That is the entire integration. When `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`
@@ -83,7 +93,11 @@ using (var scenario = langfuse.BeginScenario("trip-planner", sessionId: runId))
         evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000), new IterationCoherenceEvaluator(maxIterations: 20)],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)]);
+        additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)],
+        scoreOptions: new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+        });
 }
 ```
 
@@ -126,12 +140,51 @@ name). For cleaner dashboard filtering and grouping, enable
 `NormalizeScoreNames` to send `snake_case` names (e.g. `all_tool_calls_succeeded`) —
 this is the recommended shape unless you specifically want the authored names.
 
+### Stable score IDs and safe retries
+
+Supply `LangfuseScoreOptions.Id` when a score publication must be safely repeatable:
+
+```csharp
+await scenario.RecordScoreAsync(
+    "correctness",
+    0.94,
+    new LangfuseScoreOptions
+    {
+        Id = $"{runId}:case-42:correctness",
+        Comment = "All required facts were present.",
+    },
+    cancellationToken);
+```
+
+For a complete `EvaluationResult`, provide one stable id per metric:
+
+```csharp
+await scenario.RecordEvaluationAsync(
+    result,
+    new LangfuseEvaluationScoreOptions
+    {
+        ScoreIdProvider = metric => $"{runId}:case-42:{metric.Name}",
+    },
+    cancellationToken);
+```
+
+Langfuse uses the request-body `id` together with the score name and its server-assigned UTC date.
+There is no `Idempotency-Key` header. Needlr automatically retries score requests only when `Id`
+is present, always resending the complete unchanged payload. A retry that crosses a Langfuse UTC
+date boundary can still create another score, so callers should treat a stable id as bounded to
+one publication window rather than as a permanent global upsert key.
+
+GET requests and identical dataset upserts are also retry-safe. Other POST operations—including
+experiment item links, comments, prompts, dataset items, score-config creation, and model
+creation—are never retried blindly.
+
 ### Score-upload failures are non-fatal by default
 
 A score is a dashboard write that happens *after* an eval has already produced its
 verdict, so a transient Langfuse outage must not turn a green eval red. By default
-(`ScoreFailureMode.NonFatal`) a failed upload increments `ILangfuseSession.ScoresFailed`
-and invokes `ScoreErrorCallback` (wire it to your logger) but does **not** throw. Set
+(`ScoreFailureMode.NonFatal`) a failed upload increments
+`PublicationHealth.GetSnapshot().ScoreUploads.Failed` and invokes `ScoreErrorCallback`
+(wire it to your logger) but does **not** throw. Set
 `ScoreFailureMode.Strict` if a missing score should hard-fail the caller.
 
 Caller-requested cancellation is never converted into a non-fatal score or publication
@@ -141,6 +194,39 @@ failure. An `OperationCanceledException` propagates so a cancelled evaluation st
 var options = LangfuseOptions.FromEnvironment();
 options.ScoreErrorCallback = e => logger.LogWarning(e.Exception, "Langfuse score {Name} not recorded", e.ScoreName);
 ```
+
+### Publication health
+
+`ILangfuseClient.PublicationHealth` reports trace export, direct REST publication, retries, and
+local drain separately:
+
+```csharp
+LangfusePublicationHealthSnapshot health =
+    langfuse.PublicationHealth.GetSnapshot();
+
+Console.WriteLine(health.TraceExport.LocallyEnqueued);
+Console.WriteLine(health.TraceExport.Dropped);
+Console.WriteLine(health.TraceExport.Acknowledged);
+Console.WriteLine(health.TraceExport.Failed);
+Console.WriteLine(health.ScoreUploads.Failed);
+Console.WriteLine(health.ItemLinks.Failed);
+Console.WriteLine(health.Retries.RateLimited);
+Console.WriteLine(health.Drain.Status);
+Console.WriteLine(health.Drain.Duration);
+```
+
+The stages are intentionally distinct:
+
+- `LocallyObserved` means the custom processor saw a recorded activity.
+- `LocallyEnqueued` means the bounded local queue accepted it.
+- `Dropped` means the local queue rejected it because it was full or closing.
+- `Acknowledged` means the OTLP exporter returned success for the batch.
+- `Drain.Completed` means the local provider removed the requested work before its timeout.
+
+None of those values proves that Langfuse durably processed the event or made it queryable.
+Use read-back through Langfuse's public API when a workflow requires end-to-end confirmation.
+REST `Succeeded` counts likewise mean that Langfuse accepted the API request, not that asynchronous
+materialization completed.
 
 ### Span enrichment
 
@@ -203,7 +289,13 @@ foreach (var item in items)
         async (scenario, cancellationToken) =>
         {
             var evaluation = await RunAndEvaluate(item, cancellationToken);
-            await scenario.RecordEvaluationAsync(evaluation, cancellationToken);
+            await scenario.RecordEvaluationAsync(
+                evaluation,
+                new LangfuseEvaluationScoreOptions
+                {
+                    ScoreIdProvider = metric => $"{gitSha}:{item.Id}:{metric.Name}",
+                },
+                cancellationToken);
             return evaluation;
         },
         cancellationToken: cancellationToken);
@@ -214,9 +306,21 @@ foreach (var item in items)
 
 if (run.DatasetRunId is { } datasetRunId)
 {
-    await run.RecordScoreAsync("average_correctness", 0.94, cancellationToken: cancellationToken);
-    await run.RecordScoreAsync("passed", true, cancellationToken: cancellationToken);
-    await run.RecordScoreAsync("verdict", "acceptable", cancellationToken: cancellationToken);
+    await run.RecordScoreAsync(
+        "average_correctness",
+        0.94,
+        new LangfuseScoreOptions { Id = $"{gitSha}:average_correctness" },
+        cancellationToken);
+    await run.RecordScoreAsync(
+        "passed",
+        true,
+        new LangfuseScoreOptions { Id = $"{gitSha}:passed" },
+        cancellationToken);
+    await run.RecordScoreAsync(
+        "verdict",
+        "acceptable",
+        new LangfuseScoreOptions { Id = $"{gitSha}:verdict" },
+        cancellationToken);
 }
 
 var publication = run.GetPublicationSnapshot();
@@ -232,7 +336,7 @@ assigning `Activity.Current` or manually managing scenario lifetime.
 
 The dataset and its items must exist before the run links to them. Link failures use
 `LangfuseExperimentItemLinkFailureMode.BestEffort` by default: the callback still runs,
-`LinkStatus` is `Failed`, and details reach `DiagnosticsCallback`. Select strict behavior when
+`itemResult.Link.Status` is `Failed`, and details reach `DiagnosticsCallback`. Select strict behavior when
 publication is a prerequisite:
 
 ```csharp
@@ -241,7 +345,9 @@ var itemResult = await run.RunItemAsync(
     async (scenario, token) =>
     {
         var evaluation = await RunAndEvaluate(item, token);
-        await scenario.RecordEvaluationAsync(evaluation, token);
+        await scenario.RecordEvaluationAsync(
+            evaluation,
+            cancellationToken: token);
         return evaluation;
     },
     new LangfuseExperimentItemOptions
@@ -269,12 +375,30 @@ Run-level numeric, boolean, categorical, and MEAI evaluation scores target the r
 `DatasetRunId`:
 
 ```csharp
-await run.RecordScoreAsync("average_accuracy", 0.94, cancellationToken: cancellationToken);
-await run.RecordScoreAsync("passed", true, cancellationToken: cancellationToken);
-await run.RecordScoreAsync("verdict", "acceptable", cancellationToken: cancellationToken);
+await run.RecordScoreAsync(
+    "average_accuracy",
+    0.94,
+    new LangfuseScoreOptions { Id = $"{runId}:average_accuracy" },
+    cancellationToken);
+await run.RecordScoreAsync(
+    "passed",
+    true,
+    new LangfuseScoreOptions { Id = $"{runId}:passed" },
+    cancellationToken);
+await run.RecordScoreAsync(
+    "verdict",
+    "acceptable",
+    new LangfuseScoreOptions { Id = $"{runId}:verdict" },
+    cancellationToken);
 
 IReadOnlyList<LangfuseExperimentRunScoreResult> results =
-    await run.RecordEvaluationAsync(aggregateEvaluation, cancellationToken);
+    await run.RecordEvaluationAsync(
+        aggregateEvaluation,
+        new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+        },
+        cancellationToken);
 ```
 
 The methods return `Accepted`, `Failed`, `NotAttempted`, `Skipped`, or `Disabled`. `Accepted`
@@ -316,8 +440,18 @@ await langfuse.ScoreConfigs.EnsureScoreConfigAsync(new LangfuseScoreConfig
 });
 ```
 
-`EnsureScoreConfigAsync` is idempotent — it creates the config only when one of that name
-does not already exist — so it is safe to call on every run.
+`EnsureDatasetAsync` uses Langfuse's name-keyed dataset upsert directly. Identical concurrent calls
+are safe to repeat after throttling, transport failure, or transient 5xx responses. Concurrent
+calls that supply different descriptions are provider-defined last-writer-wins updates, so use one
+canonical dataset definition.
+
+Langfuse does not enforce score-config name uniqueness and does not accept a caller-supplied config
+id. Needlr therefore acquires `LangfuseOptions.ResourceLockProvider`, re-lists every page inside
+the lock, and compares the complete schema before creating. The default
+`LangfuseInProcessResourceLockProvider` prevents duplicates within one process. Applications with
+multiple workers or hosts must provide a distributed `ILangfuseResourceLockProvider` (for example,
+backed by Redis or a database advisory lock). An existing config with the same name but a different
+or ambiguous schema throws instead of silently accepting drift.
 
 ## Observation- and session-level scores
 
@@ -375,9 +509,11 @@ await langfuse.Models.EnsureModelPriceAsync(new LangfuseModelPrice
 });
 ```
 
-`EnsureModelPriceAsync` is idempotent (it creates the definition only when a model of that name is
-absent). Register prices **before** the generations are ingested so Langfuse computes cost at
-ingestion time.
+Langfuse model creation also lacks a reliable caller idempotency key and duplicate-name failures
+can surface as different HTTP statuses. Needlr uses the same resource-lock contract, compares the
+complete existing definition, and reconciles ambiguous transport/5xx failures by re-listing before
+retrying. Use a distributed lock provider for multi-process initialization. Register prices
+**before** the generations are ingested so Langfuse computes cost at ingestion time.
 
 ## Prompt linking
 
@@ -481,15 +617,45 @@ the `gen_ai.client.token.usage` histogram.
 | `Environment` | _(unset)_ | Deployment environment (e.g. `ci`, `production`), emitted as `langfuse.environment` on every span so Langfuse partitions the data. |
 | `Release` | _(unset)_ | Release identifier (e.g. a git SHA), emitted as `langfuse.release` for cross-release comparison. |
 | `IncludeMetrics` | `false` | Export Needlr's `gen_ai` metrics. Off by default — see note below. |
-| `ScoreFailureMode` | `NonFatal` | `NonFatal` records a failed score upload (counter + callback) without throwing; `Strict` throws. |
+| `ScoreFailureMode` | `NonFatal` | `NonFatal` records a failed score upload in publication health and invokes the callback without throwing; `Strict` throws. |
 | `ScoreErrorCallback` | _(none)_ | Invoked with a `LangfuseScoreError` when a score upload fails under `NonFatal`. |
 | `NormalizeScoreNames` | `false` | When `true`, score names are normalised to `snake_case` for consistent dashboard filtering. |
 | `DiagnosticsCallback` | _(none)_ | Receives library diagnostic messages (e.g. the "no export target" warning). Wire to your logger. |
 | `SamplingRatio` | `1.0` | Head-based trace sampling ratio (eval workloads want `1.0`). |
 | `ShutdownTimeout` | `5 seconds` | Total trace + metric timeout budget used by standalone-session disposal. |
+| `ResourceLockProvider` | in-process | Coordinates score-config and model creation. Use a distributed implementation when multiple processes initialize one project. |
 | `AgentActivitySourceName` | `NexusLabs.Needlr.AgentFramework` | Needlr agent span source to export. |
 | `GenAiMeterName` | `Experimental.Microsoft.Extensions.AI` | Meter owning `gen_ai.client.token.usage`. |
 | `AdditionalActivitySources` / `AdditionalMeters` | _(empty)_ | Extra sources/meters to export. |
+
+### REST timeout and retry controls
+
+`LangfuseOptions.Http` exposes a bounded subset of transport policy:
+
+| Option | Default | Description |
+|---|---|---|
+| `RequestTimeout` | `30 seconds` | Timeout for each individual REST attempt. |
+| `MaxAttempts` | `3` | Total attempts for retry-safe operations; `1` disables retries. |
+| `InitialRetryDelay` | `200 ms` | Initial exponential delay. |
+| `MaxRetryDelay` | `5 seconds` | Maximum exponential or `Retry-After` delay. |
+
+Needlr honors `Retry-After` for HTTP 429 and retries transport failures plus HTTP
+500/502/503/504 only when the operation is provider-idempotent. Delays and request timeout are
+caller-cancelable, and caller cancellation propagates with the caller's token.
+
+### Trace queue and batch controls
+
+`LangfuseOptions.TraceExport` configures the instrumented local processor:
+
+| Option | Default | Description |
+|---|---|---|
+| `MaxQueueSize` | `2048` | Maximum completed activities held locally before new activities are dropped. |
+| `ScheduledDelay` | `5 seconds` | Maximum wait before exporting a partial batch. |
+| `MaxBatchSize` | `512` | Maximum activities in one OTLP request; cannot exceed the queue size. |
+| `ExporterTimeout` | `30 seconds` | OTLP HTTP request timeout. |
+
+All values are validated when an enabled integration starts. Queue admission and exporter results
+feed `PublicationHealth`; the counters do not claim durable backend ingestion.
 
 !!! warning "Cloud export is opt-in (no silent egress)"
     Providing only API keys is **not** enough to export — you must also set an explicit target
@@ -519,6 +685,18 @@ builder.Services.AddNeedlrLangfuse(options =>
 {
     options.ServiceName = "my-agent-service";
 });
+```
+
+The built-in hosted REST clients use a named `IHttpClientFactory` pipeline. Configure it before
+`AddNeedlrLangfuse` when the application needs a proxy, custom certificates, handlers, or connection
+policy:
+
+```csharp
+builder.Services
+    .AddHttpClient(LangfuseServiceCollectionExtensions.HttpClientName)
+    .ConfigurePrimaryHttpMessageHandler(() => CreateLangfuseHandler());
+
+builder.Services.AddNeedlrLangfuse();
 ```
 
 This wires the OTLP exporter into the host's tracer and meter providers so they
@@ -592,7 +770,8 @@ no-ops, so host code does not branch on credentials.
     aliases. Alternatively, individual specialized interfaces may be overridden as singletons
     and are composed into Needlr's facade. Scoped and transient overrides are rejected because a
     singleton facade cannot safely capture them. Keyed registrations are independent and remain
-    untouched.
+    untouched. The built-in `PublicationHealth` snapshot covers Needlr-owned exporters and REST
+    clients; a custom specialized client owns the observability of its own publication path.
 
 Run the no-server ownership check:
 

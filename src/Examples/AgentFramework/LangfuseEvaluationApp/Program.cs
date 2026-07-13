@@ -125,28 +125,45 @@ using (var scenario = langfuse.BeginScenario(
 
     // ── Project evaluator metrics to Langfuse scores (call #3) ──────────────
     // Score uploads are non-fatal by default: a Langfuse outage records a failure
-    // (ScoreErrorCallback + ScoresFailed) but never fails the eval itself.
-    await efficiency.RecordLangfuseScoresAsync(scenario);
-    await coherence.RecordLangfuseScoresAsync(scenario);
+    // in structured publication health but never fails the eval itself.
+    await efficiency.RecordLangfuseScoresAsync(
+        scenario,
+        new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:efficiency:{metric.Name}",
+        });
+    await coherence.RecordLangfuseScoresAsync(
+        scenario,
+        new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:coherence:{metric.Name}",
+        });
 
     Console.WriteLine();
+    var scoreHealth = langfuse.PublicationHealth.GetSnapshot().ScoreUploads;
     if (!langfuse.IsEnabled)
     {
         Console.WriteLine("[langfuse] (Scores skipped — export disabled.)");
     }
-    else if (langfuse.ScoresFailed == 0)
+    else if (scoreHealth.Failed == 0)
     {
         Console.WriteLine("[langfuse] Recorded evaluator metrics as scores on the scenario trace.");
     }
     else
     {
-        Console.WriteLine($"[langfuse] {langfuse.ScoresFailed} score(s) failed to upload (eval still passed).");
+        Console.WriteLine($"[langfuse] {scoreHealth.Failed} score(s) failed to upload (eval still passed).");
     }
 }
 
 // Scenario disposed (root span ended); perform one bounded final drain.
 var shutdown = langfuse.Shutdown(langfuseOptions.ShutdownTimeout);
+var publication = langfuse.PublicationHealth.GetSnapshot();
 Console.WriteLine($"[langfuse] Shutdown: traces={shutdown.Traces}, metrics={shutdown.Metrics}");
+Console.WriteLine(
+    $"[langfuse] Publication: trace_ack={publication.TraceExport.Acknowledged}, " +
+    $"trace_failed={publication.TraceExport.Failed}, trace_dropped={publication.TraceExport.Dropped}, " +
+    $"score_failed={publication.ScoreUploads.Failed}, retries={publication.Retries.Total}, " +
+    $"drain={publication.Drain.Status}");
 
 Console.WriteLine();
 Console.WriteLine("Done. With credentials set, open Langfuse and find the trace named");

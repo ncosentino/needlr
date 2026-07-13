@@ -20,7 +20,11 @@ public sealed class LangfuseExperimentRunScoreTests
         var numeric = await run.RecordScoreAsync(
             "average_accuracy",
             0.92,
-            "aggregate",
+            new LangfuseScoreOptions
+            {
+                Id = "run-score-average-accuracy",
+                Comment = "aggregate",
+            },
             _cancellationToken);
         var boolean = await run.RecordScoreAsync(
             "passed",
@@ -35,6 +39,7 @@ public sealed class LangfuseExperimentRunScoreTests
         Assert.Equal(LangfuseExperimentRunScoreStatus.Accepted, boolean.Status);
         Assert.Equal(LangfuseExperimentRunScoreStatus.Accepted, categorical.Status);
         Assert.Equal("dataset-run-1", numeric.DatasetRunId);
+        Assert.Equal("run-score-average-accuracy", numeric.ScoreId);
         Assert.Equal(3, scoreRequests.Count);
 
         using var numericJson = JsonDocument.Parse(scoreRequests[0].Body!);
@@ -42,6 +47,7 @@ public sealed class LangfuseExperimentRunScoreTests
         Assert.Equal("average_accuracy", numericJson.RootElement.GetProperty("name").GetString());
         Assert.Equal(0.92, numericJson.RootElement.GetProperty("value").GetDouble());
         Assert.Equal("NUMERIC", numericJson.RootElement.GetProperty("dataType").GetString());
+        Assert.Equal("run-score-average-accuracy", numericJson.RootElement.GetProperty("id").GetString());
         Assert.False(numericJson.RootElement.TryGetProperty("traceId", out _));
 
         using var booleanJson = JsonDocument.Parse(scoreRequests[1].Body!);
@@ -69,13 +75,28 @@ public sealed class LangfuseExperimentRunScoreTests
             new StringMetric("verdict", "good"),
             new NumericMetric("unset"));
 
-        var outcomes = await run.RecordEvaluationAsync(result, _cancellationToken);
+        var outcomes = await run.RecordEvaluationAsync(
+            result,
+            new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"run-score:{metric.Name}",
+            },
+            cancellationToken: _cancellationToken);
 
         Assert.Equal(4, outcomes.Count);
         Assert.Equal(
             [LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Skipped],
             outcomes.Select(outcome => outcome.Status).ToArray());
         Assert.Equal(["accuracy", "passed", "verdict", "unset"], outcomes.Select(outcome => outcome.Name).ToArray());
+        Assert.Equal(
+            new string?[]
+            {
+                "run-score:accuracy",
+                "run-score:passed",
+                "run-score:verdict",
+                "run-score:unset",
+            },
+            outcomes.Select(outcome => outcome.ScoreId).ToArray());
         Assert.Equal(3, scoreRequests.Count);
 
         var snapshot = run.GetPublicationSnapshot();
@@ -91,7 +112,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.NonFatal,
-            scoreHttpClient: LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []),
+            scoreHttpClient: LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []),
             scoreErrorCallback: error => capturedError = error);
 
         var result = await run.RecordScoreAsync(
@@ -117,7 +138,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.Strict,
-            scoreHttpClient: LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []));
+            scoreHttpClient: LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []));
 
         await Assert.ThrowsAsync<LangfuseException>(() =>
             run.RecordScoreAsync(
@@ -164,7 +185,7 @@ public sealed class LangfuseExperimentRunScoreTests
             LangfuseScoreFailureMode.Strict,
             scoreHttpClient);
 
-        await Assert.ThrowsAsync<LangfuseException>(() =>
+        await Assert.ThrowsAnyAsync<LangfuseException>(() =>
             run.RecordScoreAsync(
                 "quality",
                 0.9,
@@ -184,7 +205,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.NonFatal,
-            LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []));
+            LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []));
         await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult(1),
@@ -252,7 +273,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.NonFatal,
-            scoreHttpClient: LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []));
+            scoreHttpClient: LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []));
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             run.RecordScoreAsync(
@@ -274,14 +295,16 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.NonFatal,
-            LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []),
+            LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []),
             scoreErrorCallback: _ => cancellation.Cancel());
         var evaluation = new EvaluationResult(
             new NumericMetric("first", 1),
             new NumericMetric("second", 2));
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            run.RecordEvaluationAsync(evaluation, cancellation.Token));
+            run.RecordEvaluationAsync(
+                evaluation,
+                cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
         Assert.Equal(1, run.GetPublicationSnapshot().RunScores.NotAttempted);
@@ -295,13 +318,15 @@ public sealed class LangfuseExperimentRunScoreTests
         var run = CreateRun(
             linkHttpClient,
             LangfuseScoreFailureMode.NonFatal,
-            LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []),
+            LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []),
             scoreErrorCallback: _ => Interlocked.Increment(ref failureCount));
         var evaluation = new EvaluationResult(
             new NumericMetric("publishable", 1),
             new NumericMetric("unset"));
 
-        var results = await run.RecordEvaluationAsync(evaluation, _cancellationToken);
+        var results = await run.RecordEvaluationAsync(
+            evaluation,
+            cancellationToken: _cancellationToken);
 
         Assert.Equal(
             [LangfuseExperimentRunScoreStatus.NotAttempted, LangfuseExperimentRunScoreStatus.Skipped],
@@ -322,7 +347,7 @@ public sealed class LangfuseExperimentRunScoreTests
             "dataset-run-1",
             linkRequests);
         scoreHttpClient ??= LangfuseHttpStub.Create(
-            _ => new HttpResponseMessage(HttpStatusCode.OK),
+            LangfuseHttpStub.ScoreAccepted,
             scoreRequests);
         var run = CreateRun(linkHttpClient, failureMode, scoreHttpClient);
 
@@ -339,10 +364,7 @@ public sealed class LangfuseExperimentRunScoreTests
         HttpClient scoreHttpClient,
         Action<LangfuseScoreError>? scoreErrorCallback = null)
     {
-        var scoreApiClient = new LangfuseScoreApiClient(
-            scoreHttpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
+        var scoreApiClient = LangfuseTestFactory.CreateScoreApiClient(scoreHttpClient);
         var scoreSink = new LangfuseScoreFailureSink(failureMode, scoreErrorCallback);
         var recorder = new LangfuseScoreRecorder(scoreApiClient, scoreSink, normalizeNames: false);
         return new LangfuseExperimentRun(

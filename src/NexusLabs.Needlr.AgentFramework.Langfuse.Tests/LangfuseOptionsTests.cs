@@ -40,6 +40,15 @@ public sealed class LangfuseOptionsTests
         Assert.Equal(LangfuseScoreFailureMode.NonFatal, options.ScoreFailureMode);
         Assert.Equal(1.0, options.SamplingRatio);
         Assert.Equal(TimeSpan.FromSeconds(5), options.ShutdownTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(30), options.Http.RequestTimeout);
+        Assert.Equal(3, options.Http.MaxAttempts);
+        Assert.Equal(TimeSpan.FromMilliseconds(200), options.Http.InitialRetryDelay);
+        Assert.Equal(TimeSpan.FromSeconds(5), options.Http.MaxRetryDelay);
+        Assert.Equal(2048, options.TraceExport.MaxQueueSize);
+        Assert.Equal(TimeSpan.FromSeconds(5), options.TraceExport.ScheduledDelay);
+        Assert.Equal(512, options.TraceExport.MaxBatchSize);
+        Assert.Equal(TimeSpan.FromSeconds(30), options.TraceExport.ExporterTimeout);
+        Assert.IsType<LangfuseInProcessResourceLockProvider>(options.ResourceLockProvider);
     }
 
     [Fact]
@@ -75,5 +84,58 @@ public sealed class LangfuseOptionsTests
         Assert.Null(options.PublicKey);
         Assert.Null(options.SecretKey);
         Assert.False(options.IsConfigured);
+    }
+
+    [Fact]
+    public void HttpOptions_InvalidBudgetsAreRejected()
+    {
+        using var httpClient = new HttpClient();
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LangfuseApiClient(
+            httpClient,
+            new Uri("https://lf.example/"),
+            "Basic x",
+            new LangfuseHttpOptions { RequestTimeout = TimeSpan.Zero }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LangfuseApiClient(
+            httpClient,
+            new Uri("https://lf.example/"),
+            "Basic x",
+            new LangfuseHttpOptions { MaxAttempts = 0 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LangfuseApiClient(
+            httpClient,
+            new Uri("https://lf.example/"),
+            "Basic x",
+            new LangfuseHttpOptions { InitialRetryDelay = TimeSpan.FromMilliseconds(-1) }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LangfuseApiClient(
+            httpClient,
+            new Uri("https://lf.example/"),
+            "Basic x",
+            new LangfuseHttpOptions
+            {
+                InitialRetryDelay = TimeSpan.FromSeconds(2),
+                MaxRetryDelay = TimeSpan.FromSeconds(1),
+            }));
+    }
+
+    [Fact]
+    public void TraceExportOptions_InvalidQueueAndDurationsAreRejected()
+    {
+        var options = new LangfuseOptions
+        {
+            PublicKey = "pk",
+            SecretKey = "sk",
+            Host = "https://lf.example",
+        };
+        options.TraceExport.MaxQueueSize = 1;
+        options.TraceExport.MaxBatchSize = 2;
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => LangfuseTelemetry.Start(options));
+
+        options.TraceExport.MaxBatchSize = 1;
+        options.TraceExport.ScheduledDelay = TimeSpan.Zero;
+        Assert.Throws<ArgumentOutOfRangeException>(() => LangfuseTelemetry.Start(options));
+
+        options.TraceExport.ScheduledDelay = TimeSpan.FromSeconds(1);
+        options.TraceExport.ExporterTimeout = Timeout.InfiniteTimeSpan;
+        Assert.Throws<ArgumentOutOfRangeException>(() => LangfuseTelemetry.Start(options));
     }
 }

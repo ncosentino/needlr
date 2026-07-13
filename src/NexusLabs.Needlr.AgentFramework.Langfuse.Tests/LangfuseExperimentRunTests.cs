@@ -250,7 +250,7 @@ public sealed class LangfuseExperimentRunTests
         var run = CreateRun(httpClient);
         var callbackInvoked = false;
 
-        await Assert.ThrowsAsync<LangfuseException>(() =>
+        await Assert.ThrowsAnyAsync<LangfuseException>(() =>
             run.RunItemAsync(
                 "missing",
                 (_, _) =>

@@ -78,32 +78,33 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         double value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        RecordDisabledScoreAsync(name, cancellationToken);
+        RecordDisabledScoreAsync(name, options, cancellationToken);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         bool value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        RecordDisabledScoreAsync(name, cancellationToken);
+        RecordDisabledScoreAsync(name, options, cancellationToken);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         string value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return RecordDisabledScoreAsync(name, cancellationToken);
+        return RecordDisabledScoreAsync(name, options, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -111,8 +112,8 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 
         var outcomes = result.Metrics.Values
             .Select(metric => LangfuseScoreRecorder.HasPublishableValue(metric)
-                ? CreateDisabledScore(metric.Name)
-                : CreateSkippedScore(metric.Name))
+                ? CreateDisabledScore(metric.Name, GetEvaluationScoreId(metric, options))
+                : CreateSkippedScore(metric.Name, GetEvaluationScoreId(metric, options)))
             .ToArray();
         return Task.FromResult<IReadOnlyList<LangfuseExperimentRunScoreResult>>(outcomes);
     }
@@ -123,16 +124,18 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 
     private Task<LangfuseExperimentRunScoreResult> RecordDisabledScoreAsync(
         string name,
+        LangfuseScoreOptions? options,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(CreateDisabledScore(name));
+        return Task.FromResult(CreateDisabledScore(name, GetScoreId(options)));
     }
 
-    private LangfuseExperimentRunScoreResult CreateDisabledScore(string name)
+    private LangfuseExperimentRunScoreResult CreateDisabledScore(string name, string? scoreId)
     {
         var result = new LangfuseExperimentRunScoreResult(
+            scoreId,
             name,
             LangfuseExperimentRunScoreStatus.Disabled,
             datasetRunId: null,
@@ -141,14 +144,38 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
         return result;
     }
 
-    private LangfuseExperimentRunScoreResult CreateSkippedScore(string name)
+    private LangfuseExperimentRunScoreResult CreateSkippedScore(string name, string? scoreId)
     {
         var result = new LangfuseExperimentRunScoreResult(
+            scoreId,
             name,
             LangfuseExperimentRunScoreStatus.Skipped,
             datasetRunId: null,
             failure: null);
         _state.RecordRunScore(result.Status);
         return result;
+    }
+
+    private static string? GetScoreId(LangfuseScoreOptions? options)
+    {
+        if (options?.Id is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.Id);
+        }
+
+        return options?.Id;
+    }
+
+    private static string? GetEvaluationScoreId(
+        EvaluationMetric metric,
+        LangfuseEvaluationScoreOptions? options)
+    {
+        var scoreId = options?.ScoreIdProvider?.Invoke(metric);
+        if (scoreId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(scoreId);
+        }
+
+        return scoreId;
     }
 }
