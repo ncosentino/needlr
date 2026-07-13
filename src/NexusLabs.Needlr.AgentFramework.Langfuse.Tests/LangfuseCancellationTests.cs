@@ -99,7 +99,7 @@ public sealed class LangfuseCancellationTests
     }
 
     [Fact]
-    public async Task ExperimentRunBeginItemAsync_WhenCallerCancels_StopsScenarioWithoutReportingDiagnostic()
+    public async Task ExperimentRunItemAsync_WhenCallerCancelsDuringLink_StopsScenarioWithoutReportingDiagnostic()
     {
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_testCancellationToken);
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -124,16 +124,117 @@ public sealed class LangfuseCancellationTests
             runDescription: null,
             diagnostics: message => diagnostic = message);
 
-        var beginTask = run.BeginItemAsync("case-1", cancellationToken: cancellation.Token);
+        var callbackInvoked = false;
+        var runTask = run.RunItemAsync(
+            "case-1",
+            (_, _) =>
+            {
+                callbackInvoked = true;
+                return Task.FromResult("not reached");
+            },
+            cancellationToken: cancellation.Token);
         await requestStarted.Task.WaitAsync(_testCancellationToken);
         cancellation.Cancel();
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            beginTask);
+            runTask);
+
+        Assert.Equal(cancellation.Token, exception.CancellationToken);
+        Assert.False(callbackInvoked, "Expected link cancellation to stop before callback execution.");
+        Assert.Equal(1, stoppedActivities);
+        Assert.Null(diagnostic);
+    }
+
+    [Fact]
+    public async Task ExperimentRunItemAsync_WhenCallerCancelsDuringCallback_StopsScenario()
+    {
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_testCancellationToken);
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pendingCallback = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stoppedActivities = 0;
+        using var listener = StartListener(_ => Interlocked.Increment(ref stoppedActivities));
+        using var httpClient = CreateHttpClient(
+            (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var run = new LangfuseExperimentRun(
+            new LangfuseApiClient(httpClient, new Uri("https://lf.example/"), "Basic x"),
+            LangfuseTestFactory.OkScoreRecorder(),
+            datasetName: "evals",
+            runName: "run-1",
+            runDescription: null,
+            diagnostics: null);
+
+        var runTask = run.RunItemAsync(
+            "case-1",
+            async (scenario, token) =>
+            {
+                Assert.Same(scenario.Activity, Activity.Current);
+                Assert.Equal(cancellation.Token, token);
+                callbackStarted.SetResult();
+                return await pendingCallback.Task.WaitAsync(token);
+            },
+            cancellationToken: cancellation.Token);
+        await callbackStarted.Task.WaitAsync(_testCancellationToken);
+        cancellation.Cancel();
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runTask);
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
         Assert.Equal(1, stoppedActivities);
-        Assert.Null(diagnostic);
+    }
+
+    [Fact]
+    public async Task ExperimentRunItemAsync_WithPreCanceledToken_CreatesNoScenarioOrRequest()
+    {
+        using var cancellation = CreateCanceledTokenSource();
+        var startedActivities = 0;
+        using var listener = LangfuseTestFactory.StartListener(
+            onStarted: _ => Interlocked.Increment(ref startedActivities));
+        var handler = new TrackingHttpMessageHandler();
+        using var httpClient = new HttpClient(handler);
+        var run = new LangfuseExperimentRun(
+            new LangfuseApiClient(httpClient, new Uri("https://lf.example/"), "Basic x"),
+            LangfuseTestFactory.OkScoreRecorder(),
+            datasetName: "evals",
+            runName: "run-1",
+            runDescription: null,
+            diagnostics: null);
+        var callbackInvoked = false;
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            run.RunItemAsync(
+                "case-1",
+                (_, _) =>
+                {
+                    callbackInvoked = true;
+                    return Task.FromResult("not reached");
+                },
+                cancellationToken: cancellation.Token));
+
+        Assert.Equal(cancellation.Token, exception.CancellationToken);
+        Assert.False(callbackInvoked, "Expected pre-cancellation to stop before callback execution.");
+        Assert.Equal(0, startedActivities);
+        Assert.Empty(handler.CapturedRequests);
+    }
+
+    [Fact]
+    public async Task DisabledExperimentRunItemAsync_WithPreCanceledToken_DoesNotInvokeCallback()
+    {
+        using var cancellation = CreateCanceledTokenSource();
+        var run = new DisabledLangfuseExperimentRun("evals", "run-1");
+        var callbackInvoked = false;
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            run.RunItemAsync(
+                "case-1",
+                (_, _) =>
+                {
+                    callbackInvoked = true;
+                    return Task.FromResult("not reached");
+                },
+                cancellationToken: cancellation.Token));
+
+        Assert.Equal(cancellation.Token, exception.CancellationToken);
+        Assert.False(callbackInvoked, "Expected disabled mode to preserve pre-cancellation.");
     }
 
     [Fact]
@@ -195,15 +296,5 @@ public sealed class LangfuseCancellationTests
         };
         ActivitySource.AddActivityListener(listener);
         return listener;
-    }
-
-    private sealed class DelegateHttpMessageHandler(
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsync)
-        : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken) =>
-            sendAsync(request, cancellationToken);
     }
 }

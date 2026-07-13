@@ -91,7 +91,7 @@ Two runnable examples live under `src/Examples/AgentFramework/`:
 
 - `LangfuseEvaluationApp` — the full flow with no LLM or Langfuse credentials required (no-ops cleanly without keys).
 - `LangfuseConformanceApp` — a small Langfuse-supported eval that **reads the trace and scores back** from a live Langfuse (local Docker by default) to prove ingestion. It also has no-server modes:
-  - `resiliency` proves cancellation, safe context propagation, score-failure reporting, and bounded shutdown while Langfuse is unreachable.
+  - `resiliency` proves cancellation, context-safe experiment item callbacks, safe trace propagation, structured link failure, score-failure reporting, and bounded shutdown while Langfuse is unreachable.
   - `dependency-injection` proves `ILangfuseClient` exposes the complete evaluation surface through one host-owned telemetry pipeline without registering a standalone session.
 
 ## What appears in Langfuse
@@ -187,15 +187,48 @@ var run = langfuse.BeginExperimentRun("trip-planner-evals", runName: gitSha);
 
 foreach (var item in items)
 {
-    using var scenario = await run.BeginItemAsync(item.Id);
-    var result = await RunAndEvaluate(item);       // your agent + evaluators
-    await scenario.RecordEvaluationAsync(result);  // scores roll up into the run
+    var itemResult = await run.RunItemAsync(
+        item.Id,
+        async (scenario, cancellationToken) =>
+        {
+            var evaluation = await RunAndEvaluate(item, cancellationToken);
+            await scenario.RecordEvaluationAsync(evaluation, cancellationToken);
+            return evaluation;
+        },
+        cancellationToken: cancellationToken);
+
+    Console.WriteLine($"{item.Id}: {itemResult.LinkStatus}");
 }
 ```
 
-The dataset and its items must exist before the run links to them. Run-item link failures
-are non-fatal (surfaced via `DiagnosticsCallback`) so a Langfuse hiccup never crashes the
-eval.
+`RunItemAsync` creates the scenario, links it, executes the callback while the scenario remains
+the active `Activity.Current` across awaits, and disposes it before returning. Agent, chat, and
+tool spans created inside the callback therefore nest beneath the item trace without callers
+assigning `Activity.Current` or manually managing scenario lifetime.
+
+The dataset and its items must exist before the run links to them. Link failures use
+`LangfuseExperimentItemLinkFailureMode.BestEffort` by default: the callback still runs,
+`LinkStatus` is `Failed`, and details reach `DiagnosticsCallback`. Select strict behavior when
+publication is a prerequisite:
+
+```csharp
+var itemResult = await run.RunItemAsync(
+    item.Id,
+    async (scenario, token) =>
+    {
+        var evaluation = await RunAndEvaluate(item, token);
+        await scenario.RecordEvaluationAsync(evaluation, token);
+        return evaluation;
+    },
+    new LangfuseExperimentItemOptions
+    {
+        LinkFailureMode = LangfuseExperimentItemLinkFailureMode.Strict,
+    },
+    cancellationToken);
+```
+
+Strict mode propagates `LangfuseException` and does not invoke the callback when an attempted link
+fails. `NotSampled` and `Disabled` remain explicit statuses and still execute the callback.
 
 ## Score configs
 
@@ -449,15 +482,23 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
         var experiment = langfuse.BeginExperimentRun(
             "support-agent-regression",
             "commit-abc123");
-        using var item = await experiment.BeginItemAsync(
+        var item = await experiment.RunItemAsync(
             "refund-case",
+            async (scenario, token) =>
+            {
+                await scenario.RecordScoreAsync(
+                    "reviewed",
+                    value: true,
+                    cancellationToken: token);
+                return scenario.TraceId;
+            },
             cancellationToken: cancellationToken);
 
         if (item.TraceId is { } traceId)
         {
             await langfuse.Scores.RecordScoreAsync(
                 traceId,
-                "reviewed",
+                "published",
                 value: true,
                 cancellationToken: cancellationToken);
         }

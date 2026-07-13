@@ -260,9 +260,13 @@ public sealed class LangfuseClientFacadeTests
         var client = provider.GetRequiredService<ILangfuseClient>();
         var run = client.BeginExperimentRun("dataset-a", "run-42", "facade run");
 
-        using var scenario = await run.BeginItemAsync(
+        var result = await run.RunItemAsync(
             "item-7",
-            scenarioName: "facade-item",
+            (scenario, _) => Task.FromResult(scenario.TraceId),
+            new LangfuseExperimentItemOptions
+            {
+                ScenarioName = "facade-item",
+            },
             cancellationToken: _cancellationToken);
 
         var request = Assert.Single(handler.CapturedRequests);
@@ -270,7 +274,9 @@ public sealed class LangfuseClientFacadeTests
         Assert.Equal("/api/public/dataset-run-items", request.Uri.AbsolutePath);
         Assert.Contains("\"runName\":\"run-42\"", request.Body, StringComparison.Ordinal);
         Assert.Contains("\"datasetItemId\":\"item-7\"", request.Body, StringComparison.Ordinal);
-        Assert.Contains($"\"traceId\":\"{scenario.TraceId}\"", request.Body, StringComparison.Ordinal);
+        Assert.Contains($"\"traceId\":\"{result.TraceId}\"", request.Body, StringComparison.Ordinal);
+        Assert.Equal(result.TraceId, result.Value);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Linked, result.LinkStatus);
     }
 
     [Fact]
@@ -296,7 +302,10 @@ public sealed class LangfuseClientFacadeTests
 
         using var scenario = client.BeginScenario("disabled");
         var run = client.BeginExperimentRun("dataset", "run");
-        using var item = await run.BeginItemAsync("item", cancellationToken: _cancellationToken);
+        var item = await run.RunItemAsync(
+            "item",
+            (_, _) => Task.FromResult("disabled"),
+            cancellationToken: _cancellationToken);
         await client.Scores.RecordScoreAsync(
             "trace",
             "score",
@@ -306,6 +315,8 @@ public sealed class LangfuseClientFacadeTests
 
         Assert.Null(scenario.TraceId);
         Assert.Null(item.TraceId);
+        Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, item.LinkStatus);
+        Assert.Equal("disabled", item.Value);
         Assert.Empty(provider.GetServices<TracerProvider>());
     }
 

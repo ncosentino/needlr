@@ -24,8 +24,9 @@
 // ── RESILIENCY MODE (no server required) ─────────────────────────────────────
 // Run with the argument `resiliency` to prove the opposite case: that an eval
 // still PASSES when Langfuse is unreachable. It proves cancellation propagates,
-// unrelated baggage is not exported, final shutdown is bounded, and every failed
-// score is surfaced via ScoresFailed + ScoreErrorCallback:
+// experiment-item callbacks retain their scenario context, unrelated baggage is
+// not exported, final shutdown is bounded, and every failed score is surfaced via
+// ScoresFailed + ScoreErrorCallback:
 //
 //     dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- resiliency
 //
@@ -381,6 +382,39 @@ static async Task<int> RunResiliencyCheckAsync()
         recordedScores = results.SelectMany(r => r.Metrics.Values).Count(HasValue);
     }
 
+    var experimentItemContextSafe = false;
+    var experimentItemContextRestored = false;
+    var experimentItemLinkStatus = LangfuseExperimentItemLinkStatus.Linked;
+    using (var externalContext = new Activity("resiliency-experiment-parent").Start())
+    {
+        var experiment = langfuse.BeginExperimentRun("resiliency-dataset", "resiliency-run");
+        var itemResult = await experiment.RunItemAsync(
+            "resiliency-item",
+            async (scenario, cancellationToken) =>
+            {
+                var scenarioActivity = scenario.Activity;
+                await Task.Yield();
+                using var child = contextProbeSource.StartActivity("experiment-item-context-probe");
+                experimentItemContextSafe =
+                    scenarioActivity is not null &&
+                    ReferenceEquals(Activity.Current, child) &&
+                    child is not null &&
+                    child.TraceId == scenarioActivity.TraceId &&
+                    child.ParentSpanId == scenarioActivity.SpanId;
+                cancellationToken.ThrowIfCancellationRequested();
+                return scenario.TraceId;
+            },
+            new LangfuseExperimentItemOptions
+            {
+                ScenarioName = "resiliency: experiment-item",
+                Tags = ["resiliency", "experiment"],
+            },
+            CancellationToken.None);
+
+        experimentItemContextRestored = ReferenceEquals(Activity.Current, externalContext);
+        experimentItemLinkStatus = itemResult.LinkStatus;
+    }
+
     var shutdownTimeout = TimeSpan.FromSeconds(2);
     var shutdownStopwatch = Stopwatch.StartNew();
     var shutdown = langfuse.Shutdown(shutdownTimeout);
@@ -391,6 +425,9 @@ static async Task<int> RunResiliencyCheckAsync()
     var resilient =
         cancellationPropagated &&
         contextPropagationSafe &&
+        experimentItemContextSafe &&
+        experimentItemContextRestored &&
+        experimentItemLinkStatus == LangfuseExperimentItemLinkStatus.Failed &&
         recordedScores > 0 &&
         langfuse.ScoresFailed == recordedScores &&
         callbackFired == recordedScores &&
@@ -401,6 +438,9 @@ static async Task<int> RunResiliencyCheckAsync()
     Console.WriteLine();
     Console.WriteLine($"  caller cancellation:       {(cancellationPropagated ? "propagated" : "FAILED")}");
     Console.WriteLine($"  trace context allowlist:   {(contextPropagationSafe ? "safe" : "FAILED")}");
+    Console.WriteLine($"  experiment callback scope: {(experimentItemContextSafe ? "safe" : "FAILED")}");
+    Console.WriteLine($"  experiment scope restore:  {(experimentItemContextRestored ? "restored" : "FAILED")}");
+    Console.WriteLine($"  dataset link status:       {experimentItemLinkStatus}");
     Console.WriteLine($"  scores attempted:          {recordedScores}");
     Console.WriteLine($"  ScoresFailed (session):    {langfuse.ScoresFailed}");
     Console.WriteLine($"  ScoreErrorCallback fired:  {callbackFired}");
@@ -411,8 +451,9 @@ static async Task<int> RunResiliencyCheckAsync()
 
     if (resilient)
     {
-        Console.WriteLine("RESILIENCY PASSED — cancellation propagated, trace context was safely");
-        Console.WriteLine("allowlisted, score failures were surfaced, and final shutdown was bounded.");
+        Console.WriteLine("RESILIENCY PASSED — cancellation propagated, experiment item context was");
+        Console.WriteLine("preserved, trace context was allowlisted, publication failures were surfaced,");
+        Console.WriteLine("and final shutdown was bounded.");
         return 0;
     }
 
@@ -578,40 +619,67 @@ static async Task<int> RunExperimentsCheckAsync()
 
     foreach (var id in items)
     {
-        using var scenario = await run.BeginItemAsync(id, scenarioName: $"exp: {id}", tags: ["conformance", "experiment"]);
-        var traceId = scenario.TraceId;
-        if (string.IsNullOrEmpty(traceId))
+        var itemResult = await run.RunItemAsync(
+            id,
+            async (scenario, cancellationToken) =>
+            {
+                if (!ReferenceEquals(Activity.Current, scenario.Activity))
+                {
+                    throw new InvalidOperationException(
+                        $"Experiment item '{id}' did not execute inside its scenario activity.");
+                }
+
+                scenario.SetInput(new { prompt = $"Summarize content for {id}." });
+                scenario.SetVersion("prompt-v1");
+                scenario.SetTracePublic();
+
+                var diagnostics = await RunMockAsync(
+                    loop,
+                    diagnosticsAccessor,
+                    $"summary-{id}",
+                    cancellationToken: cancellationToken);
+                if (diagnostics is null)
+                {
+                    return null;
+                }
+
+                scenario.SetOutput("Mock summary of the cached prompt content.");
+
+                var inputs = diagnostics.ToEvaluationInputs();
+                await scenario.EvaluateAndRecordAsync(
+                    evaluators:
+                    [
+                        new EfficiencyEvaluator(tokenBudget: 200_000),
+                        new IterationCoherenceEvaluator(maxIterations: 20),
+                    ],
+                    messages: inputs.Messages,
+                    modelResponse: inputs.ModelResponse,
+                    additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                    cancellationToken: cancellationToken);
+                return scenario.TraceId;
+            },
+            new LangfuseExperimentItemOptions
+            {
+                ScenarioName = $"exp: {id}",
+                Tags = ["conformance", "experiment"],
+                LinkFailureMode = LangfuseExperimentItemLinkFailureMode.Strict,
+            },
+            CancellationToken.None);
+
+        if (itemResult.LinkStatus != LangfuseExperimentItemLinkStatus.Linked)
+        {
+            Console.WriteLine($"[error] Item '{id}' link status was {itemResult.LinkStatus}.");
+            return 2;
+        }
+
+        var traceId = itemResult.TraceId;
+        if (string.IsNullOrEmpty(traceId) || string.IsNullOrEmpty(itemResult.Value))
         {
             Console.WriteLine($"[error] No trace id for item '{id}'.");
             return 2;
         }
 
         itemTraceIds[id] = traceId;
-
-        // P4/P6 — trace context
-        scenario.SetInput(new { prompt = $"Summarize content for {id}." });
-        scenario.SetVersion("prompt-v1");
-        scenario.SetTracePublic();
-
-        var diagnostics = await RunMockAsync(loop, diagnosticsAccessor, $"summary-{id}");
-        if (diagnostics is null)
-        {
-            Console.WriteLine("[error] No diagnostics captured.");
-            return 2;
-        }
-
-        scenario.SetOutput("Mock summary of the cached prompt content.");
-
-        var inputs = diagnostics.ToEvaluationInputs();
-        await scenario.EvaluateAndRecordAsync(
-            evaluators:
-            [
-                new EfficiencyEvaluator(tokenBudget: 200_000),
-                new IterationCoherenceEvaluator(maxIterations: 20),
-            ],
-            messages: inputs.Messages,
-            modelResponse: inputs.ModelResponse,
-            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)]);
     }
     Console.WriteLine($"[run] Linked {itemTraceIds.Count} run item(s) to experiment '{runId}'.");
 
@@ -1194,7 +1262,8 @@ static async Task<IAgentRunDiagnostics?> RunMockAsync(
     IIterativeAgentLoop loop,
     IAgentDiagnosticsAccessor accessor,
     string loopName,
-    string instructions = "You summarise cached prompt content.")
+    string instructions = "You summarise cached prompt content.",
+    CancellationToken cancellationToken = default)
 {
     var loopOptions = new IterativeLoopOptions
     {
@@ -1211,7 +1280,7 @@ static async Task<IAgentRunDiagnostics?> RunMockAsync(
         await loop.RunAsync(
             loopOptions,
             new IterativeContext { Workspace = new InMemoryWorkspace() },
-            CancellationToken.None);
+            cancellationToken);
         return accessor.LastRunDiagnostics;
     }
 }
