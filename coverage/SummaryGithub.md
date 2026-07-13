@@ -3,19 +3,19 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/12/2026 - 20:46:01 |
-| Coverage date: | 07/12/2026 - 20:43:11 - 07/12/2026 - 20:45:57 |
+| Generated on: | 07/13/2026 - 00:03:08 |
+| Coverage date: | 07/13/2026 - 00:00:04 - 07/13/2026 - 00:03:02 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
 | Classes: | 621 |
 | Files: | 610 |
-| **Line coverage:** | 86.6% (24914 of 28740) |
-| Covered lines: | 24914 |
-| Uncovered lines: | 3826 |
+| **Line coverage:** | 86.6% (24915 of 28740) |
+| Covered lines: | 24915 |
+| Uncovered lines: | 3825 |
 | Coverable lines: | 28740 |
 | Total lines: | 70409 |
-| **Branch coverage:** | 75.4% (9512 of 12612) |
-| Covered branches: | 9512 |
+| **Branch coverage:** | 75.4% (9514 of 12612) |
+| Covered branches: | 9514 |
 | Total branches: | 12612 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -716,20 +716,20 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||

@@ -162,3 +162,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 
 - [ADR-0001 DAG Workflow Support](https://www.devleader.ca/projects/needlr/adr/adr-0001-dag-graph-workflow-support/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0002 ScriptedChatClient Build Decision](https://www.devleader.ca/projects/needlr/adr/adr-0002-build-scriptedchatclient-locally/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0003 Provider-neutral Experiment Runner](https://www.devleader.ca/projects/needlr/adr/adr-0003-provider-neutral-experiment-runner/) -- Opinionated fluent dependency injection for .NET with source generation
