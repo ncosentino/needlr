@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/13/2026 - 00:03:08 |
-| Coverage date: | 07/13/2026 - 00:00:04 - 07/13/2026 - 00:03:02 |
+| Generated on: | 07/13/2026 - 04:40:15 |
+| Coverage date: | 07/13/2026 - 04:38:10 - 07/13/2026 - 04:40:12 |
 | Parser: | MultiReport (34x Cobertura) |
 | Assemblies: | 29 |
-| Classes: | 621 |
-| Files: | 610 |
-| **Line coverage:** | 86.6% (24915 of 28740) |
-| Covered lines: | 24915 |
-| Uncovered lines: | 3825 |
-| Coverable lines: | 28740 |
-| Total lines: | 70409 |
-| **Branch coverage:** | 75.4% (9514 of 12612) |
-| Covered branches: | 9514 |
-| Total branches: | 12612 |
+| Classes: | 633 |
+| Files: | 622 |
+| **Line coverage:** | 86.8% (25545 of 29412) |
+| Covered lines: | 25545 |
+| Uncovered lines: | 3867 |
+| Coverable lines: | 29412 |
+| Total lines: | 71794 |
+| **Branch coverage:** | 75.5% (9631 of 12740) |
+| Covered branches: | 9631 |
+| Total branches: | 12740 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -311,14 +311,14 @@
 |NexusLabs.Needlr.AgentFramework.Generators.TopologyGraphCodeGenerator|75%|69.2%|
 
 </details>
-<details><summary>NexusLabs.Needlr.AgentFramework.Langfuse - 88.4%</summary>
+<details><summary>NexusLabs.Needlr.AgentFramework.Langfuse - 90%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.AgentFramework.Langfuse**|**88.4%**|**74.1%**|
+|**NexusLabs.Needlr.AgentFramework.Langfuse**|**90%**|**78.2%**|
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseClient|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseDatasetClient|0%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseExperimentRun|71.4%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseExperimentRun|70.1%|100%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseMetricsClient|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseModelClient|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfusePromptClient|0%||
@@ -327,7 +327,7 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseScoreConfigClient|0%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.DisabledLangfuseSession|64%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseActivitySource|100%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseApiClient|98.4%|88.8%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseApiClient|100%|90%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseClient|98.3%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseClientComposition|97.7%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCommentRecorder|90%|50%|
@@ -335,6 +335,7 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateDatasetItemRequest|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateDatasetRequest|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateDatasetRunItemReques<br/>t|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateDatasetRunItemRespon<br/>se|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreateModelRequest|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseCreatePromptRequest|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetClient|96.1%|100%|
@@ -343,7 +344,16 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEndpoints|98.2%|90.4%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreExtensions|84.2%|66.6%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseException|100%||
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRun|95.8%|50%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkCounts|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkResult|93.7%|50%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemOptions|100%|100%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemResult`1|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRun|99.6%|93.3%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunOptions|100%|100%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunPublicationSn<br/>apshot|85.1%|50%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreCounts|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreResult|94.1%|50%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunState|97.1%|91.1%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExportGuard|100%|100%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseHttpTransport|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetric|100%||
@@ -365,7 +375,8 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt|100%|50%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePromptClient|96.5%|75%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePromptDto|100%|100%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario|90%|61.4%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationFailure|90.9%|50%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScenario|91.7%|65.7%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScore|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreApiClient|100%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreClient|72.2%||
@@ -378,8 +389,9 @@
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreDataTypeExtensions|62.5%|40%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreError|100%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureSink|100%|100%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecorder|90.6%|96.4%|
-|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreTarget|93.7%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecorder|84.1%|86%|
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreRecordResult|100%||
+|NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreTarget|97.5%||
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseServiceCollectionExtension<br/>s|91.4%|83.3%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseSession|91.4%|73%|
 |NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseShutdownOutcome|100%||
@@ -426,7 +438,7 @@
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeDetail|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphEdgeRouter|97.4%|85.7%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphTopology|100%|100%|
-|NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|97.6%|100%|
+|NexusLabs.Needlr.AgentFramework.Workflows.GraphTopologyProvider|98.8%|100%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowRunner|91.4%|68.1%|
 |NexusLabs.Needlr.AgentFramework.Workflows.GraphWorkflowServiceExtensions|100%||
 |NexusLabs.Needlr.AgentFramework.Workflows.KeywordTerminationCondition|100%|80%|
@@ -651,17 +663,17 @@
 |NexusLabs.Needlr.Roslyn.Shared.TypeDiscoveryHelper|91.1%|86.6%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators.Attributes - 72%</summary>
+<details><summary>NexusLabs.Needlr.Generators.Attributes - 72.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators.Attributes**|**72%**|**35.7%**|
+|**NexusLabs.Needlr.Generators.Attributes**|**72.5%**|**37.1%**|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute|100%||
 |NexusLabs.Needlr.Generators.GenerateFactoryAttribute`1|100%||
 |NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute|100%||
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttribute|85.7%||
 |NexusLabs.Needlr.Generators.InjectableTypeInfo|88.2%||
-|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|70.4%|45.2%|
+|NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap|71.2%|47.6%|
 |NexusLabs.Needlr.Generators.OpenDecoratorForAttribute|80%||
 |NexusLabs.Needlr.Generators.OptionsAttribute|90%||
 |NexusLabs.Needlr.Generators.PluginTypeInfo|79.1%|50%|
@@ -716,20 +728,20 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||

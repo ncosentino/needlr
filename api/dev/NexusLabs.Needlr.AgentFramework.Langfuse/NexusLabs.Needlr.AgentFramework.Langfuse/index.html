@@ -4725,6 +4725,38 @@
 <td style="text-align: left;">The exception thrown when a request to the Langfuse API fails.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemLinkCounts/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkCounts">LangfuseExperimentItemLinkCounts</a></td>
+<td style="text-align: left;">Contains immutable counts of experiment item-link outcomes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemLinkResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkResult">LangfuseExperimentItemLinkResult</a></td>
+<td style="text-align: left;">Describes the direct REST publication outcome for one dataset-run-item link.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemOptions">LangfuseExperimentItemOptions</a></td>
+<td style="text-align: left;">Configures the scenario and dataset-link behavior for one experiment item execution.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemResult_T_/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemResult\&lt;T&gt;">LangfuseExperimentItemResult&lt;T&gt;</a></td>
+<td style="text-align: left;">Contains the callback value and Langfuse publication status for one experiment item.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentRunOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunOptions">LangfuseExperimentRunOptions</a></td>
+<td style="text-align: left;">Configures the Langfuse dataset run created implicitly by experiment item links.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentRunPublicationSnapshot/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunPublicationSnapshot">LangfuseExperimentRunPublicationSnapshot</a></td>
+<td style="text-align: left;">Provides an immutable snapshot of direct REST publication observed by one experiment run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentRunScoreCounts/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreCounts">LangfuseExperimentRunScoreCounts</a></td>
+<td style="text-align: left;">Contains immutable counts of dataset-run score outcomes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentRunScoreResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreResult">LangfuseExperimentRunScoreResult</a></td>
+<td style="text-align: left;">Describes the publication outcome for one score against a Langfuse dataset run.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfuseMetric/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetric">LangfuseMetric</a></td>
 <td style="text-align: left;">One metric in a <a href="../LangfuseMetricsQuery/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsQuery">LangfuseMetricsQuery</a>: a measure plus an aggregation. The result column is named <code>{Aggregation}_{Measure}</code> (for example <code>avg_value</code>, <code>sum_totalCost</code>).</td>
 </tr>
@@ -4751,6 +4783,10 @@
 <tr>
 <td style="text-align: left;"><a href="../LangfusePrompt/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt">LangfusePrompt</a></td>
 <td style="text-align: left;">A prompt fetched from Langfuse prompt management. Use <a href="../LangfusePrompt/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text">Text</a> for a text prompt's content, and pass the prompt to <a href="../ILangfuseScenario/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)">SetPrompt(LangfusePrompt)</a> to link generations to the exact version that was used.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfusePublicationFailure/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationFailure">LangfusePublicationFailure</a></td>
+<td style="text-align: left;">Describes why a Langfuse publication operation did not complete.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseScoreConfig/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreConfig">LangfuseScoreConfig</a></td>
@@ -4796,7 +4832,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseExperimentRun/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun">ILangfuseExperimentRun</a></td>
-<td style="text-align: left;">Represents an in-progress Langfuse experiment (dataset run). Each call to <a href="../ILangfuseExperimentRun/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.BeginItemAsync(string,string,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IReadOnlyDictionary_string,string_,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.BeginItemAsync(string, string, System.Collections.Generic.IEnumerable\&lt;string&gt;, System.Collections.Generic.IReadOnlyDictionary\&lt;string,string&gt;, System.Threading.CancellationToken)">BeginItemAsync(string, string, IEnumerable&lt;string&gt;, IReadOnlyDictionary&lt;string,string&gt;, CancellationToken)</a> starts a trace for one dataset item and links it to this run, so the scores recorded on that trace roll up into the run's experiment-comparison view.</td>
+<td style="text-align: left;">Represents an in-progress Langfuse experiment (dataset run). Each call to <a href="../ILangfuseExperimentRun/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.RunItemAsync_T_(string,System.Func_NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario,System.Threading.CancellationToken,System.Threading.Tasks.Task_T__,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemOptions,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun.RunItemAsync\&lt;T&gt;(string, System.Func\&lt;NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario,System.Threading.CancellationToken,System.Threading.Tasks.Task\&lt;T&gt;&gt;, NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemOptions, System.Threading.CancellationToken)">RunItemAsync&lt;T&gt;(string, Func&lt;ILangfuseScenario,CancellationToken,Task&lt;T&gt;&gt;, LangfuseExperimentItemOptions, CancellationToken)</a> executes one dataset item inside an active scenario trace and links it to this run, so scores recorded on that trace roll up into the experiment-comparison view.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseMetricsClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseMetricsClient">ILangfuseMetricsClient</a></td>
@@ -4837,12 +4873,36 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetRunIdentityStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetRunIdentityStatus">LangfuseDatasetRunIdentityStatus</a></td>
+<td style="text-align: left;">Describes whether a Langfuse experiment run has one authoritative dataset-run id.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentApiPublicationStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentApiPublicationStatus">LangfuseExperimentApiPublicationStatus</a></td>
+<td style="text-align: left;">Summarizes direct Langfuse REST publication observed by one experiment run instance.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemLinkFailureMode/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkFailureMode">LangfuseExperimentItemLinkFailureMode</a></td>
+<td style="text-align: left;">Controls whether a Langfuse dataset-run-item link failure prevents experiment item execution.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentItemLinkStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkStatus">LangfuseExperimentItemLinkStatus</a></td>
+<td style="text-align: left;">Describes whether an experiment item trace was linked to its Langfuse dataset run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseExperimentRunScoreStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreStatus">LangfuseExperimentRunScoreStatus</a></td>
+<td style="text-align: left;">Describes the direct API outcome for one dataset-run score.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfuseMetricsView/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsView">LangfuseMetricsView</a></td>
 <td style="text-align: left;">The Langfuse Metrics API view to query. Determines which measures and dimensions are available.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseProviderShutdownStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseProviderShutdownStatus">LangfuseProviderShutdownStatus</a></td>
 <td style="text-align: left;">Describes the local OpenTelemetry shutdown state for one telemetry provider.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfusePublicationFailureCode/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePublicationFailureCode">LangfusePublicationFailureCode</a></td>
+<td style="text-align: left;">Identifies a machine-actionable Langfuse publication failure category.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseRegion/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseRegion">LangfuseRegion</a></td>

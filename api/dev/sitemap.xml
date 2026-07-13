@@ -241,7 +241,23 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfusePublicationFailureCode/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemLinkResult/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseMetricsQuery/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfusePublicationFailure/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemLinkCounts/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -273,6 +289,10 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemLinkStatus/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseModelClient/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
@@ -282,6 +302,14 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseSession/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemLinkFailureMode/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemOptions/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -298,6 +326,18 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseServiceCollectionExtensions/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseDatasetRunIdentityStatus/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunPublicationSnapshot/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunScoreStatus/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -321,7 +361,19 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentApiPublicationStatus/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/ILangfuseScenario/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentItemResult_T_/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunOptions/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
@@ -329,7 +381,15 @@
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunScoreResult/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseEvaluationScoreExtensions/</loc>
+    <lastmod>2026-07-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Langfuse/LangfuseExperimentRunScoreCounts/</loc>
     <lastmod>2026-07-13</lastmod>
   </url>
   <url>
