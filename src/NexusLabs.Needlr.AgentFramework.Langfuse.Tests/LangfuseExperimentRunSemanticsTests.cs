@@ -325,11 +325,8 @@ public sealed class LangfuseExperimentRunSemanticsTests
         LangfuseScoreFailureMode scoreFailureMode = LangfuseScoreFailureMode.Strict,
         HttpClient? scoreHttpClient = null)
     {
-        scoreHttpClient ??= LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
-        var scoreApiClient = new LangfuseScoreApiClient(
-            scoreHttpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
+        scoreHttpClient ??= LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []);
+        var scoreApiClient = LangfuseTestFactory.CreateScoreApiClient(scoreHttpClient);
         var scoreSink = new LangfuseScoreFailureSink(scoreFailureMode, null);
         var recorder = new LangfuseScoreRecorder(scoreApiClient, scoreSink, normalizeNames: false);
         return new LangfuseExperimentRun(

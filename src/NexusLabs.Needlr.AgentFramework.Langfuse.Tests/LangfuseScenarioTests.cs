@@ -50,7 +50,11 @@ public sealed class LangfuseScenarioTests
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
         var traceId = scenario.TraceId;
 
-        await scenario.RecordScoreAsync("relevance", 0.75, "looks good", TestContext.Current.CancellationToken);
+        await scenario.RecordScoreAsync(
+            "relevance",
+            0.75,
+            new LangfuseScoreOptions { Comment = "looks good" },
+            TestContext.Current.CancellationToken);
 
         var body = Assert.Single(bodies);
         using var json = JsonDocument.Parse(body);
@@ -74,7 +78,9 @@ public sealed class LangfuseScenarioTests
             new StringMetric("Termination Mode", value: "completed"),
             new NumericMetric("Unset Metric", value: null));
 
-        await scenario.RecordEvaluationAsync(result, TestContext.Current.CancellationToken);
+        await scenario.RecordEvaluationAsync(
+            result,
+            cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(3, bodies.Count);
 
@@ -121,7 +127,7 @@ public sealed class LangfuseScenarioTests
 
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
 
-        await Assert.ThrowsAsync<LangfuseException>(() =>
+        await Assert.ThrowsAnyAsync<LangfuseException>(() =>
             scenario.RecordScoreAsync("relevance", 0.5, cancellationToken: TestContext.Current.CancellationToken));
         Assert.Equal(0, sink.FailedCount);
     }
@@ -185,13 +191,13 @@ public sealed class LangfuseScenarioTests
             .Returns(async (HttpRequestMessage request, CancellationToken token) =>
             {
                 bodies.Add(await request.Content!.ReadAsStringAsync(token));
-                return new HttpResponseMessage(HttpStatusCode.OK);
+                return LangfuseHttpStub.ScoreAccepted(request);
             });
 
         var httpClient = new HttpClient(handler.Object);
-        return new LangfuseScoreApiClient(
+        return LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://cloud.langfuse.com/api/public/scores"),
+            new Uri("https://cloud.langfuse.com/"),
             "Basic cGs6c2s=");
     }
 
@@ -209,9 +215,9 @@ public sealed class LangfuseScenarioTests
             });
 
         var httpClient = new HttpClient(handler.Object);
-        return new LangfuseScoreApiClient(
+        return LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://cloud.langfuse.com/api/public/scores"),
+            new Uri("https://cloud.langfuse.com/"),
             "Basic cGs6c2s=");
     }
 }

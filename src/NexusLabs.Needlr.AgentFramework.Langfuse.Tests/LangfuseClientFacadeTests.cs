@@ -25,7 +25,8 @@ public sealed class LangfuseClientFacadeTests
 
         Assert.Single(tracerProviders);
         Assert.True(client.IsEnabled, "Expected configured Langfuse registration to enable the facade.");
-        Assert.Equal(0, client.ScoresFailed);
+        Assert.True(client.PublicationHealth.GetSnapshot().IsEnabled, "Expected configured publication health.");
+        Assert.Equal(0, client.PublicationHealth.GetSnapshot().ScoreUploads.Failed);
         Assert.Null(provider.GetService<ILangfuseSession>());
         Assert.False(client is IDisposable, "Expected the hosted facade to expose no telemetry lifecycle ownership.");
         Assert.Same(client.Scores, provider.GetRequiredService<ILangfuseScoreClient>());
@@ -113,8 +114,8 @@ public sealed class LangfuseClientFacadeTests
             cancellationToken: _cancellationToken);
 
         Assert.Same(scores, client.Scores);
-        Assert.Equal(3, scores.ScoresFailed);
-        Assert.Equal(scores.ScoresFailed, client.ScoresFailed);
+        Assert.Equal(3, scores.PublicationHealth.GetSnapshot().ScoreUploads.Failed);
+        Assert.Equal(0, client.PublicationHealth.GetSnapshot().ScoreUploads.Failed);
         Assert.Same(datasets, client.Datasets);
         Assert.Same(scoreConfigs, client.ScoreConfigs);
         Assert.Same(metrics, client.Metrics);
@@ -303,7 +304,8 @@ public sealed class LangfuseClientFacadeTests
 
         Assert.Empty(provider.GetServices<TracerProvider>());
         Assert.False(client.IsEnabled, "Expected disabled Langfuse registration to provide an inert facade.");
-        Assert.Equal(0, client.ScoresFailed);
+        Assert.False(client.PublicationHealth.GetSnapshot().IsEnabled, "Expected disabled publication health.");
+        Assert.Equal(LangfuseDrainStatus.Disabled, client.PublicationHealth.GetSnapshot().Drain.Status);
         Assert.Null(provider.GetService<ILangfuseSession>());
         Assert.False(client is IDisposable, "Expected the disabled facade to remain non-owning.");
         Assert.Same(client.Scores, provider.GetRequiredService<ILangfuseScoreClient>());
@@ -415,10 +417,9 @@ public sealed class LangfuseClientFacadeTests
         var failureSink = new LangfuseScoreFailureSink(
             LangfuseScoreFailureMode.NonFatal,
             callback: null);
-        var apiClient = new LangfuseScoreApiClient(
+        var apiClient = LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic dGVzdA==");
+            authorizationHeaderValue: "Basic dGVzdA==");
         var recorder = new LangfuseScoreRecorder(
             apiClient,
             failureSink,

@@ -50,8 +50,8 @@ public sealed class LangfuseScenarioContextTests
         using var listener = LangfuseTestFactory.StartListener();
         LangfuseScoreError? captured = null;
         var sink = new LangfuseScoreFailureSink(LangfuseScoreFailureMode.NonFatal, e => captured = e);
-        using var httpClient = LangfuseHttpStub.Create(_ => new HttpResponseMessage(HttpStatusCode.OK), []);
-        var apiClient = new LangfuseScoreApiClient(httpClient, new Uri("https://lf.example/api/public/scores"), "Basic x");
+        using var httpClient = LangfuseHttpStub.Create(LangfuseHttpStub.ScoreAccepted, []);
+        var apiClient = LangfuseTestFactory.CreateScoreApiClient(httpClient);
         var recorder = new LangfuseScoreRecorder(apiClient, sink, normalizeNames: false);
         using var scenario = new LangfuseScenario(recorder, "s", sessionId: null, null, null, null);
 

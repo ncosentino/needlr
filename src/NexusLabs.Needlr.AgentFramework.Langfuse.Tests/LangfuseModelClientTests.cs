@@ -17,7 +17,7 @@ public sealed class LangfuseModelClientTests
                 : new HttpResponseMessage(HttpStatusCode.OK),
             captured);
 
-        var client = new LangfuseModelClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
+        var client = CreateClient(httpClient);
 
         await client.EnsureModelPriceAsync(
             new LangfuseModelPrice
@@ -46,11 +46,13 @@ public sealed class LangfuseModelClientTests
         var captured = new List<CapturedRequest>();
         using var httpClient = LangfuseHttpStub.Create(
             request => request.Method == HttpMethod.Get
-                ? LangfuseHttpStub.Json(HttpStatusCode.OK, "{\"data\":[{\"modelName\":\"needlr-mock\"}],\"meta\":{\"totalPages\":1}}")
+                ? LangfuseHttpStub.Json(
+                    HttpStatusCode.OK,
+                    "{\"data\":[{\"modelName\":\"needlr-mock\",\"matchPattern\":\"(?i)^needlr-mock$\",\"unit\":\"TOKENS\",\"totalPrice\":0.00001}],\"meta\":{\"totalPages\":1}}")
                 : new HttpResponseMessage(HttpStatusCode.OK),
             captured);
 
-        var client = new LangfuseModelClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
+        var client = CreateClient(httpClient);
 
         await client.EnsureModelPriceAsync(
             new LangfuseModelPrice { ModelName = "needlr-mock", MatchPattern = "(?i)^needlr-mock$", TotalPrice = 0.00001 },
@@ -58,4 +60,10 @@ public sealed class LangfuseModelClientTests
 
         Assert.DoesNotContain(captured, c => c.Method == HttpMethod.Post);
     }
+
+    private static LangfuseModelClient CreateClient(HttpClient httpClient) =>
+        new(
+            new LangfuseApiClient(httpClient, BaseUrl, "Basic x"),
+            new LangfuseInProcessResourceLockProvider(),
+            "project");
 }

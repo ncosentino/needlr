@@ -28,7 +28,7 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
     public bool IsEnabled => _client.IsEnabled;
 
     /// <inheritdoc />
-    public int ScoresFailed => _client.ScoresFailed;
+    public LangfusePublicationHealth PublicationHealth => _client.PublicationHealth;
 
     /// <inheritdoc />
     public ILangfuseScoreClient Scores => _client.Scores;

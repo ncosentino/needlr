@@ -16,6 +16,7 @@ internal sealed class LangfuseHttpTransport : IDisposable
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         _httpClient = httpClient;
+        _httpClient.Timeout = Timeout.InfiniteTimeSpan;
     }
 
     public HttpClient HttpClient => _httpClient;

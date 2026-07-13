@@ -130,6 +130,28 @@ public sealed class LangfuseOptions
     public LangfuseScoreFailureMode ScoreFailureMode { get; set; } = LangfuseScoreFailureMode.NonFatal;
 
     /// <summary>
+    /// Gets the bounded timeout and retry settings used for Langfuse REST API calls.
+    /// </summary>
+    public LangfuseHttpOptions Http { get; } = new();
+
+    /// <summary>
+    /// Gets the bounded local queue and OTLP trace-export settings.
+    /// </summary>
+    public LangfuseTraceExportOptions TraceExport { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the resource-lock provider used by standalone clients while ensuring score
+    /// configs and custom models. Defaults to in-process coordination.
+    /// </summary>
+    /// <remarks>
+    /// Hosted applications can register an <see cref="ILangfuseResourceLockProvider"/> before
+    /// calling <c>AddNeedlrLangfuse</c>; that dependency-injection registration takes precedence.
+    /// Use a distributed implementation when multiple processes initialize the same project.
+    /// </remarks>
+    public ILangfuseResourceLockProvider ResourceLockProvider { get; set; } =
+        new LangfuseInProcessResourceLockProvider();
+
+    /// <summary>
     /// Gets or sets an optional callback invoked when a score upload fails under
     /// <see cref="LangfuseScoreFailureMode.NonFatal"/>. Use it to log the loss with your own logger.
     /// </summary>

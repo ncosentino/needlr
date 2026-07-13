@@ -48,7 +48,7 @@ internal sealed class LangfuseSession : ILangfuseSession
     public bool IsEnabled => _client.IsEnabled;
 
     /// <inheritdoc />
-    public int ScoresFailed => _client.ScoresFailed;
+    public LangfusePublicationHealth PublicationHealth => _client.PublicationHealth;
 
     /// <inheritdoc />
     public ILangfuseScoreClient Scores => _client.Scores;
@@ -74,9 +74,21 @@ internal sealed class LangfuseSession : ILangfuseSession
         ThrowIfShutdownStarted();
 
         var timeoutMs = LangfuseTimeout.ToFlushMilliseconds(timeout);
-        var traces = _tracerProvider.ForceFlush(timeoutMs);
-        var metrics = _meterProvider?.ForceFlush(timeoutMs) ?? true;
-        return traces && metrics;
+        PublicationHealth.BeginDrain();
+        var stopwatch = Stopwatch.StartNew();
+        var completed = false;
+        try
+        {
+            var traces = _tracerProvider.ForceFlush(timeoutMs);
+            var metrics = _meterProvider?.ForceFlush(timeoutMs) ?? true;
+            completed = traces && metrics;
+            return completed;
+        }
+        finally
+        {
+            stopwatch.Stop();
+            PublicationHealth.CompleteDrain(completed, stopwatch.Elapsed);
+        }
     }
 
     /// <inheritdoc />
@@ -123,6 +135,9 @@ internal sealed class LangfuseSession : ILangfuseSession
         }
 
         LangfuseShutdownOutcome? outcome = null;
+        var drainCompleted = false;
+        PublicationHealth.BeginDrain();
+        var drainStopwatch = Stopwatch.StartNew();
         try
         {
             var stopwatch = timeoutMilliseconds == Timeout.Infinite
@@ -153,10 +168,17 @@ internal sealed class LangfuseSession : ILangfuseSession
                 isFinal: true,
                 traceStatus,
                 metricStatus);
+            drainCompleted =
+                traceStatus is LangfuseProviderShutdownStatus.Completed
+                && metricStatus is
+                    LangfuseProviderShutdownStatus.Completed
+                    or LangfuseProviderShutdownStatus.NotConfigured;
             return outcome;
         }
         finally
         {
+            drainStopwatch.Stop();
+            PublicationHealth.CompleteDrain(drainCompleted, drainStopwatch.Elapsed);
             try
             {
                 DisposeOwnedResources();

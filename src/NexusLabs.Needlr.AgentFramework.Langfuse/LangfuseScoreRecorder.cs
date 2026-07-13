@@ -20,11 +20,13 @@ internal sealed class LangfuseScoreRecorder
     private readonly LangfuseScoreApiClient _apiClient;
     private readonly LangfuseScoreFailureSink _failureSink;
     private readonly bool _normalizeNames;
+    private readonly LangfusePublicationHealth _health;
 
     public LangfuseScoreRecorder(
         LangfuseScoreApiClient apiClient,
         LangfuseScoreFailureSink failureSink,
-        bool normalizeNames)
+        bool normalizeNames,
+        LangfusePublicationHealth? health = null)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
         ArgumentNullException.ThrowIfNull(failureSink);
@@ -32,9 +34,12 @@ internal sealed class LangfuseScoreRecorder
         _apiClient = apiClient;
         _failureSink = failureSink;
         _normalizeNames = normalizeNames;
+        _health = health ?? new LangfusePublicationHealth(isEnabled: true);
     }
 
     public LangfuseScoreFailureSink FailureSink => _failureSink;
+
+    public LangfusePublicationHealth Health => _health;
 
     internal static bool HasPublishableValue(EvaluationMetric metric)
     {
@@ -45,57 +50,57 @@ internal sealed class LangfuseScoreRecorder
             or StringMetric { Value.Length: > 0 };
     }
 
-    public async Task RecordNumericAsync(string traceId, string name, double value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordNumericAsync(string traceId, string name, double value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordNumericResultAsync(
             LangfuseScoreTarget.Trace(traceId),
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
-    public async Task RecordBooleanAsync(string traceId, string name, bool value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordBooleanAsync(string traceId, string name, bool value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordBooleanResultAsync(
             LangfuseScoreTarget.Trace(traceId),
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
-    public async Task RecordCategoricalAsync(string traceId, string name, string value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordCategoricalAsync(string traceId, string name, string value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordCategoricalResultAsync(
             LangfuseScoreTarget.Trace(traceId),
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
-    public async Task RecordNumericAsync(LangfuseScoreTarget target, string name, double value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordNumericAsync(LangfuseScoreTarget target, string name, double value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordNumericResultAsync(
             target,
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
-    public async Task RecordBooleanAsync(LangfuseScoreTarget target, string name, bool value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordBooleanAsync(LangfuseScoreTarget target, string name, bool value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordBooleanResultAsync(
             target,
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
-    public async Task RecordCategoricalAsync(LangfuseScoreTarget target, string name, string value, string? comment, CancellationToken cancellationToken) =>
+    public async Task RecordCategoricalAsync(LangfuseScoreTarget target, string name, string value, LangfuseScoreOptions? options, CancellationToken cancellationToken) =>
         _ = await RecordCategoricalResultAsync(
             target,
             name,
             value,
-            comment,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
 
@@ -103,37 +108,42 @@ internal sealed class LangfuseScoreRecorder
         LangfuseScoreTarget target,
         string name,
         double value,
-        string? comment,
+        LangfuseScoreOptions? options,
         Action<LangfuseScoreRecordResult>? resultObserver,
         CancellationToken cancellationToken) =>
-        SendAsync(target, name, value, NumericDataType, comment, resultObserver, cancellationToken);
+        SendAsync(target, name, value, NumericDataType, options, resultObserver, cancellationToken);
 
     public Task<LangfuseScoreRecordResult> RecordBooleanResultAsync(
         LangfuseScoreTarget target,
         string name,
         bool value,
-        string? comment,
+        LangfuseScoreOptions? options,
         Action<LangfuseScoreRecordResult>? resultObserver,
         CancellationToken cancellationToken) =>
-        SendAsync(target, name, value ? 1.0 : 0.0, BooleanDataType, comment, resultObserver, cancellationToken);
+        SendAsync(target, name, value ? 1.0 : 0.0, BooleanDataType, options, resultObserver, cancellationToken);
 
     public Task<LangfuseScoreRecordResult> RecordCategoricalResultAsync(
         LangfuseScoreTarget target,
         string name,
         string value,
-        string? comment,
+        LangfuseScoreOptions? options,
         Action<LangfuseScoreRecordResult>? resultObserver,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return SendAsync(target, name, value, CategoricalDataType, comment, resultObserver, cancellationToken);
+        return SendAsync(target, name, value, CategoricalDataType, options, resultObserver, cancellationToken);
     }
 
-    public async Task RecordEvaluationAsync(string traceId, EvaluationResult result, CancellationToken cancellationToken)
+    public async Task RecordEvaluationAsync(
+        string traceId,
+        EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken)
     {
         _ = await RecordEvaluationResultsAsync(
             LangfuseScoreTarget.Trace(traceId),
             result,
+            options,
             resultObserver: null,
             cancellationToken).ConfigureAwait(false);
     }
@@ -141,6 +151,7 @@ internal sealed class LangfuseScoreRecorder
     public async Task<IReadOnlyList<LangfuseScoreRecordResult>> RecordEvaluationResultsAsync(
         LangfuseScoreTarget target,
         EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options,
         Action<LangfuseScoreRecordResult>? resultObserver,
         CancellationToken cancellationToken)
     {
@@ -149,6 +160,7 @@ internal sealed class LangfuseScoreRecorder
         var results = new List<LangfuseScoreRecordResult>();
         foreach (var metric in result.Metrics.Values)
         {
+            var scoreOptions = CreateMetricScoreOptions(metric, options);
             LangfuseScoreRecordResult scoreResult;
             switch (metric)
             {
@@ -157,7 +169,7 @@ internal sealed class LangfuseScoreRecorder
                         target,
                         metric.Name,
                         numeric,
-                        metric.Reason,
+                        scoreOptions,
                         resultObserver,
                         cancellationToken).ConfigureAwait(false);
                     break;
@@ -166,7 +178,7 @@ internal sealed class LangfuseScoreRecorder
                         target,
                         metric.Name,
                         boolean,
-                        metric.Reason,
+                        scoreOptions,
                         resultObserver,
                         cancellationToken).ConfigureAwait(false);
                     break;
@@ -175,12 +187,13 @@ internal sealed class LangfuseScoreRecorder
                         target,
                         metric.Name,
                         category,
-                        metric.Reason,
+                        scoreOptions,
                         resultObserver,
                         cancellationToken).ConfigureAwait(false);
                     break;
                 default:
                     scoreResult = new LangfuseScoreRecordResult(
+                        scoreOptions?.Id,
                         metric.Name,
                         LangfuseScoreRecordStatus.Skipped,
                         failure: null);
@@ -199,11 +212,16 @@ internal sealed class LangfuseScoreRecorder
         string name,
         object value,
         string dataType,
-        string? comment,
+        LangfuseScoreOptions? options,
         Action<LangfuseScoreRecordResult>? resultObserver,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (options?.Id is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.Id);
+        }
+
         var normalizedName = NormalizeName(name);
 
         var score = new LangfuseScore
@@ -215,22 +233,33 @@ internal sealed class LangfuseScoreRecorder
             Name = normalizedName,
             Value = value,
             DataType = dataType,
-            Comment = comment,
+            Comment = options?.Comment,
+            Id = options?.Id,
         };
 
+        _health.BeginScoreUpload();
         try
         {
-            await _apiClient.CreateAsync(score, cancellationToken).ConfigureAwait(false);
+            var scoreId = await _apiClient.CreateAsync(score, cancellationToken).ConfigureAwait(false);
+            _health.CompleteScoreUpload(succeeded: true);
             var result = new LangfuseScoreRecordResult(
+                scoreId,
                 normalizedName,
                 LangfuseScoreRecordStatus.Accepted,
                 failure: null);
             resultObserver?.Invoke(result);
             return result;
         }
+        catch (OperationCanceledException)
+        {
+            _health.CancelScoreUpload();
+            throw;
+        }
         catch (LangfuseException ex)
         {
+            _health.CompleteScoreUpload(succeeded: false);
             var result = new LangfuseScoreRecordResult(
+                score.Id,
                 normalizedName,
                 LangfuseScoreRecordStatus.Failed,
                 ex);
@@ -275,6 +304,7 @@ internal sealed class LangfuseScoreRecorder
         cancellationToken.ThrowIfCancellationRequested();
         var failure = new LangfuseException(message);
         var result = new LangfuseScoreRecordResult(
+            scoreId: null,
             name,
             LangfuseScoreRecordStatus.Failed,
             failure);
@@ -292,6 +322,25 @@ internal sealed class LangfuseScoreRecorder
     }
 
     private string NormalizeName(string name) => _normalizeNames ? ToSnakeCase(name) : name;
+
+    private static LangfuseScoreOptions? CreateMetricScoreOptions(
+        EvaluationMetric metric,
+        LangfuseEvaluationScoreOptions? options)
+    {
+        var id = options?.ScoreIdProvider?.Invoke(metric);
+        if (id is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        }
+
+        return id is null && metric.Reason is null
+            ? null
+            : new LangfuseScoreOptions
+            {
+                Id = id,
+                Comment = metric.Reason,
+            };
+    }
 
     private static string ToSnakeCase(string name)
     {

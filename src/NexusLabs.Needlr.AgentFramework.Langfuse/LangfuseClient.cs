@@ -31,7 +31,6 @@ internal sealed class LangfuseClient : ILangfuseClient
         ArgumentNullException.ThrowIfNull(metrics);
         ArgumentNullException.ThrowIfNull(models);
         ArgumentNullException.ThrowIfNull(prompts);
-
         _composition = composition;
         Scores = scores;
         Datasets = datasets;
@@ -45,7 +44,7 @@ internal sealed class LangfuseClient : ILangfuseClient
     public bool IsEnabled => true;
 
     /// <inheritdoc />
-    public int ScoresFailed => Scores.ScoresFailed;
+    public LangfusePublicationHealth PublicationHealth => _composition.Health;
 
     /// <inheritdoc />
     public ILangfuseScoreClient Scores { get; }
@@ -93,7 +92,8 @@ internal sealed class LangfuseClient : ILangfuseClient
             datasetName,
             runName,
             options,
-            _composition.Diagnostics);
+            _composition.Diagnostics,
+            _composition.Health);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(
@@ -102,7 +102,7 @@ internal sealed class LangfuseClient : ILangfuseClient
         CancellationToken cancellationToken = default) =>
         _composition.CommentRecorder.AddTraceCommentAsync(traceId, content, cancellationToken);
 
-    private LangfuseClient(LangfuseClientComposition composition)
+    internal LangfuseClient(LangfuseClientComposition composition)
         : this(
             composition,
             composition.Scores,

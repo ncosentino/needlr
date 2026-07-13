@@ -28,10 +28,7 @@ public sealed class LangfuseCancellationTests
         using var cancellation = CreateCanceledTokenSource();
         using var httpClient = CreateHttpClient(
             (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
-        var client = new LangfuseScoreApiClient(
-            httpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
+        var client = LangfuseTestFactory.CreateScoreApiClient(httpClient);
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             client.CreateAsync(CreateScore(), cancellation.Token));
@@ -52,10 +49,7 @@ public sealed class LangfuseCancellationTests
             LangfuseScoreFailureMode.NonFatal,
             error => capturedError = error);
         var recorder = new LangfuseScoreRecorder(
-            new LangfuseScoreApiClient(
-                httpClient,
-                new Uri("https://lf.example/api/public/scores"),
-                "Basic x"),
+            LangfuseTestFactory.CreateScoreApiClient(httpClient),
             failureSink,
             normalizeNames: false);
 
@@ -244,7 +238,7 @@ public sealed class LangfuseCancellationTests
             (_, _) => Task.FromException<HttpResponseMessage>(new TaskCanceledException("simulated timeout")));
         var client = new LangfuseApiClient(httpClient, new Uri("https://lf.example/"), "Basic x");
 
-        var exception = await Assert.ThrowsAsync<LangfuseException>(() =>
+        var exception = await Assert.ThrowsAnyAsync<LangfuseException>(() =>
             client.PostAsync("api/public/datasets", new { name = "evals" }, _testCancellationToken));
 
         Assert.IsType<TaskCanceledException>(exception.InnerException);
@@ -255,12 +249,9 @@ public sealed class LangfuseCancellationTests
     {
         using var httpClient = CreateHttpClient(
             (_, _) => Task.FromException<HttpResponseMessage>(new TaskCanceledException("simulated timeout")));
-        var client = new LangfuseScoreApiClient(
-            httpClient,
-            new Uri("https://lf.example/api/public/scores"),
-            "Basic x");
+        var client = LangfuseTestFactory.CreateScoreApiClient(httpClient);
 
-        var exception = await Assert.ThrowsAsync<LangfuseException>(() =>
+        var exception = await Assert.ThrowsAnyAsync<LangfuseException>(() =>
             client.CreateAsync(CreateScore(), _testCancellationToken));
 
         Assert.IsType<TaskCanceledException>(exception.InnerException);

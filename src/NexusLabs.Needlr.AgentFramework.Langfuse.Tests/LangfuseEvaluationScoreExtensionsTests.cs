@@ -7,44 +7,59 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 
 public sealed class LangfuseEvaluationScoreExtensionsTests
 {
+    private readonly MockRepository _mocks = new(MockBehavior.Strict);
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+
     [Fact]
     public async Task EvaluateAndRecordAsync_RunsEachEvaluatorAndRecordsEachResult()
     {
         var result1 = new EvaluationResult(new NumericMetric("m1", value: 1.0));
         var result2 = new EvaluationResult(new BooleanMetric("m2", value: true));
-
-        var evaluator1 = CreateEvaluator(result1);
-        var evaluator2 = CreateEvaluator(result2);
-
-        var scenario = new Mock<ILangfuseScenario>(MockBehavior.Strict);
-        scenario
-            .Setup(s => s.RecordEvaluationAsync(It.IsAny<EvaluationResult>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
         var messages = new[] { new ChatMessage(ChatRole.User, "hi") };
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "yo"));
 
-        var results = await scenario.Object.EvaluateAndRecordAsync(
+        var evaluator1 = CreateEvaluator(messages, response, result1);
+        var evaluator2 = CreateEvaluator(messages, response, result2);
+        using var listener = LangfuseTestFactory.StartListener();
+        var captured = new List<CapturedRequest>();
+        using var httpClient = LangfuseHttpStub.Create(
+            LangfuseHttpStub.ScoreAccepted,
+            captured);
+        var scoreApiClient = LangfuseTestFactory.CreateScoreApiClient(httpClient);
+        var failureSink = new LangfuseScoreFailureSink(LangfuseScoreFailureMode.Strict, null);
+        var recorder = new LangfuseScoreRecorder(scoreApiClient, failureSink, normalizeNames: false);
+        using var scenario = new LangfuseScenario(
+            recorder,
+            "extension-test",
+            sessionId: null,
+            userId: null,
+            tags: null,
+            metadata: null);
+
+        var results = await scenario.EvaluateAndRecordAsync(
             [evaluator1.Object, evaluator2.Object],
             messages,
             response,
-            cancellationToken: TestContext.Current.CancellationToken);
+            cancellationToken: _cancellationToken);
 
         Assert.Equal([result1, result2], results);
-        scenario.Verify(s => s.RecordEvaluationAsync(result1, It.IsAny<CancellationToken>()), Times.Once);
-        scenario.Verify(s => s.RecordEvaluationAsync(result2, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(2, captured.Count);
+        _mocks.VerifyAll();
     }
 
-    private static Mock<IEvaluator> CreateEvaluator(EvaluationResult result)
+    private Mock<IEvaluator> CreateEvaluator(
+        IReadOnlyList<ChatMessage> messages,
+        ChatResponse response,
+        EvaluationResult result)
     {
-        var evaluator = new Mock<IEvaluator>(MockBehavior.Strict);
+        var evaluator = _mocks.Create<IEvaluator>();
         evaluator
             .Setup(e => e.EvaluateAsync(
-                It.IsAny<IEnumerable<ChatMessage>>(),
-                It.IsAny<ChatResponse>(),
-                It.IsAny<ChatConfiguration?>(),
-                It.IsAny<IEnumerable<EvaluationContext>?>(),
-                It.IsAny<CancellationToken>()))
+                messages,
+                response,
+                null,
+                null,
+                _cancellationToken))
             .ReturnsAsync(result);
         return evaluator;
     }

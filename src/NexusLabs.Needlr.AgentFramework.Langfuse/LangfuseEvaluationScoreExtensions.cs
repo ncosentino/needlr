@@ -17,6 +17,7 @@ public static class LangfuseEvaluationScoreExtensions
     /// </summary>
     /// <param name="result">The evaluation result to project.</param>
     /// <param name="scenario">The scenario whose trace the scores attach to.</param>
+    /// <param name="options">Optional stable identity settings for projected metric scores.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
     /// <exception cref="ArgumentNullException">
@@ -25,12 +26,13 @@ public static class LangfuseEvaluationScoreExtensions
     public static Task RecordLangfuseScoresAsync(
         this EvaluationResult result,
         ILangfuseScenario scenario,
+        LangfuseEvaluationScoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(scenario);
 
-        return scenario.RecordEvaluationAsync(result, cancellationToken);
+        return scenario.RecordEvaluationAsync(result, options, cancellationToken);
     }
 
     /// <summary>
@@ -44,6 +46,7 @@ public static class LangfuseEvaluationScoreExtensions
     /// <param name="modelResponse">The agent's response (for example, from <c>EvaluationInputs.ModelResponse</c>).</param>
     /// <param name="chatConfiguration">Optional chat configuration for LLM-judged evaluators.</param>
     /// <param name="additionalContext">Optional additional context (for example, <c>AgentRunDiagnosticsContext</c>).</param>
+    /// <param name="scoreOptions">Optional stable identity settings for projected metric scores.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The evaluation results, in evaluator order.</returns>
     /// <exception cref="ArgumentNullException">
@@ -57,6 +60,7 @@ public static class LangfuseEvaluationScoreExtensions
         ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
+        LangfuseEvaluationScoreOptions? scoreOptions = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(scenario);
@@ -73,7 +77,7 @@ public static class LangfuseEvaluationScoreExtensions
             var result = await evaluator
                 .EvaluateAsync(materializedMessages, modelResponse, chatConfiguration, contextList, cancellationToken)
                 .ConfigureAwait(false);
-            await scenario.RecordEvaluationAsync(result, cancellationToken).ConfigureAwait(false);
+            await scenario.RecordEvaluationAsync(result, scoreOptions, cancellationToken).ConfigureAwait(false);
             results.Add(result);
         }
 

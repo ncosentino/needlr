@@ -80,7 +80,7 @@ public interface ILangfuseExperimentRun
     /// <summary>Records a numeric score against the resolved dataset run.</summary>
     /// <param name="name">The score name.</param>
     /// <param name="value">The numeric value.</param>
-    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="options">Optional score identity and comment settings.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The direct score-publication outcome.</returns>
     /// <exception cref="LangfuseException">
@@ -91,13 +91,13 @@ public interface ILangfuseExperimentRun
     Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         double value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Records a boolean score against the resolved dataset run.</summary>
     /// <param name="name">The score name.</param>
     /// <param name="value">The boolean value.</param>
-    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="options">Optional score identity and comment settings.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The direct score-publication outcome.</returns>
     /// <exception cref="LangfuseException">
@@ -108,13 +108,13 @@ public interface ILangfuseExperimentRun
     Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         bool value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Records a categorical score against the resolved dataset run.</summary>
     /// <param name="name">The score name.</param>
     /// <param name="value">The category label.</param>
-    /// <param name="comment">An optional explanation surfaced in Langfuse.</param>
+    /// <param name="options">Optional score identity and comment settings.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The direct score-publication outcome.</returns>
     /// <exception cref="LangfuseException">
@@ -125,7 +125,7 @@ public interface ILangfuseExperimentRun
     Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         string value,
-        string? comment = null,
+        LangfuseScoreOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -133,6 +133,7 @@ public interface ILangfuseExperimentRun
     /// run.
     /// </summary>
     /// <param name="result">The evaluation result to project.</param>
+    /// <param name="options">Optional stable identity settings for projected metric scores.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>One structured score result per evaluation metric.</returns>
     /// <exception cref="LangfuseException">
@@ -142,6 +143,7 @@ public interface ILangfuseExperimentRun
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

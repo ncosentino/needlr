@@ -26,7 +26,7 @@
 // still PASSES when Langfuse is unreachable. It proves cancellation propagates,
 // experiment-item callbacks retain their scenario context, unrelated baggage is
 // not exported, final shutdown is bounded, and every failed score is surfaced via
-// ScoresFailed + ScoreErrorCallback:
+// structured publication health + ScoreErrorCallback:
 //
 //     dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- resiliency
 //
@@ -206,7 +206,11 @@ using (var scenario = langfuse.BeginScenario(
         ],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)]);
+        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+        scoreOptions: new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+        });
 
     expectedScoreNames = results
         .SelectMany(r => r.Metrics.Values)
@@ -377,7 +381,11 @@ static async Task<int> RunResiliencyCheckAsync()
             evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000)],
             messages: inputs.Messages,
             modelResponse: inputs.ModelResponse,
-            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)]);
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            scoreOptions: new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"resiliency:{metric.Name}",
+            });
 
         recordedScores = results.SelectMany(r => r.Metrics.Values).Count(HasValue);
     }
@@ -419,6 +427,7 @@ static async Task<int> RunResiliencyCheckAsync()
     var shutdownStopwatch = Stopwatch.StartNew();
     var shutdown = langfuse.Shutdown(shutdownTimeout);
     shutdownStopwatch.Stop();
+    var publication = langfuse.PublicationHealth.GetSnapshot();
     var shutdownBounded =
         shutdownStopwatch.Elapsed <= shutdownTimeout + TimeSpan.FromSeconds(3);
 
@@ -429,7 +438,9 @@ static async Task<int> RunResiliencyCheckAsync()
         experimentItemContextRestored &&
         experimentItemLinkStatus == LangfuseExperimentItemLinkStatus.Failed &&
         recordedScores > 0 &&
-        langfuse.ScoresFailed == recordedScores &&
+        publication.ScoreUploads.Failed == recordedScores &&
+        publication.ItemLinks.Failed == 1 &&
+        publication.Retries.Total > 0 &&
         callbackFired == recordedScores &&
         shutdown.IsFinal &&
         shutdownBounded &&
@@ -442,10 +453,15 @@ static async Task<int> RunResiliencyCheckAsync()
     Console.WriteLine($"  experiment scope restore:  {(experimentItemContextRestored ? "restored" : "FAILED")}");
     Console.WriteLine($"  dataset link status:       {experimentItemLinkStatus}");
     Console.WriteLine($"  scores attempted:          {recordedScores}");
-    Console.WriteLine($"  ScoresFailed (session):    {langfuse.ScoresFailed}");
+    Console.WriteLine($"  score upload failures:     {publication.ScoreUploads.Failed}");
+    Console.WriteLine($"  item link failures:        {publication.ItemLinks.Failed}");
+    Console.WriteLine($"  REST retries:              {publication.Retries.Total}");
+    Console.WriteLine($"  trace export failures:     {publication.TraceExport.Failed}");
+    Console.WriteLine($"  trace queue drops:         {publication.TraceExport.Dropped}");
     Console.WriteLine($"  ScoreErrorCallback fired:  {callbackFired}");
     Console.WriteLine($"  trace shutdown:            {shutdown.Traces}");
     Console.WriteLine($"  metric shutdown:           {shutdown.Metrics}");
+    Console.WriteLine($"  drain health:              {publication.Drain.Status}");
     Console.WriteLine($"  shutdown elapsed:          {shutdownStopwatch.Elapsed.TotalMilliseconds:F0} ms");
     Console.WriteLine();
 
@@ -717,16 +733,29 @@ static async Task<int> RunExperimentsCheckAsync()
     var numericRunScore = await run.RecordScoreAsync(
         configName,
         1.0,
-        "All conformance items linked.");
+        new LangfuseScoreOptions
+        {
+            Id = $"{runId}:{configName}",
+            Comment = "All conformance items linked.",
+        });
     var booleanRunScore = await run.RecordScoreAsync(
         "needlr_run_passed",
         true,
-        "Every required run check passed before read-back.");
+        new LangfuseScoreOptions
+        {
+            Id = $"{runId}:needlr_run_passed",
+            Comment = "Every required run check passed before read-back.",
+        });
     var categoricalRunScore = await run.RecordScoreAsync(
         "needlr_run_verdict",
-        "passed");
+        "passed",
+        new LangfuseScoreOptions { Id = $"{runId}:needlr_run_verdict" });
     var evaluationRunScores = await run.RecordEvaluationAsync(
-        new EvaluationResult(new NumericMetric("needlr_run_item_count", itemTraceIds.Count)));
+        new EvaluationResult(new NumericMetric("needlr_run_item_count", itemTraceIds.Count)),
+        new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+        });
     LangfuseExperimentRunScoreResult[] runScoreResults =
     [
         numericRunScore,
@@ -750,7 +779,14 @@ static async Task<int> RunExperimentsCheckAsync()
     using (var sessionScenario = langfuse.BeginScenario("exp: session-scored", sessionId: sessionId, tags: ["conformance"]))
     {
         await RunMockAsync(loop, diagnosticsAccessor, "session-trace");
-        await sessionScenario.RecordSessionScoreAsync("session_resolved", true, "Whole conversation resolved.");
+        await sessionScenario.RecordSessionScoreAsync(
+            "session_resolved",
+            true,
+            new LangfuseScoreOptions
+            {
+                Id = $"{runId}:session_resolved",
+                Comment = "Whole conversation resolved.",
+            });
     }
     Console.WriteLine($"[run] Recorded a session score on session '{sessionId}'.");
 
@@ -1164,7 +1200,14 @@ static async Task<int> RunMetricsCheckAsync()
     using (var scenario = langfuse.BeginScenario("metrics: scored-run", sessionId: runId, tags: ["conformance"]))
     {
         await RunMockAsync(loop, diagnosticsAccessor, "metrics");
-        await scenario.RecordScoreAsync(scoreName, scoreValue, "metrics conformance");
+        await scenario.RecordScoreAsync(
+            scoreName,
+            scoreValue,
+            new LangfuseScoreOptions
+            {
+                Id = $"{runId}:{scoreName}",
+                Comment = "metrics conformance",
+            });
         Console.WriteLine($"[run] Recorded score '{scoreName}' = {scoreValue} on trace {scenario.TraceId}.");
     }
 

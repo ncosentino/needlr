@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// The exception thrown when a request to the Langfuse API fails.
 /// </summary>
-public sealed class LangfuseException : Exception
+public class LangfuseException : Exception
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LangfuseException"/> class.

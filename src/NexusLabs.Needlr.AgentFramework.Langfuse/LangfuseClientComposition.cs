@@ -9,41 +9,56 @@ internal sealed class LangfuseClientComposition
     public LangfuseClientComposition(
         LangfuseHttpTransport transport,
         LangfuseEndpoints endpoints,
-        LangfuseOptions options)
+        LangfuseOptions options,
+        ILangfuseResourceLockProvider? resourceLockProvider = null,
+        LangfusePublicationHealth? health = null)
     {
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(options);
+        resourceLockProvider ??= options.ResourceLockProvider;
+        ArgumentNullException.ThrowIfNull(resourceLockProvider);
+        Health = health ?? new LangfusePublicationHealth(isEnabled: true);
 
-        var scoreApiClient = new LangfuseScoreApiClient(
-            transport.HttpClient,
-            endpoints.ScoresEndpoint,
-            endpoints.AuthorizationHeaderValue);
         ApiClient = new LangfuseApiClient(
             transport.HttpClient,
             endpoints.BaseUrl,
-            endpoints.AuthorizationHeaderValue);
+            endpoints.AuthorizationHeaderValue,
+            options.Http,
+            timeProvider: null,
+            health: Health);
+        var scoreApiClient = new LangfuseScoreApiClient(ApiClient);
         FailureSink = new LangfuseScoreFailureSink(
             options.ScoreFailureMode,
             options.ScoreErrorCallback);
         Recorder = new LangfuseScoreRecorder(
             scoreApiClient,
             FailureSink,
-            options.NormalizeScoreNames);
+            options.NormalizeScoreNames,
+            Health);
         CommentRecorder = new LangfuseCommentRecorder(
             ApiClient,
             options.DiagnosticsCallback);
         Diagnostics = options.DiagnosticsCallback;
+        var resourceLockScope = $"{endpoints.BaseUrl.AbsoluteUri}\n{options.PublicKey}";
 
         Scores = new LangfuseScoreClient(Recorder, FailureSink);
         Datasets = new LangfuseDatasetClient(ApiClient);
-        ScoreConfigs = new LangfuseScoreConfigClient(ApiClient);
+        ScoreConfigs = new LangfuseScoreConfigClient(
+            ApiClient,
+            resourceLockProvider,
+            resourceLockScope);
         Metrics = new LangfuseMetricsClient(ApiClient);
-        Models = new LangfuseModelClient(ApiClient);
+        Models = new LangfuseModelClient(
+            ApiClient,
+            resourceLockProvider,
+            resourceLockScope);
         Prompts = new LangfusePromptClient(ApiClient);
     }
 
     public LangfuseApiClient ApiClient { get; }
+
+    public LangfusePublicationHealth Health { get; }
 
     public LangfuseScoreFailureSink FailureSink { get; }
 

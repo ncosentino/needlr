@@ -1,38 +1,32 @@
 using System.Net;
 using System.Text.Json;
 
-using Moq;
-using Moq.Protected;
-
 namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 
 public sealed class LangfuseScoreApiClientTests
 {
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+
     [Fact]
     public async Task CreateAsync_PostsScoreWithBasicAuthAndExpectedBody()
     {
         HttpRequestMessage? capturedRequest = null;
         string? capturedBody = null;
 
-        var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Returns(async (HttpRequestMessage request, CancellationToken token) =>
+        var handler = new DelegateHttpMessageHandler(
+            async (request, token) =>
             {
                 capturedRequest = request;
                 capturedBody = request.Content is null
                     ? null
                     : await request.Content.ReadAsStringAsync(token);
-                return new HttpResponseMessage(HttpStatusCode.OK);
+                return LangfuseHttpStub.Json(HttpStatusCode.OK, """{"id":"server-id"}""");
             });
 
-        using var httpClient = new HttpClient(handler.Object, disposeHandler: false);
-        var client = new LangfuseScoreApiClient(
+        using var httpClient = new HttpClient(handler);
+        var client = LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://cloud.langfuse.com/api/public/scores"),
+            new Uri("https://cloud.langfuse.com/"),
             "Basic cGs6c2s=");
 
         var score = new LangfuseScore
@@ -44,7 +38,7 @@ public sealed class LangfuseScoreApiClientTests
             Comment = "all tools ok",
         };
 
-        await client.CreateAsync(score, CancellationToken.None);
+        await client.CreateAsync(score, _cancellationToken);
 
         Assert.NotNull(capturedRequest);
         Assert.Equal(HttpMethod.Post, capturedRequest!.Method);
@@ -66,27 +60,22 @@ public sealed class LangfuseScoreApiClientTests
     {
         string? capturedBody = null;
 
-        var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Returns(async (HttpRequestMessage request, CancellationToken token) =>
+        var handler = new DelegateHttpMessageHandler(
+            async (request, token) =>
             {
                 capturedBody = await request.Content!.ReadAsStringAsync(token);
-                return new HttpResponseMessage(HttpStatusCode.Created);
+                return LangfuseHttpStub.Json(HttpStatusCode.OK, """{"id":"server-id"}""");
             });
 
-        using var httpClient = new HttpClient(handler.Object, disposeHandler: false);
-        var client = new LangfuseScoreApiClient(
+        using var httpClient = new HttpClient(handler);
+        var client = LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://cloud.langfuse.com/api/public/scores"),
+            new Uri("https://cloud.langfuse.com/"),
             "Basic cGs6c2s=");
 
         await client.CreateAsync(
             new LangfuseScore { TraceId = "t", Name = "verdict", Value = "partially correct", DataType = "CATEGORICAL" },
-            CancellationToken.None);
+            _cancellationToken);
 
         using var json = JsonDocument.Parse(capturedBody!);
         Assert.Equal("partially correct", json.RootElement.GetProperty("value").GetString());
@@ -96,26 +85,21 @@ public sealed class LangfuseScoreApiClientTests
     [Fact]
     public async Task CreateAsync_NonSuccessStatus_ThrowsLangfuseException()
     {
-        var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+        var handler = new DelegateHttpMessageHandler(
+            (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)
             {
                 Content = new StringContent("invalid credentials"),
-            });
+            }));
 
-        using var httpClient = new HttpClient(handler.Object, disposeHandler: false);
-        var client = new LangfuseScoreApiClient(
+        using var httpClient = new HttpClient(handler);
+        var client = LangfuseTestFactory.CreateScoreApiClient(
             httpClient,
-            new Uri("https://cloud.langfuse.com/api/public/scores"),
+            new Uri("https://cloud.langfuse.com/"),
             "Basic cGs6c2s=");
 
-        var ex = await Assert.ThrowsAsync<LangfuseException>(() => client.CreateAsync(
+        var ex = await Assert.ThrowsAnyAsync<LangfuseException>(() => client.CreateAsync(
             new LangfuseScore { TraceId = "t", Name = "n", Value = 1.0, DataType = "NUMERIC" },
-            CancellationToken.None));
+            _cancellationToken));
 
         Assert.Contains("401", ex.Message, StringComparison.Ordinal);
         Assert.Contains("invalid credentials", ex.Message, StringComparison.Ordinal);
