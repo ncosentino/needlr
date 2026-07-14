@@ -6,4 +6,5 @@ namespace ExperimentRunnerApp;
 internal sealed record ExperimentCaseDefinition(
     string Mode,
     int Value,
-    int DelayMilliseconds);
+    int DelayMilliseconds,
+    double SuccessProbability);

@@ -16,4 +16,13 @@ public enum ExperimentFailureCode
 
     /// <summary>Item evaluation threw an exception.</summary>
     EvaluationFailed,
+
+    /// <summary>The retry policy failed while selecting the next attempt.</summary>
+    RetryPolicyFailed,
+
+    /// <summary>A run evaluator or its metric normalization failed.</summary>
+    RunEvaluationFailed,
+
+    /// <summary>An experiment policy failed.</summary>
+    PolicyFailed,
 }

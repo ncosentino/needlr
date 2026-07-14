@@ -13,7 +13,8 @@ superseded_by: ""
 Accepted - proceed through the separately reviewed implementation phases below.
 
 This ADR was the design deliverable for [issue #36](https://github.com/ncosentino/needlr/issues/36).
-Phase 1 implementation is tracked by [issue #43](https://github.com/ncosentino/needlr/issues/43);
+Phase 1 implementation is tracked by [issue #43](https://github.com/ncosentino/needlr/issues/43).
+Phase 2 implementation is tracked by [issue #45](https://github.com/ncosentino/needlr/issues/45);
 later phases still require their own issues and pull requests.
 
 ## Decision
@@ -557,9 +558,9 @@ Run evaluators measure. Policies decide.
 - Policies cannot mutate measurements.
 - Human-readable report rendering remains outside the policy result.
 
-The existing `EvaluationQualityGate` should not be duplicated. A future implementation should refactor its threshold checks into a shared structured policy result and keep `Assert(...)` as a throwing adapter over that same result.
+The existing `EvaluationQualityGate` is not duplicated. Phase 2 refactors its threshold checks into a shared structured result and keeps `Assert(...)` as a throwing adapter over that same evaluation.
 
-The current gate silently skips absent metrics. That behavior is not valid for a required experiment policy. Missing required metrics produce `Inconclusive` by default, or `Failed` when the policy explicitly selects pessimistic treatment. Updating `Assert(...)` to use required-metric semantics is an intentional alpha correction rather than a compatibility shim.
+Missing required metrics produce `Inconclusive` by default, or `Failed` when the policy explicitly selects pessimistic treatment. `Optional*` thresholds preserve conditionally emitted metric support. Updating `Assert(...)` to use required-metric semantics is an intentional alpha correction rather than a compatibility shim.
 
 ### Statistical policies
 

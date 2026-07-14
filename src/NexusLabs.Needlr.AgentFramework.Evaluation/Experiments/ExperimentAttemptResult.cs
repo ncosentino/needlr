@@ -19,4 +19,10 @@ public sealed class ExperimentAttemptResult
 
     /// <summary>Gets the structured failure, when present.</summary>
     public ExperimentFailure? Failure { get; init; }
+
+    /// <summary>
+    /// Gets the scheduled delay before the next attempt, or <see langword="null"/> when no retry
+    /// followed this attempt.
+    /// </summary>
+    public TimeSpan? DelayBeforeNextAttempt { get; init; }
 }

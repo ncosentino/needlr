@@ -8,7 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 public sealed class ExperimentRunResult<TCase, TOutput>
 {
     /// <summary>Gets the current canonical result schema version.</summary>
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     /// <summary>Gets the canonical result schema version.</summary>
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
@@ -36,4 +36,13 @@ public sealed class ExperimentRunResult<TCase, TOutput>
 
     /// <summary>Gets item results in stable source/trial sequence order.</summary>
     public required IReadOnlyList<ExperimentItemResult<TCase, TOutput>> Items { get; init; }
+
+    /// <summary>Gets isolated run-evaluation results in registration order.</summary>
+    public IReadOnlyList<ExperimentRunEvaluationResult> RunEvaluations { get; init; } = [];
+
+    /// <summary>Gets isolated policy results in registration order.</summary>
+    public IReadOnlyList<ExperimentPolicyResult> PolicyResults { get; init; } = [];
+
+    /// <summary>Gets the deterministic aggregate decision from required policies.</summary>
+    public ExperimentRunDecision Decision { get; init; } = ExperimentRunDecision.NotEvaluated;
 }

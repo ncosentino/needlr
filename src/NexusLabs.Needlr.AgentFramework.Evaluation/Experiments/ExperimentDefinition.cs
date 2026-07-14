@@ -18,4 +18,10 @@ public sealed class ExperimentDefinition<TCase, TOutput>
 
     /// <summary>Gets the optional evaluator invoked once after successful task execution.</summary>
     public ExperimentItemEvaluator<TCase, TOutput>? ItemEvaluator { get; init; }
+
+    /// <summary>Gets run evaluators invoked sequentially in registration order.</summary>
+    public IReadOnlyList<IExperimentRunEvaluator<TCase, TOutput>> RunEvaluators { get; init; } = [];
+
+    /// <summary>Gets policies invoked sequentially in registration order.</summary>
+    public IReadOnlyList<IExperimentRunPolicy<TCase, TOutput>> Policies { get; init; } = [];
 }

@@ -2,7 +2,8 @@
 
 Needlr's agent framework plugs directly into [`Microsoft.Extensions.AI.Evaluation`](https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries) without adapters or flattening.
 
-For collection-level orchestration across finite cases and repeated trials, see the
+For collection-level orchestration across finite cases and repeated trials—including retries,
+shared concurrency, run evaluators, and deterministic or statistical quality policies—see the
 [Experiment Runner](experiment-runner.md).
 
 ## Overview
@@ -347,12 +348,13 @@ Each `EvaluationResult` exposes metrics by name — use the `*MetricName` consta
 ```csharp
 var gate = new EvaluationQualityGate()
     .RequireBoolean(ToolCallTrajectoryEvaluator.AllSucceededMetricName, expected: true)
-    .RequireBoolean(IterationCoherenceEvaluator.TerminatedCoherentlyMetricName, expected: true)
+    .OptionalBoolean(IterationCoherenceEvaluator.TerminatedCoherentlyMetricName, expected: true)
     .RequireNumericMax(EfficiencyEvaluator.TotalTokensMetricName, max: 50_000)
     .RequireBoolean(EfficiencyEvaluator.UnderBudgetMetricName, expected: true)
-    .RequireNumericMin(IterationCoherenceEvaluator.EfficiencyRatioMetricName, min: 0.5);
+    .OptionalNumericMin(IterationCoherenceEvaluator.EfficiencyRatioMetricName, min: 0.5);
 
-// Throws QualityGateFailedException listing all violations.
+EvaluationThresholdResult decision =
+    gate.Evaluate(trajectoryResult, coherenceResult, efficiencyResult);
 gate.Assert(trajectoryResult, coherenceResult, efficiencyResult);
 ```
 
@@ -361,8 +363,13 @@ Threshold types:
 - **`RequireNumericMax(name, max)`** — metric value must be ≤ max.
 - **`RequireNumericMin(name, min)`** — metric value must be ≥ min.
 - **`RequireBoolean(name, expected)`** — metric value must equal expected.
+- **`OptionalNumericMax` / `OptionalNumericMin` / `OptionalBoolean`** — apply the
+  comparison when a conditionally emitted metric is present.
 
-Missing metrics are silently skipped — this allows a single gate definition to work with evaluators that conditionally emit metrics.
+`Evaluate(...)` returns structured per-threshold outcomes. Missing or invalid required metrics are
+`Inconclusive` by default; `Assert(...)` throws for failed or inconclusive decisions. Optional
+missing metrics do not block a pass. An optional metric that is present but invalid still produces
+an inconclusive decision rather than hiding malformed evidence.
 
 ### Transcript markdown
 

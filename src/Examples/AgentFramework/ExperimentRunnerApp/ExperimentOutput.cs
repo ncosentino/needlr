@@ -5,4 +5,5 @@ namespace ExperimentRunnerApp;
 /// </summary>
 internal sealed record ExperimentOutput(
     int Value,
-    string Category);
+    string Category,
+    bool Passed);

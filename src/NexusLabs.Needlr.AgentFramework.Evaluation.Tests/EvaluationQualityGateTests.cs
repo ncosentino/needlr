@@ -16,6 +16,13 @@ public sealed class EvaluationQualityGateTests
             .RequireBoolean("All Tool Calls Succeeded", expected: true);
 
         gate.Assert(result);
+
+        var evaluation = gate.Evaluate(result);
+        Assert.Equal(EvaluationDecision.Passed, evaluation.Decision);
+        Assert.Equal(2, evaluation.Outcomes.Count);
+        Assert.All(
+            evaluation.Outcomes,
+            outcome => Assert.Equal(EvaluationThresholdStatus.Passed, outcome.Status));
     }
 
     [Fact]
@@ -86,7 +93,7 @@ public sealed class EvaluationQualityGateTests
     }
 
     [Fact]
-    public void Assert_MissingMetric_SilentlySkipped()
+    public void Evaluate_MissingMetric_IsInconclusiveAndAssertThrows()
     {
         var result = new EvaluationResult(
             new NumericMetric("Total Tokens", value: 500));
@@ -95,7 +102,14 @@ public sealed class EvaluationQualityGateTests
             .RequireNumericMax("Total Tokens", max: 1000)
             .RequireBoolean("Max Iterations Hit", expected: false);
 
-        gate.Assert(result);
+        var evaluation = gate.Evaluate(result);
+
+        Assert.Equal(EvaluationDecision.Inconclusive, evaluation.Decision);
+        Assert.Equal(
+            EvaluationThresholdStatus.Missing,
+            evaluation.Outcomes[1].Status);
+        var exception = Assert.Throws<QualityGateFailedException>(() => gate.Assert(result));
+        Assert.Contains("Max Iterations Hit", Assert.Single(exception.Violations));
     }
 
     [Fact]
@@ -145,12 +159,15 @@ public sealed class EvaluationQualityGateTests
     }
 
     [Fact]
-    public void Assert_EmptyResults_DoesNotThrow()
+    public void Evaluate_EmptyResultsWithRequiredThreshold_IsInconclusive()
     {
         var gate = new EvaluationQualityGate()
             .RequireNumericMax("Total Tokens", max: 1000);
 
-        gate.Assert(new EvaluationResult());
+        var evaluation = gate.Evaluate(new EvaluationResult());
+
+        Assert.Equal(EvaluationDecision.Inconclusive, evaluation.Decision);
+        Assert.Throws<QualityGateFailedException>(() => gate.Assert(new EvaluationResult()));
     }
 
     [Fact]
@@ -165,7 +182,7 @@ public sealed class EvaluationQualityGateTests
     }
 
     [Fact]
-    public void Assert_NullValue_SilentlySkipped()
+    public void Evaluate_NullValue_IsInvalidAndCanBeTreatedAsFailure()
     {
         var result = new EvaluationResult(
             new NumericMetric("Total Tokens", value: null));
@@ -173,7 +190,46 @@ public sealed class EvaluationQualityGateTests
         var gate = new EvaluationQualityGate()
             .RequireNumericMax("Total Tokens", max: 1000);
 
+        var inconclusive = gate.Evaluate(result);
+        var pessimistic = gate.Evaluate(EvaluationMissingMetricBehavior.Fail, result);
+
+        Assert.Equal(EvaluationDecision.Inconclusive, inconclusive.Decision);
+        Assert.Equal(EvaluationThresholdStatus.Invalid, Assert.Single(inconclusive.Outcomes).Status);
+        Assert.Equal(EvaluationDecision.Failed, pessimistic.Decision);
+        Assert.Throws<QualityGateFailedException>(() => gate.Assert(result));
+    }
+
+    [Fact]
+    public void Evaluate_MissingOptionalMetric_DoesNotBlockPassingDecision()
+    {
+        var result = new EvaluationResult(
+            new NumericMetric("Total Tokens", value: 500));
+        var gate = new EvaluationQualityGate()
+            .RequireNumericMax("Total Tokens", max: 1000)
+            .OptionalBoolean("Iteration Coherent", expected: true);
+
+        var evaluation = gate.Evaluate(result);
+
+        Assert.Equal(EvaluationDecision.Passed, evaluation.Decision);
+        Assert.Equal(
+            [EvaluationThresholdStatus.Passed, EvaluationThresholdStatus.Missing],
+            evaluation.Outcomes.Select(outcome => outcome.Status));
         gate.Assert(result);
+    }
+
+    [Fact]
+    public void Evaluate_InvalidOptionalMetric_IsInconclusive()
+    {
+        var result = new EvaluationResult(
+            new StringMetric("Iteration Coherent", value: "not-a-boolean"));
+        var gate = new EvaluationQualityGate()
+            .OptionalBoolean("Iteration Coherent", expected: true);
+
+        var evaluation = gate.Evaluate(result);
+
+        Assert.Equal(EvaluationDecision.Inconclusive, evaluation.Decision);
+        Assert.Equal(EvaluationThresholdStatus.Invalid, Assert.Single(evaluation.Outcomes).Status);
+        Assert.Throws<QualityGateFailedException>(() => gate.Assert(result));
     }
 
     [Fact]
