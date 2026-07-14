@@ -267,7 +267,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                                 retryDecision.Delay);
                             var scheduledRetry = new ScheduledRetry<TCase, TOutput>(
                                 state,
-                                GetReadyTimestamp(retryDecision.Delay),
+                                _timeProvider.GetUtcNow() + retryDecision.Delay,
                                 Interlocked.Increment(ref retrySequence));
                             if (!delayed.Writer.TryWrite(scheduledRetry))
                             {
@@ -300,19 +300,19 @@ public sealed class ExperimentRunner : IExperimentRunner
     {
         var queue = new PriorityQueue<
             ScheduledRetry<TCase, TOutput>,
-            (long ReadyTimestamp, long Sequence)>();
+            (long ReadyAtTicks, long Sequence)>();
         while (true)
         {
             while (delayedReader.TryRead(out var scheduledRetry))
             {
                 queue.Enqueue(
                     scheduledRetry,
-                    (scheduledRetry.ReadyTimestamp, scheduledRetry.Sequence));
+                    (scheduledRetry.ReadyAt.UtcDateTime.Ticks, scheduledRetry.Sequence));
             }
 
-            var now = _timeProvider.GetTimestamp();
+            var now = _timeProvider.GetUtcNow();
             while (queue.TryPeek(out var readyRetry, out _)
-                && readyRetry.ReadyTimestamp <= now)
+                && readyRetry.ReadyAt <= now)
             {
                 queue.Dequeue();
                 if (!readyWriter.TryWrite(readyRetry.State))
@@ -336,12 +336,7 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
 
             var nextRetry = queue.Peek();
-            var currentTimestamp = _timeProvider.GetTimestamp();
-            var delay = nextRetry.ReadyTimestamp <= currentTimestamp
-                ? TimeSpan.Zero
-                : _timeProvider.GetElapsedTime(
-                    currentTimestamp,
-                    nextRetry.ReadyTimestamp);
+            var delay = nextRetry.ReadyAt - _timeProvider.GetUtcNow();
             if (delay <= TimeSpan.Zero)
             {
                 continue;
@@ -934,13 +929,6 @@ public sealed class ExperimentRunner : IExperimentRunner
             IsRetryable = false,
         };
 
-    private long GetReadyTimestamp(TimeSpan delay)
-    {
-        var timestampDelta = checked((long)Math.Ceiling(
-            delay.TotalSeconds * _timeProvider.TimestampFrequency));
-        return checked(_timeProvider.GetTimestamp() + timestampDelta);
-    }
-
     private static async Task IgnoreExpectedCancellationAsync(
         Task task,
         CancellationToken cancellationToken)
@@ -973,7 +961,7 @@ public sealed class ExperimentRunner : IExperimentRunner
 
     private sealed record ScheduledRetry<TCase, TOutput>(
         WorkItemState<TCase, TOutput> State,
-        long ReadyTimestamp,
+        DateTimeOffset ReadyAt,
         long Sequence);
 
     private sealed class AttemptExecution<TOutput>
