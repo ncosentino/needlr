@@ -4766,6 +4766,18 @@
 <td style="text-align: left;">Configurable quality gate that asserts evaluation metrics meet defined thresholds. Designed for CI pipelines — call <a href="../EvaluationQualityGate/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])">Assert(EvaluationResult[])</a> after running evaluators to fail the build when metrics regress.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../EvaluationThresholdEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdEvaluator">EvaluationThresholdEvaluator</a></td>
+<td style="text-align: left;">Configures and evaluates reusable structured metric thresholds.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationThresholdOutcome/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdOutcome">EvaluationThresholdOutcome</a></td>
+<td style="text-align: left;">Describes the structured outcome of one metric threshold.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationThresholdResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdResult">EvaluationThresholdResult</a></td>
+<td style="text-align: left;">Provides the structured result of evaluating configured metric thresholds.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../FileEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.FileEvaluationCaptureStore">FileEvaluationCaptureStore</a></td>
 <td style="text-align: left;">Disk-backed <a href="../IEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IEvaluationCaptureStore">IEvaluationCaptureStore</a> that persists each response as a single JSON file under a caller-supplied directory. File names are the request hash plus a <code>.json</code> extension.</td>
 </tr>
@@ -4832,6 +4844,32 @@
 <tr>
 <td style="text-align: left;"><a href="../IEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IEvaluationCaptureStore">IEvaluationCaptureStore</a></td>
 <td style="text-align: left;">Persists captured <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a> payloads keyed by a deterministic request hash so that evaluator runs can replay previously observed LLM responses without re-invoking the underlying model.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Enums</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationDecision/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationDecision">EvaluationDecision</a></td>
+<td style="text-align: left;">Identifies the outcome of a structured quality evaluation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationMissingMetricBehavior/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior">EvaluationMissingMetricBehavior</a></td>
+<td style="text-align: left;">Configures how required missing or invalid metrics affect a threshold decision.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationThresholdKind/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdKind">EvaluationThresholdKind</a></td>
+<td style="text-align: left;">Identifies the comparison performed by an evaluation threshold.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../EvaluationThresholdStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdStatus">EvaluationThresholdStatus</a></td>
+<td style="text-align: left;">Identifies the observed outcome of one evaluation threshold.</td>
 </tr>
 </tbody>
 </table>

@@ -4756,11 +4756,10 @@ running evaluators to fail the build when metrics regress.</p>
 threshold names a metric (using the <code>*MetricName</code> constants from
 evaluator classes) and a bound. <a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])">Assert(EvaluationResult[])</a> checks all thresholds
 against the evaluation result and throws
-<a href="../QualityGateFailedException/" title="NexusLabs.Needlr.AgentFramework.Evaluation.QualityGateFailedException">QualityGateFailedException</a> listing every violation.</p>
-<p>Metrics not present in the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a> are silently
-skipped — this allows a gate to be used with evaluators that conditionally
-emit metrics (e.g., <a href="../IterationCoherenceEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IterationCoherenceEvaluator">IterationCoherenceEvaluator</a> only emits
-when execution mode is <code>IterativeLoop</code>).</p>
+<a href="../QualityGateFailedException/" title="NexusLabs.Needlr.AgentFramework.Evaluation.QualityGateFailedException">QualityGateFailedException</a> when the structured decision is
+failed or inconclusive.</p>
+<p>Required missing or invalid metrics produce an inconclusive decision.
+Use the <code>Optional*</code> methods for metrics that are conditionally emitted.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])'></a></p>
 <h2 id="evaluationqualitygateassertevaluationresult-method">EvaluationQualityGate.Assert(EvaluationResult[]) Method<a class="headerlink" href="#evaluationqualitygateassertevaluationresult-method" title="Permanent link">&para;</a></h2>
@@ -4774,51 +4773,123 @@ are looked up across all results — the first match wins.</p>
 <p>One or more <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a> instances to check.</p>
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="../QualityGateFailedException/" title="NexusLabs.Needlr.AgentFramework.Evaluation.QualityGateFailedException">QualityGateFailedException</a><br />
-Thrown when one or more thresholds are violated. The exception message
-lists every violation.</p>
+Thrown when the structured threshold decision is failed or inconclusive. The exception
+message lists every failed, missing, or invalid required threshold.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Evaluate(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])'></a></p>
+<h2 id="evaluationqualitygateevaluateevaluationresult-method">EvaluationQualityGate.Evaluate(EvaluationResult[]) Method<a class="headerlink" href="#evaluationqualitygateevaluateevaluationresult-method" title="Permanent link">&para;</a></h2>
+<p>Evaluates all configured thresholds without throwing.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">Evaluate</span><span class="p">(</span><span class="k">params</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationResult</span><span class="p">[]</span><span class="w"> </span><span class="n">results</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Evaluate(Microsoft.Extensions.AI.Evaluation.EvaluationResult[]).results'></a></p>
+<p><code>results</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.array" title="System.Array">[]</a></p>
+<p>One or more evaluation results to check.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="../EvaluationThresholdResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdResult">EvaluationThresholdResult</a><br />
+The structured threshold result.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Evaluate(NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior,Microsoft.Extensions.AI.Evaluation.EvaluationResult[])'></a></p>
+<h2 id="evaluationqualitygateevaluateevaluationmissingmetricbehavior-evaluationresult-method">EvaluationQualityGate.Evaluate(EvaluationMissingMetricBehavior, EvaluationResult[]) Method<a class="headerlink" href="#evaluationqualitygateevaluateevaluationmissingmetricbehavior-evaluationresult-method" title="Permanent link">&para;</a></h2>
+<p>Evaluates all configured thresholds without throwing.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">Evaluate</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationMissingMetricBehavior</span><span class="w"> </span><span class="n">missingMetricBehavior</span><span class="p">,</span><span class="w"> </span><span class="k">params</span><span class="w"> </span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationResult</span><span class="p">[]</span><span class="w"> </span><span class="n">results</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Evaluate(NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior,Microsoft.Extensions.AI.Evaluation.EvaluationResult[]).missingMetricBehavior'></a></p>
+<p><code>missingMetricBehavior</code> <a href="../EvaluationMissingMetricBehavior/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior">EvaluationMissingMetricBehavior</a></p>
+<p>The treatment for required missing or invalid metrics.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Evaluate(NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior,Microsoft.Extensions.AI.Evaluation.EvaluationResult[]).results'></a></p>
+<p><code>results</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.array" title="System.Array">[]</a></p>
+<p>One or more evaluation results to check.</p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<p><a href="../EvaluationThresholdResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdResult">EvaluationThresholdResult</a><br />
+The structured threshold result.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalBoolean(string,bool)'></a></p>
+<h2 id="evaluationqualitygateoptionalbooleanstring-bool-method">EvaluationQualityGate.OptionalBoolean(string, bool) Method<a class="headerlink" href="#evaluationqualitygateoptionalbooleanstring-bool-method" title="Permanent link">&para;</a></h2>
+<p>Checks a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.booleanmetric" title="Microsoft.Extensions.AI.Evaluation.BooleanMetric">Microsoft.Extensions.AI.Evaluation.BooleanMetric</a> value when the metric is present.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">OptionalBoolean</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">expected</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalBoolean(string,bool).metricName'></a></p>
+<p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The metric name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalBoolean(string,bool).expected'></a></p>
+<p><code>expected</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
+<p>The required value when present.</p>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
+This gate instance for fluent chaining.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMax(string,double)'></a></p>
+<h2 id="evaluationqualitygateoptionalnumericmaxstring-double-method">EvaluationQualityGate.OptionalNumericMax(string, double) Method<a class="headerlink" href="#evaluationqualitygateoptionalnumericmaxstring-double-method" title="Permanent link">&para;</a></h2>
+<p>Checks a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.numericmetric" title="Microsoft.Extensions.AI.Evaluation.NumericMetric">Microsoft.Extensions.AI.Evaluation.NumericMetric</a> maximum when the metric is present.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">OptionalNumericMax</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">max</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMax(string,double).metricName'></a></p>
+<p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The metric name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMax(string,double).max'></a></p>
+<p><code>max</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
+<p>The maximum allowed value.</p>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
+This gate instance for fluent chaining.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMin(string,double)'></a></p>
+<h2 id="evaluationqualitygateoptionalnumericminstring-double-method">EvaluationQualityGate.OptionalNumericMin(string, double) Method<a class="headerlink" href="#evaluationqualitygateoptionalnumericminstring-double-method" title="Permanent link">&para;</a></h2>
+<p>Checks a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.numericmetric" title="Microsoft.Extensions.AI.Evaluation.NumericMetric">Microsoft.Extensions.AI.Evaluation.NumericMetric</a> minimum when the metric is present.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">OptionalNumericMin</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">min</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMin(string,double).metricName'></a></p>
+<p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The metric name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.OptionalNumericMin(string,double).min'></a></p>
+<p><code>min</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
+<p>The minimum allowed value.</p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
+This gate instance for fluent chaining.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireBoolean(string,bool)'></a></p>
 <h2 id="evaluationqualitygaterequirebooleanstring-bool-method">EvaluationQualityGate.RequireBoolean(string, bool) Method<a class="headerlink" href="#evaluationqualitygaterequirebooleanstring-bool-method" title="Permanent link">&para;</a></h2>
 <p>Requires a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.booleanmetric" title="Microsoft.Extensions.AI.Evaluation.BooleanMetric">Microsoft.Extensions.AI.Evaluation.BooleanMetric</a> to equal <a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireBoolean(string,bool).expected" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireBoolean(string, bool).expected">expected</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireBoolean</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">expected</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireBoolean</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">expected</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireBoolean(string,bool).metricName'></a></p>
 <p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The metric name (use evaluator <code>*MetricName</code> constants).</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireBoolean(string,bool).expected'></a></p>
 <p><code>expected</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p>The required boolean value.</p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
 <p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
 This gate instance for fluent chaining.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMax(string,double)'></a></p>
 <h2 id="evaluationqualitygaterequirenumericmaxstring-double-method">EvaluationQualityGate.RequireNumericMax(string, double) Method<a class="headerlink" href="#evaluationqualitygaterequirenumericmaxstring-double-method" title="Permanent link">&para;</a></h2>
 <p>Requires a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.numericmetric" title="Microsoft.Extensions.AI.Evaluation.NumericMetric">Microsoft.Extensions.AI.Evaluation.NumericMetric</a> to be at most <a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMax(string,double).max" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMax(string, double).max">max</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireNumericMax</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">max</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireNumericMax</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">max</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMax(string,double).metricName'></a></p>
 <p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The metric name (use evaluator <code>*MetricName</code> constants).</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMax(string,double).max'></a></p>
 <p><code>max</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
 <p>The maximum allowed value (inclusive).</p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
 <p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
 This gate instance for fluent chaining.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMin(string,double)'></a></p>
 <h2 id="evaluationqualitygaterequirenumericminstring-double-method">EvaluationQualityGate.RequireNumericMin(string, double) Method<a class="headerlink" href="#evaluationqualitygaterequirenumericminstring-double-method" title="Permanent link">&para;</a></h2>
 <p>Requires a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.numericmetric" title="Microsoft.Extensions.AI.Evaluation.NumericMetric">Microsoft.Extensions.AI.Evaluation.NumericMetric</a> to be at least <a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMin(string,double).min" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMin(string, double).min">min</a>.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireNumericMin</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">min</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationQualityGate</span><span class="w"> </span><span class="n">RequireNumericMin</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">metricName</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">min</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMin(string,double).metricName'></a></p>
 <p><code>metricName</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The metric name (use evaluator <code>*MetricName</code> constants).</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.RequireNumericMin(string,double).min'></a></p>
 <p><code>min</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
 <p>The minimum allowed value (inclusive).</p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
 <p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a><br />
 This gate instance for fluent chaining.</p>
 

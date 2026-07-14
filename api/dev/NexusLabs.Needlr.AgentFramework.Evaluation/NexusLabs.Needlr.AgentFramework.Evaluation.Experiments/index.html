@@ -4746,6 +4746,14 @@
 <td style="text-align: left;">Describes one operational execution attempt.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentBinaryStatisticalEvidence/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentBinaryStatisticalEvidence">ExperimentBinaryStatisticalEvidence</a></td>
+<td style="text-align: left;">Describes binary-success proportion evidence and its uncertainty.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentBinarySuccessPolicy_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentBinarySuccessPolicy\&lt;TCase,TOutput&gt;">ExperimentBinarySuccessPolicy&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Applies a one-sided Wilson score decision to a required boolean item metric.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentCase_TCase_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentCase\&lt;TCase&gt;">ExperimentCase&lt;TCase&gt;</a></td>
 <td style="text-align: left;">Defines one logical experiment case and the number of statistically independent trials to run.</td>
 </tr>
@@ -4754,8 +4762,16 @@
 <td style="text-align: left;">Contains a finite ordered case collection and its provider-neutral source identity.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentConcurrencyLimiter/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentConcurrencyLimiter">ExperimentConcurrencyLimiter</a></td>
+<td style="text-align: left;">Provides a semaphore-backed concurrency limiter suitable for sharing through dependency injection.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentDefinition_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentDefinition\&lt;TCase,TOutput&gt;">ExperimentDefinition&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Defines a provider-neutral experiment's finite source and item task.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentDeterministicPolicyEvidence/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentDeterministicPolicyEvidence">ExperimentDeterministicPolicyEvidence</a></td>
+<td style="text-align: left;">Describes deterministic threshold evidence from one named run evaluation.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentFailure/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure">ExperimentFailure</a></td>
@@ -4768,6 +4784,10 @@
 <tr>
 <td style="text-align: left;"><a href="../ExperimentItemResult_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemResult\&lt;TCase,TOutput&gt;">ExperimentItemResult&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Describes one case trial, including its complete attempt history and terminal output.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentItemStatusCount/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemStatusCount">ExperimentItemStatusCount</a></td>
+<td style="text-align: left;">Associates an item status with its observed count.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentJsonArtifactWriter/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentJsonArtifactWriter">ExperimentJsonArtifactWriter</a></td>
@@ -4786,8 +4806,48 @@
 <td style="text-align: left;">Provides an immutable Needlr-owned projection of one MEAI evaluation metric.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentPolicyContext_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPolicyContext\&lt;TCase,TOutput&gt;">ExperimentPolicyContext&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Provides immutable run measurements to an experiment policy.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentPolicyResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPolicyResult">ExperimentPolicyResult</a></td>
+<td style="text-align: left;">Describes one isolated experiment policy outcome.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentPolicyVerdict/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPolicyVerdict">ExperimentPolicyVerdict</a></td>
+<td style="text-align: left;">Provides a policy's decision and evidence before runner-owned result identity is applied.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRetryContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryContext">ExperimentRetryContext</a></td>
+<td style="text-align: left;">Provides one completed execution attempt to a retry policy.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRetryDecision/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision">ExperimentRetryDecision</a></td>
+<td style="text-align: left;">Describes whether and when a failed execution attempt should be retried.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryPolicy">ExperimentRetryPolicy</a></td>
+<td style="text-align: left;">Provides a bounded retry policy with explicit outcome selection and delay calculation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluationContext_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationContext\&lt;TCase,TOutput&gt;">ExperimentRunEvaluationContext&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Provides every ordered item and stable run identity to a run evaluator.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluationResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationResult">ExperimentRunEvaluationResult</a></td>
+<td style="text-align: left;">Describes one isolated run-evaluation outcome.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluationThresholdPolicy_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationThresholdPolicy\&lt;TCase,TOutput&gt;">ExperimentRunEvaluationThresholdPolicy&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Applies reusable deterministic thresholds to one named run evaluation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluator_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluator\&lt;TCase,TOutput&gt;">ExperimentRunEvaluator&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Adapts a named run-evaluation delegate to <a href="../IExperimentRunEvaluator_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunEvaluator\&lt;TCase,TOutput&gt;">IExperimentRunEvaluator&lt;TCase,TOutput&gt;</a>.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunner">ExperimentRunner</a></td>
-<td style="text-align: left;">Default fixed-worker implementation of <a href="../IExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunner">IExperimentRunner</a>.</td>
+<td style="text-align: left;">Default bounded-worker implementation of <a href="../IExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunner">IExperimentRunner</a>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentRunOptions/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOptions">ExperimentRunOptions</a></td>
@@ -4824,8 +4884,24 @@
 <td style="text-align: left;">Materializes a finite ordered experiment case collection before execution begins.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../IExperimentConcurrencyLimiter/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentConcurrencyLimiter">IExperimentConcurrencyLimiter</a></td>
+<td style="text-align: left;">Provides a caller-owned concurrency boundary that can be shared across experiment runs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRetryPolicy">IExperimentRetryPolicy</a></td>
+<td style="text-align: left;">Selects bounded execution retries for experiment items.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IExperimentRunEvaluator_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunEvaluator\&lt;TCase,TOutput&gt;">IExperimentRunEvaluator&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Measures a complete ordered experiment run.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../IExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunner">IExperimentRunner</a></td>
 <td style="text-align: left;">Runs finite provider-neutral experiments with bounded task concurrency.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IExperimentRunPolicy_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunPolicy\&lt;TCase,TOutput&gt;">IExperimentRunPolicy&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Produces a structured decision from complete experiment measurements.</td>
 </tr>
 </tbody>
 </table>
@@ -4840,6 +4916,10 @@
 <tr>
 <td style="text-align: left;"><a href="../ExperimentAttemptStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentAttemptStatus">ExperimentAttemptStatus</a></td>
 <td style="text-align: left;">Describes the terminal state of one operational experiment attempt.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentConfidenceIntervalMethod/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentConfidenceIntervalMethod">ExperimentConfidenceIntervalMethod</a></td>
+<td style="text-align: left;">Identifies the confidence interval used by a statistical policy.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentFailureCode/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode">ExperimentFailureCode</a></td>
@@ -4869,6 +4949,26 @@
 <td style="text-align: left;"><a href="../ExperimentMetricRating/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentMetricRating">ExperimentMetricRating</a></td>
 <td style="text-align: left;">Provides a stable provider-owned projection of MEAI metric ratings.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentPolicyKind/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPolicyKind">ExperimentPolicyKind</a></td>
+<td style="text-align: left;">Identifies the evidence model used by an experiment policy.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRetryableOutcome/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryableOutcome">ExperimentRetryableOutcome</a></td>
+<td style="text-align: left;">Identifies execution outcomes that a retry policy may select.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunDecision/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunDecision">ExperimentRunDecision</a></td>
+<td style="text-align: left;">Identifies the aggregate decision for an experiment run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluationStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationStatus">ExperimentRunEvaluationStatus</a></td>
+<td style="text-align: left;">Identifies the terminal status of one run evaluator.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentUnknownSampleTreatment/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentUnknownSampleTreatment">ExperimentUnknownSampleTreatment</a></td>
+<td style="text-align: left;">Configures how unknown binary samples affect a statistical policy.</td>
+</tr>
 </tbody>
 </table>
 <table>
@@ -4882,6 +4982,14 @@
 <tr>
 <td style="text-align: left;"><a href="../ExperimentItemEvaluator_TCase%2CTOutput_%28ExperimentItemEvaluationContext_TCase%2CTOutput_%2CCancellationToken%29/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemEvaluator\&lt;TCase,TOutput&gt;(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemEvaluationContext\&lt;TCase,TOutput&gt;, System.Threading.CancellationToken)">ExperimentItemEvaluator&lt;TCase,TOutput&gt;(ExperimentItemEvaluationContext&lt;TCase,TOutput&gt;, CancellationToken)</a></td>
 <td style="text-align: left;">Evaluates one terminal successful experiment item exactly once.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRetryDelayProvider%28ExperimentRetryContext%29/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDelayProvider(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryContext)">ExperimentRetryDelayProvider(ExperimentRetryContext)</a></td>
+<td style="text-align: left;">Computes an explicit retry delay from a completed execution attempt.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentRunEvaluationHandler_TCase%2CTOutput_%28ExperimentRunEvaluationContext_TCase%2CTOutput_%2CCancellationToken%29/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationHandler\&lt;TCase,TOutput&gt;(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunEvaluationContext\&lt;TCase,TOutput&gt;, System.Threading.CancellationToken)">ExperimentRunEvaluationHandler&lt;TCase,TOutput&gt;(ExperimentRunEvaluationContext&lt;TCase,TOutput&gt;, CancellationToken)</a></td>
+<td style="text-align: left;">Measures a complete ordered experiment run.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentTask_TCase%2CTOutput_%28ExperimentTaskContext_TCase_%2CCancellationToken%29/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentTask\&lt;TCase,TOutput&gt;(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentTaskContext\&lt;TCase&gt;, System.Threading.CancellationToken)">ExperimentTask&lt;TCase,TOutput&gt;(ExperimentTaskContext&lt;TCase&gt;, CancellationToken)</a></td>

@@ -1681,6 +1681,18 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunDecision/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRetryDelayProvider(ExperimentRetryContext)/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluationHandler_TCase,TOutput_(ExperimentRunEvaluationContext_TCase,TOutput_,CancellationToken)/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentMetricDiagnosticSnapshot/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
@@ -1689,11 +1701,31 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentBinaryStatisticalEvidence/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationThresholdOutcome/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IExperimentRetryPolicy/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunOptions/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentJsonArtifactWriter/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationMissingMetricBehavior/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationDecision/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1713,7 +1745,23 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentConcurrencyLimiter/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentConfidenceIntervalMethod/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentTask_TCase,TOutput_(ExperimentTaskContext_TCase_,CancellationToken)/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationThresholdEvaluator/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRetryPolicy/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1722,6 +1770,14 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentMetricRating/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentBinarySuccessPolicy_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IExperimentConcurrencyLimiter/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1742,6 +1798,14 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentMetricInterpretationSnapshot/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationThresholdResult/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluationResult/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1773,6 +1837,30 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentPolicyContext_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluator_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentPolicyKind/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentDeterministicPolicyEvidence/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluationContext_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluationThresholdPolicy_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentCaseSourceResult_TCase_/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
@@ -1789,11 +1877,27 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRetryableOutcome/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IterationCoherenceEvaluator/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/AgentRunDiagnosticsContext/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentItemStatusCount/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IExperimentRunPolicy_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentPolicyResult/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1821,6 +1925,14 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/IExperimentRunEvaluator_TCase,TOutput_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationThresholdKind/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationCaptureChatClientExtensions/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
@@ -1833,7 +1945,19 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentPolicyVerdict/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/LocalExperimentCaseSource_TCase_/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRetryDecision/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EvaluationThresholdStatus/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1853,7 +1977,15 @@
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRetryContext/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentFailure/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentRunEvaluationStatus/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>
@@ -1862,6 +1994,10 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/EfficiencyEvaluator/</loc>
+    <lastmod>2026-07-14</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AgentFramework.Evaluation/ExperimentUnknownSampleTreatment/</loc>
     <lastmod>2026-07-14</lastmod>
   </url>
   <url>

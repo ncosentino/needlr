@@ -4734,7 +4734,7 @@
 <h4 id="nexuslabsneedlragentframeworkevaluation"><a href="../" title="index">NexusLabs.Needlr.AgentFramework.Evaluation</a><a class="headerlink" href="#nexuslabsneedlragentframeworkevaluation" title="Permanent link">&para;</a></h4>
 <h3 id="nexuslabsneedlragentframeworkevaluationexperiments"><a href="../NexusLabs.Needlr.AgentFramework.Evaluation.Experiments/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments">NexusLabs.Needlr.AgentFramework.Evaluation.Experiments</a><a class="headerlink" href="#nexuslabsneedlragentframeworkevaluationexperiments" title="Permanent link">&para;</a></h3>
 <h2 id="experimentrunner-class">ExperimentRunner Class<a class="headerlink" href="#experimentrunner-class" title="Permanent link">&para;</a></h2>
-<p>Default fixed-worker implementation of <a href="../IExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunner">IExperimentRunner</a>.</p>
+<p>Default bounded-worker implementation of <a href="../IExperimentRunner/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRunner">IExperimentRunner</a>.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ExperimentRunner</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">IExperimentRunner</span>
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; ExperimentRunner</p>
@@ -4748,7 +4748,7 @@
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunner.ExperimentRunner(System.TimeProvider).timeProvider'></a></p>
 <p><code>timeProvider</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timeprovider" title="System.TimeProvider">System.TimeProvider</a></p>
-<p>The time provider used for timestamps, durations, and attempt deadlines. Uses
+<p>The time provider used for timestamps, durations, deadlines, and retry readiness. Uses
 <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timeprovider.system" title="System.TimeProvider.System">System.TimeProvider.System</a> when omitted.</p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunner.RunAsync_TCase,TOutput_(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentDefinition_TCase,TOutput_,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOptions,System.Threading.CancellationToken)'></a></p>

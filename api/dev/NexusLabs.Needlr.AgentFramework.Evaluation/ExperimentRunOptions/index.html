@@ -4753,13 +4753,27 @@
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.int32" title="System.Int32">System.Int32</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOptions.RetryPolicy'></a></p>
+<h2 id="experimentrunoptionsretrypolicy-property">ExperimentRunOptions.RetryPolicy Property<a class="headerlink" href="#experimentrunoptionsretrypolicy-property" title="Permanent link">&para;</a></h2>
+<p>Gets the optional bounded execution retry policy. A missing policy performs one attempt.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">IExperimentRetryPolicy</span><span class="o">?</span><span class="w"> </span><span class="n">RetryPolicy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<p><a href="../IExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRetryPolicy">IExperimentRetryPolicy</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOptions.RunId'></a></p>
 <h2 id="experimentrunoptionsrunid-property">ExperimentRunOptions.RunId Property<a class="headerlink" href="#experimentrunoptionsrunid-property" title="Permanent link">&para;</a></h2>
 <p>Gets the caller-supplied stable run identifier.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">RunId</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">RunId</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
+<h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOptions.SharedLimiter'></a></p>
+<h2 id="experimentrunoptionssharedlimiter-property">ExperimentRunOptions.SharedLimiter Property<a class="headerlink" href="#experimentrunoptionssharedlimiter-property" title="Permanent link">&para;</a></h2>
+<p>Gets the optional caller-owned concurrency limiter shared across experiment runs.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">IExperimentConcurrencyLimiter</span><span class="o">?</span><span class="w"> </span><span class="n">SharedLimiter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
+<p><a href="../IExperimentConcurrencyLimiter/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentConcurrencyLimiter">IExperimentConcurrencyLimiter</a></p>
 
 
 
