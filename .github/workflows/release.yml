@@ -72,6 +72,9 @@ jobs:
             --configuration Release \
             --no-build \
             --verbosity normal \
+            --blame-hang \
+            --blame-hang-dump-type none \
+            --blame-hang-timeout 5m \
             --filter "Category!=Integration" \
             --collect:"XPlat Code Coverage" \
             --results-directory coverage || failed=1
