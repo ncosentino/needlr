@@ -402,6 +402,7 @@ var webApplication = new Syringe()
 - Run multi-step agentic workloads with O(n) token cost via [Iterative Agent Loop](iterative-agent-loop.md)
 - Use [GitHub Copilot](copilot.md) as a free local-dev AI provider with web search
 - Plug Needlr agent results directly into [Microsoft.Extensions.AI.Evaluation](evaluation.md) — no flattening, no adapters
+- Run finite evaluation suites with bounded concurrency and canonical results via the [Experiment Runner](experiment-runner.md)
 - Send agent traces and eval scores to [Langfuse](langfuse.md) with a single call
 !!! info "Read More on Dev Leader"
     - [Getting Started with Needlr: Fluent DI for .NET Applications](https://www.devleader.ca/2026/02/05/getting-started-with-needlr-fluent-di-for-net-applications)

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageDescription>Evaluation adapter for NexusLabs.Needlr.AgentFramework. Maps captured agent-run diagnostics to Microsoft.Extensions.AI.Evaluation inputs so MEAI evaluators can score Needlr agent runs without re-invoking the model.</PackageDescription>
+    <PackageDescription>Evaluation support for NexusLabs.Needlr.AgentFramework. Maps captured diagnostics to Microsoft.Extensions.AI.Evaluation inputs and provides provider-neutral finite experiment scheduling, structured outcomes, and schema-versioned JSON artifacts.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

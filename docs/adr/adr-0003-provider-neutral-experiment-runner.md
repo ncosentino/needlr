@@ -1,6 +1,6 @@
 ---
 title: "ADR-0003: Provider-neutral experiment runner over MEAI Evaluation"
-status: "Proposed"
+status: "Accepted"
 date: "2026-07-12"
 authors: "Nick Cosentino"
 tags: ["architecture", "decision", "agent-framework", "evaluation", "experiments", "meai", "langfuse"]
@@ -10,9 +10,11 @@ superseded_by: ""
 
 ## Status
 
-Proposed - proceed with a deliberately small provider-neutral experiment runner.
+Accepted - proceed through the separately reviewed implementation phases below.
 
-This ADR is the design deliverable for [issue #36](https://github.com/ncosentino/needlr/issues/36). It does not authorize implementation. The public API must be reviewed before a separate implementation issue or pull request begins.
+This ADR was the design deliverable for [issue #36](https://github.com/ncosentino/needlr/issues/36).
+Phase 1 implementation is tracked by [issue #43](https://github.com/ncosentino/needlr/issues/43);
+later phases still require their own issues and pull requests.
 
 ## Decision
 
