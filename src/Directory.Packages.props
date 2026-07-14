@@ -34,7 +34,7 @@
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
-    <!-- Microsoft.Extensions.AI.Evaluation (10.x preview line — required for ToolCallAccuracyEvaluator) -->
+    <!-- Microsoft.Extensions.AI.Evaluation stable 10.x line -->
     <PackageVersion Include="Microsoft.Extensions.AI.Evaluation" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Reporting" Version="10.5.0" />

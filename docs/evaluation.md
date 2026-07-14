@@ -2,6 +2,9 @@
 
 Needlr's agent framework plugs directly into [`Microsoft.Extensions.AI.Evaluation`](https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries) without adapters or flattening.
 
+For collection-level orchestration across finite cases and repeated trials, see the
+[Experiment Runner](experiment-runner.md).
+
 ## Overview
 
 `Microsoft.Extensions.AI.Evaluation` (MEAI.Evaluation) evaluates LLM interactions by consuming native MEAI primitives: `ChatMessage`, `ChatResponse`, and `UsageDetails`. Needlr exposes these same shapes on its result surfaces, so evaluators slot in directly — no string flattening, no re-hydration step.
