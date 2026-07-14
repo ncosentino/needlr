@@ -16,7 +16,7 @@
         <link rel="prev" href="../gen-ai-token-metrics/">
       
       
-        <link rel="next" href="../langfuse/">
+        <link rel="next" href="../experiment-runner/">
       
       
         
@@ -1785,6 +1785,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiment-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -5101,7 +5129,7 @@
     
   
   
-    <span class="md-status md-status--Proposed"></span>
+    <span class="md-status md-status--Accepted"></span>
   
 
   
@@ -5141,6 +5169,8 @@
 
 <h1 id="evaluation">Evaluation<a class="headerlink" href="#evaluation" title="Permanent link">&para;</a></h1>
 <p>Needlr's agent framework plugs directly into <a href="https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries"><code>Microsoft.Extensions.AI.Evaluation</code></a> without adapters or flattening.</p>
+<p>For collection-level orchestration across finite cases and repeated trials, see the
+<a href="../experiment-runner/">Experiment Runner</a>.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><code>Microsoft.Extensions.AI.Evaluation</code> (MEAI.Evaluation) evaluates LLM interactions by consuming native MEAI primitives: <code>ChatMessage</code>, <code>ChatResponse</code>, and <code>UsageDetails</code>. Needlr exposes these same shapes on its result surfaces, so evaluators slot in directly — no string flattening, no re-hydration step.</p>
 <h2 id="live-path-result-types">Live-path result types<a class="headerlink" href="#live-path-result-types" title="Permanent link">&para;</a></h2>

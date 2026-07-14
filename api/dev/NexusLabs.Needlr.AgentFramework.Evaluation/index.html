@@ -117,7 +117,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#nexuslabsneedlragentframeworkevaluation-namespace" class="md-skip">
+        <a href="#nexuslabsneedlragentframeworkevaluation" class="md-skip">
           Skip to content
         </a>
       
@@ -1339,6 +1339,34 @@
     
   
     Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../experiment-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Runner
   
 
     
@@ -4663,7 +4691,7 @@
     
   
   
-    <span class="md-status md-status--Proposed"></span>
+    <span class="md-status md-status--Accepted"></span>
   
 
   
@@ -4703,106 +4731,23 @@
 
   <h1>Index</h1>
 
-<h2 id="nexuslabsneedlragentframeworkevaluation-namespace">NexusLabs.Needlr.AgentFramework.Evaluation Namespace<a class="headerlink" href="#nexuslabsneedlragentframeworkevaluation-namespace" title="Permanent link">&para;</a></h2>
+<h4 id="nexuslabsneedlragentframeworkevaluation"><a href="./" title="index">NexusLabs.Needlr.AgentFramework.Evaluation</a><a class="headerlink" href="#nexuslabsneedlragentframeworkevaluation" title="Permanent link">&para;</a></h4>
+<h2 id="nexuslabsneedlragentframeworkevaluation-assembly">NexusLabs.Needlr.AgentFramework.Evaluation Assembly<a class="headerlink" href="#nexuslabsneedlragentframeworkevaluation-assembly" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Classes</th>
+<th style="text-align: left;">Namespaces</th>
 <th style="text-align: left;"></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><a href="AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a></td>
-<td style="text-align: left;">Carries an <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot through the <code>Microsoft.Extensions.AI.Evaluation</code> evaluator pipeline so that Needlr-native deterministic evaluators can score execution-mode, tool-call trajectory, and termination behaviour without being re-invoked against the LLM.</td>
+<td style="text-align: left;"><a href="NexusLabs.Needlr.AgentFramework.Evaluation/" title="NexusLabs.Needlr.AgentFramework.Evaluation">NexusLabs.Needlr.AgentFramework.Evaluation</a></td>
+<td style="text-align: left;"></td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="AgentRunDiagnosticsEvaluationExtensions/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsEvaluationExtensions">AgentRunDiagnosticsEvaluationExtensions</a></td>
-<td style="text-align: left;">Extensions that convert <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> into the input shape expected by <code>Microsoft.Extensions.AI.Evaluation</code> evaluators.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="EfficiencyEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EfficiencyEvaluator">EfficiencyEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores the token efficiency and cost profile of an agent run from the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot carried in an <a href="AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="EvaluationCaptureChatClient/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationCaptureChatClient">EvaluationCaptureChatClient</a></td>
-<td style="text-align: left;"><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.delegatingchatclient" title="Microsoft.Extensions.AI.DelegatingChatClient">Microsoft.Extensions.AI.DelegatingChatClient</a> that persists every LLM request/response pair             to an <a href="IEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IEvaluationCaptureStore">IEvaluationCaptureStore</a> and replays cached responses on             subsequent calls with an identical request. Intended to make evaluator runs             deterministic and cheap to re-execute.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="EvaluationCaptureChatClientExtensions/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationCaptureChatClientExtensions">EvaluationCaptureChatClientExtensions</a></td>
-<td style="text-align: left;">Extension methods for opting in to <a href="EvaluationCaptureChatClient/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationCaptureChatClient">EvaluationCaptureChatClient</a> capture/replay behavior.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="EvaluationQualityGate/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate">EvaluationQualityGate</a></td>
-<td style="text-align: left;">Configurable quality gate that asserts evaluation metrics meet defined thresholds. Designed for CI pipelines — call <a href="EvaluationQualityGate/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])">Assert(EvaluationResult[])</a> after running evaluators to fail the build when metrics regress.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="FileEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.FileEvaluationCaptureStore">FileEvaluationCaptureStore</a></td>
-<td style="text-align: left;">Disk-backed <a href="IEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IEvaluationCaptureStore">IEvaluationCaptureStore</a> that persists each response as a single JSON file under a caller-supplied directory. File names are the request hash plus a <code>.json</code> extension.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="IterationCoherenceEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IterationCoherenceEvaluator">IterationCoherenceEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores the iteration coherence of an iterative-loop agent run from the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot carried in an <a href="AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="PipelineCostEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineCostEvaluator">PipelineCostEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores token usage and cost breakdown per stage of a pipeline run from the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> snapshot carried in a <a href="PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a></td>
-<td style="text-align: left;">Carries an <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> through the <code>Microsoft.Extensions.AI.Evaluation</code> evaluator pipeline so that pipeline-aware evaluators can score per-stage and aggregate metrics without re-invoking the model.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="PipelineEvaluationExtensions/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationExtensions">PipelineEvaluationExtensions</a></td>
-<td style="text-align: left;">Extensions that convert <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> into the input shape expected by <code>Microsoft.Extensions.AI.Evaluation</code> evaluators.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="PipelineStageEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineStageEvaluator">PipelineStageEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores per-stage success/failure and overall pipeline health from the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IPipelineRunResult</a> snapshot carried in a <a href="PipelineEvaluationContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.PipelineEvaluationContext">PipelineEvaluationContext</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="QualityGateFailedException/" title="NexusLabs.Needlr.AgentFramework.Evaluation.QualityGateFailedException">QualityGateFailedException</a></td>
-<td style="text-align: left;">Thrown by <a href="EvaluationQualityGate/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationQualityGate.Assert(Microsoft.Extensions.AI.Evaluation.EvaluationResult[])">Assert(EvaluationResult[])</a> when one or more evaluation metrics violate their configured thresholds.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="TaskCompletionEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.TaskCompletionEvaluator">TaskCompletionEvaluator</a></td>
-<td style="text-align: left;">LLM-judged evaluator that assesses whether an agent actually accomplished the task it was given. Unlike MEAI's <code>TaskAdherenceEvaluator</code> (which checks instruction following), this evaluator checks \&lt;em&gt;task success\&lt;/em&gt;: did the agent produce output that satisfies the original request?</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="TerminationAppropriatenessEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.TerminationAppropriatenessEvaluator">TerminationAppropriatenessEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores whether an agent run terminated appropriately, using the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot carried in an <a href="AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a>.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="ToolCallTrajectoryEvaluator/" title="NexusLabs.Needlr.AgentFramework.Evaluation.ToolCallTrajectoryEvaluator">ToolCallTrajectoryEvaluator</a></td>
-<td style="text-align: left;">Deterministic evaluator that scores the tool-call trajectory of an agent run from the captured <a href="../NexusLabs.Needlr.AgentFramework/">NexusLabs.Needlr.AgentFramework.Diagnostics.IAgentRunDiagnostics</a> snapshot carried in an <a href="AgentRunDiagnosticsContext/" title="NexusLabs.Needlr.AgentFramework.Evaluation.AgentRunDiagnosticsContext">AgentRunDiagnosticsContext</a>.</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Structs</th>
-<th style="text-align: left;"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><a href="EvaluationInputs/" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationInputs">EvaluationInputs</a></td>
-<td style="text-align: left;">Inputs shaped for <code>Microsoft.Extensions.AI.Evaluation</code> evaluators, derived from a captured agent run. Consumers pass <a href="EvaluationInputs/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationInputs.Messages" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationInputs.Messages">Messages</a> and <a href="EvaluationInputs/#NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationInputs.ModelResponse" title="NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationInputs.ModelResponse">ModelResponse</a> to <code>IEvaluator.EvaluateAsync</code> (or to a <code>ScenarioRun</code> obtained via <code>ReportingConfiguration.CreateScenarioRunAsync</code>).</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Interfaces</th>
-<th style="text-align: left;"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><a href="IEvaluationCaptureStore/" title="NexusLabs.Needlr.AgentFramework.Evaluation.IEvaluationCaptureStore">IEvaluationCaptureStore</a></td>
-<td style="text-align: left;">Persists captured <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.chatresponse" title="Microsoft.Extensions.AI.ChatResponse">Microsoft.Extensions.AI.ChatResponse</a> payloads keyed by a deterministic request hash so that evaluator runs can replay previously observed LLM responses without re-invoking the underlying model.</td>
+<td style="text-align: left;"><a href="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments">NexusLabs.Needlr.AgentFramework.Evaluation.Experiments</a></td>
+<td style="text-align: left;"></td>
 </tr>
 </tbody>
 </table>
