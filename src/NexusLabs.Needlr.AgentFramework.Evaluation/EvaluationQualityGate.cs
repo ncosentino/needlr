@@ -14,13 +14,12 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// threshold names a metric (using the <c>*MetricName</c> constants from
 /// evaluator classes) and a bound. <see cref="Assert"/> checks all thresholds
 /// against the evaluation result and throws
-/// <see cref="QualityGateFailedException"/> listing every violation.
+/// <see cref="QualityGateFailedException"/> when the structured decision is
+/// failed or inconclusive.
 /// </para>
 /// <para>
-/// Metrics not present in the <see cref="EvaluationResult"/> are silently
-/// skipped — this allows a gate to be used with evaluators that conditionally
-/// emit metrics (e.g., <see cref="IterationCoherenceEvaluator"/> only emits
-/// when execution mode is <c>IterativeLoop</c>).
+/// Required missing or invalid metrics produce an inconclusive decision.
+/// Use the <c>Optional*</c> methods for metrics that are conditionally emitted.
 /// </para>
 /// </remarks>
 /// <example>
@@ -37,7 +36,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// </example>
 public sealed class EvaluationQualityGate
 {
-    private readonly List<Threshold> _thresholds = [];
+    private readonly EvaluationThresholdEvaluator _thresholdEvaluator = new();
 
     /// <summary>
     /// Requires a <see cref="NumericMetric"/> to be at most <paramref name="max"/>.
@@ -47,7 +46,19 @@ public sealed class EvaluationQualityGate
     /// <returns>This gate instance for fluent chaining.</returns>
     public EvaluationQualityGate RequireNumericMax(string metricName, double max)
     {
-        _thresholds.Add(new NumericMaxThreshold(metricName, max));
+        _thresholdEvaluator.RequireNumericMax(metricName, max);
+        return this;
+    }
+
+    /// <summary>
+    /// Checks a <see cref="NumericMetric"/> maximum when the metric is present.
+    /// </summary>
+    /// <param name="metricName">The metric name.</param>
+    /// <param name="max">The maximum allowed value.</param>
+    /// <returns>This gate instance for fluent chaining.</returns>
+    public EvaluationQualityGate OptionalNumericMax(string metricName, double max)
+    {
+        _thresholdEvaluator.OptionalNumericMax(metricName, max);
         return this;
     }
 
@@ -59,7 +70,19 @@ public sealed class EvaluationQualityGate
     /// <returns>This gate instance for fluent chaining.</returns>
     public EvaluationQualityGate RequireNumericMin(string metricName, double min)
     {
-        _thresholds.Add(new NumericMinThreshold(metricName, min));
+        _thresholdEvaluator.RequireNumericMin(metricName, min);
+        return this;
+    }
+
+    /// <summary>
+    /// Checks a <see cref="NumericMetric"/> minimum when the metric is present.
+    /// </summary>
+    /// <param name="metricName">The metric name.</param>
+    /// <param name="min">The minimum allowed value.</param>
+    /// <returns>This gate instance for fluent chaining.</returns>
+    public EvaluationQualityGate OptionalNumericMin(string metricName, double min)
+    {
+        _thresholdEvaluator.OptionalNumericMin(metricName, min);
         return this;
     }
 
@@ -71,9 +94,42 @@ public sealed class EvaluationQualityGate
     /// <returns>This gate instance for fluent chaining.</returns>
     public EvaluationQualityGate RequireBoolean(string metricName, bool expected)
     {
-        _thresholds.Add(new BooleanThreshold(metricName, expected));
+        _thresholdEvaluator.RequireBoolean(metricName, expected);
         return this;
     }
+
+    /// <summary>
+    /// Checks a <see cref="BooleanMetric"/> value when the metric is present.
+    /// </summary>
+    /// <param name="metricName">The metric name.</param>
+    /// <param name="expected">The required value when present.</param>
+    /// <returns>This gate instance for fluent chaining.</returns>
+    public EvaluationQualityGate OptionalBoolean(string metricName, bool expected)
+    {
+        _thresholdEvaluator.OptionalBoolean(metricName, expected);
+        return this;
+    }
+
+    /// <summary>
+    /// Evaluates all configured thresholds without throwing.
+    /// </summary>
+    /// <param name="results">One or more evaluation results to check.</param>
+    /// <returns>The structured threshold result.</returns>
+    public EvaluationThresholdResult Evaluate(params EvaluationResult[] results) =>
+        _thresholdEvaluator.Evaluate(results);
+
+    /// <summary>
+    /// Evaluates all configured thresholds without throwing.
+    /// </summary>
+    /// <param name="missingMetricBehavior">
+    /// The treatment for required missing or invalid metrics.
+    /// </param>
+    /// <param name="results">One or more evaluation results to check.</param>
+    /// <returns>The structured threshold result.</returns>
+    public EvaluationThresholdResult Evaluate(
+        EvaluationMissingMetricBehavior missingMetricBehavior,
+        params EvaluationResult[] results) =>
+        _thresholdEvaluator.Evaluate(missingMetricBehavior, results);
 
     /// <summary>
     /// Checks all thresholds against the provided evaluation results. Metrics
@@ -81,90 +137,22 @@ public sealed class EvaluationQualityGate
     /// </summary>
     /// <param name="results">One or more <see cref="EvaluationResult"/> instances to check.</param>
     /// <exception cref="QualityGateFailedException">
-    /// Thrown when one or more thresholds are violated. The exception message
-    /// lists every violation.
+    /// Thrown when the structured threshold decision is failed or inconclusive. The exception
+    /// message lists every failed, missing, or invalid required threshold.
     /// </exception>
     public void Assert(params EvaluationResult[] results)
     {
-        ArgumentNullException.ThrowIfNull(results);
-
-        var violations = new List<string>();
-        foreach (var threshold in _thresholds)
+        var evaluation = Evaluate(results);
+        if (evaluation.Decision != EvaluationDecision.Passed)
         {
-            EvaluationMetric? metric = null;
-            foreach (var result in results)
-            {
-                if (result.Metrics.TryGetValue(threshold.MetricName, out var found))
-                {
-                    metric = found;
-                    break;
-                }
-            }
-
-            if (metric is null)
-            {
-                continue;
-            }
-
-            var violation = threshold.Check(metric);
-            if (violation is not null)
-            {
-                violations.Add(violation);
-            }
-        }
-
-        if (violations.Count > 0)
-        {
+            var violations = evaluation.Outcomes
+                .Where(outcome =>
+                    outcome.Status != EvaluationThresholdStatus.Passed
+                    && (outcome.IsRequired
+                        || outcome.Status != EvaluationThresholdStatus.Missing))
+                .Select(outcome => outcome.Message)
+                .ToArray();
             throw new QualityGateFailedException(violations);
-        }
-    }
-
-    private abstract class Threshold
-    {
-        public string MetricName { get; }
-
-        protected Threshold(string metricName)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(metricName);
-            MetricName = metricName;
-        }
-
-        public abstract string? Check(EvaluationMetric metric);
-    }
-
-    private sealed class NumericMaxThreshold(string metricName, double max) : Threshold(metricName)
-    {
-        public override string? Check(EvaluationMetric metric)
-        {
-            if (metric is NumericMetric nm && nm.Value.HasValue && nm.Value.Value > max)
-            {
-                return $"{MetricName}: {nm.Value.Value:G} exceeded max {max:G}";
-            }
-            return null;
-        }
-    }
-
-    private sealed class NumericMinThreshold(string metricName, double min) : Threshold(metricName)
-    {
-        public override string? Check(EvaluationMetric metric)
-        {
-            if (metric is NumericMetric nm && nm.Value.HasValue && nm.Value.Value < min)
-            {
-                return $"{MetricName}: {nm.Value.Value:G} below min {min:G}";
-            }
-            return null;
-        }
-    }
-
-    private sealed class BooleanThreshold(string metricName, bool expected) : Threshold(metricName)
-    {
-        public override string? Check(EvaluationMetric metric)
-        {
-            if (metric is BooleanMetric bm && bm.Value.HasValue && bm.Value.Value != expected)
-            {
-                return $"{MetricName}: expected {expected}, got {bm.Value.Value}";
-            }
-            return null;
         }
     }
 }

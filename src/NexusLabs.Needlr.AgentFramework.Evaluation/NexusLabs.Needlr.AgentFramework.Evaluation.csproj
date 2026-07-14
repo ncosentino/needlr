@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageDescription>Evaluation support for NexusLabs.Needlr.AgentFramework. Maps captured diagnostics to Microsoft.Extensions.AI.Evaluation inputs and provides provider-neutral finite experiment scheduling, structured outcomes, and schema-versioned JSON artifacts.</PackageDescription>
+    <PackageDescription>Evaluation support for NexusLabs.Needlr.AgentFramework. Maps captured diagnostics to Microsoft.Extensions.AI.Evaluation inputs and provides provider-neutral experiment scheduling, retries, run evaluation, structured quality policies, and schema-versioned JSON artifacts.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

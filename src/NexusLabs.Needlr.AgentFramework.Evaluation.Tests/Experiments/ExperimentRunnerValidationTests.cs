@@ -129,4 +129,49 @@ public sealed class ExperimentRunnerValidationTests
                 },
             };
     }
+
+    [Fact]
+    public async Task RunAsync_DuplicateRunEvaluatorOrPolicyNames_StartNoItems()
+    {
+            var executions = 0;
+            var runner = new ExperimentRunner();
+            var evaluator = new ExperimentRunEvaluator<int, int>(
+                "duplicate",
+                (_, _) => ValueTask.FromResult(
+                    new Microsoft.Extensions.AI.Evaluation.EvaluationResult()));
+            var policy = new CallbackExperimentPolicy<int, int>("duplicate", () => { });
+
+            await Assert.ThrowsAsync<ArgumentException>(() => runner.RunAsync(
+                CreateDefinition(
+                    runEvaluators: [evaluator, evaluator],
+                    policies: []),
+                new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+                _cancellationToken));
+            await Assert.ThrowsAsync<ArgumentException>(() => runner.RunAsync(
+                CreateDefinition(
+                    runEvaluators: [],
+                    policies: [policy, policy]),
+                new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+                _cancellationToken));
+
+            Assert.Equal(0, executions);
+
+            ExperimentDefinition<int, int> CreateDefinition(
+                IReadOnlyList<IExperimentRunEvaluator<int, int>> runEvaluators,
+                IReadOnlyList<IExperimentRunPolicy<int, int>> policies) =>
+                new()
+                {
+                    Name = "validation",
+                    CaseSource = new LocalExperimentCaseSource<int>(
+                        "local",
+                        [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                    Task = (_, _) =>
+                    {
+                        Interlocked.Increment(ref executions);
+                        return ValueTask.FromResult(1);
+                    },
+                    RunEvaluators = runEvaluators,
+                    Policies = policies,
+                };
+    }
 }

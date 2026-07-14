@@ -62,10 +62,16 @@ public sealed class ExperimentJsonArtifactWriterTests
                 "maxConcurrency",
                 "workerCount",
                 "items",
+                "runEvaluations",
+                "policyResults",
+                "decision",
             ],
             root.EnumerateObject().Select(property => property.Name).ToArray());
-        Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(2, root.GetProperty("schemaVersion").GetInt32());
         Assert.Equal("run-1", root.GetProperty("runId").GetString());
+        Assert.Equal("notEvaluated", root.GetProperty("decision").GetString());
+        Assert.Empty(root.GetProperty("runEvaluations").EnumerateArray());
+        Assert.Empty(root.GetProperty("policyResults").EnumerateArray());
 
         var items = root.GetProperty("items");
         Assert.Equal(2, items.GetArrayLength());
@@ -95,9 +101,141 @@ public sealed class ExperimentJsonArtifactWriterTests
         Assert.Equal("boom", failurePayload.GetProperty("message").GetString());
         Assert.False(
             failurePayload.GetProperty("isRetryable").GetBoolean(),
-            "Phase 1 failures must not claim retry-policy eligibility.");
+            "A terminal failure with no selected retry must not claim retry-policy eligibility.");
         Assert.DoesNotContain("stack", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("$type", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Serialize_WritesRetryRunEvaluationAndPolicyEvidence()
+    {
+        var executions = 0;
+        var definition = new ExperimentDefinition<int, int>
+        {
+            Name = "phase-2-artifact",
+            CaseSource = new LocalExperimentCaseSource<int>(
+                "local",
+                [new ExperimentCase<int> { Id = "case-1", Value = 7 }]),
+            Task = (_, _) => Interlocked.Increment(ref executions) == 1
+                ? throw new InvalidOperationException("retry")
+                : ValueTask.FromResult(9),
+            ItemEvaluator = (_, _) => ValueTask.FromResult(new EvaluationResult(
+                new BooleanMetric("passed", true))),
+            RunEvaluators =
+            [
+                new ExperimentRunEvaluator<int, int>(
+                    "aggregate",
+                    (_, _) => ValueTask.FromResult(new EvaluationResult(
+                        new NumericMetric("success_rate", 1)))),
+                new ExperimentRunEvaluator<int, int>(
+                    "broken",
+                    (_, _) => throw new InvalidOperationException("run evaluator failed")),
+            ],
+            Policies =
+            [
+                new ExperimentRunEvaluationThresholdPolicy<int, int>(
+                    "threshold",
+                    "aggregate",
+                    new EvaluationThresholdEvaluator()
+                        .RequireNumericMin("success_rate", 0.8)),
+                new ExperimentBinarySuccessPolicy<int, int>(
+                    "binary",
+                    "passed",
+                    requiredSuccessRate: 0,
+                    minimumSampleCount: 1,
+                    confidenceLevel: 0.95),
+                new ThrowingExperimentPolicy<int, int>("broken-policy"),
+            ],
+        };
+        var result = await new ExperimentRunner().RunAsync(
+            definition,
+            new ExperimentRunOptions
+            {
+                RunId = "run-2",
+                MaxConcurrency = 1,
+                RetryPolicy = new ExperimentRetryPolicy(
+                    maxAttempts: 2,
+                    retryOn: ExperimentRetryableOutcome.ExecutionFailure,
+                    delay: TimeSpan.Zero),
+            },
+            _cancellationToken);
+        var writer = new ExperimentJsonArtifactWriter(writeIndented: false);
+
+        var json = writer.Serialize(result);
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        Assert.Equal("inconclusive", root.GetProperty("decision").GetString());
+        var attempts = root.GetProperty("items")[0].GetProperty("attempts");
+        Assert.Equal(2, attempts.GetArrayLength());
+        Assert.Equal(
+            0,
+            attempts[0].GetProperty("delayBeforeNextAttemptMilliseconds").GetDouble());
+        var runEvaluations = root.GetProperty("runEvaluations");
+        Assert.Equal(2, runEvaluations.GetArrayLength());
+        Assert.Equal("aggregate", runEvaluations[0].GetProperty("name").GetString());
+        Assert.Equal("succeeded", runEvaluations[0].GetProperty("status").GetString());
+        Assert.Equal("broken", runEvaluations[1].GetProperty("name").GetString());
+        Assert.Equal(
+            "runEvaluationFailed",
+            runEvaluations[1].GetProperty("failure").GetProperty("code").GetString());
+        Assert.Equal(
+            "runEvaluation",
+            runEvaluations[1].GetProperty("failure").GetProperty("stage").GetString());
+
+        var policies = root.GetProperty("policyResults");
+        Assert.Equal(3, policies.GetArrayLength());
+        Assert.Equal("deterministic", policies[0].GetProperty("kind").GetString());
+        Assert.Equal(
+            "passed",
+            policies[0]
+                .GetProperty("deterministicEvidence")
+                .GetProperty("thresholds")
+                .GetProperty("decision")
+                .GetString());
+        Assert.Equal("statistical", policies[1].GetProperty("kind").GetString());
+        var statistics = policies[1].GetProperty("statisticalEvidence");
+        Assert.Equal(1, statistics.GetProperty("totalTrialCount").GetInt32());
+        Assert.Equal(2, statistics.GetProperty("attemptCount").GetInt32());
+        Assert.Equal("wilsonScore", statistics.GetProperty("intervalMethod").GetString());
+        Assert.Equal(
+            "policyFailed",
+            policies[2].GetProperty("failure").GetProperty("code").GetString());
+        Assert.Equal(
+            "policy",
+            policies[2].GetProperty("failure").GetProperty("stage").GetString());
+        Assert.DoesNotContain("stack", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("$type", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Serialize_RetryPolicyFailure_WritesStructuredFailure()
+    {
+        var result = await new ExperimentRunner().RunAsync(
+            new ExperimentDefinition<int, int>
+            {
+                Name = "retry-policy-failure",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                Task = (_, _) => throw new InvalidOperationException("execution failed"),
+            },
+            new ExperimentRunOptions
+            {
+                RunId = "run-3",
+                MaxConcurrency = 1,
+                RetryPolicy = new ThrowingExperimentRetryPolicy(),
+            },
+            _cancellationToken);
+
+        var json = new ExperimentJsonArtifactWriter(writeIndented: false).Serialize(result);
+
+        using var document = JsonDocument.Parse(json);
+        var failure = document.RootElement
+            .GetProperty("items")[0]
+            .GetProperty("failure");
+        Assert.Equal("retryPolicyFailed", failure.GetProperty("code").GetString());
+        Assert.Equal("policy", failure.GetProperty("stage").GetString());
     }
 
     [Fact]

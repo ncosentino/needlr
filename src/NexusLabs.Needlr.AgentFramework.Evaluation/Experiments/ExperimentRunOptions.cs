@@ -15,4 +15,14 @@ public sealed class ExperimentRunOptions
     /// Gets an optional cooperative timeout applied independently to each task attempt.
     /// </summary>
     public TimeSpan? AttemptTimeout { get; init; }
+
+    /// <summary>
+    /// Gets the optional bounded execution retry policy. A missing policy performs one attempt.
+    /// </summary>
+    public IExperimentRetryPolicy? RetryPolicy { get; init; }
+
+    /// <summary>
+    /// Gets the optional caller-owned concurrency limiter shared across experiment runs.
+    /// </summary>
+    public IExperimentConcurrencyLimiter? SharedLimiter { get; init; }
 }

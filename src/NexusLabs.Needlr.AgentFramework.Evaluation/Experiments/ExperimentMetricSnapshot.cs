@@ -30,7 +30,7 @@ public sealed class ExperimentMetricSnapshot
     public ExperimentMetricInterpretationSnapshot? Interpretation { get; init; }
 
     /// <summary>
-    /// Gets the number of MEAI context objects omitted from the schema-v1 snapshot.
+    /// Gets the number of MEAI context objects omitted from the canonical snapshot.
     /// </summary>
     public required int ContextCount { get; init; }
 

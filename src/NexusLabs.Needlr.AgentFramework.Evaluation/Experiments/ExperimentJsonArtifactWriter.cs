@@ -220,6 +220,25 @@ public sealed class ExperimentJsonArtifactWriter
         }
 
         writer.WriteEndArray();
+        writer.WritePropertyName("runEvaluations");
+        writer.WriteStartArray();
+        foreach (var runEvaluation in result.RunEvaluations)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            WriteRunEvaluation(writer, runEvaluation);
+        }
+
+        writer.WriteEndArray();
+        writer.WritePropertyName("policyResults");
+        writer.WriteStartArray();
+        foreach (var policy in result.PolicyResults)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            WritePolicy(writer, policy);
+        }
+
+        writer.WriteEndArray();
+        writer.WriteString("decision", ToJson(result.Decision));
         writer.WriteEndObject();
     }
 
@@ -295,9 +314,189 @@ public sealed class ExperimentJsonArtifactWriter
         writer.WriteString("status", ToJson(attempt.Status));
         writer.WriteString("startedAt", attempt.StartedAt);
         writer.WriteNumber("durationMilliseconds", attempt.Duration.TotalMilliseconds);
+        if (attempt.DelayBeforeNextAttempt is { } retryDelay)
+        {
+            writer.WriteNumber(
+                "delayBeforeNextAttemptMilliseconds",
+                retryDelay.TotalMilliseconds);
+        }
+        else
+        {
+            writer.WriteNull("delayBeforeNextAttemptMilliseconds");
+        }
+
         writer.WritePropertyName("failure");
         WriteFailure(writer, attempt.Failure);
         writer.WriteEndObject();
+    }
+
+    private static void WriteRunEvaluation(
+        Utf8JsonWriter writer,
+        ExperimentRunEvaluationResult evaluation)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("name", evaluation.Name);
+        writer.WriteString("status", ToJson(evaluation.Status));
+        writer.WritePropertyName("metrics");
+        writer.WriteStartArray();
+        foreach (var metric in evaluation.Metrics)
+        {
+            WriteMetric(writer, metric);
+        }
+
+        writer.WriteEndArray();
+        writer.WritePropertyName("failure");
+        WriteFailure(writer, evaluation.Failure);
+        writer.WriteEndObject();
+    }
+
+    private static void WritePolicy(
+        Utf8JsonWriter writer,
+        ExperimentPolicyResult policy)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("name", policy.Name);
+        writer.WriteString("kind", ToJson(policy.Kind));
+        writer.WriteBoolean("isRequired", policy.IsRequired);
+        writer.WriteString("decision", ToJson(policy.Decision));
+        writer.WritePropertyName("deterministicEvidence");
+        WriteDeterministicEvidence(writer, policy.DeterministicEvidence);
+        writer.WritePropertyName("statisticalEvidence");
+        WriteStatisticalEvidence(writer, policy.StatisticalEvidence);
+        writer.WritePropertyName("failure");
+        WriteFailure(writer, policy.Failure);
+        writer.WriteEndObject();
+    }
+
+    private static void WriteDeterministicEvidence(
+        Utf8JsonWriter writer,
+        ExperimentDeterministicPolicyEvidence? evidence)
+    {
+        if (evidence is null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        writer.WriteStartObject();
+        writer.WriteString("runEvaluationName", evidence.RunEvaluationName);
+        writer.WritePropertyName("thresholds");
+        WriteThresholdResult(writer, evidence.Thresholds);
+        writer.WriteString("unavailableReason", evidence.UnavailableReason);
+        writer.WriteEndObject();
+    }
+
+    private static void WriteThresholdResult(
+        Utf8JsonWriter writer,
+        EvaluationThresholdResult? result)
+    {
+        if (result is null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        writer.WriteStartObject();
+        writer.WriteString("decision", ToJson(result.Decision));
+        writer.WritePropertyName("outcomes");
+        writer.WriteStartArray();
+        foreach (var outcome in result.Outcomes)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("metricName", outcome.MetricName);
+            writer.WriteString("kind", ToJson(outcome.Kind));
+            writer.WriteString("status", ToJson(outcome.Status));
+            writer.WriteBoolean("isRequired", outcome.IsRequired);
+            WriteNullableNumber(writer, "numericThreshold", outcome.NumericThreshold);
+            if (outcome.BooleanExpected is { } booleanExpected)
+            {
+                writer.WriteBoolean("booleanExpected", booleanExpected);
+            }
+            else
+            {
+                writer.WriteNull("booleanExpected");
+            }
+
+            WriteNullableNumber(writer, "numericValue", outcome.NumericValue);
+            if (outcome.BooleanValue is { } booleanValue)
+            {
+                writer.WriteBoolean("booleanValue", booleanValue);
+            }
+            else
+            {
+                writer.WriteNull("booleanValue");
+            }
+
+            writer.WriteString("message", outcome.Message);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    private static void WriteStatisticalEvidence(
+        Utf8JsonWriter writer,
+        ExperimentBinaryStatisticalEvidence? evidence)
+    {
+        if (evidence is null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        writer.WriteStartObject();
+        writer.WriteString("metricName", evidence.MetricName);
+        writer.WriteNumber("totalTrialCount", evidence.TotalTrialCount);
+        writer.WriteNumber("attemptCount", evidence.AttemptCount);
+        writer.WriteNumber("sampleCount", evidence.SampleCount);
+        writer.WriteNumber("successCount", evidence.SuccessCount);
+        writer.WriteNumber("failureCount", evidence.FailureCount);
+        writer.WriteNumber("executionFailureCount", evidence.ExecutionFailureCount);
+        writer.WriteNumber("exclusionCount", evidence.ExclusionCount);
+        writer.WritePropertyName("statusCounts");
+        writer.WriteStartArray();
+        foreach (var statusCount in evidence.StatusCounts)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("status", ToJson(statusCount.Status));
+            writer.WriteNumber("count", statusCount.Count);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+        WriteNullableNumber(writer, "estimate", evidence.Estimate);
+        WriteNullableNumber(
+            writer,
+            "oneSidedLowerBound",
+            evidence.OneSidedLowerBound);
+        WriteNullableNumber(
+            writer,
+            "oneSidedUpperBound",
+            evidence.OneSidedUpperBound);
+        writer.WriteNumber("confidenceLevel", evidence.ConfidenceLevel);
+        writer.WriteNumber("requiredSuccessRate", evidence.RequiredSuccessRate);
+        writer.WriteNumber("minimumSampleCount", evidence.MinimumSampleCount);
+        writer.WriteString("intervalMethod", ToJson(evidence.IntervalMethod));
+        writer.WriteString(
+            "unknownSampleTreatment",
+            ToJson(evidence.UnknownSampleTreatment));
+        writer.WriteEndObject();
+    }
+
+    private static void WriteNullableNumber(
+        Utf8JsonWriter writer,
+        string propertyName,
+        double? value)
+    {
+        if (value is { } number)
+        {
+            writer.WriteNumber(propertyName, number);
+        }
+        else
+        {
+            writer.WriteNull(propertyName);
+        }
     }
 
     private static void WriteMetric(
@@ -424,6 +623,9 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentFailureCode.AttemptTimedOut => "attemptTimedOut",
         ExperimentFailureCode.TaskCanceled => "taskCanceled",
         ExperimentFailureCode.EvaluationFailed => "evaluationFailed",
+        ExperimentFailureCode.RetryPolicyFailed => "retryPolicyFailed",
+        ExperimentFailureCode.RunEvaluationFailed => "runEvaluationFailed",
+        ExperimentFailureCode.PolicyFailed => "policyFailed",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment failure code is not defined."),
     };
 
@@ -431,6 +633,8 @@ public sealed class ExperimentJsonArtifactWriter
     {
         ExperimentFailureStage.Execution => "execution",
         ExperimentFailureStage.ItemEvaluation => "itemEvaluation",
+        ExperimentFailureStage.RunEvaluation => "runEvaluation",
+        ExperimentFailureStage.Policy => "policy",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment failure stage is not defined."),
     };
 
@@ -471,5 +675,66 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentMetricNonFiniteValue.PositiveInfinity => "positiveInfinity",
         ExperimentMetricNonFiniteValue.NegativeInfinity => "negativeInfinity",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The non-finite metric value is not defined."),
+    };
+
+    private static string ToJson(ExperimentRunEvaluationStatus value) => value switch
+    {
+        ExperimentRunEvaluationStatus.Succeeded => "succeeded",
+        ExperimentRunEvaluationStatus.Failed => "failed",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The run evaluation status is not defined."),
+    };
+
+    private static string ToJson(ExperimentPolicyKind value) => value switch
+    {
+        ExperimentPolicyKind.Deterministic => "deterministic",
+        ExperimentPolicyKind.Statistical => "statistical",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment policy kind is not defined."),
+    };
+
+    private static string ToJson(EvaluationDecision value) => value switch
+    {
+        EvaluationDecision.Passed => "passed",
+        EvaluationDecision.Failed => "failed",
+        EvaluationDecision.Inconclusive => "inconclusive",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The evaluation decision is not defined."),
+    };
+
+    private static string ToJson(ExperimentRunDecision value) => value switch
+    {
+        ExperimentRunDecision.Passed => "passed",
+        ExperimentRunDecision.Failed => "failed",
+        ExperimentRunDecision.Inconclusive => "inconclusive",
+        ExperimentRunDecision.NotEvaluated => "notEvaluated",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment run decision is not defined."),
+    };
+
+    private static string ToJson(EvaluationThresholdKind value) => value switch
+    {
+        EvaluationThresholdKind.NumericMaximum => "numericMaximum",
+        EvaluationThresholdKind.NumericMinimum => "numericMinimum",
+        EvaluationThresholdKind.Boolean => "boolean",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The evaluation threshold kind is not defined."),
+    };
+
+    private static string ToJson(EvaluationThresholdStatus value) => value switch
+    {
+        EvaluationThresholdStatus.Passed => "passed",
+        EvaluationThresholdStatus.Failed => "failed",
+        EvaluationThresholdStatus.Missing => "missing",
+        EvaluationThresholdStatus.Invalid => "invalid",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The evaluation threshold status is not defined."),
+    };
+
+    private static string ToJson(ExperimentConfidenceIntervalMethod value) => value switch
+    {
+        ExperimentConfidenceIntervalMethod.WilsonScore => "wilsonScore",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The confidence interval method is not defined."),
+    };
+
+    private static string ToJson(ExperimentUnknownSampleTreatment value) => value switch
+    {
+        ExperimentUnknownSampleTreatment.Inconclusive => "inconclusive",
+        ExperimentUnknownSampleTreatment.CountAsFailure => "countAsFailure",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The unknown sample treatment is not defined."),
     };
 }

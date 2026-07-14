@@ -6,13 +6,13 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// </summary>
 public sealed class QualityGateFailedException : Exception
 {
-    /// <summary>Gets the individual threshold violations that triggered the failure.</summary>
+    /// <summary>Gets the non-passing threshold descriptions that triggered the failure.</summary>
     public IReadOnlyList<string> Violations { get; }
 
     /// <summary>
     /// Creates a new exception from the list of threshold violations.
     /// </summary>
-    /// <param name="violations">One or more violation descriptions.</param>
+    /// <param name="violations">One or more failed, missing, or invalid threshold descriptions.</param>
     public QualityGateFailedException(IReadOnlyList<string> violations)
         : base($"Quality gate failed with {violations.Count} violation(s):\n" +
                string.Join("\n", violations.Select(v => $"  • {v}")))

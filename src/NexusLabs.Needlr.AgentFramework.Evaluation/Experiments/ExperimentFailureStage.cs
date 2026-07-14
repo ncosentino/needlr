@@ -10,4 +10,10 @@ public enum ExperimentFailureStage
 
     /// <summary>Item evaluation produced the failure.</summary>
     ItemEvaluation,
+
+    /// <summary>A run evaluator produced the failure.</summary>
+    RunEvaluation,
+
+    /// <summary>A retry or quality policy produced the failure.</summary>
+    Policy,
 }
