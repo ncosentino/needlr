@@ -275,13 +275,15 @@ public sealed record TripPlannerCase(
     string? SourceTraceId,
     string? SourceObservationId);
 
+var selection = new LangfuseDatasetSelection
+{
+    Name = "trip-planner-evals",
+    Version = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+};
+
 var source = new LangfuseDatasetCaseSource<TripPlannerCase>(
     langfuse.Datasets,
-    new LangfuseDatasetSelection
-    {
-        Name = "trip-planner-evals",
-        Version = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
-    },
+    selection,
     item => new ExperimentCase<TripPlannerCase>
     {
         Id = item.Id,
@@ -295,10 +297,28 @@ var source = new LangfuseDatasetCaseSource<TripPlannerCase>(
         Tags = ["hosted"],
     });
 
+var langfuseRun = langfuse.BeginExperimentRun(
+    selection.Name,
+    runId,
+    new LangfuseExperimentRunOptions
+    {
+        Description = "Trip planner regression suite",
+        DatasetVersion = selection.Version,
+    });
+var langfuseScope =
+    langfuse.CreateExperimentItemScopeProvider<TripPlannerCase, TripPlannerOutput>(
+        langfuseRun,
+        new LangfuseExperimentItemScopeOptions<TripPlannerCase>
+        {
+            ScenarioNameFactory = _ => "evaluate-trip-planner-item",
+            FailureMode = ExperimentItemScopeFailureMode.BestEffort,
+        });
+
 var definition = new ExperimentDefinition<TripPlannerCase, TripPlannerOutput>
 {
     Name = "trip-planner-regression",
     CaseSource = source,
+    ItemScopes = [langfuseScope],
     Task = RunTripPlannerAsync,
 };
 ```
@@ -321,11 +341,57 @@ Langfuse API does not return a resolved version identifier.
 For lower-level reads, `ILangfuseDatasetClient` also exposes validated `ListDatasetsAsync`,
 `ListDatasetItemsAsync`, and fully materialized `GetDatasetAsync` operations.
 
-[#52](https://github.com/ncosentino/needlr/issues/52) adds the Langfuse per-trial trace/link scope and
-[#53](https://github.com/ncosentino/needlr/issues/53) adds the final result sink. Until those adapters
-land, the API below remains the low-level/manual publication surface. Do not add a second scheduler
-or policy engine to the Langfuse package: the existing scenario, link, score, identity, resilience,
-and publication-health types are the provider primitives those adapters reuse.
+### Per-trial trace and hosted link scope
+
+`CreateExperimentItemScopeProvider<TCase,TOutput>` binds the generic runner to an existing
+`ILangfuseExperimentRun`. One scenario trace is created when a statistical trial enters its scope.
+Every operational retry and the item evaluator reactivate that same trace, while the hosted
+dataset-run-item link is attempted at most once. The same run instance retains authoritative
+dataset-run identity and is reused by the result sink in
+[#53](https://github.com/ncosentino/needlr/issues/53).
+
+When a task or item evaluator needs direct scenario APIs, resolve the exact feature:
+
+```csharp
+var scenario = context.Features.GetRequired<ILangfuseScenario>();
+if (context.Case.Value.Input is { } input)
+{
+    scenario.SetInput(input);
+}
+```
+
+The item result uses the `langfuse` correlation namespace with:
+
+- `trace.id`;
+- `dataset.run.item.id`;
+- `dataset.run.id`.
+
+`Linked` produces successful item publication. `Failed` and `Inconsistent` produce structured
+publication failure without changing item quality in best-effort mode. `NotSampled` and `Disabled`
+are `NotAttempted`. A required publication affects aggregate publication health, while
+`ExecutionPrerequisite` independently selects strict link behavior and prevents the first attempt
+when linking fails. Unsampled and disabled scopes never block execution.
+
+An explicit `LangfuseExperimentRunOptions.DatasetVersion` is normalized to UTC and submitted with
+every item link. Use the same value as `LangfuseDatasetSelection.Version` so the comparison view
+references the item state that the source loaded.
+
+For local cases that are not hosted in Langfuse, use a trace-only scope:
+
+```csharp
+var localLangfuseScope =
+    langfuse.CreateLocalExperimentItemScopeProvider<MyCase, MyOutput>();
+```
+
+Local recorded traces produce only `trace.id`; no fake dataset or dataset run is created. Scope
+success means the trace lifecycle was created locally and does not claim durable OpenTelemetry
+ingestion.
+
+[#53](https://github.com/ncosentino/needlr/issues/53) adds automatic item/run score projection and
+the final result sink. Until that sink lands, the API below remains the low-level/manual publication
+surface. Do not add a second scheduler or policy engine to the Langfuse package: the existing
+scenario, link, score, identity, resilience, and publication-health types are the provider
+primitives the sink reuses.
 
 ### Low-level manual publication
 
@@ -351,6 +417,7 @@ var run = langfuse.BeginExperimentRun(
     options: new LangfuseExperimentRunOptions
     {
         Description = "Trip planner regression suite",
+        DatasetVersion = selection.Version,
         Metadata = new
         {
             candidate = new { model = "gpt-5", promptVersion = 7 },

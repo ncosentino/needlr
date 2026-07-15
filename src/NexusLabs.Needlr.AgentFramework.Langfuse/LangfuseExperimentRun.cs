@@ -9,7 +9,10 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// scenario and links its trace to the run via <c>POST /api/public/dataset-run-items</c>.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
+internal sealed class LangfuseExperimentRun :
+    ILangfuseExperimentRun,
+    ILangfuseExperimentTrialLifecycleFactory,
+    ILangfuseExperimentItemLinker
 {
     private readonly LangfuseApiClient _apiClient;
     private readonly LangfuseScoreRecorder _recorder;
@@ -17,6 +20,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
     private readonly LangfuseExperimentRunState _state;
     private readonly Action<string>? _diagnostics;
     private readonly LangfusePublicationHealth _health;
+    private readonly LangfuseExperimentTrialLifecycleFactory _lifecycleFactory;
 
     public LangfuseExperimentRun(
         LangfuseApiClient apiClient,
@@ -64,7 +68,19 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
         RunName = runName;
         options ??= new LangfuseExperimentRunOptions();
         Description = options.NormalizeDescription();
+        DatasetVersion = options.NormalizeDatasetVersion();
         Metadata = options.FreezeMetadata();
+        _lifecycleFactory = new LangfuseExperimentTrialLifecycleFactory(
+            request => new LangfuseScenario(
+                _scores,
+                _recorder,
+                request.ScenarioName,
+                sessionId: null,
+                userId: null,
+                request.Tags,
+                request.Metadata,
+                activateOnCreate: false),
+            this);
     }
 
     private static ILangfuseScoreClient CreateScoreClient(LangfuseScoreRecorder recorder)
@@ -81,6 +97,9 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
 
     /// <inheritdoc />
     public string? Description { get; }
+
+    /// <inheritdoc />
+    public DateTimeOffset? DatasetVersion { get; }
 
     /// <inheritdoc />
     public JsonElement? Metadata { get; }
@@ -109,49 +128,26 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
             ? $"{DatasetName}: {datasetItemId}"
             : options.ScenarioName;
 
-        var scenario = new LangfuseScenario(
-            _scores,
-            _recorder,
-            name,
-            sessionId: null,
-            userId: null,
-            options.Tags,
-            options.Metadata);
-
-        try
-        {
-            var recordedTraceId = scenario.Activity?.Recorded == true
-                ? scenario.TraceId
-                : null;
-            LangfuseExperimentItemLinkResult link;
-            if (recordedTraceId is { Length: > 0 } traceId)
-            {
-                link = await LinkRunItemAsync(
+        await using var lifecycle = await _lifecycleFactory
+            .EnterAsync(
+                new LangfuseExperimentTrialLifecycleRequest(
+                    name,
                     datasetItemId,
-                    traceId,
-                    options.LinkFailureMode,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                _diagnostics?.Invoke(
-                    $"Langfuse dataset run item skipped for item '{datasetItemId}' in run '{RunName}': " +
-                    "no sampled trace was available to link.");
-                link = new LangfuseExperimentItemLinkResult(
-                    LangfuseExperimentItemLinkStatus.NotSampled,
-                    datasetRunItemId: null,
-                    datasetRunId: null,
-                    failure: null);
-                _state.RecordItemLink(link.Status);
-            }
-
-            var value = await callback(scenario, cancellationToken).ConfigureAwait(false);
-            return new LangfuseExperimentItemResult<T>(value, recordedTraceId, link);
-        }
-        finally
-        {
-            scenario.Dispose();
-        }
+                    options.Tags,
+                    options.Metadata,
+                    options.LinkFailureMode),
+                cancellationToken)
+            .ConfigureAwait(false);
+        using var activation = lifecycle.Activate();
+        var value = await callback(
+            lifecycle.Scenario,
+            cancellationToken).ConfigureAwait(false);
+        return new LangfuseExperimentItemResult<T>(
+            value,
+            lifecycle.RecordedTraceId,
+            lifecycle.Link
+                ?? throw new InvalidOperationException(
+                    "A hosted Langfuse item lifecycle did not produce a link result."));
     }
 
     /// <inheritdoc />
@@ -277,6 +273,40 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
     public LangfuseExperimentRunPublicationSnapshot GetPublicationSnapshot() =>
         _state.GetSnapshot();
 
+    ValueTask<LangfuseExperimentTrialLifecycle>
+        ILangfuseExperimentTrialLifecycleFactory.EnterAsync(
+            LangfuseExperimentTrialLifecycleRequest request,
+            CancellationToken cancellationToken) =>
+        _lifecycleFactory.EnterAsync(request, cancellationToken);
+
+    async ValueTask<LangfuseExperimentItemLinkResult>
+        ILangfuseExperimentItemLinker.CreateLinkAsync(
+            string datasetItemId,
+            string? recordedTraceId,
+            LangfuseExperimentItemLinkFailureMode failureMode,
+            CancellationToken cancellationToken)
+    {
+        if (recordedTraceId is not { Length: > 0 } traceId)
+        {
+            _diagnostics?.Invoke(
+                $"Langfuse dataset run item skipped for item '{datasetItemId}' in run '{RunName}': " +
+                "no sampled trace was available to link.");
+            var notSampled = new LangfuseExperimentItemLinkResult(
+                LangfuseExperimentItemLinkStatus.NotSampled,
+                datasetRunItemId: null,
+                datasetRunId: null,
+                failure: null);
+            _state.RecordItemLink(notSampled.Status);
+            return notSampled;
+        }
+
+        return await LinkRunItemAsync(
+            datasetItemId,
+            traceId,
+            failureMode,
+            cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<LangfuseExperimentItemLinkResult> LinkRunItemAsync(
         string datasetItemId,
         string traceId,
@@ -293,6 +323,7 @@ internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
                 Metadata = Metadata,
                 DatasetItemId = datasetItemId,
                 TraceId = traceId,
+                DatasetVersion = DatasetVersion,
             };
 
             LangfuseCreateDatasetRunItemResponse? response;

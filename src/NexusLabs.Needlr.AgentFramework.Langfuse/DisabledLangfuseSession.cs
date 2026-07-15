@@ -5,7 +5,9 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// members are no-ops so calling code never needs to branch on whether credentials are present.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class DisabledLangfuseSession : ILangfuseSession
+internal sealed class DisabledLangfuseSession :
+    ILangfuseSession,
+    ILangfuseExperimentItemScopeProviderFactory
 {
     private readonly ILangfuseClient _client;
 
@@ -76,6 +78,21 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
         _client.BeginExperimentRun(datasetName, runName, options);
 
     /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateExperimentItemScopeProvider<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentItemScopeOptions<TCase>? options) =>
+        GetScopeProviderFactory()
+            .CreateExperimentItemScopeProvider<TCase, TOutput>(run, options);
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateLocalExperimentItemScopeProvider<TCase, TOutput>(
+            LangfuseExperimentItemScopeOptions<TCase>? options) =>
+        GetScopeProviderFactory()
+            .CreateLocalExperimentItemScopeProvider<TCase, TOutput>(options);
+
+    /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>
         _client.AddTraceCommentAsync(traceId, content, cancellationToken);
 
@@ -83,4 +100,9 @@ internal sealed class DisabledLangfuseSession : ILangfuseSession
     public void Dispose()
     {
     }
+
+    private ILangfuseExperimentItemScopeProviderFactory GetScopeProviderFactory() =>
+        _client as ILangfuseExperimentItemScopeProviderFactory
+        ?? throw new NotSupportedException(
+            "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
 }

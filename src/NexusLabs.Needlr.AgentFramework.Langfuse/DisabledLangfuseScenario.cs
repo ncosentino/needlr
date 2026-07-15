@@ -9,13 +9,19 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// no scores, so eval code paths run unchanged when Langfuse is not configured.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class DisabledLangfuseScenario : ILangfuseScenario
+internal sealed class DisabledLangfuseScenario : ILangfuseActivatableScenario
 {
     /// <inheritdoc />
     public string? TraceId => null;
 
     /// <inheritdoc />
     public Activity? Activity => null;
+
+    /// <inheritdoc />
+    public bool IsEnabled => false;
+
+    /// <inheritdoc />
+    public IDisposable? Activate() => null;
 
     /// <inheritdoc />
     public Task RecordScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>

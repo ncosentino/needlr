@@ -12,7 +12,9 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// providers that export to Langfuse over OTLP/HTTP.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class LangfuseSession : ILangfuseSession
+internal sealed class LangfuseSession :
+    ILangfuseSession,
+    ILangfuseExperimentItemScopeProviderFactory
 {
     private readonly TracerProvider _tracerProvider;
     private readonly MeterProvider? _meterProvider;
@@ -119,6 +121,27 @@ internal sealed class LangfuseSession : ILangfuseSession
     }
 
     /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateExperimentItemScopeProvider<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentItemScopeOptions<TCase>? options)
+    {
+        ThrowIfShutdownStarted();
+        return GetScopeProviderFactory()
+            .CreateExperimentItemScopeProvider<TCase, TOutput>(run, options);
+    }
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateLocalExperimentItemScopeProvider<TCase, TOutput>(
+            LangfuseExperimentItemScopeOptions<TCase>? options)
+    {
+        ThrowIfShutdownStarted();
+        return GetScopeProviderFactory()
+            .CreateLocalExperimentItemScopeProvider<TCase, TOutput>(options);
+    }
+
+    /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default)
     {
         ThrowIfShutdownStarted();
@@ -197,6 +220,11 @@ internal sealed class LangfuseSession : ILangfuseSession
             }
         }
     }
+
+    private ILangfuseExperimentItemScopeProviderFactory GetScopeProviderFactory() =>
+        _client as ILangfuseExperimentItemScopeProviderFactory
+        ?? throw new NotSupportedException(
+            "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
 
     private static int GetRemainingTimeoutMilliseconds(
         int timeoutMilliseconds,

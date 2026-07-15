@@ -9,9 +9,13 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// with inert scenarios and links nothing, so experiment code runs unchanged without credentials.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
+internal sealed class DisabledLangfuseExperimentRun :
+    ILangfuseExperimentRun,
+    ILangfuseExperimentTrialLifecycleFactory,
+    ILangfuseExperimentItemLinker
 {
     private readonly LangfuseExperimentRunState _state = new(disabled: true);
+    private readonly LangfuseExperimentTrialLifecycleFactory _lifecycleFactory;
 
     public DisabledLangfuseExperimentRun(
         string datasetName,
@@ -25,7 +29,11 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
         RunName = runName;
         options ??= new LangfuseExperimentRunOptions();
         Description = options.NormalizeDescription();
+        DatasetVersion = options.NormalizeDatasetVersion();
         Metadata = options.FreezeMetadata();
+        _lifecycleFactory = new LangfuseExperimentTrialLifecycleFactory(
+            _ => new DisabledLangfuseScenario(),
+            this);
     }
 
     /// <inheritdoc />
@@ -36,6 +44,9 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 
     /// <inheritdoc />
     public string? Description { get; }
+
+    /// <inheritdoc />
+    public DateTimeOffset? DatasetVersion { get; }
 
     /// <inheritdoc />
     public JsonElement? Metadata { get; }
@@ -61,18 +72,29 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
         options ??= new LangfuseExperimentItemOptions();
         options.Validate();
 
-        using var scenario = new DisabledLangfuseScenario();
-        var value = await callback(scenario, cancellationToken).ConfigureAwait(false);
-        var link = new LangfuseExperimentItemLinkResult(
-            LangfuseExperimentItemLinkStatus.Disabled,
-            datasetRunItemId: null,
-            datasetRunId: null,
-            failure: null);
-        _state.RecordItemLink(link.Status);
+        var name = string.IsNullOrWhiteSpace(options.ScenarioName)
+            ? $"{DatasetName}: {datasetItemId}"
+            : options.ScenarioName;
+        await using var lifecycle = await _lifecycleFactory
+            .EnterAsync(
+                new LangfuseExperimentTrialLifecycleRequest(
+                    name,
+                    datasetItemId,
+                    options.Tags,
+                    options.Metadata,
+                    options.LinkFailureMode),
+                cancellationToken)
+            .ConfigureAwait(false);
+        using var activation = lifecycle.Activate();
+        var value = await callback(
+            lifecycle.Scenario,
+            cancellationToken).ConfigureAwait(false);
         return new LangfuseExperimentItemResult<T>(
             value,
-            traceId: null,
-            link);
+            lifecycle.RecordedTraceId,
+            lifecycle.Link
+                ?? throw new InvalidOperationException(
+                    "A disabled hosted Langfuse item lifecycle did not produce a link result."));
     }
 
     /// <inheritdoc />
@@ -122,6 +144,29 @@ internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
     /// <inheritdoc />
     public LangfuseExperimentRunPublicationSnapshot GetPublicationSnapshot() =>
         _state.GetSnapshot();
+
+    ValueTask<LangfuseExperimentTrialLifecycle>
+        ILangfuseExperimentTrialLifecycleFactory.EnterAsync(
+            LangfuseExperimentTrialLifecycleRequest request,
+            CancellationToken cancellationToken) =>
+        _lifecycleFactory.EnterAsync(request, cancellationToken);
+
+    ValueTask<LangfuseExperimentItemLinkResult>
+        ILangfuseExperimentItemLinker.CreateLinkAsync(
+            string datasetItemId,
+            string? recordedTraceId,
+            LangfuseExperimentItemLinkFailureMode failureMode,
+            CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var link = new LangfuseExperimentItemLinkResult(
+            LangfuseExperimentItemLinkStatus.Disabled,
+            datasetRunItemId: null,
+            datasetRunId: null,
+            failure: null);
+        _state.RecordItemLink(link.Status);
+        return ValueTask.FromResult(link);
+    }
 
     private Task<LangfuseExperimentRunScoreResult> RecordDisabledScoreAsync(
         string name,

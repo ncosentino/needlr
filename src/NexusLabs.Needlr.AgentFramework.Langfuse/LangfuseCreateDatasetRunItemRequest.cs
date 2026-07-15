@@ -26,4 +26,7 @@ internal sealed record LangfuseCreateDatasetRunItemRequest
 
     /// <summary>Gets the optional id of a specific observation within the trace.</summary>
     public string? ObservationId { get; init; }
+
+    /// <summary>Gets the optional hosted dataset version timestamp.</summary>
+    public DateTimeOffset? DatasetVersion { get; init; }
 }
