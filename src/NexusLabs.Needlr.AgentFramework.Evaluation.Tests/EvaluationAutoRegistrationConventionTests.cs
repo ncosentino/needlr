@@ -1,4 +1,8 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.AI.Evaluation;
 
 using NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 
@@ -10,64 +14,53 @@ public sealed class EvaluationAutoRegistrationConventionTests
         BindingFlags.Instance | BindingFlags.NonPublic;
 
     [Fact]
-    public void DataContracts_AreRecords()
+    public void ConcreteNonServiceClasses_OptOutOfAutomaticRegistration()
     {
-        Type[] dataContracts =
-        [
-            typeof(CapturedChatResponsePayload),
-            typeof(CapturedChatResponsePayload.CapturedMessage),
-            typeof(CapturedChatResponsePayload.CapturedContent),
-            typeof(EvaluationThresholdOutcome),
-            typeof(EvaluationThresholdResult),
-            typeof(ExperimentAttemptResult),
-            typeof(ExperimentBinaryStatisticalEvidence),
-            typeof(ExperimentCase<>),
-            typeof(ExperimentCaseSourceResult<>),
-            typeof(ExperimentDefinition<,>),
-            typeof(ExperimentDeterministicPolicyEvidence),
-            typeof(ExperimentFailure),
-            typeof(ExperimentItemCorrelation),
-            typeof(ExperimentItemEvaluationContext<,>),
-            typeof(ExperimentItemPublicationResult),
-            typeof(ExperimentItemResult<,>),
-            typeof(ExperimentItemScopeContext<>),
-            typeof(ExperimentItemStatusCount),
-            typeof(ExperimentMetricDiagnosticSnapshot),
-            typeof(ExperimentMetricInterpretationSnapshot),
-            typeof(ExperimentMetricSnapshot),
-            typeof(ExperimentPolicyContext<,>),
-            typeof(ExperimentPolicyResult),
-            typeof(ExperimentPolicyVerdict),
-            typeof(ExperimentRetryContext),
-            typeof(ExperimentRetryDecision),
-            typeof(ExperimentRunEvaluationContext<,>),
-            typeof(ExperimentRunEvaluationResult),
-            typeof(ExperimentRunOptions),
-            typeof(ExperimentRunResult<,>),
-            typeof(ExperimentSourceReference),
-            typeof(ExperimentTaskContext<>),
-        ];
+        var unsafeTypes = GetConcreteTypes()
+            .Where(type =>
+                !IsRecord(type)
+                && !IsIntendedService(type)
+                && !type.IsDefined(typeof(DoNotAutoRegisterAttribute), inherit: true))
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
 
-        Assert.All(dataContracts, AssertRecord);
+        Assert.Empty(unsafeTypes);
     }
 
     [Fact]
-    public void ConcreteNonServiceClasses_OptOutOfAutomaticRegistration()
+    public void RequiredOrInitOnlyDataStyleClasses_AreRecords()
     {
-        HashSet<Type> intendedServices =
-        [
-            typeof(EfficiencyEvaluator),
-            typeof(EvaluationCaptureChatClient),
-            typeof(FileEvaluationCaptureStore),
-            typeof(IterationCoherenceEvaluator),
-            typeof(PipelineCostEvaluator),
-            typeof(PipelineStageEvaluator),
-            typeof(TaskCompletionEvaluator),
-            typeof(TerminationAppropriatenessEvaluator),
-            typeof(ToolCallTrajectoryEvaluator),
-            typeof(ExperimentRunner),
-        ];
-        var unsafeTypes = typeof(EvaluationQualityGate).Assembly
+        var violations = GetConcreteTypes()
+            .Where(type => !IsRecord(type) && HasRequiredOrInitOnlyProperties(type))
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Empty(violations);
+    }
+
+    private static bool IsRecord(Type type) =>
+        type.GetProperty("EqualityContract", RecordPropertyFlags) is not null;
+
+    private static bool IsIntendedService(Type type) =>
+        typeof(IEvaluator).IsAssignableFrom(type)
+        || typeof(IChatClient).IsAssignableFrom(type)
+        || typeof(IEvaluationCaptureStore).IsAssignableFrom(type)
+        || typeof(IExperimentRunner).IsAssignableFrom(type);
+
+    private static bool HasRequiredOrInitOnlyProperties(Type type) =>
+        type.GetProperties(
+                BindingFlags.Instance
+                | BindingFlags.Public
+                | BindingFlags.NonPublic
+                | BindingFlags.DeclaredOnly)
+            .Any(property =>
+                property.IsDefined(typeof(RequiredMemberAttribute), inherit: false)
+                || property.SetMethod?.ReturnParameter
+                    .GetRequiredCustomModifiers()
+                    .Contains(typeof(IsExternalInit)) == true);
+
+    private static IEnumerable<Type> GetConcreteTypes() =>
+        typeof(EvaluationQualityGate).Assembly
             .GetTypes()
             .Where(type =>
                 type.IsClass
@@ -77,21 +70,5 @@ public sealed class EvaluationAutoRegistrationConventionTests
                     "NexusLabs.Needlr.AgentFramework.Evaluation",
                     StringComparison.Ordinal) == true
                 && !typeof(Delegate).IsAssignableFrom(type)
-                && !typeof(Exception).IsAssignableFrom(type)
-                && !IsRecord(type)
-                && !intendedServices.Contains(type)
-                && !type.IsDefined(typeof(DoNotAutoRegisterAttribute), inherit: true))
-            .OrderBy(type => type.FullName, StringComparer.Ordinal)
-            .ToArray();
-
-        Assert.Empty(unsafeTypes);
-    }
-
-    private static void AssertRecord(Type type) =>
-        Assert.True(
-            IsRecord(type),
-            $"Expected data contract '{type.FullName}' to be declared as a record.");
-
-    private static bool IsRecord(Type type) =>
-        type.GetProperty("EqualityContract", RecordPropertyFlags) is not null;
+                && !typeof(Exception).IsAssignableFrom(type));
 }

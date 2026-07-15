@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
@@ -9,57 +10,27 @@ public sealed class LangfuseAutoRegistrationConventionTests
         BindingFlags.Instance | BindingFlags.NonPublic;
 
     [Fact]
-    public void DataContracts_AreRecords()
-    {
-        Type[] dataContracts =
-        [
-            typeof(LangfuseDrainHealth),
-            typeof(LangfuseEndpoints),
-            typeof(LangfuseEvaluationScoreOptions),
-            typeof(LangfuseExperimentItemLinkCounts),
-            typeof(LangfuseExperimentItemLinkResult),
-            typeof(LangfuseExperimentItemOptions),
-            typeof(LangfuseExperimentItemResult<>),
-            typeof(LangfuseExperimentRunOptions),
-            typeof(LangfuseExperimentRunPublicationSnapshot),
-            typeof(LangfuseExperimentRunScoreCounts),
-            typeof(LangfuseExperimentRunScoreResult),
-            typeof(LangfuseHttpOptions),
-            typeof(LangfuseMetricsResult),
-            typeof(LangfuseOptions),
-            typeof(LangfusePublicationFailure),
-            typeof(LangfusePublicationHealthSnapshot),
-            typeof(LangfusePublicationOperationHealth),
-            typeof(LangfuseRetryHealth),
-            typeof(LangfuseScoreOptions),
-            typeof(LangfuseScoreRecordResult),
-            typeof(LangfuseTraceExportHealth),
-            typeof(LangfuseTraceExportOptions),
-        ];
-
-        Assert.All(dataContracts, AssertRecord);
-    }
-
-    [Fact]
     public void ConcreteClasses_OptOutOfAutomaticRegistration()
     {
-        var unsafeTypes = typeof(LangfuseOptions).Assembly
-            .GetTypes()
+        var unsafeTypes = GetConcreteTypes()
             .Where(type =>
-                type.IsClass
-                && !type.IsAbstract
-                && !type.IsNested
-                && type.Namespace?.StartsWith(
-                    "NexusLabs.Needlr.AgentFramework.Langfuse",
-                    StringComparison.Ordinal) == true
-                && !typeof(Delegate).IsAssignableFrom(type)
-                && !typeof(Exception).IsAssignableFrom(type)
-                && !IsRecord(type)
+                !IsRecord(type)
                 && !type.IsDefined(typeof(DoNotAutoRegisterAttribute), inherit: true))
             .OrderBy(type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
         Assert.Empty(unsafeTypes);
+    }
+
+    [Fact]
+    public void RequiredOrInitOnlyDataStyleClasses_AreRecords()
+    {
+        var violations = GetConcreteTypes()
+            .Where(type => !IsRecord(type) && HasRequiredOrInitOnlyProperties(type))
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Empty(violations);
     }
 
     [Fact]
@@ -88,11 +59,31 @@ public sealed class LangfuseAutoRegistrationConventionTests
         Assert.DoesNotContain("Authorization", endpointsText, StringComparison.Ordinal);
     }
 
-    private static void AssertRecord(Type type) =>
-        Assert.True(
-            IsRecord(type),
-            $"Expected data contract '{type.FullName}' to be declared as a record.");
-
     private static bool IsRecord(Type type) =>
         type.GetProperty("EqualityContract", RecordPropertyFlags) is not null;
+
+    private static bool HasRequiredOrInitOnlyProperties(Type type) =>
+        type.GetProperties(
+                BindingFlags.Instance
+                | BindingFlags.Public
+                | BindingFlags.NonPublic
+                | BindingFlags.DeclaredOnly)
+            .Any(property =>
+                property.IsDefined(typeof(RequiredMemberAttribute), inherit: false)
+                || property.SetMethod?.ReturnParameter
+                    .GetRequiredCustomModifiers()
+                    .Contains(typeof(IsExternalInit)) == true);
+
+    private static IEnumerable<Type> GetConcreteTypes() =>
+        typeof(LangfuseOptions).Assembly
+            .GetTypes()
+            .Where(type =>
+                type.IsClass
+                && !type.IsAbstract
+                && !type.IsNested
+                && type.Namespace?.StartsWith(
+                    "NexusLabs.Needlr.AgentFramework.Langfuse",
+                    StringComparison.Ordinal) == true
+                && !typeof(Delegate).IsAssignableFrom(type)
+                && !typeof(Exception).IsAssignableFrom(type));
 }
