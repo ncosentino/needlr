@@ -24,4 +24,9 @@ public sealed class ExperimentDefinition<TCase, TOutput>
 
     /// <summary>Gets policies invoked sequentially in registration order.</summary>
     public IReadOnlyList<IExperimentRunPolicy<TCase, TOutput>> Policies { get; init; } = [];
+
+    /// <summary>
+    /// Gets per-trial item-scope providers entered sequentially in registration order.
+    /// </summary>
+    public IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> ItemScopes { get; init; } = [];
 }

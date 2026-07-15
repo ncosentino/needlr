@@ -51,6 +51,7 @@ public sealed class ExperimentRunnerRunEvaluationTests
                 ExperimentItemStatus.TimedOut,
                 ExperimentItemStatus.Canceled,
                 ExperimentItemStatus.EvaluationFailed,
+                ExperimentItemStatus.PrerequisiteFailed,
             ],
             observedStatuses);
         var runEvaluation = Assert.Single(result.RunEvaluations);
@@ -151,7 +152,7 @@ public sealed class ExperimentRunnerRunEvaluationTests
             Name = "all-statuses",
             CaseSource = new LocalExperimentCaseSource<int>(
                 "local",
-                Enumerable.Range(0, 5).Select(index =>
+                Enumerable.Range(0, 6).Select(index =>
                     new ExperimentCase<int>
                     {
                         Id = $"case-{index}",
@@ -167,6 +168,35 @@ public sealed class ExperimentRunnerRunEvaluationTests
             ItemEvaluator = (context, _) => context.Case.Value == 4
                 ? throw new InvalidOperationException("evaluation failed")
                 : ValueTask.FromResult(new EvaluationResult()),
+            ItemScopes =
+            [
+                new CallbackExperimentItemScopeProvider<int, int>(
+                    "prerequisite",
+                    isRequired: false,
+                    ExperimentItemScopeFailureMode.ExecutionPrerequisite,
+                    (context, _) =>
+                    {
+                        if (context.Case.Value == 5)
+                        {
+                            throw new InvalidOperationException("prerequisite failed");
+                        }
+
+                        IExperimentItemScope<int, int> scope =
+                            new CallbackExperimentItemScope<int, int>(
+                                new Dictionary<Type, object>(),
+                                () => null,
+                                (_, _) => ValueTask.FromResult(
+                                    new ExperimentItemPublicationResult
+                                    {
+                                        Name = "prerequisite",
+                                        IsRequired = false,
+                                        Status = ExperimentItemPublicationStatus.Succeeded,
+                                    }),
+                                _ => ValueTask.CompletedTask,
+                                () => ValueTask.CompletedTask);
+                        return ValueTask.FromResult(scope);
+                    }),
+            ],
             RunEvaluators = runEvaluators,
         };
 

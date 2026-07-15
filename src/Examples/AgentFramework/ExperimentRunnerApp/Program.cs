@@ -13,7 +13,7 @@ Console.WriteLine("  - explicit retries that re-enter the scheduler after a dela
 Console.WriteLine("  - local and caller-owned shared concurrency limits");
 Console.WriteLine("  - isolated execution failure, timeout, and task cancellation");
 Console.WriteLine("  - run evaluation plus deterministic and statistical policies");
-Console.WriteLine("  - schema-v2 deterministic JSON output");
+Console.WriteLine("  - schema-v3 deterministic JSON output");
 Console.WriteLine();
 
 var cases = new[]

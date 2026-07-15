@@ -63,6 +63,58 @@ public sealed class ExperimentRunnerValidationTests
                 AttemptTimeout = TimeSpan.MaxValue,
             },
             _cancellationToken));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => runner.RunAsync(
+            validDefinition,
+            new ExperimentRunOptions
+            {
+                RunId = "run-1",
+                MaxConcurrency = 1,
+                ItemScopeCleanupTimeout = TimeSpan.Zero,
+            },
+            _cancellationToken));
+
+        Assert.Equal(0, executions);
+    }
+
+    [Fact]
+    public async Task RunAsync_DuplicateOrInvalidItemScopes_StartNoItems()
+    {
+        var executions = 0;
+        var runner = new ExperimentRunner();
+        var provider = new CallbackExperimentItemScopeProvider<int, int>(
+            "duplicate",
+            isRequired: false,
+            ExperimentItemScopeFailureMode.BestEffort,
+            (_, _) => throw new InvalidOperationException("must not enter"));
+        var invalidMode = new CallbackExperimentItemScopeProvider<int, int>(
+            "invalid",
+            isRequired: false,
+            (ExperimentItemScopeFailureMode)int.MaxValue,
+            (_, _) => throw new InvalidOperationException("must not enter"));
+        ExperimentDefinition<int, int> CreateDefinition(
+            IReadOnlyList<IExperimentItemScopeProvider<int, int>> itemScopes) =>
+            new()
+            {
+                Name = "validation",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                Task = (_, _) =>
+                {
+                    Interlocked.Increment(ref executions);
+                    return ValueTask.FromResult(1);
+                },
+                ItemScopes = itemScopes,
+            };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => runner.RunAsync(
+            CreateDefinition([provider, provider]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => runner.RunAsync(
+            CreateDefinition([invalidMode]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken));
 
         Assert.Equal(0, executions);
     }

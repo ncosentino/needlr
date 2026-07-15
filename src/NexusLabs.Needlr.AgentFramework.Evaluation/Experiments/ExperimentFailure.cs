@@ -18,8 +18,8 @@ public sealed class ExperimentFailure
     public required string Message { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the active retry policy selected this failure. Phase 1
-    /// always reports <see langword="false"/>.
+    /// Gets a value indicating whether the active retry policy selected another attempt after this
+    /// failure.
     /// </summary>
     public bool IsRetryable { get; init; }
 }

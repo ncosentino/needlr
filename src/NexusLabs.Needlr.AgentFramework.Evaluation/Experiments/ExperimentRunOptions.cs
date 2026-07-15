@@ -25,4 +25,10 @@ public sealed class ExperimentRunOptions
     /// Gets the optional caller-owned concurrency limiter shared across experiment runs.
     /// </summary>
     public IExperimentConcurrencyLimiter? SharedLimiter { get; init; }
+
+    /// <summary>
+    /// Gets the total time allowed for item-scope abort and disposal after cancellation, or for
+    /// bounded disposal after terminal completion.
+    /// </summary>
+    public TimeSpan ItemScopeCleanupTimeout { get; init; } = TimeSpan.FromSeconds(30);
 }

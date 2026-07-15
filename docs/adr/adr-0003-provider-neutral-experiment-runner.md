@@ -15,6 +15,7 @@ Accepted - proceed through the separately reviewed implementation phases below.
 This ADR was the design deliverable for [issue #36](https://github.com/ncosentino/needlr/issues/36).
 Phase 1 was delivered by [issue #43](https://github.com/ncosentino/needlr/issues/43).
 Phase 2 was delivered by [issue #45](https://github.com/ncosentino/needlr/issues/45).
+Phase 3A was delivered by [issue #49](https://github.com/ncosentino/needlr/issues/49).
 
 The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
@@ -23,13 +24,12 @@ of the generic runner.
 
 The corrected remaining sequence is:
 
-1. provider lifecycle scopes ([#49](https://github.com/ncosentino/needlr/issues/49));
-2. provider sinks and publication outcomes ([#50](https://github.com/ncosentino/needlr/issues/50));
-3. Langfuse hosted source, item scope, and sink convergence
+1. provider sinks and publication outcomes ([#50](https://github.com/ncosentino/needlr/issues/50));
+2. Langfuse hosted source, item scope, and sink convergence
    ([#51](https://github.com/ncosentino/needlr/issues/51),
    [#52](https://github.com/ncosentino/needlr/issues/52),
    [#53](https://github.com/ncosentino/needlr/issues/53));
-4. MEAI Reporting as the second-provider proof
+3. MEAI Reporting as the second-provider proof
    ([#54](https://github.com/ncosentino/needlr/issues/54)).
 
 No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
@@ -351,7 +351,7 @@ ExperimentItemResult<TOutput>
   CaseId
   TrialIndex          one-based statistical sample index
   Status              Succeeded | ExecutionFailed | TimedOut |
-                      Canceled | EvaluationFailed
+                      Canceled | EvaluationFailed | PrerequisiteFailed
   Attempts            every operational attempt in order
   Output              terminal successful output, when available
   Evaluation          MEAI EvaluationResult, when available
@@ -372,7 +372,9 @@ ExperimentFailure
   IsRetryable
 ```
 
-The canonical result does not serialize a raw `Exception` or stack trace by default. The runner logs the original exception through normal diagnostics while retaining stable failure fields in the result.
+The canonical result does not serialize a raw `Exception` or stack trace by default. Isolated
+failures retain stable machine-actionable fields without making provider-specific exception types
+part of the result contract.
 
 An item-scope publication result is separate from item quality:
 
@@ -473,19 +475,47 @@ The runner therefore needs an item-scope extension point with these constraints:
 - multiple scopes enter in registration order and exit in reverse order;
 - no scope may rely on static or process-global mutable state.
 
+The finalized Phase 3A contract separates the provider factory from its per-trial scope:
+
+```text
+IExperimentItemScopeProvider<TCase,TOutput>
+  Name
+  IsRequired
+  FailureMode         BestEffort | ExecutionPrerequisite
+  EnterAsync          once per statistical trial
+
+IExperimentItemScope<TCase,TOutput>
+  Features            exact-Type adapter feature map
+  Activate            context-restoration handle per attempt/evaluator
+  CompleteAsync       terminal quality notification and publication result
+  AbortAsync          caller-cancellation notification
+  DisposeAsync        final cleanup
+```
+
+Entry runs under caller cancellation and shared admission but outside the per-attempt timeout.
+Activation handles nest in registration order and unwind in reverse order. Completion, abort, and scope disposal run without ambient activation and use scope-owned state.
+Caller cancellation aborts only scopes whose completion has not started; a started completion owns
+cancellation-safe termination and is never followed by abort. `ItemScopeCleanupTimeout` bounds
+cancellation cleanup and terminal disposal.
+
+`BestEffort` scope failure never changes item quality. `ExecutionPrerequisite` applies only before a
+task attempt starts; a failed prerequisite produces `PrerequisiteFailed` without inventing an
+attempt. Completion or disposal failures remain publication failures after quality is known.
+
 The item lifecycle is:
 
 1. Enter item scopes and collect their scoped features.
 2. Execute attempts under runner-owned timeout and retry rules.
 3. On terminal execution success, invoke the one item evaluator.
 4. Build the execution/evaluation portion, including `EvaluationFailed` when the evaluator throws.
-5. Notify scopes of that read-only quality outcome.
-6. Dispose scopes in reverse order and collect structured publication results.
+5. Notify scopes of that read-only quality outcome and collect structured publication results.
+6. Dispose scopes in reverse order; disposal failure updates only publication status.
 7. Finalize the item result with correlations and publication results.
 
 The MEAI Reporting adapter implements a coordinated scope/evaluator pair: the scope owns `ScenarioRun`, and the evaluator is the only component that calls `ScenarioRun.EvaluateAsync(...)`.
 
-The exact scope interface should be finalized only after issues #33 and #34 establish the context-safe Langfuse item callback and structured dataset-run/link result.
+Issues #33 and #34 established the context-safe Langfuse callback and structured link result used
+to finalize this provider-neutral contract. Langfuse types remain outside the core package.
 
 ## Execution semantics
 
@@ -611,7 +641,7 @@ The default binary-policy status mapping is:
 | `ExecutionFailed` | Denominator failure. |
 | `TimedOut` | Denominator failure. |
 | Task-originated `Canceled` | Denominator failure. |
-| `EvaluationFailed`, missing metric, or metric with failed diagnostics | Unknown sample; counted as an exclusion and forces `Inconclusive` unless the policy explicitly selects pessimistic failure treatment. |
+| `EvaluationFailed`, `PrerequisiteFailed`, missing metric, or metric with failed diagnostics | Unknown sample; counted as an exclusion and forces `Inconclusive` unless the policy explicitly selects pessimistic failure treatment. |
 | Explicit policy exclusion | Excluded with a structured reason and counted by status. |
 
 Every statistical result reports counts by item status in addition to total success, failure, and exclusion counts. A policy cannot silently remove an item from its denominator.

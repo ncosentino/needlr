@@ -25,4 +25,10 @@ public enum ExperimentFailureCode
 
     /// <summary>An experiment policy failed.</summary>
     PolicyFailed,
+
+    /// <summary>An item scope failed during entry, activation, completion, or disposal.</summary>
+    ItemScopeFailed,
+
+    /// <summary>An explicitly required item scope prevented the next task attempt.</summary>
+    ItemScopePrerequisiteFailed,
 }
