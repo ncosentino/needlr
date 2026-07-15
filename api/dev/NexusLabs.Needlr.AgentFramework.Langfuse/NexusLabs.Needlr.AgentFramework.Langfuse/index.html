@@ -4741,8 +4741,28 @@
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><a href="../LangfuseDataset/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDataset">LangfuseDataset</a></td>
+<td style="text-align: left;">Describes one hosted Langfuse dataset.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetCaseSource_TCase_/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetCaseSource\&lt;TCase&gt;">LangfuseDatasetCaseSource&lt;TCase&gt;</a></td>
+<td style="text-align: left;">Materializes one hosted Langfuse dataset as a finite provider-neutral experiment case source.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfuseDatasetItem/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem">LangfuseDatasetItem</a></td>
 <td style="text-align: left;">A single Langfuse dataset item — one eval case. Upserted via <a href="../ILangfuseDatasetClient/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient.UpsertItemAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItem, System.Threading.CancellationToken)">UpsertItemAsync(LangfuseDatasetItem, CancellationToken)</a> and later referenced by an experiment run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetItemSnapshot/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItemSnapshot">LangfuseDatasetItemSnapshot</a></td>
+<td style="text-align: left;">Captures one active hosted Langfuse dataset item at the selected dataset version.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetSelection/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetSelection">LangfuseDatasetSelection</a></td>
+<td style="text-align: left;">Selects the latest state or an explicit timestamped version of a hosted Langfuse dataset.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetSnapshot/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetSnapshot">LangfuseDatasetSnapshot</a></td>
+<td style="text-align: left;">Contains one hosted dataset and its complete ordered active-item selection.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../LangfuseDrainHealth/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDrainHealth">LangfuseDrainHealth</a></td>
@@ -4825,6 +4845,10 @@
 <td style="text-align: left;">Configuration for exporting Needlr agent telemetry and evaluation scores to Langfuse.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../LangfusePage_T_/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePage\&lt;T&gt;">LangfusePage&lt;T&gt;</a></td>
+<td style="text-align: left;">Contains one validated page returned by a Langfuse list endpoint.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../LangfusePrompt/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt">LangfusePrompt</a></td>
 <td style="text-align: left;">A prompt fetched from Langfuse prompt management. Use <a href="../LangfusePrompt/#NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt.Text">Text</a> for a text prompt's content, and pass the prompt to <a href="../ILangfuseScenario/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt)">SetPrompt(LangfusePrompt)</a> to link generations to the exact version that was used.</td>
 </tr>
@@ -4900,7 +4924,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseDatasetClient/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseDatasetClient">ILangfuseDatasetClient</a></td>
-<td style="text-align: left;">Creates and populates Langfuse datasets — the named collections of eval cases that experiment runs are scored against.</td>
+<td style="text-align: left;">Reads, creates, and populates Langfuse datasets — the named collections of evaluation cases that experiment runs are scored against.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ILangfuseExperimentRun/" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseExperimentRun">ILangfuseExperimentRun</a></td>
@@ -4995,6 +5019,20 @@
 <tr>
 <td style="text-align: left;"><a href="../LangfuseScoreFailureMode/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreFailureMode">LangfuseScoreFailureMode</a></td>
 <td style="text-align: left;">Controls how a Langfuse scenario reacts when uploading an evaluation score to the Langfuse Scores API fails.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Delegates</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="../LangfuseDatasetItemMapper_TCase_%28LangfuseDatasetItemSnapshot%29/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItemMapper\&lt;TCase&gt;(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseDatasetItemSnapshot)">LangfuseDatasetItemMapper&lt;TCase&gt;(LangfuseDatasetItemSnapshot)</a></td>
+<td style="text-align: left;">Maps one hosted Langfuse dataset item to a provider-neutral experiment case.</td>
 </tr>
 </tbody>
 </table>
