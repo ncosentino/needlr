@@ -5489,14 +5489,14 @@
 <p>This ADR was the design deliverable for <a href="https://github.com/ncosentino/needlr/issues/36">issue #36</a>.
 Phase 1 was delivered by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
 Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.
-Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.</p>
+Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.
+Phase 3B was delivered by <a href="https://github.com/ncosentino/needlr/issues/50">issue #50</a>.</p>
 <p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.</p>
 <p>The corrected remaining sequence is:</p>
 <ol>
-<li>provider sinks and publication outcomes (<a href="https://github.com/ncosentino/needlr/issues/50">#50</a>);</li>
 <li>Langfuse hosted source, item scope, and sink convergence
    (<a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
    <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>,
@@ -5907,13 +5907,16 @@ part of the result contract.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>ExperimentSinkResult
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  Name
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  IsRequired
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  Status              Succeeded | Failed | NotAttempted
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>  Failure
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>ExperimentRunOutcome&lt;TOutput&gt;
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>  Result              canonical ExperimentRunResult&lt;TOutput&gt;
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>  PublicationStatus   NotRequested | Succeeded | PartiallyFailed | Failed
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>  SinkResults
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  Status              ExperimentPublicationOperationStatus:
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>                      Succeeded | Failed | NotAttempted
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  Failure
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>ExperimentRunOutcome&lt;TOutput&gt;
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>  SchemaVersion       4
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>  Result              canonical ExperimentRunResult&lt;TOutput&gt;
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>  PublicationStatus   ExperimentPublicationStatus:
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>                      NotRequested | Succeeded | PartiallyFailed | Failed
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>  SinkResults
 </span></code></pre></div>
 <p>This two-stage model prevents publication outcomes from being folded back into the quality decision. Sinks receive a read-only snapshot contract. The implementation copies all Needlr-owned collections and normalizes MEAI metrics before fan-out; arbitrary caller-owned <code>TOutput</code> values cannot be deeply frozen and are read-only by contract.</p>
 <p>Required sink failure changes <code>PublicationStatus</code>, not <code>Result.Decision</code>. A CI adapter may independently require both a passing quality decision and successful required publication.</p>
@@ -6322,6 +6325,7 @@ to finalize this provider-neutral contract. Langfuse types remain outside the co
 <li>cancellation invokes abort and does not publish a completed item.</li>
 </ul>
 <h3 id="phase-3b-result-sinks-and-publication-outcomes-50">Phase 3B: result sinks and publication outcomes — #50<a class="headerlink" href="#phase-3b-result-sinks-and-publication-outcomes-50" title="Permanent link">&para;</a></h3>
+<p>Delivered by issue #50.</p>
 <p>Deliver:</p>
 <ul>
 <li>deterministic result-sink fan-out;</li>

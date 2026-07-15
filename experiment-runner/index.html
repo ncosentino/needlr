@@ -1511,6 +1511,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#final-result-sinks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final Result Sinks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cancellation-and-timeouts" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5042,7 +5053,7 @@ observability provider.</p>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="p">};</span>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">sharedLimiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ExperimentConcurrencyLimiter</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="n">ExperimentRunResult</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="n">ExperimentRunOutcome</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="n">outcome</span><span class="w"> </span><span class="o">=</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentRunner</span><span class="p">().</span><span class="n">RunAsync</span><span class="p">(</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="w">        </span><span class="n">definition</span><span class="p">,</span>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ExperimentRunOptions</span>
@@ -5058,6 +5069,8 @@ observability provider.</p>
 </span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="w">            </span><span class="n">SharedLimiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sharedLimiter</span><span class="p">,</span>
 </span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a><span class="w">        </span><span class="p">},</span>
 </span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="w">        </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a><span class="n">ExperimentRunResult</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outcome</span><span class="p">.</span><span class="n">Result</span><span class="p">;</span>
 </span></code></pre></div>
 <p>Every case is materialized and validated before execution. Cases expand in source order, then by
 ascending one-based trial index. Items return in that stable order regardless of completion or retry
@@ -5206,7 +5219,7 @@ implementations snapshot their feature dictionary during entry, so later mutatio
 the trial context. Registering the same exact feature type from a later scope fails that later
 scope deterministically; the first registration remains available.</p>
 <p><code>ExperimentItemScopeFailureMode.BestEffort</code> records entry or activation failure as
-<code>ExperimentItemPublicationStatus.Failed</code> while quality processing continues.
+<code>ExperimentPublicationOperationStatus.Failed</code> while quality processing continues.
 <code>ExecutionPrerequisite</code> stops the next task attempt and produces <code>PrerequisiteFailed</code> with no
 fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
 policy excludes them unless <code>ExperimentUnknownSampleTreatment.CountAsFailure</code> is selected.</p>
@@ -5220,16 +5233,62 @@ not started. Once <code>CompleteAsync</code> begins, that method owns cancellati
 runner does not also invoke <code>AbortAsync</code>. Completion, abort, and disposal run without ambient
 activation and must use scope-owned state. <code>ExperimentRunOptions.ItemScopeCleanupTimeout</code> bounds
 cancellation cleanup and terminal disposal; it defaults to 30 seconds.</p>
+<h2 id="final-result-sinks">Final Result Sinks<a class="headerlink" href="#final-result-sinks" title="Permanent link">&para;</a></h2>
+<p><code>ExperimentDefinition&lt;TCase,TOutput&gt;.Sinks</code> publishes the completed canonical quality result without
+giving providers ownership of execution or quality policy.</p>
+<p>Each named <code>IExperimentResultSink&lt;TCase,TOutput&gt;</code>:</p>
+<ul>
+<li>receives the same <code>ExperimentRunResult&lt;TCase,TOutput&gt;</code> reference after run evaluation and policy
+  reduction finish;</li>
+<li>runs sequentially in registration order;</li>
+<li>declares whether publication is required;</li>
+<li>returns <code>Succeeded</code>, <code>Failed</code>, or <code>NotAttempted</code>;</li>
+<li>owns provider retry only when its operation is provably idempotent.</li>
+</ul>
+<p>A thrown exception, <code>null</code>, or malformed sink result becomes a structured <code>ResultSinkFailed</code>
+operation and does not suppress later sinks. Caller-token cancellation propagates exactly, skips
+later sinks, and produces no outcome.</p>
+<p><code>IExperimentRunner.RunAsync</code> returns <code>ExperimentRunOutcome&lt;TCase,TOutput&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Publication status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NotRequested</code></td>
+<td>No item scope or final sink attempted publication.</td>
+</tr>
+<tr>
+<td><code>Succeeded</code></td>
+<td>Every attempted publication succeeded.</td>
+</tr>
+<tr>
+<td><code>PartiallyFailed</code></td>
+<td>At least one optional publication failed and no required publication failed.</td>
+</tr>
+<tr>
+<td><code>Failed</code></td>
+<td>At least one required publication failed.</td>
+</tr>
+</tbody>
+</table>
+<p>The aggregate includes both <code>Result.Items[*].Publications</code> and final <code>SinkResults</code>.
+<code>outcome.PublicationStatus</code> never changes <code>outcome.Result.Decision</code>.</p>
+<p>Needlr-owned collections are read-only snapshots. Caller-owned case/output values and mutable MEAI
+evaluation objects cannot be deeply frozen; sinks must treat the entire result as read-only.</p>
 <h2 id="cancellation-and-timeouts">Cancellation and Timeouts<a class="headerlink" href="#cancellation-and-timeouts" title="Permanent link">&para;</a></h2>
 <p>Caller cancellation:</p>
 <ul>
 <li>stops ready-channel admission, limiter waits, active tasks, retry delays, item evaluation, run
-  evaluation, and policies;</li>
+  evaluation, policies, and final result sinks;</li>
 <li>wins over simultaneous timeout or execution failure;</li>
 <li>is rethrown from <code>RunAsync</code> with the original caller token;</li>
 <li>aborts every entered incomplete item scope and disposes scopes in reverse order within the
   configured cleanup timeout;</li>
-<li>produces no completed run result.</li>
+<li>produces no completed run outcome.</li>
 </ul>
 <p><code>AttemptTimeout</code> is cooperative and restarts for every attempt. The task receives a linked
 caller/deadline token. If a task ignores deadline cancellation, the runner continues awaiting it so
@@ -5349,8 +5408,10 @@ a quality failure.</p>
 <p><code>Assert(...)</code> throws for <code>Failed</code> or <code>Inconclusive</code>; an optional missing metric does not block a
 passing decision.</p>
 <h2 id="json-artifact">JSON Artifact<a class="headerlink" href="#json-artifact" title="Permanent link">&para;</a></h2>
-<p><code>ExperimentJsonArtifactWriter</code> writes schema version 3 with fixed Needlr-owned property ordering:</p>
+<p><code>ExperimentJsonArtifactWriter</code> writes a schema-version-4 outcome envelope with fixed Needlr-owned
+property ordering:</p>
 <ul>
+<li>the unchanged schema-version-3 canonical quality result;</li>
 <li>source/trial item order;</li>
 <li>complete attempt history and delay-before-next-attempt values;</li>
 <li>normalized item metrics;</li>
@@ -5358,6 +5419,7 @@ passing decision.</p>
 <li>ordered run-evaluation results;</li>
 <li>ordered policy results and structured evidence;</li>
 <li>the overall run decision;</li>
+<li>aggregate publication status and ordered final sink results;</li>
 <li>structured failures without raw exceptions or stack traces.</li>
 </ul>
 <p>For Native AOT, pass caller-generated metadata:</p>
@@ -5370,7 +5432,7 @@ passing decision.</p>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentJsonArtifactWriter</span><span class="p">().</span><span class="n">WriteAsync</span><span class="p">(</span>
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="n">stream</span><span class="p">,</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">result</span><span class="p">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">outcome</span><span class="p">,</span>
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyCase</span><span class="p">,</span>
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyOutput</span><span class="p">,</span>
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="n">cancellationToken</span><span class="p">);</span>
@@ -5379,10 +5441,9 @@ passing decision.</p>
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.</p>
 <h2 id="provider-convergence-roadmap">Provider Convergence Roadmap<a class="headerlink" href="#provider-convergence-roadmap" title="Permanent link">&para;</a></h2>
-<p>The scheduler, quality core, and provider-neutral per-trial lifecycle seam are complete. Remaining
-provider convergence stays split into reviewed work:</p>
+<p>The scheduler, quality core, per-trial lifecycle seam, and final publication boundary are complete.
+Remaining provider convergence stays split into reviewed work:</p>
 <ul>
-<li><a href="https://github.com/ncosentino/needlr/issues/50">#50</a> adds result sinks and publication outcomes.</li>
 <li><a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
   <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>, and
   <a href="https://github.com/ncosentino/needlr/issues/53">#53</a> connect the runner to existing Langfuse
@@ -5394,12 +5455,12 @@ provider convergence stays split into reviewed work:</p>
 runner and its lower-level prerequisites are already complete. No additional scheduler or policy
 expansion is planned before that convergence.</p>
 <h2 id="runnable-example">Runnable Example<a class="headerlink" href="#runnable-example" title="Permanent link">&para;</a></h2>
-<p>Run the credential-free Phase 2 example:</p>
+<p>Run the credential-free Phase 3B example:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
 </span></code></pre></div>
 <p>It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
-evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v3 JSON artifact under
-the system temporary directory.</p>
+evaluation, deterministic and Wilson-bound policies, a credential-free final sink, and an AOT-safe
+schema-v4 outcome artifact under the system temporary directory.</p>
 
 
 

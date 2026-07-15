@@ -4870,8 +4870,16 @@
 <td style="text-align: left;">Configures one provider-neutral experiment run.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentRunOutcome_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunOutcome\&lt;TCase,TOutput&gt;">ExperimentRunOutcome&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Provides one canonical quality result plus independent provider publication outcomes.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentRunResult_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRunResult\&lt;TCase,TOutput&gt;">ExperimentRunResult&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Provides the canonical ordered result for one provider-neutral experiment run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentSinkResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentSinkResult">ExperimentSinkResult</a></td>
+<td style="text-align: left;">Describes one final result sink's publication outcome independently from run quality.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentSourceReference/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentSourceReference">ExperimentSourceReference</a></td>
@@ -4910,6 +4918,10 @@
 <tr>
 <td style="text-align: left;"><a href="../IExperimentItemScopeProvider_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentItemScopeProvider\&lt;TCase,TOutput&gt;">IExperimentItemScopeProvider&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Creates one provider-neutral lifecycle scope for each statistical trial.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IExperimentResultSink_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentResultSink\&lt;TCase,TOutput&gt;">IExperimentResultSink&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Publishes a completed canonical experiment result without changing its quality decision.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../IExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRetryPolicy">IExperimentRetryPolicy</a></td>
@@ -4954,10 +4966,6 @@
 <td style="text-align: left;">Identifies the experiment stage that produced a structured failure.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="../ExperimentItemPublicationStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemPublicationStatus">ExperimentItemPublicationStatus</a></td>
-<td style="text-align: left;">Describes whether one item scope completed its provider publication work.</td>
-</tr>
-<tr>
 <td style="text-align: left;"><a href="../ExperimentItemScopeFailureMode/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemScopeFailureMode">ExperimentItemScopeFailureMode</a></td>
 <td style="text-align: left;">Defines whether an item-scope setup failure may prevent a task attempt from starting.</td>
 </tr>
@@ -4984,6 +4992,14 @@
 <tr>
 <td style="text-align: left;"><a href="../ExperimentPolicyKind/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPolicyKind">ExperimentPolicyKind</a></td>
 <td style="text-align: left;">Identifies the evidence model used by an experiment policy.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentPublicationOperationStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPublicationOperationStatus">ExperimentPublicationOperationStatus</a></td>
+<td style="text-align: left;">Describes whether one item scope or final sink completed its publication work.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentPublicationStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentPublicationStatus">ExperimentPublicationStatus</a></td>
+<td style="text-align: left;">Describes aggregate publication health across item scopes and final result sinks.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentRetryableOutcome/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryableOutcome">ExperimentRetryableOutcome</a></td>
