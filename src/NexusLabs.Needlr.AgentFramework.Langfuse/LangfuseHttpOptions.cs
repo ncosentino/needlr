@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures bounded timeout and retry behavior for Langfuse REST API requests.
 /// </summary>
-public sealed class LangfuseHttpOptions
+public sealed record LangfuseHttpOptions
 {
     /// <summary>
     /// Gets or sets the timeout for each individual HTTP attempt. Defaults to 30 seconds.

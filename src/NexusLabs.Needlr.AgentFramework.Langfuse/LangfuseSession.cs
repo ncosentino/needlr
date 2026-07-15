@@ -11,6 +11,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Active <see cref="ILangfuseSession"/> backed by OpenTelemetry tracer and (optionally) meter
 /// providers that export to Langfuse over OTLP/HTTP.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseSession : ILangfuseSession
 {
     private readonly TracerProvider _tracerProvider;

@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides an immutable normalized metric diagnostic.
 /// </summary>
-public sealed class ExperimentMetricDiagnosticSnapshot
+public sealed record ExperimentMetricDiagnosticSnapshot
 {
     /// <summary>Gets the normalized diagnostic severity.</summary>
     public required ExperimentMetricDiagnosticSeverity Severity { get; init; }

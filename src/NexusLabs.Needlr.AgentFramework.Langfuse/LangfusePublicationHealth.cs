@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Collects thread-safe Langfuse publication-health counters.
 /// </summary>
+[DoNotAutoRegister]
 public sealed class LangfusePublicationHealth
 {
     private readonly bool _isEnabled;

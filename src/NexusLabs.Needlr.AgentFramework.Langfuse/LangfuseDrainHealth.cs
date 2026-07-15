@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes the latest local flush or shutdown drain.
 /// </summary>
-public sealed class LangfuseDrainHealth
+public sealed record LangfuseDrainHealth
 {
     internal LangfuseDrainHealth(
         long attempts,

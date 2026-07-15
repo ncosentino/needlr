@@ -6,6 +6,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Inert <see cref="ILangfuseScoreClient"/> registered when Langfuse is not configured, so host
 /// applications can always inject the client and call it without branching on configuration state.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfuseScoreClient : ILangfuseScoreClient
 {
     /// <inheritdoc />

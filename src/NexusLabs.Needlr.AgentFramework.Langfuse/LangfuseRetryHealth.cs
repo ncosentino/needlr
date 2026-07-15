@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes bounded Langfuse REST retry attempts by cause.
 /// </summary>
-public sealed class LangfuseRetryHealth
+public sealed record LangfuseRetryHealth
 {
     internal LangfuseRetryHealth(
         long rateLimited,

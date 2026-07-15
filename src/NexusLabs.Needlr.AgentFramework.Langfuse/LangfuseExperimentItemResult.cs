@@ -4,7 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Contains the callback value and Langfuse publication status for one experiment item.
 /// </summary>
 /// <typeparam name="T">The callback result type.</typeparam>
-public sealed class LangfuseExperimentItemResult<T>
+public sealed record LangfuseExperimentItemResult<T>
 {
     /// <summary>
     /// Initializes a new experiment item result.

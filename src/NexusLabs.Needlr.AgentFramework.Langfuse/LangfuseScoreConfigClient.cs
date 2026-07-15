@@ -5,6 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <see cref="LangfuseApiClient"/>. Creation is coordinated through a resource lock, and every
 /// same-name config is compared against the complete requested schema before creation.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseScoreConfigClient : ILangfuseScoreConfigClient
 {
     private const int PageSize = 100;

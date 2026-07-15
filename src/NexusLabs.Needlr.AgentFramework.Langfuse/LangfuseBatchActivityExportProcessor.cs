@@ -8,6 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Batches recorded activities while exposing exact local queue and exporter outcomes.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseBatchActivityExportProcessor : BaseExportProcessor<Activity>
 {
     private readonly ConcurrentQueue<Activity> _queue = new();

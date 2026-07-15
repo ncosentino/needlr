@@ -11,6 +11,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// Configure an instance before sharing it across concurrent evaluations. Evaluation copies the
 /// configured threshold list before reading metrics.
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class EvaluationThresholdEvaluator
 {
     private readonly List<Threshold> _thresholds = [];

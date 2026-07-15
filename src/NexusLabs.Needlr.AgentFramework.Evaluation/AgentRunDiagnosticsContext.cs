@@ -25,6 +25,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// Consumers that need the full snapshot read <see cref="Diagnostics"/> directly.
 /// </para>
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class AgentRunDiagnosticsContext : EvaluationContext
 {
     /// <summary>

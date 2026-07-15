@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides one namespaced provider identifier associated with an experiment item.
 /// </summary>
-public sealed class ExperimentItemCorrelation
+public sealed record ExperimentItemCorrelation
 {
     /// <summary>Gets the provider-owned correlation namespace.</summary>
     public required string Namespace { get; init; }

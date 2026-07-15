@@ -8,6 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// A score may be ingested before its trace exists; Langfuse links the two by trace id once the
 /// trace is received.
 /// </remarks>
+[DoNotAutoRegister]
 internal sealed class LangfuseScoreApiClient
 {
     private readonly LangfuseApiClient _apiClient;

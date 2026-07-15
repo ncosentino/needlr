@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes the publication outcome for one score against a Langfuse dataset run.
 /// </summary>
-public sealed class LangfuseExperimentRunScoreResult
+public sealed record LangfuseExperimentRunScoreResult
 {
     /// <summary>
     /// Initializes a dataset-run score result.

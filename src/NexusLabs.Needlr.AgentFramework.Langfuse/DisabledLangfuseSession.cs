@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Inert <see cref="ILangfuseSession"/> returned when Langfuse export is not configured. All
 /// members are no-ops so calling code never needs to branch on whether credentials are present.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfuseSession : ILangfuseSession
 {
     private readonly ILangfuseClient _client;

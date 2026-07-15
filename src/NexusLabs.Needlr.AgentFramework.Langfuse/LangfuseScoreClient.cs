@@ -6,6 +6,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Default <see cref="ILangfuseScoreClient"/> that records scores via a shared
 /// <see cref="LangfuseScoreRecorder"/>.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseScoreClient : ILangfuseScoreClient
 {
     private readonly LangfuseScoreRecorder _recorder;

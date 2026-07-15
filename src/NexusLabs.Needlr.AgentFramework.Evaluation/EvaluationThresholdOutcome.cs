@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// <summary>
 /// Describes the structured outcome of one metric threshold.
 /// </summary>
-public sealed class EvaluationThresholdOutcome
+public sealed record EvaluationThresholdOutcome
 {
     /// <summary>Gets the metric name.</summary>
     public required string MetricName { get; init; }

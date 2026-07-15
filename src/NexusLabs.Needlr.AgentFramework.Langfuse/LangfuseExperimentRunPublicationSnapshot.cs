@@ -7,7 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// The snapshot covers item-link and dataset-run score API calls made through this run instance.
 /// It does not verify that OpenTelemetry traces were durably ingested by Langfuse.
 /// </remarks>
-public sealed class LangfuseExperimentRunPublicationSnapshot
+public sealed record LangfuseExperimentRunPublicationSnapshot
 {
     /// <summary>
     /// Initializes a publication snapshot.

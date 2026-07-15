@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides stable machine-actionable failure data without retaining a raw exception or stack.
 /// </summary>
-public sealed class ExperimentFailure
+public sealed record ExperimentFailure
 {
     /// <summary>Gets the stable failure code.</summary>
     public required ExperimentFailureCode Code { get; init; }

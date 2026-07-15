@@ -10,6 +10,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// deactivation. Per-activation state must be resolved through the feature rather than captured
 /// when the feature is registered.
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class ExperimentItemFeatureCollection
 {
     private readonly IReadOnlyDictionary<Type, object> _features;

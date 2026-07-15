@@ -34,6 +34,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// gate.Assert(trajectoryResult, coherenceResult, efficiencyResult);
 /// </code>
 /// </example>
+[DoNotAutoRegister]
 public sealed class EvaluationQualityGate
 {
     private readonly EvaluationThresholdEvaluator _thresholdEvaluator = new();

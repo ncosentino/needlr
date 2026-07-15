@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Contains immutable counts of dataset-run score outcomes.
 /// </summary>
-public sealed class LangfuseExperimentRunScoreCounts
+public sealed record LangfuseExperimentRunScoreCounts
 {
     /// <summary>
     /// Initializes dataset-run score counts.

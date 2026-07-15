@@ -5,6 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <see cref="GetPromptAsync"/> returns <see langword="null"/>; creating a prompt is not possible
 /// without a configured target and throws.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfusePromptClient : ILangfusePromptClient
 {
     /// <inheritdoc />

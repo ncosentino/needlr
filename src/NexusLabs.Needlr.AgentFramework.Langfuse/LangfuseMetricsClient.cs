@@ -7,6 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Default <see cref="ILangfuseMetricsClient"/> backed by the shared <see cref="LangfuseApiClient"/>.
 /// Serializes the query to the Metrics API <c>query</c> parameter and projects the response rows.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseMetricsClient : ILangfuseMetricsClient
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()

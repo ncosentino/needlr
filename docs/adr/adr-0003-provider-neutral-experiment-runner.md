@@ -272,7 +272,7 @@ public interface IExperimentRunner
         CancellationToken cancellationToken = default);
 }
 
-public sealed class ExperimentDefinition<TCase, TOutput>
+public sealed record ExperimentDefinition<TCase, TOutput>
 {
     public required string Name { get; init; }
     public required IExperimentCaseSource<TCase> CaseSource { get; init; }
@@ -284,7 +284,7 @@ public sealed class ExperimentDefinition<TCase, TOutput>
     public IReadOnlyList<IExperimentResultSink<TOutput>> Sinks { get; init; }
 }
 
-public sealed class ExperimentRunOptions
+public sealed record ExperimentRunOptions
 {
     public required string RunId { get; init; }
     public required int MaxConcurrency { get; init; }

@@ -7,6 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Use a distributed <see cref="ILangfuseResourceLockProvider"/> when multiple application
 /// processes can initialize the same Langfuse project concurrently.
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class LangfuseInProcessResourceLockProvider : ILangfuseResourceLockProvider
 {
     private readonly object _sync = new();

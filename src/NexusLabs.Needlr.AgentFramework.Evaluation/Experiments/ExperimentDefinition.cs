@@ -5,7 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
 /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
-public sealed class ExperimentDefinition<TCase, TOutput>
+public sealed record ExperimentDefinition<TCase, TOutput>
 {
     /// <summary>Gets the experiment name.</summary>
     public required string Name { get; init; }

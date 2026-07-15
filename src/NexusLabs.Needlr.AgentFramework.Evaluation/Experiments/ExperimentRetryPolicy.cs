@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides a bounded retry policy with explicit outcome selection and delay calculation.
 /// </summary>
+[DoNotAutoRegister]
 public sealed class ExperimentRetryPolicy : IExperimentRetryPolicy
 {
     private static readonly TimeSpan MaxDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);

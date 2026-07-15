@@ -7,7 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// value; aggregated columns are named <c>{Aggregation}_{Measure}</c> and dimension columns keep
 /// their field name.
 /// </summary>
-public sealed class LangfuseMetricsResult
+public sealed record LangfuseMetricsResult
 {
     internal LangfuseMetricsResult(IReadOnlyList<IReadOnlyDictionary<string, JsonElement>> rows)
     {

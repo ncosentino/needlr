@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Associates an item status with its observed count.
 /// </summary>
-public sealed class ExperimentItemStatusCount
+public sealed record ExperimentItemStatusCount
 {
     /// <summary>
     /// Initializes a status count.

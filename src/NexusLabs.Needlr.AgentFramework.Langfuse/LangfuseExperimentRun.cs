@@ -8,6 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Default <see cref="ILangfuseExperimentRun"/>. Executes each dataset item inside an active
 /// scenario and links its trace to the run via <c>POST /api/public/dataset-run-items</c>.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseExperimentRun : ILangfuseExperimentRun
 {
     private readonly LangfuseApiClient _apiClient;

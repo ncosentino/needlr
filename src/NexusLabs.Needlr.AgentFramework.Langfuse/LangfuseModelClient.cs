@@ -5,6 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Creation is coordinated through a resource lock, and every same-name model is compared against
 /// the complete requested definition before creation.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseModelClient : ILangfuseModelClient
 {
     private const int PageSize = 100;

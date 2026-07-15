@@ -33,6 +33,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// mutations are visible to the exporter.
 /// </para>
 /// </remarks>
+[DoNotAutoRegister]
 internal sealed class LangfuseTraceAttributeProcessor : BaseProcessor<Activity>
 {
     private const string ChatActivityName = "agent.chat";

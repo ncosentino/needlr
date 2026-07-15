@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides one completed execution attempt to a retry policy.
 /// </summary>
-public sealed class ExperimentRetryContext
+public sealed record ExperimentRetryContext
 {
     internal ExperimentRetryContext(
         string runId,

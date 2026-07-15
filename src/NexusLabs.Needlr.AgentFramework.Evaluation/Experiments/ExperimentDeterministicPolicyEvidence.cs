@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes deterministic threshold evidence from one named run evaluation.
 /// </summary>
-public sealed class ExperimentDeterministicPolicyEvidence
+public sealed record ExperimentDeterministicPolicyEvidence
 {
     /// <summary>Gets the run-evaluator name that supplied metrics.</summary>
     public required string RunEvaluationName { get; init; }

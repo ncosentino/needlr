@@ -5,7 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures the Langfuse dataset run created implicitly by experiment item links.
 /// </summary>
-public sealed class LangfuseExperimentRunOptions
+public sealed record LangfuseExperimentRunOptions
 {
     /// <summary>
     /// Gets or sets the optional run description submitted with every item link.

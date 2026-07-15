@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures bounded local batching for Langfuse trace export.
 /// </summary>
-public sealed class LangfuseTraceExportOptions
+public sealed record LangfuseTraceExportOptions
 {
     /// <summary>
     /// Gets or sets the maximum number of completed activities held locally. Defaults to 2048.
