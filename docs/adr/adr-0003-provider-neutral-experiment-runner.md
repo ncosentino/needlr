@@ -13,9 +13,27 @@ superseded_by: ""
 Accepted - proceed through the separately reviewed implementation phases below.
 
 This ADR was the design deliverable for [issue #36](https://github.com/ncosentino/needlr/issues/36).
-Phase 1 implementation is tracked by [issue #43](https://github.com/ncosentino/needlr/issues/43).
-Phase 2 implementation is tracked by [issue #45](https://github.com/ncosentino/needlr/issues/45);
-later phases still require their own issues and pull requests.
+Phase 1 was delivered by [issue #43](https://github.com/ncosentino/needlr/issues/43).
+Phase 2 was delivered by [issue #45](https://github.com/ncosentino/needlr/issues/45).
+
+The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
+Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
+ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
+of the generic runner.
+
+The corrected remaining sequence is:
+
+1. provider lifecycle scopes ([#49](https://github.com/ncosentino/needlr/issues/49));
+2. provider sinks and publication outcomes ([#50](https://github.com/ncosentino/needlr/issues/50));
+3. Langfuse hosted source, item scope, and sink convergence
+   ([#51](https://github.com/ncosentino/needlr/issues/51),
+   [#52](https://github.com/ncosentino/needlr/issues/52),
+   [#53](https://github.com/ncosentino/needlr/issues/53));
+4. MEAI Reporting as the second-provider proof
+   ([#54](https://github.com/ncosentino/needlr/issues/54)).
+
+No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
+Langfuse convergence is complete.
 
 ## Decision
 
@@ -722,7 +740,7 @@ The implementation must revalidate against the then-current stable MEAI packages
 
 No phase begins from this ADR alone. Each phase requires its own issue and reviewed pull request.
 
-### Phase 1: core scheduler and canonical result
+### Phase 1: core scheduler and canonical result — delivered by #43
 
 Deliver:
 
@@ -756,7 +774,7 @@ Runnable example:
 - canonical JSON output;
 - no test-framework dependency.
 
-### Phase 2: retries, run evaluation, and policy
+### Phase 2: retries, run evaluation, and policy — delivered by #45
 
 Deliver:
 
@@ -788,15 +806,141 @@ Runnable example:
 - estimate, confidence interval, sample count, attempts, and decision;
 - no credentials.
 
-### Phase 3: MEAI Reporting adapter
+### Phase 3A: per-trial provider lifecycle scopes — #49
 
 Deliver:
 
-- one `ScenarioRun` per item;
+- provider-neutral item scopes configured on the experiment definition;
+- one scope entry per statistical trial, not per retry attempt;
+- scope reactivation around every attempt and item evaluation after delayed re-enqueue;
+- typed adapter features available to task and evaluator contexts;
+- namespaced item correlations and structured item publication outcomes;
+- terminal completion notification, caller-cancellation abort, and reverse-order disposal.
+
+Required TDD:
+
+- one scope per trial across multiple attempts;
+- scope reactivation after retry delay and worker changes;
+- nested scope ordering and reverse disposal;
+- the single item evaluator runs inside the same scope;
+- all terminal item statuses reach scope completion;
+- cancellation invokes abort and does not publish a completed item.
+
+### Phase 3B: result sinks and publication outcomes — #50
+
+Deliver:
+
+- deterministic result-sink fan-out;
+- required and optional sink semantics;
+- `ExperimentRunOutcome<TCase,TOutput>` containing the canonical result and publication outcomes;
+- aggregate `NotRequested`, `Succeeded`, `PartiallyFailed`, or `Failed` publication status;
+- item-scope and final-sink publication aggregation;
+- an intentional alpha return-type correction for `IExperimentRunner.RunAsync`;
+- schema-versioned outcome serialization.
+
+Required TDD:
+
+- deterministic sink order;
+- required versus optional failure aggregation;
+- one failing sink does not suppress another;
+- publication status never changes the quality decision;
+- caller cancellation skips final sinks;
+- runs without scopes or sinks remain `NotRequested`.
+
+### Phase 4A: Langfuse hosted case source — #51
+
+Deliver:
+
+- paginated read-side dataset and dataset-item APIs;
+- latest and explicit version-timestamp selection;
+- finite hosted-case materialization before execution;
+- caller-defined mapping from hosted item data to `ExperimentCase<TCase>`;
+- dataset identity and version in `ExperimentSourceReference`;
+- coherent disabled behavior that cannot silently produce a passing empty run.
+
+Required TDD:
+
+- pagination and stable source ordering;
+- version selection and source identity;
+- input, expected-output, and metadata mapping;
+- cancellation and malformed-response handling before execution;
+- duplicate case-id validation;
+- disabled mode does not silently pass.
+
+### Phase 4B: Langfuse per-trial trace scope — #52
+
+Prerequisites:
+
+- #33 context-safe item execution;
+- #34 dataset-run identity and link status;
+- #35 idempotency and publication health;
+- #49 provider lifecycle scopes.
+
+Deliver:
+
+- one scenario trace per statistical trial;
+- every retry attempt beneath the same trial trace;
+- one hosted dataset-run-item link per trial;
+- trace-only local experiments when no hosted item is bound;
+- namespaced trace, dataset-run-item, and dataset-run correlations;
+- structured link/trace publication outcomes;
+- strict and best-effort prerequisite behavior;
+- one shared internal lifecycle implementation used by both the adapter and
+  `ILangfuseExperimentRun.RunItemAsync`;
+- coherent disabled mode.
+
+Required TDD:
+
+- nested and parallel ambient-context restoration;
+- delayed retry reactivation on another worker;
+- no trace-per-attempt behavior;
+- local trace-only mode;
+- linked, failed, inconsistent, not-sampled, and disabled outcomes;
+- strict failure stops execution while best effort preserves it;
+- caller cancellation aborts and restores prior context.
+
+### Phase 4C: Langfuse result sink and canonical guidance — #53
+
+Deliver:
+
+- item metric projection to trace scores;
+- successful run-evaluation metric projection to dataset-run scores;
+- explicit projection of the already-computed run decision without recalculating policy;
+- generic publication status backed by the existing Langfuse publication snapshot;
+- required and optional Langfuse publication behavior;
+- the same experiment definition running locally, with disabled Langfuse, and with hosted Langfuse;
+- the generic runner documented as the canonical bulk-experiment path;
+- `ILangfuseExperimentRun` retained as the low-level/manual escape hatch.
+
+Required TDD:
+
+- item and run score projection;
+- decision projection without duplicate policy computation;
+- unresolved and inconsistent dataset-run identity;
+- one failing sink does not suppress another;
+- disabled mode;
+- publication status remains independent from quality decision;
+- the same definition works with and without credentials.
+
+Runnable example:
+
+- one public experiment definition;
+- local credential-free execution;
+- disabled Langfuse execution with identical quality results;
+- optional hosted source, trace links, and score publication when configured;
+- no standalone telemetry ownership in a DI host.
+
+### Phase 5: MEAI Reporting adapter as the second-provider proof — #54
+
+Deliver:
+
+- one `ScenarioRun` per trial;
 - execution/scenario/iteration mapping;
-- explicit response-reuse mode;
-- MEAI result-store publication outcome;
-- report generation left to MEAI tooling.
+- explicit case/trial replay, fresh-per-run, and disabled response-reuse modes;
+- coordinated item scope and single item-evaluator integration;
+- MEAI result-store persistence as item publication outcome;
+- report generation left to MEAI tooling;
+- Reporting-specific dependencies isolated from the provider-neutral core.
 
 Required TDD:
 
@@ -806,7 +950,7 @@ Required TDD:
 - no execution retry on evaluator or store failure;
 - cache isolation across trial and run modes;
 - response-cache replay across retries documented and verified;
-- disposal persists results;
+- disposal persists completed results;
 - result-store failure appears as item publication failure;
 - cancellation abort does not persist an incomplete `ScenarioRun`;
 - caller cancellation preserved.
@@ -816,39 +960,6 @@ Runnable example:
 - credential-free `ScriptedChatClient`;
 - cached deterministic replay and fresh stochastic mode;
 - generated MEAI report from the configured store.
-
-### Phase 4: Langfuse adapters
-
-Prerequisites:
-
-- #33 context-safe item execution;
-- #34 dataset-run identity, link status, and run-level scores;
-- #35 idempotency and publication health for high-volume workloads.
-
-Deliver:
-
-- hosted dataset source;
-- item scenario scope;
-- item and run score sink;
-- required/optional publication policy;
-- coherent disabled mode.
-
-Required TDD:
-
-- local and hosted sources;
-- nested and parallel trace context;
-- one trial trace across retries;
-- item-link rejection;
-- item and run score projection;
-- one failing sink not suppressing another;
-- disabled mode;
-- publication status independent from quality decision.
-
-Runnable example:
-
-- same public experiment definition works without credentials;
-- optional Langfuse publication when configured;
-- no standalone telemetry ownership in a DI host.
 
 ## Rejected alternatives
 
