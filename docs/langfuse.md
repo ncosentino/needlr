@@ -253,18 +253,81 @@ depend on implicit inference:
 
 ## Experiments (datasets and runs)
 
-The API in this section is the low-level/manual Langfuse experiment-publication surface. It does not
-provide collection scheduling, retries, aggregate evaluation, or quality policy. The canonical bulk
-experiment path is the provider-neutral runner; convergence is tracked by
-[#51](https://github.com/ncosentino/needlr/issues/51) through
-[#53](https://github.com/ncosentino/needlr/issues/53). The core per-trial lifecycle seam from
-[#49](https://github.com/ncosentino/needlr/issues/49) is available; the Langfuse source, scope, and
-sink adapters remain separate work.
+The provider-neutral runner can materialize hosted Langfuse datasets through
+`LangfuseDatasetCaseSource<TCase>`. Langfuse owns remote dataset/version semantics while the core
+runner continues to own scheduling, retries, evaluation, and quality policy.
 
-Until those adapters land, callers must compose the manual item loop below. Do not add a second
-scheduler or policy engine to the Langfuse package: the existing scenario, link, score, identity,
-resilience, and publication-health types are the provider primitives that the generic runner will
-reuse.
+### Hosted dataset case source
+
+`LangfuseDatasetSelection.Version` is an optional UTC timestamp. Omit it for the latest dataset state
+at query time, or set it to reproduce the item state at an explicit Langfuse dataset version:
+
+```csharp
+using System.Text.Json;
+
+using NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
+using NexusLabs.Needlr.AgentFramework.Langfuse;
+
+public sealed record TripPlannerCase(
+    JsonElement? Input,
+    JsonElement? ExpectedOutput,
+    JsonElement? Metadata,
+    string? SourceTraceId,
+    string? SourceObservationId);
+
+var source = new LangfuseDatasetCaseSource<TripPlannerCase>(
+    langfuse.Datasets,
+    new LangfuseDatasetSelection
+    {
+        Name = "trip-planner-evals",
+        Version = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+    },
+    item => new ExperimentCase<TripPlannerCase>
+    {
+        Id = item.Id,
+        Value = new TripPlannerCase(
+            item.Input,
+            item.ExpectedOutput,
+            item.Metadata,
+            item.SourceTraceId,
+            item.SourceObservationId),
+        TrialCount = 3,
+        Tags = ["hosted"],
+    });
+
+var definition = new ExperimentDefinition<TripPlannerCase, TripPlannerOutput>
+{
+    Name = "trip-planner-regression",
+    CaseSource = source,
+    Task = RunTripPlannerAsync,
+};
+```
+
+The source retrieves dataset metadata, follows every dataset-item page in provider order, excludes
+archived items, and validates the complete selection before the runner starts any trial. Duplicate
+item ids, changing or malformed pagination, inconsistent dataset identity, mapper duplicates, and
+empty hosted datasets fail the load. Disabled Langfuse also fails explicitly instead of producing an
+empty run.
+
+The mapper must preserve `item.Id` as `ExperimentCase<TCase>.Id`. That provider-neutral case identity
+is the binding used by the Langfuse per-trial scope to create a dataset-run-item link. Input, expected
+output, metadata, source trace id, and source observation id remain available to the caller-owned
+case value.
+
+The resulting `ExperimentSourceReference` contains the hosted dataset name and id. Explicit version
+timestamps are normalized to UTC; latest selections leave `Version` unset because the public
+Langfuse API does not return a resolved version identifier.
+
+For lower-level reads, `ILangfuseDatasetClient` also exposes validated `ListDatasetsAsync`,
+`ListDatasetItemsAsync`, and fully materialized `GetDatasetAsync` operations.
+
+[#52](https://github.com/ncosentino/needlr/issues/52) adds the Langfuse per-trial trace/link scope and
+[#53](https://github.com/ncosentino/needlr/issues/53) adds the final result sink. Until those adapters
+land, the API below remains the low-level/manual publication surface. Do not add a second scheduler
+or policy engine to the Langfuse package: the existing scenario, link, score, identity, resilience,
+and publication-health types are the provider primitives those adapters reuse.
+
+### Low-level manual publication
 
 Map each eval case to a Langfuse **dataset item**, then on every run link the trace it
 produces as a **dataset run item**. Langfuse's experiment-comparison view lines runs up

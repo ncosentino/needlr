@@ -56,7 +56,7 @@ public interface ILangfuseClient
         IReadOnlyDictionary<string, string>? metadata = null);
 
     /// <summary>
-    /// Gets the client for creating and populating Langfuse datasets.
+    /// Gets the client for reading, creating, and populating Langfuse datasets.
     /// </summary>
     ILangfuseDatasetClient Datasets { get; }
 

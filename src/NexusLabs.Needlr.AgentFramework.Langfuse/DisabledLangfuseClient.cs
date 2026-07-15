@@ -1,7 +1,7 @@
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Coherent no-op <see cref="ILangfuseClient"/> used when Langfuse is disabled or unconfigured.
+/// Coherent disabled <see cref="ILangfuseClient"/> used when Langfuse is unconfigured.
 /// </summary>
 [DoNotAutoRegister]
 internal sealed class DisabledLangfuseClient : ILangfuseClient

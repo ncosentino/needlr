@@ -58,38 +58,22 @@ internal sealed class LangfuseScoreConfigClient : ILangfuseScoreConfigClient
         LangfuseScoreConfigRequest expected,
         CancellationToken cancellationToken)
     {
-        var matches = new List<LangfuseScoreConfigSummary>();
-        var page = 1;
-        while (true)
-        {
-            var response = await _apiClient
-                .GetAsync<LangfuseScoreConfigsResponse>(
-                    $"api/public/score-configs?page={page}&limit={PageSize}",
-                    cancellationToken)
-                .ConfigureAwait(false);
+        var configs = await _apiClient
+            .GetAllPagesAsync<LangfuseScoreConfigSummary>(
+                page => $"api/public/score-configs?page={page}&limit={PageSize}",
+                cancellationToken)
+            .ConfigureAwait(false);
+        var matches = configs
+            .Where(config =>
+                string.Equals(config.Name, expected.Name, StringComparison.Ordinal))
+            .ToArray();
 
-            if (response?.Data is not { Count: > 0 } items)
-            {
-                break;
-            }
-
-            matches.AddRange(items.Where(c =>
-                string.Equals(c.Name, expected.Name, StringComparison.Ordinal)));
-
-            if (response.Meta is not { } meta || page >= meta.TotalPages)
-            {
-                break;
-            }
-
-            page++;
-        }
-
-        if (matches.Count == 0)
+        if (matches.Length == 0)
         {
             return false;
         }
 
-        if (matches.Count != 1 || !Matches(matches[0], expected))
+        if (matches.Length != 1 || !Matches(matches[0], expected))
         {
             throw new LangfuseException(
                 $"Langfuse score config '{expected.Name}' already exists with a different or ambiguous schema.");

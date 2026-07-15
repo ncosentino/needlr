@@ -59,38 +59,22 @@ internal sealed class LangfuseModelClient : ILangfuseModelClient
         LangfuseCreateModelRequest expected,
         CancellationToken cancellationToken)
     {
-        var matches = new List<LangfuseModelSummary>();
-        var page = 1;
-        while (true)
-        {
-            var response = await _apiClient
-                .GetAsync<LangfuseModelsResponse>(
-                    $"api/public/models?page={page}&limit={PageSize}",
-                    cancellationToken)
-                .ConfigureAwait(false);
+        var models = await _apiClient
+            .GetAllPagesAsync<LangfuseModelSummary>(
+                page => $"api/public/models?page={page}&limit={PageSize}",
+                cancellationToken)
+            .ConfigureAwait(false);
+        var matches = models
+            .Where(model =>
+                string.Equals(model.ModelName, expected.ModelName, StringComparison.Ordinal))
+            .ToArray();
 
-            if (response?.Data is not { Count: > 0 } items)
-            {
-                break;
-            }
-
-            matches.AddRange(items.Where(model =>
-                string.Equals(model.ModelName, expected.ModelName, StringComparison.Ordinal)));
-
-            if (response.Meta is not { } meta || page >= meta.TotalPages)
-            {
-                break;
-            }
-
-            page++;
-        }
-
-        if (matches.Count == 0)
+        if (matches.Length == 0)
         {
             return false;
         }
 
-        if (matches.Count != 1 || !Matches(matches[0], expected))
+        if (matches.Length != 1 || !Matches(matches[0], expected))
         {
             throw new LangfuseException(
                 $"Langfuse model '{expected.ModelName}' already exists with a different or ambiguous definition.");

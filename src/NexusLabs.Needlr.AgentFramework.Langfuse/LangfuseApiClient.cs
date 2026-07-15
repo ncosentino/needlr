@@ -247,6 +247,33 @@ internal sealed class LangfuseApiClient
             : await ReadAsync<TResponse>(response, cancellationToken).ConfigureAwait(false);
     }
 
+    internal async Task<IReadOnlyList<TItem>> GetAllPagesAsync<TItem>(
+        Func<int, string> relativePathFactory,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(relativePathFactory);
+
+        var items = new List<TItem>();
+        for (var page = 1; ; page++)
+        {
+            var response = await GetAsync<LangfusePageDto<TItem>>(
+               relativePathFactory(page),
+               cancellationToken).ConfigureAwait(false);
+            if (response?.Data is not { Count: > 0 } pageItems)
+            {
+               break;
+            }
+
+            items.AddRange(pageItems);
+            if (response.Meta is not { } meta || page >= meta.TotalPages)
+            {
+               break;
+            }
+        }
+
+        return Array.AsReadOnly(items.ToArray());
+    }
+
     private async Task<HttpResponseMessage> SendAsync<TRequest>(
         HttpMethod method,
         string relativePath,
@@ -471,7 +498,9 @@ internal sealed class LangfuseApiClient
         }
     }
 
-    private static async Task<TResponse?> ReadAsync<TResponse>(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static async Task<TResponse?> ReadAsync<TResponse>(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
     {
         if (response.Content.Headers.ContentLength is 0)
         {

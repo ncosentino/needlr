@@ -893,6 +893,16 @@ Deliver:
 - dataset identity and version in `ExperimentSourceReference`;
 - coherent disabled behavior that cannot silently produce a passing empty run.
 
+The hosted binding keeps the Langfuse dataset item id as `ExperimentCase<TCase>.Id`. Caller mapping
+owns the case value, trial count, and tags, but cannot replace that provider identity. This lets the
+next-phase item scope link a trial using only the provider-neutral case id while input, expected
+output, metadata, and source trace/observation references remain available in the adapter-owned
+hosted item passed to the mapper.
+
+An explicit selection timestamp is normalized to UTC in `ExperimentSourceReference.Version`. A
+latest selection leaves the version unset because Langfuse's public dataset metadata and item-list
+responses do not expose a resolved latest-version identifier.
+
 Required TDD:
 
 - pagination and stable source ordering;

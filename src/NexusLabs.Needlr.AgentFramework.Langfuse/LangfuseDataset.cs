@@ -3,15 +3,15 @@ using System.Text.Json;
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Wire projection of a dataset returned by the Langfuse v2 dataset endpoints.
+/// Describes one hosted Langfuse dataset.
 /// </summary>
-internal sealed record LangfuseDatasetRef
+public sealed record LangfuseDataset
 {
-    /// <summary>Gets the dataset identifier.</summary>
-    public string Id { get; init; } = string.Empty;
+    /// <summary>Gets the stable Langfuse dataset identifier.</summary>
+    public required string Id { get; init; }
 
-    /// <summary>Gets the dataset name.</summary>
-    public string Name { get; init; } = string.Empty;
+    /// <summary>Gets the project-unique dataset name.</summary>
+    public required string Name { get; init; }
 
     /// <summary>Gets the optional dataset description.</summary>
     public string? Description { get; init; }
@@ -19,10 +19,10 @@ internal sealed record LangfuseDatasetRef
     /// <summary>Gets optional structured dataset metadata.</summary>
     public JsonElement? Metadata { get; init; }
 
-    /// <summary>Gets the optional input JSON Schema.</summary>
+    /// <summary>Gets the optional JSON Schema applied to dataset item inputs.</summary>
     public JsonElement? InputSchema { get; init; }
 
-    /// <summary>Gets the optional expected-output JSON Schema.</summary>
+    /// <summary>Gets the optional JSON Schema applied to expected outputs.</summary>
     public JsonElement? ExpectedOutputSchema { get; init; }
 
     /// <summary>Gets the dataset creation timestamp.</summary>
