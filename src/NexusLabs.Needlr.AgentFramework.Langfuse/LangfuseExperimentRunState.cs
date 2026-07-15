@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Thread-safe identity and direct-publication state for one experiment run instance.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseExperimentRunState
 {
     private readonly object _gate = new();

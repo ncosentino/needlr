@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes binary-success proportion evidence and its uncertainty.
 /// </summary>
-public sealed class ExperimentBinaryStatisticalEvidence
+public sealed record ExperimentBinaryStatisticalEvidence
 {
     /// <summary>Gets the required boolean metric name.</summary>
     public required string MetricName { get; init; }

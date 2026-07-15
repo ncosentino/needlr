@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Applies a session's <see cref="LangfuseScoreFailureMode"/> to a failed score upload and tracks
 /// how many uploads have failed. Shared by every scenario created from one session.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseScoreFailureSink
 {
     private readonly LangfuseScoreFailureMode _mode;

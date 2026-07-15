@@ -10,6 +10,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Langfuse requires an explicit project id on each comment. The API key maps to exactly one
 /// project, so the id is resolved once from <c>GET /api/public/projects</c> and cached.
 /// </remarks>
+[DoNotAutoRegister]
 internal sealed class LangfuseCommentRecorder
 {
     private const string TraceObjectType = "TRACE";

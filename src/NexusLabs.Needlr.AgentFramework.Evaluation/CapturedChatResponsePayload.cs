@@ -9,7 +9,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// <see cref="FileEvaluationCaptureStore"/>. Captures textual content, function
 /// call payloads, and function result payloads in their original message order.
 /// </summary>
-internal sealed class CapturedChatResponsePayload
+internal sealed record CapturedChatResponsePayload
 {
     public string? ResponseId { get; set; }
     public string? ModelId { get; set; }
@@ -139,14 +139,14 @@ internal sealed class CapturedChatResponsePayload
         };
     }
 
-    internal sealed class CapturedMessage
+    internal sealed record CapturedMessage
     {
         public string? Role { get; set; }
         public string? Text { get; set; }
         public List<CapturedContent>? Contents { get; set; }
     }
 
-    internal sealed class CapturedContent
+    internal sealed record CapturedContent
     {
         public CapturedContentKind Kind { get; set; }
         public string? Text { get; set; }

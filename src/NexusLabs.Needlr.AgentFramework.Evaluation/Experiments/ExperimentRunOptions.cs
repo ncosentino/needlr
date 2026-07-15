@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Configures one provider-neutral experiment run.
 /// </summary>
-public sealed class ExperimentRunOptions
+public sealed record ExperimentRunOptions
 {
     /// <summary>Gets the caller-supplied stable run identifier.</summary>
     public required string RunId { get; init; }

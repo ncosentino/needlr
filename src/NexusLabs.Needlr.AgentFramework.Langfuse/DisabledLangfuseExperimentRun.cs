@@ -8,6 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Inert <see cref="ILangfuseExperimentRun"/> returned by a disabled session. Executes callbacks
 /// with inert scenarios and links nothing, so experiment code runs unchanged without credentials.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfuseExperimentRun : ILangfuseExperimentRun
 {
     private readonly LangfuseExperimentRunState _state = new(disabled: true);

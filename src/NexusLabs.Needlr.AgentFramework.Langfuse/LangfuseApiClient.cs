@@ -16,6 +16,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <remarks>
 /// The underlying <see cref="HttpClient"/> is owned by the caller and disposed with it.
 /// </remarks>
+[DoNotAutoRegister]
 internal sealed class LangfuseApiClient
 {
     internal static readonly JsonSerializerOptions SerializerOptions = new()

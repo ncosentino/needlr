@@ -9,7 +9,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
 /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
-public sealed class ExperimentItemResult<TCase, TOutput>
+public sealed record ExperimentItemResult<TCase, TOutput>
 {
     /// <summary>Gets the zero-based stable sequence.</summary>
     public required int Sequence { get; init; }

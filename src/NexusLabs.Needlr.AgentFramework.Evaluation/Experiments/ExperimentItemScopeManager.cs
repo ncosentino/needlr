@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Coordinates one statistical trial's provider-neutral item scopes.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class ExperimentItemScopeManager<TCase, TOutput>
 {
     private readonly ExperimentItemScopeContext<TCase> _context;

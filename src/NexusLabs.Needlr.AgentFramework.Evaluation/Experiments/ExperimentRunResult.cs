@@ -5,7 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
 /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
-public sealed class ExperimentRunResult<TCase, TOutput>
+public sealed record ExperimentRunResult<TCase, TOutput>
 {
     /// <summary>Gets the current canonical result schema version.</summary>
     public const int CurrentSchemaVersion = 3;

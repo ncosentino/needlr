@@ -7,7 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Export acknowledgement and drain completion describe local/transport outcomes only. They do not
 /// prove that traces or scores are durably processed or queryable in Langfuse.
 /// </remarks>
-public sealed class LangfusePublicationHealthSnapshot
+public sealed record LangfusePublicationHealthSnapshot
 {
     internal LangfusePublicationHealthSnapshot(
         bool isEnabled,

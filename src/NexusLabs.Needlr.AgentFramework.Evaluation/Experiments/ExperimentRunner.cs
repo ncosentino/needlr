@@ -1116,7 +1116,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         DateTimeOffset ReadyAt,
         long Sequence);
 
-    private sealed class AttemptExecution<TOutput>
+    private sealed record AttemptExecution<TOutput>
     {
         public required bool Succeeded { get; init; }
 

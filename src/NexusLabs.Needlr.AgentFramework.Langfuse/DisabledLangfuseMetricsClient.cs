@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Inert <see cref="ILangfuseMetricsClient"/> returned when Langfuse is not configured. Queries
 /// return empty results so calling code never needs to branch on configuration state.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfuseMetricsClient : ILangfuseMetricsClient
 {
     /// <inheritdoc />

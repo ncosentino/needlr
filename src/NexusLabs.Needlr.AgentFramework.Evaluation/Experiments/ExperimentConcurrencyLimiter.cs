@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// Provides a semaphore-backed concurrency limiter suitable for sharing through dependency
 /// injection.
 /// </summary>
+[DoNotAutoRegister]
 public sealed class ExperimentConcurrencyLimiter :
     IExperimentConcurrencyLimiter,
     IAsyncDisposable

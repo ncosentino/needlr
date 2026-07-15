@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes one isolated experiment policy outcome.
 /// </summary>
-public sealed class ExperimentPolicyResult
+public sealed record ExperimentPolicyResult
 {
     /// <summary>Gets the stable policy name.</summary>
     public required string Name { get; init; }

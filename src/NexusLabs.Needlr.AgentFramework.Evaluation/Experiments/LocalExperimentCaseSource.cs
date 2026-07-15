@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// Provides a finite in-process experiment case collection.
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+[DoNotAutoRegister]
 public sealed class LocalExperimentCaseSource<TCase> : IExperimentCaseSource<TCase>
 {
     private readonly ExperimentCase<TCase>[] _cases;

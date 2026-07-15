@@ -4,7 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// Defines one logical experiment case and the number of statistically independent trials to run.
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
-public sealed class ExperimentCase<TCase>
+public sealed record ExperimentCase<TCase>
 {
     /// <summary>Gets the stable case identifier, unique within the materialized source.</summary>
     public required string Id { get; init; }

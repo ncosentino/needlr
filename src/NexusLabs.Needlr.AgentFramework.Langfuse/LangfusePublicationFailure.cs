@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes why a Langfuse publication operation did not complete.
 /// </summary>
-public sealed class LangfusePublicationFailure
+public sealed record LangfusePublicationFailure
 {
     /// <summary>
     /// Initializes a publication failure.

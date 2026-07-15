@@ -12,7 +12,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// OTLP over HTTP is supported (gRPC is not), so the .NET exporter is always configured for
 /// the <c>HttpProtobuf</c> protocol against the signal-specific paths produced here.
 /// </remarks>
-internal sealed class LangfuseEndpoints
+internal sealed record LangfuseEndpoints
 {
     private const string OtelBasePath = "api/public/otel";
 
@@ -56,6 +56,10 @@ internal sealed class LangfuseEndpoints
     /// <c>Authorization</c> header and the Langfuse ingestion-version header.
     /// </summary>
     public string Headers { get; }
+
+    public override string ToString() =>
+        $"{nameof(LangfuseEndpoints)} {{ Scheme = {BaseUrl.Scheme}, " +
+        $"Host = {BaseUrl.Host}, Port = {BaseUrl.Port} }}";
 
     /// <summary>
     /// Resolves the ingestion endpoints and headers for the supplied options.

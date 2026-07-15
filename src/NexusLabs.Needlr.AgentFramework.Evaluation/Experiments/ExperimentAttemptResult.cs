@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes one operational execution attempt.
 /// </summary>
-public sealed class ExperimentAttemptResult
+public sealed record ExperimentAttemptResult
 {
     /// <summary>Gets the one-based attempt number.</summary>
     public required int AttemptNumber { get; init; }

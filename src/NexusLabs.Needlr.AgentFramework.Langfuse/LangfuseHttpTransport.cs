@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Owns the HTTP transport shared by all Langfuse REST API clients in one client composition.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseHttpTransport : IDisposable
 {
     private readonly HttpClient _httpClient;

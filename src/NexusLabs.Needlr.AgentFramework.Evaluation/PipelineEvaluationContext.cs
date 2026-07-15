@@ -28,6 +28,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation;
 /// agent runs within the pipeline.
 /// </para>
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class PipelineEvaluationContext : EvaluationContext
 {
     /// <summary>

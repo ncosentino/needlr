@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Internal result for one score projection.
 /// </summary>
-internal sealed class LangfuseScoreRecordResult
+internal sealed record LangfuseScoreRecordResult
 {
     public LangfuseScoreRecordResult(
         string? scoreId,

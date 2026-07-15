@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Default <see cref="ILangfuseDatasetClient"/> backed by the shared <see cref="LangfuseApiClient"/>.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseDatasetClient : ILangfuseDatasetClient
 {
     private readonly LangfuseApiClient _apiClient;

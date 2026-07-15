@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes local trace queue and exporter outcomes.
 /// </summary>
-public sealed class LangfuseTraceExportHealth
+public sealed record LangfuseTraceExportHealth
 {
     internal LangfuseTraceExportHealth(
         long locallyObserved,

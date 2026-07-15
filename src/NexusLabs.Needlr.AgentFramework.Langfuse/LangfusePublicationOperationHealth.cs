@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes direct REST publication outcomes for one operation category.
 /// </summary>
-public sealed class LangfusePublicationOperationHealth
+public sealed record LangfusePublicationOperationHealth
 {
     internal LangfusePublicationOperationHealth(
         long inFlight,

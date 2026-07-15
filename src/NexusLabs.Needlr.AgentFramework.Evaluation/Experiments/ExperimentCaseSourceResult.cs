@@ -4,7 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// Contains a finite ordered case collection and its provider-neutral source identity.
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
-public sealed class ExperimentCaseSourceResult<TCase>
+public sealed record ExperimentCaseSourceResult<TCase>
 {
     /// <summary>Gets the source identity.</summary>
     public required ExperimentSourceReference Source { get; init; }

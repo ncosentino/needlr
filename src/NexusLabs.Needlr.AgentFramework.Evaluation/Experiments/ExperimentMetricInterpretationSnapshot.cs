@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides an immutable normalized metric interpretation.
 /// </summary>
-public sealed class ExperimentMetricInterpretationSnapshot
+public sealed record ExperimentMetricInterpretationSnapshot
 {
     /// <summary>Gets the normalized rating.</summary>
     public required ExperimentMetricRating Rating { get; init; }

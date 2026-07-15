@@ -20,7 +20,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <see cref="AdditionalActivitySources"/> / <see cref="AdditionalMeters"/>.
 /// </para>
 /// </remarks>
-public sealed class LangfuseOptions
+public sealed record LangfuseOptions
 {
     private static readonly AgentFrameworkMetricsOptions MetricsDefaults = new();
 
@@ -245,6 +245,12 @@ public sealed class LangfuseOptions
     /// traces to Langfuse Cloud.
     /// </summary>
     public bool IsConfigured => HasCredentials && HasExplicitTarget;
+
+    /// <inheritdoc />
+    public override string ToString() =>
+        $"{nameof(LangfuseOptions)} {{ Enabled = {Enabled}, Region = {Region}, " +
+        $"HasCredentials = {HasCredentials}, HasExplicitTarget = {HasExplicitTarget}, " +
+        $"IsConfigured = {IsConfigured} }}";
 
     /// <summary>
     /// Builds a <see cref="LangfuseOptions"/> from the standard Langfuse environment variables

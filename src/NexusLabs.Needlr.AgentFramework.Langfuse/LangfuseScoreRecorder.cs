@@ -11,6 +11,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <see cref="LangfuseScoreClient"/> (host path), and <see cref="LangfuseExperimentRun"/>
 /// (dataset-run path) so the mapping lives in one place.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseScoreRecorder
 {
     private const string NumericDataType = "NUMERIC";

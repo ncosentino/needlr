@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Shared enabled Langfuse client composition used by both hosted and standalone integrations.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseClient : ILangfuseClient
 {
     private readonly LangfuseClientComposition _composition;

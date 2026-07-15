@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes one item scope's publication outcome independently from item quality.
 /// </summary>
-public sealed class ExperimentItemPublicationResult
+public sealed record ExperimentItemPublicationResult
 {
     /// <summary>Gets the unique item-scope provider name.</summary>
     public required string Name { get; init; }

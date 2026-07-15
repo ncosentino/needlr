@@ -3,6 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Default <see cref="ILangfusePromptClient"/> backed by the shared <see cref="LangfuseApiClient"/>.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfusePromptClient : ILangfusePromptClient
 {
     private readonly LangfuseApiClient _apiClient;

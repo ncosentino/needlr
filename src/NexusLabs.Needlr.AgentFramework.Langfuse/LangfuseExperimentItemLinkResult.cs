@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Describes the direct REST publication outcome for one dataset-run-item link.
 /// </summary>
-public sealed class LangfuseExperimentItemLinkResult
+public sealed record LangfuseExperimentItemLinkResult
 {
     /// <summary>
     /// Initializes an item-link result.

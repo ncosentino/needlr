@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Contains immutable counts of experiment item-link outcomes.
 /// </summary>
-public sealed class LangfuseExperimentItemLinkCounts
+public sealed record LangfuseExperimentItemLinkCounts
 {
     /// <summary>
     /// Initializes item-link counts.

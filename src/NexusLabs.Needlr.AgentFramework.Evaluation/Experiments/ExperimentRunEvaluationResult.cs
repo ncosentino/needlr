@@ -7,7 +7,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes one isolated run-evaluation outcome.
 /// </summary>
-public sealed class ExperimentRunEvaluationResult
+public sealed record ExperimentRunEvaluationResult
 {
     /// <summary>Gets the stable evaluator name.</summary>
     public required string Name { get; init; }

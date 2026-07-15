@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures one score publication to Langfuse.
 /// </summary>
-public sealed class LangfuseScoreOptions
+public sealed record LangfuseScoreOptions
 {
     /// <summary>
     /// Gets or sets the optional stable Langfuse score id.

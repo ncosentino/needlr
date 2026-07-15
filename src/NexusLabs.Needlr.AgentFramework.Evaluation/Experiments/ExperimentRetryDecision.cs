@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Describes whether and when a failed execution attempt should be retried.
 /// </summary>
-public sealed class ExperimentRetryDecision
+public sealed record ExperimentRetryDecision
 {
     /// <summary>Gets a value indicating whether another attempt should be scheduled.</summary>
     public required bool ShouldRetry { get; init; }

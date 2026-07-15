@@ -13,6 +13,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// payload schemas remain caller responsibility. This writer does not claim RFC 8785
 /// cryptographic canonicalization.
 /// </remarks>
+[DoNotAutoRegister]
 public sealed class ExperimentJsonArtifactWriter
 {
     private readonly JsonWriterOptions _writerOptions;

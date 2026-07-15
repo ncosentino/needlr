@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides an immutable Needlr-owned projection of one MEAI evaluation metric.
 /// </summary>
-public sealed class ExperimentMetricSnapshot
+public sealed record ExperimentMetricSnapshot
 {
     /// <summary>Gets the metric name.</summary>
     public required string Name { get; init; }

@@ -4,6 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Owns the shared REST API, score recording, failure handling, and default specialized clients
 /// used to compose hosted and standalone Langfuse facades.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseClientComposition
 {
     public LangfuseClientComposition(

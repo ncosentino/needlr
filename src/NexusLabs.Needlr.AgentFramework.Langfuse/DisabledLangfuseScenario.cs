@@ -8,6 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Inert <see cref="ILangfuseScenario"/> returned by a disabled session. Starts no span and posts
 /// no scores, so eval code paths run unchanged when Langfuse is not configured.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class DisabledLangfuseScenario : ILangfuseScenario
 {
     /// <inheritdoc />

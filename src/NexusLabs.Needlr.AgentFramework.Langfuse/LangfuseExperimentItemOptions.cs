@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures the scenario and dataset-link behavior for one experiment item execution.
 /// </summary>
-public sealed class LangfuseExperimentItemOptions
+public sealed record LangfuseExperimentItemOptions
 {
     /// <summary>
     /// Gets or sets the trace name. When omitted or whitespace, a name is derived from the dataset

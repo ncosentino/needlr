@@ -4,7 +4,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// Provides stable identity and case data to one experiment task attempt.
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
-public sealed class ExperimentTaskContext<TCase>
+public sealed record ExperimentTaskContext<TCase>
 {
     internal ExperimentTaskContext(
         string runId,

@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Identifies the provider-neutral source from which experiment cases were materialized.
 /// </summary>
-public sealed class ExperimentSourceReference
+public sealed record ExperimentSourceReference
 {
     /// <summary>Gets the human-readable source name.</summary>
     public required string Name { get; init; }

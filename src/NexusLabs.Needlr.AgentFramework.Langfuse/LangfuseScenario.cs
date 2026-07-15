@@ -9,6 +9,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Active <see cref="ILangfuseScenario"/> backed by a root OpenTelemetry span and a shared
 /// <see cref="LangfuseScoreRecorder"/>.
 /// </summary>
+[DoNotAutoRegister]
 internal sealed class LangfuseScenario : ILangfuseScenario
 {
     private readonly Activity? _activity;

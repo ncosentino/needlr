@@ -3,7 +3,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 /// <summary>
 /// Provides a policy's decision and evidence before runner-owned result identity is applied.
 /// </summary>
-public sealed class ExperimentPolicyVerdict
+public sealed record ExperimentPolicyVerdict
 {
     /// <summary>Gets the policy decision.</summary>
     public required EvaluationDecision Decision { get; init; }

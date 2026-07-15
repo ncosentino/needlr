@@ -15,6 +15,12 @@ dotnet test src/NexusLabs.Needlr.slnx
 - **Never save files to the repo root.** Source code lives under `src/`, docs under `docs/`, scripts under `scripts/`.
 - **File-scoped namespaces** everywhere (`namespace Foo;`, not `namespace Foo { }`).
 - **`internal` by default** for types that are not part of the public API surface. Only types consumers reference directly should be `public`.
+- **Data carriers are records.** DTOs, options, contexts, definitions, results, snapshots, evidence,
+  counts, and structured failures must be `record` types, including body-style records with
+  validated constructors. Reserve classes for behavior, mutable runtime state, and services.
+- **Non-static class-only non-services require `[DoNotAutoRegister]`.** Never rely on `required`
+  members, constructor shape, generic arity, visibility, or namespace filters to keep an
+  instantiable class out of Needlr's automatic DI registration.
 
 ## Naming
 

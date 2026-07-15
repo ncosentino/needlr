@@ -5,7 +5,7 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <summary>
 /// Configures score identities when projecting an <see cref="EvaluationResult"/> to Langfuse.
 /// </summary>
-public sealed class LangfuseEvaluationScoreOptions
+public sealed record LangfuseEvaluationScoreOptions
 {
     /// <summary>
     /// Gets or sets a callback that returns the stable Langfuse score id for each metric.
