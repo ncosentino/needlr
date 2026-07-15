@@ -33,6 +33,39 @@ public sealed class ExperimentJsonArtifactWriterTests
                 ? throw new InvalidOperationException("boom")
                 : ValueTask.FromResult("output"),
             ItemEvaluator = (_, _) => ValueTask.FromResult(evaluation),
+            ItemScopes =
+            [
+                new CallbackExperimentItemScopeProvider<int, string>(
+                    "artifact-scope",
+                    isRequired: false,
+                    ExperimentItemScopeFailureMode.BestEffort,
+                    (_, _) =>
+                    {
+                        IExperimentItemScope<int, string> scope =
+                            new CallbackExperimentItemScope<int, string>(
+                                new Dictionary<Type, object>(),
+                                () => null,
+                                (item, _) => ValueTask.FromResult(
+                                    new ExperimentItemPublicationResult
+                                    {
+                                        Name = "artifact-scope",
+                                        IsRequired = false,
+                                        Status = ExperimentItemPublicationStatus.Succeeded,
+                                        Correlations =
+                                        [
+                                            new ExperimentItemCorrelation
+                                            {
+                                                Namespace = "artifact",
+                                                Name = "case",
+                                                Value = item.Case.Id,
+                                            },
+                                        ],
+                                    }),
+                                _ => ValueTask.CompletedTask,
+                                () => ValueTask.CompletedTask);
+                        return ValueTask.FromResult(scope);
+                    }),
+            ],
         };
         var result = await new ExperimentRunner().RunAsync(
             definition,
@@ -67,7 +100,7 @@ public sealed class ExperimentJsonArtifactWriterTests
                 "decision",
             ],
             root.EnumerateObject().Select(property => property.Name).ToArray());
-        Assert.Equal(2, root.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(3, root.GetProperty("schemaVersion").GetInt32());
         Assert.Equal("run-1", root.GetProperty("runId").GetString());
         Assert.Equal("notEvaluated", root.GetProperty("decision").GetString());
         Assert.Empty(root.GetProperty("runEvaluations").EnumerateArray());
@@ -80,6 +113,23 @@ public sealed class ExperimentJsonArtifactWriterTests
         Assert.Equal("7", success.GetProperty("case").GetString());
         Assert.Equal("output", success.GetProperty("output").GetString());
         Assert.False(success.TryGetProperty("evaluation", out _));
+        Assert.Equal(
+            [
+                "sequence",
+                "caseId",
+                "case",
+                "tags",
+                "trialIndex",
+                "status",
+                "attempts",
+                "hasOutput",
+                "output",
+                "metrics",
+                "correlations",
+                "publications",
+                "failure",
+            ],
+            success.EnumerateObject().Select(property => property.Name));
         var metrics = success.GetProperty("metrics");
         Assert.Equal(
             new string?[] { "a_nan", "b_none", "m_boolean", "z_finite" },
@@ -91,6 +141,16 @@ public sealed class ExperimentJsonArtifactWriterTests
             metrics[0].GetProperty("nonFiniteNumericValue").GetString());
         Assert.Equal("numeric", metrics[0].GetProperty("kind").GetString());
         Assert.Equal("none", metrics[1].GetProperty("kind").GetString());
+        var correlation = Assert.Single(success.GetProperty("correlations").EnumerateArray());
+        Assert.Equal("artifact", correlation.GetProperty("namespace").GetString());
+        Assert.Equal("case", correlation.GetProperty("name").GetString());
+        Assert.Equal("success", correlation.GetProperty("value").GetString());
+        var publication = Assert.Single(success.GetProperty("publications").EnumerateArray());
+        Assert.Equal("artifact-scope", publication.GetProperty("name").GetString());
+        Assert.False(
+            publication.GetProperty("isRequired").GetBoolean(),
+            "Expected the optional publication requirement to be serialized.");
+        Assert.Equal("succeeded", publication.GetProperty("status").GetString());
 
         var failure = items[1];
         Assert.Equal("executionFailed", failure.GetProperty("status").GetString());
@@ -236,6 +296,51 @@ public sealed class ExperimentJsonArtifactWriterTests
             .GetProperty("failure");
         Assert.Equal("retryPolicyFailed", failure.GetProperty("code").GetString());
         Assert.Equal("policy", failure.GetProperty("stage").GetString());
+    }
+
+    [Fact]
+    public async Task Serialize_PrerequisiteFailure_WritesItemAndPublicationFailures()
+    {
+        var strict = new CallbackExperimentItemScopeProvider<int, int>(
+            "strict",
+            isRequired: true,
+            ExperimentItemScopeFailureMode.ExecutionPrerequisite,
+            (_, _) => throw new InvalidOperationException("provider unavailable"));
+        var later = new CallbackExperimentItemScopeProvider<int, int>(
+            "later",
+            isRequired: false,
+            ExperimentItemScopeFailureMode.BestEffort,
+            (_, _) => throw new InvalidOperationException("must not enter"));
+        var result = await new ExperimentRunner().RunAsync(
+            new ExperimentDefinition<int, int>
+            {
+                Name = "prerequisite-artifact",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                Task = (_, _) => ValueTask.FromResult(1),
+                ItemScopes = [strict, later],
+            },
+            new ExperimentRunOptions { RunId = "run-4", MaxConcurrency = 1 },
+            _cancellationToken);
+
+        var json = new ExperimentJsonArtifactWriter(writeIndented: false).Serialize(result);
+
+        using var document = JsonDocument.Parse(json);
+        var item = document.RootElement.GetProperty("items")[0];
+        Assert.Equal("prerequisiteFailed", item.GetProperty("status").GetString());
+        Assert.Equal(
+            "itemScopePrerequisiteFailed",
+            item.GetProperty("failure").GetProperty("code").GetString());
+        Assert.Equal(
+            "publication",
+            item.GetProperty("failure").GetProperty("stage").GetString());
+        var publications = item.GetProperty("publications");
+        Assert.Equal("failed", publications[0].GetProperty("status").GetString());
+        Assert.Equal(
+            "itemScopeFailed",
+            publications[0].GetProperty("failure").GetProperty("code").GetString());
+        Assert.Equal("notAttempted", publications[1].GetProperty("status").GetString());
     }
 
     [Fact]

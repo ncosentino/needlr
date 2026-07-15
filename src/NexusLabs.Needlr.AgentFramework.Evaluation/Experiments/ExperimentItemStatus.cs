@@ -19,4 +19,7 @@ public enum ExperimentItemStatus
 
     /// <summary>Execution succeeded but item evaluation failed.</summary>
     EvaluationFailed,
+
+    /// <summary>An explicitly required item-scope prerequisite prevented task execution.</summary>
+    PrerequisiteFailed,
 }

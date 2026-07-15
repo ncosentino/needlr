@@ -13,7 +13,8 @@ public sealed class ExperimentItemEvaluationContext<TCase, TOutput>
         ExperimentCase<TCase> @case,
         int trialIndex,
         TOutput output,
-        IReadOnlyList<ExperimentAttemptResult> attempts)
+        IReadOnlyList<ExperimentAttemptResult> attempts,
+        ExperimentItemFeatureCollection features)
     {
         RunId = runId;
         Sequence = sequence;
@@ -21,6 +22,7 @@ public sealed class ExperimentItemEvaluationContext<TCase, TOutput>
         TrialIndex = trialIndex;
         Output = output;
         Attempts = attempts;
+        Features = features;
     }
 
     /// <summary>Gets the caller-supplied run identifier.</summary>
@@ -40,4 +42,7 @@ public sealed class ExperimentItemEvaluationContext<TCase, TOutput>
 
     /// <summary>Gets the complete operational attempt history.</summary>
     public IReadOnlyList<ExperimentAttemptResult> Attempts { get; }
+
+    /// <summary>Gets adapter-owned features for this statistical trial.</summary>
+    public ExperimentItemFeatureCollection Features { get; }
 }

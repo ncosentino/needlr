@@ -16,4 +16,7 @@ public enum ExperimentFailureStage
 
     /// <summary>A retry or quality policy produced the failure.</summary>
     Policy,
+
+    /// <summary>An item scope or final result sink produced the failure.</summary>
+    Publication,
 }

@@ -300,6 +300,16 @@ public sealed class ExperimentJsonArtifactWriter
         }
 
         writer.WriteEndArray();
+        writer.WritePropertyName("correlations");
+        WriteCorrelations(writer, item.Correlations);
+        writer.WritePropertyName("publications");
+        writer.WriteStartArray();
+        foreach (var publication in item.Publications)
+        {
+            WritePublication(writer, publication);
+        }
+
+        writer.WriteEndArray();
         writer.WritePropertyName("failure");
         WriteFailure(writer, item.Failure);
         writer.WriteEndObject();
@@ -328,6 +338,38 @@ public sealed class ExperimentJsonArtifactWriter
         writer.WritePropertyName("failure");
         WriteFailure(writer, attempt.Failure);
         writer.WriteEndObject();
+    }
+
+    private static void WritePublication(
+        Utf8JsonWriter writer,
+        ExperimentItemPublicationResult publication)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("name", publication.Name);
+        writer.WriteBoolean("isRequired", publication.IsRequired);
+        writer.WriteString("status", ToJson(publication.Status));
+        writer.WritePropertyName("correlations");
+        WriteCorrelations(writer, publication.Correlations);
+        writer.WritePropertyName("failure");
+        WriteFailure(writer, publication.Failure);
+        writer.WriteEndObject();
+    }
+
+    private static void WriteCorrelations(
+        Utf8JsonWriter writer,
+        IReadOnlyList<ExperimentItemCorrelation> correlations)
+    {
+        writer.WriteStartArray();
+        foreach (var correlation in correlations)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("namespace", correlation.Namespace);
+            writer.WriteString("name", correlation.Name);
+            writer.WriteString("value", correlation.Value);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
     }
 
     private static void WriteRunEvaluation(
@@ -605,6 +647,7 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentItemStatus.TimedOut => "timedOut",
         ExperimentItemStatus.Canceled => "canceled",
         ExperimentItemStatus.EvaluationFailed => "evaluationFailed",
+        ExperimentItemStatus.PrerequisiteFailed => "prerequisiteFailed",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment item status is not defined."),
     };
 
@@ -626,6 +669,8 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentFailureCode.RetryPolicyFailed => "retryPolicyFailed",
         ExperimentFailureCode.RunEvaluationFailed => "runEvaluationFailed",
         ExperimentFailureCode.PolicyFailed => "policyFailed",
+        ExperimentFailureCode.ItemScopeFailed => "itemScopeFailed",
+        ExperimentFailureCode.ItemScopePrerequisiteFailed => "itemScopePrerequisiteFailed",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment failure code is not defined."),
     };
 
@@ -635,7 +680,16 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentFailureStage.ItemEvaluation => "itemEvaluation",
         ExperimentFailureStage.RunEvaluation => "runEvaluation",
         ExperimentFailureStage.Policy => "policy",
+        ExperimentFailureStage.Publication => "publication",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The experiment failure stage is not defined."),
+    };
+
+    private static string ToJson(ExperimentItemPublicationStatus value) => value switch
+    {
+        ExperimentItemPublicationStatus.Succeeded => "succeeded",
+        ExperimentItemPublicationStatus.Failed => "failed",
+        ExperimentItemPublicationStatus.NotAttempted => "notAttempted",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "The item publication status is not defined."),
     };
 
     private static string ToJson(ExperimentMetricKind value) => value switch

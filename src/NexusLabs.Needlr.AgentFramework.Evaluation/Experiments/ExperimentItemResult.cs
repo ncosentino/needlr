@@ -39,6 +39,12 @@ public sealed class ExperimentItemResult<TCase, TOutput>
     /// <summary>Gets immutable normalized metric snapshots.</summary>
     public IReadOnlyList<ExperimentMetricSnapshot> Metrics { get; init; } = [];
 
+    /// <summary>Gets namespaced provider identifiers in item-scope registration order.</summary>
+    public IReadOnlyList<ExperimentItemCorrelation> Correlations { get; init; } = [];
+
+    /// <summary>Gets item-scope publication results in registration order.</summary>
+    public IReadOnlyList<ExperimentItemPublicationResult> Publications { get; init; } = [];
+
     /// <summary>Gets the structured terminal failure, when present.</summary>
     public ExperimentFailure? Failure { get; init; }
 }

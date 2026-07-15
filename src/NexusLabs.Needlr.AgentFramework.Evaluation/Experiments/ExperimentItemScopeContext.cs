@@ -1,25 +1,21 @@
 namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 
 /// <summary>
-/// Provides stable identity and case data to one experiment task attempt.
+/// Provides stable identity and case data when entering one per-trial item scope.
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
-public sealed class ExperimentTaskContext<TCase>
+public sealed class ExperimentItemScopeContext<TCase>
 {
-    internal ExperimentTaskContext(
+    internal ExperimentItemScopeContext(
         string runId,
         int sequence,
         ExperimentCase<TCase> @case,
-        int trialIndex,
-        int attemptNumber,
-        ExperimentItemFeatureCollection features)
+        int trialIndex)
     {
         RunId = runId;
         Sequence = sequence;
         Case = @case;
         TrialIndex = trialIndex;
-        AttemptNumber = attemptNumber;
-        Features = features;
     }
 
     /// <summary>Gets the caller-supplied run identifier.</summary>
@@ -33,10 +29,4 @@ public sealed class ExperimentTaskContext<TCase>
 
     /// <summary>Gets the one-based statistical trial index.</summary>
     public int TrialIndex { get; }
-
-    /// <summary>Gets the one-based operational attempt number.</summary>
-    public int AttemptNumber { get; }
-
-    /// <summary>Gets adapter-owned features for this statistical trial.</summary>
-    public ExperimentItemFeatureCollection Features { get; }
 }

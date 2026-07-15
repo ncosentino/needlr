@@ -8,7 +8,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 public sealed class ExperimentRunResult<TCase, TOutput>
 {
     /// <summary>Gets the current canonical result schema version.</summary>
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     /// <summary>Gets the canonical result schema version.</summary>
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;

@@ -188,9 +188,10 @@ public sealed class ExperimentPolicyTests
                 ExperimentItemStatus.TimedOut,
                 ExperimentItemStatus.Canceled,
                 ExperimentItemStatus.EvaluationFailed,
+                ExperimentItemStatus.PrerequisiteFailed,
             ],
             defaultEvidence.StatusCounts.Select(count => count.Status));
-        Assert.Equal([2, 1, 0, 0, 0], defaultEvidence.StatusCounts.Select(count => count.Count));
+        Assert.Equal([2, 1, 0, 0, 0, 0], defaultEvidence.StatusCounts.Select(count => count.Count));
         Assert.Equal(3, result.PolicyResults[1].StatisticalEvidence!.SampleCount);
     }
 

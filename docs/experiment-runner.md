@@ -1,8 +1,9 @@
 # Experiment Runner
 
 Run finite evaluation cases and repeated trials with bounded concurrency, delayed retries,
-run-level measurement, structured quality policies, and deterministic JSON—without coupling the
-experiment to a specific agent loop, test framework, dataset host, or observability provider.
+per-trial provider scopes, run-level measurement, structured quality policies, and deterministic
+JSON—without coupling the experiment to a specific agent loop, test framework, dataset host, or
+observability provider.
 
 The runner lives in `NexusLabs.Needlr.AgentFramework.Evaluation.Experiments`.
 
@@ -101,17 +102,18 @@ order.
 so expected outputs, metadata, and provider references can live in one domain-specific value.
 
 `ExperimentTaskContext<TCase>` supplies the run ID, stable sequence, materialized case, one-based
-trial index, and one-based attempt number.
+trial index, one-based attempt number, and exact-type adapter features exposed by item scopes.
 
 ## Validation Before Execution
 
 The runner rejects invalid static configuration before starting any item:
 
-- blank experiment, run, source, case, run-evaluator, or policy names;
-- duplicate case IDs, run-evaluator names, or policy names using ordinal comparison;
+- blank experiment, run, source, case, run-evaluator, policy, or item-scope names;
+- duplicate case IDs, run-evaluator names, policy names, or item-scope names using ordinal
+  comparison;
 - non-positive trial counts or `MaxConcurrency`;
 - non-positive retry-policy attempt limits;
-- invalid attempt timeouts;
+- invalid attempt or item-scope cleanup timeouts;
 - an expanded item count that cannot be represented safely.
 
 Source-loading and validation failures throw to the caller. Per-item execution, item-evaluation,
@@ -193,14 +195,66 @@ var second = runner.RunAsync(
 
 The runner:
 
-- acquires one `IExperimentConcurrencyLimiter` lease per attempt;
+- acquires one `IExperimentConcurrencyLimiter` lease before first-attempt scope entry and reuses
+  that lease for the attempt;
+- acquires one lease around each later attempt;
 - awaits acquisition with the caller token;
-- disposes the lease when the attempt actually completes;
+- disposes the lease when scope entry or the attempt completes;
 - releases the lease before computing or waiting through a retry delay;
 - never disposes the caller-owned limiter.
 
 The built-in `ExperimentConcurrencyLimiter` is semaphore-backed and suitable for DI registration.
 Alternate implementations can adapt provider quotas or resource-aware admission logic.
+
+## Per-Trial Item Scopes
+
+`ExperimentDefinition<TCase,TOutput>.ItemScopes` adds provider lifecycle without giving providers
+ownership of scheduling, retries, evaluation, or quality policy.
+
+For every statistical trial, the runner:
+
+1. enters each `IExperimentItemScopeProvider<TCase,TOutput>` once in registration order;
+2. snapshots exact-type scope features into `ExperimentItemFeatureCollection`;
+3. activates entered scopes in registration order around every task attempt;
+4. deactivates them in reverse order before a retry delay;
+5. reactivates them around the single item evaluator after terminal execution success;
+6. sends every terminal quality status to `CompleteAsync` in registration order;
+7. disposes scopes in reverse order and records completion or disposal failure structurally.
+
+The scope object remains alive across delayed retries, but no activation handle, worker slot, or
+shared-limiter lease remains held during the delay. `EnterAsync` receives only the caller token and
+runs outside `AttemptTimeout`; it executes after shared admission so provider setup participates in
+the caller-owned concurrency boundary.
+
+Tasks and evaluators retrieve adapter features by exact registered type:
+
+```csharp
+MyProviderFeature feature =
+    context.Features.GetRequired<MyProviderFeature>();
+```
+
+A feature object must remain valid across repeated activation/deactivation cycles. Scope
+implementations snapshot their feature dictionary during entry, so later mutation does not change
+the trial context. Registering the same exact feature type from a later scope fails that later
+scope deterministically; the first registration remains available.
+
+`ExperimentItemScopeFailureMode.BestEffort` records entry or activation failure as
+`ExperimentItemPublicationStatus.Failed` while quality processing continues.
+`ExecutionPrerequisite` stops the next task attempt and produces `PrerequisiteFailed` with no
+fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
+policy excludes them unless `ExperimentUnknownSampleTreatment.CountAsFailure` is selected.
+
+`IsRequired` does not change item quality. It is retained on each
+`ExperimentItemPublicationResult` for aggregate publication health in the result-sink phase.
+Provider correlations use structured namespace/name/value triples and are copied into both the
+provider result and the item aggregate.
+
+Normal scope teardown is `CompleteAsync` then `DisposeAsync`. Caller cancellation invokes
+`AbortAsync` then `DisposeAsync` in reverse scope order for every entered scope whose completion has
+not started. Once `CompleteAsync` begins, that method owns cancellation-safe termination and the
+runner does not also invoke `AbortAsync`. Completion, abort, and disposal run without ambient
+activation and must use scope-owned state. `ExperimentRunOptions.ItemScopeCleanupTimeout` bounds
+cancellation cleanup and terminal disposal; it defaults to 30 seconds.
 
 ## Cancellation and Timeouts
 
@@ -210,6 +264,8 @@ Caller cancellation:
   evaluation, and policies;
 - wins over simultaneous timeout or execution failure;
 - is rethrown from `RunAsync` with the original caller token;
+- aborts every entered incomplete item scope and disposes scopes in reverse order within the
+  configured cleanup timeout;
 - produces no completed run result.
 
 `AttemptTimeout` is cooperative and restarts for every attempt. The task receives a linked
@@ -282,7 +338,7 @@ Default item treatment is:
 | `ExecutionFailed` | Denominator failure. |
 | `TimedOut` | Denominator failure. |
 | Task-originated `Canceled` | Denominator failure. |
-| `EvaluationFailed`, missing/invalid metric, or failed metric diagnostics | Exclusion that forces `Inconclusive`. |
+| `EvaluationFailed`, `PrerequisiteFailed`, missing/invalid metric, or failed metric diagnostics | Exclusion that forces `Inconclusive`. |
 
 `ExperimentUnknownSampleTreatment.CountAsFailure` is the explicit pessimistic alternative.
 
@@ -337,11 +393,12 @@ passing decision.
 
 ## JSON Artifact
 
-`ExperimentJsonArtifactWriter` writes schema version 2 with fixed Needlr-owned property ordering:
+`ExperimentJsonArtifactWriter` writes schema version 3 with fixed Needlr-owned property ordering:
 
 - source/trial item order;
 - complete attempt history and delay-before-next-attempt values;
 - normalized item metrics;
+- namespaced item correlations and ordered item-scope publication results;
 - ordered run-evaluation results;
 - ordered policy results and structured evidence;
 - the overall run decision;
@@ -371,10 +428,9 @@ Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.
 
 ## Provider Convergence Roadmap
 
-The scheduler and quality core are complete, but provider lifecycle and publication adapters remain
-separate reviewed work:
+The scheduler, quality core, and provider-neutral per-trial lifecycle seam are complete. Remaining
+provider convergence stays split into reviewed work:
 
-- [#49](https://github.com/ncosentino/needlr/issues/49) adds per-trial provider lifecycle scopes.
 - [#50](https://github.com/ncosentino/needlr/issues/50) adds result sinks and publication outcomes.
 - [#51](https://github.com/ncosentino/needlr/issues/51),
   [#52](https://github.com/ncosentino/needlr/issues/52), and
@@ -396,5 +452,5 @@ dotnet run --project src/Examples/AgentFramework/ExperimentRunnerApp
 ```
 
 It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
-evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v2 JSON artifact under
+evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v3 JSON artifact under
 the system temporary directory.

@@ -65,8 +65,19 @@ public sealed class ExperimentRunner : IExperimentRunner
                 "An experiment retry policy must permit at least one attempt.");
         }
 
+        if (options.ItemScopeCleanupTimeout <= TimeSpan.Zero
+            || options.ItemScopeCleanupTimeout == Timeout.InfiniteTimeSpan
+            || options.ItemScopeCleanupTimeout > MaxAttemptTimeout)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.ItemScopeCleanupTimeout),
+                options.ItemScopeCleanupTimeout,
+                $"Experiment item-scope cleanup timeout must be positive and no greater than {MaxAttemptTimeout}.");
+        }
+
         var runEvaluators = ValidateRunEvaluators(definition.RunEvaluators);
         var policies = ValidatePolicies(definition.Policies);
+        var itemScopes = ValidateItemScopes(definition.ItemScopes);
         cancellationToken.ThrowIfCancellationRequested();
         ExperimentCaseSourceResult<TCase> sourceResult;
         try
@@ -96,6 +107,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                     options,
                     workItems,
                     results,
+                    itemScopes,
                     workerCount,
                     cancellationToken).ConfigureAwait(false);
             }
@@ -149,6 +161,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         ExperimentRunOptions options,
         WorkItem<TCase>[] workItems,
         ExperimentItemResult<TCase, TOutput>[] results,
+        IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> itemScopeProviders,
         int workerCount,
         CancellationToken cancellationToken)
     {
@@ -168,9 +181,20 @@ public sealed class ExperimentRunner : IExperimentRunner
                 SingleWriter = workerCount == 1,
                 AllowSynchronousContinuations = false,
             });
-        foreach (var workItem in workItems)
+        WorkItemState<TCase, TOutput>?[] states = workItems
+            .Select(workItem => new WorkItemState<TCase, TOutput>(
+                workItem,
+                new ExperimentItemScopeManager<TCase, TOutput>(
+                    itemScopeProviders,
+                    new ExperimentItemScopeContext<TCase>(
+                        options.RunId,
+                        workItem.Sequence,
+                        workItem.Case,
+                        workItem.TrialIndex))))
+            .ToArray();
+        foreach (var state in states)
         {
-            if (!ready.Writer.TryWrite(new WorkItemState<TCase, TOutput>(workItem)))
+            if (!ready.Writer.TryWrite(state!))
             {
                 throw new InvalidOperationException(
                     "The initial experiment ready queue could not accept materialized work.");
@@ -179,11 +203,19 @@ public sealed class ExperimentRunner : IExperimentRunner
 
         var remainingItems = workItems.Length;
         long retrySequence = 0;
-        void CompleteItem(
+        async Task CompleteItemAsync(
             WorkItemState<TCase, TOutput> state,
             ExperimentItemResult<TCase, TOutput> result)
         {
-            results[state.WorkItem.Sequence] = result;
+            var finalizedResult = await state.ItemScopes
+                .CompleteAndDisposeAsync(
+                    result,
+                    options.ItemScopeCleanupTimeout,
+                    _timeProvider,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            results[state.WorkItem.Sequence] = finalizedResult;
+            states[state.WorkItem.Sequence] = null;
             if (Interlocked.Decrement(ref remainingItems) == 0)
             {
                 delayed.Writer.TryComplete();
@@ -211,7 +243,20 @@ public sealed class ExperimentRunner : IExperimentRunner
                             options,
                             state,
                             cancellationToken).ConfigureAwait(false);
-                        state.Attempts.Add(attemptExecution.Attempt);
+                        if (attemptExecution.PrerequisiteFailure is not null)
+                        {
+                            await CompleteItemAsync(
+                               state,
+                               CreateFailedItem(
+                                   state,
+                                   ExperimentItemStatus.PrerequisiteFailed,
+                                   attemptExecution.PrerequisiteFailure))
+                               .ConfigureAwait(false);
+                            continue;
+                        }
+
+                        var attempt = attemptExecution.Attempt!;
+                        state.Attempts.Add(attempt);
                         if (attemptExecution.Succeeded)
                         {
                             var successfulItem = await EvaluateSuccessfulItemAsync(
@@ -220,13 +265,14 @@ public sealed class ExperimentRunner : IExperimentRunner
                                 state,
                                 attemptExecution.Output!,
                                 cancellationToken).ConfigureAwait(false);
-                            CompleteItem(state, successfulItem);
+                            await CompleteItemAsync(state, successfulItem)
+                                .ConfigureAwait(false);
                             continue;
                         }
 
                         ExperimentRetryDecision? retryDecision = null;
                         if (options.RetryPolicy is { } retryPolicy
-                            && attemptExecution.Attempt.AttemptNumber < retryPolicy.MaxAttempts)
+                            && attempt.AttemptNumber < retryPolicy.MaxAttempts)
                         {
                             try
                             {
@@ -235,7 +281,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                                     state.WorkItem.Sequence,
                                     state.WorkItem.Case.Id,
                                     state.WorkItem.TrialIndex,
-                                    attemptExecution.Attempt));
+                                    attempt));
                                 ArgumentNullException.ThrowIfNull(retryDecision);
                                 if (retryDecision.ShouldRetry)
                                 {
@@ -246,16 +292,17 @@ public sealed class ExperimentRunner : IExperimentRunner
                             }
                             catch (Exception ex)
                             {
-                                var policyFailure = CreateFailure(
+                                var policyFailure = ExperimentFailureFactory.Create(
                                     ExperimentFailureCode.RetryPolicyFailed,
                                     ExperimentFailureStage.Policy,
                                     ex);
-                                CompleteItem(
+                                await CompleteItemAsync(
                                     state,
                                     CreateFailedItem(
                                         state,
                                         ExperimentItemStatus.ExecutionFailed,
-                                        policyFailure));
+                                        policyFailure))
+                                    .ConfigureAwait(false);
                                 continue;
                             }
                         }
@@ -279,18 +326,71 @@ public sealed class ExperimentRunner : IExperimentRunner
                             continue;
                         }
 
-                        CompleteItem(
+                        await CompleteItemAsync(
                             state,
                             CreateFailedItem(
                                 state,
                                 attemptExecution.ItemStatus,
-                                attemptExecution.Failure!));
+                                attemptExecution.Failure!))
+                            .ConfigureAwait(false);
                     }
                 },
                 CancellationToken.None);
         }
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        try
+        {
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            var cleanupFailures = await AbortItemScopesAsync(
+                states,
+                options.ItemScopeCleanupTimeout).ConfigureAwait(false);
+            if (cleanupFailures.Count == 0)
+            {
+                throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+            }
+
+            throw new OperationCanceledException(
+                "Experiment execution was canceled and one or more item scopes failed to clean up.",
+                new AggregateException([ex, .. cleanupFailures]),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            var cleanupFailures = await AbortItemScopesAsync(
+                states,
+                options.ItemScopeCleanupTimeout).ConfigureAwait(false);
+            if (cleanupFailures.Count == 0)
+            {
+                throw;
+            }
+
+            throw new AggregateException([ex, .. cleanupFailures]);
+        }
+    }
+
+    private async Task<IReadOnlyList<Exception>> AbortItemScopesAsync<TCase, TOutput>(
+        IReadOnlyList<WorkItemState<TCase, TOutput>?> states,
+        TimeSpan cleanupTimeout)
+    {
+        var failures = new List<Exception>();
+        using var cleanupCancellation =
+            new CancellationTokenSource(cleanupTimeout, _timeProvider);
+        foreach (var state in states)
+        {
+            if (state is null)
+            {
+                continue;
+            }
+
+            failures.AddRange(await state.ItemScopes
+                .AbortAndDisposeAsync(cleanupCancellation.Token, cleanupTimeout)
+                .ConfigureAwait(false));
+        }
+
+        return Array.AsReadOnly(failures.ToArray());
     }
 
     private async Task RunRetrySchedulerAsync<TCase, TOutput>(
@@ -392,6 +492,22 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+            var entryFailure = await state.ItemScopes
+                .EnterAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (entryFailure is not null)
+            {
+                return CreatePrerequisiteFailure<TOutput>(entryFailure);
+            }
+
+            using var activation = state.ItemScopes.Activate(
+                enforceExecutionPrerequisites: true,
+                out var activationFailure);
+            if (activationFailure is not null)
+            {
+                return CreatePrerequisiteFailure<TOutput>(activationFailure);
+            }
+
             var attemptNumber = state.Attempts.Count + 1;
             var startedAt = _timeProvider.GetUtcNow();
             var attemptTimestamp = _timeProvider.GetTimestamp();
@@ -409,7 +525,8 @@ public sealed class ExperimentRunner : IExperimentRunner
                 state.WorkItem.Sequence,
                 state.WorkItem.Case,
                 state.WorkItem.TrialIndex,
-                attemptNumber);
+                attemptNumber,
+                state.ItemScopes.Features);
             try
             {
                 var output = await definition.Task(context, attemptToken).ConfigureAwait(false);
@@ -422,7 +539,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                         attemptTimestamp,
                         ExperimentAttemptStatus.TimedOut,
                         ExperimentItemStatus.TimedOut,
-                        CreateFailure(
+                        ExperimentFailureFactory.Create(
                             ExperimentFailureCode.AttemptTimedOut,
                             ExperimentFailureStage.Execution,
                             new TimeoutException(
@@ -456,7 +573,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                     attemptTimestamp,
                     ExperimentAttemptStatus.TimedOut,
                     ExperimentItemStatus.TimedOut,
-                    CreateFailure(
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.AttemptTimedOut,
                         ExperimentFailureStage.Execution,
                         ex));
@@ -469,7 +586,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                     attemptTimestamp,
                     ExperimentAttemptStatus.Canceled,
                     ExperimentItemStatus.Canceled,
-                    CreateFailure(
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.TaskCanceled,
                         ExperimentFailureStage.Execution,
                         ex));
@@ -492,7 +609,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                         attemptTimestamp,
                         ExperimentAttemptStatus.TimedOut,
                         ExperimentItemStatus.TimedOut,
-                        CreateFailure(
+                        ExperimentFailureFactory.Create(
                             ExperimentFailureCode.AttemptTimedOut,
                             ExperimentFailureStage.Execution,
                             ex));
@@ -504,7 +621,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                     attemptTimestamp,
                     ExperimentAttemptStatus.Failed,
                     ExperimentItemStatus.ExecutionFailed,
-                    CreateFailure(
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.ExecutionFailed,
                         ExperimentFailureStage.Execution,
                         ex));
@@ -543,13 +660,17 @@ public sealed class ExperimentRunner : IExperimentRunner
 
         try
         {
+            using var activation = state.ItemScopes.Activate(
+                enforceExecutionPrerequisites: false,
+                out _);
             var evaluationContext = new ExperimentItemEvaluationContext<TCase, TOutput>(
                 runId,
                 state.WorkItem.Sequence,
                 state.WorkItem.Case,
                 state.WorkItem.TrialIndex,
                 output,
-                attempts);
+                attempts,
+                state.ItemScopes.Features);
             var evaluation = await definition.ItemEvaluator(
                 evaluationContext,
                 cancellationToken).ConfigureAwait(false);
@@ -569,7 +690,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         }
         catch (Exception ex)
         {
-            var failure = CreateFailure(
+            var failure = ExperimentFailureFactory.Create(
                 ExperimentFailureCode.EvaluationFailed,
                 ExperimentFailureStage.ItemEvaluation,
                 ex);
@@ -623,7 +744,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                 {
                     Name = evaluator.Name,
                     Status = ExperimentRunEvaluationStatus.Failed,
-                    Failure = CreateFailure(
+                    Failure = ExperimentFailureFactory.Create(
                         ExperimentFailureCode.RunEvaluationFailed,
                         ExperimentFailureStage.RunEvaluation,
                         ex),
@@ -693,7 +814,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                     Kind = policy.Kind,
                     IsRequired = policy.IsRequired,
                     Decision = EvaluationDecision.Inconclusive,
-                    Failure = CreateFailure(
+                    Failure = ExperimentFailureFactory.Create(
                         ExperimentFailureCode.PolicyFailed,
                         ExperimentFailureStage.Policy,
                         ex),
@@ -767,6 +888,35 @@ public sealed class ExperimentRunner : IExperimentRunner
                 throw new ArgumentException(
                     $"Experiment contains duplicate policy name '{policy.Name}'.",
                     nameof(policies));
+            }
+        }
+
+        return copy;
+    }
+
+    private static IExperimentItemScopeProvider<TCase, TOutput>[] ValidateItemScopes<TCase, TOutput>(
+        IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> providers)
+    {
+        ArgumentNullException.ThrowIfNull(providers);
+        var copy = providers.ToArray();
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var provider in copy)
+        {
+            ArgumentNullException.ThrowIfNull(provider);
+            ArgumentException.ThrowIfNullOrWhiteSpace(provider.Name);
+            if (!Enum.IsDefined(provider.FailureMode))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(providers),
+                    provider.FailureMode,
+                    $"Item-scope provider '{provider.Name}' has an undefined failure mode.");
+            }
+
+            if (!names.Add(provider.Name))
+            {
+                throw new ArgumentException(
+                    $"Experiment contains duplicate item-scope provider name '{provider.Name}'.",
+                    nameof(providers));
             }
         }
 
@@ -860,6 +1010,16 @@ public sealed class ExperimentRunner : IExperimentRunner
             Failure = failure,
         };
 
+    private static AttemptExecution<TOutput> CreatePrerequisiteFailure<TOutput>(
+        ExperimentFailure failure) =>
+        new()
+        {
+            Succeeded = false,
+            ItemStatus = ExperimentItemStatus.PrerequisiteFailed,
+            Failure = failure,
+            PrerequisiteFailure = failure,
+        };
+
     private ExperimentItemResult<TCase, TOutput> CreateFailedItem<TCase, TOutput>(
         WorkItemState<TCase, TOutput> state,
         ExperimentItemStatus itemStatus,
@@ -916,19 +1076,6 @@ public sealed class ExperimentRunner : IExperimentRunner
             DelayBeforeNextAttempt = delay,
         };
 
-    private static ExperimentFailure CreateFailure(
-        ExperimentFailureCode code,
-        ExperimentFailureStage stage,
-        Exception exception) =>
-        new()
-        {
-            Code = code,
-            Stage = stage,
-            ExceptionType = exception.GetType().FullName ?? exception.GetType().Name,
-            Message = exception.Message,
-            IsRetryable = false,
-        };
-
     private static async Task IgnoreExpectedCancellationAsync(
         Task task,
         CancellationToken cancellationToken)
@@ -949,14 +1096,19 @@ public sealed class ExperimentRunner : IExperimentRunner
 
     private sealed class WorkItemState<TCase, TOutput>
     {
-        public WorkItemState(WorkItem<TCase> workItem)
+        public WorkItemState(
+            WorkItem<TCase> workItem,
+            ExperimentItemScopeManager<TCase, TOutput> itemScopes)
         {
             WorkItem = workItem;
+            ItemScopes = itemScopes;
         }
 
         public WorkItem<TCase> WorkItem { get; }
 
         public List<ExperimentAttemptResult> Attempts { get; } = [];
+
+        public ExperimentItemScopeManager<TCase, TOutput> ItemScopes { get; }
     }
 
     private sealed record ScheduledRetry<TCase, TOutput>(
@@ -970,10 +1122,12 @@ public sealed class ExperimentRunner : IExperimentRunner
 
         public TOutput? Output { get; init; }
 
-        public required ExperimentAttemptResult Attempt { get; init; }
+        public ExperimentAttemptResult? Attempt { get; init; }
 
         public required ExperimentItemStatus ItemStatus { get; init; }
 
         public ExperimentFailure? Failure { get; init; }
+
+        public ExperimentFailure? PrerequisiteFailure { get; init; }
     }
 }

@@ -105,7 +105,7 @@ public sealed class ExperimentBinarySuccessPolicy<TCase, TOutput> :
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var statusCounts = new int[5];
+        var statusCounts = new int[6];
         var attemptCount = 0;
         var successCount = 0;
         var failureCount = 0;
@@ -147,6 +147,7 @@ public sealed class ExperimentBinarySuccessPolicy<TCase, TOutput> :
                     break;
 
                 case ExperimentItemStatus.EvaluationFailed:
+                case ExperimentItemStatus.PrerequisiteFailed:
                     exclusionCount++;
                     break;
 
@@ -205,6 +206,9 @@ public sealed class ExperimentBinarySuccessPolicy<TCase, TOutput> :
             new ExperimentItemStatusCount(
                 ExperimentItemStatus.EvaluationFailed,
                 statusCounts[(int)ExperimentItemStatus.EvaluationFailed]),
+            new ExperimentItemStatusCount(
+                ExperimentItemStatus.PrerequisiteFailed,
+                statusCounts[(int)ExperimentItemStatus.PrerequisiteFailed]),
         };
         return ValueTask.FromResult(new ExperimentPolicyVerdict
         {
