@@ -5323,6 +5323,15 @@ copied into exported span attributes. This prevents unrelated, sensitive, or hig
 application context from being sent to Langfuse or downstream services accidentally.</p>
 </div>
 <h2 id="experiments-datasets-and-runs">Experiments (datasets and runs)<a class="headerlink" href="#experiments-datasets-and-runs" title="Permanent link">&para;</a></h2>
+<p>The API in this section is the low-level/manual Langfuse experiment-publication surface. It does not
+provide collection scheduling, retries, aggregate evaluation, or quality policy. The canonical bulk
+experiment path is the provider-neutral runner; convergence is tracked by
+<a href="https://github.com/ncosentino/needlr/issues/49">#49</a> through
+<a href="https://github.com/ncosentino/needlr/issues/53">#53</a>.</p>
+<p>Until those adapters land, callers must compose the manual item loop below. Do not add a second
+scheduler or policy engine to the Langfuse package: the existing scenario, link, score, identity,
+resilience, and publication-health types are the provider primitives that the generic runner will
+reuse.</p>
 <p>Map each eval case to a Langfuse <strong>dataset item</strong>, then on every run link the trace it
 produces as a <strong>dataset run item</strong>. Langfuse's experiment-comparison view lines runs up
 side by side and shows how scores move across commits.</p>

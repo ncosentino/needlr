@@ -5212,10 +5212,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#phase-1-core-scheduler-and-canonical-result" class="md-nav__link">
+  <a href="#phase-1-core-scheduler-and-canonical-result-delivered-by-43" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: core scheduler and canonical result
+        Phase 1: core scheduler and canonical result — delivered by #43
       
     </span>
   </a>
@@ -5223,10 +5223,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-2-retries-run-evaluation-and-policy" class="md-nav__link">
+  <a href="#phase-2-retries-run-evaluation-and-policy-delivered-by-45" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 2: retries, run evaluation, and policy
+        Phase 2: retries, run evaluation, and policy — delivered by #45
       
     </span>
   </a>
@@ -5234,10 +5234,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-3-meai-reporting-adapter" class="md-nav__link">
+  <a href="#phase-3a-per-trial-provider-lifecycle-scopes-49" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 3: MEAI Reporting adapter
+        Phase 3A: per-trial provider lifecycle scopes — #49
       
     </span>
   </a>
@@ -5245,10 +5245,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-4-langfuse-adapters" class="md-nav__link">
+  <a href="#phase-3b-result-sinks-and-publication-outcomes-50" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 4: Langfuse adapters
+        Phase 3B: result sinks and publication outcomes — #50
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4a-langfuse-hosted-case-source-51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4A: Langfuse hosted case source — #51
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4b-langfuse-per-trial-trace-scope-52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4B: Langfuse per-trial trace scope — #52
       
     </span>
   </a>
@@ -5272,10 +5294,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#34-dataset-run-identity-link-status-and-run-level-scores" class="md-nav__link">
+  <a href="#34-dataset-run-identity-and-link-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        34 dataset-run identity, link status, and run-level scores;
+        34 dataset-run identity and link status;
       
     </span>
   </a>
@@ -5283,16 +5305,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#35-idempotency-and-publication-health-for-high-volume-workloads" class="md-nav__link">
+  <a href="#35-idempotency-and-publication-health" class="md-nav__link">
     <span class="md-ellipsis">
       
-        35 idempotency and publication health for high-volume workloads.
+        35 idempotency and publication health;
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="35 idempotency and publication health for high-volume workloads.">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#49-provider-lifecycle-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        49 provider lifecycle scopes.
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="49 provider lifecycle scopes.">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-4c-langfuse-result-sink-and-canonical-guidance-53" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4C: Langfuse result sink and canonical guidance — #53
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-meai-reporting-adapter-as-the-second-provider-proof-54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: MEAI Reporting adapter as the second-provider proof — #54
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#rejected-alternatives" class="md-nav__link">
@@ -5432,9 +5487,25 @@
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
 <p>Accepted - proceed through the separately reviewed implementation phases below.</p>
 <p>This ADR was the design deliverable for <a href="https://github.com/ncosentino/needlr/issues/36">issue #36</a>.
-Phase 1 implementation is tracked by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
-Phase 2 implementation is tracked by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>;
-later phases still require their own issues and pull requests.</p>
+Phase 1 was delivered by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
+Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.</p>
+<p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
+Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
+ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
+of the generic runner.</p>
+<p>The corrected remaining sequence is:</p>
+<ol>
+<li>provider lifecycle scopes (<a href="https://github.com/ncosentino/needlr/issues/49">#49</a>);</li>
+<li>provider sinks and publication outcomes (<a href="https://github.com/ncosentino/needlr/issues/50">#50</a>);</li>
+<li>Langfuse hosted source, item scope, and sink convergence
+   (<a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
+   <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>,
+   <a href="https://github.com/ncosentino/needlr/issues/53">#53</a>);</li>
+<li>MEAI Reporting as the second-provider proof
+   (<a href="https://github.com/ncosentino/needlr/issues/54">#54</a>).</li>
+</ol>
+<p>No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
+Langfuse convergence is complete.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <p>Needlr should add a provider-neutral experiment runner that owns:</p>
 <ul>
@@ -6142,7 +6213,7 @@ later phases still require their own issues and pull requests.</p>
 <p>The implementation must revalidate against the then-current stable MEAI packages before coding. This ADR was verified against the repository's pinned <code>10.5.0</code> surface and the current stable <code>10.7.0</code> responsibility boundary.</p>
 <h2 id="phased-implementation-plan">Phased implementation plan<a class="headerlink" href="#phased-implementation-plan" title="Permanent link">&para;</a></h2>
 <p>No phase begins from this ADR alone. Each phase requires its own issue and reviewed pull request.</p>
-<h3 id="phase-1-core-scheduler-and-canonical-result">Phase 1: core scheduler and canonical result<a class="headerlink" href="#phase-1-core-scheduler-and-canonical-result" title="Permanent link">&para;</a></h3>
+<h3 id="phase-1-core-scheduler-and-canonical-result-delivered-by-43">Phase 1: core scheduler and canonical result — delivered by #43<a class="headerlink" href="#phase-1-core-scheduler-and-canonical-result-delivered-by-43" title="Permanent link">&para;</a></h3>
 <p>Deliver:</p>
 <ul>
 <li>finite case source and validation;</li>
@@ -6175,7 +6246,7 @@ later phases still require their own issues and pull requests.</p>
 <li>canonical JSON output;</li>
 <li>no test-framework dependency.</li>
 </ul>
-<h3 id="phase-2-retries-run-evaluation-and-policy">Phase 2: retries, run evaluation, and policy<a class="headerlink" href="#phase-2-retries-run-evaluation-and-policy" title="Permanent link">&para;</a></h3>
+<h3 id="phase-2-retries-run-evaluation-and-policy-delivered-by-45">Phase 2: retries, run evaluation, and policy — delivered by #45<a class="headerlink" href="#phase-2-retries-run-evaluation-and-policy-delivered-by-45" title="Permanent link">&para;</a></h3>
 <p>Deliver:</p>
 <ul>
 <li>explicit retry policy and attempt history;</li>
@@ -6206,14 +6277,143 @@ later phases still require their own issues and pull requests.</p>
 <li>estimate, confidence interval, sample count, attempts, and decision;</li>
 <li>no credentials.</li>
 </ul>
-<h3 id="phase-3-meai-reporting-adapter">Phase 3: MEAI Reporting adapter<a class="headerlink" href="#phase-3-meai-reporting-adapter" title="Permanent link">&para;</a></h3>
+<h3 id="phase-3a-per-trial-provider-lifecycle-scopes-49">Phase 3A: per-trial provider lifecycle scopes — #49<a class="headerlink" href="#phase-3a-per-trial-provider-lifecycle-scopes-49" title="Permanent link">&para;</a></h3>
 <p>Deliver:</p>
 <ul>
-<li>one <code>ScenarioRun</code> per item;</li>
+<li>provider-neutral item scopes configured on the experiment definition;</li>
+<li>one scope entry per statistical trial, not per retry attempt;</li>
+<li>scope reactivation around every attempt and item evaluation after delayed re-enqueue;</li>
+<li>typed adapter features available to task and evaluator contexts;</li>
+<li>namespaced item correlations and structured item publication outcomes;</li>
+<li>terminal completion notification, caller-cancellation abort, and reverse-order disposal.</li>
+</ul>
+<p>Required TDD:</p>
+<ul>
+<li>one scope per trial across multiple attempts;</li>
+<li>scope reactivation after retry delay and worker changes;</li>
+<li>nested scope ordering and reverse disposal;</li>
+<li>the single item evaluator runs inside the same scope;</li>
+<li>all terminal item statuses reach scope completion;</li>
+<li>cancellation invokes abort and does not publish a completed item.</li>
+</ul>
+<h3 id="phase-3b-result-sinks-and-publication-outcomes-50">Phase 3B: result sinks and publication outcomes — #50<a class="headerlink" href="#phase-3b-result-sinks-and-publication-outcomes-50" title="Permanent link">&para;</a></h3>
+<p>Deliver:</p>
+<ul>
+<li>deterministic result-sink fan-out;</li>
+<li>required and optional sink semantics;</li>
+<li><code>ExperimentRunOutcome&lt;TCase,TOutput&gt;</code> containing the canonical result and publication outcomes;</li>
+<li>aggregate <code>NotRequested</code>, <code>Succeeded</code>, <code>PartiallyFailed</code>, or <code>Failed</code> publication status;</li>
+<li>item-scope and final-sink publication aggregation;</li>
+<li>an intentional alpha return-type correction for <code>IExperimentRunner.RunAsync</code>;</li>
+<li>schema-versioned outcome serialization.</li>
+</ul>
+<p>Required TDD:</p>
+<ul>
+<li>deterministic sink order;</li>
+<li>required versus optional failure aggregation;</li>
+<li>one failing sink does not suppress another;</li>
+<li>publication status never changes the quality decision;</li>
+<li>caller cancellation skips final sinks;</li>
+<li>runs without scopes or sinks remain <code>NotRequested</code>.</li>
+</ul>
+<h3 id="phase-4a-langfuse-hosted-case-source-51">Phase 4A: Langfuse hosted case source — #51<a class="headerlink" href="#phase-4a-langfuse-hosted-case-source-51" title="Permanent link">&para;</a></h3>
+<p>Deliver:</p>
+<ul>
+<li>paginated read-side dataset and dataset-item APIs;</li>
+<li>latest and explicit version-timestamp selection;</li>
+<li>finite hosted-case materialization before execution;</li>
+<li>caller-defined mapping from hosted item data to <code>ExperimentCase&lt;TCase&gt;</code>;</li>
+<li>dataset identity and version in <code>ExperimentSourceReference</code>;</li>
+<li>coherent disabled behavior that cannot silently produce a passing empty run.</li>
+</ul>
+<p>Required TDD:</p>
+<ul>
+<li>pagination and stable source ordering;</li>
+<li>version selection and source identity;</li>
+<li>input, expected-output, and metadata mapping;</li>
+<li>cancellation and malformed-response handling before execution;</li>
+<li>duplicate case-id validation;</li>
+<li>disabled mode does not silently pass.</li>
+</ul>
+<h3 id="phase-4b-langfuse-per-trial-trace-scope-52">Phase 4B: Langfuse per-trial trace scope — #52<a class="headerlink" href="#phase-4b-langfuse-per-trial-trace-scope-52" title="Permanent link">&para;</a></h3>
+<p>Prerequisites:</p>
+<ul>
+<li>
+<h1 id="33-context-safe-item-execution">33 context-safe item execution;<a class="headerlink" href="#33-context-safe-item-execution" title="Permanent link">&para;</a></h1>
+</li>
+<li>
+<h1 id="34-dataset-run-identity-and-link-status">34 dataset-run identity and link status;<a class="headerlink" href="#34-dataset-run-identity-and-link-status" title="Permanent link">&para;</a></h1>
+</li>
+<li>
+<h1 id="35-idempotency-and-publication-health">35 idempotency and publication health;<a class="headerlink" href="#35-idempotency-and-publication-health" title="Permanent link">&para;</a></h1>
+</li>
+<li>
+<h1 id="49-provider-lifecycle-scopes">49 provider lifecycle scopes.<a class="headerlink" href="#49-provider-lifecycle-scopes" title="Permanent link">&para;</a></h1>
+</li>
+</ul>
+<p>Deliver:</p>
+<ul>
+<li>one scenario trace per statistical trial;</li>
+<li>every retry attempt beneath the same trial trace;</li>
+<li>one hosted dataset-run-item link per trial;</li>
+<li>trace-only local experiments when no hosted item is bound;</li>
+<li>namespaced trace, dataset-run-item, and dataset-run correlations;</li>
+<li>structured link/trace publication outcomes;</li>
+<li>strict and best-effort prerequisite behavior;</li>
+<li>one shared internal lifecycle implementation used by both the adapter and
+  <code>ILangfuseExperimentRun.RunItemAsync</code>;</li>
+<li>coherent disabled mode.</li>
+</ul>
+<p>Required TDD:</p>
+<ul>
+<li>nested and parallel ambient-context restoration;</li>
+<li>delayed retry reactivation on another worker;</li>
+<li>no trace-per-attempt behavior;</li>
+<li>local trace-only mode;</li>
+<li>linked, failed, inconsistent, not-sampled, and disabled outcomes;</li>
+<li>strict failure stops execution while best effort preserves it;</li>
+<li>caller cancellation aborts and restores prior context.</li>
+</ul>
+<h3 id="phase-4c-langfuse-result-sink-and-canonical-guidance-53">Phase 4C: Langfuse result sink and canonical guidance — #53<a class="headerlink" href="#phase-4c-langfuse-result-sink-and-canonical-guidance-53" title="Permanent link">&para;</a></h3>
+<p>Deliver:</p>
+<ul>
+<li>item metric projection to trace scores;</li>
+<li>successful run-evaluation metric projection to dataset-run scores;</li>
+<li>explicit projection of the already-computed run decision without recalculating policy;</li>
+<li>generic publication status backed by the existing Langfuse publication snapshot;</li>
+<li>required and optional Langfuse publication behavior;</li>
+<li>the same experiment definition running locally, with disabled Langfuse, and with hosted Langfuse;</li>
+<li>the generic runner documented as the canonical bulk-experiment path;</li>
+<li><code>ILangfuseExperimentRun</code> retained as the low-level/manual escape hatch.</li>
+</ul>
+<p>Required TDD:</p>
+<ul>
+<li>item and run score projection;</li>
+<li>decision projection without duplicate policy computation;</li>
+<li>unresolved and inconsistent dataset-run identity;</li>
+<li>one failing sink does not suppress another;</li>
+<li>disabled mode;</li>
+<li>publication status remains independent from quality decision;</li>
+<li>the same definition works with and without credentials.</li>
+</ul>
+<p>Runnable example:</p>
+<ul>
+<li>one public experiment definition;</li>
+<li>local credential-free execution;</li>
+<li>disabled Langfuse execution with identical quality results;</li>
+<li>optional hosted source, trace links, and score publication when configured;</li>
+<li>no standalone telemetry ownership in a DI host.</li>
+</ul>
+<h3 id="phase-5-meai-reporting-adapter-as-the-second-provider-proof-54">Phase 5: MEAI Reporting adapter as the second-provider proof — #54<a class="headerlink" href="#phase-5-meai-reporting-adapter-as-the-second-provider-proof-54" title="Permanent link">&para;</a></h3>
+<p>Deliver:</p>
+<ul>
+<li>one <code>ScenarioRun</code> per trial;</li>
 <li>execution/scenario/iteration mapping;</li>
-<li>explicit response-reuse mode;</li>
-<li>MEAI result-store publication outcome;</li>
-<li>report generation left to MEAI tooling.</li>
+<li>explicit case/trial replay, fresh-per-run, and disabled response-reuse modes;</li>
+<li>coordinated item scope and single item-evaluator integration;</li>
+<li>MEAI result-store persistence as item publication outcome;</li>
+<li>report generation left to MEAI tooling;</li>
+<li>Reporting-specific dependencies isolated from the provider-neutral core.</li>
 </ul>
 <p>Required TDD:</p>
 <ul>
@@ -6223,7 +6423,7 @@ later phases still require their own issues and pull requests.</p>
 <li>no execution retry on evaluator or store failure;</li>
 <li>cache isolation across trial and run modes;</li>
 <li>response-cache replay across retries documented and verified;</li>
-<li>disposal persists results;</li>
+<li>disposal persists completed results;</li>
 <li>result-store failure appears as item publication failure;</li>
 <li>cancellation abort does not persist an incomplete <code>ScenarioRun</code>;</li>
 <li>caller cancellation preserved.</li>
@@ -6233,44 +6433,6 @@ later phases still require their own issues and pull requests.</p>
 <li>credential-free <code>ScriptedChatClient</code>;</li>
 <li>cached deterministic replay and fresh stochastic mode;</li>
 <li>generated MEAI report from the configured store.</li>
-</ul>
-<h3 id="phase-4-langfuse-adapters">Phase 4: Langfuse adapters<a class="headerlink" href="#phase-4-langfuse-adapters" title="Permanent link">&para;</a></h3>
-<p>Prerequisites:</p>
-<ul>
-<li>
-<h1 id="33-context-safe-item-execution">33 context-safe item execution;<a class="headerlink" href="#33-context-safe-item-execution" title="Permanent link">&para;</a></h1>
-</li>
-<li>
-<h1 id="34-dataset-run-identity-link-status-and-run-level-scores">34 dataset-run identity, link status, and run-level scores;<a class="headerlink" href="#34-dataset-run-identity-link-status-and-run-level-scores" title="Permanent link">&para;</a></h1>
-</li>
-<li>
-<h1 id="35-idempotency-and-publication-health-for-high-volume-workloads">35 idempotency and publication health for high-volume workloads.<a class="headerlink" href="#35-idempotency-and-publication-health-for-high-volume-workloads" title="Permanent link">&para;</a></h1>
-</li>
-</ul>
-<p>Deliver:</p>
-<ul>
-<li>hosted dataset source;</li>
-<li>item scenario scope;</li>
-<li>item and run score sink;</li>
-<li>required/optional publication policy;</li>
-<li>coherent disabled mode.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>local and hosted sources;</li>
-<li>nested and parallel trace context;</li>
-<li>one trial trace across retries;</li>
-<li>item-link rejection;</li>
-<li>item and run score projection;</li>
-<li>one failing sink not suppressing another;</li>
-<li>disabled mode;</li>
-<li>publication status independent from quality decision.</li>
-</ul>
-<p>Runnable example:</p>
-<ul>
-<li>same public experiment definition works without credentials;</li>
-<li>optional Langfuse publication when configured;</li>
-<li>no standalone telemetry ownership in a DI host.</li>
 </ul>
 <h2 id="rejected-alternatives">Rejected alternatives<a class="headerlink" href="#rejected-alternatives" title="Permanent link">&para;</a></h2>
 <ul>

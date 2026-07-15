@@ -1588,10 +1588,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deferred-provider-adapters" class="md-nav__link">
+  <a href="#provider-convergence-roadmap" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deferred Provider Adapters
+        Provider Convergence Roadmap
       
     </span>
   </a>
@@ -5320,16 +5320,22 @@ passing decision.</p>
 <p>The <code>JsonTypeInfo&lt;TCase&gt;</code> / <code>JsonTypeInfo&lt;TOutput&gt;</code> overload is the dependable trimmed and Native
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.</p>
-<h2 id="deferred-provider-adapters">Deferred Provider Adapters<a class="headerlink" href="#deferred-provider-adapters" title="Permanent link">&para;</a></h2>
-<p>This phase deliberately does not provide:</p>
+<h2 id="provider-convergence-roadmap">Provider Convergence Roadmap<a class="headerlink" href="#provider-convergence-roadmap" title="Permanent link">&para;</a></h2>
+<p>The scheduler and quality core are complete, but provider lifecycle and publication adapters remain
+separate reviewed work:</p>
 <ul>
-<li>item lifecycle scopes;</li>
-<li>sink fan-out or publication status;</li>
-<li>MEAI Reporting caches, stores, scenarios, or reports;</li>
-<li>Langfuse datasets, traces, scores, or experiment adapters.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/49">#49</a> adds per-trial provider lifecycle scopes.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/50">#50</a> adds result sinks and publication outcomes.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
+  <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>, and
+  <a href="https://github.com/ncosentino/needlr/issues/53">#53</a> connect the runner to existing Langfuse
+  dataset, trace, score, identity, resilience, and disabled-mode primitives.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/54">#54</a> adds MEAI Reporting afterward as the
+  second-provider proof.</li>
 </ul>
-<p>Those remain separate phases in
-<a href="../adr/adr-0003-provider-neutral-experiment-runner/">ADR-0003</a>.</p>
+<p>Langfuse convergence intentionally precedes MEAI Reporting because Langfuse support motivated the
+runner and its lower-level prerequisites are already complete. No additional scheduler or policy
+expansion is planned before that convergence.</p>
 <h2 id="runnable-example">Runnable Example<a class="headerlink" href="#runnable-example" title="Permanent link">&para;</a></h2>
 <p>Run the credential-free Phase 2 example:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
