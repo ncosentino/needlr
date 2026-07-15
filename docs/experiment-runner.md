@@ -466,13 +466,15 @@ Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.
 
 ## Provider Convergence Roadmap
 
-The scheduler, quality core, per-trial lifecycle seam, and final publication boundary are complete.
-Remaining provider convergence stays split into reviewed work:
+The scheduler, quality core, per-trial lifecycle seam, final publication boundary, and hosted
+Langfuse dataset source are complete. Remaining provider convergence stays split into reviewed work:
 
-- [#51](https://github.com/ncosentino/needlr/issues/51),
-  [#52](https://github.com/ncosentino/needlr/issues/52), and
-  [#53](https://github.com/ncosentino/needlr/issues/53) connect the runner to existing Langfuse
-  dataset, trace, score, identity, resilience, and disabled-mode primitives.
+- [#51](https://github.com/ncosentino/needlr/issues/51) provides validated paginated Langfuse
+  dataset reads and `LangfuseDatasetCaseSource<TCase>` for latest or timestamped hosted sources.
+- [#52](https://github.com/ncosentino/needlr/issues/52) and
+  [#53](https://github.com/ncosentino/needlr/issues/53) connect trials and final outcomes to the
+  existing Langfuse trace, dataset-run-item, score, identity, resilience, and disabled-mode
+  primitives.
 - [#54](https://github.com/ncosentino/needlr/issues/54) adds MEAI Reporting afterward as the
   second-provider proof.
 
