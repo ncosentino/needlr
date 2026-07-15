@@ -369,17 +369,23 @@ The `JsonTypeInfo<TCase>` / `JsonTypeInfo<TOutput>` overload is the dependable t
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.
 
-## Deferred Provider Adapters
+## Provider Convergence Roadmap
 
-This phase deliberately does not provide:
+The scheduler and quality core are complete, but provider lifecycle and publication adapters remain
+separate reviewed work:
 
-- item lifecycle scopes;
-- sink fan-out or publication status;
-- MEAI Reporting caches, stores, scenarios, or reports;
-- Langfuse datasets, traces, scores, or experiment adapters.
+- [#49](https://github.com/ncosentino/needlr/issues/49) adds per-trial provider lifecycle scopes.
+- [#50](https://github.com/ncosentino/needlr/issues/50) adds result sinks and publication outcomes.
+- [#51](https://github.com/ncosentino/needlr/issues/51),
+  [#52](https://github.com/ncosentino/needlr/issues/52), and
+  [#53](https://github.com/ncosentino/needlr/issues/53) connect the runner to existing Langfuse
+  dataset, trace, score, identity, resilience, and disabled-mode primitives.
+- [#54](https://github.com/ncosentino/needlr/issues/54) adds MEAI Reporting afterward as the
+  second-provider proof.
 
-Those remain separate phases in
-[ADR-0003](adr/adr-0003-provider-neutral-experiment-runner.md).
+Langfuse convergence intentionally precedes MEAI Reporting because Langfuse support motivated the
+runner and its lower-level prerequisites are already complete. No additional scheduler or policy
+expansion is planned before that convergence.
 
 ## Runnable Example
 

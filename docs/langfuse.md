@@ -253,6 +253,17 @@ depend on implicit inference:
 
 ## Experiments (datasets and runs)
 
+The API in this section is the low-level/manual Langfuse experiment-publication surface. It does not
+provide collection scheduling, retries, aggregate evaluation, or quality policy. The canonical bulk
+experiment path is the provider-neutral runner; convergence is tracked by
+[#49](https://github.com/ncosentino/needlr/issues/49) through
+[#53](https://github.com/ncosentino/needlr/issues/53).
+
+Until those adapters land, callers must compose the manual item loop below. Do not add a second
+scheduler or policy engine to the Langfuse package: the existing scenario, link, score, identity,
+resilience, and publication-health types are the provider primitives that the generic runner will
+reuse.
+
 Map each eval case to a Langfuse **dataset item**, then on every run link the trace it
 produces as a **dataset run item**. Langfuse's experiment-comparison view lines runs up
 side by side and shows how scores move across commits.
