@@ -84,7 +84,7 @@ public sealed class ExperimentRunnerCancellationTests
         timeProvider.Advance(TimeSpan.FromSeconds(5));
         var result = await runTask;
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.TimedOut, item.Status);
         Assert.Equal(ExperimentAttemptStatus.TimedOut, Assert.Single(item.Attempts).Status);
         Assert.Equal(ExperimentFailureCode.AttemptTimedOut, item.Failure!.Code);
@@ -152,7 +152,7 @@ public sealed class ExperimentRunnerCancellationTests
         release.SetResult();
         var result = await runTask;
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.TimedOut, item.Status);
         Assert.False(item.HasOutput, "Expected output returned after the deadline to be discarded.");
     }

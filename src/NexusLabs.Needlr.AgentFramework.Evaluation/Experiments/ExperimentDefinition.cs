@@ -29,4 +29,7 @@ public sealed record ExperimentDefinition<TCase, TOutput>
     /// Gets per-trial item-scope providers entered sequentially in registration order.
     /// </summary>
     public IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> ItemScopes { get; init; } = [];
+
+    /// <summary>Gets final result sinks invoked sequentially in registration order.</summary>
+    public IReadOnlyList<IExperimentResultSink<TCase, TOutput>> Sinks { get; init; } = [];
 }

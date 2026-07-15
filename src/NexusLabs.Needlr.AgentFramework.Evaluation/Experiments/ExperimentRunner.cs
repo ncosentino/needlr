@@ -27,7 +27,7 @@ public sealed class ExperimentRunner : IExperimentRunner
     }
 
     /// <inheritdoc />
-    public async Task<ExperimentRunResult<TCase, TOutput>> RunAsync<TCase, TOutput>(
+    public async Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
         ExperimentDefinition<TCase, TOutput> definition,
         ExperimentRunOptions options,
         CancellationToken cancellationToken = default)
@@ -78,6 +78,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         var runEvaluators = ValidateRunEvaluators(definition.RunEvaluators);
         var policies = ValidatePolicies(definition.Policies);
         var itemScopes = ValidateItemScopes(definition.ItemScopes);
+        var sinkPipeline = new ExperimentResultSinkPipeline<TCase, TOutput>(definition.Sinks);
         cancellationToken.ThrowIfCancellationRequested();
         ExperimentCaseSourceResult<TCase> sourceResult;
         try
@@ -135,7 +136,7 @@ public sealed class ExperimentRunner : IExperimentRunner
                 policyContext,
                 cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            return new ExperimentRunResult<TCase, TOutput>
+            var result = new ExperimentRunResult<TCase, TOutput>
             {
                 RunId = options.RunId,
                 ExperimentName = definition.Name,
@@ -149,6 +150,10 @@ public sealed class ExperimentRunner : IExperimentRunner
                 PolicyResults = policyResults,
                 Decision = ReduceDecision(policyResults),
             };
+            cancellationToken.ThrowIfCancellationRequested();
+            return await sinkPipeline
+                .PublishAsync(result, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {

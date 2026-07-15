@@ -40,7 +40,7 @@ public sealed class ExperimentRunnerEvaluationTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(1, evaluatorCalls);
         Assert.Same(evaluation, item.Evaluation);
         Assert.Equal(
@@ -97,7 +97,7 @@ public sealed class ExperimentRunnerEvaluationTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(1, executions);
         Assert.Equal(1, evaluatorCalls);
         Assert.Equal(ExperimentItemStatus.EvaluationFailed, item.Status);
@@ -153,7 +153,7 @@ public sealed class ExperimentRunnerEvaluationTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.EvaluationFailed, item.Status);
         Assert.True(item.HasOutput, "Expected task output to survive normalization failure.");
         Assert.Contains("different-key", item.Failure!.Message, StringComparison.Ordinal);

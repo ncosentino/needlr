@@ -46,7 +46,7 @@ public sealed class ExperimentRunnerRetryTests
 
         var result = await runTask;
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal(3, item.Output);
         Assert.Equal(
@@ -92,7 +92,7 @@ public sealed class ExperimentRunnerRetryTests
             },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(3, attempts);
         Assert.Equal(ExperimentItemStatus.ExecutionFailed, item.Status);
         Assert.Equal(3, item.Attempts.Count);
@@ -142,7 +142,7 @@ public sealed class ExperimentRunnerRetryTests
         timeProvider.Advance(TimeSpan.FromSeconds(5));
         var result = await runTask;
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal(2, item.Output);
         Assert.Equal(
@@ -169,7 +169,7 @@ public sealed class ExperimentRunnerRetryTests
             },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal(2, item.Output);
         Assert.Equal(
@@ -235,7 +235,7 @@ public sealed class ExperimentRunnerRetryTests
         Assert.Equal(3, limiter.AcquisitionCount);
         Assert.Equal(1, limiter.MaximumActiveLeaseCount);
         Assert.Equal(0, limiter.ActiveLeaseCount);
-        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.Result.Items.Count);
     }
 
     [Fact]
@@ -278,9 +278,9 @@ public sealed class ExperimentRunnerRetryTests
             },
             _cancellationToken);
 
-        Assert.Equal(2, result.Items.Count);
-        Assert.Equal([1, 2], result.Items.Select(item => item.TrialIndex));
-        Assert.All(result.Items, item => Assert.Equal(2, item.Attempts.Count));
+        Assert.Equal(2, result.Result.Items.Count);
+        Assert.Equal([1, 2], result.Result.Items.Select(item => item.TrialIndex));
+        Assert.All(result.Result.Items, item => Assert.Equal(2, item.Attempts.Count));
         Assert.Equal(2, attemptsByTrial[1]);
         Assert.Equal(2, attemptsByTrial[2]);
     }
@@ -362,7 +362,7 @@ public sealed class ExperimentRunnerRetryTests
             },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(1, executions);
         Assert.Equal(1, evaluatorCalls);
         Assert.Equal(ExperimentItemStatus.EvaluationFailed, item.Status);
@@ -383,7 +383,7 @@ public sealed class ExperimentRunnerRetryTests
             },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.ExecutionFailed, item.Status);
         Assert.Single(item.Attempts);
         Assert.Equal(ExperimentFailureCode.RetryPolicyFailed, item.Failure!.Code);

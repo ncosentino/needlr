@@ -54,7 +54,7 @@ public sealed class ExperimentRunnerRunEvaluationTests
                 ExperimentItemStatus.PrerequisiteFailed,
             ],
             observedStatuses);
-        var runEvaluation = Assert.Single(result.RunEvaluations);
+        var runEvaluation = Assert.Single(result.Result.RunEvaluations);
         Assert.Equal("status-counts", runEvaluation.Name);
         Assert.Equal(ExperimentRunEvaluationStatus.Succeeded, runEvaluation.Status);
         Assert.Equal("item_count", Assert.Single(runEvaluation.Metrics).Name);
@@ -93,16 +93,16 @@ public sealed class ExperimentRunnerRunEvaluationTests
             _cancellationToken);
 
         Assert.Equal(1, laterEvaluatorCalls);
-        Assert.Equal(2, result.RunEvaluations.Count);
+        Assert.Equal(2, result.Result.RunEvaluations.Count);
         Assert.Equal(
             [ExperimentRunEvaluationStatus.Failed, ExperimentRunEvaluationStatus.Succeeded],
-            result.RunEvaluations.Select(evaluation => evaluation.Status));
+            result.Result.RunEvaluations.Select(evaluation => evaluation.Status));
         Assert.Equal(
             ExperimentFailureCode.RunEvaluationFailed,
-            result.RunEvaluations[0].Failure!.Code);
+            result.Result.RunEvaluations[0].Failure!.Code);
         Assert.Equal(
             ExperimentFailureStage.RunEvaluation,
-            result.RunEvaluations[0].Failure!.Stage);
+            result.Result.RunEvaluations[0].Failure!.Stage);
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public sealed class ExperimentRunnerRunEvaluationTests
                                     {
                                         Name = "prerequisite",
                                         IsRequired = false,
-                                        Status = ExperimentItemPublicationStatus.Succeeded,
+                                        Status = ExperimentPublicationOperationStatus.Succeeded,
                                     }),
                                 _ => ValueTask.CompletedTask,
                                 () => ValueTask.CompletedTask);

@@ -133,12 +133,12 @@ public sealed class ExperimentRunnerItemScopeTests
             TimeSpan.FromMinutes(1));
         var result = await runTask;
 
-        Assert.Equal(2, result.Items.Count);
-        Assert.All(result.Items, item => Assert.Equal(2, item.Attempts.Count));
-        Assert.All(result.Items, item =>
+        Assert.Equal(2, result.Result.Items.Count);
+        Assert.All(result.Result.Items, item => Assert.Equal(2, item.Attempts.Count));
+        Assert.All(result.Result.Items, item =>
         {
             var publication = Assert.Single(item.Publications);
-            Assert.Equal(ExperimentItemPublicationStatus.Succeeded, publication.Status);
+            Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, publication.Status);
             var correlation = Assert.Single(item.Correlations);
             Assert.Equal("recording", correlation.Namespace);
             Assert.Equal("trial", correlation.Name);
@@ -235,7 +235,7 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        Assert.Equal(expectedStatus, Assert.Single(result.Items).Status);
+        Assert.Equal(expectedStatus, Assert.Single(result.Result.Items).Status);
         Assert.Equal(expectedStatus, completedStatus);
     }
 
@@ -273,7 +273,7 @@ public sealed class ExperimentRunnerItemScopeTests
         timeProvider.Advance(TimeSpan.FromSeconds(5));
         var result = await runTask;
 
-        Assert.Equal(ExperimentItemStatus.TimedOut, Assert.Single(result.Items).Status);
+        Assert.Equal(ExperimentItemStatus.TimedOut, Assert.Single(result.Result.Items).Status);
         Assert.Equal(ExperimentItemStatus.TimedOut, completedStatus);
     }
 
@@ -301,7 +301,7 @@ public sealed class ExperimentRunnerItemScopeTests
 
         Assert.Equal(
             ExperimentFailureCode.RetryPolicyFailed,
-            Assert.Single(result.Items).Failure!.Code);
+            Assert.Single(result.Result.Items).Failure!.Code);
         Assert.Equal(ExperimentFailureCode.RetryPolicyFailed, completedFailure);
     }
 
@@ -534,14 +534,14 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal(2, item.Publications.Count);
         Assert.All(
             item.Publications,
             publication =>
             {
-                Assert.Equal(ExperimentItemPublicationStatus.Failed, publication.Status);
+                Assert.Equal(ExperimentPublicationOperationStatus.Failed, publication.Status);
                 Assert.Equal(ExperimentFailureCode.ItemScopeFailed, publication.Failure!.Code);
                 Assert.Equal(ExperimentFailureStage.Publication, publication.Failure.Stage);
             });
@@ -589,7 +589,7 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.PrerequisiteFailed, item.Status);
         Assert.Empty(item.Attempts);
         Assert.Equal(ExperimentFailureCode.ItemScopePrerequisiteFailed, item.Failure!.Code);
@@ -597,11 +597,11 @@ public sealed class ExperimentRunnerItemScopeTests
         Assert.Equal(0, laterEntries);
         Assert.Equal(
             [
-                ExperimentItemPublicationStatus.Failed,
-                ExperimentItemPublicationStatus.NotAttempted,
+                ExperimentPublicationOperationStatus.Failed,
+                ExperimentPublicationOperationStatus.NotAttempted,
             ],
             item.Publications.Select(publication => publication.Status));
-        var policy = Assert.Single(result.PolicyResults);
+        var policy = Assert.Single(result.Result.PolicyResults);
         Assert.Equal(EvaluationDecision.Inconclusive, policy.Decision);
         Assert.Equal(1, policy.StatisticalEvidence!.ExclusionCount);
         Assert.Equal(
@@ -663,7 +663,7 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.PrerequisiteFailed, item.Status);
         Assert.Equal(0, executions);
         Assert.Equal(
@@ -680,7 +680,7 @@ public sealed class ExperimentRunnerItemScopeTests
             ],
             events);
         Assert.Equal(
-            ExperimentItemPublicationStatus.Failed,
+            ExperimentPublicationOperationStatus.Failed,
             item.Publications[1].Status);
     }
 
@@ -778,11 +778,11 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal("first", observedFeature);
-        Assert.Equal(ExperimentItemPublicationStatus.Succeeded, item.Publications[0].Status);
-        Assert.Equal(ExperimentItemPublicationStatus.Failed, item.Publications[1].Status);
+        Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, item.Publications[0].Status);
+        Assert.Equal(ExperimentPublicationOperationStatus.Failed, item.Publications[1].Status);
     }
 
     [Fact]
@@ -825,7 +825,7 @@ public sealed class ExperimentRunnerItemScopeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal(
             [
@@ -839,8 +839,8 @@ public sealed class ExperimentRunnerItemScopeTests
                 "dispose:first",
             ],
             events);
-        Assert.Equal(ExperimentItemPublicationStatus.Succeeded, item.Publications[0].Status);
-        Assert.Equal(ExperimentItemPublicationStatus.Failed, item.Publications[1].Status);
+        Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, item.Publications[0].Status);
+        Assert.Equal(ExperimentPublicationOperationStatus.Failed, item.Publications[1].Status);
         Assert.Equal(
             ExperimentFailureCode.ItemScopeFailed,
             item.Publications[1].Failure!.Code);
@@ -943,7 +943,7 @@ public sealed class ExperimentRunnerItemScopeTests
         {
             Name = name,
             IsRequired = isRequired,
-            Status = ExperimentItemPublicationStatus.Succeeded,
+            Status = ExperimentPublicationOperationStatus.Succeeded,
             Correlations = Array.AsReadOnly(correlations),
         };
 

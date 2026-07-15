@@ -13,8 +13,8 @@ public interface IExperimentRunner
     /// <param name="definition">The experiment definition.</param>
     /// <param name="options">The run options.</param>
     /// <param name="cancellationToken">A caller cancellation token.</param>
-    /// <returns>The canonical ordered run result.</returns>
-    Task<ExperimentRunResult<TCase, TOutput>> RunAsync<TCase, TOutput>(
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
         ExperimentDefinition<TCase, TOutput> definition,
         ExperimentRunOptions options,
         CancellationToken cancellationToken = default);

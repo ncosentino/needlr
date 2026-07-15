@@ -49,13 +49,13 @@ public sealed class ExperimentPolicyTests
 
         Assert.Equal(
             ["passing", "missing", "failing"],
-            result.PolicyResults.Select(policy => policy.Name));
+            result.Result.PolicyResults.Select(policy => policy.Name));
         Assert.Equal(
             [EvaluationDecision.Passed, EvaluationDecision.Inconclusive, EvaluationDecision.Failed],
-            result.PolicyResults.Select(policy => policy.Decision));
-        Assert.Equal(ExperimentRunDecision.Failed, result.Decision);
+            result.Result.PolicyResults.Select(policy => policy.Decision));
+        Assert.Equal(ExperimentRunDecision.Failed, result.Result.Decision);
         Assert.All(
-            result.PolicyResults,
+            result.Result.PolicyResults,
             policy => Assert.Equal(ExperimentPolicyKind.Deterministic, policy.Kind));
     }
 
@@ -89,9 +89,9 @@ public sealed class ExperimentPolicyTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        Assert.Equal(EvaluationDecision.Passed, result.PolicyResults[0].Decision);
-        Assert.Equal(EvaluationDecision.Inconclusive, result.PolicyResults[1].Decision);
-        Assert.Equal(ExperimentRunDecision.Passed, result.Decision);
+        Assert.Equal(EvaluationDecision.Passed, result.Result.PolicyResults[0].Decision);
+        Assert.Equal(EvaluationDecision.Inconclusive, result.Result.PolicyResults[1].Decision);
+        Assert.Equal(ExperimentRunDecision.Passed, result.Result.Decision);
     }
 
     [Fact]
@@ -172,9 +172,9 @@ public sealed class ExperimentPolicyTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 3 },
             _cancellationToken);
 
-        Assert.Equal(EvaluationDecision.Inconclusive, result.PolicyResults[0].Decision);
-        Assert.Equal(EvaluationDecision.Failed, result.PolicyResults[1].Decision);
-        var defaultEvidence = result.PolicyResults[0].StatisticalEvidence!;
+        Assert.Equal(EvaluationDecision.Inconclusive, result.Result.PolicyResults[0].Decision);
+        Assert.Equal(EvaluationDecision.Failed, result.Result.PolicyResults[1].Decision);
+        var defaultEvidence = result.Result.PolicyResults[0].StatisticalEvidence!;
         Assert.Equal(3, defaultEvidence.TotalTrialCount);
         Assert.Equal(2, defaultEvidence.SampleCount);
         Assert.Equal(1, defaultEvidence.SuccessCount);
@@ -192,7 +192,7 @@ public sealed class ExperimentPolicyTests
             ],
             defaultEvidence.StatusCounts.Select(count => count.Status));
         Assert.Equal([2, 1, 0, 0, 0, 0], defaultEvidence.StatusCounts.Select(count => count.Count));
-        Assert.Equal(3, result.PolicyResults[1].StatisticalEvidence!.SampleCount);
+        Assert.Equal(3, result.Result.PolicyResults[1].StatisticalEvidence!.SampleCount);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public sealed class ExperimentPolicyTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
             _cancellationToken);
 
-        var policy = Assert.Single(result.PolicyResults);
+        var policy = Assert.Single(result.Result.PolicyResults);
         Assert.Equal(EvaluationDecision.Inconclusive, policy.Decision);
         Assert.Equal(3, policy.StatisticalEvidence!.SampleCount);
         Assert.Equal(4, policy.StatisticalEvidence.MinimumSampleCount);
@@ -245,12 +245,12 @@ public sealed class ExperimentPolicyTests
             _cancellationToken);
 
         Assert.Equal(1, laterPolicyCalls);
-        Assert.Equal(2, result.PolicyResults.Count);
-        Assert.Equal(EvaluationDecision.Inconclusive, result.PolicyResults[0].Decision);
-        Assert.Equal(ExperimentFailureCode.PolicyFailed, result.PolicyResults[0].Failure!.Code);
-        Assert.Equal(ExperimentFailureStage.Policy, result.PolicyResults[0].Failure!.Stage);
-        Assert.Equal(EvaluationDecision.Passed, result.PolicyResults[1].Decision);
-        Assert.Equal(ExperimentRunDecision.Inconclusive, result.Decision);
+        Assert.Equal(2, result.Result.PolicyResults.Count);
+        Assert.Equal(EvaluationDecision.Inconclusive, result.Result.PolicyResults[0].Decision);
+        Assert.Equal(ExperimentFailureCode.PolicyFailed, result.Result.PolicyResults[0].Failure!.Code);
+        Assert.Equal(ExperimentFailureStage.Policy, result.Result.PolicyResults[0].Failure!.Stage);
+        Assert.Equal(EvaluationDecision.Passed, result.Result.PolicyResults[1].Decision);
+        Assert.Equal(ExperimentRunDecision.Inconclusive, result.Result.Decision);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public sealed class ExperimentPolicyTests
             new ExperimentRunOptions { RunId = name, MaxConcurrency = 4 },
             _cancellationToken);
 
-        return Assert.Single(result.PolicyResults);
+        return Assert.Single(result.Result.PolicyResults);
     }
 
     private static ExperimentDefinition<int, int> CreateDefinition(

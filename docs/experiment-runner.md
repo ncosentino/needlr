@@ -67,7 +67,7 @@ var definition = new ExperimentDefinition<MyCase, MyOutput>
 };
 
 await using var sharedLimiter = new ExperimentConcurrencyLimiter(8);
-ExperimentRunResult<MyCase, MyOutput> result =
+ExperimentRunOutcome<MyCase, MyOutput> outcome =
     await new ExperimentRunner().RunAsync(
         definition,
         new ExperimentRunOptions
@@ -83,6 +83,8 @@ ExperimentRunResult<MyCase, MyOutput> result =
             SharedLimiter = sharedLimiter,
         },
         cancellationToken);
+
+ExperimentRunResult<MyCase, MyOutput> result = outcome.Result;
 ```
 
 Every case is materialized and validated before execution. Cases expand in source order, then by
@@ -239,7 +241,7 @@ the trial context. Registering the same exact feature type from a later scope fa
 scope deterministically; the first registration remains available.
 
 `ExperimentItemScopeFailureMode.BestEffort` records entry or activation failure as
-`ExperimentItemPublicationStatus.Failed` while quality processing continues.
+`ExperimentPublicationOperationStatus.Failed` while quality processing continues.
 `ExecutionPrerequisite` stops the next task attempt and produces `PrerequisiteFailed` with no
 fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
 policy excludes them unless `ExperimentUnknownSampleTreatment.CountAsFailure` is selected.
@@ -256,17 +258,50 @@ runner does not also invoke `AbortAsync`. Completion, abort, and disposal run wi
 activation and must use scope-owned state. `ExperimentRunOptions.ItemScopeCleanupTimeout` bounds
 cancellation cleanup and terminal disposal; it defaults to 30 seconds.
 
+## Final Result Sinks
+
+`ExperimentDefinition<TCase,TOutput>.Sinks` publishes the completed canonical quality result without
+giving providers ownership of execution or quality policy.
+
+Each named `IExperimentResultSink<TCase,TOutput>`:
+
+- receives the same `ExperimentRunResult<TCase,TOutput>` reference after run evaluation and policy
+  reduction finish;
+- runs sequentially in registration order;
+- declares whether publication is required;
+- returns `Succeeded`, `Failed`, or `NotAttempted`;
+- owns provider retry only when its operation is provably idempotent.
+
+A thrown exception, `null`, or malformed sink result becomes a structured `ResultSinkFailed`
+operation and does not suppress later sinks. Caller-token cancellation propagates exactly, skips
+later sinks, and produces no outcome.
+
+`IExperimentRunner.RunAsync` returns `ExperimentRunOutcome<TCase,TOutput>`:
+
+| Publication status | Meaning |
+|---|---|
+| `NotRequested` | No item scope or final sink attempted publication. |
+| `Succeeded` | Every attempted publication succeeded. |
+| `PartiallyFailed` | At least one optional publication failed and no required publication failed. |
+| `Failed` | At least one required publication failed. |
+
+The aggregate includes both `Result.Items[*].Publications` and final `SinkResults`.
+`outcome.PublicationStatus` never changes `outcome.Result.Decision`.
+
+Needlr-owned collections are read-only snapshots. Caller-owned case/output values and mutable MEAI
+evaluation objects cannot be deeply frozen; sinks must treat the entire result as read-only.
+
 ## Cancellation and Timeouts
 
 Caller cancellation:
 
 - stops ready-channel admission, limiter waits, active tasks, retry delays, item evaluation, run
-  evaluation, and policies;
+  evaluation, policies, and final result sinks;
 - wins over simultaneous timeout or execution failure;
 - is rethrown from `RunAsync` with the original caller token;
 - aborts every entered incomplete item scope and disposes scopes in reverse order within the
   configured cleanup timeout;
-- produces no completed run result.
+- produces no completed run outcome.
 
 `AttemptTimeout` is cooperative and restarts for every attempt. The task receives a linked
 caller/deadline token. If a task ignores deadline cancellation, the runner continues awaiting it so
@@ -393,8 +428,10 @@ passing decision.
 
 ## JSON Artifact
 
-`ExperimentJsonArtifactWriter` writes schema version 3 with fixed Needlr-owned property ordering:
+`ExperimentJsonArtifactWriter` writes a schema-version-4 outcome envelope with fixed Needlr-owned
+property ordering:
 
+- the unchanged schema-version-3 canonical quality result;
 - source/trial item order;
 - complete attempt history and delay-before-next-attempt values;
 - normalized item metrics;
@@ -402,6 +439,7 @@ passing decision.
 - ordered run-evaluation results;
 - ordered policy results and structured evidence;
 - the overall run decision;
+- aggregate publication status and ordered final sink results;
 - structured failures without raw exceptions or stack traces.
 
 For Native AOT, pass caller-generated metadata:
@@ -416,7 +454,7 @@ internal partial class MyJsonContext : JsonSerializerContext;
 await using var stream = File.Create(path);
 await new ExperimentJsonArtifactWriter().WriteAsync(
     stream,
-    result,
+    outcome,
     MyJsonContext.Default.MyCase,
     MyJsonContext.Default.MyOutput,
     cancellationToken);
@@ -428,10 +466,9 @@ Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.
 
 ## Provider Convergence Roadmap
 
-The scheduler, quality core, and provider-neutral per-trial lifecycle seam are complete. Remaining
-provider convergence stays split into reviewed work:
+The scheduler, quality core, per-trial lifecycle seam, and final publication boundary are complete.
+Remaining provider convergence stays split into reviewed work:
 
-- [#50](https://github.com/ncosentino/needlr/issues/50) adds result sinks and publication outcomes.
 - [#51](https://github.com/ncosentino/needlr/issues/51),
   [#52](https://github.com/ncosentino/needlr/issues/52), and
   [#53](https://github.com/ncosentino/needlr/issues/53) connect the runner to existing Langfuse
@@ -445,12 +482,12 @@ expansion is planned before that convergence.
 
 ## Runnable Example
 
-Run the credential-free Phase 2 example:
+Run the credential-free Phase 3B example:
 
 ```bash
 dotnet run --project src/Examples/AgentFramework/ExperimentRunnerApp
 ```
 
 It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
-evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v3 JSON artifact under
-the system temporary directory.
+evaluation, deterministic and Wilson-bound policies, a credential-free final sink, and an AOT-safe
+schema-v4 outcome artifact under the system temporary directory.

@@ -56,12 +56,12 @@ public sealed class ExperimentRunnerSchedulingTests
 
         var result = await runTask;
 
-        Assert.Equal(20, result.Items.Count);
-        Assert.Equal(maxConcurrency, result.WorkerCount);
+        Assert.Equal(20, result.Result.Items.Count);
+        Assert.Equal(maxConcurrency, result.Result.WorkerCount);
         Assert.Equal(0, active);
         Assert.Equal(
             Enumerable.Range(0, 20),
-            result.Items.Select(item => item.Sequence));
+            result.Result.Items.Select(item => item.Sequence));
     }
 
     [Fact]
@@ -129,11 +129,11 @@ public sealed class ExperimentRunnerSchedulingTests
                 "gamma:2",
                 "gamma:3",
             },
-            result.Items.Select(item => item.Output).ToArray());
+            result.Result.Items.Select(item => item.Output).ToArray());
         Assert.Equal(
             ["alpha", "alpha", "beta", "gamma", "gamma", "gamma"],
-            result.Items.Select(item => item.Case.Id).ToArray());
-        Assert.Equal([1, 2, 1, 1, 2, 3], result.Items.Select(item => item.TrialIndex).ToArray());
+            result.Result.Items.Select(item => item.Case.Id).ToArray());
+        Assert.Equal([1, 2, 1, 1, 2, 3], result.Result.Items.Select(item => item.TrialIndex).ToArray());
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public sealed class ExperimentRunnerSchedulingTests
         release.SetResult();
         var result = await runTask;
 
-        var item = Assert.Single(result.Items);
+        var item = Assert.Single(result.Result.Items);
         Assert.Equal("case-1", item.Case.Id);
         Assert.Equal(["original"], item.Case.Tags);
     }
@@ -195,8 +195,8 @@ public sealed class ExperimentRunnerSchedulingTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 4 },
             _cancellationToken);
 
-        Assert.Empty(result.Items);
-        Assert.Equal(0, result.WorkerCount);
+        Assert.Empty(result.Result.Items);
+        Assert.Equal(0, result.Result.WorkerCount);
     }
 
     private static ExperimentDefinition<TCase, TOutput> CreateDefinition<TCase, TOutput>(

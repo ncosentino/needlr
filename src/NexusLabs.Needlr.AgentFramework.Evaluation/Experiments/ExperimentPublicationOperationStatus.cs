@@ -1,9 +1,9 @@
 namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 
 /// <summary>
-/// Describes whether one item scope completed its provider publication work.
+/// Describes whether one item scope or final sink completed its publication work.
 /// </summary>
-public enum ExperimentItemPublicationStatus
+public enum ExperimentPublicationOperationStatus
 {
     /// <summary>The scope completed its requested publication work.</summary>
     Succeeded,

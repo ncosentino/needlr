@@ -120,6 +120,47 @@ public sealed class ExperimentRunnerValidationTests
     }
 
     [Fact]
+    public async Task RunAsync_DuplicateOrBlankResultSinks_StartNoItems()
+    {
+        var executions = 0;
+        var runner = new ExperimentRunner();
+        var duplicate = new CallbackExperimentResultSink<int, int>(
+            "duplicate",
+            isRequired: false,
+            (_, _) => throw new InvalidOperationException("must not publish"));
+        var blank = new CallbackExperimentResultSink<int, int>(
+            " ",
+            isRequired: false,
+            (_, _) => throw new InvalidOperationException("must not publish"));
+        ExperimentDefinition<int, int> CreateDefinition(
+            IReadOnlyList<IExperimentResultSink<int, int>> sinks) =>
+            new()
+            {
+                Name = "validation",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                Task = (_, _) =>
+                {
+                    Interlocked.Increment(ref executions);
+                    return ValueTask.FromResult(1);
+                },
+                Sinks = sinks,
+            };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => runner.RunAsync(
+            CreateDefinition([duplicate, duplicate]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken));
+        await Assert.ThrowsAsync<ArgumentException>(() => runner.RunAsync(
+            CreateDefinition([blank]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken));
+
+        Assert.Equal(0, executions);
+    }
+
+    [Fact]
     public async Task RunAsync_InvalidCases_StartNoItems()
     {
         var executions = 0;

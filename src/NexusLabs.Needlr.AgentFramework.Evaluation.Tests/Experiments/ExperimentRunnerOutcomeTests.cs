@@ -34,7 +34,7 @@ public sealed class ExperimentRunnerOutcomeTests
             new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 4 },
             _cancellationToken);
 
-        Assert.Equal(4, result.Items.Count);
+        Assert.Equal(4, result.Result.Items.Count);
         Assert.Equal(
             [
                 ExperimentItemStatus.Succeeded,
@@ -42,15 +42,15 @@ public sealed class ExperimentRunnerOutcomeTests
                 ExperimentItemStatus.Canceled,
                 ExperimentItemStatus.Succeeded,
             ],
-            result.Items.Select(item => item.Status).ToArray());
-        Assert.Equal([true, false, false, true], result.Items.Select(item => item.HasOutput).ToArray());
-        Assert.Equal(0, result.Items[0].Output);
-        Assert.Equal(30, result.Items[3].Output);
-        Assert.Equal(ExperimentFailureCode.ExecutionFailed, result.Items[1].Failure!.Code);
-        Assert.Equal(typeof(InvalidOperationException).FullName, result.Items[1].Failure!.ExceptionType);
-        Assert.Equal("execution failed", result.Items[1].Failure!.Message);
-        Assert.Equal(ExperimentFailureCode.TaskCanceled, result.Items[2].Failure!.Code);
-        Assert.All(result.Items, item => Assert.Single(item.Attempts));
+            result.Result.Items.Select(item => item.Status).ToArray());
+        Assert.Equal([true, false, false, true], result.Result.Items.Select(item => item.HasOutput).ToArray());
+        Assert.Equal(0, result.Result.Items[0].Output);
+        Assert.Equal(30, result.Result.Items[3].Output);
+        Assert.Equal(ExperimentFailureCode.ExecutionFailed, result.Result.Items[1].Failure!.Code);
+        Assert.Equal(typeof(InvalidOperationException).FullName, result.Result.Items[1].Failure!.ExceptionType);
+        Assert.Equal("execution failed", result.Result.Items[1].Failure!.Message);
+        Assert.Equal(ExperimentFailureCode.TaskCanceled, result.Result.Items[2].Failure!.Code);
+        Assert.All(result.Result.Items, item => Assert.Single(item.Attempts));
         Assert.Equal(
             [
                 ExperimentAttemptStatus.Succeeded,
@@ -58,6 +58,6 @@ public sealed class ExperimentRunnerOutcomeTests
                 ExperimentAttemptStatus.Canceled,
                 ExperimentAttemptStatus.Succeeded,
             ],
-            result.Items.Select(item => item.Attempts[0].Status).ToArray());
+            result.Result.Items.Select(item => item.Attempts[0].Status).ToArray());
     }
 }
