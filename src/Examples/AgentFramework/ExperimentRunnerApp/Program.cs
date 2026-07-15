@@ -13,7 +13,8 @@ Console.WriteLine("  - explicit retries that re-enter the scheduler after a dela
 Console.WriteLine("  - local and caller-owned shared concurrency limits");
 Console.WriteLine("  - isolated execution failure, timeout, and task cancellation");
 Console.WriteLine("  - run evaluation plus deterministic and statistical policies");
-Console.WriteLine("  - schema-v3 deterministic JSON output");
+Console.WriteLine("  - required final result-sink publication");
+Console.WriteLine("  - schema-v4 deterministic outcome JSON");
 Console.WriteLine();
 
 var cases = new[]
@@ -73,7 +74,7 @@ var cases = new[]
 
 var definition = new ExperimentDefinition<ExperimentCaseDefinition, ExperimentOutput>
 {
-    Name = "credential-free-phase-2",
+    Name = "credential-free-phase-3b",
     CaseSource = new LocalExperimentCaseSource<ExperimentCaseDefinition>(
         "local-example",
         cases),
@@ -150,16 +151,17 @@ var definition = new ExperimentDefinition<ExperimentCaseDefinition, ExperimentOu
             minimumSampleCount: 20,
             confidenceLevel: 0.95),
     ],
+    Sinks = [new ExampleExperimentResultSink()],
 };
 
 await using var sharedLimiter = new ExperimentConcurrencyLimiter(
     maximumConcurrency: 3);
 IExperimentRunner runner = new ExperimentRunner();
-var result = await runner.RunAsync(
+var outcome = await runner.RunAsync(
     definition,
     new ExperimentRunOptions
     {
-        RunId = "phase-2-example",
+        RunId = "phase-3b-example",
         MaxConcurrency = 4,
         AttemptTimeout = TimeSpan.FromMilliseconds(100),
         RetryPolicy = new ExperimentRetryPolicy(
@@ -169,6 +171,7 @@ var result = await runner.RunAsync(
         SharedLimiter = sharedLimiter,
     });
 
+var result = outcome.Result;
 Console.WriteLine(
     $"Run '{result.RunId}' used {result.WorkerCount} workers for {result.Items.Count} trials.");
 foreach (var statusGroup in result.Items
@@ -201,19 +204,21 @@ foreach (var policy in result.PolicyResults)
 
 var artifactPath = Path.Combine(
     Path.GetTempPath(),
-    "needlr-experiment-phase-2.json");
+    "needlr-experiment-phase-3b.json");
 await using (var stream = File.Create(artifactPath))
 {
     await new ExperimentJsonArtifactWriter().WriteAsync(
         stream,
-        result,
+        outcome,
         ExperimentJsonContext.Default.ExperimentCaseDefinition,
         ExperimentJsonContext.Default.ExperimentOutput);
 }
 
 Console.WriteLine();
 Console.WriteLine($"Overall decision: {result.Decision}");
-Console.WriteLine($"Schema version: {result.SchemaVersion}");
+Console.WriteLine($"Publication status: {outcome.PublicationStatus}");
+Console.WriteLine($"Outcome schema version: {outcome.SchemaVersion}");
+Console.WriteLine($"Result schema version: {result.SchemaVersion}");
 Console.WriteLine($"JSON artifact: {artifactPath}");
 return 0;
 

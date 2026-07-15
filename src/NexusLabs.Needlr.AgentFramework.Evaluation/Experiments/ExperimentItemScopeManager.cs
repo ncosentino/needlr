@@ -321,16 +321,13 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             };
         }
 
-        if (publication.Status == ExperimentItemPublicationStatus.Failed)
+        ExperimentFailure? failure = null;
+        if (publication.Status == ExperimentPublicationOperationStatus.Failed)
         {
-            ArgumentNullException.ThrowIfNull(publication.Failure);
-            if (publication.Failure.Stage != ExperimentFailureStage.Publication
-                || publication.Failure.Code != ExperimentFailureCode.ItemScopeFailed
-                || publication.Failure.IsRetryable)
-            {
-                throw new InvalidOperationException(
-                    $"Item scope '{provider.Name}' returned an invalid publication failure.");
-            }
+            failure = ExperimentFailureFactory.ValidateAndSnapshotPublicationFailure(
+                publication.Failure!,
+                ExperimentFailureCode.ItemScopeFailed,
+                $"Item scope '{provider.Name}'");
         }
         else if (publication.Failure is not null)
         {
@@ -345,21 +342,9 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             IsRequired = publication.IsRequired,
             Status = publication.Status,
             Correlations = Array.AsReadOnly(correlations),
-            Failure = publication.Failure is null
-                ? null
-                : SnapshotFailure(publication.Failure),
+            Failure = failure,
         };
     }
-
-    private static ExperimentFailure SnapshotFailure(ExperimentFailure failure) =>
-        new()
-        {
-            Code = failure.Code,
-            Stage = failure.Stage,
-            ExceptionType = failure.ExceptionType,
-            Message = failure.Message,
-            IsRetryable = failure.IsRetryable,
-        };
 
     private static ExperimentItemResult<TCase, TOutput> WithPublications(
         ExperimentItemResult<TCase, TOutput> result,
@@ -464,7 +449,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             {
                 Name = state.Provider.Name,
                 IsRequired = state.Provider.IsRequired,
-                Status = ExperimentItemPublicationStatus.NotAttempted,
+                Status = ExperimentPublicationOperationStatus.NotAttempted,
             };
         }
     }
@@ -478,7 +463,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             {
                 Name = state.Provider.Name,
                 IsRequired = state.Provider.IsRequired,
-                Status = ExperimentItemPublicationStatus.Failed,
+                Status = ExperimentPublicationOperationStatus.Failed,
                 Correlations = correlations,
                 Failure = state.Failure,
             };
@@ -488,7 +473,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         {
             Name = state.Provider.Name,
             IsRequired = state.Provider.IsRequired,
-            Status = ExperimentItemPublicationStatus.NotAttempted,
+            Status = ExperimentPublicationOperationStatus.NotAttempted,
         };
     }
 

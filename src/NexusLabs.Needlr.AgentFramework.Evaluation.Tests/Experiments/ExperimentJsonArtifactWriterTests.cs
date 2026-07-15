@@ -50,7 +50,7 @@ public sealed class ExperimentJsonArtifactWriterTests
                                     {
                                         Name = "artifact-scope",
                                         IsRequired = false,
-                                        Status = ExperimentItemPublicationStatus.Succeeded,
+                                        Status = ExperimentPublicationOperationStatus.Succeeded,
                                         Correlations =
                                         [
                                             new ExperimentItemCorrelation
@@ -87,26 +87,22 @@ public sealed class ExperimentJsonArtifactWriterTests
         Assert.Equal(
             [
                 "schemaVersion",
-                "runId",
-                "experimentName",
-                "source",
-                "startedAt",
-                "durationMilliseconds",
-                "maxConcurrency",
-                "workerCount",
-                "items",
-                "runEvaluations",
-                "policyResults",
-                "decision",
+                "result",
+                "publicationStatus",
+                "sinkResults",
             ],
             root.EnumerateObject().Select(property => property.Name).ToArray());
-        Assert.Equal(3, root.GetProperty("schemaVersion").GetInt32());
-        Assert.Equal("run-1", root.GetProperty("runId").GetString());
-        Assert.Equal("notEvaluated", root.GetProperty("decision").GetString());
-        Assert.Empty(root.GetProperty("runEvaluations").EnumerateArray());
-        Assert.Empty(root.GetProperty("policyResults").EnumerateArray());
+        Assert.Equal(4, root.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal("succeeded", root.GetProperty("publicationStatus").GetString());
+        Assert.Empty(root.GetProperty("sinkResults").EnumerateArray());
+        var resultRoot = root.GetProperty("result");
+        Assert.Equal(3, resultRoot.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal("run-1", resultRoot.GetProperty("runId").GetString());
+        Assert.Equal("notEvaluated", resultRoot.GetProperty("decision").GetString());
+        Assert.Empty(resultRoot.GetProperty("runEvaluations").EnumerateArray());
+        Assert.Empty(resultRoot.GetProperty("policyResults").EnumerateArray());
 
-        var items = root.GetProperty("items");
+        var items = resultRoot.GetProperty("items");
         Assert.Equal(2, items.GetArrayLength());
         var success = items[0];
         Assert.Equal("succeeded", success.GetProperty("status").GetString());
@@ -206,6 +202,13 @@ public sealed class ExperimentJsonArtifactWriterTests
                     confidenceLevel: 0.95),
                 new ThrowingExperimentPolicy<int, int>("broken-policy"),
             ],
+            Sinks =
+            [
+                new CallbackExperimentResultSink<int, int>(
+                    "optional-artifact",
+                    isRequired: false,
+                    (_, _) => throw new InvalidOperationException("sink failed")),
+            ],
         };
         var result = await new ExperimentRunner().RunAsync(
             definition,
@@ -225,13 +228,21 @@ public sealed class ExperimentJsonArtifactWriterTests
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        Assert.Equal("inconclusive", root.GetProperty("decision").GetString());
-        var attempts = root.GetProperty("items")[0].GetProperty("attempts");
+        Assert.Equal("partiallyFailed", root.GetProperty("publicationStatus").GetString());
+        var sinkResult = Assert.Single(root.GetProperty("sinkResults").EnumerateArray());
+        Assert.Equal("optional-artifact", sinkResult.GetProperty("name").GetString());
+        Assert.Equal("failed", sinkResult.GetProperty("status").GetString());
+        Assert.Equal(
+            "resultSinkFailed",
+            sinkResult.GetProperty("failure").GetProperty("code").GetString());
+        var resultRoot = root.GetProperty("result");
+        Assert.Equal("inconclusive", resultRoot.GetProperty("decision").GetString());
+        var attempts = resultRoot.GetProperty("items")[0].GetProperty("attempts");
         Assert.Equal(2, attempts.GetArrayLength());
         Assert.Equal(
             0,
             attempts[0].GetProperty("delayBeforeNextAttemptMilliseconds").GetDouble());
-        var runEvaluations = root.GetProperty("runEvaluations");
+        var runEvaluations = resultRoot.GetProperty("runEvaluations");
         Assert.Equal(2, runEvaluations.GetArrayLength());
         Assert.Equal("aggregate", runEvaluations[0].GetProperty("name").GetString());
         Assert.Equal("succeeded", runEvaluations[0].GetProperty("status").GetString());
@@ -243,7 +254,7 @@ public sealed class ExperimentJsonArtifactWriterTests
             "runEvaluation",
             runEvaluations[1].GetProperty("failure").GetProperty("stage").GetString());
 
-        var policies = root.GetProperty("policyResults");
+        var policies = resultRoot.GetProperty("policyResults");
         Assert.Equal(3, policies.GetArrayLength());
         Assert.Equal("deterministic", policies[0].GetProperty("kind").GetString());
         Assert.Equal(
@@ -291,7 +302,11 @@ public sealed class ExperimentJsonArtifactWriterTests
         var json = new ExperimentJsonArtifactWriter(writeIndented: false).Serialize(result);
 
         using var document = JsonDocument.Parse(json);
+        Assert.Equal(
+            "notRequested",
+            document.RootElement.GetProperty("publicationStatus").GetString());
         var failure = document.RootElement
+            .GetProperty("result")
             .GetProperty("items")[0]
             .GetProperty("failure");
         Assert.Equal("retryPolicyFailed", failure.GetProperty("code").GetString());
@@ -327,7 +342,10 @@ public sealed class ExperimentJsonArtifactWriterTests
         var json = new ExperimentJsonArtifactWriter(writeIndented: false).Serialize(result);
 
         using var document = JsonDocument.Parse(json);
-        var item = document.RootElement.GetProperty("items")[0];
+        Assert.Equal(
+            "failed",
+            document.RootElement.GetProperty("publicationStatus").GetString());
+        var item = document.RootElement.GetProperty("result").GetProperty("items")[0];
         Assert.Equal("prerequisiteFailed", item.GetProperty("status").GetString());
         Assert.Equal(
             "itemScopePrerequisiteFailed",
@@ -377,7 +395,7 @@ public sealed class ExperimentJsonArtifactWriterTests
         using var document = await JsonDocument.ParseAsync(
             stream,
             cancellationToken: _cancellationToken);
-        var item = document.RootElement.GetProperty("items")[0];
+        var item = document.RootElement.GetProperty("result").GetProperty("items")[0];
         Assert.Equal("7", item.GetProperty("case").GetString());
         Assert.Equal("9", item.GetProperty("output").GetString());
     }

@@ -16,6 +16,7 @@ This ADR was the design deliverable for [issue #36](https://github.com/ncosentin
 Phase 1 was delivered by [issue #43](https://github.com/ncosentino/needlr/issues/43).
 Phase 2 was delivered by [issue #45](https://github.com/ncosentino/needlr/issues/45).
 Phase 3A was delivered by [issue #49](https://github.com/ncosentino/needlr/issues/49).
+Phase 3B was delivered by [issue #50](https://github.com/ncosentino/needlr/issues/50).
 
 The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
@@ -24,12 +25,11 @@ of the generic runner.
 
 The corrected remaining sequence is:
 
-1. provider sinks and publication outcomes ([#50](https://github.com/ncosentino/needlr/issues/50));
-2. Langfuse hosted source, item scope, and sink convergence
+1. Langfuse hosted source, item scope, and sink convergence
    ([#51](https://github.com/ncosentino/needlr/issues/51),
    [#52](https://github.com/ncosentino/needlr/issues/52),
    [#53](https://github.com/ncosentino/needlr/issues/53));
-3. MEAI Reporting as the second-provider proof
+2. MEAI Reporting as the second-provider proof
    ([#54](https://github.com/ncosentino/needlr/issues/54)).
 
 No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
@@ -435,12 +435,15 @@ Sinks receive a read-only snapshot of `ExperimentRunResult<TOutput>` and return 
 ExperimentSinkResult
   Name
   IsRequired
-  Status              Succeeded | Failed | NotAttempted
+  Status              ExperimentPublicationOperationStatus:
+                      Succeeded | Failed | NotAttempted
   Failure
 
 ExperimentRunOutcome<TOutput>
+  SchemaVersion       4
   Result              canonical ExperimentRunResult<TOutput>
-  PublicationStatus   NotRequested | Succeeded | PartiallyFailed | Failed
+  PublicationStatus   ExperimentPublicationStatus:
+                      NotRequested | Succeeded | PartiallyFailed | Failed
   SinkResults
 ```
 
@@ -857,6 +860,8 @@ Required TDD:
 - cancellation invokes abort and does not publish a completed item.
 
 ### Phase 3B: result sinks and publication outcomes — #50
+
+Delivered by issue #50.
 
 Deliver:
 

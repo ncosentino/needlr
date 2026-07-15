@@ -15,7 +15,7 @@ public sealed record ExperimentItemPublicationResult
     public required bool IsRequired { get; init; }
 
     /// <summary>Gets the publication status.</summary>
-    public required ExperimentItemPublicationStatus Status { get; init; }
+    public required ExperimentPublicationOperationStatus Status { get; init; }
 
     /// <summary>Gets namespaced provider identifiers produced by this scope.</summary>
     public IReadOnlyList<ExperimentItemCorrelation> Correlations { get; init; } = [];

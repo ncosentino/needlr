@@ -31,4 +31,7 @@ public enum ExperimentFailureCode
 
     /// <summary>An explicitly required item scope prevented the next task attempt.</summary>
     ItemScopePrerequisiteFailed,
+
+    /// <summary>A final experiment result sink failed during publication.</summary>
+    ResultSinkFailed,
 }
