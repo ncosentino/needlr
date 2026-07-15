@@ -1500,6 +1500,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#per-trial-item-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Trial Item Scopes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cancellation-and-timeouts" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4969,8 +4980,9 @@
 
 <h1 id="experiment-runner">Experiment Runner<a class="headerlink" href="#experiment-runner" title="Permanent link">&para;</a></h1>
 <p>Run finite evaluation cases and repeated trials with bounded concurrency, delayed retries,
-run-level measurement, structured quality policies, and deterministic JSON—without coupling the
-experiment to a specific agent loop, test framework, dataset host, or observability provider.</p>
+per-trial provider scopes, run-level measurement, structured quality policies, and deterministic
+JSON—without coupling the experiment to a specific agent loop, test framework, dataset host, or
+observability provider.</p>
 <p>The runner lives in <code>NexusLabs.Needlr.AgentFramework.Evaluation.Experiments</code>.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">Microsoft.Extensions.AI.Evaluation</span><span class="p">;</span>
@@ -5080,15 +5092,16 @@ order.</p>
 <p><code>ExperimentCase&lt;TCase&gt;.TrialCount</code> controls statistical replication. <code>TCase</code> remains caller-owned,
 so expected outputs, metadata, and provider references can live in one domain-specific value.</p>
 <p><code>ExperimentTaskContext&lt;TCase&gt;</code> supplies the run ID, stable sequence, materialized case, one-based
-trial index, and one-based attempt number.</p>
+trial index, one-based attempt number, and exact-type adapter features exposed by item scopes.</p>
 <h2 id="validation-before-execution">Validation Before Execution<a class="headerlink" href="#validation-before-execution" title="Permanent link">&para;</a></h2>
 <p>The runner rejects invalid static configuration before starting any item:</p>
 <ul>
-<li>blank experiment, run, source, case, run-evaluator, or policy names;</li>
-<li>duplicate case IDs, run-evaluator names, or policy names using ordinal comparison;</li>
+<li>blank experiment, run, source, case, run-evaluator, policy, or item-scope names;</li>
+<li>duplicate case IDs, run-evaluator names, policy names, or item-scope names using ordinal
+  comparison;</li>
 <li>non-positive trial counts or <code>MaxConcurrency</code>;</li>
 <li>non-positive retry-policy attempt limits;</li>
-<li>invalid attempt timeouts;</li>
+<li>invalid attempt or item-scope cleanup timeouts;</li>
 <li>an expanded item count that cannot be represented safely.</li>
 </ul>
 <p>Source-loading and validation failures throw to the caller. Per-item execution, item-evaluation,
@@ -5157,14 +5170,56 @@ runs must share a second admission boundary:</p>
 </span></code></pre></div>
 <p>The runner:</p>
 <ul>
-<li>acquires one <code>IExperimentConcurrencyLimiter</code> lease per attempt;</li>
+<li>acquires one <code>IExperimentConcurrencyLimiter</code> lease before first-attempt scope entry and reuses
+  that lease for the attempt;</li>
+<li>acquires one lease around each later attempt;</li>
 <li>awaits acquisition with the caller token;</li>
-<li>disposes the lease when the attempt actually completes;</li>
+<li>disposes the lease when scope entry or the attempt completes;</li>
 <li>releases the lease before computing or waiting through a retry delay;</li>
 <li>never disposes the caller-owned limiter.</li>
 </ul>
 <p>The built-in <code>ExperimentConcurrencyLimiter</code> is semaphore-backed and suitable for DI registration.
 Alternate implementations can adapt provider quotas or resource-aware admission logic.</p>
+<h2 id="per-trial-item-scopes">Per-Trial Item Scopes<a class="headerlink" href="#per-trial-item-scopes" title="Permanent link">&para;</a></h2>
+<p><code>ExperimentDefinition&lt;TCase,TOutput&gt;.ItemScopes</code> adds provider lifecycle without giving providers
+ownership of scheduling, retries, evaluation, or quality policy.</p>
+<p>For every statistical trial, the runner:</p>
+<ol>
+<li>enters each <code>IExperimentItemScopeProvider&lt;TCase,TOutput&gt;</code> once in registration order;</li>
+<li>snapshots exact-type scope features into <code>ExperimentItemFeatureCollection</code>;</li>
+<li>activates entered scopes in registration order around every task attempt;</li>
+<li>deactivates them in reverse order before a retry delay;</li>
+<li>reactivates them around the single item evaluator after terminal execution success;</li>
+<li>sends every terminal quality status to <code>CompleteAsync</code> in registration order;</li>
+<li>disposes scopes in reverse order and records completion or disposal failure structurally.</li>
+</ol>
+<p>The scope object remains alive across delayed retries, but no activation handle, worker slot, or
+shared-limiter lease remains held during the delay. <code>EnterAsync</code> receives only the caller token and
+runs outside <code>AttemptTimeout</code>; it executes after shared admission so provider setup participates in
+the caller-owned concurrency boundary.</p>
+<p>Tasks and evaluators retrieve adapter features by exact registered type:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">MyProviderFeature</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">context</span><span class="p">.</span><span class="n">Features</span><span class="p">.</span><span class="n">GetRequired</span><span class="o">&lt;</span><span class="n">MyProviderFeature</span><span class="o">&gt;</span><span class="p">();</span>
+</span></code></pre></div>
+<p>A feature object must remain valid across repeated activation/deactivation cycles. Scope
+implementations snapshot their feature dictionary during entry, so later mutation does not change
+the trial context. Registering the same exact feature type from a later scope fails that later
+scope deterministically; the first registration remains available.</p>
+<p><code>ExperimentItemScopeFailureMode.BestEffort</code> records entry or activation failure as
+<code>ExperimentItemPublicationStatus.Failed</code> while quality processing continues.
+<code>ExecutionPrerequisite</code> stops the next task attempt and produces <code>PrerequisiteFailed</code> with no
+fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
+policy excludes them unless <code>ExperimentUnknownSampleTreatment.CountAsFailure</code> is selected.</p>
+<p><code>IsRequired</code> does not change item quality. It is retained on each
+<code>ExperimentItemPublicationResult</code> for aggregate publication health in the result-sink phase.
+Provider correlations use structured namespace/name/value triples and are copied into both the
+provider result and the item aggregate.</p>
+<p>Normal scope teardown is <code>CompleteAsync</code> then <code>DisposeAsync</code>. Caller cancellation invokes
+<code>AbortAsync</code> then <code>DisposeAsync</code> in reverse scope order for every entered scope whose completion has
+not started. Once <code>CompleteAsync</code> begins, that method owns cancellation-safe termination and the
+runner does not also invoke <code>AbortAsync</code>. Completion, abort, and disposal run without ambient
+activation and must use scope-owned state. <code>ExperimentRunOptions.ItemScopeCleanupTimeout</code> bounds
+cancellation cleanup and terminal disposal; it defaults to 30 seconds.</p>
 <h2 id="cancellation-and-timeouts">Cancellation and Timeouts<a class="headerlink" href="#cancellation-and-timeouts" title="Permanent link">&para;</a></h2>
 <p>Caller cancellation:</p>
 <ul>
@@ -5172,6 +5227,8 @@ Alternate implementations can adapt provider quotas or resource-aware admission 
   evaluation, and policies;</li>
 <li>wins over simultaneous timeout or execution failure;</li>
 <li>is rethrown from <code>RunAsync</code> with the original caller token;</li>
+<li>aborts every entered incomplete item scope and disposes scopes in reverse order within the
+  configured cleanup timeout;</li>
 <li>produces no completed run result.</li>
 </ul>
 <p><code>AttemptTimeout</code> is cooperative and restarts for every attempt. The task receives a linked
@@ -5249,16 +5306,16 @@ uncorrected Wilson score interval.</p>
 <td>Denominator failure.</td>
 </tr>
 <tr>
-<td><code>EvaluationFailed</code>, missing/invalid metric, or failed metric diagnostics</td>
+<td><code>EvaluationFailed</code>, <code>PrerequisiteFailed</code>, missing/invalid metric, or failed metric diagnostics</td>
 <td>Exclusion that forces <code>Inconclusive</code>.</td>
 </tr>
 </tbody>
 </table>
 <p><code>ExperimentUnknownSampleTreatment.CountAsFailure</code> is the explicit pessimistic alternative.</p>
 <p>The decision rule is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Passed         one-sided lower Wilson bound &gt;= required success rate
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Failed         one-sided upper Wilson bound &lt; required success rate
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Inconclusive   otherwise, below minimum sample count, or unknown evidence remains
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Passed         one-sided lower Wilson bound &gt;= required success rate
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Failed         one-sided upper Wilson bound &lt; required success rate
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Inconclusive   otherwise, below minimum sample count, or unknown evidence remains
 </span></code></pre></div>
 <p>Evidence reports trial count, operational attempt count, effective sample count, successes,
 failures, execution failures, exclusions, status counts, estimate, bounds, confidence level,
@@ -5282,49 +5339,49 @@ a quality failure.</p>
 <code>EvaluationThresholdEvaluator</code>. Use <code>Evaluate(...)</code> for structured non-throwing decisions and
 <code>Assert(...)</code> as the CI-oriented throwing adapter.</p>
 <p>Required missing or invalid metrics no longer pass silently:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">gate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationQualityGate</span><span class="p">()</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="p">.</span><span class="n">RequireBoolean</span><span class="p">(</span><span class="s">&quot;required_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="p">.</span><span class="n">OptionalBoolean</span><span class="p">(</span><span class="s">&quot;conditional_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gate</span><span class="p">.</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">gate</span><span class="p">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">gate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationQualityGate</span><span class="p">()</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">RequireBoolean</span><span class="p">(</span><span class="s">&quot;required_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">OptionalBoolean</span><span class="p">(</span><span class="s">&quot;conditional_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gate</span><span class="p">.</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">gate</span><span class="p">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
 </span></code></pre></div>
 <p><code>Assert(...)</code> throws for <code>Failed</code> or <code>Inconclusive</code>; an optional missing metric does not block a
 passing decision.</p>
 <h2 id="json-artifact">JSON Artifact<a class="headerlink" href="#json-artifact" title="Permanent link">&para;</a></h2>
-<p><code>ExperimentJsonArtifactWriter</code> writes schema version 2 with fixed Needlr-owned property ordering:</p>
+<p><code>ExperimentJsonArtifactWriter</code> writes schema version 3 with fixed Needlr-owned property ordering:</p>
 <ul>
 <li>source/trial item order;</li>
 <li>complete attempt history and delay-before-next-attempt values;</li>
 <li>normalized item metrics;</li>
+<li>namespaced item correlations and ordered item-scope publication results;</li>
 <li>ordered run-evaluation results;</li>
 <li>ordered policy results and structured evidence;</li>
 <li>the overall run decision;</li>
 <li>structured failures without raw exceptions or stack traces.</li>
 </ul>
 <p>For Native AOT, pass caller-generated metadata:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Text.Json.Serialization</span><span class="p">;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="na">[JsonSerializable(typeof(MyCase))]</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">[JsonSerializable(typeof(MyOutput))]</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">internal</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyJsonContext</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">JsonSerializerContext</span><span class="p">;</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentJsonArtifactWriter</span><span class="p">().</span><span class="n">WriteAsync</span><span class="p">(</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="n">stream</span><span class="p">,</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="n">result</span><span class="p">,</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyCase</span><span class="p">,</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyOutput</span><span class="p">,</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="n">cancellationToken</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Text.Json.Serialization</span><span class="p">;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="na">[JsonSerializable(typeof(MyCase))]</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="na">[JsonSerializable(typeof(MyOutput))]</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">internal</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyJsonContext</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">JsonSerializerContext</span><span class="p">;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentJsonArtifactWriter</span><span class="p">().</span><span class="n">WriteAsync</span><span class="p">(</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="n">stream</span><span class="p">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">result</span><span class="p">,</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyCase</span><span class="p">,</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyOutput</span><span class="p">,</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
 <p>The <code>JsonTypeInfo&lt;TCase&gt;</code> / <code>JsonTypeInfo&lt;TOutput&gt;</code> overload is the dependable trimmed and Native
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.</p>
 <h2 id="provider-convergence-roadmap">Provider Convergence Roadmap<a class="headerlink" href="#provider-convergence-roadmap" title="Permanent link">&para;</a></h2>
-<p>The scheduler and quality core are complete, but provider lifecycle and publication adapters remain
-separate reviewed work:</p>
+<p>The scheduler, quality core, and provider-neutral per-trial lifecycle seam are complete. Remaining
+provider convergence stays split into reviewed work:</p>
 <ul>
-<li><a href="https://github.com/ncosentino/needlr/issues/49">#49</a> adds per-trial provider lifecycle scopes.</li>
 <li><a href="https://github.com/ncosentino/needlr/issues/50">#50</a> adds result sinks and publication outcomes.</li>
 <li><a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
   <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>, and
@@ -5338,10 +5395,10 @@ runner and its lower-level prerequisites are already complete. No additional sch
 expansion is planned before that convergence.</p>
 <h2 id="runnable-example">Runnable Example<a class="headerlink" href="#runnable-example" title="Permanent link">&para;</a></h2>
 <p>Run the credential-free Phase 2 example:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
 </span></code></pre></div>
 <p>It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
-evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v2 JSON artifact under
+evaluation, deterministic and Wilson-bound policies, and an AOT-safe schema-v3 JSON artifact under
 the system temporary directory.</p>
 
 

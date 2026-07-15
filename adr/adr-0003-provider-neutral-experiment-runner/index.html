@@ -5488,14 +5488,14 @@
 <p>Accepted - proceed through the separately reviewed implementation phases below.</p>
 <p>This ADR was the design deliverable for <a href="https://github.com/ncosentino/needlr/issues/36">issue #36</a>.
 Phase 1 was delivered by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
-Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.</p>
+Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.
+Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.</p>
 <p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.</p>
 <p>The corrected remaining sequence is:</p>
 <ol>
-<li>provider lifecycle scopes (<a href="https://github.com/ncosentino/needlr/issues/49">#49</a>);</li>
 <li>provider sinks and publication outcomes (<a href="https://github.com/ncosentino/needlr/issues/50">#50</a>);</li>
 <li>Langfuse hosted source, item scope, and sink convergence
    (<a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
@@ -5838,7 +5838,7 @@ Langfuse convergence is complete.</p>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>  CaseId
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  TrialIndex          one-based statistical sample index
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>  Status              Succeeded | ExecutionFailed | TimedOut |
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>                      Canceled | EvaluationFailed
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>                      Canceled | EvaluationFailed | PrerequisiteFailed
 </span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>  Attempts            every operational attempt in order
 </span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  Output              terminal successful output, when available
 </span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>  Evaluation          MEAI EvaluationResult, when available
@@ -5855,7 +5855,9 @@ Langfuse convergence is complete.</p>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  Message
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  IsRetryable
 </span></code></pre></div>
-<p>The canonical result does not serialize a raw <code>Exception</code> or stack trace by default. The runner logs the original exception through normal diagnostics while retaining stable failure fields in the result.</p>
+<p>The canonical result does not serialize a raw <code>Exception</code> or stack trace by default. Isolated
+failures retain stable machine-actionable fields without making provider-specific exception types
+part of the result contract.</p>
 <p>An item-scope publication result is separate from item quality:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>ExperimentItemPublicationResult
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  Name
@@ -5941,18 +5943,41 @@ Langfuse convergence is complete.</p>
 <li>multiple scopes enter in registration order and exit in reverse order;</li>
 <li>no scope may rely on static or process-global mutable state.</li>
 </ul>
+<p>The finalized Phase 3A contract separates the provider factory from its per-trial scope:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>IExperimentItemScopeProvider&lt;TCase,TOutput&gt;
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  Name
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  IsRequired
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  FailureMode         BestEffort | ExecutionPrerequisite
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  EnterAsync          once per statistical trial
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>IExperimentItemScope&lt;TCase,TOutput&gt;
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>  Features            exact-Type adapter feature map
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  Activate            context-restoration handle per attempt/evaluator
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>  CompleteAsync       terminal quality notification and publication result
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>  AbortAsync          caller-cancellation notification
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>  DisposeAsync        final cleanup
+</span></code></pre></div>
+<p>Entry runs under caller cancellation and shared admission but outside the per-attempt timeout.
+Activation handles nest in registration order and unwind in reverse order. Completion, abort, and scope disposal run without ambient activation and use scope-owned state.
+Caller cancellation aborts only scopes whose completion has not started; a started completion owns
+cancellation-safe termination and is never followed by abort. <code>ItemScopeCleanupTimeout</code> bounds
+cancellation cleanup and terminal disposal.</p>
+<p><code>BestEffort</code> scope failure never changes item quality. <code>ExecutionPrerequisite</code> applies only before a
+task attempt starts; a failed prerequisite produces <code>PrerequisiteFailed</code> without inventing an
+attempt. Completion or disposal failures remain publication failures after quality is known.</p>
 <p>The item lifecycle is:</p>
 <ol>
 <li>Enter item scopes and collect their scoped features.</li>
 <li>Execute attempts under runner-owned timeout and retry rules.</li>
 <li>On terminal execution success, invoke the one item evaluator.</li>
 <li>Build the execution/evaluation portion, including <code>EvaluationFailed</code> when the evaluator throws.</li>
-<li>Notify scopes of that read-only quality outcome.</li>
-<li>Dispose scopes in reverse order and collect structured publication results.</li>
+<li>Notify scopes of that read-only quality outcome and collect structured publication results.</li>
+<li>Dispose scopes in reverse order; disposal failure updates only publication status.</li>
 <li>Finalize the item result with correlations and publication results.</li>
 </ol>
 <p>The MEAI Reporting adapter implements a coordinated scope/evaluator pair: the scope owns <code>ScenarioRun</code>, and the evaluator is the only component that calls <code>ScenarioRun.EvaluateAsync(...)</code>.</p>
-<p>The exact scope interface should be finalized only after issues #33 and #34 establish the context-safe Langfuse item callback and structured dataset-run/link result.</p>
+<p>Issues #33 and #34 established the context-safe Langfuse callback and structured link result used
+to finalize this provider-neutral contract. Langfuse types remain outside the core package.</p>
 <h2 id="execution-semantics">Execution semantics<a class="headerlink" href="#execution-semantics" title="Permanent link">&para;</a></h2>
 <h3 id="materialization-and-ordering">Materialization and ordering<a class="headerlink" href="#materialization-and-ordering" title="Permanent link">&para;</a></h3>
 <ul>
@@ -6054,9 +6079,9 @@ Langfuse convergence is complete.</p>
 <li>baseline and paired delta when applicable.</li>
 </ul>
 <p>The initial statistical vertical slice should support a binary success proportion with a documented confidence interval and a policy such as:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Passed         lower confidence bound &gt;= required threshold
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Failed         upper confidence bound &lt; required threshold
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Inconclusive   otherwise, or minimum sample requirements are unmet
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Passed         lower confidence bound &gt;= required threshold
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Failed         upper confidence bound &lt; required threshold
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Inconclusive   otherwise, or minimum sample requirements are unmet
 </span></code></pre></div>
 <p>The default binary-policy status mapping is:</p>
 <table>
@@ -6084,7 +6109,7 @@ Langfuse convergence is complete.</p>
 <td>Denominator failure.</td>
 </tr>
 <tr>
-<td><code>EvaluationFailed</code>, missing metric, or metric with failed diagnostics</td>
+<td><code>EvaluationFailed</code>, <code>PrerequisiteFailed</code>, missing metric, or metric with failed diagnostics</td>
 <td>Unknown sample; counted as an exclusion and forces <code>Inconclusive</code> unless the policy explicitly selects pessimistic failure treatment.</td>
 </tr>
 <tr>

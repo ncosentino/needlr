@@ -4778,12 +4778,28 @@
 <td style="text-align: left;">Provides stable machine-actionable failure data without retaining a raw exception or stack.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentItemCorrelation/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemCorrelation">ExperimentItemCorrelation</a></td>
+<td style="text-align: left;">Provides one namespaced provider identifier associated with an experiment item.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentItemEvaluationContext_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemEvaluationContext\&lt;TCase,TOutput&gt;">ExperimentItemEvaluationContext&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Provides a successful task output and its stable identity to an item evaluator.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../ExperimentItemFeatureCollection/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemFeatureCollection">ExperimentItemFeatureCollection</a></td>
+<td style="text-align: left;">Provides exact-type access to adapter-owned features for one experiment item scope.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentItemPublicationResult/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemPublicationResult">ExperimentItemPublicationResult</a></td>
+<td style="text-align: left;">Describes one item scope's publication outcome independently from item quality.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../ExperimentItemResult_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemResult\&lt;TCase,TOutput&gt;">ExperimentItemResult&lt;TCase,TOutput&gt;</a></td>
 <td style="text-align: left;">Describes one case trial, including its complete attempt history and terminal output.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentItemScopeContext_TCase_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemScopeContext\&lt;TCase&gt;">ExperimentItemScopeContext&lt;TCase&gt;</a></td>
+<td style="text-align: left;">Provides stable identity and case data when entering one per-trial item scope.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentItemStatusCount/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemStatusCount">ExperimentItemStatusCount</a></td>
@@ -4888,6 +4904,14 @@
 <td style="text-align: left;">Provides a caller-owned concurrency boundary that can be shared across experiment runs.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="../IExperimentItemScope_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentItemScope\&lt;TCase,TOutput&gt;">IExperimentItemScope&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Provides one provider lifecycle spanning every attempt and item evaluation for a trial.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../IExperimentItemScopeProvider_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentItemScopeProvider\&lt;TCase,TOutput&gt;">IExperimentItemScopeProvider&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Creates one provider-neutral lifecycle scope for each statistical trial.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="../IExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.IExperimentRetryPolicy">IExperimentRetryPolicy</a></td>
 <td style="text-align: left;">Selects bounded execution retries for experiment items.</td>
 </tr>
@@ -4928,6 +4952,14 @@
 <tr>
 <td style="text-align: left;"><a href="../ExperimentFailureStage/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage">ExperimentFailureStage</a></td>
 <td style="text-align: left;">Identifies the experiment stage that produced a structured failure.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentItemPublicationStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemPublicationStatus">ExperimentItemPublicationStatus</a></td>
+<td style="text-align: left;">Describes whether one item scope completed its provider publication work.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="../ExperimentItemScopeFailureMode/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemScopeFailureMode">ExperimentItemScopeFailureMode</a></td>
+<td style="text-align: left;">Defines whether an item-scope setup failure may prevent a task attempt from starting.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="../ExperimentItemStatus/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentItemStatus">ExperimentItemStatus</a></td>

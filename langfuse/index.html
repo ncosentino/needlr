@@ -5326,8 +5326,10 @@ application context from being sent to Langfuse or downstream services accidenta
 <p>The API in this section is the low-level/manual Langfuse experiment-publication surface. It does not
 provide collection scheduling, retries, aggregate evaluation, or quality policy. The canonical bulk
 experiment path is the provider-neutral runner; convergence is tracked by
-<a href="https://github.com/ncosentino/needlr/issues/49">#49</a> through
-<a href="https://github.com/ncosentino/needlr/issues/53">#53</a>.</p>
+<a href="https://github.com/ncosentino/needlr/issues/51">#51</a> through
+<a href="https://github.com/ncosentino/needlr/issues/53">#53</a>. The core per-trial lifecycle seam from
+<a href="https://github.com/ncosentino/needlr/issues/49">#49</a> is available; the Langfuse source, scope, and
+sink adapters remain separate work.</p>
 <p>Until those adapters land, callers must compose the manual item loop below. Do not add a second
 scheduler or policy engine to the Langfuse package: the existing scenario, link, score, identity,
 resilience, and publication-health types are the provider primitives that the generic runner will
