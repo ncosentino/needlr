@@ -1511,6 +1511,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#meai-reporting-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MEAI Reporting Adapter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#final-result-sinks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1610,10 +1621,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#provider-convergence-roadmap" class="md-nav__link">
+  <a href="#provider-convergence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provider Convergence Roadmap
+        Provider Convergence
       
     </span>
   </a>
@@ -5233,6 +5244,91 @@ not started. Once <code>CompleteAsync</code> begins, that method owns cancellati
 runner does not also invoke <code>AbortAsync</code>. Completion, abort, and disposal run without ambient
 activation and must use scope-owned state. <code>ExperimentRunOptions.ItemScopeCleanupTimeout</code> bounds
 cancellation cleanup and terminal disposal; it defaults to 30 seconds.</p>
+<h2 id="meai-reporting-adapter">MEAI Reporting Adapter<a class="headerlink" href="#meai-reporting-adapter" title="Permanent link">&para;</a></h2>
+<p>Install <code>NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</code> when an experiment should use MEAI
+Reporting response caching, <code>ScenarioRun</code> persistence, and the official report writers. The
+provider-neutral Evaluation package does not reference Reporting.</p>
+<p>Create a run-specific <code>ReportingConfiguration</code>, then attach the coordinated scope/evaluator pair
+with <code>WithMeaiReporting(...)</code>:</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">Microsoft.Extensions.AI.Evaluation.Reporting.Storage</span><span class="p">;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</span><span class="p">;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">const</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">runId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;commit-abc123&quot;</span><span class="p">;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kt">var</span><span class="w"> </span><span class="n">reportingConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DiskBasedReportingConfiguration</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="n">storageRootPath</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="n">evaluators</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="nf">ChatConfiguration</span><span class="p">(</span><span class="n">chatClient</span><span class="p">),</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="n">enableResponseCaching</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="n">executionName</span><span class="p">:</span><span class="w"> </span><span class="n">runId</span><span class="p">);</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="kt">var</span><span class="w"> </span><span class="n">definition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ExperimentDefinition</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="p">{</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;support-regression&quot;</span><span class="p">,</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="n">CaseSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">caseSource</span><span class="p">,</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="n">Task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">reporting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">Features</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">            </span><span class="p">.</span><span class="n">GetRequired</span><span class="o">&lt;</span><span class="n">MeaiReportingExperimentItem</span><span class="o">&gt;</span><span class="p">();</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">        </span><span class="n">ChatResponse</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">reporting</span><span class="p">.</span><span class="n">ChatConfiguration</span><span class="o">!</span><span class="p">.</span><span class="n">ChatClient</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">            </span><span class="p">.</span><span class="n">GetResponseAsync</span><span class="p">(</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">                </span><span class="n">context</span><span class="p">.</span><span class="n">Case</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">                </span><span class="n">cancellationToken</span><span class="p">:</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">MyOutput</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">Case</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">);</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="p">}.</span><span class="n">WithMeaiReporting</span><span class="p">(</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="n">reportingConfiguration</span><span class="p">,</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationInputs</span><span class="p">(</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">Output</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">Output</span><span class="p">.</span><span class="n">Response</span><span class="p">),</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">MeaiReportingExperimentAdapterOptions</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">        </span><span class="n">ResponseReuseMode</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">            </span><span class="n">MeaiReportingResponseReuseMode</span><span class="p">.</span><span class="n">CaseAndTrialReplay</span><span class="p">,</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">        </span><span class="n">IsRequired</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">    </span><span class="p">});</span>
+</span></code></pre></div>
+<p>The configuration's <code>ExecutionName</code> must equal <code>ExperimentRunOptions.RunId</code>. The adapter maps
+<code>ExperimentCase.Id</code> to <code>ScenarioName</code> and the one-based trial index to <code>IterationName</code>. When using
+the disk result store, those values must also be valid path segments.</p>
+<p><code>WithMeaiReporting(...)</code> rejects a definition that already has an item evaluator. Configure every
+MEAI evaluator on <code>ReportingConfiguration</code>; MEAI's <code>CompositeEvaluator</code> remains the single
+evaluation producer.</p>
+<table>
+<thead>
+<tr>
+<th>Response reuse mode</th>
+<th>Configuration and behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CaseAndTrialReplay</code></td>
+<td>Requires a response cache. Matching request, model, scenario, and trial cache keys can replay across separate Needlr runs.</td>
+</tr>
+<tr>
+<td><code>FreshPerRun</code></td>
+<td>Requires a response cache and adds the Needlr run ID to the scenario cache keys. Retries still replay within the same run.</td>
+</tr>
+<tr>
+<td><code>Disabled</code></td>
+<td>Requires a configuration with no response-cache provider. Every attempt reaches the underlying chat client.</td>
+</tr>
+</tbody>
+</table>
+<p>The task must use <code>MeaiReportingExperimentItem.ChatConfiguration.ChatClient</code> for primary model
+responses to participate in MEAI caching. A cache hit still requires the complete MEAI key to match;
+case and trial identity alone do not override changed messages, options, model metadata, or streaming
+mode.</p>
+<p>One <code>ScenarioRun</code> remains alive across all operational retries. The paired item evaluator calls
+<code>ScenarioRun.EvaluateAsync(...)</code> once after terminal execution success, and normal scope disposal
+persists the completed result. Store exceptions become <code>ItemScopeFailed</code> publication failures and do
+not replay execution or alter item quality. Caller cancellation aborts incomplete scenarios without
+persisting them. MEAI does not accept a cancellation token on <code>ScenarioRun.DisposeAsync</code>; the
+runner's cleanup timeout can therefore report a disposal failure while a provider store operation
+finishes later.</p>
+<p>Needlr does not render MEAI reports or fabricate aggregate <code>ScenarioRun</code> entries. Read the configured
+<code>IEvaluationResultStore</code> and use MEAI's <code>HtmlReportWriter</code>, <code>JsonReportWriter</code>, or <code>dotnet aieval</code>
+tooling.</p>
 <h2 id="final-result-sinks">Final Result Sinks<a class="headerlink" href="#final-result-sinks" title="Permanent link">&para;</a></h2>
 <p><code>ExperimentDefinition&lt;TCase,TOutput&gt;.Sinks</code> publishes the completed canonical quality result without
 giving providers ownership of execution or quality policy.</p>
@@ -5372,9 +5468,9 @@ uncorrected Wilson score interval.</p>
 </table>
 <p><code>ExperimentUnknownSampleTreatment.CountAsFailure</code> is the explicit pessimistic alternative.</p>
 <p>The decision rule is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Passed         one-sided lower Wilson bound &gt;= required success rate
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Failed         one-sided upper Wilson bound &lt; required success rate
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Inconclusive   otherwise, below minimum sample count, or unknown evidence remains
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Passed         one-sided lower Wilson bound &gt;= required success rate
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Failed         one-sided upper Wilson bound &lt; required success rate
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Inconclusive   otherwise, below minimum sample count, or unknown evidence remains
 </span></code></pre></div>
 <p>Evidence reports trial count, operational attempt count, effective sample count, successes,
 failures, execution failures, exclusions, status counts, estimate, bounds, confidence level,
@@ -5398,12 +5494,12 @@ a quality failure.</p>
 <code>EvaluationThresholdEvaluator</code>. Use <code>Evaluate(...)</code> for structured non-throwing decisions and
 <code>Assert(...)</code> as the CI-oriented throwing adapter.</p>
 <p>Required missing or invalid metrics no longer pass silently:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">gate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationQualityGate</span><span class="p">()</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="n">RequireBoolean</span><span class="p">(</span><span class="s">&quot;required_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="n">OptionalBoolean</span><span class="p">(</span><span class="s">&quot;conditional_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gate</span><span class="p">.</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">gate</span><span class="p">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">var</span><span class="w"> </span><span class="n">gate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationQualityGate</span><span class="p">()</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="p">.</span><span class="n">RequireBoolean</span><span class="p">(</span><span class="s">&quot;required_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="p">.</span><span class="n">OptionalBoolean</span><span class="p">(</span><span class="s">&quot;conditional_metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">EvaluationThresholdResult</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gate</span><span class="p">.</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">gate</span><span class="p">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">evaluation</span><span class="p">);</span>
 </span></code></pre></div>
 <p><code>Assert(...)</code> throws for <code>Failed</code> or <code>Inconclusive</code>; an optional missing metric does not block a
 passing decision.</p>
@@ -5423,26 +5519,25 @@ property ordering:</p>
 <li>structured failures without raw exceptions or stack traces.</li>
 </ul>
 <p>For Native AOT, pass caller-generated metadata:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Text.Json.Serialization</span><span class="p">;</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="na">[JsonSerializable(typeof(MyCase))]</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="na">[JsonSerializable(typeof(MyOutput))]</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">internal</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyJsonContext</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">JsonSerializerContext</span><span class="p">;</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentJsonArtifactWriter</span><span class="p">().</span><span class="n">WriteAsync</span><span class="p">(</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="n">stream</span><span class="p">,</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">outcome</span><span class="p">,</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyCase</span><span class="p">,</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyOutput</span><span class="p">,</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="n">cancellationToken</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Text.Json.Serialization</span><span class="p">;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="na">[JsonSerializable(typeof(MyCase))]</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="na">[JsonSerializable(typeof(MyOutput))]</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">internal</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MyJsonContext</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">JsonSerializerContext</span><span class="p">;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">await</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="nn">var</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">ExperimentJsonArtifactWriter</span><span class="p">().</span><span class="n">WriteAsync</span><span class="p">(</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="n">stream</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="n">outcome</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyCase</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="n">MyJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">MyOutput</span><span class="p">,</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
 <p>The <code>JsonTypeInfo&lt;TCase&gt;</code> / <code>JsonTypeInfo&lt;TOutput&gt;</code> overload is the dependable trimmed and Native
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.</p>
-<h2 id="provider-convergence-roadmap">Provider Convergence Roadmap<a class="headerlink" href="#provider-convergence-roadmap" title="Permanent link">&para;</a></h2>
-<p>The scheduler, quality core, lifecycle and publication seams, and full Langfuse source/scope/sink
-convergence are complete. The remaining second-provider proof is:</p>
+<h2 id="provider-convergence">Provider Convergence<a class="headerlink" href="#provider-convergence" title="Permanent link">&para;</a></h2>
+<p>The planned ADR-0003 workstream is complete:</p>
 <ul>
 <li><a href="https://github.com/ncosentino/needlr/issues/51">#51</a> provides validated paginated Langfuse
   dataset reads and <code>LangfuseDatasetCaseSource&lt;TCase&gt;</code> for latest or timestamped hosted sources.</li>
@@ -5450,19 +5545,24 @@ convergence are complete. The remaining second-provider proof is:</p>
   at most one hosted dataset-run-item link per statistical trial.</li>
 <li><a href="https://github.com/ncosentino/needlr/issues/53">#53</a> projects canonical item/run measurements and
   the optional canonical decision through the final Langfuse result sink.</li>
-<li><a href="https://github.com/ncosentino/needlr/issues/54">#54</a> adds MEAI Reporting afterward as the
-  second-provider proof.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/54">#54</a> adds the isolated MEAI Reporting adapter as
+  the second-provider proof.</li>
 </ul>
-<p>Langfuse convergence intentionally precedes MEAI Reporting because Langfuse support motivated the
-runner and its lower-level prerequisites are already complete. No additional scheduler or policy
-expansion is planned before that convergence.</p>
+<p>Further scheduler, retry, evaluator, statistical-policy, or provider expansion requires a separate
+design and issue rather than extending this workstream implicitly.</p>
 <h2 id="runnable-example">Runnable Example<a class="headerlink" href="#runnable-example" title="Permanent link">&para;</a></h2>
 <p>Run the credential-free Phase 3B example:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/ExperimentRunnerApp
 </span></code></pre></div>
 <p>It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
 evaluation, deterministic and Wilson-bound policies, a credential-free final sink, and an AOT-safe
 schema-v4 outcome artifact under the system temporary directory.</p>
+<p>Run the credential-free MEAI Reporting adapter example:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>--project<span class="w"> </span>src/Examples/AgentFramework/MeaiReportingExperimentApp
+</span></code></pre></div>
+<p>It uses the scenario-wrapped chat client to demonstrate case/trial replay across runs,
+fresh-per-run cache isolation, one persisted <code>ScenarioRun</code> per trial, and an official MEAI JSON
+report under the system temporary directory.</p>
 
 
 
