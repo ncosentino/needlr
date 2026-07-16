@@ -258,6 +258,85 @@ runner does not also invoke `AbortAsync`. Completion, abort, and disposal run wi
 activation and must use scope-owned state. `ExperimentRunOptions.ItemScopeCleanupTimeout` bounds
 cancellation cleanup and terminal disposal; it defaults to 30 seconds.
 
+## MEAI Reporting Adapter
+
+Install `NexusLabs.Needlr.AgentFramework.Evaluation.Reporting` when an experiment should use MEAI
+Reporting response caching, `ScenarioRun` persistence, and the official report writers. The
+provider-neutral Evaluation package does not reference Reporting.
+
+Create a run-specific `ReportingConfiguration`, then attach the coordinated scope/evaluator pair
+with `WithMeaiReporting(...)`:
+
+```csharp
+using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
+using NexusLabs.Needlr.AgentFramework.Evaluation.Reporting;
+
+const string runId = "commit-abc123";
+var reportingConfiguration = DiskBasedReportingConfiguration.Create(
+    storageRootPath,
+    evaluators,
+    new ChatConfiguration(chatClient),
+    enableResponseCaching: true,
+    executionName: runId);
+
+var definition = new ExperimentDefinition<MyCase, MyOutput>
+{
+    Name = "support-regression",
+    CaseSource = caseSource,
+    Task = async (context, cancellationToken) =>
+    {
+        var reporting = context.Features
+            .GetRequired<MeaiReportingExperimentItem>();
+        ChatResponse response = await reporting.ChatConfiguration!.ChatClient
+            .GetResponseAsync(
+                context.Case.Value.Messages,
+                cancellationToken: cancellationToken);
+        return new MyOutput(context.Case.Value.Messages, response);
+    },
+}.WithMeaiReporting(
+    reportingConfiguration,
+    context => new EvaluationInputs(
+        context.Output.Messages,
+        context.Output.Response),
+    new MeaiReportingExperimentAdapterOptions<MyCase, MyOutput>
+    {
+        ResponseReuseMode =
+            MeaiReportingResponseReuseMode.CaseAndTrialReplay,
+        IsRequired = true,
+    });
+```
+
+The configuration's `ExecutionName` must equal `ExperimentRunOptions.RunId`. The adapter maps
+`ExperimentCase.Id` to `ScenarioName` and the one-based trial index to `IterationName`. When using
+the disk result store, those values must also be valid path segments.
+
+`WithMeaiReporting(...)` rejects a definition that already has an item evaluator. Configure every
+MEAI evaluator on `ReportingConfiguration`; MEAI's `CompositeEvaluator` remains the single
+evaluation producer.
+
+| Response reuse mode | Configuration and behavior |
+|---|---|
+| `CaseAndTrialReplay` | Requires a response cache. Matching request, model, scenario, and trial cache keys can replay across separate Needlr runs. |
+| `FreshPerRun` | Requires a response cache and adds the Needlr run ID to the scenario cache keys. Retries still replay within the same run. |
+| `Disabled` | Requires a configuration with no response-cache provider. Every attempt reaches the underlying chat client. |
+
+The task must use `MeaiReportingExperimentItem.ChatConfiguration.ChatClient` for primary model
+responses to participate in MEAI caching. A cache hit still requires the complete MEAI key to match;
+case and trial identity alone do not override changed messages, options, model metadata, or streaming
+mode.
+
+One `ScenarioRun` remains alive across all operational retries. The paired item evaluator calls
+`ScenarioRun.EvaluateAsync(...)` once after terminal execution success, and normal scope disposal
+persists the completed result. Store exceptions become `ItemScopeFailed` publication failures and do
+not replay execution or alter item quality. Caller cancellation aborts incomplete scenarios without
+persisting them. MEAI does not accept a cancellation token on `ScenarioRun.DisposeAsync`; the
+runner's cleanup timeout can therefore report a disposal failure while a provider store operation
+finishes later.
+
+Needlr does not render MEAI reports or fabricate aggregate `ScenarioRun` entries. Read the configured
+`IEvaluationResultStore` and use MEAI's `HtmlReportWriter`, `JsonReportWriter`, or `dotnet aieval`
+tooling.
+
 ## Final Result Sinks
 
 `ExperimentDefinition<TCase,TOutput>.Sinks` publishes the completed canonical quality result without
@@ -464,10 +543,9 @@ The `JsonTypeInfo<TCase>` / `JsonTypeInfo<TOutput>` overload is the dependable t
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.
 
-## Provider Convergence Roadmap
+## Provider Convergence
 
-The scheduler, quality core, lifecycle and publication seams, and full Langfuse source/scope/sink
-convergence are complete. The remaining second-provider proof is:
+The planned ADR-0003 workstream is complete:
 
 - [#51](https://github.com/ncosentino/needlr/issues/51) provides validated paginated Langfuse
   dataset reads and `LangfuseDatasetCaseSource<TCase>` for latest or timestamped hosted sources.
@@ -475,12 +553,11 @@ convergence are complete. The remaining second-provider proof is:
   at most one hosted dataset-run-item link per statistical trial.
 - [#53](https://github.com/ncosentino/needlr/issues/53) projects canonical item/run measurements and
   the optional canonical decision through the final Langfuse result sink.
-- [#54](https://github.com/ncosentino/needlr/issues/54) adds MEAI Reporting afterward as the
-  second-provider proof.
+- [#54](https://github.com/ncosentino/needlr/issues/54) adds the isolated MEAI Reporting adapter as
+  the second-provider proof.
 
-Langfuse convergence intentionally precedes MEAI Reporting because Langfuse support motivated the
-runner and its lower-level prerequisites are already complete. No additional scheduler or policy
-expansion is planned before that convergence.
+Further scheduler, retry, evaluator, statistical-policy, or provider expansion requires a separate
+design and issue rather than extending this workstream implicitly.
 
 ## Runnable Example
 
@@ -493,3 +570,13 @@ dotnet run --project src/Examples/AgentFramework/ExperimentRunnerApp
 It uses seeded stochastic trials, a scripted retry, mixed terminal outcomes, a shared limiter, run
 evaluation, deterministic and Wilson-bound policies, a credential-free final sink, and an AOT-safe
 schema-v4 outcome artifact under the system temporary directory.
+
+Run the credential-free MEAI Reporting adapter example:
+
+```bash
+dotnet run --project src/Examples/AgentFramework/MeaiReportingExperimentApp
+```
+
+It uses the scenario-wrapped chat client to demonstrate case/trial replay across runs,
+fresh-per-run cache isolation, one persisted `ScenarioRun` per trial, and an official MEAI JSON
+report under the system temporary directory.

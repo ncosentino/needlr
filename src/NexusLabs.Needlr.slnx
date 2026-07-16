@@ -56,6 +56,7 @@
     <Project Path="Examples/AgentFramework/GenAiTokenMetricsApp/GenAiTokenMetricsApp.csproj" />
     <Project Path="Examples/AgentFramework/EarlyCompletionApp/EarlyCompletionApp.csproj" />
     <Project Path="Examples/AgentFramework/ExperimentRunnerApp/ExperimentRunnerApp.csproj" />
+    <Project Path="Examples/AgentFramework/MeaiReportingExperimentApp/MeaiReportingExperimentApp.csproj" />
     <Project Path="Examples/AgentFramework/GraphWorkflowApp/GraphWorkflowApp.csproj" />
     <Project Path="Examples/AgentFramework/GeneratorCoexistenceApp/GeneratorCoexistenceApp.csproj" />
     <Project Path="Examples/AgentFramework/GraphWorkflowApp.Agents/GraphWorkflowApp.Agents.csproj" />
@@ -139,6 +140,8 @@
     <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers.Tests/NexusLabs.Needlr.AgentFramework.Analyzers.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation/NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Reporting/NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.csproj" />
+    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
     <Project Path="NexusLabs.Needlr.AgentFramework.Langfuse/NexusLabs.Needlr.AgentFramework.Langfuse.csproj" />
