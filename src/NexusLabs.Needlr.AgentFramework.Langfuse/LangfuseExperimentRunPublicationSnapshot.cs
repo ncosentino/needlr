@@ -23,7 +23,7 @@ public sealed record LangfuseExperimentRunPublicationSnapshot
         string? datasetRunId,
         int operationsInFlight,
         LangfuseExperimentItemLinkCounts itemLinks,
-        LangfuseExperimentRunScoreCounts runScores,
+        LangfuseExperimentScoreCounts runScores,
         LangfuseExperimentApiPublicationStatus apiPublicationStatus)
     {
         if (!Enum.IsDefined(identityStatus))
@@ -61,7 +61,7 @@ public sealed record LangfuseExperimentRunPublicationSnapshot
     public LangfuseExperimentItemLinkCounts ItemLinks { get; }
 
     /// <summary>Gets dataset-run score outcome counts.</summary>
-    public LangfuseExperimentRunScoreCounts RunScores { get; }
+    public LangfuseExperimentScoreCounts RunScores { get; }
 
     /// <summary>Gets the aggregate direct API publication status.</summary>
     public LangfuseExperimentApiPublicationStatus ApiPublicationStatus { get; }

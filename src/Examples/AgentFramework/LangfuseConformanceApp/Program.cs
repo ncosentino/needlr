@@ -49,6 +49,7 @@ using OpenTelemetry.Trace;
 using NexusLabs.Needlr.AgentFramework;
 using NexusLabs.Needlr.AgentFramework.Diagnostics;
 using NexusLabs.Needlr.AgentFramework.Evaluation;
+using NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 using NexusLabs.Needlr.AgentFramework.Iterative;
 using NexusLabs.Needlr.AgentFramework.Langfuse;
 using NexusLabs.Needlr.AgentFramework.Workflows.Diagnostics;
@@ -56,12 +57,15 @@ using NexusLabs.Needlr.AgentFramework.Workspace;
 using NexusLabs.Needlr.Injection;
 using NexusLabs.Needlr.Injection.Reflection;
 
+using LangfuseConformanceApp;
+
 Console.WriteLine("=== Needlr → Langfuse Conformance Check ===");
 Console.WriteLine();
 
-// Two modes:
-//   (default)      live read-back conformance — requires a running Langfuse.
-//   "resiliency"   Langfuse-down lifecycle and resiliency checks — needs NO server.
+// Selected modes:
+//   (default)             live read-back conformance — requires a running Langfuse.
+//   "resiliency"          Langfuse-down lifecycle and resiliency checks — needs NO server.
+//   "experiment-runner"   generic runner with disabled/local/hosted Langfuse adapters.
 if (args.Length > 0 && string.Equals(args[0], "resiliency", StringComparison.OrdinalIgnoreCase))
 {
     return await RunResiliencyCheckAsync();
@@ -70,6 +74,11 @@ if (args.Length > 0 && string.Equals(args[0], "resiliency", StringComparison.Ord
 if (args.Length > 0 && string.Equals(args[0], "dependency-injection", StringComparison.OrdinalIgnoreCase))
 {
     return RunDependencyInjectionCheck();
+}
+
+if (args.Length > 0 && string.Equals(args[0], "experiment-runner", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunExperimentRunnerCheckAsync(args.Skip(1).ToArray());
 }
 
 // "experiments" mode exercises the dataset/experiment, score-config, comment,
@@ -549,6 +558,196 @@ static int RunDependencyInjectionCheck()
     return 1;
 }
 
+static async Task<int> RunExperimentRunnerCheckAsync(string[] modeArgs)
+{
+    var useHostedDataset =
+        modeArgs.Length > 0
+        && string.Equals(modeArgs[0], "hosted", StringComparison.OrdinalIgnoreCase);
+    var datasetName = modeArgs.Length > 1
+        ? modeArgs[1]
+        : "needlr-converged-experiment";
+    var runId =
+        $"needlr-runner-{TimeProvider.System.GetUtcNow():yyyyMMdd-HHmmss}";
+    var options = LangfuseOptions.FromEnvironment();
+    options.ServiceName = "needlr-langfuse-experiment-runner";
+    options.Environment = "needlr-conformance";
+    options.Release = runId;
+    options.ScoreFailureMode = LangfuseScoreFailureMode.NonFatal;
+    options.DiagnosticsCallback =
+        message => Console.WriteLine($"[langfuse] {message}");
+
+    using var langfuse = LangfuseTelemetry.Start(options);
+    Console.WriteLine("=== Converged Langfuse Experiment Runner ===");
+    Console.WriteLine(
+        $"Mode: {(useHostedDataset ? "hosted dataset" : "local cases")}; " +
+        $"Langfuse: {(langfuse.IsEnabled ? "enabled" : "disabled")}");
+    if (useHostedDataset && !langfuse.IsEnabled)
+    {
+        Console.WriteLine(
+            "Hosted mode requires LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY.");
+        return 2;
+    }
+
+    IExperimentCaseSource<LangfuseRunnerCase> caseSource;
+    LangfuseExperimentItemScopeProvider<LangfuseRunnerCase, string> itemScope;
+    LangfuseExperimentResultSink<LangfuseRunnerCase, string> resultSink;
+    if (useHostedDataset)
+    {
+        await langfuse.Datasets.EnsureDatasetAsync(
+            datasetName,
+            "Needlr converged experiment-runner example.");
+        foreach (var id in new[] { "first", "second" })
+        {
+            await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
+            {
+                DatasetName = datasetName,
+                Id = id,
+                Input = new { prompt = $"Summarize example {id}." },
+                ExpectedOutput = "a non-empty summary",
+            });
+        }
+
+        var selection = new LangfuseDatasetSelection { Name = datasetName };
+        caseSource = new LangfuseDatasetCaseSource<LangfuseRunnerCase>(
+            langfuse.Datasets,
+            selection,
+            item => new ExperimentCase<LangfuseRunnerCase>
+            {
+                Id = item.Id,
+                Value = new LangfuseRunnerCase(
+                    item.Id,
+                    item.Input ?? JsonSerializer.SerializeToElement<object?>(null),
+                    item.ExpectedOutput),
+            });
+        var run = langfuse.BeginExperimentRun(
+            selection.Name,
+            runId,
+            new LangfuseExperimentRunOptions
+            {
+                Description = "Needlr converged experiment-runner example.",
+                DatasetVersion = selection.Version,
+            });
+        itemScope =
+            langfuse.CreateExperimentItemScopeProvider<LangfuseRunnerCase, string>(
+                run);
+        resultSink =
+            langfuse.CreateExperimentResultSink<LangfuseRunnerCase, string>(
+                run,
+                CreateResultSinkOptions(runId));
+    }
+    else
+    {
+        caseSource = new LocalExperimentCaseSource<LangfuseRunnerCase>(
+            "local-conformance",
+            [
+                CreateLocalCase("first"),
+                CreateLocalCase("second"),
+            ]);
+        itemScope =
+            langfuse.CreateLocalExperimentItemScopeProvider<LangfuseRunnerCase, string>();
+        resultSink =
+            langfuse.CreateLocalExperimentResultSink<LangfuseRunnerCase, string>(
+                CreateResultSinkOptions(runId));
+    }
+
+    var definition = new ExperimentDefinition<LangfuseRunnerCase, string>
+    {
+        Name = "langfuse-converged-runner",
+        CaseSource = caseSource,
+        ItemScopes = [itemScope],
+        Sinks = [resultSink],
+        Task = (context, _) =>
+        {
+            var scenario = context.Features.GetRequired<ILangfuseScenario>();
+            scenario.SetInput(context.Case.Value.Input);
+            var output =
+                $"Processed {context.Case.Value.Id}: " +
+                $"{context.Case.Value.Input.GetRawText()}";
+            scenario.SetOutput(output);
+            return ValueTask.FromResult(output);
+        },
+        ItemEvaluator = (context, _) =>
+            ValueTask.FromResult(new EvaluationResult(
+                new BooleanMetric(
+                    "non_empty",
+                    !string.IsNullOrWhiteSpace(context.Output)),
+                new NumericMetric("length", context.Output.Length))),
+        RunEvaluators =
+        [
+            new ExperimentRunEvaluator<LangfuseRunnerCase, string>(
+                "aggregate",
+                (context, _) => ValueTask.FromResult(new EvaluationResult(
+                    new NumericMetric(
+                        "completion_rate",
+                        (double)context.Items.Count(
+                            item => item.Status == ExperimentItemStatus.Succeeded)
+                        / context.Items.Count)))),
+        ],
+        Policies =
+        [
+            new ExperimentRunEvaluationThresholdPolicy<LangfuseRunnerCase, string>(
+                "completion",
+                "aggregate",
+                new EvaluationThresholdEvaluator()
+                    .RequireNumericMin("completion_rate", 1)),
+        ],
+    };
+
+    var outcome = await new ExperimentRunner().RunAsync(
+        definition,
+        new ExperimentRunOptions
+        {
+            RunId = runId,
+            MaxConcurrency = 2,
+        });
+    var snapshot = resultSink.GetPublicationSnapshot();
+    Console.WriteLine($"Decision: {outcome.Result.Decision}");
+    Console.WriteLine($"Publication: {outcome.PublicationStatus}");
+    Console.WriteLine(
+        $"Langfuse score publication: {snapshot.ScorePublicationStatus}; " +
+        $"item scores={snapshot.ItemScores.Count}; " +
+        $"run scores={snapshot.RunEvaluationScores.Count}; " +
+        $"decision score={(snapshot.DecisionScore is null ? 0 : 1)}");
+    var flushed = langfuse.Flush(TimeSpan.FromSeconds(10));
+    var publicationSucceeded = outcome.PublicationStatus is
+        ExperimentPublicationStatus.Succeeded
+        or ExperimentPublicationStatus.NotRequested;
+    return outcome.Result.Decision == ExperimentRunDecision.Passed
+        && publicationSucceeded
+        && (!langfuse.IsEnabled || flushed)
+            ? 0
+            : 1;
+}
+
+static ExperimentCase<LangfuseRunnerCase> CreateLocalCase(string id)
+{
+    var input = JsonSerializer.SerializeToElement(
+        new { prompt = $"Summarize example {id}." });
+    return new ExperimentCase<LangfuseRunnerCase>
+    {
+        Id = id,
+        Value = new LangfuseRunnerCase(
+            id,
+            input,
+            JsonSerializer.SerializeToElement("a non-empty summary")),
+    };
+}
+
+static LangfuseExperimentResultSinkOptions<LangfuseRunnerCase, string>
+    CreateResultSinkOptions(string runId) =>
+    new()
+    {
+        ItemScoreIdProvider = (item, metric) =>
+            $"{runId}:{item.Case.Id}:{item.TrialIndex}:{metric.Name}",
+        RunEvaluationScoreIdProvider = (evaluation, metric) =>
+            $"{runId}:{evaluation.Name}:{metric.Name}",
+        DecisionScore = new LangfuseExperimentDecisionScoreOptions
+        {
+            Name = "experiment_decision",
+            ScoreIdProvider = _ => $"{runId}:decision",
+        },
+    };
+
 // ── Experiments mode: prove every Wave-1..3 capability against a LIVE Langfuse ─
 // Exercises datasets + experiment runs (dataset-run-items), score configs,
 // comments, trace context (environment/release/public/input/output), and
@@ -763,7 +962,7 @@ static async Task<int> RunExperimentsCheckAsync()
         categoricalRunScore,
         .. evaluationRunScores,
     ];
-    if (runScoreResults.Any(result => result.Status != LangfuseExperimentRunScoreStatus.Accepted))
+    if (runScoreResults.Any(result => result.Status != LangfuseExperimentScoreStatus.Accepted))
     {
         Console.WriteLine("[error] One or more dataset-run scores were not accepted.");
         return 2;

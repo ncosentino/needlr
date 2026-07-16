@@ -24,4 +24,14 @@ public enum LangfusePublicationFailureCode
     /// No authoritative dataset-run id is available for a run-level score.
     /// </summary>
     DatasetRunIdentityUnavailable = 3,
+
+    /// <summary>
+    /// No sampled or correlated trace is available for a requested item score.
+    /// </summary>
+    TraceUnavailable = 4,
+
+    /// <summary>
+    /// Caller cancellation interrupted a requested publication operation.
+    /// </summary>
+    PublicationCanceled = 5,
 }

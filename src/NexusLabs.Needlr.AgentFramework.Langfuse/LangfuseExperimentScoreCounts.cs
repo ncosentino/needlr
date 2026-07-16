@@ -1,19 +1,19 @@
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Contains immutable counts of dataset-run score outcomes.
+/// Contains immutable counts of experiment score outcomes.
 /// </summary>
-public sealed record LangfuseExperimentRunScoreCounts
+public sealed record LangfuseExperimentScoreCounts
 {
     /// <summary>
-    /// Initializes dataset-run score counts.
+    /// Initializes experiment score counts.
     /// </summary>
     /// <param name="accepted">The number of accepted score requests.</param>
     /// <param name="failed">The number of failed score requests.</param>
     /// <param name="notAttempted">The number of scores without an authoritative target.</param>
     /// <param name="skipped">The number of metrics without publishable values.</param>
     /// <param name="disabled">The number of disabled-mode scores.</param>
-    public LangfuseExperimentRunScoreCounts(
+    public LangfuseExperimentScoreCounts(
         int accepted,
         int failed,
         int notAttempted,
@@ -39,7 +39,7 @@ public sealed record LangfuseExperimentRunScoreCounts
     /// <summary>Gets the number of failed score requests.</summary>
     public int Failed { get; }
 
-    /// <summary>Gets the number of scores not attempted because run identity was unavailable.</summary>
+    /// <summary>Gets the number of scores not attempted because their target was unavailable.</summary>
     public int NotAttempted { get; }
 
     /// <summary>Gets the number of evaluation metrics without publishable values.</summary>

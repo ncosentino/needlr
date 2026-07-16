@@ -201,6 +201,10 @@ public sealed class LangfuseSessionShutdownTests
         Assert.Throws<ObjectDisposedException>(() =>
             session.CreateLocalExperimentItemScopeProvider<int, string>());
         Assert.Throws<ObjectDisposedException>(() =>
+            session.CreateExperimentResultSink<int, string>(run));
+        Assert.Throws<ObjectDisposedException>(() =>
+            session.CreateLocalExperimentResultSink<int, string>());
+        Assert.Throws<ObjectDisposedException>(() =>
         {
             _ = session.AddTraceCommentAsync(
                 "trace-id",

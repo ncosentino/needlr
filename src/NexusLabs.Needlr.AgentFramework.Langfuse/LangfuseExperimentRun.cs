@@ -12,7 +12,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 internal sealed class LangfuseExperimentRun :
     ILangfuseExperimentRun,
     ILangfuseExperimentTrialLifecycleFactory,
-    ILangfuseExperimentItemLinker
+    ILangfuseExperimentItemLinker,
+    ILangfuseExperimentScorePublisher
 {
     private readonly LangfuseApiClient _apiClient;
     private readonly LangfuseScoreRecorder _recorder;
@@ -166,6 +167,7 @@ internal sealed class LangfuseExperimentRun :
                 observer,
                 token),
             options,
+            observer: null,
             cancellationToken);
 
     /// <inheritdoc />
@@ -184,6 +186,7 @@ internal sealed class LangfuseExperimentRun :
                 observer,
                 token),
             options,
+            observer: null,
             cancellationToken);
 
     /// <inheritdoc />
@@ -204,6 +207,7 @@ internal sealed class LangfuseExperimentRun :
                 observer,
                 token),
             options,
+            observer: null,
             cancellationToken);
     }
 
@@ -211,7 +215,50 @@ internal sealed class LangfuseExperimentRun :
     public async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
         LangfuseEvaluationScoreOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        await RecordEvaluationAsync(
+            result,
+            options,
+            observer: null,
+            cancellationToken).ConfigureAwait(false);
+
+    async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>>
+        ILangfuseExperimentScorePublisher.RecordEvaluationAsync(
+            EvaluationResult result,
+            LangfuseEvaluationScoreOptions? options,
+            Action<LangfuseExperimentRunScoreResult> observer,
+            CancellationToken cancellationToken) =>
+        await RecordEvaluationAsync(
+            result,
+            options,
+            observer,
+            cancellationToken).ConfigureAwait(false);
+
+    Task<LangfuseExperimentRunScoreResult>
+        ILangfuseExperimentScorePublisher.RecordCategoricalScoreAsync(
+            string name,
+            string value,
+            LangfuseScoreOptions? options,
+            Action<LangfuseExperimentRunScoreResult> observer,
+            CancellationToken cancellationToken) =>
+        RecordScoreAsync(
+            name,
+            (target, resultObserver, token) => _recorder.RecordCategoricalResultAsync(
+                target,
+                name,
+                value,
+                options,
+                resultObserver,
+                token),
+            options,
+            observer,
+            cancellationToken);
+
+    private async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
+        EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options,
+        Action<LangfuseExperimentRunScoreResult>? observer,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(result);
         cancellationToken.ThrowIfCancellationRequested();
@@ -228,10 +275,11 @@ internal sealed class LangfuseExperimentRun :
                     var skipped = new LangfuseExperimentRunScoreResult(
                         GetEvaluationScoreId(metric, options),
                         metric.Name,
-                        LangfuseExperimentRunScoreStatus.Skipped,
+                        LangfuseExperimentScoreStatus.Skipped,
                         datasetRunId: null,
                         failure: null);
                     _state.RecordRunScore(skipped.Status);
+                    observer?.Invoke(skipped);
                     unavailable.Add(skipped);
                     continue;
                 }
@@ -240,6 +288,7 @@ internal sealed class LangfuseExperimentRun :
                     await RecordUnavailableScoreAsync(
                         metric.Name,
                         GetEvaluationScoreId(metric, options),
+                        observer,
                         cancellationToken).ConfigureAwait(false));
             }
 
@@ -258,6 +307,7 @@ internal sealed class LangfuseExperimentRun :
                 {
                     var outcome = ToRunScoreResult(scoreResult, datasetRunId);
                     _state.RecordRunScore(outcome.Status);
+                    observer?.Invoke(outcome);
                     outcomes.Add(outcome);
                 },
                 cancellationToken).ConfigureAwait(false);
@@ -466,6 +516,7 @@ internal sealed class LangfuseExperimentRun :
             CancellationToken,
             Task<LangfuseScoreRecordResult>> recordScore,
         LangfuseScoreOptions? options,
+        Action<LangfuseExperimentRunScoreResult>? observer,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -476,7 +527,11 @@ internal sealed class LangfuseExperimentRun :
         var datasetRunId = DatasetRunId;
         if (datasetRunId is null)
         {
-            return await RecordUnavailableScoreAsync(name, scoreId, cancellationToken).ConfigureAwait(false);
+            return await RecordUnavailableScoreAsync(
+                name,
+                scoreId,
+                observer,
+                cancellationToken).ConfigureAwait(false);
         }
 
         LangfuseExperimentRunScoreResult? observed = null;
@@ -489,6 +544,7 @@ internal sealed class LangfuseExperimentRun :
                 {
                     observed = ToRunScoreResult(result, datasetRunId);
                     _state.RecordRunScore(observed.Status);
+                    observer?.Invoke(observed);
                 },
                 cancellationToken).ConfigureAwait(false);
             return observed ?? ToRunScoreResult(scoreResult, datasetRunId);
@@ -502,6 +558,7 @@ internal sealed class LangfuseExperimentRun :
     private async Task<LangfuseExperimentRunScoreResult> RecordUnavailableScoreAsync(
         string name,
         string? scoreId,
+        Action<LangfuseExperimentRunScoreResult>? observer,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -519,10 +576,11 @@ internal sealed class LangfuseExperimentRun :
             var result = new LangfuseExperimentRunScoreResult(
                 scoreId,
                 name,
-                LangfuseExperimentRunScoreStatus.NotAttempted,
+                LangfuseExperimentScoreStatus.NotAttempted,
                 datasetRunId: null,
                 failure);
             _state.RecordRunScore(result.Status);
+            observer?.Invoke(result);
 
             await _recorder.RecordUnavailableResultAsync(
                 name,
@@ -543,9 +601,9 @@ internal sealed class LangfuseExperimentRun :
     {
         var status = result.Status switch
         {
-            LangfuseScoreRecordStatus.Accepted => LangfuseExperimentRunScoreStatus.Accepted,
-            LangfuseScoreRecordStatus.Failed => LangfuseExperimentRunScoreStatus.Failed,
-            LangfuseScoreRecordStatus.Skipped => LangfuseExperimentRunScoreStatus.Skipped,
+            LangfuseScoreRecordStatus.Accepted => LangfuseExperimentScoreStatus.Accepted,
+            LangfuseScoreRecordStatus.Failed => LangfuseExperimentScoreStatus.Failed,
+            LangfuseScoreRecordStatus.Skipped => LangfuseExperimentScoreStatus.Skipped,
             _ => throw new ArgumentOutOfRangeException(nameof(result), result.Status, "The score record status is not defined."),
         };
         var failure = result.Failure is null

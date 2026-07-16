@@ -306,7 +306,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, item.Link.Status);
-        Assert.Equal(LangfuseExperimentRunScoreStatus.Disabled, score.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.Disabled, score.Status);
         Assert.Null(run.DatasetRunId);
         Assert.Equal(LangfuseDatasetRunIdentityStatus.Disabled, run.IdentityStatus);
         Assert.Equal("disabled run", run.Description);
