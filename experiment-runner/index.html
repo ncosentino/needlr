@@ -5441,15 +5441,16 @@ property ordering:</p>
 AOT path. Caller-owned payload schemas remain caller responsibility. Determinism applies to the
 Needlr envelope; it does not claim RFC 8785 cryptographic canonicalization.</p>
 <h2 id="provider-convergence-roadmap">Provider Convergence Roadmap<a class="headerlink" href="#provider-convergence-roadmap" title="Permanent link">&para;</a></h2>
-<p>The scheduler, quality core, per-trial lifecycle seam, final publication boundary, and hosted
-Langfuse dataset source are complete. Remaining provider convergence stays split into reviewed work:</p>
+<p>The scheduler, quality core, per-trial lifecycle seam, final publication boundary, hosted Langfuse
+dataset source, and Langfuse per-trial trace/link scope are complete. Remaining provider convergence
+stays split into reviewed work:</p>
 <ul>
 <li><a href="https://github.com/ncosentino/needlr/issues/51">#51</a> provides validated paginated Langfuse
   dataset reads and <code>LangfuseDatasetCaseSource&lt;TCase&gt;</code> for latest or timestamped hosted sources.</li>
-<li><a href="https://github.com/ncosentino/needlr/issues/52">#52</a> and
-  <a href="https://github.com/ncosentino/needlr/issues/53">#53</a> connect trials and final outcomes to the
-  existing Langfuse trace, dataset-run-item, score, identity, resilience, and disabled-mode
-  primitives.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/52">#52</a> creates one reactivatable Langfuse trace and
+  at most one hosted dataset-run-item link per statistical trial.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/53">#53</a> is the remaining Langfuse phase: item/run
+  score projection, final publication mapping, and canonical end-to-end guidance.</li>
 <li><a href="https://github.com/ncosentino/needlr/issues/54">#54</a> adds MEAI Reporting afterward as the
   second-provider proof.</li>
 </ul>

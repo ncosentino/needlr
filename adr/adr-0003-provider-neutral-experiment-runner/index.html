@@ -5490,17 +5490,17 @@
 Phase 1 was delivered by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
 Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.
 Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.
-Phase 3B was delivered by <a href="https://github.com/ncosentino/needlr/issues/50">issue #50</a>.</p>
+Phase 3B was delivered by <a href="https://github.com/ncosentino/needlr/issues/50">issue #50</a>.
+Phase 4A was delivered by <a href="https://github.com/ncosentino/needlr/issues/51">issue #51</a>.
+Phase 4B was delivered by <a href="https://github.com/ncosentino/needlr/issues/52">issue #52</a>.</p>
 <p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.</p>
-<p>The corrected remaining sequence is:</p>
+<p>The remaining sequence is:</p>
 <ol>
-<li>Langfuse hosted source, item scope, and sink convergence
-   (<a href="https://github.com/ncosentino/needlr/issues/51">#51</a>,
-   <a href="https://github.com/ncosentino/needlr/issues/52">#52</a>,
-   <a href="https://github.com/ncosentino/needlr/issues/53">#53</a>);</li>
+<li>Langfuse result sink and canonical guidance
+   (<a href="https://github.com/ncosentino/needlr/issues/53">#53</a>);</li>
 <li>MEAI Reporting as the second-provider proof
    (<a href="https://github.com/ncosentino/needlr/issues/54">#54</a>).</li>
 </ol>
@@ -6401,6 +6401,15 @@ responses do not expose a resolved latest-version identifier.</p>
   <code>ILangfuseExperimentRun.RunItemAsync</code>;</li>
 <li>coherent disabled mode.</li>
 </ul>
+<p>The built-in client/session extension creates either a hosted provider bound to an existing
+<code>ILangfuseExperimentRun</code> or a local trace-only provider. The hosted provider uses the case id as the
+dataset item id, forwards the run's optional dataset-version timestamp, and leaves the same run
+instance available to the Phase 4C result sink. Task and evaluator contexts receive the active
+<code>ILangfuseScenario</code> as an exact-type feature.</p>
+<p>Item publications use the <code>langfuse</code> namespace with <code>trace.id</code>, <code>dataset.run.item.id</code>, and
+<code>dataset.run.id</code> correlations. Linked and local recorded traces complete their requested local
+lifecycle work; failed or inconsistent links remain publication failures; not-sampled and disabled
+scopes are not attempted. None of these states claims durable OpenTelemetry ingestion.</p>
 <p>Required TDD:</p>
 <ul>
 <li>nested and parallel ambient-context restoration;</li>
@@ -6409,6 +6418,7 @@ responses do not expose a resolved latest-version identifier.</p>
 <li>local trace-only mode;</li>
 <li>linked, failed, inconsistent, not-sampled, and disabled outcomes;</li>
 <li>strict failure stops execution while best effort preserves it;</li>
+<li>item evaluation can publish scores before scenario disposal;</li>
 <li>caller cancellation aborts and restores prior context.</li>
 </ul>
 <h3 id="phase-4c-langfuse-result-sink-and-canonical-guidance-53">Phase 4C: Langfuse result sink and canonical guidance — #53<a class="headerlink" href="#phase-4c-langfuse-result-sink-and-canonical-guidance-53" title="Permanent link">&para;</a></h3>
