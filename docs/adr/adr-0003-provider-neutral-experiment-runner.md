@@ -20,19 +20,15 @@ Phase 3B was delivered by [issue #50](https://github.com/ncosentino/needlr/issue
 Phase 4A was delivered by [issue #51](https://github.com/ncosentino/needlr/issues/51).
 Phase 4B was delivered by [issue #52](https://github.com/ncosentino/needlr/issues/52).
 Phase 4C was delivered by [issue #53](https://github.com/ncosentino/needlr/issues/53).
+Phase 5 was delivered by [issue #54](https://github.com/ncosentino/needlr/issues/54).
 
 The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.
 
-The remaining sequence is:
-
-1. MEAI Reporting as the second-provider proof
-   ([#54](https://github.com/ncosentino/needlr/issues/54)).
-
-No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
-Langfuse convergence is complete.
+The separately reviewed implementation sequence is complete. Further scheduler, retry, evaluator,
+statistical-policy, or provider expansion requires a separate design and issue.
 
 ## Decision
 
@@ -60,7 +56,10 @@ Needlr should not own:
 
 In this ADR, provider-neutral means neutral across execution engines, dataset hosts, observability platforms, and publication targets. It does not mean evaluation-abstraction neutral: MEAI core is the deliberate metric lingua franca for Needlr's evaluation package.
 
-The runner belongs in the existing `NexusLabs.Needlr.AgentFramework.Evaluation` package under an `Experiments` namespace. Langfuse-specific adapters remain in `NexusLabs.Needlr.AgentFramework.Langfuse`.
+The runner belongs in the existing `NexusLabs.Needlr.AgentFramework.Evaluation` package under an
+`Experiments` namespace. Langfuse-specific adapters remain in
+`NexusLabs.Needlr.AgentFramework.Langfuse`; MEAI Reporting-specific dependencies remain in
+`NexusLabs.Needlr.AgentFramework.Evaluation.Reporting`.
 
 ## Context
 
@@ -658,7 +657,7 @@ The MEAI Reporting adapter is responsible for:
 2. Mapping the Needlr run ID to MEAI `ExecutionName`.
 3. Mapping case ID to `ScenarioName`.
 4. Mapping trial index to `IterationName`.
-5. Creating one `ScenarioRun` per item, not per retry attempt.
+5. Creating one `ScenarioRun` per statistical trial, not per retry attempt.
 6. Exposing the scenario's wrapped `ChatConfiguration` to the task when response caching is desired.
 7. Supplying the definition's single item evaluator, which calls `ScenarioRun.EvaluateAsync(...)` once after successful execution.
 8. Mapping an evaluator exception to the runner's `EvaluationFailed` item status.
@@ -677,17 +676,20 @@ The adapter must make response reuse explicit for repeated trials:
 
 | Mode | Behavior |
 |---|---|
-| Reuse by case and trial | Preserve MEAI's normal scenario/iteration cache identity across runs. Useful for deterministic replay. |
-| Fresh per run | Add the Needlr run ID to cache identity so a new run produces new stochastic samples. |
-| Disabled | Do not use a response cache. |
+| `CaseAndTrialReplay` | Preserve MEAI's normal scenario/iteration cache identity across runs. Useful for deterministic replay when the complete request and model cache key also matches. |
+| `FreshPerRun` | Add the Needlr run ID to cache identity so a new run produces new stochastic samples. |
+| `Disabled` | Require a `ReportingConfiguration` without a response-cache provider. |
 
 One `ScenarioRun` and cache identity spans all retry attempts for an item. A response cached before a downstream execution failure may therefore be replayed by the retry. This is intentional because a retry is not a new statistical sample. A caller that requires a fresh model response on every attempt must disable MEAI response caching for that experiment; finer per-attempt cache policy is deferred.
 
 The runner does not generate MEAI reports and does not create fake `ScenarioRun` entries for aggregate metrics. Run-level metrics remain in the Needlr result and may be published by sinks.
 
-A MEAI result-store write failure is publication failure. It does not trigger another model execution.
-
-The coordinated MEAI scope reports that write failure through `ExperimentItemPublicationResult`; it cannot disappear into logging or change the item's quality status.
+A MEAI result-store write failure is publication failure. Normal scope disposal invokes
+`ScenarioRun.DisposeAsync`; the provider-neutral scope manager converts a thrown store exception into
+the final failed `ExperimentItemPublicationResult`. It does not trigger another model execution,
+disappear into logging, or change the item's quality status. `ScenarioRun.DisposeAsync` accepts no
+cancellation token, so a cleanup timeout can be reported while the provider store operation finishes
+later.
 
 ## Langfuse adapter boundary
 
@@ -999,6 +1001,8 @@ Runnable example:
 
 ### Phase 5: MEAI Reporting adapter as the second-provider proof — #54
 
+Delivered in the dedicated `NexusLabs.Needlr.AgentFramework.Evaluation.Reporting` package.
+
 Deliver:
 
 - one `ScenarioRun` per trial;
@@ -1024,7 +1028,7 @@ Required TDD:
 
 Runnable example:
 
-- credential-free `ScriptedChatClient`;
+- credential-free deterministic `IChatClient`;
 - cached deterministic replay and fresh stochastic mode;
 - generated MEAI report from the configured store.
 
@@ -1097,7 +1101,7 @@ Do not proceed with a Langfuse-specific runner. Do not treat thin MEAI Reporting
 - [`ReportingConfiguration` 10.5.0 source](https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/CSharp/ReportingConfiguration.cs)
 - [`ScenarioRun` 10.5.0 source](https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/CSharp/ScenarioRun.cs)
 - [`CompositeEvaluator` 10.5.0 source](https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation/CompositeEvaluator.cs)
-- [MEAI Reporting 10.7.0 on NuGet](https://www.nuget.org/packages/Microsoft.Extensions.AI.Evaluation.Reporting/10.7.0)
+- [MEAI Reporting 10.8.0 on NuGet](https://www.nuget.org/packages/Microsoft.Extensions.AI.Evaluation.Reporting/10.8.0)
 - [Langfuse experiments via SDK](https://langfuse.com/docs/evaluation/experiments/experiments-via-sdk)
 - [Langfuse experiment data model](https://langfuse.com/docs/evaluation/experiments/data-model)
 - [Langfuse experiments in CI/CD](https://langfuse.com/docs/evaluation/experiments/experiments-ci-cd)

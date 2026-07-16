@@ -6,6 +6,10 @@ For collection-level orchestration across finite cases and repeated trials—inc
 shared concurrency, run evaluators, and deterministic or statistical quality policies—see the
 [Experiment Runner](experiment-runner.md).
 
+MEAI Reporting response caching, `ScenarioRun` persistence, and official report generation remain
+opt-in through the dedicated `NexusLabs.Needlr.AgentFramework.Evaluation.Reporting` package; see the
+[MEAI Reporting adapter](experiment-runner.md#meai-reporting-adapter).
+
 ## Overview
 
 `Microsoft.Extensions.AI.Evaluation` (MEAI.Evaluation) evaluates LLM interactions by consuming native MEAI primitives: `ChatMessage`, `ChatResponse`, and `UsageDetails`. Needlr exposes these same shapes on its result surfaces, so evaluators slot in directly — no string flattening, no re-hydration step.
