@@ -313,12 +313,28 @@ var langfuseScope =
             ScenarioNameFactory = _ => "evaluate-trip-planner-item",
             FailureMode = ExperimentItemScopeFailureMode.BestEffort,
         });
+var langfuseSink =
+    langfuse.CreateExperimentResultSink<TripPlannerCase, TripPlannerOutput>(
+        langfuseRun,
+        new LangfuseExperimentResultSinkOptions<TripPlannerCase, TripPlannerOutput>
+        {
+            ItemScoreIdProvider = (item, metric) =>
+                $"{runId}:{item.Case.Id}:{item.TrialIndex}:{metric.Name}",
+            RunEvaluationScoreIdProvider = (evaluation, metric) =>
+                $"{runId}:{evaluation.Name}:{metric.Name}",
+            DecisionScore = new LangfuseExperimentDecisionScoreOptions
+            {
+                Name = "experiment_decision",
+                ScoreIdProvider = _ => $"{runId}:decision",
+            },
+        });
 
 var definition = new ExperimentDefinition<TripPlannerCase, TripPlannerOutput>
 {
     Name = "trip-planner-regression",
     CaseSource = source,
     ItemScopes = [langfuseScope],
+    Sinks = [langfuseSink],
     Task = RunTripPlannerAsync,
 };
 ```
@@ -387,11 +403,56 @@ Local recorded traces produce only `trace.id`; no fake dataset or dataset run is
 success means the trace lifecycle was created locally and does not claim durable OpenTelemetry
 ingestion.
 
-[#53](https://github.com/ncosentino/needlr/issues/53) adds automatic item/run score projection and
-the final result sink. Until that sink lands, the API below remains the low-level/manual publication
-surface. Do not add a second scheduler or policy engine to the Langfuse package: the existing
-scenario, link, score, identity, resilience, and publication-health types are the provider
-primitives the sink reuses.
+### Canonical result publication
+
+`CreateExperimentResultSink<TCase,TOutput>` projects each canonical item `EvaluationResult` to its
+correlated trace, each successful run evaluator to the authoritative dataset run, and an optional
+categorical `ExperimentRunDecision` score. The sink never reruns evaluators or policies.
+
+Use contextual score-id callbacks when provider retry or rerun idempotency matters. Item callbacks
+receive case/trial identity, and run callbacks receive the evaluator identity, so equal metric names
+do not collide across trials or evaluators. Langfuse's score identity still includes the score name
+and UTC date; see `LangfuseScoreOptions` for the provider constraint.
+
+The sink maps direct score outcomes independently from quality:
+
+- accepted and intentionally skipped score projections complete successfully;
+- nonfatal API failures return a structured failed sink result;
+- strict score mode throws into the generic sink pipeline, which isolates later sinks;
+- missing or inconsistent hosted dataset-run identity fails configured run-score publication;
+- disabled and entirely unattempted publication remain `NotAttempted`;
+- local mode publishes item trace scores and skips dataset-run/decision targets without fabricating
+  a run.
+
+`GetPublicationSnapshot()` retains ordered item and run-evaluation score results, the optional
+decision score result, and the hosted run's existing link/run-score snapshot. REST acceptance does
+not prove durable trace ingestion.
+
+For local cases, pair the local scope with a local sink:
+
+```csharp
+var localScope =
+    langfuse.CreateLocalExperimentItemScopeProvider<MyCase, MyOutput>();
+var localSink =
+    langfuse.CreateLocalExperimentResultSink<MyCase, MyOutput>();
+```
+
+The same definition shape works against the disabled facade. No credential branches are needed
+inside the task, evaluator, policy, or runner.
+
+Run the converged example without credentials, with local trace publication, or with a hosted
+dataset:
+
+```bash
+dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- experiment-runner
+dotnet run --project src/Examples/AgentFramework/LangfuseConformanceApp -- experiment-runner hosted my-dataset
+```
+
+The first command uses the coherent disabled facade when credentials are absent and automatically
+uses local trace publication when credentials are present.
+
+The API below is retained as the low-level/manual escape hatch for ad hoc item loops and direct run
+scores. It is not the canonical bulk experiment workflow.
 
 ### Low-level manual publication
 

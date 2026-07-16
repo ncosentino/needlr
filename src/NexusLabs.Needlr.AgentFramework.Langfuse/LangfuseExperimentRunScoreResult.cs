@@ -16,7 +16,7 @@ public sealed record LangfuseExperimentRunScoreResult
     public LangfuseExperimentRunScoreResult(
         string? scoreId,
         string name,
-        LangfuseExperimentRunScoreStatus status,
+        LangfuseExperimentScoreStatus status,
         string? datasetRunId,
         LangfusePublicationFailure? failure)
     {
@@ -46,7 +46,7 @@ public sealed record LangfuseExperimentRunScoreResult
     /// <summary>
     /// Gets the publication status.
     /// </summary>
-    public LangfuseExperimentRunScoreStatus Status { get; }
+    public LangfuseExperimentScoreStatus Status { get; }
 
     /// <summary>
     /// Gets the target dataset-run id, when available.

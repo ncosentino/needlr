@@ -35,9 +35,9 @@ public sealed class LangfuseExperimentRunScoreTests
             "acceptable",
             cancellationToken: _cancellationToken);
 
-        Assert.Equal(LangfuseExperimentRunScoreStatus.Accepted, numeric.Status);
-        Assert.Equal(LangfuseExperimentRunScoreStatus.Accepted, boolean.Status);
-        Assert.Equal(LangfuseExperimentRunScoreStatus.Accepted, categorical.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.Accepted, numeric.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.Accepted, boolean.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.Accepted, categorical.Status);
         Assert.Equal("dataset-run-1", numeric.DatasetRunId);
         Assert.Equal("run-score-average-accuracy", numeric.ScoreId);
         Assert.Equal(3, scoreRequests.Count);
@@ -85,7 +85,7 @@ public sealed class LangfuseExperimentRunScoreTests
 
         Assert.Equal(4, outcomes.Count);
         Assert.Equal(
-            [LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Accepted, LangfuseExperimentRunScoreStatus.Skipped],
+            [LangfuseExperimentScoreStatus.Accepted, LangfuseExperimentScoreStatus.Accepted, LangfuseExperimentScoreStatus.Accepted, LangfuseExperimentScoreStatus.Skipped],
             outcomes.Select(outcome => outcome.Status).ToArray());
         Assert.Equal(["accuracy", "passed", "verdict", "unset"], outcomes.Select(outcome => outcome.Name).ToArray());
         Assert.Equal(
@@ -120,7 +120,7 @@ public sealed class LangfuseExperimentRunScoreTests
             0.9,
             cancellationToken: _cancellationToken);
 
-        Assert.Equal(LangfuseExperimentRunScoreStatus.NotAttempted, result.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.NotAttempted, result.Status);
         Assert.Null(result.DatasetRunId);
         Assert.NotNull(result.Failure);
         Assert.Equal(LangfusePublicationFailureCode.DatasetRunIdentityUnavailable, result.Failure!.Code);
@@ -166,7 +166,7 @@ public sealed class LangfuseExperimentRunScoreTests
             0.9,
             cancellationToken: _cancellationToken);
 
-        Assert.Equal(LangfuseExperimentRunScoreStatus.Failed, result.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.Failed, result.Status);
         Assert.NotNull(result.Failure);
         Assert.Equal(LangfusePublicationFailureCode.ApiRejected, result.Failure!.Code);
         Assert.Equal(1, run.GetPublicationSnapshot().RunScores.Failed);
@@ -220,7 +220,7 @@ public sealed class LangfuseExperimentRunScoreTests
             0.9,
             cancellationToken: _cancellationToken);
 
-        Assert.Equal(LangfuseExperimentRunScoreStatus.NotAttempted, result.Status);
+        Assert.Equal(LangfuseExperimentScoreStatus.NotAttempted, result.Status);
         Assert.NotNull(result.Failure);
         Assert.Equal(
             LangfusePublicationFailureCode.InconsistentDatasetRunIdentity,
@@ -329,7 +329,7 @@ public sealed class LangfuseExperimentRunScoreTests
             cancellationToken: _cancellationToken);
 
         Assert.Equal(
-            [LangfuseExperimentRunScoreStatus.NotAttempted, LangfuseExperimentRunScoreStatus.Skipped],
+            [LangfuseExperimentScoreStatus.NotAttempted, LangfuseExperimentScoreStatus.Skipped],
             results.Select(result => result.Status).ToArray());
         Assert.Equal(1, failureCount);
         var snapshot = run.GetPublicationSnapshot();

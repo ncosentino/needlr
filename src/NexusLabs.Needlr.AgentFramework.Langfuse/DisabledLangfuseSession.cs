@@ -7,7 +7,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 [DoNotAutoRegister]
 internal sealed class DisabledLangfuseSession :
     ILangfuseSession,
-    ILangfuseExperimentItemScopeProviderFactory
+    ILangfuseExperimentItemScopeProviderFactory,
+    ILangfuseExperimentResultSinkFactory
 {
     private readonly ILangfuseClient _client;
 
@@ -92,6 +93,19 @@ internal sealed class DisabledLangfuseSession :
         GetScopeProviderFactory()
             .CreateLocalExperimentItemScopeProvider<TCase, TOutput>(options);
 
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateExperimentResultSink<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options) =>
+        GetResultSinkFactory()
+            .CreateExperimentResultSink<TCase, TOutput>(run, options);
+
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateLocalExperimentResultSink<TCase, TOutput>(
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options) =>
+        GetResultSinkFactory()
+            .CreateLocalExperimentResultSink<TCase, TOutput>(options);
+
     /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default) =>
         _client.AddTraceCommentAsync(traceId, content, cancellationToken);
@@ -105,4 +119,9 @@ internal sealed class DisabledLangfuseSession :
         _client as ILangfuseExperimentItemScopeProviderFactory
         ?? throw new NotSupportedException(
             "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
+
+    private ILangfuseExperimentResultSinkFactory GetResultSinkFactory() =>
+        _client as ILangfuseExperimentResultSinkFactory
+        ?? throw new NotSupportedException(
+            "The configured Langfuse client does not expose the built-in experiment result-sink capability.");
 }

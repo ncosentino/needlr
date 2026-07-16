@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageDescription>Langfuse integration for NexusLabs.Needlr.AgentFramework. Exports Needlr's gen_ai OpenTelemetry traces and metrics over OTLP/HTTP, projects Microsoft.Extensions.AI.Evaluation results as Langfuse scores, and adapts hosted or local provider-neutral experiment trials to reactivatable traces and dataset-run-item links.</PackageDescription>
+    <PackageDescription>Langfuse integration for NexusLabs.Needlr.AgentFramework. Exports gen_ai telemetry over OTLP/HTTP and provides hosted/local provider-neutral experiment sources, reactivatable trial traces, dataset-run-item links, canonical item/run score projection, and structured publication outcomes.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

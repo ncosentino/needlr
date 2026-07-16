@@ -14,7 +14,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 [DoNotAutoRegister]
 internal sealed class LangfuseSession :
     ILangfuseSession,
-    ILangfuseExperimentItemScopeProviderFactory
+    ILangfuseExperimentItemScopeProviderFactory,
+    ILangfuseExperimentResultSinkFactory
 {
     private readonly TracerProvider _tracerProvider;
     private readonly MeterProvider? _meterProvider;
@@ -141,6 +142,25 @@ internal sealed class LangfuseSession :
             .CreateLocalExperimentItemScopeProvider<TCase, TOutput>(options);
     }
 
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateExperimentResultSink<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options)
+    {
+        ThrowIfShutdownStarted();
+        return GetResultSinkFactory()
+            .CreateExperimentResultSink<TCase, TOutput>(run, options);
+    }
+
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateLocalExperimentResultSink<TCase, TOutput>(
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options)
+    {
+        ThrowIfShutdownStarted();
+        return GetResultSinkFactory()
+            .CreateLocalExperimentResultSink<TCase, TOutput>(options);
+    }
+
     /// <inheritdoc />
     public Task AddTraceCommentAsync(string traceId, string content, CancellationToken cancellationToken = default)
     {
@@ -225,6 +245,11 @@ internal sealed class LangfuseSession :
         _client as ILangfuseExperimentItemScopeProviderFactory
         ?? throw new NotSupportedException(
             "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
+
+    private ILangfuseExperimentResultSinkFactory GetResultSinkFactory() =>
+        _client as ILangfuseExperimentResultSinkFactory
+        ?? throw new NotSupportedException(
+            "The configured Langfuse client does not expose the built-in experiment result-sink capability.");
 
     private static int GetRemainingTimeoutMilliseconds(
         int timeoutMilliseconds,

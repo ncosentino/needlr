@@ -6,7 +6,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 [DoNotAutoRegister]
 internal sealed class DisabledLangfuseClient :
     ILangfuseClient,
-    ILangfuseExperimentItemScopeProviderFactory
+    ILangfuseExperimentItemScopeProviderFactory,
+    ILangfuseExperimentResultSinkFactory
 {
     public DisabledLangfuseClient()
     {
@@ -88,6 +89,28 @@ internal sealed class DisabledLangfuseClient :
                 _ => new DisabledLangfuseScenario(),
                 itemLinker: null),
             linkHostedItem: false,
+            options);
+
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateExperimentResultSink<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        return new LangfuseExperimentResultSink<TCase, TOutput>(
+            recorder: null,
+            isEnabled: false,
+            run,
+            options);
+    }
+
+    LangfuseExperimentResultSink<TCase, TOutput>
+        ILangfuseExperimentResultSinkFactory.CreateLocalExperimentResultSink<TCase, TOutput>(
+            LangfuseExperimentResultSinkOptions<TCase, TOutput>? options) =>
+        new(
+            recorder: null,
+            isEnabled: false,
+            run: null,
             options);
 
     /// <inheritdoc />

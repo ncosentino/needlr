@@ -12,7 +12,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 internal sealed class DisabledLangfuseExperimentRun :
     ILangfuseExperimentRun,
     ILangfuseExperimentTrialLifecycleFactory,
-    ILangfuseExperimentItemLinker
+    ILangfuseExperimentItemLinker,
+    ILangfuseExperimentScorePublisher
 {
     private readonly LangfuseExperimentRunState _state = new(disabled: true);
     private readonly LangfuseExperimentTrialLifecycleFactory _lifecycleFactory;
@@ -141,6 +142,44 @@ internal sealed class DisabledLangfuseExperimentRun :
         return Task.FromResult<IReadOnlyList<LangfuseExperimentRunScoreResult>>(outcomes);
     }
 
+    async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>>
+        ILangfuseExperimentScorePublisher.RecordEvaluationAsync(
+            EvaluationResult result,
+            LangfuseEvaluationScoreOptions? options,
+            Action<LangfuseExperimentRunScoreResult> observer,
+            CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+            var scores = await RecordEvaluationAsync(
+                result,
+                options,
+                cancellationToken).ConfigureAwait(false);
+            foreach (var score in scores)
+            {
+                observer(score);
+            }
+
+            return scores;
+    }
+
+    async Task<LangfuseExperimentRunScoreResult>
+            ILangfuseExperimentScorePublisher.RecordCategoricalScoreAsync(
+            string name,
+            string value,
+            LangfuseScoreOptions? options,
+            Action<LangfuseExperimentRunScoreResult> observer,
+            CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        var score = await RecordScoreAsync(
+            name,
+            value,
+            options,
+            cancellationToken).ConfigureAwait(false);
+        observer(score);
+        return score;
+    }
+
     /// <inheritdoc />
     public LangfuseExperimentRunPublicationSnapshot GetPublicationSnapshot() =>
         _state.GetSnapshot();
@@ -183,7 +222,7 @@ internal sealed class DisabledLangfuseExperimentRun :
         var result = new LangfuseExperimentRunScoreResult(
             scoreId,
             name,
-            LangfuseExperimentRunScoreStatus.Disabled,
+            LangfuseExperimentScoreStatus.Disabled,
             datasetRunId: null,
             failure: null);
         _state.RecordRunScore(result.Status);
@@ -195,7 +234,7 @@ internal sealed class DisabledLangfuseExperimentRun :
         var result = new LangfuseExperimentRunScoreResult(
             scoreId,
             name,
-            LangfuseExperimentRunScoreStatus.Skipped,
+            LangfuseExperimentScoreStatus.Skipped,
             datasetRunId: null,
             failure: null);
         _state.RecordRunScore(result.Status);

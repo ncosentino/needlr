@@ -124,25 +124,25 @@ internal sealed class LangfuseExperimentRunState
         }
     }
 
-    public void RecordRunScore(LangfuseExperimentRunScoreStatus status)
+    public void RecordRunScore(LangfuseExperimentScoreStatus status)
     {
         lock (_gate)
         {
             switch (status)
             {
-                case LangfuseExperimentRunScoreStatus.Accepted:
+                case LangfuseExperimentScoreStatus.Accepted:
                     _scoresAccepted++;
                     break;
-                case LangfuseExperimentRunScoreStatus.Failed:
+                case LangfuseExperimentScoreStatus.Failed:
                     _scoresFailed++;
                     break;
-                case LangfuseExperimentRunScoreStatus.NotAttempted:
+                case LangfuseExperimentScoreStatus.NotAttempted:
                     _scoresNotAttempted++;
                     break;
-                case LangfuseExperimentRunScoreStatus.Skipped:
+                case LangfuseExperimentScoreStatus.Skipped:
                     _scoresSkipped++;
                     break;
-                case LangfuseExperimentRunScoreStatus.Disabled:
+                case LangfuseExperimentScoreStatus.Disabled:
                     _scoresDisabled++;
                     break;
                 default:
@@ -161,7 +161,7 @@ internal sealed class LangfuseExperimentRunState
                 _linksInconsistent,
                 _linksNotSampled,
                 _linksDisabled);
-            var runScores = new LangfuseExperimentRunScoreCounts(
+            var runScores = new LangfuseExperimentScoreCounts(
                 _scoresAccepted,
                 _scoresFailed,
                 _scoresNotAttempted,
@@ -179,7 +179,7 @@ internal sealed class LangfuseExperimentRunState
 
     private LangfuseExperimentApiPublicationStatus GetApiPublicationStatus(
         LangfuseExperimentItemLinkCounts itemLinks,
-        LangfuseExperimentRunScoreCounts runScores)
+        LangfuseExperimentScoreCounts runScores)
     {
         if (_identityStatus is LangfuseDatasetRunIdentityStatus.Disabled)
         {

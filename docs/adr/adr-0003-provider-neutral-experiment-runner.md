@@ -19,6 +19,7 @@ Phase 3A was delivered by [issue #49](https://github.com/ncosentino/needlr/issue
 Phase 3B was delivered by [issue #50](https://github.com/ncosentino/needlr/issues/50).
 Phase 4A was delivered by [issue #51](https://github.com/ncosentino/needlr/issues/51).
 Phase 4B was delivered by [issue #52](https://github.com/ncosentino/needlr/issues/52).
+Phase 4C was delivered by [issue #53](https://github.com/ncosentino/needlr/issues/53).
 
 The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
@@ -27,9 +28,7 @@ of the generic runner.
 
 The remaining sequence is:
 
-1. Langfuse result sink and canonical guidance
-   ([#53](https://github.com/ncosentino/needlr/issues/53));
-2. MEAI Reporting as the second-provider proof
+1. MEAI Reporting as the second-provider proof
    ([#54](https://github.com/ncosentino/needlr/issues/54)).
 
 No additional scheduler, retry, evaluator, or statistical-policy expansion should begin before
@@ -968,6 +967,17 @@ Deliver:
 - the same experiment definition running locally, with disabled Langfuse, and with hosted Langfuse;
 - the generic runner documented as the canonical bulk-experiment path;
 - `ILangfuseExperimentRun` retained as the low-level/manual escape hatch.
+
+The result sink uses the Langfuse item-scope publication to resolve each trace correlation, then
+projects the existing mutable `EvaluationResult` rather than rebuilding metrics from normalized
+snapshots. Successful run evaluators publish through the bound run's authoritative dataset-run
+identity. Decision publication is explicit and categorical, using the already-reduced
+`ExperimentRunDecision` without invoking policy again.
+
+Provider details remain on `LangfuseExperimentResultSink.GetPublicationSnapshot()`: ordered item and
+run-evaluation score outcomes, optional decision publication, and the hosted run's link/run-score
+snapshot. Generic publication reduction observes only the sink's score work; item-link failures are
+already represented by item-scope publication and are not counted again.
 
 Required TDD:
 

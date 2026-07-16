@@ -1,9 +1,9 @@
 namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
-/// Describes the direct API outcome for one dataset-run score.
+/// Describes the direct API outcome for one experiment score.
 /// </summary>
-public enum LangfuseExperimentRunScoreStatus
+public enum LangfuseExperimentScoreStatus
 {
     /// <summary>
     /// Langfuse accepted the score request.
@@ -16,7 +16,7 @@ public enum LangfuseExperimentRunScoreStatus
     Failed = 1,
 
     /// <summary>
-    /// No authoritative dataset-run id was available, so no request was sent.
+    /// No authoritative score target was available, so no request was sent.
     /// </summary>
     NotAttempted = 2,
 
