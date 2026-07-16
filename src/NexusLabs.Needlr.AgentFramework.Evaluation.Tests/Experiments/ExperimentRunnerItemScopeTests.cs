@@ -122,7 +122,8 @@ public sealed class ExperimentRunnerItemScopeTests
             _cancellationToken);
         await WaitUntilAsync(() =>
             attemptsByTrial.Count == 2
-            && attemptsByTrial.Values.All(count => count == 1));
+            && attemptsByTrial.Values.All(count => count == 1)
+            && Volatile.Read(ref activeActivations) == 0);
 
         Assert.Equal(2, entries);
         Assert.Equal(0, activeActivations);
