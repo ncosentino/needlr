@@ -4781,6 +4781,10 @@
 <td style="text-align: left;">The exception thrown when a request to the Langfuse API fails.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseExperimentDecisionScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentDecisionScoreOptions">LangfuseExperimentDecisionScoreOptions</a></td>
+<td style="text-align: left;">Configures optional categorical publication of the canonical experiment decision.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseExperimentItemLinkCounts/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemLinkCounts">LangfuseExperimentItemLinkCounts</a></td>
 <td style="text-align: left;">Contains immutable counts of experiment item-link outcomes.</td>
 </tr>
@@ -4809,6 +4813,30 @@
 <td style="text-align: left;">Creates one Langfuse scenario trace for each statistical trial and reactivates it around every retry attempt and item evaluation.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><a href="LangfuseExperimentItemScoreResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentItemScoreResult">LangfuseExperimentItemScoreResult</a></td>
+<td style="text-align: left;">Describes one canonical item metric projected to a Langfuse trace score.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentResultSink_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentResultSink\&lt;TCase,TOutput&gt;">LangfuseExperimentResultSink&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Projects completed canonical experiment measurements to Langfuse trace and dataset-run scores without changing the canonical quality decision.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentResultSinkExtensions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentResultSinkExtensions">LangfuseExperimentResultSinkExtensions</a></td>
+<td style="text-align: left;">Creates provider-neutral result sinks from the built-in Langfuse client or session.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentResultSinkOptions_TCase%2CTOutput_/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentResultSinkOptions\&lt;TCase,TOutput&gt;">LangfuseExperimentResultSinkOptions&lt;TCase,TOutput&gt;</a></td>
+<td style="text-align: left;">Configures canonical item, run-evaluation, and decision score projection to Langfuse.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentResultSinkSnapshot/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentResultSinkSnapshot">LangfuseExperimentResultSinkSnapshot</a></td>
+<td style="text-align: left;">Captures the latest detailed score projection performed by a Langfuse experiment result sink.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentRunEvaluationScoreResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunEvaluationScoreResult">LangfuseExperimentRunEvaluationScoreResult</a></td>
+<td style="text-align: left;">Describes one successful canonical run-evaluation metric projected to a dataset-run score.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><a href="LangfuseExperimentRunOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunOptions">LangfuseExperimentRunOptions</a></td>
 <td style="text-align: left;">Configures the Langfuse dataset run created implicitly by experiment item links.</td>
 </tr>
@@ -4817,12 +4845,12 @@
 <td style="text-align: left;">Provides an immutable snapshot of direct REST publication observed by one experiment run.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="LangfuseExperimentRunScoreCounts/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreCounts">LangfuseExperimentRunScoreCounts</a></td>
-<td style="text-align: left;">Contains immutable counts of dataset-run score outcomes.</td>
-</tr>
-<tr>
 <td style="text-align: left;"><a href="LangfuseExperimentRunScoreResult/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreResult">LangfuseExperimentRunScoreResult</a></td>
 <td style="text-align: left;">Describes the publication outcome for one score against a Langfuse dataset run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LangfuseExperimentScoreCounts/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentScoreCounts">LangfuseExperimentScoreCounts</a></td>
+<td style="text-align: left;">Contains immutable counts of experiment score outcomes.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="LangfuseHttpOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseHttpOptions">LangfuseHttpOptions</a></td>
@@ -5005,8 +5033,8 @@
 <td style="text-align: left;">Describes whether an experiment item trace was linked to its Langfuse dataset run.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="LangfuseExperimentRunScoreStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentRunScoreStatus">LangfuseExperimentRunScoreStatus</a></td>
-<td style="text-align: left;">Describes the direct API outcome for one dataset-run score.</td>
+<td style="text-align: left;"><a href="LangfuseExperimentScoreStatus/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseExperimentScoreStatus">LangfuseExperimentScoreStatus</a></td>
+<td style="text-align: left;">Describes the direct API outcome for one experiment score.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="LangfuseMetricsView/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseMetricsView">LangfuseMetricsView</a></td>

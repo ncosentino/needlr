@@ -5492,15 +5492,14 @@ Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45
 Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.
 Phase 3B was delivered by <a href="https://github.com/ncosentino/needlr/issues/50">issue #50</a>.
 Phase 4A was delivered by <a href="https://github.com/ncosentino/needlr/issues/51">issue #51</a>.
-Phase 4B was delivered by <a href="https://github.com/ncosentino/needlr/issues/52">issue #52</a>.</p>
+Phase 4B was delivered by <a href="https://github.com/ncosentino/needlr/issues/52">issue #52</a>.
+Phase 4C was delivered by <a href="https://github.com/ncosentino/needlr/issues/53">issue #53</a>.</p>
 <p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.</p>
 <p>The remaining sequence is:</p>
 <ol>
-<li>Langfuse result sink and canonical guidance
-   (<a href="https://github.com/ncosentino/needlr/issues/53">#53</a>);</li>
 <li>MEAI Reporting as the second-provider proof
    (<a href="https://github.com/ncosentino/needlr/issues/54">#54</a>).</li>
 </ol>
@@ -6433,6 +6432,15 @@ scopes are not attempted. None of these states claims durable OpenTelemetry inge
 <li>the generic runner documented as the canonical bulk-experiment path;</li>
 <li><code>ILangfuseExperimentRun</code> retained as the low-level/manual escape hatch.</li>
 </ul>
+<p>The result sink uses the Langfuse item-scope publication to resolve each trace correlation, then
+projects the existing mutable <code>EvaluationResult</code> rather than rebuilding metrics from normalized
+snapshots. Successful run evaluators publish through the bound run's authoritative dataset-run
+identity. Decision publication is explicit and categorical, using the already-reduced
+<code>ExperimentRunDecision</code> without invoking policy again.</p>
+<p>Provider details remain on <code>LangfuseExperimentResultSink.GetPublicationSnapshot()</code>: ordered item and
+run-evaluation score outcomes, optional decision publication, and the hosted run's link/run-score
+snapshot. Generic publication reduction observes only the sink's score work; item-link failures are
+already represented by item-scope publication and are not counted again.</p>
 <p>Required TDD:</p>
 <ul>
 <li>item and run score projection;</li>
