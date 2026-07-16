@@ -21,9 +21,18 @@ public sealed record LangfuseExperimentRunOptions
     /// </remarks>
     public object? Metadata { get; init; }
 
+    /// <summary>
+    /// Gets or sets the optional hosted dataset version timestamp submitted with every item link.
+    /// A <see langword="null"/> value links against the latest dataset state.
+    /// </summary>
+    public DateTimeOffset? DatasetVersion { get; init; }
+
     internal string? NormalizeDescription() =>
         string.IsNullOrWhiteSpace(Description) ? null : Description;
 
     internal JsonElement? FreezeMetadata() =>
         Metadata is null ? null : LangfuseApiClient.SerializeToElement(Metadata);
+
+    internal DateTimeOffset? NormalizeDatasetVersion() =>
+        DatasetVersion?.ToUniversalTime();
 }

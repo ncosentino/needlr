@@ -27,6 +27,11 @@ public interface ILangfuseExperimentRun
     /// <summary>Gets the requested run description.</summary>
     string? Description { get; }
 
+    /// <summary>
+    /// Gets the optional hosted dataset version timestamp used for every item link.
+    /// </summary>
+    DateTimeOffset? DatasetVersion { get; }
+
     /// <summary>Gets the frozen structured metadata submitted with item links.</summary>
     JsonElement? Metadata { get; }
 

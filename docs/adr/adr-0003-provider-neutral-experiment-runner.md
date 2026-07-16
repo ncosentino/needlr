@@ -17,18 +17,18 @@ Phase 1 was delivered by [issue #43](https://github.com/ncosentino/needlr/issues
 Phase 2 was delivered by [issue #45](https://github.com/ncosentino/needlr/issues/45).
 Phase 3A was delivered by [issue #49](https://github.com/ncosentino/needlr/issues/49).
 Phase 3B was delivered by [issue #50](https://github.com/ncosentino/needlr/issues/50).
+Phase 4A was delivered by [issue #51](https://github.com/ncosentino/needlr/issues/51).
+Phase 4B was delivered by [issue #52](https://github.com/ncosentino/needlr/issues/52).
 
 The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
 Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
 ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
 of the generic runner.
 
-The corrected remaining sequence is:
+The remaining sequence is:
 
-1. Langfuse hosted source, item scope, and sink convergence
-   ([#51](https://github.com/ncosentino/needlr/issues/51),
-   [#52](https://github.com/ncosentino/needlr/issues/52),
-   [#53](https://github.com/ncosentino/needlr/issues/53));
+1. Langfuse result sink and canonical guidance
+   ([#53](https://github.com/ncosentino/needlr/issues/53));
 2. MEAI Reporting as the second-provider proof
    ([#54](https://github.com/ncosentino/needlr/issues/54)).
 
@@ -934,6 +934,17 @@ Deliver:
   `ILangfuseExperimentRun.RunItemAsync`;
 - coherent disabled mode.
 
+The built-in client/session extension creates either a hosted provider bound to an existing
+`ILangfuseExperimentRun` or a local trace-only provider. The hosted provider uses the case id as the
+dataset item id, forwards the run's optional dataset-version timestamp, and leaves the same run
+instance available to the Phase 4C result sink. Task and evaluator contexts receive the active
+`ILangfuseScenario` as an exact-type feature.
+
+Item publications use the `langfuse` namespace with `trace.id`, `dataset.run.item.id`, and
+`dataset.run.id` correlations. Linked and local recorded traces complete their requested local
+lifecycle work; failed or inconsistent links remain publication failures; not-sampled and disabled
+scopes are not attempted. None of these states claims durable OpenTelemetry ingestion.
+
 Required TDD:
 
 - nested and parallel ambient-context restoration;
@@ -942,6 +953,7 @@ Required TDD:
 - local trace-only mode;
 - linked, failed, inconsistent, not-sampled, and disabled outcomes;
 - strict failure stops execution while best effort preserves it;
+- item evaluation can publish scores before scenario disposal;
 - caller cancellation aborts and restores prior context.
 
 ### Phase 4C: Langfuse result sink and canonical guidance — #53

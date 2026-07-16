@@ -4,7 +4,9 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Shared enabled Langfuse client composition used by both hosted and standalone integrations.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class LangfuseClient : ILangfuseClient
+internal sealed class LangfuseClient :
+    ILangfuseClient,
+    ILangfuseExperimentItemScopeProviderFactory
 {
     private readonly LangfuseClientComposition _composition;
 
@@ -95,6 +97,45 @@ internal sealed class LangfuseClient : ILangfuseClient
             options,
             _composition.Diagnostics,
             _composition.Health);
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateExperimentItemScopeProvider<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentItemScopeOptions<TCase>? options)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        if (run is not ILangfuseExperimentTrialLifecycleFactory lifecycleFactory)
+        {
+            throw new ArgumentException(
+                "The supplied experiment run does not expose the built-in Langfuse trial lifecycle.",
+                nameof(run));
+        }
+
+        return new LangfuseExperimentItemScopeProvider<TCase, TOutput>(
+            lifecycleFactory,
+            linkHostedItem: true,
+            options);
+    }
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateLocalExperimentItemScopeProvider<TCase, TOutput>(
+            LangfuseExperimentItemScopeOptions<TCase>? options) =>
+        new(
+            new LangfuseExperimentTrialLifecycleFactory(
+                request => new LangfuseScenario(
+                    Scores,
+                    _composition.Recorder,
+                    request.ScenarioName,
+                    sessionId: null,
+                    userId: null,
+                    request.Tags,
+                    request.Metadata,
+                    activateOnCreate: false),
+                itemLinker: null),
+            linkHostedItem: false,
+            options);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(

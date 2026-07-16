@@ -10,10 +10,11 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// <see cref="LangfuseScoreRecorder"/>.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class LangfuseScenario : ILangfuseScenario
+internal sealed class LangfuseScenario : ILangfuseActivatableScenario
 {
     private readonly Activity? _activity;
-    private readonly Activity? _previousActivity;
+    private readonly Activity? _initialPreviousActivity;
+    private readonly bool _activatedOnCreate;
     private readonly LangfuseScoreRecorder _recorder;
     private readonly ILangfuseScoreClient _scores;
     private readonly string? _sessionId;
@@ -26,7 +27,8 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         string? sessionId,
         string? userId,
         IEnumerable<string>? tags,
-        IReadOnlyDictionary<string, string>? metadata)
+        IReadOnlyDictionary<string, string>? metadata,
+        bool activateOnCreate = true)
         : this(
             CreateScoreClient(recorder),
             recorder,
@@ -34,7 +36,8 @@ internal sealed class LangfuseScenario : ILangfuseScenario
             sessionId,
             userId,
             tags,
-            metadata)
+            metadata,
+            activateOnCreate)
     {
     }
 
@@ -45,7 +48,8 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         string? sessionId,
         string? userId,
         IEnumerable<string>? tags,
-        IReadOnlyDictionary<string, string>? metadata)
+        IReadOnlyDictionary<string, string>? metadata,
+        bool activateOnCreate = true)
     {
         ArgumentNullException.ThrowIfNull(scores);
         ArgumentNullException.ThrowIfNull(recorder);
@@ -55,7 +59,7 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         _recorder = recorder;
         _sessionId = sessionId;
         _traceContext = CreateTraceContext(name, sessionId, userId, tags, metadata);
-        _previousActivity = Activity.Current;
+        var previousActivity = Activity.Current;
         Activity? activity = null;
         Activity.Current = null;
         try
@@ -64,15 +68,18 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         }
         finally
         {
-            if (activity is null)
-            {
-                Activity.Current = _previousActivity;
-            }
+            Activity.Current = previousActivity;
         }
         _activity = activity;
 
         ApplyTraceAttributes(_activity, _traceContext);
         LangfuseTraceContext.Attach(_activity, _traceContext);
+        if (activateOnCreate && _activity is not null)
+        {
+            _initialPreviousActivity = Activity.Current;
+            Activity.Current = _activity;
+            _activatedOnCreate = true;
+        }
     }
 
     private static ILangfuseScoreClient CreateScoreClient(LangfuseScoreRecorder recorder)
@@ -86,6 +93,25 @@ internal sealed class LangfuseScenario : ILangfuseScenario
 
     /// <inheritdoc />
     public Activity? Activity => _activity;
+
+    /// <inheritdoc />
+    public bool IsEnabled => true;
+
+    /// <inheritdoc />
+    public IDisposable? Activate()
+    {
+        ObjectDisposedException.ThrowIf(
+            Volatile.Read(ref _disposed) != 0,
+            this);
+        if (_activity is null)
+        {
+            return null;
+        }
+
+        var previousActivity = Activity.Current;
+        Activity.Current = _activity;
+        return new ScenarioActivation(_activity, previousActivity);
+    }
 
     /// <inheritdoc />
     public Task RecordScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
@@ -126,11 +152,13 @@ internal sealed class LangfuseScenario : ILangfuseScenario
             return;
         }
 
-        var restorePreviousActivity = ReferenceEquals(Activity.Current, _activity);
+        var restoreInitialActivity =
+            _activatedOnCreate
+            && ReferenceEquals(Activity.Current, _activity);
         _activity?.Dispose();
-        if (restorePreviousActivity)
+        if (restoreInitialActivity)
         {
-            Activity.Current = _previousActivity;
+            Activity.Current = _initialPreviousActivity;
         }
     }
 
@@ -256,6 +284,22 @@ internal sealed class LangfuseScenario : ILangfuseScenario
         foreach (var entry in context.Metadata)
         {
             activity.SetTag($"langfuse.trace.metadata.{entry.Key}", entry.Value);
+        }
+    }
+
+    private sealed class ScenarioActivation(
+        Activity activity,
+        Activity? previousActivity) : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0
+                && ReferenceEquals(Activity.Current, activity))
+            {
+                Activity.Current = previousActivity;
+            }
         }
     }
 }

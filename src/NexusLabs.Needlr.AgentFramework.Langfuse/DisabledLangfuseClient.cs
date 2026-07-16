@@ -4,7 +4,9 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 /// Coherent disabled <see cref="ILangfuseClient"/> used when Langfuse is unconfigured.
 /// </summary>
 [DoNotAutoRegister]
-internal sealed class DisabledLangfuseClient : ILangfuseClient
+internal sealed class DisabledLangfuseClient :
+    ILangfuseClient,
+    ILangfuseExperimentItemScopeProviderFactory
 {
     public DisabledLangfuseClient()
     {
@@ -56,6 +58,37 @@ internal sealed class DisabledLangfuseClient : ILangfuseClient
         string runName,
         LangfuseExperimentRunOptions? options = null) =>
         new DisabledLangfuseExperimentRun(datasetName, runName, options);
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateExperimentItemScopeProvider<TCase, TOutput>(
+            ILangfuseExperimentRun run,
+            LangfuseExperimentItemScopeOptions<TCase>? options)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        if (run is not ILangfuseExperimentTrialLifecycleFactory lifecycleFactory)
+        {
+            throw new ArgumentException(
+                "The supplied experiment run does not expose the built-in Langfuse trial lifecycle.",
+                nameof(run));
+        }
+
+        return new LangfuseExperimentItemScopeProvider<TCase, TOutput>(
+            lifecycleFactory,
+            linkHostedItem: true,
+            options);
+    }
+
+    /// <inheritdoc />
+    LangfuseExperimentItemScopeProvider<TCase, TOutput>
+        ILangfuseExperimentItemScopeProviderFactory.CreateLocalExperimentItemScopeProvider<TCase, TOutput>(
+            LangfuseExperimentItemScopeOptions<TCase>? options) =>
+        new(
+            new LangfuseExperimentTrialLifecycleFactory(
+                _ => new DisabledLangfuseScenario(),
+                itemLinker: null),
+            linkHostedItem: false,
+            options);
 
     /// <inheritdoc />
     public Task AddTraceCommentAsync(

@@ -190,11 +190,16 @@ public sealed class LangfuseSessionShutdownTests
         var (session, _, _, _) = CreateSession(
             TimeSpan.FromSeconds(5),
             includeMetrics: false);
+        var run = session.BeginExperimentRun("dataset", "before-shutdown");
         session.Shutdown(TimeSpan.FromSeconds(1));
 
         Assert.Throws<ObjectDisposedException>(() => session.Flush(TimeSpan.Zero));
         Assert.Throws<ObjectDisposedException>(() => session.BeginScenario("after-shutdown"));
         Assert.Throws<ObjectDisposedException>(() => session.BeginExperimentRun("dataset", "run"));
+        Assert.Throws<ObjectDisposedException>(() =>
+            session.CreateExperimentItemScopeProvider<int, string>(run));
+        Assert.Throws<ObjectDisposedException>(() =>
+            session.CreateLocalExperimentItemScopeProvider<int, string>());
         Assert.Throws<ObjectDisposedException>(() =>
         {
             _ = session.AddTraceCommentAsync(
