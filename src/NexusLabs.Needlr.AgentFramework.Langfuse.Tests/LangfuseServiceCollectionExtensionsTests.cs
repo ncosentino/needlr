@@ -67,7 +67,12 @@ public sealed class LangfuseServiceCollectionExtensionsTests
         var scoreClient = provider.GetRequiredService<ILangfuseScoreClient>();
         var client = provider.GetRequiredService<ILangfuseClient>();
 
-        await scoreClient.RecordScoreAsync("trace", "name", 1.0, cancellationToken: TestContext.Current.CancellationToken);
+        await scoreClient.RecordScoreAsync(
+            "trace",
+            "name",
+            1.0,
+            options: null,
+            TestContext.Current.CancellationToken);
         Assert.False(client.PublicationHealth.GetSnapshot().IsEnabled);
         Assert.Equal(0, client.PublicationHealth.GetSnapshot().ScoreUploads.Total);
     }

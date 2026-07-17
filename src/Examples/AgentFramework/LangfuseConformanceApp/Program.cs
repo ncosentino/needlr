@@ -990,7 +990,8 @@ static async Task<int> RunExperimentsCheckAsync()
             {
                 Id = $"{runId}:session_resolved",
                 Comment = "Whole conversation resolved.",
-            });
+            },
+            CancellationToken.None);
     }
     Console.WriteLine($"[run] Recorded a session score on session '{sessionId}'.");
 
@@ -1411,7 +1412,8 @@ static async Task<int> RunMetricsCheckAsync()
             {
                 Id = $"{runId}:{scoreName}",
                 Comment = "metrics conformance",
-            });
+            },
+            CancellationToken.None);
         Console.WriteLine($"[run] Recorded score '{scoreName}' = {scoreValue} on trace {scenario.TraceId}.");
     }
 

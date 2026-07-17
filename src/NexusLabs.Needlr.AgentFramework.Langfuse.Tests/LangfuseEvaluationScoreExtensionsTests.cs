@@ -11,6 +11,49 @@ public sealed class LangfuseEvaluationScoreExtensionsTests
     private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     [Fact]
+    public async Task RecordLangfuseScoresAsync_RequiredOnly_ForwardsNullOptionsAndNoCancellation()
+    {
+        var result = new EvaluationResult(new NumericMetric("m1", value: 1.0));
+        var scenario = _mocks.Create<ILangfuseScenario>();
+        scenario
+            .Setup(value => value.RecordEvaluationAsync(
+                result,
+                null,
+                CancellationToken.None))
+            .Returns(Task.CompletedTask);
+
+#pragma warning disable xUnit1051 // This test intentionally exercises the tokenless extension overload.
+        await result.RecordLangfuseScoresAsync(scenario.Object);
+#pragma warning restore xUnit1051
+
+        _mocks.VerifyAll();
+    }
+
+    [Fact]
+    public async Task RecordLangfuseScoresAsync_FullOverload_ForwardsOptionsAndCancellation()
+    {
+        var result = new EvaluationResult(new NumericMetric("m1", value: 1.0));
+        var options = new LangfuseEvaluationScoreOptions
+        {
+            ScoreIdProvider = metric => $"score:{metric.Name}",
+        };
+        var scenario = _mocks.Create<ILangfuseScenario>();
+        scenario
+            .Setup(value => value.RecordEvaluationAsync(
+                result,
+                options,
+                _cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        await result.RecordLangfuseScoresAsync(
+            scenario.Object,
+            options,
+            _cancellationToken);
+
+        _mocks.VerifyAll();
+    }
+
+    [Fact]
     public async Task EvaluateAndRecordAsync_RunsEachEvaluatorAndRecordsEachResult()
     {
         var result1 = new EvaluationResult(new NumericMetric("m1", value: 1.0));

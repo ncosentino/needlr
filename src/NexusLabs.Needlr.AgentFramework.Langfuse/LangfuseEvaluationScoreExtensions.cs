@@ -12,12 +12,36 @@ public static class LangfuseEvaluationScoreExtensions
     /// <summary>
     /// Records every metric in <paramref name="result"/> as a Langfuse score on
     /// <paramref name="scenario"/>'s trace. Equivalent to
-    /// <see cref="ILangfuseScenario.RecordEvaluationAsync"/>, provided as a fluent call site for
-    /// eval code that already holds an <see cref="EvaluationResult"/>.
+    /// <see cref="ILangfuseScenario.RecordEvaluationAsync(EvaluationResult)"/>, provided as a fluent
+    /// call site for eval code that already holds an <see cref="EvaluationResult"/>.
     /// </summary>
     /// <param name="result">The evaluation result to project.</param>
     /// <param name="scenario">The scenario whose trace the scores attach to.</param>
-    /// <param name="options">Optional stable identity settings for projected metric scores.</param>
+    /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="result"/> or <paramref name="scenario"/> is <see langword="null"/>.
+    /// </exception>
+    public static Task RecordLangfuseScoresAsync(
+        this EvaluationResult result,
+        ILangfuseScenario scenario) =>
+        RecordLangfuseScoresAsync(
+            result,
+            scenario,
+            options: null,
+            CancellationToken.None);
+
+    /// <summary>
+    /// Records every metric in <paramref name="result"/> as a Langfuse score on
+    /// <paramref name="scenario"/>'s trace. Equivalent to
+    /// <see cref="ILangfuseScenario.RecordEvaluationAsync(EvaluationResult, LangfuseEvaluationScoreOptions?, CancellationToken)"/>,
+    /// provided as a fluent call site for eval code that already holds an
+    /// <see cref="EvaluationResult"/>.
+    /// </summary>
+    /// <param name="result">The evaluation result to project.</param>
+    /// <param name="scenario">The scenario whose trace the scores attach to.</param>
+    /// <param name="options">
+    /// Stable identity settings for projected metric scores, or <see langword="null"/>.
+    /// </param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
     /// <exception cref="ArgumentNullException">
@@ -26,8 +50,8 @@ public static class LangfuseEvaluationScoreExtensions
     public static Task RecordLangfuseScoresAsync(
         this EvaluationResult result,
         ILangfuseScenario scenario,
-        LangfuseEvaluationScoreOptions? options = null,
-        CancellationToken cancellationToken = default)
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(scenario);

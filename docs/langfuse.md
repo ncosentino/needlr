@@ -48,7 +48,8 @@ using (var scenario = langfuse.BeginScenario(
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        },
+        cancellationToken);
 }
 
 var shutdown = langfuse.Shutdown(TimeSpan.FromSeconds(5));
@@ -139,6 +140,12 @@ Score names are sent verbatim by default (preserving the evaluator's authored me
 name). For cleaner dashboard filtering and grouping, enable
 `NormalizeScoreNames` to send `snake_case` names (e.g. `all_tool_calls_succeeded`) —
 this is the recommended shape unless you specifically want the authored names.
+
+Each score and evaluation API exposes two overloads: one with only the required
+arguments, and one with nullable options plus an explicit `CancellationToken`.
+To customize either concern, call the full overload and pass `null` or
+`CancellationToken.None` for the concern you are not customizing. There are no
+token-only or options-only overloads.
 
 ### Stable score IDs and safe retries
 
@@ -557,7 +564,8 @@ var itemResult = await run.RunItemAsync(
         var evaluation = await RunAndEvaluate(item, token);
         await scenario.RecordEvaluationAsync(
             evaluation,
-            cancellationToken: token);
+            options: null,
+            token);
         return evaluation;
     },
     new LangfuseExperimentItemOptions
@@ -927,7 +935,8 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
         await scenario.RecordScoreAsync(
             "resolved",
             response.Resolved,
-            cancellationToken: cancellationToken);
+            options: null,
+            cancellationToken);
 
         var experiment = langfuse.BeginExperimentRun(
             "support-agent-regression",
@@ -943,7 +952,8 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                 await scenario.RecordScoreAsync(
                     "reviewed",
                     value: true,
-                    cancellationToken: token);
+                    options: null,
+                    token);
                 return scenario.TraceId;
             },
             options: null,
@@ -955,7 +965,8 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                 traceId,
                 "published",
                 value: true,
-                cancellationToken: cancellationToken);
+                options: null,
+                cancellationToken);
         }
 
         Console.WriteLine(item.Link.Status);

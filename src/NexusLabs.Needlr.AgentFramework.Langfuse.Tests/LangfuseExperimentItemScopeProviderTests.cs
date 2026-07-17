@@ -465,7 +465,8 @@ public sealed class LangfuseExperimentItemScopeProviderTests
                 await scenario.RecordScoreAsync(
                     "quality",
                     1.0,
-                    cancellationToken: cancellationToken);
+                    options: null,
+                    cancellationToken);
                 Assert.Equal(0, Volatile.Read(ref stoppedActivities));
                 return new EvaluationResult();
             });

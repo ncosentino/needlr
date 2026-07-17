@@ -80,7 +80,8 @@ public sealed class LangfuseScenarioTests
 
         await scenario.RecordEvaluationAsync(
             result,
-            cancellationToken: TestContext.Current.CancellationToken);
+            options: null,
+            TestContext.Current.CancellationToken);
 
         Assert.Equal(3, bodies.Count);
 
@@ -110,7 +111,11 @@ public sealed class LangfuseScenarioTests
 
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
 
-        await scenario.RecordScoreAsync("relevance", 0.5, cancellationToken: TestContext.Current.CancellationToken);
+        await scenario.RecordScoreAsync(
+            "relevance",
+            0.5,
+            options: null,
+            TestContext.Current.CancellationToken);
 
         Assert.Equal(1, sink.FailedCount);
         Assert.NotNull(captured);
@@ -128,7 +133,11 @@ public sealed class LangfuseScenarioTests
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
 
         await Assert.ThrowsAnyAsync<LangfuseException>(() =>
-            scenario.RecordScoreAsync("relevance", 0.5, cancellationToken: TestContext.Current.CancellationToken));
+            scenario.RecordScoreAsync(
+                "relevance",
+                0.5,
+                options: null,
+                TestContext.Current.CancellationToken));
         Assert.Equal(0, sink.FailedCount);
     }
 

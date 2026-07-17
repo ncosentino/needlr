@@ -56,7 +56,11 @@ public sealed class LangfuseCancellationTests
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            scenario.RecordScoreAsync("correctness", 1.0, cancellationToken: cancellation.Token));
+            scenario.RecordScoreAsync(
+                "correctness",
+                1.0,
+                options: null,
+                cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
         Assert.Equal(0, failureSink.FailedCount);

@@ -28,9 +28,9 @@ public sealed class LangfuseTelemetryDisabledTests
         Assert.Null(scenario.TraceId);
         Assert.Null(scenario.Activity);
 
-        await scenario.RecordScoreAsync("numeric", 0.5, cancellationToken: TestContext.Current.CancellationToken);
-        await scenario.RecordScoreAsync("boolean", true, cancellationToken: TestContext.Current.CancellationToken);
-        await scenario.RecordScoreAsync("categorical", "good", cancellationToken: TestContext.Current.CancellationToken);
+        await scenario.RecordScoreAsync("numeric", 0.5, options: null, TestContext.Current.CancellationToken);
+        await scenario.RecordScoreAsync("boolean", true, options: null, TestContext.Current.CancellationToken);
+        await scenario.RecordScoreAsync("categorical", "good", options: null, TestContext.Current.CancellationToken);
     }
 
     [Fact]

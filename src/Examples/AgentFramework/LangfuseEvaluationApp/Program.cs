@@ -131,13 +131,15 @@ using (var scenario = langfuse.BeginScenario(
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:efficiency:{metric.Name}",
-        });
+        },
+        CancellationToken.None);
     await coherence.RecordLangfuseScoresAsync(
         scenario,
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:coherence:{metric.Name}",
-        });
+        },
+        CancellationToken.None);
 
     Console.WriteLine();
     var scoreHealth = langfuse.PublicationHealth.GetSnapshot().ScoreUploads;
