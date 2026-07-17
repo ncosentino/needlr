@@ -62,7 +62,6 @@ public static class LangfuseExperimentResultSinkExtensions
 
     private static ILangfuseExperimentResultSinkFactory GetFactory(
         ILangfuseClient client) =>
-        client as ILangfuseExperimentResultSinkFactory
-        ?? throw new NotSupportedException(
+        client.ResolveExperimentFactory<ILangfuseExperimentResultSinkFactory>(
             "The supplied Langfuse client does not expose the built-in experiment result-sink capability.");
 }

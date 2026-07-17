@@ -116,12 +116,10 @@ internal sealed class DisabledLangfuseSession :
     }
 
     private ILangfuseExperimentItemScopeProviderFactory GetScopeProviderFactory() =>
-        _client as ILangfuseExperimentItemScopeProviderFactory
-        ?? throw new NotSupportedException(
+        _client.ResolveExperimentFactory<ILangfuseExperimentItemScopeProviderFactory>(
             "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
 
     private ILangfuseExperimentResultSinkFactory GetResultSinkFactory() =>
-        _client as ILangfuseExperimentResultSinkFactory
-        ?? throw new NotSupportedException(
+        _client.ResolveExperimentFactory<ILangfuseExperimentResultSinkFactory>(
             "The configured Langfuse client does not expose the built-in experiment result-sink capability.");
 }

@@ -62,7 +62,6 @@ public static class LangfuseExperimentItemScopeExtensions
 
     private static ILangfuseExperimentItemScopeProviderFactory GetFactory(
         ILangfuseClient client) =>
-        client as ILangfuseExperimentItemScopeProviderFactory
-        ?? throw new NotSupportedException(
+        client.ResolveExperimentFactory<ILangfuseExperimentItemScopeProviderFactory>(
             "The supplied Langfuse client does not expose the built-in experiment trial lifecycle.");
 }
