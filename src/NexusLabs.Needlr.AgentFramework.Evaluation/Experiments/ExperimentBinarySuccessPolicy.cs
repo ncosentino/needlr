@@ -17,17 +17,65 @@ public sealed class ExperimentBinarySuccessPolicy<TCase, TOutput> :
     /// <param name="requiredSuccessRate">The required success proportion from zero through one.</param>
     /// <param name="minimumSampleCount">The minimum effective denominator count.</param>
     /// <param name="confidenceLevel">The one-sided confidence level, greater than 0.5 and less than one.</param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="name"/> or <paramref name="metricName"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="name"/> or <paramref name="metricName"/> is empty or consists only of
+    /// white-space characters.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="requiredSuccessRate"/>, <paramref name="minimumSampleCount"/>, or
+    /// <paramref name="confidenceLevel"/> is outside its supported range.
+    /// </exception>
+    public ExperimentBinarySuccessPolicy(
+        string name,
+        string metricName,
+        double requiredSuccessRate,
+        int minimumSampleCount,
+        double confidenceLevel)
+        : this(
+            name,
+            metricName,
+            requiredSuccessRate,
+            minimumSampleCount,
+            confidenceLevel,
+            isRequired: true,
+            unknownSampleTreatment: ExperimentUnknownSampleTreatment.Inconclusive)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a binary-success statistical policy with an explicit required flag and
+    /// unknown-sample treatment.
+    /// </summary>
+    /// <param name="name">The stable policy name.</param>
+    /// <param name="metricName">The required boolean item metric name.</param>
+    /// <param name="requiredSuccessRate">The required success proportion from zero through one.</param>
+    /// <param name="minimumSampleCount">The minimum effective denominator count.</param>
+    /// <param name="confidenceLevel">The one-sided confidence level, greater than 0.5 and less than one.</param>
     /// <param name="isRequired">Whether this policy contributes to the run decision.</param>
     /// <param name="unknownSampleTreatment">The treatment for unknown item evidence.</param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="name"/> or <paramref name="metricName"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="name"/> or <paramref name="metricName"/> is empty or consists only of
+    /// white-space characters.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="requiredSuccessRate"/>, <paramref name="minimumSampleCount"/>,
+    /// <paramref name="confidenceLevel"/>, or <paramref name="unknownSampleTreatment"/> is outside
+    /// its supported range.
+    /// </exception>
     public ExperimentBinarySuccessPolicy(
         string name,
         string metricName,
         double requiredSuccessRate,
         int minimumSampleCount,
         double confidenceLevel,
-        bool isRequired = true,
-        ExperimentUnknownSampleTreatment unknownSampleTreatment =
-            ExperimentUnknownSampleTreatment.Inconclusive)
+        bool isRequired,
+        ExperimentUnknownSampleTreatment unknownSampleTreatment)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(metricName);

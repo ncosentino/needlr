@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using Microsoft.Extensions.AI.Evaluation;
+
 using NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 
 namespace NexusLabs.Needlr.AgentFramework.Evaluation.Tests.Experiments;
@@ -53,6 +55,35 @@ public sealed class ExperimentApiOverloadTests
             typeof(bool),
             Assert.Single(writerConstructors[1].GetParameters()).ParameterType);
 
+        var binaryPolicyConstructors =
+            typeof(ExperimentBinarySuccessPolicy<int, int>).GetConstructors();
+        AssertConstructorShapes(
+            binaryPolicyConstructors,
+            [
+                "System.String name, System.String metricName, System.Double requiredSuccessRate, " +
+                    "System.Int32 minimumSampleCount, System.Double confidenceLevel",
+                "System.String name, System.String metricName, System.Double requiredSuccessRate, " +
+                    "System.Int32 minimumSampleCount, System.Double confidenceLevel, " +
+                    "System.Boolean isRequired, " +
+                    "NexusLabs.Needlr.AgentFramework.Evaluation.Experiments." +
+                    "ExperimentUnknownSampleTreatment unknownSampleTreatment",
+            ]);
+
+        var thresholdPolicyConstructors =
+            typeof(ExperimentRunEvaluationThresholdPolicy<int, int>).GetConstructors();
+        AssertConstructorShapes(
+            thresholdPolicyConstructors,
+            [
+                "System.String name, System.String runEvaluationName, " +
+                    "NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdEvaluator " +
+                    "thresholds",
+                "System.String name, System.String runEvaluationName, " +
+                    "NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationThresholdEvaluator " +
+                    "thresholds, System.Boolean isRequired, " +
+                    "NexusLabs.Needlr.AgentFramework.Evaluation.EvaluationMissingMetricBehavior " +
+                    "missingMetricBehavior",
+            ]);
+
         var writerMethods = typeof(ExperimentJsonArtifactWriter)
             .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
         var serializeMethods = writerMethods
@@ -73,8 +104,72 @@ public sealed class ExperimentApiOverloadTests
             .Concat(writeMethods)
             .SelectMany(method => method.GetParameters())
             .Concat(runnerConstructors.SelectMany(constructor => constructor.GetParameters()))
-            .Concat(writerConstructors.SelectMany(constructor => constructor.GetParameters()));
+            .Concat(writerConstructors.SelectMany(constructor => constructor.GetParameters()))
+            .Concat(binaryPolicyConstructors.SelectMany(constructor => constructor.GetParameters()))
+            .Concat(thresholdPolicyConstructors.SelectMany(constructor =>
+                constructor.GetParameters()));
         Assert.DoesNotContain(publicParameters, parameter => parameter.IsOptional);
+    }
+
+    [Fact]
+    public void BinaryPolicyConstructors_MapRequiredFlagAndUnknownSampleTreatment()
+    {
+        var defaults = new ExperimentBinarySuccessPolicy<int, int>(
+            "defaults",
+            "passed",
+            0.8,
+            10,
+            0.95);
+        var optionalPessimistic = new ExperimentBinarySuccessPolicy<int, int>(
+            "optional-pessimistic",
+            "passed",
+            0.8,
+            10,
+            0.95,
+            isRequired: false,
+            unknownSampleTreatment: ExperimentUnknownSampleTreatment.CountAsFailure);
+
+        Assert.True(defaults.IsRequired);
+        Assert.Equal(
+            ExperimentUnknownSampleTreatment.Inconclusive,
+            defaults.UnknownSampleTreatment);
+        Assert.False(optionalPessimistic.IsRequired);
+        Assert.Equal(
+            ExperimentUnknownSampleTreatment.CountAsFailure,
+            optionalPessimistic.UnknownSampleTreatment);
+    }
+
+    [Fact]
+    public async Task ThresholdPolicyConstructors_MapRequiredFlagAndMissingMetricBehavior()
+    {
+        var thresholds = new EvaluationThresholdEvaluator()
+            .RequireBoolean("passed", expected: true);
+        var defaults = new ExperimentRunEvaluationThresholdPolicy<int, int>(
+            "defaults",
+            "missing",
+            thresholds);
+        var optionalPessimistic = new ExperimentRunEvaluationThresholdPolicy<int, int>(
+            "optional-pessimistic",
+            "missing",
+            thresholds,
+            isRequired: false,
+            missingMetricBehavior: EvaluationMissingMetricBehavior.Fail);
+        var context = new ExperimentPolicyContext<int, int>(
+            "run",
+            "experiment",
+            new ExperimentSourceReference { Name = "source" },
+            [],
+            []);
+
+        var defaultVerdict = await defaults.EvaluateAsync(context, _cancellationToken);
+        var optionalPessimisticVerdict = await optionalPessimistic.EvaluateAsync(
+            context,
+            _cancellationToken);
+
+        Assert.True(defaults.IsRequired);
+        Assert.Equal(EvaluationDecision.Inconclusive, defaultVerdict.Decision);
+        Assert.False(optionalPessimistic.IsRequired);
+        Assert.Equal(EvaluationDecision.Failed, optionalPessimisticVerdict.Decision);
     }
 
     [Fact]
@@ -137,4 +232,21 @@ public sealed class ExperimentApiOverloadTests
 
     private static int GetParameterCount(MethodBase method) =>
         method.GetParameters().Length;
+
+    private static void AssertConstructorShapes(
+        IReadOnlyList<ConstructorInfo> constructors,
+        IReadOnlyList<string> expectedShapes)
+    {
+        var actualShapes = constructors
+            .Select(constructor => string.Join(
+                ", ",
+                constructor.GetParameters().Select(parameter =>
+                    $"{parameter.ParameterType.FullName} {parameter.Name}")))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(
+            expectedShapes.Order(StringComparer.Ordinal),
+            actualShapes);
+    }
 }

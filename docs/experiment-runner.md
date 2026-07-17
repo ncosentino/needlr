@@ -98,7 +98,18 @@ The provider-neutral execution APIs use explicit overloads rather than optional 
 - `IExperimentRunner.RunAsync(definition, options)` delegates to the overload that accepts
   `CancellationToken`;
 - `ExperimentRunner()` uses `TimeProvider.System`, while
-  `ExperimentRunner(TimeProvider)` requires a non-null provider.
+  `ExperimentRunner(TimeProvider?)` also falls back to `TimeProvider.System` for an explicit
+  null value.
+
+The built-in policies also use explicit constructor matrices. Neither policy exposes optional
+parameters:
+
+| Policy | Explicit constructor suffix | Resulting configuration |
+|---|---|---|
+| `ExperimentBinarySuccessPolicy<TCase,TOutput>` | Statistical arguments only | Required; unknown samples are inconclusive. |
+| `ExperimentBinarySuccessPolicy<TCase,TOutput>` | `bool isRequired, ExperimentUnknownSampleTreatment` | Both values specified explicitly. |
+| `ExperimentRunEvaluationThresholdPolicy<TCase,TOutput>` | Threshold arguments only | Required; missing metrics are inconclusive. |
+| `ExperimentRunEvaluationThresholdPolicy<TCase,TOutput>` | `bool isRequired, EvaluationMissingMetricBehavior` | Both values specified explicitly. |
 
 ## Cases, Trials, and Attempts
 
