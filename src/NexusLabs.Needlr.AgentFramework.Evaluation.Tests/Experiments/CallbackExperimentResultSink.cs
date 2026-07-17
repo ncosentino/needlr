@@ -11,14 +11,14 @@ internal sealed class CallbackExperimentResultSink<TCase, TOutput>(
     Func<
         ExperimentRunResult<TCase, TOutput>,
         CancellationToken,
-        ValueTask<ExperimentSinkResult>> publishAsync) :
+        ValueTask<ExperimentSinkPublicationOperationResult>> publishAsync) :
     IExperimentResultSink<TCase, TOutput>
 {
     public string Name => name;
 
     public bool IsRequired => isRequired;
 
-    public ValueTask<ExperimentSinkResult> PublishAsync(
+    public ValueTask<ExperimentSinkPublicationOperationResult> PublishAsync(
         ExperimentRunResult<TCase, TOutput> result,
         CancellationToken cancellationToken) =>
         publishAsync(result, cancellationToken);

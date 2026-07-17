@@ -86,9 +86,7 @@ internal sealed class MeaiReportingExperimentAdapter<TCase, TOutput> :
         cancellationToken.ThrowIfCancellationRequested();
 
         var item = new MeaiReportingExperimentItem(scenarioRun);
-        return new MeaiReportingExperimentItemScope<TCase, TOutput>(
-            item,
-            IsRequired);
+        return new MeaiReportingExperimentItemScope<TCase, TOutput>(item);
     }
 
     /// <summary>

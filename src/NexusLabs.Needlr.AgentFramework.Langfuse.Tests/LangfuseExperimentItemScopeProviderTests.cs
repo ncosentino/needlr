@@ -116,6 +116,10 @@ public sealed class LangfuseExperimentItemScopeProviderTests
         Assert.Equal(2, item.Attempts.Count);
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         var publication = Assert.Single(item.Publications);
+        Assert.Equal(
+            LangfuseExperimentItemScopeProvider<int, string>.ProviderName,
+            publication.Name);
+        Assert.False(publication.IsRequired);
         Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, publication.Status);
         Assert.Equal(3, publication.Correlations.Count);
         AssertCorrelation(
@@ -258,6 +262,9 @@ public sealed class LangfuseExperimentItemScopeProviderTests
         Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
         Assert.Equal("quality-result", item.Output);
         var publication = Assert.Single(item.Publications);
+        Assert.Equal(
+            LangfuseExperimentItemScopeProvider<int, string>.ProviderName,
+            publication.Name);
         Assert.True(publication.IsRequired, "Expected required publication to affect aggregate publication health.");
         Assert.Equal(ExperimentPublicationOperationStatus.Failed, publication.Status);
         Assert.Equal(ExperimentFailureCode.ItemScopeFailed, publication.Failure!.Code);

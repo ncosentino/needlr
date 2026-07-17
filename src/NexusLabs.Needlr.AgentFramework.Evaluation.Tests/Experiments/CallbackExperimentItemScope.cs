@@ -11,7 +11,7 @@ internal sealed class CallbackExperimentItemScope<TCase, TOutput>(
     Func<
         ExperimentItemResult<TCase, TOutput>,
         CancellationToken,
-        ValueTask<ExperimentItemPublicationResult>> completeAsync,
+        ValueTask<ExperimentItemPublicationOperationResult>> completeAsync,
     Func<CancellationToken, ValueTask> abortAsync,
     Func<ValueTask> disposeAsync) :
     IExperimentItemScope<TCase, TOutput>
@@ -20,7 +20,7 @@ internal sealed class CallbackExperimentItemScope<TCase, TOutput>(
 
     public IDisposable? Activate() => activate();
 
-    public ValueTask<ExperimentItemPublicationResult> CompleteAsync(
+    public ValueTask<ExperimentItemPublicationOperationResult> CompleteAsync(
         ExperimentItemResult<TCase, TOutput> result,
         CancellationToken cancellationToken) =>
         completeAsync(result, cancellationToken);

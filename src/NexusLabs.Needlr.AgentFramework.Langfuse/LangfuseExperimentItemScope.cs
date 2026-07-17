@@ -10,15 +10,11 @@ internal sealed class LangfuseExperimentItemScope<TCase, TOutput> :
     IExperimentItemScope<TCase, TOutput>
 {
     private readonly LangfuseExperimentTrialLifecycle _lifecycle;
-    private readonly bool _isRequired;
 
-    public LangfuseExperimentItemScope(
-        LangfuseExperimentTrialLifecycle lifecycle,
-        bool isRequired)
+    public LangfuseExperimentItemScope(LangfuseExperimentTrialLifecycle lifecycle)
     {
         ArgumentNullException.ThrowIfNull(lifecycle);
         _lifecycle = lifecycle;
-        _isRequired = isRequired;
         Features = new Dictionary<Type, object>
         {
             [typeof(ILangfuseScenario)] = lifecycle.Scenario,
@@ -29,7 +25,7 @@ internal sealed class LangfuseExperimentItemScope<TCase, TOutput> :
 
     public IDisposable? Activate() => _lifecycle.Activate();
 
-    public ValueTask<ExperimentItemPublicationResult> CompleteAsync(
+    public ValueTask<ExperimentItemPublicationOperationResult> CompleteAsync(
         ExperimentItemResult<TCase, TOutput> result,
         CancellationToken cancellationToken)
     {
@@ -43,50 +39,28 @@ internal sealed class LangfuseExperimentItemScope<TCase, TOutput> :
 
     public ValueTask DisposeAsync() => _lifecycle.DisposeAsync();
 
-    private ExperimentItemPublicationResult CreatePublication()
+    private ExperimentItemPublicationOperationResult CreatePublication()
     {
         var correlations = CreateCorrelations();
         if (_lifecycle.Link is null)
         {
-            return new ExperimentItemPublicationResult
-            {
-                Name = LangfuseExperimentItemScopeProvider<TCase, TOutput>.ProviderName,
-                IsRequired = _isRequired,
-                Status = _lifecycle.IsDisabled || _lifecycle.RecordedTraceId is null
-                    ? ExperimentPublicationOperationStatus.NotAttempted
-                    : ExperimentPublicationOperationStatus.Succeeded,
-                Correlations = correlations,
-            };
+            return _lifecycle.IsDisabled || _lifecycle.RecordedTraceId is null
+                ? ExperimentItemPublicationOperationResult.NotAttempted(correlations)
+                : ExperimentItemPublicationOperationResult.Succeeded(correlations);
         }
 
         return _lifecycle.Link.Status switch
         {
-            LangfuseExperimentItemLinkStatus.Linked => new ExperimentItemPublicationResult
-            {
-                Name = LangfuseExperimentItemScopeProvider<TCase, TOutput>.ProviderName,
-                IsRequired = _isRequired,
-                Status = ExperimentPublicationOperationStatus.Succeeded,
-                Correlations = correlations,
-            },
+            LangfuseExperimentItemLinkStatus.Linked =>
+                ExperimentItemPublicationOperationResult.Succeeded(correlations),
             LangfuseExperimentItemLinkStatus.Failed
                 or LangfuseExperimentItemLinkStatus.Inconsistent =>
-                new ExperimentItemPublicationResult
-                {
-                    Name = LangfuseExperimentItemScopeProvider<TCase, TOutput>.ProviderName,
-                    IsRequired = _isRequired,
-                    Status = ExperimentPublicationOperationStatus.Failed,
-                    Correlations = correlations,
-                    Failure = CreateFailure(_lifecycle.Link),
-                },
+                ExperimentItemPublicationOperationResult.Failed(
+                    correlations,
+                    CreateFailure(_lifecycle.Link)),
             LangfuseExperimentItemLinkStatus.NotSampled
                 or LangfuseExperimentItemLinkStatus.Disabled =>
-                new ExperimentItemPublicationResult
-                {
-                    Name = LangfuseExperimentItemScopeProvider<TCase, TOutput>.ProviderName,
-                    IsRequired = _isRequired,
-                    Status = ExperimentPublicationOperationStatus.NotAttempted,
-                    Correlations = correlations,
-                },
+                ExperimentItemPublicationOperationResult.NotAttempted(correlations),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(_lifecycle.Link.Status),
                 _lifecycle.Link.Status,

@@ -403,6 +403,10 @@ are `NotAttempted`. A required publication affects aggregate publication health,
 `ExecutionPrerequisite` independently selects strict link behavior and prevents the first attempt
 when linking fails. Unsampled and disabled scopes never block execution.
 
+The Langfuse scope returns only an `ExperimentItemPublicationOperationResult` containing status,
+correlations, and an optional failure. The generic runner stamps the registered provider name and
+requirement flag into the canonical `ExperimentItemPublicationResult`.
+
 An explicit `LangfuseExperimentRunOptions.DatasetVersion` is normalized to UTC and submitted with
 every item link. Use the same value as `LangfuseDatasetSelection.Version` so the comparison view
 references the item state that the source loaded.
@@ -444,6 +448,9 @@ The sink maps direct score outcomes independently from quality:
 - disabled and entirely unattempted publication remain `NotAttempted`;
 - local mode publishes item trace scores and skips dataset-run/decision targets without fabricating
   a run.
+
+The Langfuse sink returns only an `ExperimentSinkPublicationOperationResult`; the generic runner
+stamps the configured sink name and requirement flag into the canonical `ExperimentSinkResult`.
 
 `GetPublicationSnapshot()` retains ordered item and run-evaluation score results, the optional
 decision score result, and the hosted run's existing link/run-score snapshot. REST acceptance does

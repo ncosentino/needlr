@@ -79,23 +79,10 @@ internal sealed class ExperimentResultSinkPipeline<TCase, TOutput>
     }
 
     private static ExperimentSinkResult ValidateAndSnapshot(
-        ExperimentSinkResult result,
+        ExperimentSinkPublicationOperationResult result,
         SinkRegistration registration)
     {
         ArgumentNullException.ThrowIfNull(result);
-        ArgumentException.ThrowIfNullOrWhiteSpace(result.Name);
-        if (!string.Equals(result.Name, registration.Name, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                $"Result sink '{registration.Name}' returned sink name '{result.Name}'.");
-        }
-
-        if (result.IsRequired != registration.IsRequired)
-        {
-            throw new InvalidOperationException(
-                $"Result sink '{registration.Name}' returned an inconsistent required-publication flag.");
-        }
-
         if (!Enum.IsDefined(result.Status))
         {
             throw new InvalidOperationException(
@@ -118,8 +105,8 @@ internal sealed class ExperimentResultSinkPipeline<TCase, TOutput>
 
         return new ExperimentSinkResult
         {
-            Name = result.Name,
-            IsRequired = result.IsRequired,
+            Name = registration.Name,
+            IsRequired = registration.IsRequired,
             Status = result.Status,
             Failure = failure,
         };

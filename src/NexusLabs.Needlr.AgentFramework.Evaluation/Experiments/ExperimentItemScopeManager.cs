@@ -16,7 +16,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
     private bool _finished;
 
     public ExperimentItemScopeManager(
-        IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> providers,
+        IReadOnlyList<ExperimentItemScopeRegistration<TCase, TOutput>> providers,
         ExperimentItemScopeContext<TCase> context)
     {
         ArgumentNullException.ThrowIfNull(providers);
@@ -66,11 +66,11 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             catch (Exception ex)
             {
                 state.RecordFailure(ex, "entry");
-                if (state.Provider.FailureMode
+                if (state.Registration.FailureMode
                     == ExperimentItemScopeFailureMode.ExecutionPrerequisite)
                 {
                     _prerequisiteFailure = CreatePrerequisiteFailure(
-                        state.Provider.Name,
+                        state.Registration.Name,
                         "entry",
                         ex);
                     MarkRemainingNotAttempted(index + 1);
@@ -116,11 +116,11 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
                 state.ActivationDisabled = true;
                 state.RecordFailure(ex, "activation");
                 if (enforceExecutionPrerequisites
-                    && state.Provider.FailureMode
+                    && state.Registration.FailureMode
                     == ExperimentItemScopeFailureMode.ExecutionPrerequisite)
                 {
                     prerequisiteFailure = CreatePrerequisiteFailure(
-                        state.Provider.Name,
+                        state.Registration.Name,
                         "activation",
                         ex);
                     break;
@@ -177,7 +177,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
                 var publication = await state.Scope
                     .CompleteAsync(result, cancellationToken)
                     .ConfigureAwait(false);
-                state.Publication = ValidateAndSnapshot(publication, state.Provider);
+                state.Publication = ValidateAndSnapshot(publication, state.Registration);
                 cancellationToken.ThrowIfCancellationRequested();
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
@@ -249,7 +249,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
                 }
 
                 cleanupFailures.Add(CreateCleanupTimeout(
-                    state.Provider.Name,
+                    state.Registration.Name,
                     "abort",
                     cleanupTimeout,
                     ex));
@@ -257,7 +257,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             catch (Exception ex)
             {
                 cleanupFailures.Add(CreateCleanupFailure(
-                    state.Provider.Name,
+                    state.Registration.Name,
                     "abort",
                     ex));
             }
@@ -273,27 +273,14 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
     }
 
     private static ExperimentItemPublicationResult ValidateAndSnapshot(
-        ExperimentItemPublicationResult publication,
-        IExperimentItemScopeProvider<TCase, TOutput> provider)
+        ExperimentItemPublicationOperationResult publication,
+        ExperimentItemScopeRegistration<TCase, TOutput> registration)
     {
         ArgumentNullException.ThrowIfNull(publication);
-        ArgumentException.ThrowIfNullOrWhiteSpace(publication.Name);
-        if (!string.Equals(publication.Name, provider.Name, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                $"Item scope '{provider.Name}' returned publication name '{publication.Name}'.");
-        }
-
-        if (publication.IsRequired != provider.IsRequired)
-        {
-            throw new InvalidOperationException(
-                $"Item scope '{provider.Name}' returned an inconsistent required-publication flag.");
-        }
-
         if (!Enum.IsDefined(publication.Status))
         {
             throw new InvalidOperationException(
-                $"Item scope '{provider.Name}' returned an undefined publication status.");
+                $"Item scope '{registration.Name}' returned an undefined publication status.");
         }
 
         ArgumentNullException.ThrowIfNull(publication.Correlations);
@@ -309,7 +296,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             if (!correlationKeys.Add((correlation.Namespace, correlation.Name)))
             {
                 throw new InvalidOperationException(
-                    $"Item scope '{provider.Name}' returned duplicate correlation " +
+                    $"Item scope '{registration.Name}' returned duplicate correlation " +
                     $"'{correlation.Namespace}:{correlation.Name}'.");
             }
 
@@ -327,19 +314,19 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             failure = ExperimentFailureFactory.ValidateAndSnapshotPublicationFailure(
                 publication.Failure!,
                 ExperimentFailureCode.ItemScopeFailed,
-                $"Item scope '{provider.Name}'");
+                $"Item scope '{registration.Name}'");
         }
         else if (publication.Failure is not null)
         {
             throw new InvalidOperationException(
-                $"Item scope '{provider.Name}' returned a failure for status " +
+                $"Item scope '{registration.Name}' returned a failure for status " +
                 $"'{publication.Status}'.");
         }
 
         return new ExperimentItemPublicationResult
         {
-            Name = publication.Name,
-            IsRequired = publication.IsRequired,
+            Name = registration.Name,
+            IsRequired = registration.IsRequired,
             Status = publication.Status,
             Correlations = Array.AsReadOnly(correlations),
             Failure = failure,
@@ -419,7 +406,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             if (!feature.Key.IsInstanceOfType(feature.Value))
             {
                 throw new InvalidOperationException(
-                    $"Item scope '{state.Provider.Name}' registered feature value " +
+                    $"Item scope '{state.Registration.Name}' registered feature value " +
                     $"'{feature.Value.GetType().FullName}' for incompatible type " +
                     $"'{feature.Key.FullName}'.");
             }
@@ -427,7 +414,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             if (featureValues.ContainsKey(feature.Key) || !newTypes.Add(feature.Key))
             {
                 throw new InvalidOperationException(
-                    $"Item scope '{state.Provider.Name}' registered duplicate feature type " +
+                    $"Item scope '{state.Registration.Name}' registered duplicate feature type " +
                     $"'{feature.Key.FullName}'.");
             }
 
@@ -447,8 +434,8 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             var state = _states[index];
             state.Publication = new ExperimentItemPublicationResult
             {
-                Name = state.Provider.Name,
-                IsRequired = state.Provider.IsRequired,
+                Name = state.Registration.Name,
+                IsRequired = state.Registration.IsRequired,
                 Status = ExperimentPublicationOperationStatus.NotAttempted,
             };
         }
@@ -461,8 +448,8 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         {
             return new ExperimentItemPublicationResult
             {
-                Name = state.Provider.Name,
-                IsRequired = state.Provider.IsRequired,
+                Name = state.Registration.Name,
+                IsRequired = state.Registration.IsRequired,
                 Status = ExperimentPublicationOperationStatus.Failed,
                 Correlations = correlations,
                 Failure = state.Failure,
@@ -471,8 +458,8 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
 
         return state.Publication ?? new ExperimentItemPublicationResult
         {
-            Name = state.Provider.Name,
-            IsRequired = state.Provider.IsRequired,
+            Name = state.Registration.Name,
+            IsRequired = state.Registration.IsRequired,
             Status = ExperimentPublicationOperationStatus.NotAttempted,
         };
     }
@@ -506,7 +493,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
                 }
 
                 var failure = CreateCleanupTimeout(
-                    state.Provider.Name,
+                    state.Registration.Name,
                     "disposal",
                     cleanupTimeout,
                     ex);
@@ -519,7 +506,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
             catch (Exception ex)
             {
                 var failure = CreateCleanupFailure(
-                    state.Provider.Name,
+                    state.Registration.Name,
                     "disposal",
                     ex);
                 cleanupFailures.Add(failure);
@@ -533,12 +520,15 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
 
     private sealed class ProviderState
     {
-        public ProviderState(IExperimentItemScopeProvider<TCase, TOutput> provider)
+        public ProviderState(ExperimentItemScopeRegistration<TCase, TOutput> registration)
         {
-            Provider = provider;
+            Registration = registration;
         }
 
-        public IExperimentItemScopeProvider<TCase, TOutput> Provider { get; }
+        public ExperimentItemScopeRegistration<TCase, TOutput> Registration { get; }
+
+        public IExperimentItemScopeProvider<TCase, TOutput> Provider =>
+            Registration.Provider;
 
         public IExperimentItemScope<TCase, TOutput>? Scope { get; set; }
 
@@ -560,7 +550,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
                 ExperimentFailureCode.ItemScopeFailed,
                 ExperimentFailureStage.Publication,
                 exception,
-                $"Item scope '{Provider.Name}' failed during {operation}: {exception.Message}");
+                $"Item scope '{Registration.Name}' failed during {operation}: {exception.Message}");
         }
     }
 

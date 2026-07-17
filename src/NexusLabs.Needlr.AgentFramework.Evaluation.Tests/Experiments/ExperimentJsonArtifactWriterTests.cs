@@ -150,12 +150,7 @@ public sealed class ExperimentJsonArtifactWriterTests
                                 new Dictionary<Type, object>(),
                                 () => null,
                                 (item, _) => ValueTask.FromResult(
-                                    new ExperimentItemPublicationResult
-                                    {
-                                        Name = "artifact-scope",
-                                        IsRequired = false,
-                                        Status = ExperimentPublicationOperationStatus.Succeeded,
-                                        Correlations =
+                                    ExperimentItemPublicationOperationResult.Succeeded(
                                         [
                                             new ExperimentItemCorrelation
                                             {
@@ -163,8 +158,7 @@ public sealed class ExperimentJsonArtifactWriterTests
                                                 Name = "case",
                                                 Value = item.Case.Id,
                                             },
-                                        ],
-                                    }),
+                                        ])),
                                 _ => ValueTask.CompletedTask,
                                 () => ValueTask.CompletedTask);
                         return ValueTask.FromResult(scope);
@@ -246,6 +240,9 @@ public sealed class ExperimentJsonArtifactWriterTests
         Assert.Equal("case", correlation.GetProperty("name").GetString());
         Assert.Equal("success", correlation.GetProperty("value").GetString());
         var publication = Assert.Single(success.GetProperty("publications").EnumerateArray());
+        Assert.Equal(
+            ["name", "isRequired", "status", "correlations", "failure"],
+            publication.EnumerateObject().Select(property => property.Name));
         Assert.Equal("artifact-scope", publication.GetProperty("name").GetString());
         Assert.False(
             publication.GetProperty("isRequired").GetBoolean(),
@@ -264,6 +261,71 @@ public sealed class ExperimentJsonArtifactWriterTests
             "A terminal failure with no selected retry must not claim retry-policy eligibility.");
         Assert.DoesNotContain("stack", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("$type", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Serialize_NormalizedOperationsPreserveCanonicalPublicationJsonBytes()
+    {
+        var scope = new CallbackExperimentItemScopeProvider<int, string>(
+            "artifact-scope",
+            isRequired: true,
+            ExperimentItemScopeFailureMode.BestEffort,
+            (_, _) =>
+            {
+                IExperimentItemScope<int, string> itemScope =
+                    new CallbackExperimentItemScope<int, string>(
+                        new Dictionary<Type, object>(),
+                        () => null,
+                        (_, _) => ValueTask.FromResult(
+                            ExperimentItemPublicationOperationResult.Succeeded(
+                                [
+                                    new ExperimentItemCorrelation
+                                    {
+                                        Namespace = "artifact",
+                                        Name = "item",
+                                        Value = "correlation-1",
+                                    },
+                                ])),
+                        _ => ValueTask.CompletedTask,
+                        () => ValueTask.CompletedTask);
+                return ValueTask.FromResult(itemScope);
+            });
+        var sink = new CallbackExperimentResultSink<int, string>(
+            "artifact-sink",
+            isRequired: false,
+            (_, _) => ValueTask.FromResult(
+                ExperimentSinkPublicationOperationResult.NotAttempted()));
+        var actual = await new ExperimentRunner().RunAsync(
+            new ExperimentDefinition<int, string>
+            {
+                Name = "publication-contract",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 1 }]),
+                Task = (_, _) => ValueTask.FromResult("output"),
+                ItemScopes = [scope],
+                Sinks = [sink],
+            },
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken);
+        var writer = new ExperimentJsonArtifactWriter(writeIndented: false);
+        using var document = JsonDocument.Parse(writer.Serialize(actual));
+        var item = Assert.Single(
+            document.RootElement.GetProperty("result").GetProperty("items").EnumerateArray());
+        var publication = Assert.Single(
+            item.GetProperty("publications").EnumerateArray());
+        var sinkResult = Assert.Single(
+            document.RootElement.GetProperty("sinkResults").EnumerateArray());
+
+        Assert.Equal(
+            """[{"namespace":"artifact","name":"item","value":"correlation-1"}]""",
+            item.GetProperty("correlations").GetRawText());
+        Assert.Equal(
+            """{"name":"artifact-scope","isRequired":true,"status":"succeeded","correlations":[{"namespace":"artifact","name":"item","value":"correlation-1"}],"failure":null}""",
+            publication.GetRawText());
+        Assert.Equal(
+            """{"name":"artifact-sink","isRequired":false,"status":"notAttempted","failure":null}""",
+            sinkResult.GetRawText());
     }
 
     [Fact]
@@ -334,6 +396,9 @@ public sealed class ExperimentJsonArtifactWriterTests
         var root = document.RootElement;
         Assert.Equal("partiallyFailed", root.GetProperty("publicationStatus").GetString());
         var sinkResult = Assert.Single(root.GetProperty("sinkResults").EnumerateArray());
+        Assert.Equal(
+            ["name", "isRequired", "status", "failure"],
+            sinkResult.EnumerateObject().Select(property => property.Name));
         Assert.Equal("optional-artifact", sinkResult.GetProperty("name").GetString());
         Assert.Equal("failed", sinkResult.GetProperty("status").GetString());
         Assert.Equal(

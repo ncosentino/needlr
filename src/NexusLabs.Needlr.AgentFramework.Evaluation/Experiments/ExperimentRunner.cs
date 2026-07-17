@@ -207,7 +207,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         ExperimentRunOptions options,
         WorkItem<TCase>[] workItems,
         ExperimentItemResult<TCase, TOutput>[] results,
-        IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> itemScopeProviders,
+        IReadOnlyList<ExperimentItemScopeRegistration<TCase, TOutput>> itemScopeProviders,
         int workerCount,
         CancellationToken cancellationToken)
     {
@@ -940,33 +940,45 @@ public sealed class ExperimentRunner : IExperimentRunner
         return copy;
     }
 
-    private static IExperimentItemScopeProvider<TCase, TOutput>[] ValidateItemScopes<TCase, TOutput>(
+    private static ExperimentItemScopeRegistration<TCase, TOutput>[] ValidateItemScopes<TCase, TOutput>(
         IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> providers)
     {
         ArgumentNullException.ThrowIfNull(providers);
         var copy = providers.ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var provider in copy)
+        var registrations =
+            new ExperimentItemScopeRegistration<TCase, TOutput>[copy.Length];
+        for (var index = 0; index < copy.Length; index++)
         {
+            var provider = copy[index];
             ArgumentNullException.ThrowIfNull(provider);
-            ArgumentException.ThrowIfNullOrWhiteSpace(provider.Name);
-            if (!Enum.IsDefined(provider.FailureMode))
+            var name = provider.Name;
+            var isRequired = provider.IsRequired;
+            var failureMode = provider.FailureMode;
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            if (!Enum.IsDefined(failureMode))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(providers),
-                    provider.FailureMode,
-                    $"Item-scope provider '{provider.Name}' has an undefined failure mode.");
+                    failureMode,
+                    $"Item-scope provider '{name}' has an undefined failure mode.");
             }
 
-            if (!names.Add(provider.Name))
+            if (!names.Add(name))
             {
                 throw new ArgumentException(
-                    $"Experiment contains duplicate item-scope provider name '{provider.Name}'.",
+                    $"Experiment contains duplicate item-scope provider name '{name}'.",
                     nameof(providers));
             }
+
+            registrations[index] = new ExperimentItemScopeRegistration<TCase, TOutput>(
+                name,
+                isRequired,
+                failureMode,
+                provider);
         }
 
-        return copy;
+        return registrations;
     }
 
     private static WorkItem<TCase>[] MaterializeAndValidate<TCase, TOutput>(

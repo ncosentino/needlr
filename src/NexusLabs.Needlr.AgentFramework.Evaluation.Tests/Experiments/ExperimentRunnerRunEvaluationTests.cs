@@ -186,12 +186,7 @@ public sealed class ExperimentRunnerRunEvaluationTests
                                 new Dictionary<Type, object>(),
                                 () => null,
                                 (_, _) => ValueTask.FromResult(
-                                    new ExperimentItemPublicationResult
-                                    {
-                                        Name = "prerequisite",
-                                        IsRequired = false,
-                                        Status = ExperimentPublicationOperationStatus.Succeeded,
-                                    }),
+                                    ExperimentItemPublicationOperationResult.Succeeded([])),
                                 _ => ValueTask.CompletedTask,
                                 () => ValueTask.CompletedTask);
                         return ValueTask.FromResult(scope);

@@ -232,6 +232,7 @@ public sealed class LangfuseExperimentResultSinkTests
         Assert.Equal(ExperimentRunDecision.Passed, outcome.Result.Decision);
         Assert.Equal(expectedPublicationStatus, outcome.PublicationStatus);
         var sinkResult = Assert.Single(outcome.SinkResults);
+        Assert.Equal(sink.Name, sinkResult.Name);
         Assert.Equal(ExperimentPublicationOperationStatus.Failed, sinkResult.Status);
         Assert.Equal(isRequired, sinkResult.IsRequired);
         Assert.Empty(handler.CapturedRequests);
@@ -793,12 +794,8 @@ public sealed class LangfuseExperimentResultSinkTests
                 It.Is<ExperimentRunResult<int, string>>(
                     result => result.Decision == ExperimentRunDecision.Passed),
                 _cancellationToken))
-            .Returns(ValueTask.FromResult(new ExperimentSinkResult
-            {
-                Name = "later",
-                IsRequired = false,
-                Status = ExperimentPublicationOperationStatus.Succeeded,
-            }));
+            .Returns(ValueTask.FromResult(
+                ExperimentSinkPublicationOperationResult.Succeeded()));
         var definition = CreateDefinition(
             itemScopes: [scope],
             sinks: [langfuseSink, laterSink.Object],

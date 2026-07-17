@@ -183,6 +183,8 @@ public sealed class MeaiReportingExperimentAdapterTests
             Assert.Equal(2, item.Metrics.Count);
             Assert.Equal(["first", "second"], item.Metrics.Select(metric => metric.Name));
             var publication = Assert.Single(item.Publications);
+            Assert.Equal(MeaiReportingExperimentSchema.ProviderName, publication.Name);
+            Assert.True(publication.IsRequired);
             Assert.Equal(
                 ExperimentPublicationOperationStatus.Succeeded,
                 publication.Status);

@@ -36,8 +36,8 @@ public interface IExperimentItemScope<TCase, TOutput> : IAsyncDisposable
     /// </remarks>
     /// <param name="result">The terminal execution and evaluation result.</param>
     /// <param name="cancellationToken">The caller cancellation token.</param>
-    /// <returns>The structured publication result.</returns>
-    ValueTask<ExperimentItemPublicationResult> CompleteAsync(
+    /// <returns>The structured publication operation result.</returns>
+    ValueTask<ExperimentItemPublicationOperationResult> CompleteAsync(
         ExperimentItemResult<TCase, TOutput> result,
         CancellationToken cancellationToken);
 
