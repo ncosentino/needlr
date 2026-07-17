@@ -321,7 +321,10 @@ static async Task<int> RunResiliencyCheckAsync()
         cancellation.Cancel();
         try
         {
-            await langfuse.Datasets.EnsureDatasetAsync("cancelled-operation", cancellationToken: cancellation.Token);
+            await langfuse.Datasets.EnsureDatasetAsync(
+                "cancelled-operation",
+                description: null,
+                cancellation.Token);
         }
         catch (OperationCanceledException exception) when (exception.CancellationToken == cancellation.Token)
         {
@@ -595,7 +598,8 @@ static async Task<int> RunExperimentRunnerCheckAsync(string[] modeArgs)
     {
         await langfuse.Datasets.EnsureDatasetAsync(
             datasetName,
-            "Needlr converged experiment-runner example.");
+            "Needlr converged experiment-runner example.",
+            CancellationToken.None);
         foreach (var id in new[] { "first", "second" })
         {
             await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
@@ -815,7 +819,10 @@ static async Task<int> RunExperimentsCheckAsync()
     Console.WriteLine($"[setup] Ensured score config '{configName}'.");
 
     // P1 — dataset + items
-    await langfuse.Datasets.EnsureDatasetAsync(datasetName, "Needlr conformance dataset.");
+    await langfuse.Datasets.EnsureDatasetAsync(
+        datasetName,
+        "Needlr conformance dataset.",
+        CancellationToken.None);
     var items = new[] { "case-cached", "case-fresh" };
     foreach (var id in items)
     {

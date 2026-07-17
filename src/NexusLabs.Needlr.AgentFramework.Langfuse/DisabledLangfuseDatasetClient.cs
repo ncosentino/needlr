@@ -12,10 +12,14 @@ internal sealed class DisabledLangfuseDatasetClient : ILangfuseDatasetClient
     public bool IsEnabled => false;
 
     /// <inheritdoc />
+    public Task<LangfusePage<LangfuseDataset>> ListDatasetsAsync() =>
+        ListDatasetsAsync(page: 1, pageSize: 50, CancellationToken.None);
+
+    /// <inheritdoc />
     public Task<LangfusePage<LangfuseDataset>> ListDatasetsAsync(
-        int page = 1,
-        int pageSize = 50,
-        CancellationToken cancellationToken = default)
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromException<LangfusePage<LangfuseDataset>>(
@@ -25,10 +29,15 @@ internal sealed class DisabledLangfuseDatasetClient : ILangfuseDatasetClient
 
     /// <inheritdoc />
     public Task<LangfusePage<LangfuseDatasetItemSnapshot>> ListDatasetItemsAsync(
+        LangfuseDatasetSelection selection) =>
+        ListDatasetItemsAsync(selection, page: 1, pageSize: 50, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfusePage<LangfuseDatasetItemSnapshot>> ListDatasetItemsAsync(
         LangfuseDatasetSelection selection,
-        int page = 1,
-        int pageSize = 50,
-        CancellationToken cancellationToken = default)
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(selection);
         selection.Validate();
@@ -39,9 +48,13 @@ internal sealed class DisabledLangfuseDatasetClient : ILangfuseDatasetClient
     }
 
     /// <inheritdoc />
+    public Task<LangfuseDatasetSnapshot> GetDatasetAsync(LangfuseDatasetSelection selection) =>
+        GetDatasetAsync(selection, CancellationToken.None);
+
+    /// <inheritdoc />
     public Task<LangfuseDatasetSnapshot> GetDatasetAsync(
         LangfuseDatasetSelection selection,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(selection);
         selection.Validate();
@@ -52,10 +65,21 @@ internal sealed class DisabledLangfuseDatasetClient : ILangfuseDatasetClient
     }
 
     /// <inheritdoc />
-    public Task EnsureDatasetAsync(string name, string? description = null, CancellationToken cancellationToken = default) =>
+    public Task EnsureDatasetAsync(string name) =>
+        EnsureDatasetAsync(name, description: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task EnsureDatasetAsync(
+        string name,
+        string? description,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task UpsertItemAsync(LangfuseDatasetItem item, CancellationToken cancellationToken = default) =>
+    public Task UpsertItemAsync(LangfuseDatasetItem item) =>
+        UpsertItemAsync(item, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task UpsertItemAsync(LangfuseDatasetItem item, CancellationToken cancellationToken) =>
         Task.CompletedTask;
 }

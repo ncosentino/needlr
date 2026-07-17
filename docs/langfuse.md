@@ -663,6 +663,12 @@ are safe to repeat after throttling, transport failure, or transient 5xx respons
 calls that supply different descriptions are provider-defined last-writer-wins updates, so use one
 canonical dataset definition.
 
+Every `ILangfuseDatasetClient` member uses two explicit overloads: required arguments only (using
+`CancellationToken.None` and, for `EnsureDatasetAsync`/`ListDatasetsAsync`/`ListDatasetItemsAsync`,
+no description or page 1 of 50), or the full set of required arguments plus an explicit
+`CancellationToken`. To customize paging or supply a description, call the full overload; there are
+no token-only, description-only, or custom-page-without-a-token overloads.
+
 Langfuse does not enforce score-config name uniqueness and does not accept a caller-supplied config
 id. Needlr therefore acquires `LangfuseOptions.ResourceLockProvider`, re-lists every page inside
 the lock, and compares the complete schema before creating. The default

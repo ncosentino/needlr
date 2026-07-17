@@ -37,7 +37,7 @@ public sealed class LangfuseDatasetClientTests
 
         var client = new LangfuseDatasetClient(new LangfuseApiClient(httpClient, BaseUrl, "Basic x"));
 
-        await client.EnsureDatasetAsync("evals", cancellationToken: _cancellationToken);
+        await client.EnsureDatasetAsync("evals");
 
         var post = Assert.Single(captured);
         Assert.Equal(HttpMethod.Post, post.Method);
