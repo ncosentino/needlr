@@ -125,7 +125,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#status" class="md-skip">
+        <a href="#context-and-scope" class="md-skip">
           Skip to content
         </a>
       
@@ -4757,10 +4757,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#context-and-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status
+        Context and scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision drivers
       
     </span>
   </a>
@@ -4779,22 +4790,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context
+        Alternatives considered
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Context">
+    <nav class="md-nav" aria-label="Alternatives considered">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#verified-external-boundaries" class="md-nav__link">
+  <a href="#leave-orchestration-to-each-consumer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verified external boundaries
+        Leave orchestration to each consumer
       
     </span>
   </a>
@@ -4802,10 +4813,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#decision-constraints" class="md-nav__link">
+  <a href="#build-only-thin-meai-reporting-extensions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Decision constraints
+        Build only thin MEAI Reporting extensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-a-langfuse-specific-runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build a Langfuse-specific runner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reuse-agentscenariorunner-or-pipelinescenariorunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reuse AgentScenarioRunner or PipelineScenarioRunner
       
     </span>
   </a>
@@ -4818,560 +4851,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#independent-evaluation-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Independent evaluation shapes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Independent evaluation shapes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#shape-1-finite-deterministic-regression-suite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shape 1: finite deterministic regression suite
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#shape-2-repeated-stochastic-trials" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shape 2: repeated stochastic trials
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#terminology" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Terminology
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#options-considered" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Options considered
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Options considered">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-provider-neutral-needlr-runner" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option A: provider-neutral Needlr runner
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-thin-meai-reporting-extensions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option B: thin MEAI Reporting extensions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-c-langfuse-specific-runner" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option C: Langfuse-specific runner
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proposed-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proposed architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#proposed-definition-and-execution-surface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed definition and execution surface
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#case-and-source-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Case and source model
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#attempt-and-item-result-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Attempt and item result model
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-evaluation-and-policy-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run evaluation and policy model
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#publication-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Publication model
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#item-lifecycle-adapters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Item lifecycle adapters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execution-semantics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execution semantics
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Execution semantics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#materialization-and-ordering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Materialization and ordering
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bounded-concurrency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Bounded concurrency
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cancellation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cancellation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#timeouts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Timeouts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#retries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Retries
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#item-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Item evaluation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#whole-item-failure-isolation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Whole-item failure isolation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-evaluators-and-policies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run evaluators and policies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#statistical-policies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Statistical policies
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#meai-reporting-adapter-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MEAI Reporting adapter boundary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#langfuse-adapter-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Langfuse adapter boundary
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Langfuse adapter boundary">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hosted-case-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosted case source
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#item-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Item scope
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#result-sink" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Result sink
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sink-fan-out" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sink fan-out
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#compatibility-and-versioning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Compatibility and versioning
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#phased-implementation-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phased implementation plan
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Phased implementation plan">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-1-core-scheduler-and-canonical-result-delivered-by-43" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 1: core scheduler and canonical result — delivered by #43
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-2-retries-run-evaluation-and-policy-delivered-by-45" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 2: retries, run evaluation, and policy — delivered by #45
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-3a-per-trial-provider-lifecycle-scopes-49" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 3A: per-trial provider lifecycle scopes — #49
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-3b-result-sinks-and-publication-outcomes-50" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 3B: result sinks and publication outcomes — #50
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-4a-langfuse-hosted-case-source-51" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 4A: Langfuse hosted case source — #51
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-4b-langfuse-per-trial-trace-scope-52" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 4B: Langfuse per-trial trace scope — #52
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#33-context-safe-item-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        33 context-safe item execution;
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#34-dataset-run-identity-and-link-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        34 dataset-run identity and link status;
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#35-idempotency-and-publication-health" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        35 idempotency and publication health;
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#49-provider-lifecycle-scopes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        49 provider lifecycle scopes.
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="49 provider lifecycle scopes.">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-4c-langfuse-result-sink-and-canonical-guidance-53" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 4C: Langfuse result sink and canonical guidance — #53
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-5-meai-reporting-adapter-as-the-second-provider-proof-54" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 5: MEAI Reporting adapter as the second-provider proof — #54
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rejected-alternatives" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rejected alternatives
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deferred-concerns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deferred concerns
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5420,19 +4899,19 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#outcome" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#confirmation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outcome
+        Confirmation
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5440,11 +4919,6 @@
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -5484,1088 +4958,197 @@
   
 
 
-<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
-<p>Accepted - proceed through the separately reviewed implementation phases below.</p>
-<p>This ADR was the design deliverable for <a href="https://github.com/ncosentino/needlr/issues/36">issue #36</a>.
-Phase 1 was delivered by <a href="https://github.com/ncosentino/needlr/issues/43">issue #43</a>.
-Phase 2 was delivered by <a href="https://github.com/ncosentino/needlr/issues/45">issue #45</a>.
-Phase 3A was delivered by <a href="https://github.com/ncosentino/needlr/issues/49">issue #49</a>.
-Phase 3B was delivered by <a href="https://github.com/ncosentino/needlr/issues/50">issue #50</a>.
-Phase 4A was delivered by <a href="https://github.com/ncosentino/needlr/issues/51">issue #51</a>.
-Phase 4B was delivered by <a href="https://github.com/ncosentino/needlr/issues/52">issue #52</a>.
-Phase 4C was delivered by <a href="https://github.com/ncosentino/needlr/issues/53">issue #53</a>.
-Phase 5 was delivered by <a href="https://github.com/ncosentino/needlr/issues/54">issue #54</a>.</p>
-<p>The post-Phase-2 convergence audit found that the provider-neutral scheduler and the existing
-Langfuse primitives are complementary, but the item-lifecycle and result-sink seams proposed by this
-ADR were still missing. That left Langfuse documentation relying on a caller-owned item loop instead
-of the generic runner.</p>
-<p>The separately reviewed implementation sequence is complete. Further scheduler, retry, evaluator,
-statistical-policy, or provider expansion requires a separate design and issue.</p>
+  <h1>ADR-0003 Provider-neutral Experiment Runner</h1>
+
+<h2 id="context-and-scope">Context and scope<a class="headerlink" href="#context-and-scope" title="Permanent link">&para;</a></h2>
+<p>Needlr already supported individual MEAI evaluations, deterministic and LLM-judged
+evaluators, response capture, quality thresholds, and Langfuse tracing and scoring.
+It did not provide one reusable way to run a finite collection of cases with bounded
+concurrency, repeated statistical trials, operational retries, failure isolation,
+run-level evaluation, acceptance policy, and independent publication.</p>
+<p>That gap affected at least two materially different workloads:</p>
+<ul>
+<li>deterministic regression suites, where each case usually runs once and every failure
+  must remain visible; and</li>
+<li>stochastic evaluations, where one logical case has multiple independent trials and
+  acceptance must report sample counts and uncertainty.</li>
+</ul>
+<p>Microsoft.Extensions.AI.Evaluation.Reporting provides evaluator composition, response
+caching, result storage, and report generation around a <code>ScenarioRun</code>. It is not a
+collection scheduler or retry and policy engine. Langfuse's SDK experiment runners prove
+that collection orchestration is useful, but their provider-specific data model and
+failure semantics are not suitable as Needlr's canonical contract.</p>
+<p>This decision governs finite in-process experiment orchestration and provider adapter
+boundaries. It does not cover streaming or unbounded case sources, distributed workers,
+checkpoint and resume, a universal statistical-method catalog, provider-specific
+idempotency, or test-framework fixtures.</p>
+<h2 id="decision-drivers">Decision drivers<a class="headerlink" href="#decision-drivers" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Deterministic and stochastic workloads should share one execution and failure model.</li>
+<li>Trials must remain distinct from operational retry attempts.</li>
+<li>Bounded resource use, caller cancellation, and deterministic result ordering must be
+  explicit.</li>
+<li>Failed, timed-out, canceled, and unevaluable items must remain visible to run-level
+  analysis.</li>
+<li>Evaluation quality must remain independent from telemetry and persistence health.</li>
+<li>Dataset hosts, observability providers, and report stores must integrate without
+  controlling scheduling or canonical results.</li>
+<li>Needlr should reuse MEAI's evaluator and metric abstractions rather than create a second
+  evaluation ecosystem.</li>
+<li>The core API must remain independent of xUnit, NUnit, MSTest, and a particular agent
+  loop.</li>
+</ul>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Needlr should add a provider-neutral experiment runner that owns:</p>
+<p>Needlr will own a provider-neutral experiment runner in
+<code>NexusLabs.Needlr.AgentFramework.Evaluation.Experiments</code>.</p>
+<p>The core runner owns:</p>
 <ul>
 <li>finite case materialization and validation;</li>
-<li>expansion of cases into statistically meaningful trials;</li>
-<li>bounded item scheduling;</li>
-<li>execution attempts, timeouts, and retries;</li>
+<li>expansion of cases into statistically independent trials;</li>
+<li>bounded scheduling and deterministic result ordering;</li>
+<li>attempt history, timeout, cancellation, and explicit retry policy;</li>
 <li>whole-item failure isolation;</li>
-<li>deterministic result ordering;</li>
-<li>run-level evaluation and policy decisions;</li>
-<li>structured publication outcomes across independent sinks.</li>
+<li>one item-evaluation stage after terminal execution success;</li>
+<li>run-level evaluators and structured acceptance policies;</li>
+<li>per-trial lifecycle scopes for provider context;</li>
+<li>final result-sink fan-out;</li>
+<li>a canonical result and schema-versioned artifact model.</li>
 </ul>
-<p>Needlr should not own:</p>
+<p>A bounded worker scheduler keeps pending work as data rather than creating one task per
+item behind a semaphore. Delayed retries hold neither worker capacity nor shared admission
+permits.</p>
+<p>A trial is the statistical sample. A retry is another operational attempt for the same
+trial and never increases the sample count. Run evaluators receive the complete ordered
+item set, including failures, unless an explicit policy records an exclusion.</p>
+<p>Caller cancellation stops admission, active work, retry delays, evaluation, policy, and
+publication. It aborts entered incomplete scopes and propagates
+<code>OperationCanceledException</code>; the runner does not return a partial success-shaped outcome
+or continue into run evaluation, policies, or sinks.</p>
+<p><code>Microsoft.Extensions.AI.Evaluation.EvaluationResult</code> is the metric payload for item and
+run evaluation. Needlr owns the surrounding experiment, failure, policy, publication, and
+serialization contracts; it does not replace MEAI evaluator composition.</p>
+<p>Provider integrations remain adapters:</p>
 <ul>
-<li>MEAI evaluator composition;</li>
-<li>MEAI response caches;</li>
-<li>MEAI evaluation-result stores;</li>
-<li>MEAI report generation;</li>
-<li>Langfuse dataset, trace, score, or comparison semantics;</li>
-<li>test-framework fixtures or process-global coordination.</li>
+<li>case sources may materialize local or hosted datasets before execution;</li>
+<li>item scopes may establish one provider lifecycle per trial and reactivate it around
+  attempts and item evaluation;</li>
+<li>result sinks may publish the completed result;</li>
+<li>case-source loading and validation fail before execution and propagate to the caller;</li>
+<li>best-effort scope entry and activation failures are publication failures;</li>
+<li>execution-prerequisite scope failures prevent the next attempt and produce an explicit
+  prerequisite item failure; and</li>
+<li>scope completion, disposal, and sink failures after quality is known remain publication
+  failures.</li>
 </ul>
-<p><code>Microsoft.Extensions.AI.Evaluation.EvaluationResult</code> remains the item- and run-metric payload because Needlr's evaluation package already uses the MEAI core abstractions directly. MEAI Reporting types such as <code>ReportingConfiguration</code>, <code>ScenarioRun</code>, and <code>ScenarioRunResult</code> do not become Needlr's experiment data model.</p>
-<p>In this ADR, provider-neutral means neutral across execution engines, dataset hosts, observability platforms, and publication targets. It does not mean evaluation-abstraction neutral: MEAI core is the deliberate metric lingua franca for Needlr's evaluation package.</p>
-<p>The runner belongs in the existing <code>NexusLabs.Needlr.AgentFramework.Evaluation</code> package under an
-<code>Experiments</code> namespace. Langfuse-specific adapters remain in
-<code>NexusLabs.Needlr.AgentFramework.Langfuse</code>; MEAI Reporting-specific dependencies remain in
-<code>NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</code>.</p>
-<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>Needlr already provides:</p>
-<ul>
-<li>native MEAI evaluation inputs and evaluators;</li>
-<li>deterministic and LLM-judged agent evaluators;</li>
-<li>a single-result <code>EvaluationQualityGate</code>;</li>
-<li>response capture and replay;</li>
-<li>agent and pipeline scenario runners;</li>
-<li>Langfuse scenario, dataset-run, and score primitives;</li>
-<li>bounded Langfuse shutdown, caller-cancellation preservation, isolated trace context, and a complete non-owning <code>ILangfuseClient</code>.</li>
-</ul>
-<p>It does not provide collection-level experiment orchestration. Consumers still have to independently implement:</p>
-<ul>
-<li>bounded concurrency across cases;</li>
-<li>failure isolation between cases;</li>
-<li>retries that remain distinct from statistical trials;</li>
-<li>run-level aggregates and acceptance policies;</li>
-<li>one structured result that retains failures;</li>
-<li>publication to multiple reporting or observability systems.</li>
-</ul>
-<p>The existing <code>AgentScenarioRunner</code> and <code>PipelineScenarioRunner</code> are not the missing abstraction. They each execute one Needlr-specific scenario shape and combine execution with verification. An experiment runner must remain independent of a particular agent loop, pipeline, test framework, or verification style.</p>
-<h3 id="verified-external-boundaries">Verified external boundaries<a class="headerlink" href="#verified-external-boundaries" title="Permanent link">&para;</a></h3>
-<p>The repository currently pins MEAI Evaluation and Reporting <code>10.5.0</code>. The latest stable Reporting package reviewed during this spike was <code>10.7.0</code>; its documented responsibility remains response caching, result storage, and reporting rather than collection scheduling.</p>
-<p>At the pinned version:</p>
-<ul>
-<li><code>ReportingConfiguration</code> configures evaluators, judge chat configuration, response caching, result storage, execution identity, interpretation, and tags.</li>
-<li><code>ScenarioRun</code> represents one scenario iteration, invokes a <code>CompositeEvaluator</code>, and persists its result when disposed.</li>
-<li><code>CompositeEvaluator</code> runs item evaluators concurrently and converts evaluator exceptions into metric diagnostics.</li>
-<li>MEAI does not schedule a collection of scenarios, bound item concurrency, model execution attempts, apply retries, or run aggregate evaluators.</li>
-</ul>
-<p>Langfuse's current Python and JavaScript/TypeScript experiment runners provide concurrent item execution, item and run evaluators, tracing, error isolation, and hosted-dataset integration. They are useful validation that the orchestration problem is real, but they are not a suitable canonical model for Needlr:</p>
-<ul>
-<li>both SDKs currently default to a concurrency of 50;</li>
-<li>their scheduling implementations differ;</li>
-<li>failed task items are logged and omitted from the <code>itemResults</code> supplied to run evaluators;</li>
-<li>they do not expose a first-class retry/attempt model;</li>
-<li>local datasets and hosted datasets have different publication behavior.</li>
-</ul>
-<p>Needlr should not clone those provider-specific semantics, especially the omission of failed items from aggregate inputs.</p>
-<h3 id="decision-constraints">Decision constraints<a class="headerlink" href="#decision-constraints" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Needlr is alpha. Prefer intentional API correction over compatibility shims.</li>
-<li>Public results must be structured and machine-actionable.</li>
-<li>A human-readable formatter is an adapter, not the canonical result.</li>
-<li>No static singleton holders or process-global mutable coordination.</li>
-<li>No xUnit, NUnit, MSTest, or test-runner types in the core API.</li>
-<li>No universal concurrency default derived from one provider or workload.</li>
-<li>Provider publication failure must not redefine evaluation quality.</li>
-<li>Implementation must use strict TDD and include runnable, credential-free examples.</li>
-</ul>
-<h2 id="independent-evaluation-shapes">Independent evaluation shapes<a class="headerlink" href="#independent-evaluation-shapes" title="Permanent link">&para;</a></h2>
-<p>The runner is justified only if one model supports materially different evaluation shapes.</p>
-<h3 id="shape-1-finite-deterministic-regression-suite">Shape 1: finite deterministic regression suite<a class="headerlink" href="#shape-1-finite-deterministic-regression-suite" title="Permanent link">&para;</a></h3>
-<p>Example:</p>
-<ul>
-<li>200 fixed agent scenarios;</li>
-<li>one trial per case;</li>
-<li>no retry unless a case explicitly opts into a transient-failure policy;</li>
-<li>deterministic trajectory, termination, and token-budget evaluators;</li>
-<li>acceptance requires every required metric and no failed execution.</li>
-</ul>
-<p>This shape needs:</p>
-<ul>
-<li>stable source ordering;</li>
-<li>bounded concurrency;</li>
-<li>exact failure accounting;</li>
-<li>deterministic pass/fail policy;</li>
-<li>a CI adapter that can translate the structured decision to a process exit code.</li>
-</ul>
-<h3 id="shape-2-repeated-stochastic-trials">Shape 2: repeated stochastic trials<a class="headerlink" href="#shape-2-repeated-stochastic-trials" title="Permanent link">&para;</a></h3>
-<p>Example:</p>
-<ul>
-<li>40 logical scenarios;</li>
-<li>10 independent trials per scenario;</li>
-<li>an LLM or agent execution whose output can vary;</li>
-<li>run evaluators that calculate success rate, execution-failure rate, latency, cost, and a confidence interval;</li>
-<li>acceptance that can return passed, failed, or inconclusive.</li>
-</ul>
-<p>This shape needs:</p>
-<ul>
-<li>a strict distinction between a trial and an operational retry;</li>
-<li>sample and exclusion counts;</li>
-<li>all failed and timed-out items retained in aggregate inputs;</li>
-<li>an explicit response-cache policy so repeated trials are not accidentally replayed from one cached response;</li>
-<li>statistical policies that report uncertainty rather than only a mean.</li>
-</ul>
-<p>These shapes share scheduling, attempts, result ordering, failure isolation, and publication. They differ at the run-evaluation and policy layers, which supports a common runner with composable policies.</p>
-<h2 id="terminology">Terminology<a class="headerlink" href="#terminology" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Term</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Case</td>
-<td>One logical input and its caller-defined data.</td>
-</tr>
-<tr>
-<td>Trial</td>
-<td>One statistically independent scheduled execution of a case.</td>
-</tr>
-<tr>
-<td>Item</td>
-<td>The runner's work unit for one case and one trial index.</td>
-</tr>
-<tr>
-<td>Attempt</td>
-<td>One operational execution try for an item. Retries add attempts, not trials.</td>
-</tr>
-<tr>
-<td>Item evaluation</td>
-<td>Metrics calculated from one terminal successful item output.</td>
-</tr>
-<tr>
-<td>Run evaluation</td>
-<td>Metrics calculated across every item result, including failures.</td>
-</tr>
-<tr>
-<td>Policy</td>
-<td>A structured acceptance decision derived from item and run metrics.</td>
-</tr>
-<tr>
-<td>Sink</td>
-<td>An independent publisher or artifact writer that receives a completed run result.</td>
-</tr>
-</tbody>
-</table>
-<p>The identity of an item is <code>(CaseId, TrialIndex)</code>. The identity of an attempt is <code>(CaseId, TrialIndex, AttemptNumber)</code>.</p>
-<h2 id="options-considered">Options considered<a class="headerlink" href="#options-considered" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Path</th>
-<th>Benefits</th>
-<th>Costs and risks</th>
-<th>Migration and future compatibility</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A. Provider-neutral Needlr runner</td>
-<td>Solves scheduling, attempts, failures, aggregation, and publication once; supports local and hosted data; retains a single structured result; test-framework independent.</td>
-<td>Medium public API cost; Needlr must maintain concurrency, cancellation, and failure semantics.</td>
-<td>Best isolation from MEAI Reporting and provider changes. Adapters can evolve without changing experiment definitions.</td>
-</tr>
-<tr>
-<td>B. Thin MEAI Reporting extensions</td>
-<td>Lowest immediate implementation and API cost; directly follows Microsoft types.</td>
-<td>Does not solve collection scheduling, retries, aggregate policy, or sink fan-out; every consumer still builds a runner.</td>
-<td>Low library maintenance but high consumer fragmentation. A later canonical runner becomes harder to adopt.</td>
-</tr>
-<tr>
-<td>C. Langfuse-specific runner</td>
-<td>Fastest path to familiarity for Langfuse Python/JS users; direct hosted-dataset integration.</td>
-<td>Provider lock-in; duplicates changing SDK behavior; failed-item semantics are unsuitable; creates a second Needlr evaluation model.</td>
-<td>Highest migration risk if Langfuse changes or MEAI later adds orchestration. Non-Langfuse users still need another solution.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="option-a-provider-neutral-needlr-runner">Option A: provider-neutral Needlr runner<a class="headerlink" href="#option-a-provider-neutral-needlr-runner" title="Permanent link">&para;</a></h3>
-<p><strong>Pros</strong></p>
-<ul>
-<li>The missing behavior is general across deterministic and stochastic workloads.</li>
-<li>Failure, timeout, retry, and ordering semantics become consistent.</li>
-<li>Providers cannot silently change the quality verdict.</li>
-<li>Local data remains first-class.</li>
-<li>MEAI and Langfuse each retain ownership of their established capabilities.</li>
-</ul>
-<p><strong>Cons</strong></p>
-<ul>
-<li>The scheduler and result model become long-lived Needlr API.</li>
-<li>Statistical policy design must avoid false universality.</li>
-<li>Adapter lifecycle hooks require careful async-context testing.</li>
-</ul>
-<h3 id="option-b-thin-meai-reporting-extensions">Option B: thin MEAI Reporting extensions<a class="headerlink" href="#option-b-thin-meai-reporting-extensions" title="Permanent link">&para;</a></h3>
-<p><strong>Pros</strong></p>
-<ul>
-<li>Minimal code and dependency risk.</li>
-<li>MEAI remains the visible user model.</li>
-</ul>
-<p><strong>Cons</strong></p>
-<ul>
-<li><code>ReportingConfiguration</code> and <code>ScenarioRun</code> are not collection schedulers.</li>
-<li>Consumers still duplicate concurrency, retries, partial-failure handling, and aggregate decisions.</li>
-<li>Provider publication and evaluation quality remain easy to conflate.</li>
-</ul>
-<p>This path may produce small convenience adapters, but it is rejected as the end state for issue #36.</p>
-<h3 id="option-c-langfuse-specific-runner">Option C: Langfuse-specific runner<a class="headerlink" href="#option-c-langfuse-specific-runner" title="Permanent link">&para;</a></h3>
-<p><strong>Pros</strong></p>
-<ul>
-<li>Direct parity with Langfuse terminology and hosted comparison views.</li>
-<li>Less adapter work for Langfuse-only consumers.</li>
-</ul>
-<p><strong>Cons</strong></p>
-<ul>
-<li>Concurrency and failure semantics would inherit provider behavior.</li>
-<li>Local-only and alternate-provider consumers would receive a second-class API.</li>
-<li>Current Langfuse SDKs omit failed tasks from aggregate inputs.</li>
-<li>Retries, statistical trials, and MEAI Reporting would remain awkward additions.</li>
-</ul>
-<p>This path is avoided.</p>
-<h2 id="proposed-architecture">Proposed architecture<a class="headerlink" href="#proposed-architecture" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Experiment definition
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  |
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  +-- finite case source
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  +-- item task
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  +-- optional item evaluator
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  +-- run evaluators
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  +-- run policies
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  +-- item lifecycle adapters
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  +-- result sinks
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  |
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Experiment runner
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  |
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  +-- materialize and validate cases
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  +-- expand cases into ordered trials
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  +-- schedule bounded attempts
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  +-- isolate item failures
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  +-- evaluate successful items
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>  +-- evaluate the full run
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  +-- calculate the quality decision
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  +-- publish through independent sinks
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>  |
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>Experiment run outcome
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>  +-- canonical run result
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>  +-- independent publication results
-</span></code></pre></div>
-<h3 id="proposed-definition-and-execution-surface">Proposed definition and execution surface<a class="headerlink" href="#proposed-definition-and-execution-surface" title="Permanent link">&para;</a></h3>
-<p>The following is the intended shape, not a finalized signature:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IExperimentRunner</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">ValueTask</span><span class="o">&lt;</span><span class="n">ExperimentRunOutcome</span><span class="o">&lt;</span><span class="n">TOutput</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">RunAsync</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;</span><span class="p">(</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="n">ExperimentDefinition</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="n">definition</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="n">ExperimentRunOptions</span><span class="w"> </span><span class="n">options</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">);</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="n">ExperimentDefinition</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">{</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="n">IExperimentCaseSource</span><span class="o">&lt;</span><span class="n">TCase</span><span class="o">&gt;</span><span class="w"> </span><span class="n">CaseSource</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="n">ExperimentTask</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IExperimentItemEvaluator</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">ItemEvaluator</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">IExperimentRunEvaluator</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">RunEvaluators</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">IExperimentRunPolicy</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Policies</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">IExperimentItemScopeProvider</span><span class="o">&lt;</span><span class="n">TCase</span><span class="p">,</span><span class="w"> </span><span class="n">TOutput</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">ItemScopes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IReadOnlyList</span><span class="o">&lt;</span><span class="n">IExperimentResultSink</span><span class="o">&lt;</span><span class="n">TOutput</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Sinks</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="p">}</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="n">ExperimentRunOptions</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="p">{</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">RunId</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxConcurrency</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">TimeSpan</span><span class="o">?</span><span class="w"> </span><span class="n">AttemptTimeout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IExperimentRetryPolicy</span><span class="w"> </span><span class="n">RetryPolicy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">IExperimentConcurrencyLimiter</span><span class="o">?</span><span class="w"> </span><span class="n">SharedLimiter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>The implementation may refine names or generic placement, but it must preserve these boundaries:</p>
-<ul>
-<li>one runner service with injected dependencies;</li>
-<li>a finite case source;</li>
-<li>an attempt-level task callback;</li>
-<li>item evaluation after terminal execution success;</li>
-<li>full-run evaluators and policies;</li>
-<li>item-lifecycle scopes for provider context;</li>
-<li>independent final-result sinks.</li>
-</ul>
-<p>Interfaces are limited to genuine extension points. Result types are sealed data types rather than inheritance hierarchies.</p>
-<p>There is at most one item-evaluation producer. A caller that needs multiple evaluators composes them behind that one interface. A MEAI Reporting adapter supplies the item evaluator and uses its paired item scope to reach the same <code>ScenarioRun</code>; it does not add a second hidden evaluation stage.</p>
-<h3 id="case-and-source-model">Case and source model<a class="headerlink" href="#case-and-source-model" title="Permanent link">&para;</a></h3>
-<p>The minimum case model is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ExperimentCase&lt;TCase&gt;
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  Id                 required, unique within the materialized source
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  Value              caller-defined input, expected output, and metadata
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  TrialCount         positive; defaults to one
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  Tags               optional string tags
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>ExperimentCaseSourceResult&lt;TCase&gt;
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  Source             provider-neutral name/id/version reference
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  Cases              finite ordered case list
-</span></code></pre></div>
-<p>The core does not define separate generic input, expected-output, and metadata types. Callers model those together in <code>TCase</code>, which avoids a growing generic arity and lets hosted adapters preserve provider references in an adapter-owned case type.</p>
-<p>The source is fully materialized before execution. The runner validates:</p>
-<ul>
-<li>non-empty run and case identifiers;</li>
-<li>unique case identifiers;</li>
-<li>positive trial counts;</li>
-<li>positive <code>MaxConcurrency</code>;</li>
-<li>representable total item count.</li>
-</ul>
-<p>Source or validation failures occur before any item starts and are thrown to the caller.</p>
-<h3 id="attempt-and-item-result-model">Attempt and item result model<a class="headerlink" href="#attempt-and-item-result-model" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ExperimentAttemptResult
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  AttemptNumber       one-based
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  Status              Succeeded | Failed | TimedOut | Canceled
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  StartedAt
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  Duration
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  Failure             structured failure when not successful
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>ExperimentItemResult&lt;TOutput&gt;
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  Sequence            stable source-order/trial-order index
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>  CaseId
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  TrialIndex          one-based statistical sample index
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>  Status              Succeeded | ExecutionFailed | TimedOut |
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>                      Canceled | EvaluationFailed | PrerequisiteFailed
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>  Attempts            every operational attempt in order
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  Output              terminal successful output, when available
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>  Evaluation          MEAI EvaluationResult, when available
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>  Failure             terminal structured failure, when present
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>  Correlations        optional namespaced string identifiers for adapters
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>  Publications        item-scope publication results
-</span></code></pre></div>
-<p><code>ExperimentFailure</code> is machine-actionable:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ExperimentFailure
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  Code
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  Stage               Execution | ItemEvaluation | RunEvaluation |
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>                      Policy | Publication
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  ExceptionType
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  Message
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  IsRetryable
-</span></code></pre></div>
-<p>The canonical result does not serialize a raw <code>Exception</code> or stack trace by default. Isolated
-failures retain stable machine-actionable fields without making provider-specific exception types
-part of the result contract.</p>
-<p>An item-scope publication result is separate from item quality:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>ExperimentItemPublicationResult
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  Name
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  IsRequired
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  Status              Succeeded | Failed | NotAttempted
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  Correlations
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  Failure
-</span></code></pre></div>
-<h3 id="run-evaluation-and-policy-model">Run evaluation and policy model<a class="headerlink" href="#run-evaluation-and-policy-model" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>ExperimentRunEvaluationResult
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  Name
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  Status              Succeeded | Failed
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  Metrics             MEAI EvaluationResult when successful
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  Failure             structured failure when failed
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>ExperimentPolicyResult
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  Name
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>  Kind                Deterministic | Statistical
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>  IsRequired
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>  Decision            Passed | Failed | Inconclusive
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>  Evidence            structured policy evidence containing MEAI metrics,
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>                      status counts, thresholds, bounds, and exclusions
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>  Failure             structured failure when policy execution failed
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>ExperimentRunResult&lt;TOutput&gt;
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>  SchemaVersion
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>  RunId
-</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>  ExperimentName
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>  Source
-</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>  StartedAt
-</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>  Duration
-</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>  Items
-</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>  RunEvaluations
-</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>  PolicyResults
-</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>  Decision            Passed | Failed | Inconclusive | NotEvaluated
-</span></code></pre></div>
-<p>The overall decision is reduced deterministically:</p>
-<ol>
-<li>Any required failed policy makes the run <code>Failed</code>.</li>
-<li>Otherwise, any required inconclusive policy makes the run <code>Inconclusive</code>.</li>
-<li>Otherwise, all required policies passing makes the run <code>Passed</code>.</li>
-<li>No required policies makes the run <code>NotEvaluated</code>.</li>
-</ol>
-<p>A policy exception does not become a fabricated quality failure. It produces an inconclusive policy result with a structured failure.</p>
-<h3 id="publication-model">Publication model<a class="headerlink" href="#publication-model" title="Permanent link">&para;</a></h3>
-<p>Sinks receive a read-only snapshot of <code>ExperimentRunResult&lt;TOutput&gt;</code> and return structured sink results. The runner then returns:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>ExperimentSinkResult
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  Name
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  IsRequired
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  Status              ExperimentPublicationOperationStatus:
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>                      Succeeded | Failed | NotAttempted
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  Failure
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>ExperimentRunOutcome&lt;TOutput&gt;
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>  SchemaVersion       4
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>  Result              canonical ExperimentRunResult&lt;TOutput&gt;
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>  PublicationStatus   ExperimentPublicationStatus:
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>                      NotRequested | Succeeded | PartiallyFailed | Failed
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>  SinkResults
-</span></code></pre></div>
-<p>This two-stage model prevents publication outcomes from being folded back into the quality decision. Sinks receive a read-only snapshot contract. The implementation copies all Needlr-owned collections and normalizes MEAI metrics before fan-out; arbitrary caller-owned <code>TOutput</code> values cannot be deeply frozen and are read-only by contract.</p>
-<p>Required sink failure changes <code>PublicationStatus</code>, not <code>Result.Decision</code>. A CI adapter may independently require both a passing quality decision and successful required publication.</p>
-<p><code>PublicationStatus</code> aggregates both item-scope publication results and final sink results:</p>
-<ul>
-<li><code>NotRequested</code> when no scope or sink attempted publication;</li>
-<li><code>Succeeded</code> when every attempted publication succeeded;</li>
-<li><code>PartiallyFailed</code> when only optional publications failed;</li>
-<li><code>Failed</code> when any required publication failed.</li>
-</ul>
-<h3 id="item-lifecycle-adapters">Item lifecycle adapters<a class="headerlink" href="#item-lifecycle-adapters" title="Permanent link">&para;</a></h3>
-<p>Some providers need a scope around the entire item rather than only a final sink:</p>
-<ul>
-<li>MEAI Reporting creates a <code>ScenarioRun</code> before model execution when response caching is used.</li>
-<li>Langfuse creates and activates one scenario trace for the trial and links it to a hosted dataset run.</li>
-</ul>
-<p>The runner therefore needs an item-scope extension point with these constraints:</p>
-<ul>
-<li>scopes wrap one trial, not each retry attempt;</li>
-<li>the runner still owns admission, attempts, timeout, retry, and decision semantics;</li>
-<li>scopes can expose adapter-specific execution context to the task;</li>
-<li>the runner invokes exactly one configured item evaluator after terminal execution success;</li>
-<li>scopes can provide state to that evaluator but do not independently produce a second evaluation;</li>
-<li>the runner builds the execution/evaluation portion, notifies scopes, disposes them, and then finalizes the item result with their publication results;</li>
-<li>scopes receive an explicit abort path for caller cancellation before disposal;</li>
-<li>provider failures are publication failures unless the caller explicitly makes them execution prerequisites;</li>
-<li>multiple scopes enter in registration order and exit in reverse order;</li>
-<li>no scope may rely on static or process-global mutable state.</li>
-</ul>
-<p>The finalized Phase 3A contract separates the provider factory from its per-trial scope:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>IExperimentItemScopeProvider&lt;TCase,TOutput&gt;
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  Name
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  IsRequired
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  FailureMode         BestEffort | ExecutionPrerequisite
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  EnterAsync          once per statistical trial
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>IExperimentItemScope&lt;TCase,TOutput&gt;
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>  Features            exact-Type adapter feature map
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  Activate            context-restoration handle per attempt/evaluator
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>  CompleteAsync       terminal quality notification and publication result
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>  AbortAsync          caller-cancellation notification
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>  DisposeAsync        final cleanup
-</span></code></pre></div>
-<p>Entry runs under caller cancellation and shared admission but outside the per-attempt timeout.
-Activation handles nest in registration order and unwind in reverse order. Completion, abort, and scope disposal run without ambient activation and use scope-owned state.
-Caller cancellation aborts only scopes whose completion has not started; a started completion owns
-cancellation-safe termination and is never followed by abort. <code>ItemScopeCleanupTimeout</code> bounds
-cancellation cleanup and terminal disposal.</p>
-<p><code>BestEffort</code> scope failure never changes item quality. <code>ExecutionPrerequisite</code> applies only before a
-task attempt starts; a failed prerequisite produces <code>PrerequisiteFailed</code> without inventing an
-attempt. Completion or disposal failures remain publication failures after quality is known.</p>
-<p>The item lifecycle is:</p>
-<ol>
-<li>Enter item scopes and collect their scoped features.</li>
-<li>Execute attempts under runner-owned timeout and retry rules.</li>
-<li>On terminal execution success, invoke the one item evaluator.</li>
-<li>Build the execution/evaluation portion, including <code>EvaluationFailed</code> when the evaluator throws.</li>
-<li>Notify scopes of that read-only quality outcome and collect structured publication results.</li>
-<li>Dispose scopes in reverse order; disposal failure updates only publication status.</li>
-<li>Finalize the item result with correlations and publication results.</li>
-</ol>
-<p>The MEAI Reporting adapter implements a coordinated scope/evaluator pair: the scope owns <code>ScenarioRun</code>, and the evaluator is the only component that calls <code>ScenarioRun.EvaluateAsync(...)</code>.</p>
-<p>Issues #33 and #34 established the context-safe Langfuse callback and structured link result used
-to finalize this provider-neutral contract. Langfuse types remain outside the core package.</p>
-<h2 id="execution-semantics">Execution semantics<a class="headerlink" href="#execution-semantics" title="Permanent link">&para;</a></h2>
-<h3 id="materialization-and-ordering">Materialization and ordering<a class="headerlink" href="#materialization-and-ordering" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Materialize the finite source before scheduling.</li>
-<li>Expand cases in source order, then ascending <code>TrialIndex</code>.</li>
-<li>Assign a stable <code>Sequence</code> before execution.</li>
-<li>Return item results in <code>Sequence</code> order regardless of completion order.</li>
-<li>Invoke run evaluators, policies, scopes, and sinks in their registration order unless an API explicitly states otherwise.</li>
-</ul>
-<h3 id="bounded-concurrency">Bounded concurrency<a class="headerlink" href="#bounded-concurrency" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>MaxConcurrency</code> is required and must be positive.</li>
-<li>It bounds active execution attempts, not total cases and not queued retry delays.</li>
-<li>Do not create one task per dataset item and place all tasks behind a semaphore.</li>
-<li>Use a bounded worker/scheduler design whose pending work is data, not an unbounded task collection.</li>
-<li>A retry delay holds neither a local execution permit nor a shared permit.</li>
-<li>A retry is re-enqueued with a scheduled ready time; a worker does not sleep in place while holding a worker slot.</li>
-</ul>
-<p>An optional caller-owned <code>IExperimentConcurrencyLimiter</code> provides a second admission boundary shared by simultaneous runs. The runner:</p>
-<ul>
-<li>awaits it with the caller token;</li>
-<li>acquires it per attempt;</li>
-<li>releases it before retry delay;</li>
-<li>never disposes it;</li>
-<li>does not create a default process-global limiter.</li>
-</ul>
-<p>The built-in limiter can be registered and shared through DI. Alternate implementations may adapt <code>System.Threading.RateLimiting</code>, provider quotas, or resource-aware admission policies.</p>
-<h3 id="cancellation">Cancellation<a class="headerlink" href="#cancellation" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Caller cancellation stops new admission immediately.</li>
-<li>Limiter waits, active attempts, evaluator calls, and retry delays receive cancellation.</li>
-<li>If the caller token is requested, caller cancellation wins over a simultaneous timeout.</li>
-<li><code>RunAsync</code> rethrows <code>OperationCanceledException</code>; it does not convert cancellation into an item failure or a completed run result.</li>
-<li>Final run evaluators, policies, and sinks do not run after caller cancellation.</li>
-<li>Entered item scopes receive an abort notification and are disposed through bounded cleanup.</li>
-<li>An aborted scope must not publish a completed evaluation record for an incomplete item.</li>
-</ul>
-<p>Completed provider side effects may already exist when cancellation occurs. A resumable partial-run artifact is deferred rather than hidden behind a success-shaped result.</p>
-<h3 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Timeout is per attempt.</li>
-<li>The task receives a linked token combining caller cancellation and attempt deadline.</li>
-<li>Caller-token cancellation is rethrown.</li>
-<li>Deadline cancellation while the caller token remains active produces <code>TimedOut</code>.</li>
-<li>A task-originated cancellation with neither token requested produces <code>Canceled</code>.</li>
-<li>Timeout is retryable only when the configured retry policy says so.</li>
-</ul>
-<h3 id="retries">Retries<a class="headerlink" href="#retries" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Default is one attempt and no retry.</li>
-<li>Retries apply only to execution failure, timeout, or task-originated cancellation selected by policy.</li>
-<li>Caller cancellation is never retried.</li>
-<li>Item evaluation, run evaluation, policy, scope, and sink failures never rerun the agent task.</li>
-<li>Every attempt and retry delay is recorded.</li>
-<li>Retry attempts do not increase the statistical sample count.</li>
-<li>Hidden random jitter is prohibited. Any jitter policy must be explicit and reproducibly seeded.</li>
-</ul>
-<h3 id="item-evaluation">Item evaluation<a class="headerlink" href="#item-evaluation" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Item evaluation runs once after terminal execution success.</li>
-<li>It receives the case, trial identity, output, and attempt history.</li>
-<li>It returns a MEAI <code>EvaluationResult</code>.</li>
-<li>Evaluator failure preserves the successful task output and marks the item <code>EvaluationFailed</code>.</li>
-<li>The definition has at most one item evaluator. Multiple evaluator implementations must be explicitly composed behind it.</li>
-<li>A MEAI Reporting adapter occupies that one evaluator slot and delegates to <code>ScenarioRun</code> and its <code>CompositeEvaluator</code>.</li>
-<li>The runner never invokes both a direct item evaluator and a hidden MEAI evaluator for the same item.</li>
-</ul>
-<h3 id="whole-item-failure-isolation">Whole-item failure isolation<a class="headerlink" href="#whole-item-failure-isolation" title="Permanent link">&para;</a></h3>
-<ul>
-<li>One item failure does not cancel siblings.</li>
-<li>Failed, timed-out, canceled, and evaluation-failed items remain in the run result.</li>
-<li>Run evaluators receive every item, not only successes.</li>
-<li>Any exclusion must be explicit and reported with an exclusion count.</li>
-<li>Execution failures count in denominators by default.</li>
-</ul>
-<h3 id="run-evaluators-and-policies">Run evaluators and policies<a class="headerlink" href="#run-evaluators-and-policies" title="Permanent link">&para;</a></h3>
-<p>Run evaluators measure. Policies decide.</p>
-<ul>
-<li>Run evaluators receive the complete ordered item list.</li>
-<li>Run evaluator failures are isolated and represented structurally.</li>
-<li>Run evaluators execute sequentially in registration order initially; no hidden second concurrency policy is introduced.</li>
-<li>Policies consume item results and successful run-evaluation metrics.</li>
-<li>Policies cannot mutate measurements.</li>
-<li>Human-readable report rendering remains outside the policy result.</li>
-</ul>
-<p>The existing <code>EvaluationQualityGate</code> is not duplicated. Phase 2 refactors its threshold checks into a shared structured result and keeps <code>Assert(...)</code> as a throwing adapter over that same evaluation.</p>
-<p>Missing required metrics produce <code>Inconclusive</code> by default, or <code>Failed</code> when the policy explicitly selects pessimistic treatment. <code>Optional*</code> thresholds preserve conditionally emitted metric support. Updating <code>Assert(...)</code> to use required-metric semantics is an intentional alpha correction rather than a compatibility shim.</p>
-<h3 id="statistical-policies">Statistical policies<a class="headerlink" href="#statistical-policies" title="Permanent link">&para;</a></h3>
-<p>The runner does not claim one universal statistical method.</p>
-<p>A statistical run evaluation must report at least:</p>
-<ul>
-<li>total trial count;</li>
-<li>successful sample count;</li>
-<li>execution-failure count;</li>
-<li>exclusion count;</li>
-<li>estimate;</li>
-<li>uncertainty measure or confidence interval;</li>
-<li>confidence level;</li>
-<li>baseline and paired delta when applicable.</li>
-</ul>
-<p>The initial statistical vertical slice should support a binary success proportion with a documented confidence interval and a policy such as:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Passed         lower confidence bound &gt;= required threshold
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Failed         upper confidence bound &lt; required threshold
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Inconclusive   otherwise, or minimum sample requirements are unmet
-</span></code></pre></div>
-<p>The default binary-policy status mapping is:</p>
-<table>
-<thead>
-<tr>
-<th>Item state</th>
-<th>Statistical treatment</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Succeeded</code> with a valid required boolean metric</td>
-<td>Denominator success or failure according to the metric value.</td>
-</tr>
-<tr>
-<td><code>ExecutionFailed</code></td>
-<td>Denominator failure.</td>
-</tr>
-<tr>
-<td><code>TimedOut</code></td>
-<td>Denominator failure.</td>
-</tr>
-<tr>
-<td>Task-originated <code>Canceled</code></td>
-<td>Denominator failure.</td>
-</tr>
-<tr>
-<td><code>EvaluationFailed</code>, <code>PrerequisiteFailed</code>, missing metric, or metric with failed diagnostics</td>
-<td>Unknown sample; counted as an exclusion and forces <code>Inconclusive</code> unless the policy explicitly selects pessimistic failure treatment.</td>
-</tr>
-<tr>
-<td>Explicit policy exclusion</td>
-<td>Excluded with a structured reason and counted by status.</td>
-</tr>
-</tbody>
-</table>
-<p>Every statistical result reports counts by item status in addition to total success, failure, and exclusion counts. A policy cannot silently remove an item from its denominator.</p>
-<p>Paired candidate/baseline comparisons, clustered bootstrap methods, continuous-metric policies, adaptive sampling, and power-analysis helpers are deferred extension points.</p>
-<h2 id="meai-reporting-adapter-boundary">MEAI Reporting adapter boundary<a class="headerlink" href="#meai-reporting-adapter-boundary" title="Permanent link">&para;</a></h2>
-<p>The MEAI Reporting adapter is responsible for:</p>
-<ol>
-<li>Creating or receiving a run-specific <code>ReportingConfiguration</code>.</li>
-<li>Mapping the Needlr run ID to MEAI <code>ExecutionName</code>.</li>
-<li>Mapping case ID to <code>ScenarioName</code>.</li>
-<li>Mapping trial index to <code>IterationName</code>.</li>
-<li>Creating one <code>ScenarioRun</code> per statistical trial, not per retry attempt.</li>
-<li>Exposing the scenario's wrapped <code>ChatConfiguration</code> to the task when response caching is desired.</li>
-<li>Supplying the definition's single item evaluator, which calls <code>ScenarioRun.EvaluateAsync(...)</code> once after successful execution.</li>
-<li>Mapping an evaluator exception to the runner's <code>EvaluationFailed</code> item status.</li>
-<li>Disposing the <code>ScenarioRun</code> after the item result is built so the configured MEAI result store persists it.</li>
-<li>Returning the <code>EvaluationResult</code> as the item's canonical metrics.</li>
-</ol>
-<p>MEAI continues to own:</p>
-<ul>
-<li><code>CompositeEvaluator</code>;</li>
-<li>judge chat configuration;</li>
-<li>response-cache providers and keys;</li>
-<li>evaluation-result stores;</li>
-<li>report writers and the <code>dotnet aieval</code> report workflow.</li>
-</ul>
-<p>The adapter must make response reuse explicit for repeated trials:</p>
-<table>
-<thead>
-<tr>
-<th>Mode</th>
-<th>Behavior</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CaseAndTrialReplay</code></td>
-<td>Preserve MEAI's normal scenario/iteration cache identity across runs. Useful for deterministic replay when the complete request and model cache key also matches.</td>
-</tr>
-<tr>
-<td><code>FreshPerRun</code></td>
-<td>Add the Needlr run ID to cache identity so a new run produces new stochastic samples.</td>
-</tr>
-<tr>
-<td><code>Disabled</code></td>
-<td>Require a <code>ReportingConfiguration</code> without a response-cache provider.</td>
-</tr>
-</tbody>
-</table>
-<p>One <code>ScenarioRun</code> and cache identity spans all retry attempts for an item. A response cached before a downstream execution failure may therefore be replayed by the retry. This is intentional because a retry is not a new statistical sample. A caller that requires a fresh model response on every attempt must disable MEAI response caching for that experiment; finer per-attempt cache policy is deferred.</p>
-<p>The runner does not generate MEAI reports and does not create fake <code>ScenarioRun</code> entries for aggregate metrics. Run-level metrics remain in the Needlr result and may be published by sinks.</p>
-<p>A MEAI result-store write failure is publication failure. Normal scope disposal invokes
-<code>ScenarioRun.DisposeAsync</code>; the provider-neutral scope manager converts a thrown store exception into
-the final failed <code>ExperimentItemPublicationResult</code>. It does not trigger another model execution,
-disappear into logging, or change the item's quality status. <code>ScenarioRun.DisposeAsync</code> accepts no
-cancellation token, so a cleanup timeout can be reported while the provider store operation finishes
-later.</p>
-<h2 id="langfuse-adapter-boundary">Langfuse adapter boundary<a class="headerlink" href="#langfuse-adapter-boundary" title="Permanent link">&para;</a></h2>
-<p>Langfuse integrates through three independent adapters.</p>
-<h3 id="hosted-case-source">Hosted case source<a class="headerlink" href="#hosted-case-source" title="Permanent link">&para;</a></h3>
-<p>The source:</p>
-<ul>
-<li>loads a finite hosted dataset selection;</li>
-<li>records dataset identity and selected version in the source reference;</li>
-<li>maps each hosted item to a Needlr case while preserving dataset-item identity;</li>
-<li>performs all remote loading before item execution starts.</li>
-</ul>
-<p>Local case sources remain first-class and require no Langfuse dataset.</p>
-<h3 id="item-scope">Item scope<a class="headerlink" href="#item-scope" title="Permanent link">&para;</a></h3>
-<p>The scope:</p>
-<ul>
-<li>creates one context-safe scenario trace per trial;</li>
-<li>links that trace to a hosted dataset item at most once;</li>
-<li>keeps every retry attempt beneath the same trial trace;</li>
-<li>exposes trace correlation to the item result;</li>
-<li>restores the prior ambient activity for nested and parallel items;</li>
-<li>records link or trace-publication failure independently from item quality.</li>
-</ul>
-<p>This adapter depends on issue #33 for context-safe item execution and issue #34 for structured run identity and link status.</p>
-<h3 id="result-sink">Result sink<a class="headerlink" href="#result-sink" title="Permanent link">&para;</a></h3>
-<p>The sink:</p>
-<ul>
-<li>projects item MEAI metrics to trace or observation scores;</li>
-<li>projects run-evaluation metrics to dataset-run scores when a dataset-run ID exists;</li>
-<li>records item-link, score, and run-score outcomes;</li>
-<li>treats disabled Langfuse mode as a structurally valid no-op publication result;</li>
-<li>does not choose concurrency, retry, timeout, or the quality verdict.</li>
-</ul>
-<p>High-volume retry, idempotency, batching, and export-health behavior remains owned by issue #35.</p>
-<p>Local experiments may publish traces and scores without a Langfuse dataset run. The Needlr run result remains complete even when the provider cannot create a comparison view.</p>
-<h2 id="sink-fan-out">Sink fan-out<a class="headerlink" href="#sink-fan-out" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Sinks receive the same read-only run snapshot, including item-scope publication results.</li>
-<li>Sinks execute in deterministic registration order.</li>
-<li>One sink failure does not suppress later sinks.</li>
-<li>Sinks declare whether publication is required.</li>
-<li>Generic automatic sink retry is not provided because publication operations may not be idempotent.</li>
-<li>Provider adapters own bounded retry only after they establish provider-specific idempotency.</li>
-<li>Evaluation decision and publication status remain separate at every layer.</li>
-</ul>
-<p>Expected initial sinks:</p>
-<ul>
-<li>canonical JSON artifact;</li>
-<li>MEAI Reporting persistence adapter;</li>
-<li>Langfuse publication adapter.</li>
-</ul>
-<p>Human-readable console, Markdown, HTML, and CI-comment rendering consume the canonical outcome rather than changing it.</p>
-<h2 id="compatibility-and-versioning">Compatibility and versioning<a class="headerlink" href="#compatibility-and-versioning" title="Permanent link">&para;</a></h2>
-<p>The API is new and alpha:</p>
-<ul>
-<li>no compatibility shim is required;</li>
-<li>breaking corrections should be made before stabilization;</li>
-<li>result types should be sealed, non-positional types so fields can be added without constructor churn;</li>
-<li>interfaces should exist only at extension points;</li>
-<li>the canonical result and canonical JSON projection include <code>SchemaVersion</code> from the first release;</li>
-<li>serialized enum values and required fields become versioned contracts;</li>
-<li>the JSON sink normalizes MEAI metrics into a Needlr-owned metric snapshot rather than blindly serializing the mutable <code>EvaluationResult</code> object graph;</li>
-<li><code>SchemaVersion</code> governs the Needlr envelope and normalized metric projection, not arbitrary caller-owned <code>TCase</code> or <code>TOutput</code> payloads;</li>
-<li>Langfuse types do not appear in the core package;</li>
-<li>MEAI Reporting types appear only in its adapter surface;</li>
-<li>no raw exception object is part of the serialized contract;</li>
-<li>caller-defined <code>TCase</code> and <code>TOutput</code> serialization remains caller responsibility.</li>
-</ul>
-<p>The implementation must revalidate against the then-current stable MEAI packages before coding. This ADR was verified against the repository's pinned <code>10.5.0</code> surface and the current stable <code>10.7.0</code> responsibility boundary.</p>
-<h2 id="phased-implementation-plan">Phased implementation plan<a class="headerlink" href="#phased-implementation-plan" title="Permanent link">&para;</a></h2>
-<p>No phase begins from this ADR alone. Each phase requires its own issue and reviewed pull request.</p>
-<h3 id="phase-1-core-scheduler-and-canonical-result-delivered-by-43">Phase 1: core scheduler and canonical result — delivered by #43<a class="headerlink" href="#phase-1-core-scheduler-and-canonical-result-delivered-by-43" title="Permanent link">&para;</a></h3>
-<p>Deliver:</p>
-<ul>
-<li>finite case source and validation;</li>
-<li>case-to-trial expansion;</li>
-<li>required bounded concurrency;</li>
-<li>caller cancellation and per-attempt timeout;</li>
-<li>one-attempt default;</li>
-<li>whole-item failure isolation;</li>
-<li>deterministic result ordering;</li>
-<li>canonical JSON sink with normalized metric snapshots;</li>
-<li>no provider adapter.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>exact maximum active attempts;</li>
-<li>no unbounded task creation;</li>
-<li>deterministic ordering under out-of-order completion;</li>
-<li>duplicate-ID and invalid-option rejection before execution;</li>
-<li>failure isolation;</li>
-<li>caller cancellation precedence over timeout;</li>
-<li>task-originated cancellation classification;</li>
-<li>failed and timed-out items retained.</li>
-<li>JSON schema version and normalized metric shape.</li>
-</ul>
-<p>Runnable example:</p>
-<ul>
-<li>credential-free deterministic fake agent;</li>
-<li>finite local cases;</li>
-<li>mixed success and failure;</li>
-<li>canonical JSON output;</li>
-<li>no test-framework dependency.</li>
-</ul>
-<h3 id="phase-2-retries-run-evaluation-and-policy-delivered-by-45">Phase 2: retries, run evaluation, and policy — delivered by #45<a class="headerlink" href="#phase-2-retries-run-evaluation-and-policy-delivered-by-45" title="Permanent link">&para;</a></h3>
-<p>Deliver:</p>
-<ul>
-<li>explicit retry policy and attempt history;</li>
-<li>run evaluators;</li>
-<li>deterministic and statistical policy results;</li>
-<li>structured quality decision;</li>
-<li>shared concurrency limiter;</li>
-<li><code>EvaluationQualityGate</code> refactored to reuse structured threshold evaluation.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>retry selection and exhaustion;</li>
-<li>cancellation during retry delay;</li>
-<li>retry delays holding no permits;</li>
-<li>delayed retries re-entering the scheduler without occupying workers;</li>
-<li>retries not counted as trials;</li>
-<li>evaluator failure not rerunning execution;</li>
-<li>all item statuses reaching run evaluators;</li>
-<li>run-evaluator failure isolation;</li>
-<li>deterministic passed/failed decisions;</li>
-<li>statistical passed/failed/inconclusive decisions;</li>
-<li>two concurrent runs sharing one limiter.</li>
-</ul>
-<p>Runnable example:</p>
-<ul>
-<li>seeded stochastic binary outcomes;</li>
-<li>repeated trials;</li>
-<li>estimate, confidence interval, sample count, attempts, and decision;</li>
-<li>no credentials.</li>
-</ul>
-<h3 id="phase-3a-per-trial-provider-lifecycle-scopes-49">Phase 3A: per-trial provider lifecycle scopes — #49<a class="headerlink" href="#phase-3a-per-trial-provider-lifecycle-scopes-49" title="Permanent link">&para;</a></h3>
-<p>Deliver:</p>
-<ul>
-<li>provider-neutral item scopes configured on the experiment definition;</li>
-<li>one scope entry per statistical trial, not per retry attempt;</li>
-<li>scope reactivation around every attempt and item evaluation after delayed re-enqueue;</li>
-<li>typed adapter features available to task and evaluator contexts;</li>
-<li>namespaced item correlations and structured item publication outcomes;</li>
-<li>terminal completion notification, caller-cancellation abort, and reverse-order disposal.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>one scope per trial across multiple attempts;</li>
-<li>scope reactivation after retry delay and worker changes;</li>
-<li>nested scope ordering and reverse disposal;</li>
-<li>the single item evaluator runs inside the same scope;</li>
-<li>all terminal item statuses reach scope completion;</li>
-<li>cancellation invokes abort and does not publish a completed item.</li>
-</ul>
-<h3 id="phase-3b-result-sinks-and-publication-outcomes-50">Phase 3B: result sinks and publication outcomes — #50<a class="headerlink" href="#phase-3b-result-sinks-and-publication-outcomes-50" title="Permanent link">&para;</a></h3>
-<p>Delivered by issue #50.</p>
-<p>Deliver:</p>
-<ul>
-<li>deterministic result-sink fan-out;</li>
-<li>required and optional sink semantics;</li>
-<li><code>ExperimentRunOutcome&lt;TCase,TOutput&gt;</code> containing the canonical result and publication outcomes;</li>
-<li>aggregate <code>NotRequested</code>, <code>Succeeded</code>, <code>PartiallyFailed</code>, or <code>Failed</code> publication status;</li>
-<li>item-scope and final-sink publication aggregation;</li>
-<li>an intentional alpha return-type correction for <code>IExperimentRunner.RunAsync</code>;</li>
-<li>schema-versioned outcome serialization.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>deterministic sink order;</li>
-<li>required versus optional failure aggregation;</li>
-<li>one failing sink does not suppress another;</li>
-<li>publication status never changes the quality decision;</li>
-<li>caller cancellation skips final sinks;</li>
-<li>runs without scopes or sinks remain <code>NotRequested</code>.</li>
-</ul>
-<h3 id="phase-4a-langfuse-hosted-case-source-51">Phase 4A: Langfuse hosted case source — #51<a class="headerlink" href="#phase-4a-langfuse-hosted-case-source-51" title="Permanent link">&para;</a></h3>
-<p>Deliver:</p>
-<ul>
-<li>paginated read-side dataset and dataset-item APIs;</li>
-<li>latest and explicit version-timestamp selection;</li>
-<li>finite hosted-case materialization before execution;</li>
-<li>caller-defined mapping from hosted item data to <code>ExperimentCase&lt;TCase&gt;</code>;</li>
-<li>dataset identity and version in <code>ExperimentSourceReference</code>;</li>
-<li>coherent disabled behavior that cannot silently produce a passing empty run.</li>
-</ul>
-<p>The hosted binding keeps the Langfuse dataset item id as <code>ExperimentCase&lt;TCase&gt;.Id</code>. Caller mapping
-owns the case value, trial count, and tags, but cannot replace that provider identity. This lets the
-next-phase item scope link a trial using only the provider-neutral case id while input, expected
-output, metadata, and source trace/observation references remain available in the adapter-owned
-hosted item passed to the mapper.</p>
-<p>An explicit selection timestamp is normalized to UTC in <code>ExperimentSourceReference.Version</code>. A
-latest selection leaves the version unset because Langfuse's public dataset metadata and item-list
-responses do not expose a resolved latest-version identifier.</p>
-<p>Required TDD:</p>
-<ul>
-<li>pagination and stable source ordering;</li>
-<li>version selection and source identity;</li>
-<li>input, expected-output, and metadata mapping;</li>
-<li>cancellation and malformed-response handling before execution;</li>
-<li>duplicate case-id validation;</li>
-<li>disabled mode does not silently pass.</li>
-</ul>
-<h3 id="phase-4b-langfuse-per-trial-trace-scope-52">Phase 4B: Langfuse per-trial trace scope — #52<a class="headerlink" href="#phase-4b-langfuse-per-trial-trace-scope-52" title="Permanent link">&para;</a></h3>
-<p>Prerequisites:</p>
-<ul>
-<li>
-<h1 id="33-context-safe-item-execution">33 context-safe item execution;<a class="headerlink" href="#33-context-safe-item-execution" title="Permanent link">&para;</a></h1>
-</li>
-<li>
-<h1 id="34-dataset-run-identity-and-link-status">34 dataset-run identity and link status;<a class="headerlink" href="#34-dataset-run-identity-and-link-status" title="Permanent link">&para;</a></h1>
-</li>
-<li>
-<h1 id="35-idempotency-and-publication-health">35 idempotency and publication health;<a class="headerlink" href="#35-idempotency-and-publication-health" title="Permanent link">&para;</a></h1>
-</li>
-<li>
-<h1 id="49-provider-lifecycle-scopes">49 provider lifecycle scopes.<a class="headerlink" href="#49-provider-lifecycle-scopes" title="Permanent link">&para;</a></h1>
-</li>
-</ul>
-<p>Deliver:</p>
-<ul>
-<li>one scenario trace per statistical trial;</li>
-<li>every retry attempt beneath the same trial trace;</li>
-<li>one hosted dataset-run-item link per trial;</li>
-<li>trace-only local experiments when no hosted item is bound;</li>
-<li>namespaced trace, dataset-run-item, and dataset-run correlations;</li>
-<li>structured link/trace publication outcomes;</li>
-<li>strict and best-effort prerequisite behavior;</li>
-<li>one shared internal lifecycle implementation used by both the adapter and
-  <code>ILangfuseExperimentRun.RunItemAsync</code>;</li>
-<li>coherent disabled mode.</li>
-</ul>
-<p>The built-in client/session extension creates either a hosted provider bound to an existing
-<code>ILangfuseExperimentRun</code> or a local trace-only provider. The hosted provider uses the case id as the
-dataset item id, forwards the run's optional dataset-version timestamp, and leaves the same run
-instance available to the Phase 4C result sink. Task and evaluator contexts receive the active
-<code>ILangfuseScenario</code> as an exact-type feature.</p>
-<p>Item publications use the <code>langfuse</code> namespace with <code>trace.id</code>, <code>dataset.run.item.id</code>, and
-<code>dataset.run.id</code> correlations. Linked and local recorded traces complete their requested local
-lifecycle work; failed or inconsistent links remain publication failures; not-sampled and disabled
-scopes are not attempted. None of these states claims durable OpenTelemetry ingestion.</p>
-<p>Required TDD:</p>
-<ul>
-<li>nested and parallel ambient-context restoration;</li>
-<li>delayed retry reactivation on another worker;</li>
-<li>no trace-per-attempt behavior;</li>
-<li>local trace-only mode;</li>
-<li>linked, failed, inconsistent, not-sampled, and disabled outcomes;</li>
-<li>strict failure stops execution while best effort preserves it;</li>
-<li>item evaluation can publish scores before scenario disposal;</li>
-<li>caller cancellation aborts and restores prior context.</li>
-</ul>
-<h3 id="phase-4c-langfuse-result-sink-and-canonical-guidance-53">Phase 4C: Langfuse result sink and canonical guidance — #53<a class="headerlink" href="#phase-4c-langfuse-result-sink-and-canonical-guidance-53" title="Permanent link">&para;</a></h3>
-<p>Deliver:</p>
-<ul>
-<li>item metric projection to trace scores;</li>
-<li>successful run-evaluation metric projection to dataset-run scores;</li>
-<li>explicit projection of the already-computed run decision without recalculating policy;</li>
-<li>generic publication status backed by the existing Langfuse publication snapshot;</li>
-<li>required and optional Langfuse publication behavior;</li>
-<li>the same experiment definition running locally, with disabled Langfuse, and with hosted Langfuse;</li>
-<li>the generic runner documented as the canonical bulk-experiment path;</li>
-<li><code>ILangfuseExperimentRun</code> retained as the low-level/manual escape hatch.</li>
-</ul>
-<p>The result sink uses the Langfuse item-scope publication to resolve each trace correlation, then
-projects the existing mutable <code>EvaluationResult</code> rather than rebuilding metrics from normalized
-snapshots. Successful run evaluators publish through the bound run's authoritative dataset-run
-identity. Decision publication is explicit and categorical, using the already-reduced
-<code>ExperimentRunDecision</code> without invoking policy again.</p>
-<p>Provider details remain on <code>LangfuseExperimentResultSink.GetPublicationSnapshot()</code>: ordered item and
-run-evaluation score outcomes, optional decision publication, and the hosted run's link/run-score
-snapshot. Generic publication reduction observes only the sink's score work; item-link failures are
-already represented by item-scope publication and are not counted again.</p>
-<p>Required TDD:</p>
-<ul>
-<li>item and run score projection;</li>
-<li>decision projection without duplicate policy computation;</li>
-<li>unresolved and inconsistent dataset-run identity;</li>
-<li>one failing sink does not suppress another;</li>
-<li>disabled mode;</li>
-<li>publication status remains independent from quality decision;</li>
-<li>the same definition works with and without credentials.</li>
-</ul>
-<p>Runnable example:</p>
-<ul>
-<li>one public experiment definition;</li>
-<li>local credential-free execution;</li>
-<li>disabled Langfuse execution with identical quality results;</li>
-<li>optional hosted source, trace links, and score publication when configured;</li>
-<li>no standalone telemetry ownership in a DI host.</li>
-</ul>
-<h3 id="phase-5-meai-reporting-adapter-as-the-second-provider-proof-54">Phase 5: MEAI Reporting adapter as the second-provider proof — #54<a class="headerlink" href="#phase-5-meai-reporting-adapter-as-the-second-provider-proof-54" title="Permanent link">&para;</a></h3>
-<p>Delivered in the dedicated <code>NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</code> package.</p>
-<p>Deliver:</p>
-<ul>
-<li>one <code>ScenarioRun</code> per trial;</li>
-<li>execution/scenario/iteration mapping;</li>
-<li>explicit case/trial replay, fresh-per-run, and disabled response-reuse modes;</li>
-<li>coordinated item scope and single item-evaluator integration;</li>
-<li>MEAI result-store persistence as item publication outcome;</li>
-<li>report generation left to MEAI tooling;</li>
-<li>Reporting-specific dependencies isolated from the provider-neutral core.</li>
-</ul>
-<p>Required TDD:</p>
-<ul>
-<li>real <code>ReportingConfiguration</code> and test store/cache implementations;</li>
-<li><code>CompositeEvaluator</code> behavior preserved;</li>
-<li>one evaluation per successful item;</li>
-<li>no execution retry on evaluator or store failure;</li>
-<li>cache isolation across trial and run modes;</li>
-<li>response-cache replay across retries documented and verified;</li>
-<li>disposal persists completed results;</li>
-<li>result-store failure appears as item publication failure;</li>
-<li>cancellation abort does not persist an incomplete <code>ScenarioRun</code>;</li>
-<li>caller cancellation preserved.</li>
-</ul>
-<p>Runnable example:</p>
-<ul>
-<li>credential-free deterministic <code>IChatClient</code>;</li>
-<li>cached deterministic replay and fresh stochastic mode;</li>
-<li>generated MEAI report from the configured store.</li>
-</ul>
-<h2 id="rejected-alternatives">Rejected alternatives<a class="headerlink" href="#rejected-alternatives" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Use Langfuse item and result types as Needlr's canonical model.</li>
-<li>Treat a retry as another statistical sample.</li>
-<li>Drop failed items before run evaluation.</li>
-<li>Make telemetry or result-store availability redefine model quality.</li>
-<li>Reimplement MEAI <code>CompositeEvaluator</code>, response caches, stores, or reports.</li>
-<li>Reuse <code>AgentScenarioRunner</code> or <code>PipelineScenarioRunner</code> as the collection contract.</li>
-<li>Put xUnit fixtures, theory data, collection attributes, or assembly-global gates in core.</li>
-<li>Create a process-global semaphore or static coordination registry.</li>
-<li>Copy Langfuse's concurrency default or its failed-item omission.</li>
-<li>Create one task for every source item and rely only on a semaphore.</li>
-<li>Add hidden random retry jitter.</li>
-<li>Automatically retry non-idempotent sinks.</li>
-<li>Return a success-shaped partial result after caller cancellation.</li>
-<li>Ship a universal statistical policy for binary, continuous, paired, and clustered data.</li>
-</ul>
-<h2 id="deferred-concerns">Deferred concerns<a class="headerlink" href="#deferred-concerns" title="Permanent link">&para;</a></h2>
-<ul>
-<li>streaming or unbounded case sources;</li>
-<li>checkpoint/resume;</li>
-<li>distributed workers;</li>
-<li>adaptive sampling and early stopping;</li>
-<li>cross-run baseline storage;</li>
-<li>paired and clustered statistical helpers;</li>
-<li>durable partial artifacts after cancellation;</li>
-<li>a broad built-in statistical policy catalog.</li>
-</ul>
-<p>These concerns may be added after the finite runner and its result contract are exercised by runnable examples.</p>
+<p>Evaluation decision and publication status are separate. A model-quality result is not
+changed by a failed trace export, dataset link, score upload, or result-store write.</p>
+<p>Required policies reduce deterministically: any failed required policy makes the run
+<code>Failed</code>; otherwise any inconclusive required policy makes it <code>Inconclusive</code>; otherwise
+all required policies passing makes it <code>Passed</code>; and a run with no required policies is
+<code>NotEvaluated</code>.</p>
+<p>The initial built-in statistical policy evaluates a binary success proportion with
+confidence bounds. Execution failure, timeout, and task-originated cancellation count as
+failed samples. Evaluation failure, prerequisite failure, missing evidence, and invalid
+metrics are explicit exclusions that make the result inconclusive unless the caller
+selects pessimistic failure treatment. The policy reports item-status, success, failure,
+sample, attempt, and exclusion counts so excluded or unknown evidence cannot disappear
+from the reported accounting.</p>
+<p>Langfuse-specific sources, trial scopes, and score sinks remain in
+<code>NexusLabs.Needlr.AgentFramework.Langfuse</code>. MEAI Reporting-specific scenario caching and
+persistence remain in <code>NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</code>. Neither
+provider's types become the canonical experiment model.</p>
+<p>The runner requires explicit local concurrency and may accept a caller-owned shared
+limiter. It will not create process-global mutable coordination or copy a provider's
+default concurrency.</p>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<h3 id="leave-orchestration-to-each-consumer">Leave orchestration to each consumer<a class="headerlink" href="#leave-orchestration-to-each-consumer" title="Permanent link">&para;</a></h3>
+<p>This keeps Needlr's public API small and lets every workload choose its own scheduler.
+It was rejected because consumers would continue to duplicate cancellation, retries,
+failure accounting, result ordering, aggregate policy, and provider publication, producing
+incompatible experiment semantics.</p>
+<h3 id="build-only-thin-meai-reporting-extensions">Build only thin MEAI Reporting extensions<a class="headerlink" href="#build-only-thin-meai-reporting-extensions" title="Permanent link">&para;</a></h3>
+<p>This has low implementation cost and follows Microsoft's public model closely. It was
+rejected as the complete solution because <code>ReportingConfiguration</code> and <code>ScenarioRun</code> do
+not schedule case collections, distinguish trials from retries, retain all failed items
+for aggregation, or reduce run-level acceptance policy. MEAI Reporting remains an adapter
+for the responsibilities it already owns.</p>
+<h3 id="build-a-langfuse-specific-runner">Build a Langfuse-specific runner<a class="headerlink" href="#build-a-langfuse-specific-runner" title="Permanent link">&para;</a></h3>
+<p>This would provide direct parity with Langfuse datasets and experiment-comparison views.
+It was rejected because it would couple execution semantics to one provider, make local
+and alternate-provider experiments second-class, and create a competing Needlr evaluation
+model. Langfuse remains a hosted source, lifecycle, and publication adapter.</p>
+<h3 id="reuse-agentscenariorunner-or-pipelinescenariorunner">Reuse <code>AgentScenarioRunner</code> or <code>PipelineScenarioRunner</code><a class="headerlink" href="#reuse-agentscenariorunner-or-pipelinescenariorunner" title="Permanent link">&para;</a></h3>
+<p>Those runners execute one Needlr-specific scenario shape and combine execution with
+verification. They were rejected as the collection contract because experiments must be
+independent of a particular agent loop, pipeline, or test framework.</p>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Needlr consumers receive one reusable orchestration model instead of rebuilding schedulers.</li>
-<li>Deterministic and stochastic evaluations share the same execution semantics.</li>
-<li>Failures remain visible and statistically honest.</li>
-<li>MEAI and Langfuse remain replaceable adapters.</li>
-<li>CI quality and publication health are independently actionable.</li>
-<li>The design remains independent of test frameworks and agent-loop implementations.</li>
+<li>Needlr consumers share one bounded and failure-honest experiment model.</li>
+<li>Deterministic suites and repeated stochastic trials use the same scheduling and result
+  semantics.</li>
+<li>Retries cannot silently inflate statistical sample counts.</li>
+<li>Local data, Langfuse, MEAI Reporting, and future providers compose through independent
+  boundaries.</li>
+<li>Quality policy and publication health remain separately actionable in CI and operations.</li>
+<li>Failed items remain available to aggregate evaluation instead of disappearing from the
+  denominator.</li>
 </ul>
 <h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Needlr assumes long-term ownership of scheduler and result semantics.</li>
-<li>The public surface is larger than thin MEAI helpers.</li>
-<li>Item-scope composition adds async-context and lifecycle complexity.</li>
-<li>Statistical policy APIs require careful documentation to prevent misuse.</li>
+<li>Needlr assumes long-term ownership of scheduler, failure, result, and policy contracts.</li>
+<li>The public surface is larger than a thin wrapper over MEAI Reporting.</li>
+<li>Per-trial scope composition and cancellation-safe cleanup require careful asynchronous
+  lifecycle testing.</li>
+<li>Statistical policy APIs can be misused if callers ignore exclusions, sample size, or
+  uncertainty.</li>
+<li>Provider adapters may expose capability differences that the core cannot normalize
+  without becoming provider-specific.</li>
 </ul>
 <h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
 <ul>
-<li>This ADR does not immediately change existing single-scenario evaluators or quality gates.</li>
-<li>This decision does not add an implementation timeline.</li>
-<li>Langfuse-specific runner parity is not a goal.</li>
+<li>Existing single-result evaluators and quality gates remain useful outside experiments.</li>
+<li>Provider SDKs retain ownership of their storage, scoring, tracing, and report-rendering
+  semantics.</li>
+<li>Distributed execution and broader statistical methods require separate decisions.</li>
 </ul>
-<h2 id="outcome">Outcome<a class="headerlink" href="#outcome" title="Permanent link">&para;</a></h2>
-<p>Proceed with option A after this ADR is reviewed.</p>
-<p>Do not proceed with a Langfuse-specific runner. Do not treat thin MEAI Reporting helpers as a complete solution.</p>
+<h2 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h2>
+<p>The repository confirms the decision through these stable boundaries:</p>
+<ul>
+<li><code>ExperimentDefinition&lt;TCase,TOutput&gt;</code> composes a finite case source, task, one item
+  evaluator, run evaluators, policies, per-trial scopes, and result sinks.</li>
+<li><code>IExperimentRunner</code> returns a canonical quality result with independent publication
+  outcomes.</li>
+<li>Experiment-runner tests cover bounded scheduling, retries, cancellation, failure
+  isolation, run evaluation, policy, scope lifecycle, sink fan-out, and deterministic
+  artifacts.</li>
+<li><code>NexusLabs.Needlr.AgentFramework.Langfuse</code> implements hosted source, trial lifecycle,
+  and result-sink adapters without owning the scheduler.</li>
+<li><code>NexusLabs.Needlr.AgentFramework.Evaluation.Reporting</code> implements one MEAI
+  <code>ScenarioRun</code> per trial without introducing a second scheduler or canonical result.</li>
+<li>Credential-free examples exercise the core runner and Reporting adapter; the Langfuse
+  conformance example exercises disabled, local, and hosted provider shapes.</li>
+</ul>
+<p>Repository tests cannot establish production provider availability, model quality, or the
+statistical validity of a caller's chosen metric and sample design. Those require
+workload-specific evidence.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/ncosentino/needlr/issues/36">Needlr issue #36</a></li>
-<li><a href="../../evaluation/">Needlr evaluation documentation</a></li>
-<li><a href="https://learn.microsoft.com/en-us/dotnet/ai/evaluation/libraries">MEAI Evaluation libraries</a></li>
-<li><a href="https://learn.microsoft.com/en-us/dotnet/ai/evaluation/evaluate-with-reporting">MEAI evaluation reporting tutorial</a></li>
-<li><a href="https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/CSharp/ReportingConfiguration.cs"><code>ReportingConfiguration</code> 10.5.0 source</a></li>
-<li><a href="https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/CSharp/ScenarioRun.cs"><code>ScenarioRun</code> 10.5.0 source</a></li>
-<li><a href="https://github.com/dotnet/extensions/blob/v10.5.0/src/Libraries/Microsoft.Extensions.AI.Evaluation/CompositeEvaluator.cs"><code>CompositeEvaluator</code> 10.5.0 source</a></li>
-<li><a href="https://www.nuget.org/packages/Microsoft.Extensions.AI.Evaluation.Reporting/10.8.0">MEAI Reporting 10.8.0 on NuGet</a></li>
-<li><a href="https://langfuse.com/docs/evaluation/experiments/experiments-via-sdk">Langfuse experiments via SDK</a></li>
-<li><a href="https://langfuse.com/docs/evaluation/experiments/data-model">Langfuse experiment data model</a></li>
-<li><a href="https://langfuse.com/docs/evaluation/experiments/experiments-ci-cd">Langfuse experiments in CI/CD</a></li>
-<li><a href="https://github.com/langfuse/langfuse-python/blob/a02fc7c2195a81a6f75e084795f86857876b1c90/langfuse/_client/client.py">Langfuse Python experiment runner source</a></li>
-<li><a href="https://github.com/langfuse/langfuse-js/blob/a7ca64951da54448ff3397f21cf0ca378023be28/packages/client/src/experiment/ExperimentManager.ts">Langfuse JavaScript experiment runner source</a></li>
-<li><a href="https://arxiv.org/abs/2411.00640">Adding Error Bars to Evals</a></li>
-<li><a href="https://www.anthropic.com/research/statistical-approach-to-model-evals">A statistical approach to model evaluations</a></li>
-<li><a href="https://arxiv.org/abs/2407.01502">AI Agents That Matter</a></li>
+<li><a href="../../experiment-runner/"><code>docs/experiment-runner.md</code></a> documents the implemented runner,
+  lifecycle, retry, policy, and adapter semantics selected by this decision.</li>
+<li><a href="../../evaluation/"><code>docs/evaluation.md</code></a> describes the MEAI evaluation primitives reused
+  as the metric language rather than replaced by Needlr.</li>
+<li><a href="../../langfuse/"><code>docs/langfuse.md</code></a> describes the provider-specific source, trace, and
+  score adapters that remain outside the core runner.</li>
+<li><a href="https://learn.microsoft.com/dotnet/ai/evaluation/libraries">MEAI Evaluation libraries</a>
+  define the evaluator, metric, caching, storage, and reporting responsibilities Needlr
+  composes with.</li>
+<li><a href="https://langfuse.com/docs/evaluation/experiments/experiments-via-sdk">Langfuse experiments via SDK</a>
+  provide the hosted experiment model that motivated adapter support without becoming the
+  Needlr canonical contract.</li>
+<li><a href="https://github.com/ncosentino/needlr/issues/36">Needlr issue #36</a> contains supplemental
+  design-spike and implementation history intentionally excluded from this permanent
+  decision record.</li>
 </ul>
 
 

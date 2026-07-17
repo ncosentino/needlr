@@ -127,7 +127,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#status" class="md-skip">
+        <a href="#context-and-scope" class="md-skip">
           Skip to content
         </a>
       
@@ -4724,10 +4724,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#context-and-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status
+        Context and scope
       
     </span>
   </a>
@@ -4735,10 +4735,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#decision-drivers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context
+        Decision drivers
       
     </span>
   </a>
@@ -4757,13 +4757,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#investigation" class="md-nav__link">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Investigation
+        Alternatives considered
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Alternatives considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#depend-on-an-official-microsoftextensionsai-testing-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Depend on an official Microsoft.Extensions.AI testing package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continue-using-local-fakes-in-each-test-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continue using local fakes in each test project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-a-shared-fake-internal-to-needlrs-test-assemblies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep a shared fake internal to Needlr's test assemblies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-mocks-directly-for-ichatclient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use mocks directly for IChatClient
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4818,10 +4868,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-outline-v15" class="md-nav__link">
+  <a href="#confirmation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation outline (V1.5)
+        Confirmation
       
     </span>
   </a>
@@ -4912,97 +4962,110 @@
 
   <h1>ADR-0002 ScriptedChatClient Build Decision</h1>
 
-<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
-<p>Accepted — gates the V1.5 follow-up to ship a paved path for end-to-end agent-loop tool tests.</p>
-<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>The <code>NexusLabs.Needlr.AgentFramework.Testing</code> package ships <code>AgentScenarioRunner</code> and <code>PipelineScenarioRunner</code>, both of which expect callers to wire a fake <code>IChatClient</code> through <code>AgentFrameworkSyringeExtensions.UsingChatClient(...)</code> to deterministically test agent behavior without a real LLM. The package itself does not provide an <code>IChatClient</code> fake, so the Needlr codebase contains 8 ad-hoc, copy-pasted implementations:</p>
+<h2 id="context-and-scope">Context and scope<a class="headerlink" href="#context-and-scope" title="Permanent link">&para;</a></h2>
+<p><code>NexusLabs.Needlr.AgentFramework.Testing</code> provides runners for deterministic agent and
+pipeline scenarios, but callers must supply an <code>IChatClient</code>. Needlr's tests and examples
+therefore contain multiple one-off chat-client implementations for scripted responses,
+multi-turn tool calls, failure injection, and call recording. Consumers face the same
+duplication when testing agents without a live model.</p>
+<p>At the time of this decision, the shipped Microsoft.Extensions.AI packages did not
+include a public testing package or reusable scripted <code>IChatClient</code>. The dotnet/extensions
+test suite had a callback-based <code>TestChatClient</code> in a test assembly, but that type was not
+part of a package consumers could reference.</p>
+<p>This decision covers a deterministic scripted test client for agent-loop tests. It does
+not attempt to emulate a model provider, network transport, token accounting, streaming
+timing, or every possible <code>IChatClient</code> implementation detail.</p>
+<h2 id="decision-drivers">Decision drivers<a class="headerlink" href="#decision-drivers" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>Examples/AgentFramework/IterativeLoopDiagnosticsApp/Program.cs:200</code> — <code>ToolCallingMockChatClient</code></li>
-<li><code>Examples/AgentFramework/DiagnosticAttributionApp/Program.cs:197</code> — <code>MockChatClient</code></li>
-<li><code>Examples/AgentFramework/AotAgentFrameworkApp/Program.cs:68</code> — <code>NoOpChatClient</code></li>
-<li><code>NexusLabs.Needlr.AgentFramework.Evaluation.Tests/RecordingChatClient.cs</code></li>
-<li><code>NexusLabs.Needlr.AgentFramework.Evaluation.Tests/ThrowingChatClient.cs</code></li>
-<li><code>NexusLabs.Needlr.AgentFramework.Tests/DiagnosticsRecordingChatClientTestsHelpers.cs:5</code> — <code>FakeInnerChatClient</code></li>
-<li><code>NexusLabs.Needlr.AgentFramework.Tests/DiagnosticsFunctionInvokingChatClientTestsHelpers.cs:9</code> — <code>TestChatClient</code></li>
-<li><code>NexusLabs.Needlr.AgentFramework.Tests/GraphWorkflowRuntimeTests.cs:1399</code> — <code>FailingChatClient</code></li>
+<li>Agent-loop tests must run deterministically without credentials or network access.</li>
+<li>Needlr and its consumers should not repeatedly implement the same multi-turn fake.</li>
+<li>The public testing surface should remain small and depend only on existing MEAI
+  abstractions.</li>
+<li>The client should support both response scripting and request inspection.</li>
+<li>Needlr should prefer an official Microsoft test primitive if one becomes available and
+  satisfies the same contract.</li>
 </ul>
-<p>Downstream consumers writing <code>[AgentFunction]</code>-decorated tools hit the same gap and write their own.</p>
-<p>The candidate alternative was to depend on a Microsoft testing package and wrap it with a Needlr extension method. This ADR records the investigation outcome and the build-vs-buy decision.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Build a first-party <code>ScriptedChatClient</code> (and supporting <code>ChatScriptBuilder</code>) inside <code>NexusLabs.Needlr.AgentFramework.Testing</code>. Do not take a dependency on a Microsoft testing package — none exists, none is on the public roadmap, and the dotnet/extensions team's own tests use an <code>internal</code> copy-paste pattern that consumers cannot reuse.</p>
-<h2 id="investigation">Investigation<a class="headerlink" href="#investigation" title="Permanent link">&para;</a></h2>
-<p>Verified via direct nuget.org and dotnet/extensions repository inspection (May 6, 2026):</p>
-<table>
-<thead>
-<tr>
-<th>Search</th>
-<th>Result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>https://www.nuget.org/packages/Microsoft.Extensions.AI.Testing</code></td>
-<td>HTTP 404</td>
-</tr>
-<tr>
-<td>NuGet search <code>Microsoft.Extensions.AI.Testing</code> (incl. prerelease)</td>
-<td>0 results</td>
-</tr>
-<tr>
-<td>NuGet search <code>Microsoft.Extensions.AI.Fakes</code> / <code>Microsoft.Extensions.AI.TestUtilities</code></td>
-<td>0 results</td>
-</tr>
-<tr>
-<td>dotnet/extensions GitHub issues + discussions for testing package</td>
-<td>0 results — no public proposal or roadmap entry</td>
-</tr>
-<tr>
-<td>dotnet/extensions <code>src/</code> libraries scanned for any public scripted/fake <code>IChatClient</code></td>
-<td>None found</td>
-</tr>
-</tbody>
-</table>
-<p>What does exist:</p>
-<ol>
-<li><strong><code>TestChatClient</code></strong> at <code>dotnet/extensions:test/Libraries/Microsoft.Extensions.AI.Abstractions.Tests/TestChatClient.cs</code> (SHA <code>95f89a79141e34f8f8defddb60821800cc3bffad</code>) — an internal callback wrapper used only inside the dotnet/extensions test suite. Not referenced from any <code>src/</code> library, not packaged into any NuGet output. Public API surface is two settable <code>Func&lt;&gt;</code> callbacks; no turn scheduling or call recording.</li>
-<li><strong><code>AnonymousDelegatingChatClient</code></strong> at <code>dotnet/extensions:src/Libraries/Microsoft.Extensions.AI/ChatCompletion/AnonymousDelegatingChatClient.cs:18</code> is <code>internal sealed</code>, so consumers cannot instantiate it.</li>
-<li><strong>The dotnet team's own multi-turn tests</strong> at <code>dotnet/extensions:test/Libraries/Microsoft.Extensions.AI.Tests/ChatCompletion/FunctionInvokingChatClientTests.cs:2198-2252</code> use the <code>TestChatClient</code> callback with <code>messages.Count()</code> as the turn index — every test re-implements the turn counter via closure. There is no reusable type.</li>
-<li><strong>Shipped MEAI packages</strong> (Abstractions / Core / OpenAI / Evaluation, all 10.5.2 as of May 5, 2026, MIT-licensed) provide no <code>IChatClient</code> test fakes.</li>
-</ol>
+<p>Needlr will build a first-party <code>ScriptedChatClient</code> in
+<code>NexusLabs.Needlr.AgentFramework.Testing</code>, with a small <code>ChatScriptBuilder</code> for readable
+multi-turn scripts.</p>
+<p>The client will:</p>
+<ul>
+<li>implement <code>IChatClient</code> directly;</li>
+<li>return ordered scripted responses and fail clearly when the script is exhausted;</li>
+<li>record received messages and call count for assertions;</li>
+<li>support streaming by projecting scripted responses through MEAI's response-update
+  model;</li>
+<li>remain sealed and intentionally narrow so it can be deprecated or adapted if Microsoft
+  later ships an equivalent public testing primitive.</li>
+</ul>
+<p>The Testing package will not take a dependency on a speculative Microsoft testing package
+or copy an internal test-only type from dotnet/extensions.</p>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<h3 id="depend-on-an-official-microsoftextensionsai-testing-package">Depend on an official Microsoft.Extensions.AI testing package<a class="headerlink" href="#depend-on-an-official-microsoftextensionsai-testing-package" title="Permanent link">&para;</a></h3>
+<p>An official package would minimize Needlr-owned surface and align consumers with upstream
+MEAI conventions. It was not available when this decision was made, so it could not
+provide a usable dependency. This remains the preferred future replacement if Microsoft
+ships an equivalent public contract.</p>
+<h3 id="continue-using-local-fakes-in-each-test-project">Continue using local fakes in each test project<a class="headerlink" href="#continue-using-local-fakes-in-each-test-project" title="Permanent link">&para;</a></h3>
+<p>Local fakes avoid adding a public Needlr type and let each test implement only what it
+needs. This was rejected because multi-turn sequencing, exhaustion behavior, streaming,
+and request recording were already being duplicated across the repository and by
+consumers.</p>
+<h3 id="keep-a-shared-fake-internal-to-needlrs-test-assemblies">Keep a shared fake internal to Needlr's test assemblies<a class="headerlink" href="#keep-a-shared-fake-internal-to-needlrs-test-assemblies" title="Permanent link">&para;</a></h3>
+<p>An internal helper would improve Needlr's own tests without committing to public API. It
+was rejected because the same gap exists for every consumer of <code>AgentScenarioRunner</code>; an
+internal helper would leave the public testing workflow incomplete.</p>
+<h3 id="use-mocks-directly-for-ichatclient">Use mocks directly for <code>IChatClient</code><a class="headerlink" href="#use-mocks-directly-for-ichatclient" title="Permanent link">&para;</a></h3>
+<p>Mocking is appropriate for a single boundary call, but multi-turn agent behavior requires
+ordered responses and captured conversation state. Rebuilding that state machine in each
+mock setup is less readable and no less coupled than a purpose-built scripted client.</p>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Removes 8 copy-paste fakes once V1.5 ships.</li>
-<li>The <code>AgentScenarioRunner</code> doc comment at <code>src/NexusLabs.Needlr.AgentFramework.Testing/AgentScenarioRunner.cs:24-37</code> already directs consumers to wire a fake <code>IChatClient</code> — <code>ScriptedChatClient</code> becomes the canonical answer.</li>
-<li>~60 lines of code with zero dependencies beyond <code>Microsoft.Extensions.AI.Abstractions</code> (already in the chain).</li>
-<li><code>ScriptedChatClient</code> lives next to <code>AgentScenarioRunner</code> in the same package — discoverable in IDE.</li>
-<li>Streaming support is free via <code>ChatResponse.ToChatResponseUpdates()</code> (stable public MEAI API).</li>
+<li>Agent-loop tests gain one credential-free, deterministic client for multi-turn scripts.</li>
+<li>Consumers can assert the messages sent to the model without writing another fake.</li>
+<li>The type lives beside <code>AgentScenarioRunner</code>, making the supported test path discoverable.</li>
+<li>No new package dependency is required beyond the MEAI abstractions already used by the
+  Agent Framework.</li>
 </ul>
 <h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
 <ul>
-<li>One more shipped public type to maintain forever in Needlr's public API surface.</li>
-<li>If Microsoft ever ships an official testing package, we'd have a competing primitive. Mitigation: design <code>ScriptedChatClient</code> as a thin sealed type so it can be marked <code>[Obsolete]</code> and forwarded later without breaking consumers.</li>
+<li>Needlr assumes maintenance responsibility for another public testing type.</li>
+<li>The client cannot model every provider-specific behavior without losing its intentionally
+  small scope.</li>
+<li>If Microsoft ships an equivalent package, Needlr will temporarily have a competing
+  abstraction and will need a deliberate migration.</li>
 </ul>
 <h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The decision does not affect V1 — the <code>ToolInvocationRunner</code> does not need a chat client because it invokes the source-generated <code>AIFunction</code> wrapper directly, bypassing the LLM.</li>
+<li>Tests that need provider-specific transport or streaming behavior may continue to use
+  specialized boundary fakes.</li>
+<li>This decision does not change production chat-client composition.</li>
 </ul>
-<h2 id="implementation-outline-v15">Implementation outline (V1.5)<a class="headerlink" href="#implementation-outline-v15" title="Permanent link">&para;</a></h2>
-<p>Target file: <code>src/NexusLabs.Needlr.AgentFramework.Testing/ScriptedChatClient.cs</code>. One type per file. File-scoped namespace. Full XML docs. Per <code>AGENTS.md</code>.</p>
-<p>Required surface:
-- Sealed class implementing <code>IChatClient</code>.
-- Constructor accepting an ordered list of <code>ChatResponse</code> (the script).
-- <code>ReceivedMessages</code> — <code>IReadOnlyList&lt;IReadOnlyList&lt;ChatMessage&gt;&gt;</code> for assertions.
-- <code>CallCount</code> — <code>int</code>.
-- <code>GetResponseAsync</code> returns the next scripted response; throws clear <code>InvalidOperationException</code> on overflow ("script exhausted").
-- <code>GetStreamingResponseAsync</code> shells through <code>GetResponseAsync</code> + <code>ToChatResponseUpdates()</code>.
-- A separate <code>ChatScriptBuilder</code> (also one type per file) for fluent script assembly with <code>OnTurn(n, t =&gt; t.RequestTool(...))</code> / <code>OnTurn(n, t =&gt; t.RespondText(...))</code> shorthand.</p>
-<p>Replaces (post-ship migration):
-- All 8 ad-hoc fakes listed above. Forcing-function migration done as part of V1.5 to keep the abstraction honest.</p>
+<h2 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h2>
+<p>This accepted decision is not yet fully implemented. The current Testing package still
+exposes scenario runners without a public <code>ScriptedChatClient</code>, and
+<code>docs/testing-tools.md</code> identifies the scripted client as planned work.</p>
+<p>Implementation will confirm the decision when:</p>
+<ul>
+<li>the Testing package exposes the scripted client and builder;</li>
+<li>tests verify ordered responses, exhaustion, request recording, cancellation, and
+  streaming projection;</li>
+<li>at least one end-to-end agent scenario uses the public client; and</li>
+<li>representative one-off chat-client fakes can be removed without losing coverage.</li>
+</ul>
+<p>If Microsoft publishes a supported equivalent before those conditions are met, this ADR
+must be reconsidered rather than implemented by default.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Spike research: <code>meai-testing-spike</code> background agent, May 6, 2026.</li>
-<li>Needlr issue: build-vs-buy gate for V1.5 follow-up todo <code>meai-testing-spike</code> (was satisfied by this ADR; new V1.5 todo <code>scripted-chat-client-build</code> will track implementation).</li>
+<li><a href="../../testing-tools/"><code>docs/testing-tools.md</code></a> explains why full agent scenarios require
+  a deterministic <code>IChatClient</code> and records the current absence of the shared client.</li>
+<li><a href="https://github.com/ncosentino/needlr/blob/78b27a1c5eddd5b8fa3e0c07dce629159b39e436/src/NexusLabs.Needlr.AgentFramework.Testing/AgentScenarioRunner.cs"><code>AgentScenarioRunner</code> at the confirmation snapshot</a>
+  is the public test harness that needs the scripted boundary.</li>
+<li><a href="https://github.com/dotnet/extensions/blob/c221abef4b4f1bf3fcf0bda27490e8b26bb479f4/test/Libraries/Microsoft.Extensions.AI.Abstractions.Tests/TestChatClient.cs">dotnet/extensions <code>TestChatClient</code> at an immutable commit</a>
+  demonstrates that Microsoft used a test-assembly helper but did not expose it as a
+  consumer package.</li>
 </ul>
 
 
