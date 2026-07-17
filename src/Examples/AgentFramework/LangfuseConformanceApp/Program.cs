@@ -699,7 +699,8 @@ static async Task<int> RunExperimentRunnerCheckAsync(string[] modeArgs)
         {
             RunId = runId,
             MaxConcurrency = 2,
-        });
+        },
+        CancellationToken.None);
     var snapshot = resultSink.GetPublicationSnapshot();
     Console.WriteLine($"Decision: {outcome.Result.Decision}");
     Console.WriteLine($"Publication: {outcome.PublicationStatus}");

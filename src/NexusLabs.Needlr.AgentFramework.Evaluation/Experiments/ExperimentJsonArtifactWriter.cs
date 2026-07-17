@@ -19,10 +19,18 @@ public sealed class ExperimentJsonArtifactWriter
     private readonly JsonWriterOptions _writerOptions;
 
     /// <summary>
-    /// Initializes an experiment artifact writer.
+    /// Initializes an experiment artifact writer that indents JSON output.
+    /// </summary>
+    public ExperimentJsonArtifactWriter()
+        : this(writeIndented: true)
+    {
+    }
+
+    /// <summary>
+    /// Initializes an experiment artifact writer with the specified indentation behavior.
     /// </summary>
     /// <param name="writeIndented">Whether to indent the JSON output.</param>
-    public ExperimentJsonArtifactWriter(bool writeIndented = true)
+    public ExperimentJsonArtifactWriter(bool writeIndented)
     {
         _writerOptions = new JsonWriterOptions
         {
@@ -36,8 +44,25 @@ public sealed class ExperimentJsonArtifactWriter
     /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
     /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
     /// <param name="outcome">The canonical experiment outcome.</param>
+    /// <returns>The JSON artifact.</returns>
+    [RequiresDynamicCode(
+        "Reflection-based case and output serialization may require runtime code generation. Use the JsonTypeInfo overload for Native AOT.")]
+    [RequiresUnreferencedCode(
+        "Reflection-based case and output serialization may require unreferenced members. Use the JsonTypeInfo overload for trimmed applications.")]
+    public string Serialize<TCase, TOutput>(
+        ExperimentRunOutcome<TCase, TOutput> outcome) =>
+        Serialize(outcome, JsonSerializerOptions.Default);
+
+    /// <summary>
+    /// Serializes an experiment outcome using reflection-based caller payload serialization and
+    /// the specified payload serializer options.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="outcome">The canonical experiment outcome.</param>
     /// <param name="payloadSerializerOptions">
-    /// Optional serializer options applied only to caller-owned case and output values.
+    /// Serializer options applied only to caller-owned case and output values. A null value uses
+    /// <see cref="JsonSerializerOptions.Default"/>.
     /// </param>
     /// <returns>The JSON artifact.</returns>
     [RequiresDynamicCode(
@@ -46,7 +71,7 @@ public sealed class ExperimentJsonArtifactWriter
         "Reflection-based case and output serialization may require unreferenced members. Use the JsonTypeInfo overload for trimmed applications.")]
     public string Serialize<TCase, TOutput>(
         ExperimentRunOutcome<TCase, TOutput> outcome,
-        JsonSerializerOptions? payloadSerializerOptions = null)
+        JsonSerializerOptions? payloadSerializerOptions)
     {
         ArgumentNullException.ThrowIfNull(outcome);
         payloadSerializerOptions ??= JsonSerializerOptions.Default;
@@ -117,8 +142,55 @@ public sealed class ExperimentJsonArtifactWriter
     /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
     /// <param name="destination">The destination stream, which remains open.</param>
     /// <param name="outcome">The canonical experiment outcome.</param>
+    /// <returns>A task that completes after the artifact is flushed.</returns>
+    [RequiresDynamicCode(
+        "Reflection-based case and output serialization may require runtime code generation. Use the JsonTypeInfo overload for Native AOT.")]
+    [RequiresUnreferencedCode(
+        "Reflection-based case and output serialization may require unreferenced members. Use the JsonTypeInfo overload for trimmed applications.")]
+    public Task WriteAsync<TCase, TOutput>(
+        Stream destination,
+        ExperimentRunOutcome<TCase, TOutput> outcome) =>
+        WriteAsync(
+            destination,
+            outcome,
+            JsonSerializerOptions.Default,
+            CancellationToken.None);
+
+    /// <summary>
+    /// Writes an experiment outcome using reflection-based caller payload serialization with
+    /// caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="destination">The destination stream, which remains open.</param>
+    /// <param name="outcome">The canonical experiment outcome.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that completes after the artifact is flushed.</returns>
+    [RequiresDynamicCode(
+        "Reflection-based case and output serialization may require runtime code generation. Use the JsonTypeInfo overload for Native AOT.")]
+    [RequiresUnreferencedCode(
+        "Reflection-based case and output serialization may require unreferenced members. Use the JsonTypeInfo overload for trimmed applications.")]
+    public Task WriteAsync<TCase, TOutput>(
+        Stream destination,
+        ExperimentRunOutcome<TCase, TOutput> outcome,
+        CancellationToken cancellationToken) =>
+        WriteAsync(
+            destination,
+            outcome,
+            JsonSerializerOptions.Default,
+            cancellationToken);
+
+    /// <summary>
+    /// Writes an experiment outcome using reflection-based caller payload serialization, the
+    /// specified payload serializer options, and caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="destination">The destination stream, which remains open.</param>
+    /// <param name="outcome">The canonical experiment outcome.</param>
     /// <param name="payloadSerializerOptions">
-    /// Optional serializer options applied only to caller-owned case and output values.
+    /// Serializer options applied only to caller-owned case and output values. A null value uses
+    /// <see cref="JsonSerializerOptions.Default"/>.
     /// </param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes after the artifact is flushed.</returns>
@@ -129,8 +201,8 @@ public sealed class ExperimentJsonArtifactWriter
     public async Task WriteAsync<TCase, TOutput>(
         Stream destination,
         ExperimentRunOutcome<TCase, TOutput> outcome,
-        JsonSerializerOptions? payloadSerializerOptions = null,
-        CancellationToken cancellationToken = default)
+        JsonSerializerOptions? payloadSerializerOptions,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(outcome);
@@ -156,7 +228,7 @@ public sealed class ExperimentJsonArtifactWriter
 
     /// <summary>
     /// Writes an experiment outcome using caller-provided serialization metadata for AOT-safe
-    /// case and output payloads.
+    /// case and output payloads with caller cancellation.
     /// </summary>
     /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
     /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
@@ -171,7 +243,7 @@ public sealed class ExperimentJsonArtifactWriter
         ExperimentRunOutcome<TCase, TOutput> outcome,
         JsonTypeInfo<TCase> caseTypeInfo,
         JsonTypeInfo<TOutput> outputTypeInfo,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(outcome);

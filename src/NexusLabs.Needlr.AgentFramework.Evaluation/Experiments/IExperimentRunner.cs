@@ -6,7 +6,19 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 public interface IExperimentRunner
 {
     /// <summary>
-    /// Materializes, validates, expands, and executes one experiment.
+    /// Materializes, validates, expands, and executes one experiment without caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="definition">The experiment definition.</param>
+    /// <param name="options">The run options.</param>
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
+        ExperimentDefinition<TCase, TOutput> definition,
+        ExperimentRunOptions options);
+
+    /// <summary>
+    /// Materializes, validates, expands, and executes one experiment with caller cancellation.
     /// </summary>
     /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
     /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
@@ -17,5 +29,5 @@ public interface IExperimentRunner
     Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
         ExperimentDefinition<TCase, TOutput> definition,
         ExperimentRunOptions options,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

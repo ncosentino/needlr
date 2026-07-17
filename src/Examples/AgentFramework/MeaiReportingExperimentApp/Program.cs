@@ -131,7 +131,8 @@ async Task RunAsync(
         {
             RunId = runId,
             MaxConcurrency = 1,
-        });
+        },
+        CancellationToken.None);
     var item = outcome.Result.Items.Single();
     var publication = item.Publications.Single();
     Console.WriteLine(

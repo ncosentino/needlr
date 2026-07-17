@@ -169,7 +169,8 @@ var outcome = await runner.RunAsync(
             retryOn: ExperimentRetryableOutcome.ExecutionFailure,
             delay: TimeSpan.FromMilliseconds(20)),
         SharedLimiter = sharedLimiter,
-    });
+    },
+    CancellationToken.None);
 
 var result = outcome.Result;
 Console.WriteLine(
@@ -211,7 +212,8 @@ await using (var stream = File.Create(artifactPath))
         stream,
         outcome,
         ExperimentJsonContext.Default.ExperimentCaseDefinition,
-        ExperimentJsonContext.Default.ExperimentOutput);
+        ExperimentJsonContext.Default.ExperimentOutput,
+        CancellationToken.None);
 }
 
 Console.WriteLine();

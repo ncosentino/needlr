@@ -7,10 +7,16 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
 public interface IExperimentCaseSource<TCase>
 {
     /// <summary>
-    /// Loads the complete finite case collection.
+    /// Loads the complete finite case collection without caller cancellation.
+    /// </summary>
+    /// <returns>The source identity and ordered cases.</returns>
+    ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync();
+
+    /// <summary>
+    /// Loads the complete finite case collection with caller cancellation.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The source identity and ordered cases.</returns>
     ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

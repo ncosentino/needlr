@@ -13,6 +13,110 @@ public sealed class ExperimentJsonArtifactWriterTests
     private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     [Fact]
+    public async Task Overloads_WriteByteIdenticalArtifactsForIdenticalInputs()
+    {
+        var outcome = await CreateSimpleOutcomeAsync();
+        var defaultWriter = new ExperimentJsonArtifactWriter();
+        var explicitIndentedWriter = new ExperimentJsonArtifactWriter(writeIndented: true);
+        var serializerOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        var caseTypeInfo = (JsonTypeInfo<int>)serializerOptions.GetTypeInfo(typeof(int));
+        var outputTypeInfo = (JsonTypeInfo<string>)serializerOptions.GetTypeInfo(typeof(string));
+
+        var tokenlessSerialization = defaultWriter.Serialize(outcome);
+        var explicitOptionsSerialization = defaultWriter.Serialize(
+            outcome,
+            JsonSerializerOptions.Default);
+        var explicitConstructorSerialization = explicitIndentedWriter.Serialize(outcome);
+        Assert.Equal(tokenlessSerialization, explicitOptionsSerialization);
+        Assert.Equal(tokenlessSerialization, explicitConstructorSerialization);
+
+        using var tokenlessReflectionStream = new MemoryStream();
+#pragma warning disable xUnit1051 // This test intentionally exercises the tokenless reflection-write overload.
+        await defaultWriter.WriteAsync(tokenlessReflectionStream, outcome);
+#pragma warning restore xUnit1051
+        using var cancellableReflectionStream = new MemoryStream();
+        await defaultWriter.WriteAsync(
+            cancellableReflectionStream,
+            outcome,
+            _cancellationToken);
+        Assert.Equal(
+            tokenlessReflectionStream.ToArray(),
+            cancellableReflectionStream.ToArray());
+
+        using var explicitOptionsStream = new MemoryStream();
+        await defaultWriter.WriteAsync(
+            explicitOptionsStream,
+            outcome,
+            JsonSerializerOptions.Default,
+            _cancellationToken);
+        using var nullOptionsStream = new MemoryStream();
+        await defaultWriter.WriteAsync(
+            nullOptionsStream,
+            outcome,
+            null,
+            _cancellationToken);
+        Assert.Equal(
+            tokenlessSerialization,
+            System.Text.Encoding.UTF8.GetString(explicitOptionsStream.ToArray()));
+        Assert.Equal(
+            explicitOptionsStream.ToArray(),
+            nullOptionsStream.ToArray());
+
+        using var aotStream = new MemoryStream();
+        await defaultWriter.WriteAsync(
+            aotStream,
+            outcome,
+            caseTypeInfo,
+            outputTypeInfo,
+            _cancellationToken);
+        Assert.Equal(
+            defaultWriter.Serialize(outcome, caseTypeInfo, outputTypeInfo),
+            System.Text.Encoding.UTF8.GetString(aotStream.ToArray()));
+    }
+
+    [Fact]
+    public async Task WriteAsync_CanceledTokenPreservesTokenAndWritesNoBytes()
+    {
+        var outcome = await CreateSimpleOutcomeAsync();
+        var writer = new ExperimentJsonArtifactWriter(writeIndented: false);
+        var serializerOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        var caseTypeInfo = (JsonTypeInfo<int>)serializerOptions.GetTypeInfo(typeof(int));
+        var outputTypeInfo = (JsonTypeInfo<string>)serializerOptions.GetTypeInfo(typeof(string));
+        using var cancellation =
+            CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken);
+        cancellation.Cancel();
+        using var reflectionStream = new MemoryStream();
+
+        var reflectionException = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            writer.WriteAsync(
+                reflectionStream,
+                outcome,
+                JsonSerializerOptions.Default,
+                cancellation.Token));
+
+        Assert.Equal(cancellation.Token, reflectionException.CancellationToken);
+        Assert.Equal(0, reflectionStream.Length);
+
+        using var aotStream = new MemoryStream();
+        var aotException = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            writer.WriteAsync(
+                aotStream,
+                outcome,
+                caseTypeInfo,
+                outputTypeInfo,
+                cancellation.Token));
+
+        Assert.Equal(cancellation.Token, aotException.CancellationToken);
+        Assert.Equal(0, aotStream.Length);
+    }
+
+    [Fact]
     public async Task Serialize_WritesStableEnvelopeOrderingAndNormalizedMetrics()
     {
         var evaluation = new EvaluationResult(
@@ -399,4 +503,21 @@ public sealed class ExperimentJsonArtifactWriterTests
         Assert.Equal("7", item.GetProperty("case").GetString());
         Assert.Equal("9", item.GetProperty("output").GetString());
     }
+
+    private async Task<ExperimentRunOutcome<int, string>> CreateSimpleOutcomeAsync() =>
+        await new ExperimentRunner().RunAsync(
+            new ExperimentDefinition<int, string>
+            {
+                Name = "overload-artifact",
+                CaseSource = new LocalExperimentCaseSource<int>(
+                    "local",
+                    [new ExperimentCase<int> { Id = "case-1", Value = 7 }]),
+                Task = (_, _) => ValueTask.FromResult("output"),
+            },
+            new ExperimentRunOptions
+            {
+                RunId = "overload-run",
+                MaxConcurrency = 1,
+            },
+            _cancellationToken);
 }

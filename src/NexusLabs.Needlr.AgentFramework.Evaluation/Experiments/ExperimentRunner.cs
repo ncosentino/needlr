@@ -15,22 +15,63 @@ public sealed class ExperimentRunner : IExperimentRunner
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
-    /// Initializes an experiment runner.
+    /// Initializes an experiment runner that uses <see cref="TimeProvider.System"/>.
+    /// </summary>
+    public ExperimentRunner()
+        : this(TimeProvider.System)
+    {
+    }
+
+    /// <summary>
+    /// Initializes an experiment runner with the specified time provider.
     /// </summary>
     /// <param name="timeProvider">
-    /// The time provider used for timestamps, durations, deadlines, and retry readiness. Uses
-    /// <see cref="TimeProvider.System"/> when omitted.
+    /// The time provider used for timestamps, durations, deadlines, and retry readiness.
+    /// A null value uses <see cref="TimeProvider.System"/>.
     /// </param>
-    public ExperimentRunner(TimeProvider? timeProvider = null)
+    public ExperimentRunner(TimeProvider? timeProvider)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Materializes, validates, expands, and executes one experiment without caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="definition">The experiment definition.</param>
+    /// <param name="options">The run options.</param>
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    public Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
+        ExperimentDefinition<TCase, TOutput> definition,
+        ExperimentRunOptions options) =>
+        RunAsync(definition, options, CancellationToken.None);
+
+    /// <summary>
+    /// Materializes, validates, expands, and executes one experiment with caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="definition">The experiment definition.</param>
+    /// <param name="options">The run options.</param>
+    /// <param name="cancellationToken">A caller cancellation token.</param>
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="definition"/> or <paramref name="options"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The experiment definition, run options, or materialized cases are invalid.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A run option, trial count, or policy value is outside its supported range.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// <paramref name="cancellationToken"/> was canceled.
+    /// </exception>
     public async Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
         ExperimentDefinition<TCase, TOutput> definition,
         ExperimentRunOptions options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(options);

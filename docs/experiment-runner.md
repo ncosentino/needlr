@@ -91,6 +91,15 @@ Every case is materialized and validated before execution. Cases expand in sourc
 ascending one-based trial index. Items return in that stable order regardless of completion or retry
 order.
 
+The provider-neutral execution APIs use explicit overloads rather than optional parameters:
+
+- `IExperimentCaseSource<TCase>.LoadAsync()` delegates to
+  `LoadAsync(CancellationToken.None)`;
+- `IExperimentRunner.RunAsync(definition, options)` delegates to the overload that accepts
+  `CancellationToken`;
+- `ExperimentRunner()` uses `TimeProvider.System`, while
+  `ExperimentRunner(TimeProvider)` requires a non-null provider.
+
 ## Cases, Trials, and Attempts
 
 | Term | Meaning |
@@ -520,6 +529,12 @@ property ordering:
 - the overall run decision;
 - aggregate publication status and ordered final sink results;
 - structured failures without raw exceptions or stack traces.
+
+Constructors and write operations also use explicit overloads. Reflection-based serialization
+offers tokenless, cancellable, default-options, and explicit-`JsonSerializerOptions` forms. The AOT
+stream path offers tokenless and cancellable `JsonTypeInfo<T>` forms. Tokenless overloads use
+`CancellationToken.None`; all overloads route through one implementation per serialization family
+so identical inputs produce identical JSON bytes.
 
 For Native AOT, pass caller-generated metadata:
 
