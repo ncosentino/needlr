@@ -13,24 +13,9 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Reporting;
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
 /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
 [DoNotAutoRegister]
-public sealed class MeaiReportingExperimentAdapter<TCase, TOutput> :
+internal sealed class MeaiReportingExperimentAdapter<TCase, TOutput> :
     IExperimentItemScopeProvider<TCase, TOutput>
 {
-    /// <summary>Gets the provider name used in item publication results.</summary>
-    public const string ProviderName = "meai-reporting";
-
-    /// <summary>Gets the namespace used for MEAI Reporting item correlations.</summary>
-    public const string CorrelationNamespace = "meai.reporting";
-
-    /// <summary>Gets the execution-name correlation name.</summary>
-    public const string ExecutionNameCorrelationName = "execution.name";
-
-    /// <summary>Gets the scenario-name correlation name.</summary>
-    public const string ScenarioNameCorrelationName = "scenario.name";
-
-    /// <summary>Gets the iteration-name correlation name.</summary>
-    public const string IterationNameCorrelationName = "iteration.name";
-
     private readonly ReportingConfiguration _configuration;
     private readonly MeaiReportingEvaluationInputFactory<TCase, TOutput> _inputFactory;
     private readonly Func<
@@ -41,7 +26,7 @@ public sealed class MeaiReportingExperimentAdapter<TCase, TOutput> :
     internal MeaiReportingExperimentAdapter(
         ReportingConfiguration configuration,
         MeaiReportingEvaluationInputFactory<TCase, TOutput> inputFactory,
-        MeaiReportingExperimentAdapterOptions<TCase, TOutput> options)
+        MeaiReportingExperimentOptions<TCase, TOutput> options)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(inputFactory);
@@ -58,7 +43,7 @@ public sealed class MeaiReportingExperimentAdapter<TCase, TOutput> :
     }
 
     /// <inheritdoc />
-    public string Name => ProviderName;
+    public string Name => MeaiReportingExperimentSchema.ProviderName;
 
     /// <inheritdoc />
     public bool IsRequired { get; }

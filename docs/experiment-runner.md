@@ -298,7 +298,7 @@ var definition = new ExperimentDefinition<MyCase, MyOutput>
     context => new EvaluationInputs(
         context.Output.Messages,
         context.Output.Response),
-    new MeaiReportingExperimentAdapterOptions<MyCase, MyOutput>
+    new MeaiReportingExperimentOptions<MyCase, MyOutput>
     {
         ResponseReuseMode =
             MeaiReportingResponseReuseMode.CaseAndTrialReplay,

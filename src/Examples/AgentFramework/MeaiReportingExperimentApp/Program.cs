@@ -117,7 +117,7 @@ async Task RunAsync(
         context => new EvaluationInputs(
             context.Output.Messages,
             context.Output.Response),
-        new MeaiReportingExperimentAdapterOptions<
+        new MeaiReportingExperimentOptions<
             ReportingExampleCase,
             ReportingExampleOutput>
         {

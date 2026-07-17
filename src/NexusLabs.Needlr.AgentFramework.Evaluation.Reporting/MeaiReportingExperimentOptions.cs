@@ -9,7 +9,7 @@ namespace NexusLabs.Needlr.AgentFramework.Evaluation.Reporting;
 /// </summary>
 /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
 /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
-public sealed record MeaiReportingExperimentAdapterOptions<TCase, TOutput>
+public sealed record MeaiReportingExperimentOptions<TCase, TOutput>
 {
     /// <summary>
     /// Gets the explicit response-cache reuse behavior.

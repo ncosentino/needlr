@@ -32,28 +32,25 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .ExecutionNameCorrelationName,
+                    MeaiReportingExperimentSchema.ExecutionNameCorrelationName,
                 Value = item.ExecutionName,
             },
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .ScenarioNameCorrelationName,
+                    MeaiReportingExperimentSchema.ScenarioNameCorrelationName,
                 Value = item.ScenarioName,
             },
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .IterationNameCorrelationName,
+                    MeaiReportingExperimentSchema.IterationNameCorrelationName,
                 Value = item.IterationName,
             },
         ]);
@@ -76,7 +73,7 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
             _persistOnDispose = true;
             return ValueTask.FromResult(new ExperimentItemPublicationResult
             {
-                Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
+                Name = MeaiReportingExperimentSchema.ProviderName,
                 IsRequired = _isRequired,
                 Status = ExperimentPublicationOperationStatus.Succeeded,
                 Correlations = _correlations,
@@ -90,7 +87,7 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
                 "the paired MEAI Reporting item evaluator.");
             return ValueTask.FromResult(new ExperimentItemPublicationResult
             {
-                Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
+                Name = MeaiReportingExperimentSchema.ProviderName,
                 IsRequired = _isRequired,
                 Status = ExperimentPublicationOperationStatus.Failed,
                 Correlations = _correlations,
@@ -106,7 +103,7 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
 
         return ValueTask.FromResult(new ExperimentItemPublicationResult
         {
-            Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
+            Name = MeaiReportingExperimentSchema.ProviderName,
             IsRequired = _isRequired,
             Status = ExperimentPublicationOperationStatus.NotAttempted,
             Correlations = _correlations,

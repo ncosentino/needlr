@@ -17,6 +17,14 @@ public sealed class MeaiReportingExperimentAdapterTests
     private readonly MockRepository _mocks = new(MockBehavior.Strict);
 
     [Fact]
+    public void Adapter_IsNotPublic()
+    {
+        Assert.False(
+            typeof(MeaiReportingExperimentAdapter<,>).IsPublic,
+            "The coordinated Reporting adapter must remain an internal implementation detail.");
+    }
+
+    [Fact]
     public void WithMeaiReporting_AddsCoordinatedScopeAndEvaluator()
     {
         using var storage = new TemporaryTestDirectory();
@@ -38,7 +46,7 @@ public sealed class MeaiReportingExperimentAdapterTests
             context => new EvaluationInputs(
                 context.Output.Messages,
                 context.Output.Response),
-            new MeaiReportingExperimentAdapterOptions<string, ReportingTestOutput>
+            new MeaiReportingExperimentOptions<string, ReportingTestOutput>
             {
                 ResponseReuseMode = MeaiReportingResponseReuseMode.Disabled,
             });
@@ -49,7 +57,7 @@ public sealed class MeaiReportingExperimentAdapterTests
         var scope = Assert.Single(configured.ItemScopes);
         Assert.IsType<MeaiReportingExperimentAdapter<string, ReportingTestOutput>>(scope);
         Assert.Equal(
-            MeaiReportingExperimentAdapter<string, ReportingTestOutput>.ProviderName,
+            MeaiReportingExperimentSchema.ProviderName,
             scope.Name);
     }
 
@@ -77,7 +85,7 @@ public sealed class MeaiReportingExperimentAdapterTests
                 context => new EvaluationInputs(
                     context.Output.Messages,
                     context.Output.Response),
-                new MeaiReportingExperimentAdapterOptions<string, ReportingTestOutput>
+                new MeaiReportingExperimentOptions<string, ReportingTestOutput>
                 {
                     ResponseReuseMode = MeaiReportingResponseReuseMode.Disabled,
                 }));
@@ -183,20 +191,17 @@ public sealed class MeaiReportingExperimentAdapterTests
                 runId,
                 GetCorrelation(
                     publication,
-                    MeaiReportingExperimentAdapter<string, ReportingTestOutput>
-                        .ExecutionNameCorrelationName));
+                    MeaiReportingExperimentSchema.ExecutionNameCorrelationName));
             Assert.Equal(
                 "case-1",
                 GetCorrelation(
                     publication,
-                    MeaiReportingExperimentAdapter<string, ReportingTestOutput>
-                        .ScenarioNameCorrelationName));
+                    MeaiReportingExperimentSchema.ScenarioNameCorrelationName));
             Assert.Equal(
                 item.TrialIndex.ToString(),
                 GetCorrelation(
                     publication,
-                    MeaiReportingExperimentAdapter<string, ReportingTestOutput>
-                        .IterationNameCorrelationName));
+                    MeaiReportingExperimentSchema.IterationNameCorrelationName));
         });
         Assert.Equal(2, firstEvaluator.CallCount);
         Assert.Equal(2, secondEvaluator.CallCount);
@@ -341,7 +346,7 @@ public sealed class MeaiReportingExperimentAdapterTests
             executionName: runId);
         var adapter = configuration.CreateExperimentAdapter<string, ReportingTestOutput>(
             _ => throw new InvalidOperationException("projection failed"),
-            new MeaiReportingExperimentAdapterOptions<string, ReportingTestOutput>
+            new MeaiReportingExperimentOptions<string, ReportingTestOutput>
             {
                 ResponseReuseMode = MeaiReportingResponseReuseMode.Disabled,
             });
@@ -537,7 +542,7 @@ public sealed class MeaiReportingExperimentAdapterTests
             context => new EvaluationInputs(
                 context.Output.Messages,
                 context.Output.Response),
-            new MeaiReportingExperimentAdapterOptions<string, ReportingTestOutput>
+            new MeaiReportingExperimentOptions<string, ReportingTestOutput>
             {
                 ResponseReuseMode = responseReuseMode,
                 IsRequired = isRequired,
@@ -684,7 +689,6 @@ public sealed class MeaiReportingExperimentAdapterTests
             publication.Correlations,
             correlation =>
                 correlation.Namespace
-                    == MeaiReportingExperimentAdapter<string, ReportingTestOutput>
-                        .CorrelationNamespace
+                    == MeaiReportingExperimentSchema.CorrelationNamespace
                 && correlation.Name == name).Value;
 }
