@@ -148,13 +148,13 @@ internal sealed class LangfuseApiClient
 
     internal async Task EnsureResourceAsync(
         ILangfuseResourceLockProvider lockProvider,
-        string lockKey,
+        LangfuseResourceLockKey lockKey,
         Func<CancellationToken, Task<bool>> resourceMatchesAsync,
         Func<CancellationToken, Task> createAsync,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(lockProvider);
-        ArgumentException.ThrowIfNullOrWhiteSpace(lockKey);
+        ArgumentNullException.ThrowIfNull(lockKey);
         ArgumentNullException.ThrowIfNull(resourceMatchesAsync);
         ArgumentNullException.ThrowIfNull(createAsync);
 

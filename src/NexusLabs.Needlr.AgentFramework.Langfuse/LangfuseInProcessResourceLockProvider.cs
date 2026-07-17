@@ -21,19 +21,24 @@ public sealed class LangfuseInProcessResourceLockProvider : ILangfuseResourceLoc
     }
 
     /// <inheritdoc />
+    public ValueTask<IAsyncDisposable> AcquireAsync(LangfuseResourceLockKey key) =>
+        AcquireAsync(key, CancellationToken.None);
+
+    /// <inheritdoc />
     public async ValueTask<IAsyncDisposable> AcquireAsync(
-        string key,
-        CancellationToken cancellationToken = default)
+        LangfuseResourceLockKey key,
+        CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(key);
+        var keyValue = key.Value;
 
         LockEntry entry;
         lock (_sync)
         {
-            if (!_entries.TryGetValue(key, out entry!))
+            if (!_entries.TryGetValue(keyValue, out entry!))
             {
                 entry = new LockEntry();
-                _entries.Add(key, entry);
+                _entries.Add(keyValue, entry);
             }
 
             entry.ReferenceCount++;
@@ -42,11 +47,11 @@ public sealed class LangfuseInProcessResourceLockProvider : ILangfuseResourceLoc
         try
         {
             await entry.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            return new LockLease(this, key, entry);
+            return new LockLease(this, keyValue, entry);
         }
         catch (OperationCanceledException)
         {
-            RemoveReference(key, entry);
+            RemoveReference(keyValue, entry);
             throw;
         }
     }
