@@ -74,6 +74,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.Equal(scenario.Activity.SpanId, child.ParentSpanId);
                 return Task.FromResult(child.TraceId.ToString());
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(result.TraceId, result.Value);
@@ -96,6 +97,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.Same(scenario.Activity, Activity.Current);
                 return Task.FromResult("done");
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("done", result.Value);
@@ -122,6 +124,7 @@ public sealed class LangfuseExperimentRunTests
                     await Task.Yield();
                     throw new InvalidOperationException("callback failed");
                 },
+                options: null,
                 cancellationToken: _cancellationToken));
 
         Assert.Equal("callback failed", exception.Message);
@@ -153,8 +156,16 @@ public sealed class LangfuseExperimentRunTests
             return scenario.TraceId!;
         }
 
-        var firstTask = run.RunItemAsync("case-1", ExecuteAsync, cancellationToken: _cancellationToken);
-        var secondTask = run.RunItemAsync("case-2", ExecuteAsync, cancellationToken: _cancellationToken);
+        var firstTask = run.RunItemAsync(
+            "case-1",
+            ExecuteAsync,
+            options: null,
+            cancellationToken: _cancellationToken);
+        var secondTask = run.RunItemAsync(
+            "case-2",
+            ExecuteAsync,
+            options: null,
+            cancellationToken: _cancellationToken);
         var results = await Task.WhenAll(firstTask, secondTask);
 
         Assert.Equal(2, results.Length);
@@ -189,11 +200,13 @@ public sealed class LangfuseExperimentRunTests
                         Assert.NotEqual(outerScenario.TraceId, innerScenario.TraceId);
                         return Task.FromResult(innerScenario.TraceId!);
                     },
+                    options: null,
                     cancellationToken: cancellationToken);
 
                 Assert.Same(outerScenario.Activity, Activity.Current);
                 return innerResult.TraceId;
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(outerTraceId, outerResult.TraceId);
@@ -228,6 +241,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.Same(scenario.Activity, Activity.Current);
                 return Task.FromResult("continued");
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.True(callbackInvoked, "Expected best-effort link failure to continue into the callback.");
@@ -283,6 +297,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.Same(scenario.Activity, Activity.Current);
                 return Task.FromResult("not sampled");
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("not sampled", result.Value);
@@ -332,6 +347,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.NotNull(scenario.TraceId);
                 return Task.FromResult(scenario.TraceId);
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.NotNull(result.Value);
@@ -388,6 +404,7 @@ public sealed class LangfuseExperimentRunTests
             run.RunItemAsync<string>(
                 "case-1",
                 (_, _) => throw new LangfuseException("callback failure"),
+                options: null,
                 cancellationToken: _cancellationToken));
 
         Assert.Equal("callback failure", exception.Message);
@@ -408,6 +425,7 @@ public sealed class LangfuseExperimentRunTests
                 Assert.Equal(_cancellationToken, cancellationToken);
                 return Task.FromResult(42);
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(42, result.Value);

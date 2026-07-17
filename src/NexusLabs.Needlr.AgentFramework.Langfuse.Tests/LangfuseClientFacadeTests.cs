@@ -320,6 +320,7 @@ public sealed class LangfuseClientFacadeTests
         var item = await run.RunItemAsync(
             "item",
             (_, _) => Task.FromResult("disabled"),
+            options: null,
             cancellationToken: _cancellationToken);
         await client.Scores.RecordScoreAsync(
             "trace",

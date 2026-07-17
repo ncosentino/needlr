@@ -937,7 +937,8 @@ static async Task<int> RunExperimentsCheckAsync()
         {
             Id = $"{runId}:{configName}",
             Comment = "All conformance items linked.",
-        });
+        },
+        CancellationToken.None);
     var booleanRunScore = await run.RecordScoreAsync(
         "needlr_run_passed",
         true,
@@ -945,17 +946,20 @@ static async Task<int> RunExperimentsCheckAsync()
         {
             Id = $"{runId}:needlr_run_passed",
             Comment = "Every required run check passed before read-back.",
-        });
+        },
+        CancellationToken.None);
     var categoricalRunScore = await run.RecordScoreAsync(
         "needlr_run_verdict",
         "passed",
-        new LangfuseScoreOptions { Id = $"{runId}:needlr_run_verdict" });
+        new LangfuseScoreOptions { Id = $"{runId}:needlr_run_verdict" },
+        CancellationToken.None);
     var evaluationRunScores = await run.RecordEvaluationAsync(
         new EvaluationResult(new NumericMetric("needlr_run_item_count", itemTraceIds.Count)),
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        },
+        CancellationToken.None);
     LangfuseExperimentRunScoreResult[] runScoreResults =
     [
         numericRunScore,

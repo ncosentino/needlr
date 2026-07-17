@@ -62,9 +62,19 @@ internal sealed class DisabledLangfuseExperimentRun :
     /// <inheritdoc />
     public Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
         string datasetItemId,
+        Func<ILangfuseScenario, CancellationToken, Task<T>> callback) =>
+        RunItemAsync(
+            datasetItemId,
+            callback,
+            options: null,
+            CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
+        string datasetItemId,
         Func<ILangfuseScenario, CancellationToken, Task<T>> callback,
-        LangfuseExperimentItemOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseExperimentItemOptions? options,
+        CancellationToken cancellationToken) =>
         _lifecycleFactory.RunItemAsync(
             DatasetName,
             datasetItemId,
@@ -76,25 +86,43 @@ internal sealed class DisabledLangfuseExperimentRun :
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
+        double value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
         double value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         RecordDisabledScoreAsync(name, options, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        bool value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         bool value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         RecordDisabledScoreAsync(name, options, cancellationToken);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
+        string value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
         string value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default)
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
         return RecordDisabledScoreAsync(name, options, cancellationToken);
@@ -102,9 +130,14 @@ internal sealed class DisabledLangfuseExperimentRun :
 
     /// <inheritdoc />
     public Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
+        EvaluationResult result) =>
+        RecordEvaluationAsync(result, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
-        LangfuseEvaluationScoreOptions? options = null,
-        CancellationToken cancellationToken = default)
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(result);
         cancellationToken.ThrowIfCancellationRequested();

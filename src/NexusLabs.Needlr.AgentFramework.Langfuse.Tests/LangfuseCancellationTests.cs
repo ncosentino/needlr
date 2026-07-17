@@ -126,6 +126,7 @@ public sealed class LangfuseCancellationTests
                 callbackInvoked = true;
                 return Task.FromResult("not reached");
             },
+            options: null,
             cancellationToken: cancellation.Token);
         await requestStarted.Task.WaitAsync(_testCancellationToken);
         cancellation.Cancel();
@@ -166,6 +167,7 @@ public sealed class LangfuseCancellationTests
                 callbackStarted.SetResult();
                 return await pendingCallback.Task.WaitAsync(token);
             },
+            options: null,
             cancellationToken: cancellation.Token);
         await callbackStarted.Task.WaitAsync(_testCancellationToken);
         cancellation.Cancel();
@@ -202,6 +204,7 @@ public sealed class LangfuseCancellationTests
                     callbackInvoked = true;
                     return Task.FromResult("not reached");
                 },
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
@@ -225,6 +228,7 @@ public sealed class LangfuseCancellationTests
                     callbackInvoked = true;
                     return Task.FromResult("not reached");
                 },
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);

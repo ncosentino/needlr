@@ -56,8 +56,14 @@ internal sealed class DisabledLangfuseClient :
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
+        string runName) =>
+        BeginExperimentRun(datasetName, runName, options: null);
+
+    /// <inheritdoc />
+    public ILangfuseExperimentRun BeginExperimentRun(
+        string datasetName,
         string runName,
-        LangfuseExperimentRunOptions? options = null) =>
+        LangfuseExperimentRunOptions? options) =>
         new DisabledLangfuseExperimentRun(datasetName, runName, options);
 
     /// <inheritdoc />

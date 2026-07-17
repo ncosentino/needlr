@@ -502,6 +502,7 @@ foreach (var item in items)
                 cancellationToken);
             return evaluation;
         },
+        options: null,
         cancellationToken: cancellationToken);
 
     Console.WriteLine(
@@ -537,6 +538,11 @@ Console.WriteLine(
 the active `Activity.Current` across awaits, and disposes it before returning. Agent, chat, and
 tool spans created inside the callback therefore nest beneath the item trace without callers
 assigning `Activity.Current` or manually managing scenario lifetime.
+
+The experiment-run methods use two explicit overloads: required arguments only, or required
+arguments plus nullable options and an explicit cancellation token. To customize either concern,
+call the full overload and pass `null` for default options or `CancellationToken.None` when
+cancellation is not needed. There are no token-only or options-only overloads.
 
 The dataset and its items must exist before the run links to them. Link failures use
 `LangfuseExperimentItemLinkFailureMode.BestEffort` by default: the callback still runs,
@@ -940,6 +946,7 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                     cancellationToken: token);
                 return scenario.TraceId;
             },
+            options: null,
             cancellationToken: cancellationToken);
 
         if (item.TraceId is { } traceId)
