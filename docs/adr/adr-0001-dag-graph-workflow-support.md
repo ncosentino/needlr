@@ -8,281 +8,172 @@ supersedes: ""
 superseded_by: ""
 ---
 
-## Status
+## Context and scope
 
-Accepted — Phases 1–4 implemented. Expert-validated via 5-agent fleet review, rubber duck critique, and expert consultation.
+Needlr's Agent Framework originally supported handoff, group-chat, and sequential
+workflows through a consistent model: attributes declare topology, source generation
+emits registration and factory code, and analyzers reject invalid declarations before
+runtime.
 
-### Implementation Status
+Microsoft Agent Framework (MAF) also supports graph execution for conditional routing,
+fan-out, and fan-in. Without a Needlr graph abstraction, consumers that need non-linear
+workflows must use raw MAF APIs and give up Needlr's source-generated discovery,
+compile-time validation, dependency-injection integration, and common diagnostics.
 
-| Phase | Status | Notes |
-|---|---|---|
-| 1 | ✅ Complete | Attributes, enums, `IWorkflowFactory.CreateGraphWorkflow`, reflection-based factory |
-| 2 | ✅ Complete | Source generator discovers graph attributes, emits `Create{Name}GraphWorkflow()` extensions, Mermaid subgraph. `AgentGraphReducerAttribute` defined. |
-| 3 | ✅ Complete | 12 diagnostics (NDLRMAF016–022, NDLRMAF024–025, NDLRMAF027–029) across 9 analyzer classes. 137 analyzer tests. Release tracking entries. |
-| 4 | ✅ Complete | `IDagRunResult`, `IDagNodeResult`, `NodeKind`, `DagRunResult`, `DagNodeResult`, `ReducerNodeInvokedEvent`. Docs updated. Runtime wiring for RoutingMode, JoinMode, reducers. End-to-end example app (`GraphWorkflowApp`). Per-node `NodeRoutingMode` override on `AgentGraphEdgeAttribute`. 12 analyzer doc pages. `GraphTopologyRegistration` DTO + `AgentGraphTopologyRegistry` source-gen emission + bootstrap registration for AOT-safe topology discovery. `Run{Name}GraphWorkflowAsync` generated extension method on `IGraphWorkflowRunner`. `GraphNames` constants class. |
+This decision governs finite directed acyclic workflows composed of Needlr agents and
+deterministic reducer nodes. It does not make Needlr a general-purpose distributed
+workflow engine, add cyclic execution, or guarantee that every graph can run through the
+same MAF execution primitive.
 
-### Known Limitations
+## Decision drivers
 
-- **WaitAny requires `RunGraphAsync`**: `GraphJoinMode.WaitAny` is fully implemented via the `RunGraphAsync` extension method in `NexusLabs.Needlr.AgentFramework.Workflows`. However, it is **not compatible** with `CreateGraphWorkflow` (which returns a MAF `Workflow` using BSP execution). `CreateGraphWorkflow` throws `NotSupportedException` when WaitAny nodes are detected, directing users to `RunGraphAsync`. Analyzer **NDLRMAF025** catches this at compile time — users see an error in their IDE before they ever run the code.
-- **LlmChoice requires `RunGraphAsync`**: `GraphRoutingMode.LlmChoice` uses the Needlr-native executor (`RunGraphAsync`) because MAF's BSP engine cannot handle LLM-driven edge selection. `CreateGraphWorkflow` does not support LlmChoice. When the graph-wide or any per-node routing mode is `LlmChoice`, `RunGraphAsync` automatically selects the Needlr-native executor.
-
-### Runtime Feature Coverage
-
-All attribute properties are wired at runtime in the Needlr-native executor (`RunGraphAsync`) with test coverage:
-
-| Feature | Status | Tests |
-|---|---|---|
-| Condition-based routing | ✅ Implemented | Conditional edge skips branch, unconditional always fires, mixed behavior |
-| IsRequired failure propagation | ✅ Implemented | Required failure kills graph, optional failure continues, mixed scenario |
-| Reducer invocation | ✅ Implemented | Reducer called with branch outputs, return value passed downstream |
-| WaitAny join mode | ✅ Implemented | Proceeds on first-to-complete, verified by timing |
-| RoutingMode enforcement | ✅ Implemented | FirstMatching fires only first, ExclusiveChoice rejects zero/multiple matches |
-| NodeRoutingMode override | ✅ Implemented | Per-node override takes precedence over graph-wide mode |
-| Progress events | ✅ Implemented | AgentInvokedEvent, WorkflowStarted/CompletedEvent emitted during execution |
-| LlmChoice routing | ✅ Implemented | LLM picks route from condition strings, unchosen branch skipped, no-match fallback |
-
-## Context
-
-Needlr's agent framework wraps [Microsoft Agent Framework (MAF)](https://github.com/microsoft/agent-framework) with an attribute-driven, source-generated workflow model. Three workflow types exist today:
-
-| Workflow Type | Attribute | Factory Method Pattern |
-|---|---|---|
-| Handoff | `[AgentHandoffsTo]` | `Create{Agent}HandoffWorkflow()` |
-| Group Chat | `[AgentGroupChatMember]` | `Create{GroupName}GroupChatWorkflow()` |
-| Sequential | `[AgentSequenceMember]` | `Create{PipelineName}SequentialWorkflow()` |
-
-Each follows a consistent pattern: attributes on agent classes declare topology, a source generator (`AgentFrameworkFunctionRegistryGenerator`) emits `IWorkflowFactory` extension methods, and Roslyn analyzers (`NDLRMAF001`–`NDLRMAF015`) provide compile-time validation.
-
-MAF 1.1.0 introduced a graph-based execution model (`WorkflowBuilder`, `Edge`, `Executor`, `FunctionExecutor<T>`, `DirectEdgeData`, `FanOutEdgeData`, `FanInEdgeData`, `SwitchBuilder`) using superstep-based Bulk Synchronous Parallel (BSP) execution. This model enables directed acyclic graph (DAG) orchestration: conditional routing, fan-out/fan-in parallelism, and non-linear agent coordination. Needlr does not yet wrap this API.
-
-Without DAG support, users who need branching, parallel, or conditional workflows must drop down to raw MAF APIs, losing Needlr's compile-time validation, diagnostics integration, and attribute-driven developer experience.
-
-Existing infrastructure that this decision builds on:
-
-- **Progress reporting**: `IProgressReporter` with events for workflow lifecycle, agent invocation, LLM calls, tool calls, budget tracking, and superstep progression (`SuperStepStartedProgressEvent`, `SuperStepCompletedProgressEvent`).
-- **Diagnostics**: `IPipelineRunResult` with per-stage `IAgentStageResult` entries, token usage tracking via `IAgentMetrics`, and hierarchical scoping via `BeginChildScope`.
-- **Source generator**: Incremental generator with `Models/` (metadata types like `HandoffEntry`, `GroupChatEntry`, `SequenceEntry`) and `CodeGen/` (emitters like `RegistryCodeGenerator`, `ExtensionsCodeGenerator`, `BootstrapCodeGenerator`, `TopologyGraphCodeGenerator`).
-- **Analyzer infrastructure**: `MafDiagnosticIds` and `MafDiagnosticDescriptors` centralize diagnostic metadata. Existing analyzers cover cyclic handoffs, orphan detection, group chat validation, sequence ordering, and topology correctness.
-
-### Forces
-
-- **Consistency**: A 4th workflow type should follow the established attribute → generator → analyzer → factory pattern.
-- **Determinism**: Orchestration edges encode control flow. Nondeterministic routing by default undermines testability, replayability, and debuggability.
-- **Expressiveness**: DAGs introduce topological ambiguity that linear and group-chat workflows do not have. Three outgoing conditional edges could mean fan-out, switch-case, or priority routing — the topology alone does not disambiguate.
-- **Progressive disclosure**: Simple DAGs (linear chains, basic fan-out) should be simple to declare. Complex DAGs (conditional routing, LLM-driven choice, mixed fan-out/fan-in) should be possible without escaping to raw MAF.
-- **MAF stability**: MAF's graph API is relatively new (v1.1.0). The attribute model should insulate users from breaking changes in the underlying API.
+- Graph workflows should follow the same attribute, generator, analyzer, and runtime
+  composition model as existing Needlr workflows.
+- Deterministic and replayable control flow should be the default.
+- Routing, joining, and failure semantics must be explicit where topology alone is
+  ambiguous.
+- Invalid topology and callback signatures should fail at compile time where possible.
+- The public model should insulate consumers from changes in MAF's graph API.
+- Graph support should reuse existing Agent Framework packages, diagnostics, and progress
+  infrastructure rather than create a parallel subsystem.
 
 ## Decision
 
-Add a 4th workflow type — DAG/graph workflows — via `[AgentGraphEdge]` and `[AgentGraphEntry]` attributes, a `[AgentGraphReducer]` attribute for fan-in aggregation, source-generated `Create{Name}GraphWorkflow()` factory methods, and Roslyn analyzers (`NDLRMAF016`–`NDLRMAF022`, `NDLRMAF024`–`NDLRMAF025`, `NDLRMAF027`).
+Needlr will support graph workflows as a first-class Agent Framework workflow type.
 
-### Core Attribute Design
+Graph topology is declared through:
 
-Edges are declared on the source node (edge-on-source), consistent with `[AgentHandoffsTo]`:
+- `AgentGraphEntryAttribute` for an explicit named entry point;
+- `AgentGraphEdgeAttribute` for source-to-target edges and per-edge failure requirements;
+- `AgentGraphNodeAttribute` for target-side join behavior;
+- `AgentGraphReducerAttribute` for deterministic fan-in aggregation.
 
-```csharp
-[AgentGraphEntry("ResearchPipeline")]
-[AgentGraphEdge("ResearchPipeline", typeof(WebResearchAgent), Condition = "needs-web")]
-[AgentGraphEdge("ResearchPipeline", typeof(SummarizerAgent))]
-public class AnalyzerAgent { }
-```
+The source generator emits topology metadata, registration, and execution extensions
+through the same surfaces used by other workflow types. Generated topology metadata is the
+intended discovery source for trimmed and AOT execution; reflection may exist only as an
+explicit fallback. Roslyn analyzers validate cycles, entry points, reachability, edge
+targets, terminal nodes, routing callbacks, reducer callbacks, and executor
+incompatibilities.
 
-- `[AgentGraphEntry]` marks an agent as the entry point for a named graph. It is required and must be explicit — entry points are not inferred from topology.
-- `[AgentGraphEdge]` declares a directed edge from the decorated class to the specified target agent type, within a named graph.
-- The source generator emits `Create{Name}GraphWorkflow()` as an extension method on `IWorkflowFactory`.
+Routing is deterministic by default. `GraphRoutingMode` supports predicate-based
+`Deterministic` routing, parallel `AllMatching`, ordered `FirstMatching`,
+single-selection `ExclusiveChoice`, and explicit LLM-selected `LlmChoice`. The entry
+attribute supplies the graph-wide default, and an edge may declare the effective mode for
+its source node. Fan-out routing behavior and fan-in join behavior are declared
+independently because multiple outgoing or incoming edges do not fully describe execution
+semantics.
 
-### Routing: Deterministic Default, LLM Opt-In
+`IGraphWorkflowRunner.RunGraphAsync` is the canonical execution entry point. It may use
+MAF's native bulk-synchronous execution for compatible `WaitAll` graphs and a
+Needlr-owned executor for semantics that MAF does not provide, including `WaitAny` and
+LLM-selected routing. Raw MAF workflow creation remains available for compatible graphs
+and direct MAF integration.
 
-Deterministic routing is the default. Condition strings on `[AgentGraphEdge]` reference a named predicate method on the agent class by convention. The Roslyn analyzer (`NDLRMAF028`) validates the method exists with the correct signature at compile time. At runtime, the `GraphEdgeRouter` binds the method via reflection and evaluates it as a `Func<object?, bool>` predicate.
+Failure requirements are declared per edge. Required branch failure fails the graph;
+optional branch failure degrades that branch while preserving completed work. Graph
+results extend the existing pipeline result model with node and branch diagnostics rather
+than introducing an unrelated result hierarchy.
 
-LLM-driven routing is an explicit opt-in via `RoutingMode = GraphRoutingMode.LlmChoice` on the entry point attribute. When active, condition strings become handoff-style tool descriptions — the agent's LLM selects which edge to follow. The routing decision is recorded in diagnostics for auditability.
+User-facing content comes from terminal graph output. Intermediate node execution is
+reported through diagnostics and progress events rather than being treated as an
+independent user-facing content stream.
 
-Routing mode enum (`GraphRoutingMode`):
+Graph support remains in the existing Agent Framework, Workflows, Generators, and
+Analyzers packages. It will not be split into a separate graph package.
 
-| Mode | Behavior | MAF Mapping |
-|---|---|---|
-| `Deterministic` (default) | Condition methods evaluated as boolean predicates | Individual `AddEdge` with `Func<object?, bool>` |
-| `LlmChoice` | Condition strings as tool descriptions; model selects | Handoff-style tool mapping |
-| `AllMatching` | All edges whose condition is true are followed (parallel fan-out) | MAF's default behavior when multiple edge conditions pass |
-| `FirstMatching` | First edge whose condition is true is followed (priority order) | **Needlr abstraction** — MAF has no ordered-priority routing; generator emits a composite condition wrapper |
-| `ExclusiveChoice` | Exactly one edge must match | **Needlr abstraction** — composite condition validates exactly one match at runtime |
+## Alternatives considered
 
-`RoutingMode` is a property on `[AgentGraphEntry]` as the graph-wide default. Per-node routing overrides (via `NodeRoutingMode` on `[AgentGraphEdge]`) are enabled by the source generator's edge-grouping logic and the runtime's per-node effective routing mode computation.
+### Require consumers to use raw MAF graph APIs
 
-**Rationale**: DAG edges encode orchestration rules. Making control flow nondeterministic by default undermines testability, replayability, and determinism. LLM routing is powerful but should be a conscious architectural choice.
+This has the lowest Needlr maintenance cost and exposes every MAF capability immediately.
+It was rejected because graph users would lose the compile-time discovery, analyzers,
+DI composition, diagnostics, and stable abstraction that justify Needlr's other workflow
+types.
 
-### Fan-Out/Fan-In: Inferred Shape, Explicit Semantics
+### Infer entry, routing, and join semantics from topology
 
-Fan-out and fan-in **shapes** are inferred from topology (multiple outgoing edges = fan-out, multiple incoming edges = fan-in). However, the **semantics** are explicitly declared because topology alone is ambiguous.
+Inference makes simple graphs terse, but multiple roots, multiple outgoing edges, and
+multiple incoming edges have several valid meanings. It was rejected because hidden
+inference would make behavior difficult to review and could change when topology changes.
 
-Source-side routing (on `[AgentGraphEntry]` or per-node):
+### Make LLM-selected routing the default
 
-- `AllMatching` — run all edges whose condition passes
-- `FirstMatching` — run the first edge whose condition passes
-- `ExclusiveChoice` — exactly one edge must match (analyzer error if ambiguous at compile time)
-- `LlmChoice` — LLM selects
+LLM routing is expressive and avoids writing predicates. It was rejected as the default
+because orchestration control flow would become nondeterministic, harder to test, and
+harder to audit. It remains available as an explicit mode.
 
-Target-side join is declared via `[AgentGraphNode]` on the target agent:
+### Use one graph-wide failure mode
 
-```csharp
-[NeedlrAiAgent(Instructions = "Synthesize all findings.")]
-[AgentGraphNode("ResearchPipeline", JoinMode = GraphJoinMode.WaitAll)]
-public class SummarizerAgent { }
-```
+A single fail-fast or continue-on-error setting is simpler than per-edge requirements.
+It was rejected because real graphs commonly contain both required and optional branches;
+one global setting either discards useful completed work or hides failures on required
+paths.
 
-- `WaitAll` (default) — barrier; wait for all incoming edges before proceeding
-- `WaitAny` — proceed when any incoming edge completes
+### Create a separate graph-workflow package
 
-`[AgentGraphNode]` is a lightweight per-node attribute separate from `[AgentGraphEdge]` to avoid overloading edge attributes with target-side semantics.
-
-**Rationale**: Three conditional outgoing edges could mean fan-out, switch-case, or priority routing. The topology says "3 edges" but not what they mean. Explicit semantics prevent runtime ambiguity without requiring users to understand MAF's `FanOutEdgeData` vs `DirectEdgeData` distinction.
-
-### Non-Agent Nodes: Minimal Phase-1 Reducer
-
-Full `FunctionExecutor<T>` support is deferred to phase 2. However, phase 1 includes a minimal deterministic reducer node for fan-in convergence, because fan-in without a reducer forces users to wrap pure aggregation logic in agent classes (paying LLM cost and latency for what should be a deterministic function).
-
-```csharp
-[AgentGraphReducer("ResearchPipeline", ReducerMethod = nameof(MergeResults))]
-public static class ResearchReducer
-{
-    public static string MergeResults(IReadOnlyList<string> branchOutputs)
-        => string.Join("\n---\n", branchOutputs);
-}
-```
-
-The reducer covers the most common fan-in pattern (aggregation of branch outputs) without requiring a full function-executor attribute model. If `ReducerMethod` is not specified, the convention default `"Reduce"` is used — the source generator and runtime will look for a `public static string Reduce(IReadOnlyList<string>)` method on the decorated class.
-
-**Diagnostics**: Reducer nodes do NOT go through `IChatClient` pipelines (no LLM calls, no token usage). `IDagNodeResult` carries a `NodeKind` discriminator (`Agent` vs `Reducer`) so downstream tooling can distinguish agent nodes from pure-function nodes. A dedicated `ReducerNodeInvokedEvent` progress event carries `NodeId`, `InputBranchCount`, and `Duration` without the LLM-specific metadata of `AgentInvokedEvent`.
-
-### Streaming: Terminal Content, Full Progress
-
-Content streaming is terminal-node only by default. Intermediate node output is internal processing — not user-facing.
-
-Progress and observability use the existing `IProgressReporter` infrastructure, which already supports `AgentInvokedEvent`, `LlmCallStartedEvent`, `ToolCallCompletedEvent`, and `SuperStepStartedProgressEvent`. DAG-specific metadata is added as nullable properties to existing event types for backward compatibility:
-
-| Field | Type | Added To | Purpose |
-|---|---|---|---|
-| `GraphName` | `string?` | All DAG progress events | Identifies which named graph is executing |
-| `NodeId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the node within the graph |
-| `BranchId` | `string?` | `AgentInvokedEvent`, `ReducerNodeInvokedEvent` | Identifies the parallel branch |
-| `IncomingEdgeLabel` | `string?` | `AgentInvokedEvent` | The condition label of the activating edge |
-| `ParallelBranchCount` | `int?` | `SuperStepStartedProgressEvent` | Active parallel branches in this superstep |
-
-One new event type: `ReducerNodeInvokedEvent` for non-LLM reducer nodes (carries `NodeId`, `BranchId`, `InputBranchCount`, `Duration` without LLM-specific fields).
-
-**Rationale**: Users need progress visibility for long-running DAGs, but that is a progress concern, not a streaming concern. The existing `IProgressReporter` and `IProgressSink` pipeline is extensible and already consumed by downstream tooling.
-
-### Failure Propagation: Per-Edge Required/Optional
-
-Graph-wide failure modes (fail-fast vs continue-parallel) are too coarse for DAGs with heterogeneous branches. Instead, failure semantics are declared per-edge:
-
-- `IsRequired = true` (default): if this edge's target node fails, the entire graph fails.
-- `IsRequired = false`: if this edge's target node fails, the branch is marked degraded but parallel branches continue.
-
-Completed branch outputs are always preserved in `IDagRunResult.NodeResults` — even when the graph fails, work already done is accessible. This avoids discarding expensive computation (e.g., a completed research branch) when an optional enrichment branch fails.
-
-### Diagnostics: `IDagRunResult`
-
-`IDagRunResult` extends `IPipelineRunResult` with:
-
-- `NodeResults` — per-node diagnostics with edge metadata and timing offsets
-- `BranchResults` — parallel branch grouping with degraded/failed status
-- Flat `Stages` preserved for backward compatibility with existing `IPipelineRunResult` consumers
-- Token budget tracking via existing hierarchical scoping (`BeginChildScope`)
-
-### Analyzers
-
-Twelve new diagnostics across nine analyzer classes, extending the existing `NDLRMAF` series:
-
-| ID | Title | Severity |
-|---|---|---|
-| NDLRMAF016 | Cycle detected in agent graph | Error |
-| NDLRMAF017 | Graph has no entry point | Error |
-| NDLRMAF018 | Graph has multiple entry points | Error |
-| NDLRMAF019 | Graph edge target is not a declared agent | Error |
-| NDLRMAF020 | Graph edge source is not a declared agent | Warning |
-| NDLRMAF021 | Graph entry point is not a declared agent | Warning |
-| NDLRMAF022 | Graph contains unreachable agents | Warning |
-| ~~NDLRMAF023~~ | ~~MaxSupersteps value is invalid~~ | Retired — property removed |
-| NDLRMAF024 | All edges from fan-out node are optional | Warning |
-| NDLRMAF025 | CreateGraphWorkflow incompatible with WaitAny | Error |
-| ~~NDLRMAF026~~ | *(reserved — do not reuse)* | Reserved |
-| NDLRMAF027 | Terminal node has outgoing edges | Error |
-| NDLRMAF028 | Condition method has invalid signature | Error |
-| NDLRMAF029 | Reducer method has invalid signature | Error |
-
-NDLRMAF024 catches the pattern where all outgoing edges from a fan-out node have `IsRequired = false` — the graph could produce empty results if all optional branches fail. NDLRMAF025 catches calls to `CreateGraphWorkflow` on graphs that contain `WaitAny` nodes — `CreateGraphWorkflow` returns a MAF `Workflow` using BSP execution which only supports `WaitAll`; the fix is to use `RunGraphAsync` instead. NDLRMAF027 catches topology errors where a terminal node still has outgoing edges. NDLRMAF028 validates that `Condition` references on `[AgentGraphEdge]` point to a `public static bool Method(object?)` method. NDLRMAF029 validates that `ReducerMethod` references on `[AgentGraphReducer]` point to a `public static string Method(IReadOnlyList<string>)` method.
-
-These follow the existing pattern in `MafDiagnosticIds` and `MafDiagnosticDescriptors`, extending the ID range from the current ceiling of `NDLRMAF015`.
-
-### Implementation Phases
-
-| Phase | Scope | Deliverables |
-|---|---|---|
-| 1 | Attributes + Runtime Factory | `AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphNodeAttribute`, `GraphRoutingMode`/`GraphJoinMode` enums, `IWorkflowFactory.CreateGraphWorkflow`, `WorkflowFactory` graph support |
-| 2 | Source Generator + Reducer + Mermaid Diagrams | `AgentGraphReducerAttribute`, per-node `RoutingMode` override, `GraphEdgeEntry`/`GraphEntryPointEntry`/`GraphNodeEntry`/`GraphReducerEntry` models, `TopologyGraphCodeGenerator` Mermaid output, `RegistryCodeGenerator.GenerateGraphTopologyRegistrySource`, `BootstrapCodeGenerator` graph registration, `GraphTopologyRegistration` DTO, `Run{Name}GraphWorkflowAsync` extension, `GraphNames` constants |
-| 3 | Analyzers + Release Tracking + Docs | `NDLRMAF016`–`NDLRMAF025`, `NDLRMAF027`–`NDLRMAF029`, analyzer tests, XML doc comments, README updates |
-| 4 | Diagnostics + Progress Events + Example App | `IDagRunResult`, `NodeKind` discriminator, DAG-specific progress metadata, `ReducerNodeInvokedEvent`, `RunGraphAsync` extension (WaitAny via Needlr-native executor), `Examples/` project demonstrating a research pipeline |
+Package separation could isolate graph-specific dependencies. It was rejected because the
+feature shares the same public agents, factory, generator, analyzer IDs, diagnostics, and
+composition root as the existing workflow types. A new package would fragment that model.
 
 ## Consequences
 
 ### Positive
 
-- **POS-001**: Needlr covers all four MAF workflow patterns (Handoff, Group Chat, Sequential, DAG), eliminating the need for users to drop to raw MAF APIs for non-linear orchestration.
-- **POS-002**: Deterministic-first routing gives users testable, replayable, and debuggable orchestration by default. LLM-driven routing is available when intelligence-based decisions are genuinely needed.
-- **POS-003**: Compile-time validation via 9 new analyzer classes (12 diagnostics) catches topology errors (cycles, missing entry points, unreachable nodes) and method signature errors (condition/reducer methods) before runtime, consistent with the existing analyzer experience for other workflow types.
-- **POS-004**: Per-edge failure semantics (`IsRequired`) preserve expensive parallel work when optional branches fail, avoiding the all-or-nothing tradeoff of graph-wide failure modes.
-- **POS-005**: The attribute model insulates users from MAF's graph API surface (`WorkflowBuilder`, `Edge`, `DirectEdgeData`, `FanOutEdgeData`, etc.), providing a stable abstraction layer if MAF's API evolves.
+- Consumers can express non-linear workflows without leaving Needlr's source-generated
+  and analyzer-backed model.
+- Deterministic routing remains the normal path, while LLM routing is available when its
+  nondeterminism is intentional.
+- Compile-time topology validation catches many graph defects before execution.
+- Per-edge failure requirements preserve completed optional work without weakening
+  required paths.
+- Needlr can adapt its runtime integration when MAF changes without replacing the
+  consumer-facing topology model.
 
 ### Negative
 
-- **NEG-001**: Significant implementation surface across 4 phases: 4 new attributes, 2 enums, factory method updates, 9 analyzer classes (12 diagnostics), generator updates, a new diagnostics interface, progress event extensions, and a compile-time topology registry.
-- **NEG-002**: Routing mode (`Deterministic`, `LlmChoice`, `AllMatching`, `FirstMatching`) and join mode (`WaitAll`, `WaitAny`) add cognitive overhead compared to the simpler "just declare edges" model. Users must understand when each mode applies.
-- **NEG-003**: The phase-1 reducer (`[AgentGraphReducer]`) is a narrow solution covering only the aggregation pattern. Full `FunctionExecutor<T>` support is still needed for arbitrary non-agent computation nodes.
-- **NEG-004**: MAF's graph execution model uses superstep-based BSP, which may surprise users expecting event-driven or streaming DAG execution. Documentation must set clear expectations.
+- Needlr owns a larger public surface for routing, joining, reducers, graph diagnostics,
+  and analyzer behavior.
+- Two execution strategies must remain behaviorally coherent even though MAF does not
+  support every Needlr graph semantic.
+- Users must understand the difference between source-side routing and target-side join
+  behavior.
+- The abstraction is intentionally narrower than a general workflow engine and will not
+  represent every arbitrary computation graph.
 
-## Alternatives Considered
+### Neutral
 
-### Infer Entry Points from Topology
+- Raw MAF workflows remain available for callers that need direct framework control.
+- Existing handoff, group-chat, and sequential workflow contracts remain separate and
+  unchanged.
 
-- **Description**: Automatically identify the entry point as the node with zero incoming edges, rather than requiring an explicit `[AgentGraphEntry]` attribute.
-- **Rejection Reason**: Topological inference is fragile — a graph with multiple roots (e.g., parallel starting branches) would require disambiguation logic in the generator. Explicit declaration is consistent with the existing pattern where `[AgentHandoffsTo]` requires the user to mark the initial agent via the generic type parameter on `CreateHandoffWorkflow<TInitialAgent>()`. Explicit entry points also serve as documentation.
+## Confirmation
 
-### LLM Routing as the Default
+The repository confirms this decision through the following durable boundaries:
 
-- **Description**: Default to LLM-driven routing where the agent's model decides which edge to follow based on condition strings as tool descriptions.
-- **Rejection Reason**: DAG edges encode orchestration control flow. Nondeterministic routing by default undermines testability, replayability, and determinism. Teams that need deterministic pipelines (compliance, financial, safety-critical) would be forced to opt out of the default. Deterministic-default with LLM opt-in respects both camps.
+- The Agent Framework exposes graph entry, edge, node, reducer, routing, and join types.
+- `AgentFrameworkFunctionRegistryGenerator` emits graph topology and execution extensions,
+  demonstrating that graph discovery participates in the source-generated model.
+- The Agent Framework analyzers include graph topology and callback validation rules.
+- `GraphWorkflowRunner` selects between MAF and Needlr execution based on the declared
+  topology, while `IGraphWorkflowRunner` exposes one public execution contract.
+- Graph runtime, generator, and analyzer tests exercise valid and invalid topologies.
+- `GraphWorkflowApp` and the graph section of `docs/ai-integrations.md` demonstrate the
+  supported public workflow.
 
-### Graph-Wide Failure Mode Instead of Per-Edge
+The runtime topology provider currently reconstructs graph metadata through assembly
+reflection instead of consuming the generated topology registration. The public graph
+workflow is implemented, but the intended AOT-safe discovery path is therefore not fully
+confirmed and remains architecture drift against this decision.
 
-- **Description**: Provide a single `FailureMode` property on `[AgentGraphEntry]` with `FailFast` and `ContinueParallel` options, rather than per-edge `IsRequired` semantics.
-- **Rejection Reason**: Graph-wide modes are too coarse. A research pipeline may have a required web-research branch and an optional sentiment-enrichment branch. `FailFast` would discard completed research if sentiment fails. `ContinueParallel` would silently ignore failures in the required branch. Per-edge semantics let users express "this branch is optional" without sacrificing safety for required paths.
-
-### Defer Entirely Until MAF Stabilizes
-
-- **Description**: Wait for MAF's graph API to mature beyond v1.1.0 before adding Needlr support, avoiding rework if the API changes.
-- **Rejection Reason**: Users need DAG support now for multi-agent research pipelines, content generation workflows, and conditional processing. The attribute model provides an insulation layer — if MAF's underlying API changes, only the factory/generator internals need updating, not the user-facing attribute surface. The risk of rework is contained.
-
-### Separate Package for Graph Workflows
-
-- **Description**: Create a new `NexusLabs.Needlr.AgentFramework.Graph` package rather than adding graph support to the existing `AgentFramework`, `Generators`, and `Analyzers` projects.
-- **Rejection Reason**: The three existing workflow types live in the core `AgentFramework` package with shared infrastructure (`IWorkflowFactory`, `WorkflowFactory`, generator, analyzers). A separate package would duplicate shared types, require cross-package analyzer coordination, and fragment the developer experience. Graph workflows should be a first-class citizen alongside the other three types.
-
-## Implementation Notes
-
-- **IMP-001**: New attributes (`AgentGraphEdgeAttribute`, `AgentGraphEntryAttribute`, `AgentGraphReducerAttribute`) should follow the established pattern: `[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]`, placed in `src/NexusLabs.Needlr.AgentFramework/`.
-- **IMP-002**: The source generator requires new model types (`GraphEdgeEntry`, `GraphEntryPointEntry`, `GraphNodeEntry`, `GraphReducerEntry`) in `Generators/Models/` and Mermaid emission in `TopologyGraphCodeGenerator` in `Generators/CodeGen/`, following the existing `HandoffEntry`/`GroupChatEntry`/`SequenceEntry` pattern. The registry emitter (`RegistryCodeGenerator.GenerateGraphTopologyRegistrySource`) produces `AgentGraphTopologyRegistry` which is registered in the bootstrap `ModuleInitializer`.
-- **IMP-003**: Analyzer IDs `NDLRMAF016`–`NDLRMAF029` (with `023` retired and `026` reserved) must be registered in `MafDiagnosticIds.cs` and `MafDiagnosticDescriptors.cs`. Cycle detection (`NDLRMAF016`) requires a topological sort or DFS-based algorithm operating on the Roslyn syntax/semantic model. Condition method validation (`NDLRMAF028`) and reducer method validation (`NDLRMAF029`) walk the type hierarchy for inherited method resolution.
-- **IMP-004**: The `WorkflowFactory` needs a new code path for graph construction that maps `[AgentGraphEdge]` topology to MAF's `WorkflowBuilder` API, translating routing modes to the appropriate edge data types (`DirectEdgeData`, `FanOutEdgeData`, `FanInEdgeData`).
-- **IMP-005**: Success criteria — the feature is correct when: (a) a DAG declared entirely via attributes compiles, runs, and produces the expected output; (b) all 9 analyzer classes (12 diagnostics) fire on invalid topologies with no false positives on valid ones; (c) `IDagRunResult` captures per-node diagnostics with timing and token usage; (d) existing workflow types are unaffected (no regressions in handoff, group chat, or sequential tests).
+Static repository inspection cannot establish production latency, model-routing quality,
+or suitability for a particular workload. Those remain operational concerns.
 
 ## References
 
-- **REF-001**: [MAF graph API source (v1.1.0)](https://github.com/microsoft/agent-framework/tree/main/dotnet/src/Microsoft.Agents.AI.Workflows) — `WorkflowBuilder`, `Edge`, `Executor`, `FunctionExecutor<T>`, `DirectEdgeData`, `FanOutEdgeData`, `FanInEdgeData`
-- **REF-002**: Existing workflow attributes — `src/NexusLabs.Needlr.AgentFramework/AgentHandoffsToAttribute.cs`, `AgentGroupChatMemberAttribute.cs`, `AgentSequenceMemberAttribute.cs`
-- **REF-003**: Existing workflow factory — `src/NexusLabs.Needlr.AgentFramework/IWorkflowFactory.cs`, `WorkflowFactory.cs`
-- **REF-004**: Existing source generator — `src/NexusLabs.Needlr.AgentFramework.Generators/AgentFrameworkFunctionRegistryGenerator.cs`, `CodeGen/`, `Models/`
-- **REF-005**: Existing analyzers — `src/NexusLabs.Needlr.AgentFramework.Analyzers/MafDiagnosticIds.cs` (IDs `NDLRMAF001`–`NDLRMAF015`)
-- **REF-006**: Progress infrastructure — `src/NexusLabs.Needlr.AgentFramework/Progress/IProgressReporter.cs`, `IProgressEvent.cs`
-- **REF-007**: Diagnostics infrastructure — `src/NexusLabs.Needlr.AgentFramework/Diagnostics/IPipelineRunResult.cs`, `IAgentStageResult.cs`
-- **REF-008**: MAF package version — `src/Directory.Packages.props` pins `Microsoft.Agents.AI.Workflows` at `1.1.0`
+- [`docs/ai-integrations.md`](../ai-integrations.md) documents the public graph attributes,
+  execution modes, diagnostics, and runnable example that implement this decision.
+- [`IGraphWorkflowRunner` at the confirmation snapshot](https://github.com/ncosentino/needlr/blob/78b27a1c5eddd5b8fa3e0c07dce629159b39e436/src/NexusLabs.Needlr.AgentFramework/IGraphWorkflowRunner.cs)
+  is the stable public execution boundary selected by this decision.
+- [Microsoft Agent Framework workflows](https://learn.microsoft.com/en-us/agent-framework/workflows/)
+  describe the underlying framework capability that Needlr adapts rather than exposes as
+  its public topology model.

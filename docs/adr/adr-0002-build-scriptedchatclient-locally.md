@@ -8,86 +8,127 @@ supersedes: ""
 superseded_by: ""
 ---
 
-## Status
+## Context and scope
 
-Accepted — gates the V1.5 follow-up to ship a paved path for end-to-end agent-loop tool tests.
+`NexusLabs.Needlr.AgentFramework.Testing` provides runners for deterministic agent and
+pipeline scenarios, but callers must supply an `IChatClient`. Needlr's tests and examples
+therefore contain multiple one-off chat-client implementations for scripted responses,
+multi-turn tool calls, failure injection, and call recording. Consumers face the same
+duplication when testing agents without a live model.
 
-## Context
+At the time of this decision, the shipped Microsoft.Extensions.AI packages did not
+include a public testing package or reusable scripted `IChatClient`. The dotnet/extensions
+test suite had a callback-based `TestChatClient` in a test assembly, but that type was not
+part of a package consumers could reference.
 
-The `NexusLabs.Needlr.AgentFramework.Testing` package ships `AgentScenarioRunner` and `PipelineScenarioRunner`, both of which expect callers to wire a fake `IChatClient` through `AgentFrameworkSyringeExtensions.UsingChatClient(...)` to deterministically test agent behavior without a real LLM. The package itself does not provide an `IChatClient` fake, so the Needlr codebase contains 8 ad-hoc, copy-pasted implementations:
+This decision covers a deterministic scripted test client for agent-loop tests. It does
+not attempt to emulate a model provider, network transport, token accounting, streaming
+timing, or every possible `IChatClient` implementation detail.
 
-- `Examples/AgentFramework/IterativeLoopDiagnosticsApp/Program.cs:200` — `ToolCallingMockChatClient`
-- `Examples/AgentFramework/DiagnosticAttributionApp/Program.cs:197` — `MockChatClient`
-- `Examples/AgentFramework/AotAgentFrameworkApp/Program.cs:68` — `NoOpChatClient`
-- `NexusLabs.Needlr.AgentFramework.Evaluation.Tests/RecordingChatClient.cs`
-- `NexusLabs.Needlr.AgentFramework.Evaluation.Tests/ThrowingChatClient.cs`
-- `NexusLabs.Needlr.AgentFramework.Tests/DiagnosticsRecordingChatClientTestsHelpers.cs:5` — `FakeInnerChatClient`
-- `NexusLabs.Needlr.AgentFramework.Tests/DiagnosticsFunctionInvokingChatClientTestsHelpers.cs:9` — `TestChatClient`
-- `NexusLabs.Needlr.AgentFramework.Tests/GraphWorkflowRuntimeTests.cs:1399` — `FailingChatClient`
+## Decision drivers
 
-Downstream consumers writing `[AgentFunction]`-decorated tools hit the same gap and write their own.
-
-The candidate alternative was to depend on a Microsoft testing package and wrap it with a Needlr extension method. This ADR records the investigation outcome and the build-vs-buy decision.
+- Agent-loop tests must run deterministically without credentials or network access.
+- Needlr and its consumers should not repeatedly implement the same multi-turn fake.
+- The public testing surface should remain small and depend only on existing MEAI
+  abstractions.
+- The client should support both response scripting and request inspection.
+- Needlr should prefer an official Microsoft test primitive if one becomes available and
+  satisfies the same contract.
 
 ## Decision
 
-Build a first-party `ScriptedChatClient` (and supporting `ChatScriptBuilder`) inside `NexusLabs.Needlr.AgentFramework.Testing`. Do not take a dependency on a Microsoft testing package — none exists, none is on the public roadmap, and the dotnet/extensions team's own tests use an `internal` copy-paste pattern that consumers cannot reuse.
+Needlr will build a first-party `ScriptedChatClient` in
+`NexusLabs.Needlr.AgentFramework.Testing`, with a small `ChatScriptBuilder` for readable
+multi-turn scripts.
 
-## Investigation
+The client will:
 
-Verified via direct nuget.org and dotnet/extensions repository inspection (May 6, 2026):
+- implement `IChatClient` directly;
+- return ordered scripted responses and fail clearly when the script is exhausted;
+- record received messages and call count for assertions;
+- support streaming by projecting scripted responses through MEAI's response-update
+  model;
+- remain sealed and intentionally narrow so it can be deprecated or adapted if Microsoft
+  later ships an equivalent public testing primitive.
 
-| Search | Result |
-|---|---|
-| `https://www.nuget.org/packages/Microsoft.Extensions.AI.Testing` | HTTP 404 |
-| NuGet search `Microsoft.Extensions.AI.Testing` (incl. prerelease) | 0 results |
-| NuGet search `Microsoft.Extensions.AI.Fakes` / `Microsoft.Extensions.AI.TestUtilities` | 0 results |
-| dotnet/extensions GitHub issues + discussions for testing package | 0 results — no public proposal or roadmap entry |
-| dotnet/extensions `src/` libraries scanned for any public scripted/fake `IChatClient` | None found |
+The Testing package will not take a dependency on a speculative Microsoft testing package
+or copy an internal test-only type from dotnet/extensions.
 
-What does exist:
+## Alternatives considered
 
-1. **`TestChatClient`** at `dotnet/extensions:test/Libraries/Microsoft.Extensions.AI.Abstractions.Tests/TestChatClient.cs` (SHA `95f89a79141e34f8f8defddb60821800cc3bffad`) — an internal callback wrapper used only inside the dotnet/extensions test suite. Not referenced from any `src/` library, not packaged into any NuGet output. Public API surface is two settable `Func<>` callbacks; no turn scheduling or call recording.
-2. **`AnonymousDelegatingChatClient`** at `dotnet/extensions:src/Libraries/Microsoft.Extensions.AI/ChatCompletion/AnonymousDelegatingChatClient.cs:18` is `internal sealed`, so consumers cannot instantiate it.
-3. **The dotnet team's own multi-turn tests** at `dotnet/extensions:test/Libraries/Microsoft.Extensions.AI.Tests/ChatCompletion/FunctionInvokingChatClientTests.cs:2198-2252` use the `TestChatClient` callback with `messages.Count()` as the turn index — every test re-implements the turn counter via closure. There is no reusable type.
-4. **Shipped MEAI packages** (Abstractions / Core / OpenAI / Evaluation, all 10.5.2 as of May 5, 2026, MIT-licensed) provide no `IChatClient` test fakes.
+### Depend on an official Microsoft.Extensions.AI testing package
+
+An official package would minimize Needlr-owned surface and align consumers with upstream
+MEAI conventions. It was not available when this decision was made, so it could not
+provide a usable dependency. This remains the preferred future replacement if Microsoft
+ships an equivalent public contract.
+
+### Continue using local fakes in each test project
+
+Local fakes avoid adding a public Needlr type and let each test implement only what it
+needs. This was rejected because multi-turn sequencing, exhaustion behavior, streaming,
+and request recording were already being duplicated across the repository and by
+consumers.
+
+### Keep a shared fake internal to Needlr's test assemblies
+
+An internal helper would improve Needlr's own tests without committing to public API. It
+was rejected because the same gap exists for every consumer of `AgentScenarioRunner`; an
+internal helper would leave the public testing workflow incomplete.
+
+### Use mocks directly for `IChatClient`
+
+Mocking is appropriate for a single boundary call, but multi-turn agent behavior requires
+ordered responses and captured conversation state. Rebuilding that state machine in each
+mock setup is less readable and no less coupled than a purpose-built scripted client.
 
 ## Consequences
 
 ### Positive
 
-- Removes 8 copy-paste fakes once V1.5 ships.
-- The `AgentScenarioRunner` doc comment at `src/NexusLabs.Needlr.AgentFramework.Testing/AgentScenarioRunner.cs:24-37` already directs consumers to wire a fake `IChatClient` — `ScriptedChatClient` becomes the canonical answer.
-- ~60 lines of code with zero dependencies beyond `Microsoft.Extensions.AI.Abstractions` (already in the chain).
-- `ScriptedChatClient` lives next to `AgentScenarioRunner` in the same package — discoverable in IDE.
-- Streaming support is free via `ChatResponse.ToChatResponseUpdates()` (stable public MEAI API).
+- Agent-loop tests gain one credential-free, deterministic client for multi-turn scripts.
+- Consumers can assert the messages sent to the model without writing another fake.
+- The type lives beside `AgentScenarioRunner`, making the supported test path discoverable.
+- No new package dependency is required beyond the MEAI abstractions already used by the
+  Agent Framework.
 
 ### Negative
 
-- One more shipped public type to maintain forever in Needlr's public API surface.
-- If Microsoft ever ships an official testing package, we'd have a competing primitive. Mitigation: design `ScriptedChatClient` as a thin sealed type so it can be marked `[Obsolete]` and forwarded later without breaking consumers.
+- Needlr assumes maintenance responsibility for another public testing type.
+- The client cannot model every provider-specific behavior without losing its intentionally
+  small scope.
+- If Microsoft ships an equivalent package, Needlr will temporarily have a competing
+  abstraction and will need a deliberate migration.
 
 ### Neutral
 
-- The decision does not affect V1 — the `ToolInvocationRunner` does not need a chat client because it invokes the source-generated `AIFunction` wrapper directly, bypassing the LLM.
+- Tests that need provider-specific transport or streaming behavior may continue to use
+  specialized boundary fakes.
+- This decision does not change production chat-client composition.
 
-## Implementation outline (V1.5)
+## Confirmation
 
-Target file: `src/NexusLabs.Needlr.AgentFramework.Testing/ScriptedChatClient.cs`. One type per file. File-scoped namespace. Full XML docs. Per `AGENTS.md`.
+This accepted decision is not yet fully implemented. The current Testing package still
+exposes scenario runners without a public `ScriptedChatClient`, and
+`docs/testing-tools.md` identifies the scripted client as planned work.
 
-Required surface:
-- Sealed class implementing `IChatClient`.
-- Constructor accepting an ordered list of `ChatResponse` (the script).
-- `ReceivedMessages` — `IReadOnlyList<IReadOnlyList<ChatMessage>>` for assertions.
-- `CallCount` — `int`.
-- `GetResponseAsync` returns the next scripted response; throws clear `InvalidOperationException` on overflow ("script exhausted").
-- `GetStreamingResponseAsync` shells through `GetResponseAsync` + `ToChatResponseUpdates()`.
-- A separate `ChatScriptBuilder` (also one type per file) for fluent script assembly with `OnTurn(n, t => t.RequestTool(...))` / `OnTurn(n, t => t.RespondText(...))` shorthand.
+Implementation will confirm the decision when:
 
-Replaces (post-ship migration):
-- All 8 ad-hoc fakes listed above. Forcing-function migration done as part of V1.5 to keep the abstraction honest.
+- the Testing package exposes the scripted client and builder;
+- tests verify ordered responses, exhaustion, request recording, cancellation, and
+  streaming projection;
+- at least one end-to-end agent scenario uses the public client; and
+- representative one-off chat-client fakes can be removed without losing coverage.
+
+If Microsoft publishes a supported equivalent before those conditions are met, this ADR
+must be reconsidered rather than implemented by default.
 
 ## References
 
-- Spike research: `meai-testing-spike` background agent, May 6, 2026.
-- Needlr issue: build-vs-buy gate for V1.5 follow-up todo `meai-testing-spike` (was satisfied by this ADR; new V1.5 todo `scripted-chat-client-build` will track implementation).
+- [`docs/testing-tools.md`](../testing-tools.md) explains why full agent scenarios require
+  a deterministic `IChatClient` and records the current absence of the shared client.
+- [`AgentScenarioRunner` at the confirmation snapshot](https://github.com/ncosentino/needlr/blob/78b27a1c5eddd5b8fa3e0c07dce629159b39e436/src/NexusLabs.Needlr.AgentFramework.Testing/AgentScenarioRunner.cs)
+  is the public test harness that needs the scripted boundary.
+- [dotnet/extensions `TestChatClient` at an immutable commit](https://github.com/dotnet/extensions/blob/c221abef4b4f1bf3fcf0bda27490e8b26bb479f4/test/Libraries/Microsoft.Extensions.AI.Abstractions.Tests/TestChatClient.cs)
+  demonstrates that Microsoft used a test-assembly helper but did not expose it as a
+  consumer package.

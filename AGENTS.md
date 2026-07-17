@@ -42,6 +42,20 @@ All NuGet package versions are declared in `src/Directory.Packages.props` (`Mana
 - **Interfaces over static classes.** Static classes are acceptable only for trivial value calculations or extension method containers. Anything with behavior, state, or dependencies must be an interface registered via DI.
 - **No static singleton holders.** Never use `static Instance` properties, `static Holder` classes, or any pattern that stores a singleton in a static field to share state between components. This destroys testability, breaks multi-threaded scenarios, and is antithetical to dependency injection. Pass dependencies through constructors, method parameters, or DI — never through static state. We are a dependency injection library; use dependency injection.
 
+## Architecture Decision Records
+
+When a task involves a significant architectural or technical decision:
+
+- Check existing ADRs before implementation. Flag contradictions with accepted decisions
+  instead of silently diverging.
+- Propose an ADR when the choice changes system structure, technology, integration
+  boundaries, important quality attributes, or another convention that is costly to
+  reverse.
+- Do not create an ADR for a routine implementation choice, straightforward bug fix, or
+  decision already covered by an accepted record.
+- Use the repository's established ADR location and format; default to `docs/adr/` only
+  when no convention exists.
+
 ## Architecture
 
 The codebase follows a consistent per-feature pattern:
