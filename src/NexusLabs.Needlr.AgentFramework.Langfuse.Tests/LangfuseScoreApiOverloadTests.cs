@@ -33,6 +33,8 @@ public sealed class LangfuseScoreApiOverloadTests
         }
 
         AssertRecordLangfuseScoresSurface();
+        AssertEvaluateAndRecordSurface();
+        AssertEvaluateAndRecordOptionsSurface();
     }
 
     private static MethodInfo[] GetDeclaredMethods(
@@ -144,6 +146,87 @@ public sealed class LangfuseScoreApiOverloadTests
         AssertNoOptionalParameters(methods);
     }
 
+    private static void AssertEvaluateAndRecordSurface()
+    {
+        var methods = GetDeclaredMethods(
+            typeof(LangfuseEvaluationScoreExtensions),
+            nameof(LangfuseEvaluationScoreExtensions.EvaluateAndRecordAsync),
+            BindingFlags.Static);
+        Assert.Equal(2, methods.Length);
+
+        AssertMethod(
+            methods[0],
+            expectAbstract: false,
+            typeof(Task<IReadOnlyList<EvaluationResult>>),
+            typeof(ILangfuseScenario),
+            typeof(IEnumerable<IEvaluator>),
+            typeof(IEnumerable<Microsoft.Extensions.AI.ChatMessage>),
+            typeof(Microsoft.Extensions.AI.ChatResponse));
+        AssertMethod(
+            methods[1],
+            expectAbstract: false,
+            typeof(Task<IReadOnlyList<EvaluationResult>>),
+            typeof(ILangfuseScenario),
+            typeof(IEnumerable<IEvaluator>),
+            typeof(IEnumerable<Microsoft.Extensions.AI.ChatMessage>),
+            typeof(Microsoft.Extensions.AI.ChatResponse),
+            typeof(LangfuseEvaluateAndRecordOptions),
+            typeof(CancellationToken));
+        Assert.All(methods, method => Assert.True(method.IsStatic));
+        AssertNotNullable(methods[1].GetParameters()[4]);
+        AssertNoOptionalParameters(methods);
+    }
+
+    private static void AssertEvaluateAndRecordOptionsSurface()
+    {
+        var type = typeof(LangfuseEvaluateAndRecordOptions);
+        Assert.True(type.IsPublic);
+        Assert.True(type.IsSealed);
+
+        var constructor = Assert.Single(type.GetConstructors(BindingFlags.Instance | BindingFlags.Public));
+        Assert.Equal(
+            [
+                typeof(ChatConfiguration),
+                typeof(IEnumerable<EvaluationContext>),
+                typeof(LangfuseEvaluationScoreOptions),
+            ],
+            constructor.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+        Assert.All(constructor.GetParameters(), parameter => Assert.False(parameter.IsOptional));
+        Assert.All(constructor.GetParameters(), AssertNullable);
+
+        AssertReadOnlyProperty(
+            type,
+            nameof(LangfuseEvaluateAndRecordOptions.ChatConfiguration),
+            typeof(ChatConfiguration),
+            nullable: true);
+        AssertReadOnlyProperty(
+            type,
+            nameof(LangfuseEvaluateAndRecordOptions.AdditionalContext),
+            typeof(IReadOnlyCollection<EvaluationContext>),
+            nullable: false);
+        AssertReadOnlyProperty(
+            type,
+            nameof(LangfuseEvaluateAndRecordOptions.ScoreOptions),
+            typeof(LangfuseEvaluationScoreOptions),
+            nullable: true);
+    }
+
+    private static void AssertReadOnlyProperty(
+        Type declaringType,
+        string propertyName,
+        Type propertyType,
+        bool nullable)
+    {
+        var property = Assert.IsAssignableFrom<PropertyInfo>(
+            declaringType.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public));
+        Assert.Equal(propertyType, property.PropertyType);
+        Assert.NotNull(property.GetMethod);
+        Assert.Null(property.SetMethod);
+        Assert.Equal(
+            nullable ? NullabilityState.Nullable : NullabilityState.NotNull,
+            Nullability.Create(property).ReadState);
+    }
+
     private static void AssertTypedScoreFamily(
         MethodInfo[] methods,
         bool expectAbstract,
@@ -221,6 +304,9 @@ public sealed class LangfuseScoreApiOverloadTests
 
     private static void AssertNullable(ParameterInfo parameter) =>
         Assert.Equal(NullabilityState.Nullable, Nullability.Create(parameter).ReadState);
+
+    private static void AssertNotNullable(ParameterInfo parameter) =>
+        Assert.Equal(NullabilityState.NotNull, Nullability.Create(parameter).ReadState);
 
     private static void AssertNoOptionalParameters(IEnumerable<MethodInfo> methods) =>
         Assert.DoesNotContain(

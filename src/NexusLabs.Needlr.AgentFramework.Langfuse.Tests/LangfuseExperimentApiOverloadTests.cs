@@ -13,6 +13,7 @@ public sealed class LangfuseExperimentApiOverloadTests
     {
         AssertExperimentRunSurface(typeof(ILangfuseExperimentRun), expectAbstract: true);
         AssertBeginExperimentRunSurface(typeof(ILangfuseClient), expectAbstract: true);
+        AssertExperimentFactoryExtensionSurfaces();
 
         foreach (var implementationType in new[]
         {
@@ -33,6 +34,28 @@ public sealed class LangfuseExperimentApiOverloadTests
         {
             AssertBeginExperimentRunSurface(implementationType, expectAbstract: false);
         }
+    }
+
+    [Fact]
+    public void ExplicitExperimentFactoryOptions_RejectNull()
+    {
+        var client = new DisabledLangfuseClient();
+        var run = client.BeginExperimentRun("dataset", "run");
+
+        Assert.Throws<ArgumentNullException>(
+            () => client.CreateExperimentItemScopeProvider<int, string>(
+                run,
+                null!));
+        Assert.Throws<ArgumentNullException>(
+            () => client.CreateLocalExperimentItemScopeProvider<int, string>(
+                null!));
+        Assert.Throws<ArgumentNullException>(
+            () => client.CreateExperimentResultSink<int, string>(
+                run,
+                null!));
+        Assert.Throws<ArgumentNullException>(
+            () => client.CreateLocalExperimentResultSink<int, string>(
+                null!));
     }
 
     [Fact]
@@ -70,8 +93,11 @@ public sealed class LangfuseExperimentApiOverloadTests
         Assert.Null(run.Metadata);
     }
 
-    private static MethodInfo[] GetDeclaredMethods(Type type, string name) =>
-        type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+    private static MethodInfo[] GetDeclaredMethods(
+        Type type,
+        string name,
+        BindingFlags methodKind = BindingFlags.Instance) =>
+        type.GetMethods(methodKind | BindingFlags.Public | BindingFlags.DeclaredOnly)
             .Where(method => method.Name == name)
             .OrderBy(method => method.GetParameters().Length)
             .ToArray();
@@ -128,6 +154,72 @@ public sealed class LangfuseExperimentApiOverloadTests
             typeof(string),
             typeof(LangfuseExperimentRunOptions));
         AssertNullable(methods[1].GetParameters()[2]);
+        AssertNoOptionalParameters(methods);
+    }
+
+    private static void AssertExperimentFactoryExtensionSurfaces()
+    {
+        AssertFactoryExtensionPair(
+            typeof(LangfuseExperimentItemScopeExtensions),
+            nameof(LangfuseExperimentItemScopeExtensions.CreateExperimentItemScopeProvider),
+            includeRun: true,
+            typeof(LangfuseExperimentItemScopeProvider<,>),
+            typeof(LangfuseExperimentItemScopeOptions<>));
+        AssertFactoryExtensionPair(
+            typeof(LangfuseExperimentItemScopeExtensions),
+            nameof(LangfuseExperimentItemScopeExtensions.CreateLocalExperimentItemScopeProvider),
+            includeRun: false,
+            typeof(LangfuseExperimentItemScopeProvider<,>),
+            typeof(LangfuseExperimentItemScopeOptions<>));
+        AssertFactoryExtensionPair(
+            typeof(LangfuseExperimentResultSinkExtensions),
+            nameof(LangfuseExperimentResultSinkExtensions.CreateExperimentResultSink),
+            includeRun: true,
+            typeof(LangfuseExperimentResultSink<,>),
+            typeof(LangfuseExperimentResultSinkOptions<,>));
+        AssertFactoryExtensionPair(
+            typeof(LangfuseExperimentResultSinkExtensions),
+            nameof(LangfuseExperimentResultSinkExtensions.CreateLocalExperimentResultSink),
+            includeRun: false,
+            typeof(LangfuseExperimentResultSink<,>),
+            typeof(LangfuseExperimentResultSinkOptions<,>));
+    }
+
+    private static void AssertFactoryExtensionPair(
+        Type extensionType,
+        string methodName,
+        bool includeRun,
+        Type returnTypeDefinition,
+        Type optionsTypeDefinition)
+    {
+        var methods = GetDeclaredMethods(
+            extensionType,
+            methodName,
+            BindingFlags.Static);
+        Assert.Equal(2, methods.Length);
+        Assert.All(methods, method => Assert.True(method.IsGenericMethodDefinition));
+
+        var requiredOnly = methods[0].MakeGenericMethod(typeof(int), typeof(string));
+        var explicitOptions = methods[1].MakeGenericMethod(typeof(int), typeof(string));
+        var returnType = returnTypeDefinition.MakeGenericType(typeof(int), typeof(string));
+        var optionsType = optionsTypeDefinition.GetGenericArguments().Length == 1
+            ? optionsTypeDefinition.MakeGenericType(typeof(int))
+            : optionsTypeDefinition.MakeGenericType(typeof(int), typeof(string));
+        var requiredParameters = includeRun
+            ? new[] { typeof(ILangfuseClient), typeof(ILangfuseExperimentRun) }
+            : [typeof(ILangfuseClient)];
+
+        AssertMethod(
+            requiredOnly,
+            expectAbstract: false,
+            returnType,
+            requiredParameters);
+        AssertMethod(
+            explicitOptions,
+            expectAbstract: false,
+            returnType,
+            requiredParameters.Append(optionsType).ToArray());
+        AssertNotNullable(methods[1].GetParameters()[^1]);
         AssertNoOptionalParameters(methods);
     }
 
@@ -228,6 +320,9 @@ public sealed class LangfuseExperimentApiOverloadTests
 
     private static void AssertNullable(ParameterInfo parameter) =>
         Assert.Equal(NullabilityState.Nullable, Nullability.Create(parameter).ReadState);
+
+    private static void AssertNotNullable(ParameterInfo parameter) =>
+        Assert.Equal(NullabilityState.NotNull, Nullability.Create(parameter).ReadState);
 
     private static void AssertNoOptionalParameters(IEnumerable<MethodInfo> methods) =>
         Assert.DoesNotContain(

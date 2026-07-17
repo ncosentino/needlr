@@ -94,13 +94,21 @@ using (var scenario = langfuse.BeginScenario("trip-planner", sessionId: runId))
         evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000), new IterationCoherenceEvaluator(maxIterations: 20)],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)],
-        scoreOptions: new LangfuseEvaluationScoreOptions
-        {
-            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        options: new LangfuseEvaluateAndRecordOptions(
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)],
+            scoreOptions: new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+            }),
+        cancellationToken: cancellationToken);
 }
 ```
+
+Use the four-argument overload when chat configuration, additional context, score identity, and
+cancellation all use their defaults. The explicit overload requires one
+`LangfuseEvaluateAndRecordOptions` value plus an explicit cancellation token. The options constructor
+snapshots additional context, and a `null` context sequence becomes an empty read-only collection.
 
 Two runnable examples live under `src/Examples/AgentFramework/`:
 
@@ -399,6 +407,9 @@ An explicit `LangfuseExperimentRunOptions.DatasetVersion` is normalized to UTC a
 every item link. Use the same value as `LangfuseDatasetSelection.Version` so the comparison view
 references the item state that the source loaded.
 
+Hosted and local scope factories each expose two shapes only: a default overload without options and
+an explicit overload that requires a non-null `LangfuseExperimentItemScopeOptions<TCase>`.
+
 For local cases that are not hosted in Langfuse, use a trace-only scope:
 
 ```csharp
@@ -415,6 +426,9 @@ ingestion.
 `CreateExperimentResultSink<TCase,TOutput>` projects each canonical item `EvaluationResult` to its
 correlated trace, each successful run evaluator to the authoritative dataset run, and an optional
 categorical `ExperimentRunDecision` score. The sink never reruns evaluators or policies.
+
+Hosted and local result-sink factories likewise expose a default overload and an explicit overload
+that requires non-null `LangfuseExperimentResultSinkOptions<TCase,TOutput>`.
 
 Use contextual score-id callbacks when provider retry or rerun idempotency matters. Item callbacks
 receive case/trial identity, and run callbacks receive the evaluator identity, so equal metric names

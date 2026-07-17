@@ -215,11 +215,14 @@ using (var scenario = langfuse.BeginScenario(
         ],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
-        scoreOptions: new LangfuseEvaluationScoreOptions
-        {
-            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        options: new LangfuseEvaluateAndRecordOptions(
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            scoreOptions: new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+            }),
+        cancellationToken: CancellationToken.None);
 
     expectedScoreNames = results
         .SelectMany(r => r.Metrics.Values)
@@ -393,11 +396,14 @@ static async Task<int> RunResiliencyCheckAsync()
             evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000)],
             messages: inputs.Messages,
             modelResponse: inputs.ModelResponse,
-            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
-            scoreOptions: new LangfuseEvaluationScoreOptions
-            {
-                ScoreIdProvider = metric => $"resiliency:{metric.Name}",
-            });
+            options: new LangfuseEvaluateAndRecordOptions(
+                chatConfiguration: null,
+                additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                scoreOptions: new LangfuseEvaluationScoreOptions
+                {
+                    ScoreIdProvider = metric => $"resiliency:{metric.Name}",
+                }),
+            cancellationToken: CancellationToken.None);
 
         recordedScores = results.SelectMany(r => r.Metrics.Values).Count(HasValue);
     }
@@ -892,7 +898,10 @@ static async Task<int> RunExperimentsCheckAsync()
                     ],
                     messages: inputs.Messages,
                     modelResponse: inputs.ModelResponse,
-                    additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                    options: new LangfuseEvaluateAndRecordOptions(
+                        chatConfiguration: null,
+                        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                        scoreOptions: null),
                     cancellationToken: cancellationToken);
                 return scenario.TraceId;
             },
