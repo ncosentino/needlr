@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 using Microsoft.Extensions.AI.Evaluation;
 
 namespace NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
@@ -84,36 +82,35 @@ internal static class ExperimentMetricSnapshotFactory
                 ExperimentMetricNonFiniteValue.NegativeInfinity,
             _ => null,
         };
-        return new ExperimentMetricSnapshot
-        {
-            Name = metric.Name,
-            Kind = kind,
-            NumericValue = nonFiniteNumericValue is null ? numericValue : null,
-            NonFiniteNumericValue = nonFiniteNumericValue,
-            BooleanValue = (metric as BooleanMetric)?.Value,
-            StringValue = (metric as StringMetric)?.Value,
-            Reason = metric.Reason,
-            Interpretation = metric.Interpretation is null
-                ? null
-                : new ExperimentMetricInterpretationSnapshot
+        var interpretation = metric.Interpretation is null
+            ? null
+            : new ExperimentMetricInterpretationSnapshot
+            {
+                Rating = metric.Interpretation.Rating switch
                 {
-                    Rating = metric.Interpretation.Rating switch
-                    {
-                        EvaluationRating.Unknown => ExperimentMetricRating.Unknown,
-                        EvaluationRating.Inconclusive => ExperimentMetricRating.Inconclusive,
-                        EvaluationRating.Unacceptable => ExperimentMetricRating.Unacceptable,
-                        EvaluationRating.Poor => ExperimentMetricRating.Poor,
-                        EvaluationRating.Average => ExperimentMetricRating.Average,
-                        EvaluationRating.Good => ExperimentMetricRating.Good,
-                        EvaluationRating.Exceptional => ExperimentMetricRating.Exceptional,
-                        _ => ExperimentMetricRating.Unknown,
-                    },
-                    Failed = metric.Interpretation.Failed,
-                    Reason = metric.Interpretation.Reason,
+                    EvaluationRating.Unknown => ExperimentMetricRating.Unknown,
+                    EvaluationRating.Inconclusive => ExperimentMetricRating.Inconclusive,
+                    EvaluationRating.Unacceptable => ExperimentMetricRating.Unacceptable,
+                    EvaluationRating.Poor => ExperimentMetricRating.Poor,
+                    EvaluationRating.Average => ExperimentMetricRating.Average,
+                    EvaluationRating.Good => ExperimentMetricRating.Good,
+                    EvaluationRating.Exceptional => ExperimentMetricRating.Exceptional,
+                    _ => ExperimentMetricRating.Unknown,
                 },
-            ContextCount = metric.Context?.Count ?? 0,
-            Diagnostics = Array.AsReadOnly(diagnostics),
-            Metadata = new ReadOnlyDictionary<string, string>(metadata),
-        };
+                Failed = metric.Interpretation.Failed,
+                Reason = metric.Interpretation.Reason,
+            };
+        return new ExperimentMetricSnapshot(
+            metric.Name,
+            kind,
+            nonFiniteNumericValue is null ? numericValue : null,
+            nonFiniteNumericValue,
+            (metric as BooleanMetric)?.Value,
+            (metric as StringMetric)?.Value,
+            metric.Reason,
+            interpretation,
+            metric.Context?.Count ?? 0,
+            Array.AsReadOnly(diagnostics),
+            metadata);
     }
 }

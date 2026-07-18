@@ -596,13 +596,10 @@ public sealed class ExperimentRunner : IExperimentRunner
                 {
                     Succeeded = true,
                     Output = output,
-                    Attempt = new ExperimentAttemptResult
-                    {
-                        AttemptNumber = attemptNumber,
-                        Status = ExperimentAttemptStatus.Succeeded,
-                        StartedAt = startedAt,
-                        Duration = _timeProvider.GetElapsedTime(attemptTimestamp),
-                    },
+                    Attempt = ExperimentAttemptResult.Succeeded(
+                        attemptNumber,
+                        startedAt,
+                        _timeProvider.GetElapsedTime(attemptTimestamp)),
                     ItemStatus = ExperimentItemStatus.Succeeded,
                 };
             }
@@ -1056,14 +1053,12 @@ public sealed class ExperimentRunner : IExperimentRunner
         new()
         {
             Succeeded = false,
-            Attempt = new ExperimentAttemptResult
-            {
-                AttemptNumber = attemptNumber,
-                Status = attemptStatus,
-                StartedAt = startedAt,
-                Duration = _timeProvider.GetElapsedTime(attemptTimestamp),
-                Failure = failure,
-            },
+            Attempt = ExperimentAttemptResult.Unsuccessful(
+                attemptNumber,
+                attemptStatus,
+                startedAt,
+                _timeProvider.GetElapsedTime(attemptTimestamp),
+                failure),
             ItemStatus = itemStatus,
             Failure = failure,
         };
@@ -1115,24 +1110,13 @@ public sealed class ExperimentRunner : IExperimentRunner
     private static ExperimentAttemptResult WithRetry(
         ExperimentAttemptResult attempt,
         TimeSpan delay) =>
-        new()
-        {
-            AttemptNumber = attempt.AttemptNumber,
-            Status = attempt.Status,
-            StartedAt = attempt.StartedAt,
-            Duration = attempt.Duration,
-            Failure = attempt.Failure is null
-                ? null
-                : new ExperimentFailure
-                {
-                    Code = attempt.Failure.Code,
-                    Stage = attempt.Failure.Stage,
-                    ExceptionType = attempt.Failure.ExceptionType,
-                    Message = attempt.Failure.Message,
-                    IsRetryable = true,
-                },
-            DelayBeforeNextAttempt = delay,
-        };
+        ExperimentAttemptResult.RetryScheduled(
+            attempt.AttemptNumber,
+            attempt.Status,
+            attempt.StartedAt,
+            attempt.Duration,
+            attempt.Failure!,
+            delay);
 
     private static async Task IgnoreExpectedCancellationAsync(
         Task task,

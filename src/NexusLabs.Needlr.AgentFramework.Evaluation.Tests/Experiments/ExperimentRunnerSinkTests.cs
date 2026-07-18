@@ -143,14 +143,12 @@ public sealed class ExperimentRunnerSinkTests
         var laterCalls = 0;
         var invalidFailureOperation =
             ExperimentSinkPublicationOperationResult.Failed(
-                new ExperimentFailure
-                {
-                    Code = ExperimentFailureCode.ResultSinkFailed,
-                    Stage = ExperimentFailureStage.Publication,
-                    ExceptionType = " ",
-                    Message = "invalid",
-                    IsRetryable = false,
-                });
+                new ExperimentFailure(
+                    ExperimentFailureCode.ResultSinkFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(InvalidOperationException).FullName!,
+                    "invalid",
+                    isRetryable: true));
         var outcome = await new ExperimentRunner().RunAsync(
             CreateDefinition(
                 sinks:
@@ -373,12 +371,10 @@ public sealed class ExperimentRunnerSinkTests
     private static ExperimentFailure PublicationFailure(
         ExperimentFailureCode code,
         string message) =>
-        new()
-        {
-            Code = code,
-            Stage = ExperimentFailureStage.Publication,
-            ExceptionType = typeof(InvalidOperationException).FullName!,
-            Message = message,
-            IsRetryable = false,
-        };
+        new(
+            code,
+            ExperimentFailureStage.Publication,
+            typeof(InvalidOperationException).FullName!,
+            message,
+            isRetryable: false);
 }

@@ -719,15 +719,13 @@ public sealed class LangfuseExperimentResultSink<TCase, TOutput> :
                 or LangfuseExperimentApiPublicationStatus.Disabled =>
                 ExperimentSinkPublicationOperationResult.NotAttempted(),
             _ => ExperimentSinkPublicationOperationResult.Failed(
-                new ExperimentFailure
-                {
-                    Code = ExperimentFailureCode.ResultSinkFailed,
-                    Stage = ExperimentFailureStage.Publication,
-                    ExceptionType = typeof(LangfuseException).FullName!,
-                    Message =
-                        $"Langfuse score publication ended with status " +
+                new ExperimentFailure(
+                    ExperimentFailureCode.ResultSinkFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(LangfuseException).FullName!,
+                    $"Langfuse score publication ended with status " +
                         $"'{snapshot.ScorePublicationStatus}'.",
-                }),
+                    isRetryable: false)),
         };
 
     private void SetSnapshot(

@@ -109,12 +109,11 @@ internal sealed class LangfuseExperimentItemScope<TCase, TOutput> :
     {
         var message = link.Failure?.Message
             ?? $"Langfuse item link ended with status '{link.Status}'.";
-        return new ExperimentFailure
-        {
-            Code = ExperimentFailureCode.ItemScopeFailed,
-            Stage = ExperimentFailureStage.Publication,
-            ExceptionType = typeof(LangfuseException).FullName!,
-            Message = message,
-        };
+        return new ExperimentFailure(
+            ExperimentFailureCode.ItemScopeFailed,
+            ExperimentFailureStage.Publication,
+            typeof(LangfuseException).FullName!,
+            message,
+            isRetryable: false);
     }
 }

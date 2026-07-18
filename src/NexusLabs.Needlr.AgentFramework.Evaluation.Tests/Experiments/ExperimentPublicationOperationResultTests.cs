@@ -163,11 +163,10 @@ public sealed class ExperimentPublicationOperationResultTests
         };
 
     private static ExperimentFailure CreateFailure(ExperimentFailureCode code) =>
-        new()
-        {
-            Code = code,
-            Stage = ExperimentFailureStage.Publication,
-            ExceptionType = typeof(InvalidOperationException).FullName!,
-            Message = "publication failed",
-        };
+        new(
+            code,
+            ExperimentFailureStage.Publication,
+            typeof(InvalidOperationException).FullName!,
+            "publication failed",
+            isRetryable: false);
 }

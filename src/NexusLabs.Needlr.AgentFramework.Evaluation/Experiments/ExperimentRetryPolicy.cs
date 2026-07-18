@@ -89,19 +89,11 @@ public sealed class ExperimentRetryPolicy : IExperimentRetryPolicy
             || retryableOutcome == ExperimentRetryableOutcome.None
             || (RetryOn & retryableOutcome) == 0)
         {
-            return new ExperimentRetryDecision
-            {
-                ShouldRetry = false,
-            };
+            return ExperimentRetryDecision.DoNotRetry();
         }
 
         var delay = _delayProvider(context);
-        ValidateDelay(delay, nameof(delay));
-        return new ExperimentRetryDecision
-        {
-            ShouldRetry = true,
-            Delay = delay,
-        };
+        return ExperimentRetryDecision.RetryAfter(delay);
     }
 
     internal static void ValidateDelay(TimeSpan delay, string parameterName)

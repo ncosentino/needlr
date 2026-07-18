@@ -195,13 +195,12 @@ public sealed class ExperimentRunnerItemScopeTests
         var malformedFailureOperation =
             ExperimentItemPublicationOperationResult.Failed(
                 [],
-                new ExperimentFailure
-                {
-                    Code = ExperimentFailureCode.ItemScopeFailed,
-                    Stage = ExperimentFailureStage.Publication,
-                    ExceptionType = " ",
-                    Message = "invalid failure",
-                });
+                new ExperimentFailure(
+                    ExperimentFailureCode.ItemScopeFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(InvalidOperationException).FullName!,
+                    "invalid failure",
+                    isRetryable: true));
         var malformedCorrelation =
             new CallbackExperimentItemScopeProvider<int, int>(
                 "malformed-correlation",

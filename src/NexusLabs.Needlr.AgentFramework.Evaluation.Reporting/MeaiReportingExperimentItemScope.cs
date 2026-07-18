@@ -79,13 +79,12 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
             return ValueTask.FromResult(
                 ExperimentItemPublicationOperationResult.Failed(
                     _correlations,
-                    new ExperimentFailure
-                    {
-                        Code = ExperimentFailureCode.ItemScopeFailed,
-                        Stage = ExperimentFailureStage.Publication,
-                        ExceptionType = exception.GetType().FullName!,
-                        Message = exception.Message,
-                    }));
+                    new ExperimentFailure(
+                        ExperimentFailureCode.ItemScopeFailed,
+                        ExperimentFailureStage.Publication,
+                        exception.GetType().FullName!,
+                        exception.Message,
+                        isRetryable: false)));
         }
 
         return ValueTask.FromResult(
