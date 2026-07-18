@@ -177,20 +177,17 @@ public sealed class ExperimentRunner : IExperimentRunner
                 policyContext,
                 cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            var result = new ExperimentRunResult<TCase, TOutput>
-            {
-                RunId = options.RunId,
-                ExperimentName = definition.Name,
-                Source = sourceResult.Source,
-                StartedAt = startedAt,
-                Duration = _timeProvider.GetElapsedTime(runTimestamp),
-                MaxConcurrency = options.MaxConcurrency,
-                WorkerCount = workerCount,
-                Items = items,
-                RunEvaluations = runEvaluationResults,
-                PolicyResults = policyResults,
-                Decision = ReduceDecision(policyResults),
-            };
+            var result = new ExperimentRunResult<TCase, TOutput>(
+                options.RunId,
+                definition.Name,
+                sourceResult.Source,
+                startedAt,
+                _timeProvider.GetElapsedTime(runTimestamp),
+                options.MaxConcurrency,
+                workerCount,
+                items,
+                runEvaluationResults,
+                policyResults);
             cancellationToken.ThrowIfCancellationRequested();
             return await sinkPipeline
                 .PublishAsync(result, cancellationToken)
@@ -831,25 +828,6 @@ public sealed class ExperimentRunner : IExperimentRunner
         }
 
         return Array.AsReadOnly(results);
-    }
-
-    private static ExperimentRunDecision ReduceDecision(
-        IReadOnlyList<ExperimentPolicyResult> policies)
-    {
-        var required = policies.Where(policy => policy.IsRequired).ToArray();
-        if (required.Length == 0)
-        {
-            return ExperimentRunDecision.NotEvaluated;
-        }
-
-        if (required.Any(policy => policy.Decision == EvaluationDecision.Failed))
-        {
-            return ExperimentRunDecision.Failed;
-        }
-
-        return required.Any(policy => policy.Decision == EvaluationDecision.Inconclusive)
-            ? ExperimentRunDecision.Inconclusive
-            : ExperimentRunDecision.Passed;
     }
 
     private static IExperimentRunEvaluator<TCase, TOutput>[] ValidateRunEvaluators<TCase, TOutput>(

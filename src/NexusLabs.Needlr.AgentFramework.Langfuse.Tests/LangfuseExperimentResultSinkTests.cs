@@ -926,12 +926,11 @@ public sealed class LangfuseExperimentResultSinkTests
             .Value;
 
     private static ExperimentRunResult<int, string> CreateCanonicalResult() =>
-        new()
-        {
-            RunId = "run-1",
-            ExperimentName = "direct-publication",
-            Source = new ExperimentSourceReference { Name = "local" },
-            StartedAt = new DateTimeOffset(
+        new(
+            "run-1",
+            "direct-publication",
+            new ExperimentSourceReference { Name = "local" },
+            new DateTimeOffset(
                 2026,
                 7,
                 15,
@@ -939,10 +938,9 @@ public sealed class LangfuseExperimentResultSinkTests
                 0,
                 0,
                 TimeSpan.Zero),
-            Duration = TimeSpan.FromSeconds(1),
-            MaxConcurrency = 1,
-            WorkerCount = 1,
-            Items =
+            TimeSpan.FromSeconds(1),
+            1,
+            1,
             [
                 ExperimentItemResult<int, string>.Succeeded(
                     0,
@@ -984,6 +982,12 @@ public sealed class LangfuseExperimentResultSinkTests
                             ]),
                     ]),
             ],
-            Decision = ExperimentRunDecision.Passed,
-        };
+            [],
+            [
+                ExperimentPolicyResult.FromVerdict(
+                    "decision",
+                    ExperimentPolicyKind.Deterministic,
+                    isRequired: true,
+                    ExperimentPolicyVerdict.WithoutEvidence(EvaluationDecision.Passed)),
+            ]);
 }

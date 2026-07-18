@@ -65,17 +65,13 @@ internal sealed class ExperimentResultSinkPipeline<TCase, TOutput>
         }
 
         var frozenSinkResults = Array.AsReadOnly(sinkResults);
-        var publicationStatus = ReducePublicationStatus(
-            result.Items,
+        cancellationToken.ThrowIfCancellationRequested();
+        var outcome = new ExperimentRunOutcome<TCase, TOutput>(
+            result,
             frozenSinkResults,
             cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
-        return new ExperimentRunOutcome<TCase, TOutput>
-        {
-            Result = result,
-            PublicationStatus = publicationStatus,
-            SinkResults = frozenSinkResults,
-        };
+        return outcome;
     }
 
     private static ExperimentSinkResult ValidateAndSnapshot(
@@ -116,83 +112,6 @@ internal sealed class ExperimentResultSinkPipeline<TCase, TOutput>
                 ExperimentFailureStage.Publication,
                 exception,
                 $"Result sink '{registration.Name}' failed: {exception.Message}"));
-
-    private static ExperimentPublicationStatus ReducePublicationStatus(
-        IReadOnlyList<ExperimentItemResult<TCase, TOutput>> items,
-        IReadOnlyList<ExperimentSinkResult> sinkResults,
-        CancellationToken cancellationToken)
-    {
-        var hasAttemptedPublication = false;
-        var hasOptionalFailure = false;
-        foreach (var item in items)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var publication in item.Publications)
-            {
-                Observe(
-                    publication.IsRequired,
-                    publication.Status,
-                    ref hasAttemptedPublication,
-                    ref hasOptionalFailure,
-                    cancellationToken,
-                    out var requiredFailure);
-                if (requiredFailure)
-                {
-                    return ExperimentPublicationStatus.Failed;
-                }
-            }
-        }
-
-        foreach (var sinkResult in sinkResults)
-        {
-            Observe(
-                sinkResult.IsRequired,
-                sinkResult.Status,
-                ref hasAttemptedPublication,
-                ref hasOptionalFailure,
-                cancellationToken,
-                out var requiredFailure);
-            if (requiredFailure)
-            {
-                return ExperimentPublicationStatus.Failed;
-            }
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        if (!hasAttemptedPublication)
-        {
-            return ExperimentPublicationStatus.NotRequested;
-        }
-
-        return hasOptionalFailure
-            ? ExperimentPublicationStatus.PartiallyFailed
-            : ExperimentPublicationStatus.Succeeded;
-    }
-
-    private static void Observe(
-        bool isRequired,
-        ExperimentPublicationOperationStatus status,
-        ref bool hasAttemptedPublication,
-        ref bool hasOptionalFailure,
-        CancellationToken cancellationToken,
-        out bool requiredFailure)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        requiredFailure = false;
-        if (status == ExperimentPublicationOperationStatus.NotAttempted)
-        {
-            return;
-        }
-
-        hasAttemptedPublication = true;
-        if (status != ExperimentPublicationOperationStatus.Failed)
-        {
-            return;
-        }
-
-        requiredFailure = isRequired;
-        hasOptionalFailure |= !isRequired;
-    }
 
     private sealed record SinkRegistration(
         string Name,
