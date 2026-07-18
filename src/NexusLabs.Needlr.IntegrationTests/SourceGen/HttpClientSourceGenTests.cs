@@ -39,7 +39,7 @@ public sealed class HttpClientSourceGenTests
         var client = factory.CreateClient("WebFetch");
 
         Assert.Equal(TimeSpan.FromSeconds(15), client.Timeout);
-        Assert.Contains("BrandGhost-Agent/1.0", client.DefaultRequestHeaders.UserAgent.ToString());
+        Assert.Contains("ExampleProduct-Agent/1.0", client.DefaultRequestHeaders.UserAgent.ToString());
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class HttpClientSourceGenTests
 
         Assert.NotNull(options);
         Assert.Equal(TimeSpan.FromSeconds(25), options.Value.Timeout);
-        Assert.Equal("BrandGhost-Agent/1.0", options.Value.UserAgent);
+        Assert.Equal("ExampleProduct-Agent/1.0", options.Value.UserAgent);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public sealed class HttpClientSourceGenTests
 public sealed record WebFetchHttpClientOptions : IStandardHttpClientOptions
 {
     public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(15);
-    public string? UserAgent { get; init; } = "BrandGhost-Agent/1.0";
+    public string? UserAgent { get; init; } = "ExampleProduct-Agent/1.0";
     public Uri? BaseAddress { get; init; }
     public IReadOnlyDictionary<string, string>? DefaultHeaders { get; init; }
 }
