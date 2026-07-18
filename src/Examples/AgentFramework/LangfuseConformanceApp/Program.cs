@@ -215,11 +215,14 @@ using (var scenario = langfuse.BeginScenario(
         ],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
-        scoreOptions: new LangfuseEvaluationScoreOptions
-        {
-            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        options: new LangfuseEvaluateAndRecordOptions(
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+            scoreOptions: new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+            }),
+        cancellationToken: CancellationToken.None);
 
     expectedScoreNames = results
         .SelectMany(r => r.Metrics.Values)
@@ -321,7 +324,10 @@ static async Task<int> RunResiliencyCheckAsync()
         cancellation.Cancel();
         try
         {
-            await langfuse.Datasets.EnsureDatasetAsync("cancelled-operation", cancellationToken: cancellation.Token);
+            await langfuse.Datasets.EnsureDatasetAsync(
+                "cancelled-operation",
+                description: null,
+                cancellation.Token);
         }
         catch (OperationCanceledException exception) when (exception.CancellationToken == cancellation.Token)
         {
@@ -390,11 +396,14 @@ static async Task<int> RunResiliencyCheckAsync()
             evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000)],
             messages: inputs.Messages,
             modelResponse: inputs.ModelResponse,
-            additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
-            scoreOptions: new LangfuseEvaluationScoreOptions
-            {
-                ScoreIdProvider = metric => $"resiliency:{metric.Name}",
-            });
+            options: new LangfuseEvaluateAndRecordOptions(
+                chatConfiguration: null,
+                additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                scoreOptions: new LangfuseEvaluationScoreOptions
+                {
+                    ScoreIdProvider = metric => $"resiliency:{metric.Name}",
+                }),
+            cancellationToken: CancellationToken.None);
 
         recordedScores = results.SelectMany(r => r.Metrics.Values).Count(HasValue);
     }
@@ -595,7 +604,8 @@ static async Task<int> RunExperimentRunnerCheckAsync(string[] modeArgs)
     {
         await langfuse.Datasets.EnsureDatasetAsync(
             datasetName,
-            "Needlr converged experiment-runner example.");
+            "Needlr converged experiment-runner example.",
+            CancellationToken.None);
         foreach (var id in new[] { "first", "second" })
         {
             await langfuse.Datasets.UpsertItemAsync(new LangfuseDatasetItem
@@ -699,7 +709,8 @@ static async Task<int> RunExperimentRunnerCheckAsync(string[] modeArgs)
         {
             RunId = runId,
             MaxConcurrency = 2,
-        });
+        },
+        CancellationToken.None);
     var snapshot = resultSink.GetPublicationSnapshot();
     Console.WriteLine($"Decision: {outcome.Result.Decision}");
     Console.WriteLine($"Publication: {outcome.PublicationStatus}");
@@ -814,7 +825,10 @@ static async Task<int> RunExperimentsCheckAsync()
     Console.WriteLine($"[setup] Ensured score config '{configName}'.");
 
     // P1 — dataset + items
-    await langfuse.Datasets.EnsureDatasetAsync(datasetName, "Needlr conformance dataset.");
+    await langfuse.Datasets.EnsureDatasetAsync(
+        datasetName,
+        "Needlr conformance dataset.",
+        CancellationToken.None);
     var items = new[] { "case-cached", "case-fresh" };
     foreach (var id in items)
     {
@@ -884,7 +898,10 @@ static async Task<int> RunExperimentsCheckAsync()
                     ],
                     messages: inputs.Messages,
                     modelResponse: inputs.ModelResponse,
-                    additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                    options: new LangfuseEvaluateAndRecordOptions(
+                        chatConfiguration: null,
+                        additionalContext: [new AgentRunDiagnosticsContext(diagnostics)],
+                        scoreOptions: null),
                     cancellationToken: cancellationToken);
                 return scenario.TraceId;
             },
@@ -936,7 +953,8 @@ static async Task<int> RunExperimentsCheckAsync()
         {
             Id = $"{runId}:{configName}",
             Comment = "All conformance items linked.",
-        });
+        },
+        CancellationToken.None);
     var booleanRunScore = await run.RecordScoreAsync(
         "needlr_run_passed",
         true,
@@ -944,17 +962,20 @@ static async Task<int> RunExperimentsCheckAsync()
         {
             Id = $"{runId}:needlr_run_passed",
             Comment = "Every required run check passed before read-back.",
-        });
+        },
+        CancellationToken.None);
     var categoricalRunScore = await run.RecordScoreAsync(
         "needlr_run_verdict",
         "passed",
-        new LangfuseScoreOptions { Id = $"{runId}:needlr_run_verdict" });
+        new LangfuseScoreOptions { Id = $"{runId}:needlr_run_verdict" },
+        CancellationToken.None);
     var evaluationRunScores = await run.RecordEvaluationAsync(
         new EvaluationResult(new NumericMetric("needlr_run_item_count", itemTraceIds.Count)),
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        },
+        CancellationToken.None);
     LangfuseExperimentRunScoreResult[] runScoreResults =
     [
         numericRunScore,
@@ -985,7 +1006,8 @@ static async Task<int> RunExperimentsCheckAsync()
             {
                 Id = $"{runId}:session_resolved",
                 Comment = "Whole conversation resolved.",
-            });
+            },
+            CancellationToken.None);
     }
     Console.WriteLine($"[run] Recorded a session score on session '{sessionId}'.");
 
@@ -1406,7 +1428,8 @@ static async Task<int> RunMetricsCheckAsync()
             {
                 Id = $"{runId}:{scoreName}",
                 Comment = "metrics conformance",
-            });
+            },
+            CancellationToken.None);
         Console.WriteLine($"[run] Recorded score '{scoreName}' = {scoreValue} on trace {scenario.TraceId}.");
     }
 

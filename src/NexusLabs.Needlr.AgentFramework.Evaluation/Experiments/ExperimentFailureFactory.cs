@@ -13,14 +13,12 @@ internal static class ExperimentFailureFactory
         bool isRetryable = false)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        return new ExperimentFailure
-        {
-            Code = code,
-            Stage = stage,
-            ExceptionType = exception.GetType().FullName ?? exception.GetType().Name,
-            Message = message ?? exception.Message,
-            IsRetryable = isRetryable,
-        };
+        return new ExperimentFailure(
+            code,
+            stage,
+            exception.GetType().FullName ?? exception.GetType().Name,
+            message ?? exception.Message,
+            isRetryable);
     }
 
     public static ExperimentFailure ValidateAndSnapshotPublicationFailure(
@@ -40,13 +38,11 @@ internal static class ExperimentFailureFactory
 
         ArgumentException.ThrowIfNullOrWhiteSpace(failure.ExceptionType);
         ArgumentException.ThrowIfNullOrWhiteSpace(failure.Message);
-        return new ExperimentFailure
-        {
-            Code = failure.Code,
-            Stage = failure.Stage,
-            ExceptionType = failure.ExceptionType,
-            Message = failure.Message,
-            IsRetryable = false,
-        };
+        return new ExperimentFailure(
+            failure.Code,
+            failure.Stage,
+            failure.ExceptionType,
+            failure.Message,
+            isRetryable: false);
     }
 }

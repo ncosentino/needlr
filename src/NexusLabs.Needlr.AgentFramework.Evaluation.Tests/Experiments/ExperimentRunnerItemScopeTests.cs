@@ -51,8 +51,6 @@ public sealed class ExperimentRunnerItemScopeTests
                         {
                             Interlocked.Increment(ref completions);
                             return ValueTask.FromResult(SucceededPublication(
-                                "recording",
-                                isRequired: false,
                                 new ExperimentItemCorrelation
                                 {
                                     Namespace = "recording",
@@ -139,6 +137,8 @@ public sealed class ExperimentRunnerItemScopeTests
         Assert.All(result.Result.Items, item =>
         {
             var publication = Assert.Single(item.Publications);
+            Assert.Equal("recording", publication.Name);
+            Assert.False(publication.IsRequired);
             Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, publication.Status);
             var correlation = Assert.Single(item.Correlations);
             Assert.Equal("recording", correlation.Namespace);
@@ -156,6 +156,109 @@ public sealed class ExperimentRunnerItemScopeTests
         Assert.Equal(2, completions);
         Assert.Equal(2, disposals);
         Assert.Equal(0, activeActivations);
+    }
+
+    [Fact]
+    public async Task RunAsync_StampsRegisteredProviderIdentityOntoOperationResult()
+    {
+        var provider = new MutableIdentityItemScopeProvider();
+
+        var outcome = await new ExperimentRunner().RunAsync(
+            CreateDefinition(
+                task: (_, _) => ValueTask.FromResult(1),
+                evaluator: null,
+                itemScopes: [provider]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken);
+
+        var publication = Assert.Single(Assert.Single(outcome.Result.Items).Publications);
+        Assert.Equal("registered-provider", publication.Name);
+        Assert.True(publication.IsRequired);
+        Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, publication.Status);
+        Assert.Equal("mutated-provider", provider.Name);
+        Assert.False(provider.IsRequired);
+    }
+
+    [Fact]
+    public async Task RunAsync_MalformedCorrelationAndFailureAreRejectedDuringNormalization()
+    {
+        var malformedCorrelationOperation =
+            ExperimentItemPublicationOperationResult.Succeeded(
+                [
+                    new ExperimentItemCorrelation
+                    {
+                        Namespace = "provider",
+                        Name = "item",
+                        Value = " ",
+                    },
+                ]);
+        var malformedFailureOperation =
+            ExperimentItemPublicationOperationResult.Failed(
+                [],
+                new ExperimentFailure(
+                    ExperimentFailureCode.ItemScopeFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(InvalidOperationException).FullName!,
+                    "invalid failure",
+                    isRetryable: true));
+        var malformedCorrelation =
+            new CallbackExperimentItemScopeProvider<int, int>(
+                "malformed-correlation",
+                isRequired: false,
+                ExperimentItemScopeFailureMode.BestEffort,
+                (_, _) =>
+                {
+                    IExperimentItemScope<int, int> scope =
+                        new CallbackExperimentItemScope<int, int>(
+                            new Dictionary<Type, object>(),
+                            () => null,
+                            (_, _) => ValueTask.FromResult(
+                                malformedCorrelationOperation),
+                            _ => ValueTask.CompletedTask,
+                            () => ValueTask.CompletedTask);
+                    return ValueTask.FromResult(scope);
+                });
+        var malformedFailure =
+            new CallbackExperimentItemScopeProvider<int, int>(
+                "malformed-failure",
+                isRequired: false,
+                ExperimentItemScopeFailureMode.BestEffort,
+                (_, _) =>
+                {
+                    IExperimentItemScope<int, int> scope =
+                        new CallbackExperimentItemScope<int, int>(
+                            new Dictionary<Type, object>(),
+                            () => null,
+                            (_, _) => ValueTask.FromResult(
+                                malformedFailureOperation),
+                            _ => ValueTask.CompletedTask,
+                            () => ValueTask.CompletedTask);
+                    return ValueTask.FromResult(scope);
+                });
+
+        var outcome = await new ExperimentRunner().RunAsync(
+            CreateDefinition(
+                task: (_, _) => ValueTask.FromResult(1),
+                evaluator: null,
+                itemScopes: [malformedCorrelation, malformedFailure]),
+            new ExperimentRunOptions { RunId = "run-1", MaxConcurrency = 1 },
+            _cancellationToken);
+
+        var item = Assert.Single(outcome.Result.Items);
+        Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
+        Assert.Equal(ExperimentPublicationStatus.PartiallyFailed, outcome.PublicationStatus);
+        Assert.Equal(
+            ["malformed-correlation", "malformed-failure"],
+            item.Publications.Select(publication => publication.Name));
+        Assert.All(item.Publications, publication =>
+        {
+            Assert.Equal(ExperimentPublicationOperationStatus.Failed, publication.Status);
+            Assert.Equal(ExperimentFailureCode.ItemScopeFailed, publication.Failure!.Code);
+            Assert.Equal(ExperimentFailureStage.Publication, publication.Failure.Stage);
+            Assert.False(publication.Failure.IsRetryable);
+            Assert.False(string.IsNullOrWhiteSpace(publication.Failure.ExceptionType));
+            Assert.NotEqual("invalid failure", publication.Failure.Message);
+        });
     }
 
     [Fact]
@@ -384,9 +487,7 @@ public sealed class ExperimentRunnerItemScopeTests
                         (_, _) =>
                         {
                             Interlocked.Increment(ref completions);
-                            return ValueTask.FromResult(SucceededPublication(
-                                "retry-scope",
-                                isRequired: false));
+                            return ValueTask.FromResult(SucceededPublication());
                         },
                         _ =>
                         {
@@ -461,9 +562,7 @@ public sealed class ExperimentRunnerItemScopeTests
                             Interlocked.Increment(ref completions);
                             completionStarted.SetResult();
                             await Task.Delay(Timeout.InfiniteTimeSpan, token);
-                            return SucceededPublication(
-                                "completion",
-                                isRequired: false);
+                            return SucceededPublication();
                         },
                         _ =>
                         {
@@ -515,9 +614,7 @@ public sealed class ExperimentRunnerItemScopeTests
                     new CallbackExperimentItemScope<int, int>(
                         new Dictionary<Type, object>(),
                         () => throw new InvalidOperationException("activation failed"),
-                        (_, _) => ValueTask.FromResult(SucceededPublication(
-                            "activation",
-                            isRequired: false)),
+                        (_, _) => ValueTask.FromResult(SucceededPublication()),
                         _ => ValueTask.CompletedTask,
                         () =>
                         {
@@ -635,9 +732,7 @@ public sealed class ExperimentRunnerItemScopeTests
                         (item, _) =>
                         {
                             events.Add($"complete:strict:{item.Status}");
-                            return ValueTask.FromResult(SucceededPublication(
-                                "strict",
-                                isRequired: true));
+                            return ValueTask.FromResult(SucceededPublication());
                         },
                         _ =>
                         {
@@ -711,9 +806,7 @@ public sealed class ExperimentRunnerItemScopeTests
                     new CallbackExperimentItemScope<int, int>(
                         new Dictionary<Type, object>(),
                         () => null,
-                        (_, _) => ValueTask.FromResult(SucceededPublication(
-                            "hanging",
-                            isRequired: false)),
+                        (_, _) => ValueTask.FromResult(SucceededPublication()),
                         _ =>
                         {
                             abortStarted.SetResult();
@@ -805,9 +898,7 @@ public sealed class ExperimentRunnerItemScopeTests
                         (_, _) =>
                         {
                             events.Add("complete:second");
-                            return ValueTask.FromResult(SucceededPublication(
-                                "second",
-                                isRequired: false));
+                            return ValueTask.FromResult(SucceededPublication());
                         },
                         _ => ValueTask.CompletedTask,
                         () =>
@@ -869,9 +960,7 @@ public sealed class ExperimentRunnerItemScopeTests
                         (item, _) =>
                         {
                             events.Add($"complete:{name}");
-                            return ValueTask.FromResult(SucceededPublication(
-                                name,
-                                isRequired: false));
+                            return ValueTask.FromResult(SucceededPublication());
                         },
                         _ =>
                         {
@@ -903,9 +992,7 @@ public sealed class ExperimentRunnerItemScopeTests
                         (item, _) =>
                         {
                             onComplete(item);
-                            return ValueTask.FromResult(SucceededPublication(
-                                name,
-                                isRequired: false));
+                            return ValueTask.FromResult(SucceededPublication());
                         },
                         _ => ValueTask.CompletedTask,
                         () => ValueTask.CompletedTask);
@@ -928,25 +1015,15 @@ public sealed class ExperimentRunnerItemScopeTests
                             [typeof(ExperimentItemScopeTestFeature)] = feature,
                         },
                         () => null,
-                        (_, _) => ValueTask.FromResult(SucceededPublication(
-                            name,
-                            isRequired: false)),
+                        (_, _) => ValueTask.FromResult(SucceededPublication()),
                         _ => ValueTask.CompletedTask,
                         () => ValueTask.CompletedTask);
                 return ValueTask.FromResult(scope);
             });
 
-    private static ExperimentItemPublicationResult SucceededPublication(
-        string name,
-        bool isRequired,
+    private static ExperimentItemPublicationOperationResult SucceededPublication(
         params ExperimentItemCorrelation[] correlations) =>
-        new()
-        {
-            Name = name,
-            IsRequired = isRequired,
-            Status = ExperimentPublicationOperationStatus.Succeeded,
-            Correlations = Array.AsReadOnly(correlations),
-        };
+        ExperimentItemPublicationOperationResult.Succeeded(correlations);
 
     private static ExperimentDefinition<int, int> CreateDefinition(
         ExperimentTask<int, int> task,
@@ -984,6 +1061,33 @@ public sealed class ExperimentRunnerItemScopeTests
             _cancellationToken.ThrowIfCancellationRequested();
             timeProvider.Advance(increment);
             await Task.Yield();
+        }
+    }
+
+    private sealed class MutableIdentityItemScopeProvider :
+        IExperimentItemScopeProvider<int, int>
+    {
+        public string Name { get; private set; } = "registered-provider";
+
+        public bool IsRequired { get; private set; } = true;
+
+        public ExperimentItemScopeFailureMode FailureMode =>
+            ExperimentItemScopeFailureMode.BestEffort;
+
+        public ValueTask<IExperimentItemScope<int, int>> EnterAsync(
+            ExperimentItemScopeContext<int> context,
+            CancellationToken cancellationToken)
+        {
+            Name = "mutated-provider";
+            IsRequired = false;
+            IExperimentItemScope<int, int> scope =
+                new CallbackExperimentItemScope<int, int>(
+                    new Dictionary<Type, object>(),
+                    () => null,
+                    (_, _) => ValueTask.FromResult(SucceededPublication()),
+                    _ => ValueTask.CompletedTask,
+                    () => ValueTask.CompletedTask);
+            return ValueTask.FromResult(scope);
         }
     }
 }

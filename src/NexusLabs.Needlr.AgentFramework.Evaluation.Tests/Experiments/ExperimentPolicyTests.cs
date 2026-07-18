@@ -74,14 +74,16 @@ public sealed class ExperimentPolicyTests
                     requiredSuccessRate: 0,
                     minimumSampleCount: 1,
                     confidenceLevel: 0.95,
-                    isRequired: true),
+                    isRequired: true,
+                    unknownSampleTreatment: ExperimentUnknownSampleTreatment.Inconclusive),
                 new ExperimentBinarySuccessPolicy<int, int>(
                     "optional",
                     "passed",
                     requiredSuccessRate: 1,
                     minimumSampleCount: 1,
                     confidenceLevel: 0.95,
-                    isRequired: false),
+                    isRequired: false,
+                    unknownSampleTreatment: ExperimentUnknownSampleTreatment.Inconclusive),
             ]);
 
         var result = await new ExperimentRunner().RunAsync(
@@ -163,6 +165,7 @@ public sealed class ExperimentPolicyTests
                     requiredSuccessRate: 0.9,
                     minimumSampleCount: 1,
                     confidenceLevel: 0.95,
+                    isRequired: true,
                     unknownSampleTreatment: ExperimentUnknownSampleTreatment.CountAsFailure),
             ],
         };

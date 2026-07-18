@@ -21,6 +21,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
         var result = await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("done"),
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("done", result.Value);
@@ -48,10 +49,12 @@ public sealed class LangfuseExperimentRunSemanticsTests
         var first = await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult(1),
+            options: null,
             cancellationToken: _cancellationToken);
         var second = await run.RunItemAsync(
             "case-2",
             (_, _) => Task.FromResult(2),
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("dataset-run-1", first.Link.DatasetRunId);
@@ -73,6 +76,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
             .Select(index => run.RunItemAsync(
                 $"case-{index}",
                 (_, _) => Task.FromResult(index),
+                options: null,
                 cancellationToken: _cancellationToken))
             .ToArray();
         var results = await Task.WhenAll(tasks);
@@ -98,10 +102,12 @@ public sealed class LangfuseExperimentRunSemanticsTests
         var firstTask = run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult(1),
+            options: null,
             cancellationToken: _cancellationToken);
         var secondTask = run.RunItemAsync(
             "case-2",
             (_, _) => Task.FromResult(2),
+            options: null,
             cancellationToken: _cancellationToken);
         var results = await Task.WhenAll(firstTask, secondTask);
 
@@ -130,6 +136,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
         await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("first"),
+            options: null,
             cancellationToken: _cancellationToken);
         var callbackInvoked = false;
 
@@ -169,6 +176,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
                 callbackInvoked = true;
                 return Task.FromResult("continued");
             },
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.True(callbackInvoked, "Expected best-effort invalid response to continue into the callback.");
@@ -203,10 +211,12 @@ public sealed class LangfuseExperimentRunSemanticsTests
         await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult(1),
+            options: null,
             cancellationToken: _cancellationToken);
         await run.RunItemAsync(
             "case-2",
             (_, _) => Task.FromResult(2),
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("comparison run", run.Description);
@@ -250,6 +260,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
         var itemTask = run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("done"),
+            options: null,
             cancellationToken: _cancellationToken);
         await requestStarted.Task.WaitAsync(_cancellationToken);
 
@@ -277,6 +288,7 @@ public sealed class LangfuseExperimentRunSemanticsTests
             run.RunItemAsync<string>(
                 "case-1",
                 (_, _) => throw new InvalidOperationException("subject failed"),
+                options: null,
                 cancellationToken: _cancellationToken));
 
         var snapshot = run.GetPublicationSnapshot();
@@ -299,10 +311,12 @@ public sealed class LangfuseExperimentRunSemanticsTests
         var item = await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("done"),
+            options: null,
             cancellationToken: _cancellationToken);
         var score = await run.RecordScoreAsync(
             "quality",
             0.9,
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentItemLinkStatus.Disabled, item.Link.Status);

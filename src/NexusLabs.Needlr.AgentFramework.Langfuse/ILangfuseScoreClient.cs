@@ -25,99 +25,239 @@ public interface ILangfuseScoreClient
     /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The numeric value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordScoreAsync(string traceId, string name, double value);
+
+    /// <summary>Records a numeric score against <paramref name="traceId"/>.</summary>
+    /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The numeric value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordScoreAsync(string traceId, string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordScoreAsync(
+        string traceId,
+        string name,
+        double value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a boolean score (stored as <c>1</c>/<c>0</c>) against <paramref name="traceId"/>.</summary>
     /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The boolean value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordScoreAsync(string traceId, string name, bool value);
+
+    /// <summary>Records a boolean score (stored as <c>1</c>/<c>0</c>) against <paramref name="traceId"/>.</summary>
+    /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The boolean value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordScoreAsync(string traceId, string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordScoreAsync(
+        string traceId,
+        string name,
+        bool value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a categorical score against <paramref name="traceId"/>.</summary>
     /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The category label.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordScoreAsync(string traceId, string name, string value);
+
+    /// <summary>Records a categorical score against <paramref name="traceId"/>.</summary>
+    /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The category label.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordScoreAsync(string traceId, string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordScoreAsync(
+        string traceId,
+        string name,
+        string value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Projects every metric in <paramref name="result"/> to a Langfuse score against
     /// <paramref name="traceId"/>, using the same mapping as
-    /// <see cref="ILangfuseScenario.RecordEvaluationAsync"/>.
+    /// <see cref="ILangfuseScenario.RecordEvaluationAsync(EvaluationResult)"/>.
     /// </summary>
     /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the scores to.</param>
     /// <param name="result">The evaluation result to project.</param>
-    /// <param name="options">Optional stable identity settings for projected metric scores.</param>
+    /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
+    Task RecordEvaluationAsync(
+        string traceId,
+        EvaluationResult result);
+
+    /// <summary>
+    /// Projects every metric in <paramref name="result"/> to a Langfuse score against
+    /// <paramref name="traceId"/>, using the same mapping as
+    /// <see cref="ILangfuseScenario.RecordEvaluationAsync(EvaluationResult, LangfuseEvaluationScoreOptions?, CancellationToken)"/>.
+    /// </summary>
+    /// <param name="traceId">The Langfuse/OpenTelemetry trace id to attach the scores to.</param>
+    /// <param name="result">The evaluation result to project.</param>
+    /// <param name="options">
+    /// Stable identity settings for projected metric scores, or <see langword="null"/>.
+    /// </param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted all projected scores.</returns>
     Task RecordEvaluationAsync(
         string traceId,
         EvaluationResult result,
-        LangfuseEvaluationScoreOptions? options = null,
-        CancellationToken cancellationToken = default);
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a numeric score against a specific observation within a trace.</summary>
     /// <param name="traceId">The owning trace id.</param>
     /// <param name="observationId">The observation (span/generation) id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The numeric value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        double value);
+
+    /// <summary>Records a numeric score against a specific observation within a trace.</summary>
+    /// <param name="traceId">The owning trace id.</param>
+    /// <param name="observationId">The observation (span/generation) id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The numeric value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordObservationScoreAsync(string traceId, string observationId, string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        double value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a boolean score (stored as <c>1</c>/<c>0</c>) against a specific observation.</summary>
     /// <param name="traceId">The owning trace id.</param>
     /// <param name="observationId">The observation id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The boolean value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        bool value);
+
+    /// <summary>Records a boolean score (stored as <c>1</c>/<c>0</c>) against a specific observation.</summary>
+    /// <param name="traceId">The owning trace id.</param>
+    /// <param name="observationId">The observation id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The boolean value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordObservationScoreAsync(string traceId, string observationId, string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        bool value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a categorical score against a specific observation.</summary>
     /// <param name="traceId">The owning trace id.</param>
     /// <param name="observationId">The observation id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The category label.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        string value);
+
+    /// <summary>Records a categorical score against a specific observation.</summary>
+    /// <param name="traceId">The owning trace id.</param>
+    /// <param name="observationId">The observation id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The category label.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordObservationScoreAsync(string traceId, string observationId, string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordObservationScoreAsync(
+        string traceId,
+        string observationId,
+        string name,
+        string value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a numeric score against a whole session (across its traces).</summary>
     /// <param name="sessionId">The session id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The numeric value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string sessionId, string name, double value);
+
+    /// <summary>Records a numeric score against a whole session (across its traces).</summary>
+    /// <param name="sessionId">The session id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The numeric value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordSessionScoreAsync(string sessionId, string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordSessionScoreAsync(
+        string sessionId,
+        string name,
+        double value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a boolean session score (stored as <c>1</c>/<c>0</c>).</summary>
     /// <param name="sessionId">The session id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The boolean value.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string sessionId, string name, bool value);
+
+    /// <summary>Records a boolean session score (stored as <c>1</c>/<c>0</c>).</summary>
+    /// <param name="sessionId">The session id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The boolean value.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordSessionScoreAsync(string sessionId, string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordSessionScoreAsync(
+        string sessionId,
+        string name,
+        bool value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 
     /// <summary>Records a categorical session score.</summary>
     /// <param name="sessionId">The session id to attach the score to.</param>
     /// <param name="name">The score name.</param>
     /// <param name="value">The category label.</param>
-    /// <param name="options">Optional score identity and comment settings.</param>
+    /// <returns>A task that completes when Langfuse has accepted the score.</returns>
+    Task RecordSessionScoreAsync(string sessionId, string name, string value);
+
+    /// <summary>Records a categorical session score.</summary>
+    /// <param name="sessionId">The session id to attach the score to.</param>
+    /// <param name="name">The score name.</param>
+    /// <param name="value">The category label.</param>
+    /// <param name="options">Score identity and comment settings, or <see langword="null"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when Langfuse has accepted the score.</returns>
-    Task RecordSessionScoreAsync(string sessionId, string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default);
+    Task RecordSessionScoreAsync(
+        string sessionId,
+        string name,
+        string value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken);
 }

@@ -91,6 +91,26 @@ Every case is materialized and validated before execution. Cases expand in sourc
 ascending one-based trial index. Items return in that stable order regardless of completion or retry
 order.
 
+The provider-neutral execution APIs use explicit overloads rather than optional parameters:
+
+- `IExperimentCaseSource<TCase>.LoadAsync()` delegates to
+  `LoadAsync(CancellationToken.None)`;
+- `IExperimentRunner.RunAsync(definition, options)` delegates to the overload that accepts
+  `CancellationToken`;
+- `ExperimentRunner()` uses `TimeProvider.System`, while
+  `ExperimentRunner(TimeProvider?)` also falls back to `TimeProvider.System` for an explicit
+  null value.
+
+The built-in policies also use explicit constructor matrices. Neither policy exposes optional
+parameters:
+
+| Policy | Explicit constructor suffix | Resulting configuration |
+|---|---|---|
+| `ExperimentBinarySuccessPolicy<TCase,TOutput>` | Statistical arguments only | Required; unknown samples are inconclusive. |
+| `ExperimentBinarySuccessPolicy<TCase,TOutput>` | `bool isRequired, ExperimentUnknownSampleTreatment` | Both values specified explicitly. |
+| `ExperimentRunEvaluationThresholdPolicy<TCase,TOutput>` | Threshold arguments only | Required; missing metrics are inconclusive. |
+| `ExperimentRunEvaluationThresholdPolicy<TCase,TOutput>` | `bool isRequired, EvaluationMissingMetricBehavior` | Both values specified explicitly. |
+
 ## Cases, Trials, and Attempts
 
 | Term | Meaning |
@@ -223,6 +243,13 @@ For every statistical trial, the runner:
 6. sends every terminal quality status to `CompleteAsync` in registration order;
 7. disposes scopes in reverse order and records completion or disposal failure structurally.
 
+`CompleteAsync` returns an `ExperimentItemPublicationOperationResult`, not the canonical
+provider result. Implementations select `Succeeded(correlations)`, `NotAttempted(correlations)`, or
+`Failed(correlations, failure)` and do not return provider identity. The factories snapshot the
+correlation list. The runner validates and snapshots correlation/failure content, then stamps the
+registered provider `Name` and `IsRequired` into the unchanged canonical
+`ExperimentItemPublicationResult`.
+
 The scope object remains alive across delayed retries, but no activation handle, worker slot, or
 shared-limiter lease remains held during the delay. `EnterAsync` receives only the caller token and
 runs outside `AttemptTimeout`; it executes after shared admission so provider setup participates in
@@ -246,10 +273,11 @@ scope deterministically; the first registration remains available.
 fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
 policy excludes them unless `ExperimentUnknownSampleTreatment.CountAsFailure` is selected.
 
-`IsRequired` does not change item quality. It is retained on each
-`ExperimentItemPublicationResult` for aggregate publication health in the result-sink phase.
-Provider correlations use structured namespace/name/value triples and are copied into both the
-provider result and the item aggregate.
+`IsRequired` does not change item quality. The runner copies it from the registered provider onto
+each canonical `ExperimentItemPublicationResult` for aggregate publication health in the
+result-sink phase. Provider correlations use structured namespace/name/value triples and are copied
+into both the provider result and the item aggregate. Malformed correlations or publication
+failures are rejected during normalization and become structured scope publication failures.
 
 Normal scope teardown is `CompleteAsync` then `DisposeAsync`. Caller cancellation invokes
 `AbortAsync` then `DisposeAsync` in reverse scope order for every entered scope whose completion has
@@ -298,7 +326,7 @@ var definition = new ExperimentDefinition<MyCase, MyOutput>
     context => new EvaluationInputs(
         context.Output.Messages,
         context.Output.Response),
-    new MeaiReportingExperimentAdapterOptions<MyCase, MyOutput>
+    new MeaiReportingExperimentOptions<MyCase, MyOutput>
     {
         ResponseReuseMode =
             MeaiReportingResponseReuseMode.CaseAndTrialReplay,
@@ -337,6 +365,14 @@ Needlr does not render MEAI reports or fabricate aggregate `ScenarioRun` entries
 `IEvaluationResultStore` and use MEAI's `HtmlReportWriter`, `JsonReportWriter`, or `dotnet aieval`
 tooling.
 
+MEAI Reporting and Langfuse can compose on the same definition. Add the Langfuse item scope and
+result sink, then call `WithMeaiReporting(...)`; Reporting produces the canonical item
+`EvaluationResult`, and the Langfuse sink projects those same metrics without re-evaluating. A
+consumer-defined sink can receive the same canonical run and publish domain artifacts independently.
+If execution fails before evaluation, the canonical item retains the failure, the Langfuse trial
+scope can still retain its trace and dataset link, and Reporting remains `NotAttempted` because no
+completed `ScenarioRun` exists to persist.
+
 ## Final Result Sinks
 
 `ExperimentDefinition<TCase,TOutput>.Sinks` publishes the completed canonical quality result without
@@ -348,12 +384,14 @@ Each named `IExperimentResultSink<TCase,TOutput>`:
   reduction finish;
 - runs sequentially in registration order;
 - declares whether publication is required;
-- returns `Succeeded`, `Failed`, or `NotAttempted`;
+- returns `ExperimentSinkPublicationOperationResult.Succeeded()`, `NotAttempted()`, or
+  `Failed(failure)` without repeating its identity;
 - owns provider retry only when its operation is provably idempotent.
 
-A thrown exception, `null`, or malformed sink result becomes a structured `ResultSinkFailed`
-operation and does not suppress later sinks. Caller-token cancellation propagates exactly, skips
-later sinks, and produces no outcome.
+The runner validates the operation result and stamps the registered sink `Name` and `IsRequired`
+onto the unchanged canonical `ExperimentSinkResult`. A thrown exception, `null`, or malformed sink
+operation becomes a structured `ResultSinkFailed` result and does not suppress later sinks.
+Caller-token cancellation propagates exactly, skips later sinks, and produces no outcome.
 
 `IExperimentRunner.RunAsync` returns `ExperimentRunOutcome<TCase,TOutput>`:
 
@@ -520,6 +558,16 @@ property ordering:
 - the overall run decision;
 - aggregate publication status and ordered final sink results;
 - structured failures without raw exceptions or stack traces.
+
+Publication operation results are normalization inputs only and are not serialized. Equivalent
+canonical outcomes retain the existing schema-version-3 result and schema-version-4 envelope
+property names, ordering, and JSON bytes.
+
+Constructors and write operations also use explicit overloads. Reflection-based serialization
+offers tokenless, cancellable, default-options, and explicit-`JsonSerializerOptions` forms. The AOT
+stream path offers tokenless and cancellable `JsonTypeInfo<T>` forms. Tokenless overloads use
+`CancellationToken.None`; all overloads route through one implementation per serialization family
+so identical inputs produce identical JSON bytes.
 
 For Native AOT, pass caller-generated metadata:
 

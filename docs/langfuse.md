@@ -48,7 +48,8 @@ using (var scenario = langfuse.BeginScenario(
         new LangfuseEvaluationScoreOptions
         {
             ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        },
+        cancellationToken);
 }
 
 var shutdown = langfuse.Shutdown(TimeSpan.FromSeconds(5));
@@ -93,13 +94,21 @@ using (var scenario = langfuse.BeginScenario("trip-planner", sessionId: runId))
         evaluators: [new EfficiencyEvaluator(tokenBudget: 200_000), new IterationCoherenceEvaluator(maxIterations: 20)],
         messages: inputs.Messages,
         modelResponse: inputs.ModelResponse,
-        additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)],
-        scoreOptions: new LangfuseEvaluationScoreOptions
-        {
-            ScoreIdProvider = metric => $"{runId}:{metric.Name}",
-        });
+        options: new LangfuseEvaluateAndRecordOptions(
+            chatConfiguration: null,
+            additionalContext: [new AgentRunDiagnosticsContext(run.Diagnostics!)],
+            scoreOptions: new LangfuseEvaluationScoreOptions
+            {
+                ScoreIdProvider = metric => $"{runId}:{metric.Name}",
+            }),
+        cancellationToken: cancellationToken);
 }
 ```
+
+Use the four-argument overload when chat configuration, additional context, score identity, and
+cancellation all use their defaults. The explicit overload requires one
+`LangfuseEvaluateAndRecordOptions` value plus an explicit cancellation token. The options constructor
+snapshots additional context, and a `null` context sequence becomes an empty read-only collection.
 
 Two runnable examples live under `src/Examples/AgentFramework/`:
 
@@ -139,6 +148,12 @@ Score names are sent verbatim by default (preserving the evaluator's authored me
 name). For cleaner dashboard filtering and grouping, enable
 `NormalizeScoreNames` to send `snake_case` names (e.g. `all_tool_calls_succeeded`) —
 this is the recommended shape unless you specifically want the authored names.
+
+Each score and evaluation API exposes two overloads: one with only the required
+arguments, and one with nullable options plus an explicit `CancellationToken`.
+To customize either concern, call the full overload and pass `null` or
+`CancellationToken.None` for the concern you are not customizing. There are no
+token-only or options-only overloads.
 
 ### Stable score IDs and safe retries
 
@@ -388,9 +403,16 @@ are `NotAttempted`. A required publication affects aggregate publication health,
 `ExecutionPrerequisite` independently selects strict link behavior and prevents the first attempt
 when linking fails. Unsampled and disabled scopes never block execution.
 
+The Langfuse scope returns only an `ExperimentItemPublicationOperationResult` containing status,
+correlations, and an optional failure. The generic runner stamps the registered provider name and
+requirement flag into the canonical `ExperimentItemPublicationResult`.
+
 An explicit `LangfuseExperimentRunOptions.DatasetVersion` is normalized to UTC and submitted with
 every item link. Use the same value as `LangfuseDatasetSelection.Version` so the comparison view
 references the item state that the source loaded.
+
+Hosted and local scope factories each expose two shapes only: a default overload without options and
+an explicit overload that requires a non-null `LangfuseExperimentItemScopeOptions<TCase>`.
 
 For local cases that are not hosted in Langfuse, use a trace-only scope:
 
@@ -409,6 +431,9 @@ ingestion.
 correlated trace, each successful run evaluator to the authoritative dataset run, and an optional
 categorical `ExperimentRunDecision` score. The sink never reruns evaluators or policies.
 
+Hosted and local result-sink factories likewise expose a default overload and an explicit overload
+that requires non-null `LangfuseExperimentResultSinkOptions<TCase,TOutput>`.
+
 Use contextual score-id callbacks when provider retry or rerun idempotency matters. Item callbacks
 receive case/trial identity, and run callbacks receive the evaluator identity, so equal metric names
 do not collide across trials or evaluators. Langfuse's score identity still includes the score name
@@ -423,6 +448,9 @@ The sink maps direct score outcomes independently from quality:
 - disabled and entirely unattempted publication remain `NotAttempted`;
 - local mode publishes item trace scores and skips dataset-run/decision targets without fabricating
   a run.
+
+The Langfuse sink returns only an `ExperimentSinkPublicationOperationResult`; the generic runner
+stamps the configured sink name and requirement flag into the canonical `ExperimentSinkResult`.
 
 `GetPublicationSnapshot()` retains ordered item and run-evaluation score results, the optional
 decision score result, and the hosted run's existing link/run-score snapshot. REST acceptance does
@@ -502,6 +530,7 @@ foreach (var item in items)
                 cancellationToken);
             return evaluation;
         },
+        options: null,
         cancellationToken: cancellationToken);
 
     Console.WriteLine(
@@ -538,6 +567,11 @@ the active `Activity.Current` across awaits, and disposes it before returning. A
 tool spans created inside the callback therefore nest beneath the item trace without callers
 assigning `Activity.Current` or manually managing scenario lifetime.
 
+The experiment-run methods use two explicit overloads: required arguments only, or required
+arguments plus nullable options and an explicit cancellation token. To customize either concern,
+call the full overload and pass `null` for default options or `CancellationToken.None` when
+cancellation is not needed. There are no token-only or options-only overloads.
+
 The dataset and its items must exist before the run links to them. Link failures use
 `LangfuseExperimentItemLinkFailureMode.BestEffort` by default: the callback still runs,
 `itemResult.Link.Status` is `Failed`, and details reach `DiagnosticsCallback`. Select strict behavior when
@@ -551,7 +585,8 @@ var itemResult = await run.RunItemAsync(
         var evaluation = await RunAndEvaluate(item, token);
         await scenario.RecordEvaluationAsync(
             evaluation,
-            cancellationToken: token);
+            options: null,
+            token);
         return evaluation;
     },
     new LangfuseExperimentItemOptions
@@ -648,6 +683,12 @@ await langfuse.ScoreConfigs.EnsureScoreConfigAsync(new LangfuseScoreConfig
 are safe to repeat after throttling, transport failure, or transient 5xx responses. Concurrent
 calls that supply different descriptions are provider-defined last-writer-wins updates, so use one
 canonical dataset definition.
+
+Every `ILangfuseDatasetClient` member uses two explicit overloads: required arguments only (using
+`CancellationToken.None` and, for `EnsureDatasetAsync`/`ListDatasetsAsync`/`ListDatasetItemsAsync`,
+no description or page 1 of 50), or the full set of required arguments plus an explicit
+`CancellationToken`. To customize paging or supply a description, call the full overload; there are
+no token-only, description-only, or custom-page-without-a-token overloads.
 
 Langfuse does not enforce score-config name uniqueness and does not accept a caller-supplied config
 id. Needlr therefore acquires `LangfuseOptions.ResourceLockProvider`, re-lists every page inside
@@ -921,7 +962,8 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
         await scenario.RecordScoreAsync(
             "resolved",
             response.Resolved,
-            cancellationToken: cancellationToken);
+            options: null,
+            cancellationToken);
 
         var experiment = langfuse.BeginExperimentRun(
             "support-agent-regression",
@@ -937,9 +979,11 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                 await scenario.RecordScoreAsync(
                     "reviewed",
                     value: true,
-                    cancellationToken: token);
+                    options: null,
+                    token);
                 return scenario.TraceId;
             },
+            options: null,
             cancellationToken: cancellationToken);
 
         if (item.TraceId is { } traceId)
@@ -948,7 +992,8 @@ public sealed class MyEvalRunner(ILangfuseClient langfuse)
                 traceId,
                 "published",
                 value: true,
-                cancellationToken: cancellationToken);
+                options: null,
+                cancellationToken);
         }
 
         Console.WriteLine(item.Link.Status);

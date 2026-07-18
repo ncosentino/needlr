@@ -26,9 +26,23 @@ public sealed class LocalExperimentCaseSource<TCase> : IExperimentCaseSource<TCa
         _cases = cases.ToArray();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Loads the complete local case collection without caller cancellation.
+    /// </summary>
+    /// <returns>The local source identity and ordered cases.</returns>
+    public ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync() =>
+        LoadAsync(CancellationToken.None);
+
+    /// <summary>
+    /// Loads the complete local case collection with caller cancellation.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The local source identity and ordered cases.</returns>
+    /// <exception cref="OperationCanceledException">
+    /// <paramref name="cancellationToken"/> was canceled.
+    /// </exception>
     public ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return ValueTask.FromResult(new ExperimentCaseSourceResult<TCase>

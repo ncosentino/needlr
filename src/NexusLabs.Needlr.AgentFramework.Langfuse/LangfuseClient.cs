@@ -87,8 +87,14 @@ internal sealed class LangfuseClient :
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
+        string runName) =>
+        BeginExperimentRun(datasetName, runName, options: null);
+
+    /// <inheritdoc />
+    public ILangfuseExperimentRun BeginExperimentRun(
+        string datasetName,
         string runName,
-        LangfuseExperimentRunOptions? options = null) =>
+        LangfuseExperimentRunOptions? options) =>
         new LangfuseExperimentRun(
             _composition.ApiClient,
             Scores,
@@ -103,21 +109,8 @@ internal sealed class LangfuseClient :
     LangfuseExperimentItemScopeProvider<TCase, TOutput>
         ILangfuseExperimentItemScopeProviderFactory.CreateExperimentItemScopeProvider<TCase, TOutput>(
             ILangfuseExperimentRun run,
-            LangfuseExperimentItemScopeOptions<TCase>? options)
-    {
-        ArgumentNullException.ThrowIfNull(run);
-        if (run is not ILangfuseExperimentTrialLifecycleFactory lifecycleFactory)
-        {
-            throw new ArgumentException(
-                "The supplied experiment run does not expose the built-in Langfuse trial lifecycle.",
-                nameof(run));
-        }
-
-        return new LangfuseExperimentItemScopeProvider<TCase, TOutput>(
-            lifecycleFactory,
-            linkHostedItem: true,
-            options);
-    }
+            LangfuseExperimentItemScopeOptions<TCase>? options) =>
+        run.CreateHostedExperimentItemScopeProvider<TCase, TOutput>(options);
 
     /// <inheritdoc />
     LangfuseExperimentItemScopeProvider<TCase, TOutput>

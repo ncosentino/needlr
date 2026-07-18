@@ -15,22 +15,63 @@ public sealed class ExperimentRunner : IExperimentRunner
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
-    /// Initializes an experiment runner.
+    /// Initializes an experiment runner that uses <see cref="TimeProvider.System"/>.
+    /// </summary>
+    public ExperimentRunner()
+        : this(TimeProvider.System)
+    {
+    }
+
+    /// <summary>
+    /// Initializes an experiment runner with the specified time provider.
     /// </summary>
     /// <param name="timeProvider">
-    /// The time provider used for timestamps, durations, deadlines, and retry readiness. Uses
-    /// <see cref="TimeProvider.System"/> when omitted.
+    /// The time provider used for timestamps, durations, deadlines, and retry readiness.
+    /// A null value uses <see cref="TimeProvider.System"/>.
     /// </param>
-    public ExperimentRunner(TimeProvider? timeProvider = null)
+    public ExperimentRunner(TimeProvider? timeProvider)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Materializes, validates, expands, and executes one experiment without caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="definition">The experiment definition.</param>
+    /// <param name="options">The run options.</param>
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    public Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
+        ExperimentDefinition<TCase, TOutput> definition,
+        ExperimentRunOptions options) =>
+        RunAsync(definition, options, CancellationToken.None);
+
+    /// <summary>
+    /// Materializes, validates, expands, and executes one experiment with caller cancellation.
+    /// </summary>
+    /// <typeparam name="TCase">The caller-owned case value type.</typeparam>
+    /// <typeparam name="TOutput">The caller-owned output type.</typeparam>
+    /// <param name="definition">The experiment definition.</param>
+    /// <param name="options">The run options.</param>
+    /// <param name="cancellationToken">A caller cancellation token.</param>
+    /// <returns>The canonical quality result plus independent publication outcomes.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="definition"/> or <paramref name="options"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The experiment definition, run options, or materialized cases are invalid.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A run option, trial count, or policy value is outside its supported range.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// <paramref name="cancellationToken"/> was canceled.
+    /// </exception>
     public async Task<ExperimentRunOutcome<TCase, TOutput>> RunAsync<TCase, TOutput>(
         ExperimentDefinition<TCase, TOutput> definition,
         ExperimentRunOptions options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(options);
@@ -136,20 +177,17 @@ public sealed class ExperimentRunner : IExperimentRunner
                 policyContext,
                 cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            var result = new ExperimentRunResult<TCase, TOutput>
-            {
-                RunId = options.RunId,
-                ExperimentName = definition.Name,
-                Source = sourceResult.Source,
-                StartedAt = startedAt,
-                Duration = _timeProvider.GetElapsedTime(runTimestamp),
-                MaxConcurrency = options.MaxConcurrency,
-                WorkerCount = workerCount,
-                Items = items,
-                RunEvaluations = runEvaluationResults,
-                PolicyResults = policyResults,
-                Decision = ReduceDecision(policyResults),
-            };
+            var result = new ExperimentRunResult<TCase, TOutput>(
+                options.RunId,
+                definition.Name,
+                sourceResult.Source,
+                startedAt,
+                _timeProvider.GetElapsedTime(runTimestamp),
+                options.MaxConcurrency,
+                workerCount,
+                items,
+                runEvaluationResults,
+                policyResults);
             cancellationToken.ThrowIfCancellationRequested();
             return await sinkPipeline
                 .PublishAsync(result, cancellationToken)
@@ -166,7 +204,7 @@ public sealed class ExperimentRunner : IExperimentRunner
         ExperimentRunOptions options,
         WorkItem<TCase>[] workItems,
         ExperimentItemResult<TCase, TOutput>[] results,
-        IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> itemScopeProviders,
+        IReadOnlyList<ExperimentItemScopeRegistration<TCase, TOutput>> itemScopeProviders,
         int workerCount,
         CancellationToken cancellationToken)
     {
@@ -555,13 +593,10 @@ public sealed class ExperimentRunner : IExperimentRunner
                 {
                     Succeeded = true,
                     Output = output,
-                    Attempt = new ExperimentAttemptResult
-                    {
-                        AttemptNumber = attemptNumber,
-                        Status = ExperimentAttemptStatus.Succeeded,
-                        StartedAt = startedAt,
-                        Duration = _timeProvider.GetElapsedTime(attemptTimestamp),
-                    },
+                    Attempt = ExperimentAttemptResult.Succeeded(
+                        attemptNumber,
+                        startedAt,
+                        _timeProvider.GetElapsedTime(attemptTimestamp)),
                     ItemStatus = ExperimentItemStatus.Succeeded,
                 };
             }
@@ -655,12 +690,14 @@ public sealed class ExperimentRunner : IExperimentRunner
         var attempts = Array.AsReadOnly(state.Attempts.ToArray());
         if (definition.ItemEvaluator is null)
         {
-            return CreateSuccessfulItem(
-                state.WorkItem,
-                output,
+            return ExperimentItemResult<TCase, TOutput>.Succeeded(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
                 attempts,
+                output,
                 evaluation: null,
-                metrics: []);
+                publications: []);
         }
 
         try
@@ -681,13 +718,14 @@ public sealed class ExperimentRunner : IExperimentRunner
                 cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             ArgumentNullException.ThrowIfNull(evaluation);
-            var metrics = ExperimentMetricSnapshotFactory.Create(evaluation);
-            return CreateSuccessfulItem(
-                state.WorkItem,
-                output,
+            return ExperimentItemResult<TCase, TOutput>.Succeeded(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
                 attempts,
+                output,
                 evaluation,
-                metrics);
+                publications: []);
         }
         catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {
@@ -699,18 +737,14 @@ public sealed class ExperimentRunner : IExperimentRunner
                 ExperimentFailureCode.EvaluationFailed,
                 ExperimentFailureStage.ItemEvaluation,
                 ex);
-            return new ExperimentItemResult<TCase, TOutput>
-            {
-                Sequence = state.WorkItem.Sequence,
-                Case = state.WorkItem.Case,
-                TrialIndex = state.WorkItem.TrialIndex,
-                Status = ExperimentItemStatus.EvaluationFailed,
-                Attempts = attempts,
-                HasOutput = true,
-                Output = output,
-                Metrics = [],
-                Failure = failure,
-            };
+            return ExperimentItemResult<TCase, TOutput>.EvaluationFailed(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
+                attempts,
+                output,
+                failure,
+                publications: []);
         }
     }
 
@@ -731,13 +765,9 @@ public sealed class ExperimentRunner : IExperimentRunner
                     .ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 ArgumentNullException.ThrowIfNull(evaluation);
-                results[index] = new ExperimentRunEvaluationResult
-                {
-                    Name = evaluator.Name,
-                    Status = ExperimentRunEvaluationStatus.Succeeded,
-                    Evaluation = evaluation,
-                    Metrics = ExperimentMetricSnapshotFactory.Create(evaluation),
-                };
+                results[index] = ExperimentRunEvaluationResult.Succeeded(
+                    evaluator.Name,
+                    evaluation);
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -745,15 +775,12 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
             catch (Exception ex)
             {
-                results[index] = new ExperimentRunEvaluationResult
-                {
-                    Name = evaluator.Name,
-                    Status = ExperimentRunEvaluationStatus.Failed,
-                    Failure = ExperimentFailureFactory.Create(
+                results[index] = ExperimentRunEvaluationResult.Failed(
+                    evaluator.Name,
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.RunEvaluationFailed,
                         ExperimentFailureStage.RunEvaluation,
-                        ex),
-                };
+                        ex));
             }
         }
 
@@ -777,35 +804,11 @@ public sealed class ExperimentRunner : IExperimentRunner
                     .ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 ArgumentNullException.ThrowIfNull(evaluation);
-                if (!Enum.IsDefined(evaluation.Decision))
-                {
-                    throw new InvalidOperationException(
-                        $"Policy '{policy.Name}' returned an undefined decision.");
-                }
-
-                if (policy.Kind == ExperimentPolicyKind.Deterministic
-                    && evaluation.StatisticalEvidence is not null)
-                {
-                    throw new InvalidOperationException(
-                        $"Deterministic policy '{policy.Name}' returned statistical evidence.");
-                }
-
-                if (policy.Kind == ExperimentPolicyKind.Statistical
-                    && evaluation.DeterministicEvidence is not null)
-                {
-                    throw new InvalidOperationException(
-                        $"Statistical policy '{policy.Name}' returned deterministic evidence.");
-                }
-
-                results[index] = new ExperimentPolicyResult
-                {
-                    Name = policy.Name,
-                    Kind = policy.Kind,
-                    IsRequired = policy.IsRequired,
-                    Decision = evaluation.Decision,
-                    DeterministicEvidence = evaluation.DeterministicEvidence,
-                    StatisticalEvidence = evaluation.StatisticalEvidence,
-                };
+                results[index] = ExperimentPolicyResult.FromVerdict(
+                    policy.Name,
+                    policy.Kind,
+                    policy.IsRequired,
+                    evaluation);
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -813,40 +816,18 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
             catch (Exception ex)
             {
-                results[index] = new ExperimentPolicyResult
-                {
-                    Name = policy.Name,
-                    Kind = policy.Kind,
-                    IsRequired = policy.IsRequired,
-                    Decision = EvaluationDecision.Inconclusive,
-                    Failure = ExperimentFailureFactory.Create(
+                results[index] = ExperimentPolicyResult.ExecutionFailed(
+                    policy.Name,
+                    policy.Kind,
+                    policy.IsRequired,
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.PolicyFailed,
                         ExperimentFailureStage.Policy,
-                        ex),
-                };
+                        ex));
             }
         }
 
         return Array.AsReadOnly(results);
-    }
-
-    private static ExperimentRunDecision ReduceDecision(
-        IReadOnlyList<ExperimentPolicyResult> policies)
-    {
-        var required = policies.Where(policy => policy.IsRequired).ToArray();
-        if (required.Length == 0)
-        {
-            return ExperimentRunDecision.NotEvaluated;
-        }
-
-        if (required.Any(policy => policy.Decision == EvaluationDecision.Failed))
-        {
-            return ExperimentRunDecision.Failed;
-        }
-
-        return required.Any(policy => policy.Decision == EvaluationDecision.Inconclusive)
-            ? ExperimentRunDecision.Inconclusive
-            : ExperimentRunDecision.Passed;
     }
 
     private static IExperimentRunEvaluator<TCase, TOutput>[] ValidateRunEvaluators<TCase, TOutput>(
@@ -899,33 +880,45 @@ public sealed class ExperimentRunner : IExperimentRunner
         return copy;
     }
 
-    private static IExperimentItemScopeProvider<TCase, TOutput>[] ValidateItemScopes<TCase, TOutput>(
+    private static ExperimentItemScopeRegistration<TCase, TOutput>[] ValidateItemScopes<TCase, TOutput>(
         IReadOnlyList<IExperimentItemScopeProvider<TCase, TOutput>> providers)
     {
         ArgumentNullException.ThrowIfNull(providers);
         var copy = providers.ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var provider in copy)
+        var registrations =
+            new ExperimentItemScopeRegistration<TCase, TOutput>[copy.Length];
+        for (var index = 0; index < copy.Length; index++)
         {
+            var provider = copy[index];
             ArgumentNullException.ThrowIfNull(provider);
-            ArgumentException.ThrowIfNullOrWhiteSpace(provider.Name);
-            if (!Enum.IsDefined(provider.FailureMode))
+            var name = provider.Name;
+            var isRequired = provider.IsRequired;
+            var failureMode = provider.FailureMode;
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            if (!Enum.IsDefined(failureMode))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(providers),
-                    provider.FailureMode,
-                    $"Item-scope provider '{provider.Name}' has an undefined failure mode.");
+                    failureMode,
+                    $"Item-scope provider '{name}' has an undefined failure mode.");
             }
 
-            if (!names.Add(provider.Name))
+            if (!names.Add(name))
             {
                 throw new ArgumentException(
-                    $"Experiment contains duplicate item-scope provider name '{provider.Name}'.",
+                    $"Experiment contains duplicate item-scope provider name '{name}'.",
                     nameof(providers));
             }
+
+            registrations[index] = new ExperimentItemScopeRegistration<TCase, TOutput>(
+                name,
+                isRequired,
+                failureMode,
+                provider);
         }
 
-        return copy;
+        return registrations;
     }
 
     private static WorkItem<TCase>[] MaterializeAndValidate<TCase, TOutput>(
@@ -1003,14 +996,12 @@ public sealed class ExperimentRunner : IExperimentRunner
         new()
         {
             Succeeded = false,
-            Attempt = new ExperimentAttemptResult
-            {
-                AttemptNumber = attemptNumber,
-                Status = attemptStatus,
-                StartedAt = startedAt,
-                Duration = _timeProvider.GetElapsedTime(attemptTimestamp),
-                Failure = failure,
-            },
+            Attempt = ExperimentAttemptResult.Unsuccessful(
+                attemptNumber,
+                attemptStatus,
+                startedAt,
+                _timeProvider.GetElapsedTime(attemptTimestamp),
+                failure),
             ItemStatus = itemStatus,
             Failure = failure,
         };
@@ -1029,57 +1020,25 @@ public sealed class ExperimentRunner : IExperimentRunner
         WorkItemState<TCase, TOutput> state,
         ExperimentItemStatus itemStatus,
         ExperimentFailure failure) =>
-        new()
-        {
-            Sequence = state.WorkItem.Sequence,
-            Case = state.WorkItem.Case,
-            TrialIndex = state.WorkItem.TrialIndex,
-            Status = itemStatus,
-            Attempts = Array.AsReadOnly(state.Attempts.ToArray()),
-            HasOutput = false,
-            Failure = failure,
-        };
-
-    private static ExperimentItemResult<TCase, TOutput> CreateSuccessfulItem<TCase, TOutput>(
-        WorkItem<TCase> workItem,
-        TOutput output,
-        IReadOnlyList<ExperimentAttemptResult> attempts,
-        EvaluationResult? evaluation,
-        IReadOnlyList<ExperimentMetricSnapshot> metrics) =>
-        new()
-        {
-            Sequence = workItem.Sequence,
-            Case = workItem.Case,
-            TrialIndex = workItem.TrialIndex,
-            Status = ExperimentItemStatus.Succeeded,
-            Attempts = attempts,
-            HasOutput = true,
-            Output = output,
-            Evaluation = evaluation,
-            Metrics = metrics,
-        };
+        ExperimentItemResult<TCase, TOutput>.Failed(
+            state.WorkItem.Sequence,
+            state.WorkItem.Case,
+            state.WorkItem.TrialIndex,
+            itemStatus,
+            Array.AsReadOnly(state.Attempts.ToArray()),
+            failure,
+            publications: []);
 
     private static ExperimentAttemptResult WithRetry(
         ExperimentAttemptResult attempt,
         TimeSpan delay) =>
-        new()
-        {
-            AttemptNumber = attempt.AttemptNumber,
-            Status = attempt.Status,
-            StartedAt = attempt.StartedAt,
-            Duration = attempt.Duration,
-            Failure = attempt.Failure is null
-                ? null
-                : new ExperimentFailure
-                {
-                    Code = attempt.Failure.Code,
-                    Stage = attempt.Failure.Stage,
-                    ExceptionType = attempt.Failure.ExceptionType,
-                    Message = attempt.Failure.Message,
-                    IsRetryable = true,
-                },
-            DelayBeforeNextAttempt = delay,
-        };
+        ExperimentAttemptResult.RetryScheduled(
+            attempt.AttemptNumber,
+            attempt.Status,
+            attempt.StartedAt,
+            attempt.Duration,
+            attempt.Failure!,
+            delay);
 
     private static async Task IgnoreExpectedCancellationAsync(
         Task task,

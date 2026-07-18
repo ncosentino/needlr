@@ -14,18 +14,14 @@ internal sealed class ExampleExperimentResultSink :
 
     public bool IsRequired => true;
 
-    public ValueTask<ExperimentSinkResult> PublishAsync(
+    public ValueTask<ExperimentSinkPublicationOperationResult> PublishAsync(
         ExperimentRunResult<ExperimentCaseDefinition, ExperimentOutput> result,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Console.WriteLine(
             $"  Sink '{Name}' observed {result.Items.Count} finalized trials.");
-        return ValueTask.FromResult(new ExperimentSinkResult
-        {
-            Name = Name,
-            IsRequired = IsRequired,
-            Status = ExperimentPublicationOperationStatus.Succeeded,
-        });
+        return ValueTask.FromResult(
+            ExperimentSinkPublicationOperationResult.Succeeded());
     }
 }

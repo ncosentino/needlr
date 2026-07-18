@@ -24,19 +24,50 @@ internal sealed class DisabledLangfuseScenario : ILangfuseActivatableScenario
     public IDisposable? Activate() => null;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, double value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordScoreAsync(
+        string name,
+        double value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, bool value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordScoreAsync(
+        string name,
+        bool value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordScoreAsync(string name, string value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordScoreAsync(
+        string name,
+        string value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordEvaluationAsync(EvaluationResult result, LangfuseEvaluationScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordEvaluationAsync(EvaluationResult result) =>
+        RecordEvaluationAsync(result, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordEvaluationAsync(
+        EvaluationResult result,
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
@@ -70,15 +101,39 @@ internal sealed class DisabledLangfuseScenario : ILangfuseActivatableScenario
     }
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, double value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, double value) =>
+        RecordSessionScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(
+        string name,
+        double value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, bool value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, bool value) =>
+        RecordSessionScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(
+        string name,
+        bool value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />
-    public Task RecordSessionScoreAsync(string name, string value, LangfuseScoreOptions? options = null, CancellationToken cancellationToken = default) =>
+    public Task RecordSessionScoreAsync(string name, string value) =>
+        RecordSessionScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task RecordSessionScoreAsync(
+        string name,
+        string value,
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         Task.CompletedTask;
 
     /// <inheritdoc />

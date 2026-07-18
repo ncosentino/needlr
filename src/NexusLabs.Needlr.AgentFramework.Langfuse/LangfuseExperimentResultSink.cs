@@ -85,7 +85,7 @@ public sealed class LangfuseExperimentResultSink<TCase, TOutput> :
     }
 
     /// <inheritdoc />
-    public async ValueTask<ExperimentSinkResult> PublishAsync(
+    public async ValueTask<ExperimentSinkPublicationOperationResult> PublishAsync(
         ExperimentRunResult<TCase, TOutput> result,
         CancellationToken cancellationToken)
     {
@@ -709,40 +709,23 @@ public sealed class LangfuseExperimentResultSink<TCase, TOutput> :
             : LangfuseExperimentApiPublicationStatus.NotAttempted;
     }
 
-    private ExperimentSinkResult CreateSinkResult(
+    private static ExperimentSinkPublicationOperationResult CreateSinkResult(
         LangfuseExperimentResultSinkSnapshot snapshot) =>
         snapshot.ScorePublicationStatus switch
         {
             LangfuseExperimentApiPublicationStatus.Complete =>
-                new ExperimentSinkResult
-                {
-                    Name = Name,
-                    IsRequired = IsRequired,
-                    Status = ExperimentPublicationOperationStatus.Succeeded,
-                },
+                ExperimentSinkPublicationOperationResult.Succeeded(),
             LangfuseExperimentApiPublicationStatus.NotAttempted
                 or LangfuseExperimentApiPublicationStatus.Disabled =>
-                new ExperimentSinkResult
-                {
-                    Name = Name,
-                    IsRequired = IsRequired,
-                    Status = ExperimentPublicationOperationStatus.NotAttempted,
-                },
-            _ => new ExperimentSinkResult
-            {
-                Name = Name,
-                IsRequired = IsRequired,
-                Status = ExperimentPublicationOperationStatus.Failed,
-                Failure = new ExperimentFailure
-                {
-                    Code = ExperimentFailureCode.ResultSinkFailed,
-                    Stage = ExperimentFailureStage.Publication,
-                    ExceptionType = typeof(LangfuseException).FullName!,
-                    Message =
-                        $"Langfuse score publication ended with status " +
+                ExperimentSinkPublicationOperationResult.NotAttempted(),
+            _ => ExperimentSinkPublicationOperationResult.Failed(
+                new ExperimentFailure(
+                    ExperimentFailureCode.ResultSinkFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(LangfuseException).FullName!,
+                    $"Langfuse score publication ended with status " +
                         $"'{snapshot.ScorePublicationStatus}'.",
-                },
-            },
+                    isRetryable: false)),
         };
 
     private void SetSnapshot(

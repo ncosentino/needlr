@@ -10,19 +10,15 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
     IExperimentItemScope<TCase, TOutput>
 {
     private readonly MeaiReportingExperimentItem _item;
-    private readonly bool _isRequired;
     private readonly IReadOnlyList<ExperimentItemCorrelation> _correlations;
     private CancellationToken _completionCancellationToken;
     private bool _persistOnDispose;
     private bool _disposed;
 
-    public MeaiReportingExperimentItemScope(
-        MeaiReportingExperimentItem item,
-        bool isRequired)
+    public MeaiReportingExperimentItemScope(MeaiReportingExperimentItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
         _item = item;
-        _isRequired = isRequired;
         Features = new Dictionary<Type, object>
         {
             [typeof(MeaiReportingExperimentItem)] = item,
@@ -32,28 +28,25 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .ExecutionNameCorrelationName,
+                    MeaiReportingExperimentSchema.ExecutionNameCorrelationName,
                 Value = item.ExecutionName,
             },
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .ScenarioNameCorrelationName,
+                    MeaiReportingExperimentSchema.ScenarioNameCorrelationName,
                 Value = item.ScenarioName,
             },
             new ExperimentItemCorrelation
             {
                 Namespace =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.CorrelationNamespace,
+                    MeaiReportingExperimentSchema.CorrelationNamespace,
                 Name =
-                    MeaiReportingExperimentAdapter<TCase, TOutput>
-                        .IterationNameCorrelationName,
+                    MeaiReportingExperimentSchema.IterationNameCorrelationName,
                 Value = item.IterationName,
             },
         ]);
@@ -63,7 +56,7 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
 
     public IDisposable? Activate() => null;
 
-    public ValueTask<ExperimentItemPublicationResult> CompleteAsync(
+    public ValueTask<ExperimentItemPublicationOperationResult> CompleteAsync(
         ExperimentItemResult<TCase, TOutput> result,
         CancellationToken cancellationToken)
     {
@@ -74,13 +67,8 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
         if (_item.EvaluationCompleted)
         {
             _persistOnDispose = true;
-            return ValueTask.FromResult(new ExperimentItemPublicationResult
-            {
-                Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
-                IsRequired = _isRequired,
-                Status = ExperimentPublicationOperationStatus.Succeeded,
-                Correlations = _correlations,
-            });
+            return ValueTask.FromResult(
+                ExperimentItemPublicationOperationResult.Succeeded(_correlations));
         }
 
         if (result.Status == ExperimentItemStatus.Succeeded)
@@ -88,29 +76,19 @@ internal sealed class MeaiReportingExperimentItemScope<TCase, TOutput> :
             var exception = new InvalidOperationException(
                 "The MEAI Reporting item scope completed a successful experiment item without " +
                 "the paired MEAI Reporting item evaluator.");
-            return ValueTask.FromResult(new ExperimentItemPublicationResult
-            {
-                Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
-                IsRequired = _isRequired,
-                Status = ExperimentPublicationOperationStatus.Failed,
-                Correlations = _correlations,
-                Failure = new ExperimentFailure
-                {
-                    Code = ExperimentFailureCode.ItemScopeFailed,
-                    Stage = ExperimentFailureStage.Publication,
-                    ExceptionType = exception.GetType().FullName!,
-                    Message = exception.Message,
-                },
-            });
+            return ValueTask.FromResult(
+                ExperimentItemPublicationOperationResult.Failed(
+                    _correlations,
+                    new ExperimentFailure(
+                        ExperimentFailureCode.ItemScopeFailed,
+                        ExperimentFailureStage.Publication,
+                        exception.GetType().FullName!,
+                        exception.Message,
+                        isRetryable: false)));
         }
 
-        return ValueTask.FromResult(new ExperimentItemPublicationResult
-        {
-            Name = MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
-            IsRequired = _isRequired,
-            Status = ExperimentPublicationOperationStatus.NotAttempted,
-            Correlations = _correlations,
-        });
+        return ValueTask.FromResult(
+            ExperimentItemPublicationOperationResult.NotAttempted(_correlations));
     }
 
     public ValueTask AbortAsync(CancellationToken cancellationToken)

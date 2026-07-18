@@ -19,9 +19,6 @@ internal sealed class BlockingExperimentPolicy(
     {
         started.SetResult();
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-        return new ExperimentPolicyVerdict
-        {
-            Decision = EvaluationDecision.Passed,
-        };
+        return ExperimentPolicyVerdict.WithoutEvidence(EvaluationDecision.Passed);
     }
 }

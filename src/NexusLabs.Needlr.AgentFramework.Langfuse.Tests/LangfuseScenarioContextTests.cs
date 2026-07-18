@@ -36,7 +36,11 @@ public sealed class LangfuseScenarioContextTests
         using var scenario = new LangfuseScenario(
             LangfuseTestFactory.OkScoreRecorder(captured), "s", sessionId: "sess-1", null, null, null);
 
-        await scenario.RecordSessionScoreAsync("resolved", true, cancellationToken: TestContext.Current.CancellationToken);
+        await scenario.RecordSessionScoreAsync(
+            "resolved",
+            true,
+            options: null,
+            TestContext.Current.CancellationToken);
 
         using var json = JsonDocument.Parse(Assert.Single(captured).Body!);
         Assert.Equal("sess-1", json.RootElement.GetProperty("sessionId").GetString());
@@ -55,7 +59,11 @@ public sealed class LangfuseScenarioContextTests
         var recorder = new LangfuseScoreRecorder(apiClient, sink, normalizeNames: false);
         using var scenario = new LangfuseScenario(recorder, "s", sessionId: null, null, null, null);
 
-        await scenario.RecordSessionScoreAsync("resolved", 1.0, cancellationToken: TestContext.Current.CancellationToken);
+        await scenario.RecordSessionScoreAsync(
+            "resolved",
+            1.0,
+            options: null,
+            TestContext.Current.CancellationToken);
 
         Assert.Equal(1, sink.FailedCount);
         Assert.NotNull(captured);

@@ -112,51 +112,41 @@ internal sealed class LangfuseExperimentRun :
     public LangfuseDatasetRunIdentityStatus IdentityStatus => _state.IdentityStatus;
 
     /// <inheritdoc />
-    public async Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
+    public Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
+        string datasetItemId,
+        Func<ILangfuseScenario, CancellationToken, Task<T>> callback) =>
+        RunItemAsync(
+            datasetItemId,
+            callback,
+            options: null,
+            CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentItemResult<T>> RunItemAsync<T>(
         string datasetItemId,
         Func<ILangfuseScenario, CancellationToken, Task<T>> callback,
-        LangfuseExperimentItemOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(datasetItemId);
-        ArgumentNullException.ThrowIfNull(callback);
-        cancellationToken.ThrowIfCancellationRequested();
+        LangfuseExperimentItemOptions? options,
+        CancellationToken cancellationToken) =>
+        _lifecycleFactory.RunItemAsync(
+            DatasetName,
+            datasetItemId,
+            callback,
+            options,
+            "A hosted Langfuse item lifecycle did not produce a link result.",
+            cancellationToken);
 
-        options ??= new LangfuseExperimentItemOptions();
-        options.Validate();
-
-        var name = string.IsNullOrWhiteSpace(options.ScenarioName)
-            ? $"{DatasetName}: {datasetItemId}"
-            : options.ScenarioName;
-
-        await using var lifecycle = await _lifecycleFactory
-            .EnterAsync(
-                new LangfuseExperimentTrialLifecycleRequest(
-                    name,
-                    datasetItemId,
-                    options.Tags,
-                    options.Metadata,
-                    options.LinkFailureMode),
-                cancellationToken)
-            .ConfigureAwait(false);
-        using var activation = lifecycle.Activate();
-        var value = await callback(
-            lifecycle.Scenario,
-            cancellationToken).ConfigureAwait(false);
-        return new LangfuseExperimentItemResult<T>(
-            value,
-            lifecycle.RecordedTraceId,
-            lifecycle.Link
-                ?? throw new InvalidOperationException(
-                    "A hosted Langfuse item lifecycle did not produce a link result."));
-    }
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
+        double value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
 
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
         double value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         RecordScoreAsync(
             name,
             (target, observer, token) => _recorder.RecordNumericResultAsync(
@@ -173,9 +163,15 @@ internal sealed class LangfuseExperimentRun :
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
+        bool value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
         bool value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken) =>
         RecordScoreAsync(
             name,
             (target, observer, token) => _recorder.RecordBooleanResultAsync(
@@ -192,9 +188,15 @@ internal sealed class LangfuseExperimentRun :
     /// <inheritdoc />
     public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
         string name,
+        string value) =>
+        RecordScoreAsync(name, value, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<LangfuseExperimentRunScoreResult> RecordScoreAsync(
+        string name,
         string value,
-        LangfuseScoreOptions? options = null,
-        CancellationToken cancellationToken = default)
+        LangfuseScoreOptions? options,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
         return RecordScoreAsync(
@@ -212,10 +214,15 @@ internal sealed class LangfuseExperimentRun :
     }
 
     /// <inheritdoc />
+    public Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
+        EvaluationResult result) =>
+        RecordEvaluationAsync(result, options: null, CancellationToken.None);
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LangfuseExperimentRunScoreResult>> RecordEvaluationAsync(
         EvaluationResult result,
-        LangfuseEvaluationScoreOptions? options = null,
-        CancellationToken cancellationToken = default) =>
+        LangfuseEvaluationScoreOptions? options,
+        CancellationToken cancellationToken) =>
         await RecordEvaluationAsync(
             result,
             options,

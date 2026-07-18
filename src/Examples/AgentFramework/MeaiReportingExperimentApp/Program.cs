@@ -117,7 +117,7 @@ async Task RunAsync(
         context => new EvaluationInputs(
             context.Output.Messages,
             context.Output.Response),
-        new MeaiReportingExperimentAdapterOptions<
+        new MeaiReportingExperimentOptions<
             ReportingExampleCase,
             ReportingExampleOutput>
         {
@@ -131,7 +131,8 @@ async Task RunAsync(
         {
             RunId = runId,
             MaxConcurrency = 1,
-        });
+        },
+        CancellationToken.None);
     var item = outcome.Result.Items.Single();
     var publication = item.Publications.Single();
     Console.WriteLine(

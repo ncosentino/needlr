@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework\NexusLabs.Needlr.AgentFramework.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Evaluation\NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
+    <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Evaluation.Reporting\NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.csproj" />
     <ProjectReference Include="..\NexusLabs.Needlr.AgentFramework.Langfuse\NexusLabs.Needlr.AgentFramework.Langfuse.csproj" />
   </ItemGroup>
 

@@ -32,7 +32,7 @@ public interface IExperimentResultSink<TCase, TOutput>
     /// <param name="result">The read-only canonical quality result.</param>
     /// <param name="cancellationToken">The caller cancellation token.</param>
     /// <returns>The structured publication operation result.</returns>
-    ValueTask<ExperimentSinkResult> PublishAsync(
+    ValueTask<ExperimentSinkPublicationOperationResult> PublishAsync(
         ExperimentRunResult<TCase, TOutput> result,
         CancellationToken cancellationToken);
 }

@@ -114,8 +114,14 @@ internal sealed class LangfuseSession :
     /// <inheritdoc />
     public ILangfuseExperimentRun BeginExperimentRun(
         string datasetName,
+        string runName) =>
+        BeginExperimentRun(datasetName, runName, options: null);
+
+    /// <inheritdoc />
+    public ILangfuseExperimentRun BeginExperimentRun(
+        string datasetName,
         string runName,
-        LangfuseExperimentRunOptions? options = null)
+        LangfuseExperimentRunOptions? options)
     {
         ThrowIfShutdownStarted();
         return _client.BeginExperimentRun(datasetName, runName, options);
@@ -242,13 +248,11 @@ internal sealed class LangfuseSession :
     }
 
     private ILangfuseExperimentItemScopeProviderFactory GetScopeProviderFactory() =>
-        _client as ILangfuseExperimentItemScopeProviderFactory
-        ?? throw new NotSupportedException(
+        _client.ResolveExperimentFactory<ILangfuseExperimentItemScopeProviderFactory>(
             "The configured Langfuse client does not expose the built-in experiment trial lifecycle.");
 
     private ILangfuseExperimentResultSinkFactory GetResultSinkFactory() =>
-        _client as ILangfuseExperimentResultSinkFactory
-        ?? throw new NotSupportedException(
+        _client.ResolveExperimentFactory<ILangfuseExperimentResultSinkFactory>(
             "The configured Langfuse client does not expose the built-in experiment result-sink capability.");
 
     private static int GetRemainingTimeoutMilliseconds(

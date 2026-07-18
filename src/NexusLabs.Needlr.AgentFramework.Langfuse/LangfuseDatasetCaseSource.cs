@@ -43,7 +43,25 @@ public sealed class LangfuseDatasetCaseSource<TCase> : IExperimentCaseSource<TCa
     /// <summary>Gets the hosted dataset selection used by this source.</summary>
     public LangfuseDatasetSelection Selection { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Loads the complete hosted dataset case collection without caller cancellation.
+    /// </summary>
+    /// <returns>The hosted source identity and ordered cases.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Langfuse is disabled or the hosted dataset contains no active items.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The mapper returns an invalid, duplicate, or provider-identity-breaking case id.
+    /// </exception>
+    /// <exception cref="LangfuseException">The provider request or response is invalid or inconsistent.</exception>
+    public ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync() =>
+        LoadAsync(CancellationToken.None);
+
+    /// <summary>
+    /// Loads the complete hosted dataset case collection with caller cancellation.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The hosted source identity and ordered cases.</returns>
     /// <exception cref="InvalidOperationException">
     /// Langfuse is disabled or the hosted dataset contains no active items.
     /// </exception>
@@ -53,7 +71,7 @@ public sealed class LangfuseDatasetCaseSource<TCase> : IExperimentCaseSource<TCa
     /// <exception cref="LangfuseException">The provider request or response is invalid or inconsistent.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     public async ValueTask<ExperimentCaseSourceResult<TCase>> LoadAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!_datasetClient.IsEnabled)

@@ -42,7 +42,12 @@ public sealed class LangfuseScoreClientTargetTests
         var captured = new List<CapturedRequest>();
         var client = CreateClient(captured);
 
-        await client.RecordSessionScoreAsync("session-9", "resolved", 0.8, cancellationToken: TestContext.Current.CancellationToken);
+        await client.RecordSessionScoreAsync(
+            "session-9",
+            "resolved",
+            0.8,
+            options: null,
+            TestContext.Current.CancellationToken);
 
         using var json = JsonDocument.Parse(Assert.Single(captured).Body!);
         Assert.Equal("session-9", json.RootElement.GetProperty("sessionId").GetString());

@@ -79,7 +79,8 @@ public sealed class LangfuseClientFacadeTests
             "trace",
             "failure",
             1.0,
-            cancellationToken: _cancellationToken);
+            options: null,
+            _cancellationToken);
         var datasets = new DisabledLangfuseDatasetClient();
         var scoreConfigs = new DisabledLangfuseScoreConfigClient();
         var metrics = new DisabledLangfuseMetricsClient();
@@ -107,11 +108,13 @@ public sealed class LangfuseClientFacadeTests
         await scenario.RecordScoreAsync(
             "scenario-failure",
             1.0,
-            cancellationToken: _cancellationToken);
+            options: null,
+            _cancellationToken);
         await scenario.RecordSessionScoreAsync(
             "session-failure",
             1.0,
-            cancellationToken: _cancellationToken);
+            options: null,
+            _cancellationToken);
 
         Assert.Same(scores, client.Scores);
         Assert.Equal(3, scores.PublicationHealth.GetSnapshot().ScoreUploads.Failed);
@@ -320,12 +323,14 @@ public sealed class LangfuseClientFacadeTests
         var item = await run.RunItemAsync(
             "item",
             (_, _) => Task.FromResult("disabled"),
+            options: null,
             cancellationToken: _cancellationToken);
         await client.Scores.RecordScoreAsync(
             "trace",
             "score",
             1.0,
-            cancellationToken: _cancellationToken);
+            options: null,
+            _cancellationToken);
         await client.AddTraceCommentAsync("trace", "comment", _cancellationToken);
 
         Assert.Null(scenario.TraceId);

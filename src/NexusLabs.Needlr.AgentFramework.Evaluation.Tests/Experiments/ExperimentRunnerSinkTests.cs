@@ -20,13 +20,13 @@ public sealed class ExperimentRunnerSinkTests
                     {
                         calls.Add("first");
                         firstResult = result;
-                        return ValueTask.FromResult(SucceededSink("first", isRequired: false));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                     CreateSink("second", isRequired: true, (result, _) =>
                     {
                         calls.Add("second");
                         secondResult = result;
-                        return ValueTask.FromResult(SucceededSink("second", isRequired: true));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                 ]),
             CreateOptions(),
@@ -37,6 +37,28 @@ public sealed class ExperimentRunnerSinkTests
         Assert.Same(outcome.Result, secondResult);
         Assert.Equal(ExperimentPublicationStatus.Succeeded, outcome.PublicationStatus);
         Assert.Equal(["first", "second"], outcome.SinkResults.Select(result => result.Name));
+        Assert.Equal([false, true], outcome.SinkResults.Select(result => result.IsRequired));
+    }
+
+    [Fact]
+    public async Task RunAsync_StampsRegisteredSinkIdentityOntoOperationResult()
+    {
+        var outcome = await new ExperimentRunner().RunAsync(
+            CreateDefinition(
+                sinks:
+                [
+                    CreateSink(
+                        "registered-sink",
+                        isRequired: true,
+                        (_, _) => ValueTask.FromResult(SucceededSink())),
+                ]),
+            CreateOptions(),
+            _cancellationToken);
+
+        var sinkResult = Assert.Single(outcome.SinkResults);
+        Assert.Equal("registered-sink", sinkResult.Name);
+        Assert.True(sinkResult.IsRequired);
+        Assert.Equal(ExperimentPublicationOperationStatus.Succeeded, sinkResult.Status);
     }
 
     [Fact]
@@ -60,9 +82,7 @@ public sealed class ExperimentRunnerSinkTests
                 sinks:
                 [
                     CreateSink("disabled", isRequired: true, (_, _) =>
-                        ValueTask.FromResult(NotAttemptedSink(
-                            "disabled",
-                            isRequired: true))),
+                        ValueTask.FromResult(NotAttemptedSink())),
                 ]),
             CreateOptions(),
             _cancellationToken);
@@ -81,10 +101,7 @@ public sealed class ExperimentRunnerSinkTests
                 sinks:
                 [
                     CreateSink("optional", isRequired: false, (_, _) =>
-                        ValueTask.FromResult(FailedSink(
-                            "optional",
-                            isRequired: false,
-                            "optional failed"))),
+                        ValueTask.FromResult(FailedSink("optional failed"))),
                 ]),
             CreateOptions(),
             _cancellationToken);
@@ -124,6 +141,14 @@ public sealed class ExperimentRunnerSinkTests
     public async Task RunAsync_SinkFailuresAndMalformedResults_DoNotSuppressLaterSinks()
     {
         var laterCalls = 0;
+        var invalidFailureOperation =
+            ExperimentSinkPublicationOperationResult.Failed(
+                new ExperimentFailure(
+                    ExperimentFailureCode.ResultSinkFailed,
+                    ExperimentFailureStage.Publication,
+                    typeof(InvalidOperationException).FullName!,
+                    "invalid",
+                    isRetryable: true));
         var outcome = await new ExperimentRunner().RunAsync(
             CreateDefinition(
                 sinks:
@@ -131,28 +156,13 @@ public sealed class ExperimentRunnerSinkTests
                     CreateSink("throwing", isRequired: false, (_, _) =>
                         throw new InvalidOperationException("threw")),
                     CreateSink("malformed", isRequired: false, (_, _) =>
-                        ValueTask.FromResult<ExperimentSinkResult>(null!)),
+                        ValueTask.FromResult<ExperimentSinkPublicationOperationResult>(null!)),
                     CreateSink("invalid-failure", isRequired: false, (_, _) =>
-                        ValueTask.FromResult(new ExperimentSinkResult
-                        {
-                            Name = "invalid-failure",
-                            IsRequired = false,
-                            Status = ExperimentPublicationOperationStatus.Failed,
-                            Failure = new ExperimentFailure
-                            {
-                                Code = ExperimentFailureCode.ResultSinkFailed,
-                                Stage = ExperimentFailureStage.Publication,
-                                ExceptionType = " ",
-                                Message = "invalid",
-                                IsRetryable = false,
-                            },
-                        })),
+                        ValueTask.FromResult(invalidFailureOperation)),
                     CreateSink("later", isRequired: false, (_, _) =>
                     {
                         Interlocked.Increment(ref laterCalls);
-                        return ValueTask.FromResult(SucceededSink(
-                            "later",
-                            isRequired: false));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                 ]),
             CreateOptions(),
@@ -168,6 +178,11 @@ public sealed class ExperimentRunnerSinkTests
                 ExperimentPublicationOperationStatus.Succeeded,
             ],
             outcome.SinkResults.Select(result => result.Status));
+        var normalizedFailure = outcome.SinkResults[2].Failure!;
+        Assert.Equal(ExperimentFailureCode.ResultSinkFailed, normalizedFailure.Code);
+        Assert.Equal(ExperimentFailureStage.Publication, normalizedFailure.Stage);
+        Assert.False(string.IsNullOrWhiteSpace(normalizedFailure.ExceptionType));
+        Assert.NotEqual("invalid", normalizedFailure.Message);
         Assert.Equal(ExperimentPublicationStatus.PartiallyFailed, outcome.PublicationStatus);
     }
 
@@ -189,15 +204,11 @@ public sealed class ExperimentRunnerSinkTests
                         new Dictionary<Type, object>(),
                         () => null,
                         (_, _) => ValueTask.FromResult(
-                            new ExperimentItemPublicationResult
-                            {
-                                Name = "scope",
-                                IsRequired = isRequired,
-                                Status = ExperimentPublicationOperationStatus.Failed,
-                                Failure = PublicationFailure(
+                            ExperimentItemPublicationOperationResult.Failed(
+                                [],
+                                PublicationFailure(
                                     ExperimentFailureCode.ItemScopeFailed,
-                                    "scope failed"),
-                            }),
+                                    "scope failed"))),
                         _ => ValueTask.CompletedTask,
                         () => ValueTask.CompletedTask);
                 return ValueTask.FromResult(scope);
@@ -233,9 +244,7 @@ public sealed class ExperimentRunnerSinkTests
                     CreateSink("sink", isRequired: true, (_, _) =>
                     {
                         Interlocked.Increment(ref sinkCalls);
-                        return ValueTask.FromResult(SucceededSink(
-                            "sink",
-                            isRequired: true));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                 ]),
             CreateOptions(),
@@ -264,14 +273,12 @@ public sealed class ExperimentRunnerSinkTests
                     {
                         firstStarted.SetResult();
                         await Task.Delay(Timeout.InfiniteTimeSpan, token);
-                        return SucceededSink("blocking", isRequired: true);
+                        return SucceededSink();
                     }),
                     CreateSink("later", isRequired: true, (_, _) =>
                     {
                         Interlocked.Increment(ref laterCalls);
-                        return ValueTask.FromResult(SucceededSink(
-                            "later",
-                            isRequired: true));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                 ]),
             CreateOptions(),
@@ -304,9 +311,7 @@ public sealed class ExperimentRunnerSinkTests
                     CreateSink("later", isRequired: false, (_, _) =>
                     {
                         Interlocked.Increment(ref laterCalls);
-                        return ValueTask.FromResult(SucceededSink(
-                            "later",
-                            isRequired: false));
+                        return ValueTask.FromResult(SucceededSink());
                     }),
                 ]),
             CreateOptions(),
@@ -348,52 +353,28 @@ public sealed class ExperimentRunnerSinkTests
         Func<
             ExperimentRunResult<int, int>,
             CancellationToken,
-            ValueTask<ExperimentSinkResult>> publishAsync) =>
+            ValueTask<ExperimentSinkPublicationOperationResult>> publishAsync) =>
         new(name, isRequired, publishAsync);
 
-    private static ExperimentSinkResult SucceededSink(
-        string name,
-        bool isRequired) =>
-        new()
-        {
-            Name = name,
-            IsRequired = isRequired,
-            Status = ExperimentPublicationOperationStatus.Succeeded,
-        };
+    private static ExperimentSinkPublicationOperationResult SucceededSink() =>
+        ExperimentSinkPublicationOperationResult.Succeeded();
 
-    private static ExperimentSinkResult NotAttemptedSink(
-        string name,
-        bool isRequired) =>
-        new()
-        {
-            Name = name,
-            IsRequired = isRequired,
-            Status = ExperimentPublicationOperationStatus.NotAttempted,
-        };
+    private static ExperimentSinkPublicationOperationResult NotAttemptedSink() =>
+        ExperimentSinkPublicationOperationResult.NotAttempted();
 
-    private static ExperimentSinkResult FailedSink(
-        string name,
-        bool isRequired,
-        string message) =>
-        new()
-        {
-            Name = name,
-            IsRequired = isRequired,
-            Status = ExperimentPublicationOperationStatus.Failed,
-            Failure = PublicationFailure(
+    private static ExperimentSinkPublicationOperationResult FailedSink(string message) =>
+        ExperimentSinkPublicationOperationResult.Failed(
+            PublicationFailure(
                 ExperimentFailureCode.ResultSinkFailed,
-                message),
-        };
+                message));
 
     private static ExperimentFailure PublicationFailure(
         ExperimentFailureCode code,
         string message) =>
-        new()
-        {
-            Code = code,
-            Stage = ExperimentFailureStage.Publication,
-            ExceptionType = typeof(InvalidOperationException).FullName!,
-            Message = message,
-            IsRetryable = false,
-        };
+        new(
+            code,
+            ExperimentFailureStage.Publication,
+            typeof(InvalidOperationException).FullName!,
+            message,
+            isRetryable: false);
 }

@@ -18,17 +18,55 @@ public sealed class ExperimentRunEvaluationThresholdPolicy<TCase, TOutput> :
     /// <param name="name">The stable policy name.</param>
     /// <param name="runEvaluationName">The run evaluator that supplies metrics.</param>
     /// <param name="thresholds">The configured reusable threshold evaluator.</param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="name"/>, <paramref name="runEvaluationName"/>, or
+    /// <paramref name="thresholds"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="name"/> or <paramref name="runEvaluationName"/> is empty or consists only of
+    /// white-space characters.
+    /// </exception>
+    public ExperimentRunEvaluationThresholdPolicy(
+        string name,
+        string runEvaluationName,
+        EvaluationThresholdEvaluator thresholds)
+        : this(
+            name,
+            runEvaluationName,
+            thresholds,
+            isRequired: true,
+            missingMetricBehavior: EvaluationMissingMetricBehavior.Inconclusive)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a deterministic run-evaluation threshold policy with an explicit required flag
+    /// and missing metric behavior.
+    /// </summary>
+    /// <param name="name">The stable policy name.</param>
+    /// <param name="runEvaluationName">The run evaluator that supplies metrics.</param>
+    /// <param name="thresholds">The configured reusable threshold evaluator.</param>
     /// <param name="isRequired">Whether this policy contributes to the run decision.</param>
     /// <param name="missingMetricBehavior">
     /// The treatment for unavailable, missing, or invalid required evidence.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="name"/>, <paramref name="runEvaluationName"/>, or
+    /// <paramref name="thresholds"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="name"/> or <paramref name="runEvaluationName"/> is empty or consists only of
+    /// white-space characters.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="missingMetricBehavior"/> is not defined.
+    /// </exception>
     public ExperimentRunEvaluationThresholdPolicy(
         string name,
         string runEvaluationName,
         EvaluationThresholdEvaluator thresholds,
-        bool isRequired = true,
-        EvaluationMissingMetricBehavior missingMetricBehavior =
-            EvaluationMissingMetricBehavior.Inconclusive)
+        bool isRequired,
+        EvaluationMissingMetricBehavior missingMetricBehavior)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(runEvaluationName);
@@ -78,30 +116,25 @@ public sealed class ExperimentRunEvaluationThresholdPolicy<TCase, TOutput> :
             var unavailableReason = runEvaluation is null
                 ? $"Run evaluation '{RunEvaluationName}' was not configured."
                 : $"Run evaluation '{RunEvaluationName}' did not complete successfully.";
-            return ValueTask.FromResult(new ExperimentPolicyVerdict
-            {
-                Decision = _missingMetricBehavior == EvaluationMissingMetricBehavior.Fail
-                    ? EvaluationDecision.Failed
-                    : EvaluationDecision.Inconclusive,
-                DeterministicEvidence = new ExperimentDeterministicPolicyEvidence
-                {
-                    RunEvaluationName = RunEvaluationName,
-                    UnavailableReason = unavailableReason,
-                },
-            });
+            var decision = _missingMetricBehavior == EvaluationMissingMetricBehavior.Fail
+                ? EvaluationDecision.Failed
+                : EvaluationDecision.Inconclusive;
+            return ValueTask.FromResult(
+                ExperimentPolicyVerdict.FromDeterministicEvidence(
+                    decision,
+                    ExperimentDeterministicPolicyEvidence.Unavailable(
+                        RunEvaluationName,
+                        unavailableReason)));
         }
 
         var thresholdResult = _thresholds.Evaluate(
             runEvaluation.Metrics,
             _missingMetricBehavior);
-        return ValueTask.FromResult(new ExperimentPolicyVerdict
-        {
-            Decision = thresholdResult.Decision,
-            DeterministicEvidence = new ExperimentDeterministicPolicyEvidence
-            {
-                RunEvaluationName = RunEvaluationName,
-                Thresholds = thresholdResult,
-            },
-        });
+        return ValueTask.FromResult(
+            ExperimentPolicyVerdict.FromDeterministicEvidence(
+                thresholdResult.Decision,
+                ExperimentDeterministicPolicyEvidence.Available(
+                    RunEvaluationName,
+                    thresholdResult)));
     }
 }

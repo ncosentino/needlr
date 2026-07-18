@@ -44,7 +44,7 @@ public static class MeaiReportingExperimentExtensions
             this ExperimentDefinition<TCase, TOutput> definition,
             ReportingConfiguration configuration,
             MeaiReportingEvaluationInputFactory<TCase, TOutput> inputFactory,
-            MeaiReportingExperimentAdapterOptions<TCase, TOutput> options)
+            MeaiReportingExperimentOptions<TCase, TOutput> options)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(definition.ItemScopes);
@@ -58,7 +58,7 @@ public static class MeaiReportingExperimentExtensions
         if (definition.ItemScopes.Any(scope =>
                 string.Equals(
                     scope.Name,
-                    MeaiReportingExperimentAdapter<TCase, TOutput>.ProviderName,
+                    MeaiReportingExperimentSchema.ProviderName,
                     StringComparison.Ordinal)))
         {
             throw new InvalidOperationException(
@@ -80,7 +80,7 @@ public static class MeaiReportingExperimentExtensions
         CreateExperimentAdapter<TCase, TOutput>(
             this ReportingConfiguration configuration,
             MeaiReportingEvaluationInputFactory<TCase, TOutput> inputFactory,
-            MeaiReportingExperimentAdapterOptions<TCase, TOutput> options)
+            MeaiReportingExperimentOptions<TCase, TOutput> options)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(inputFactory);

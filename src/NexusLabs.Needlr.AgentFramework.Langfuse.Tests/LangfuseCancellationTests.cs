@@ -56,7 +56,11 @@ public sealed class LangfuseCancellationTests
         using var scenario = new LangfuseScenario(recorder, "scenario", null, null, null, null);
 
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            scenario.RecordScoreAsync("correctness", 1.0, cancellationToken: cancellation.Token));
+            scenario.RecordScoreAsync(
+                "correctness",
+                1.0,
+                options: null,
+                cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
         Assert.Equal(0, failureSink.FailedCount);
@@ -126,6 +130,7 @@ public sealed class LangfuseCancellationTests
                 callbackInvoked = true;
                 return Task.FromResult("not reached");
             },
+            options: null,
             cancellationToken: cancellation.Token);
         await requestStarted.Task.WaitAsync(_testCancellationToken);
         cancellation.Cancel();
@@ -166,6 +171,7 @@ public sealed class LangfuseCancellationTests
                 callbackStarted.SetResult();
                 return await pendingCallback.Task.WaitAsync(token);
             },
+            options: null,
             cancellationToken: cancellation.Token);
         await callbackStarted.Task.WaitAsync(_testCancellationToken);
         cancellation.Cancel();
@@ -202,6 +208,7 @@ public sealed class LangfuseCancellationTests
                     callbackInvoked = true;
                     return Task.FromResult("not reached");
                 },
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
@@ -225,6 +232,7 @@ public sealed class LangfuseCancellationTests
                     callbackInvoked = true;
                     return Task.FromResult("not reached");
                 },
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);

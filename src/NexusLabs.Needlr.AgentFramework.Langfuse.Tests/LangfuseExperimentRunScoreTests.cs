@@ -29,10 +29,12 @@ public sealed class LangfuseExperimentRunScoreTests
         var boolean = await run.RecordScoreAsync(
             "passed",
             true,
+            options: null,
             cancellationToken: _cancellationToken);
         var categorical = await run.RecordScoreAsync(
             "verdict",
             "acceptable",
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentScoreStatus.Accepted, numeric.Status);
@@ -118,6 +120,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var result = await run.RecordScoreAsync(
             "quality",
             0.9,
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentScoreStatus.NotAttempted, result.Status);
@@ -144,6 +147,7 @@ public sealed class LangfuseExperimentRunScoreTests
             run.RecordScoreAsync(
                 "quality",
                 0.9,
+                options: null,
                 cancellationToken: _cancellationToken));
 
         Assert.Equal(1, run.GetPublicationSnapshot().RunScores.NotAttempted);
@@ -164,6 +168,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var result = await run.RecordScoreAsync(
             "quality",
             0.9,
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentScoreStatus.Failed, result.Status);
@@ -189,6 +194,7 @@ public sealed class LangfuseExperimentRunScoreTests
             run.RecordScoreAsync(
                 "quality",
                 0.9,
+                options: null,
                 cancellationToken: _cancellationToken));
 
         Assert.Equal(1, run.GetPublicationSnapshot().RunScores.Failed);
@@ -209,15 +215,18 @@ public sealed class LangfuseExperimentRunScoreTests
         await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult(1),
+            options: null,
             cancellationToken: _cancellationToken);
         await run.RunItemAsync(
             "case-2",
             (_, _) => Task.FromResult(2),
+            options: null,
             cancellationToken: _cancellationToken);
 
         var result = await run.RecordScoreAsync(
             "quality",
             0.9,
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(LangfuseExperimentScoreStatus.NotAttempted, result.Status);
@@ -251,6 +260,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var scoreTask = run.RecordScoreAsync(
             "quality",
             0.9,
+            options: null,
             cancellationToken: cancellation.Token);
         await requestStarted.Task.WaitAsync(_cancellationToken);
         Assert.Equal(1, run.GetPublicationSnapshot().OperationsInFlight);
@@ -279,6 +289,7 @@ public sealed class LangfuseExperimentRunScoreTests
             run.RecordScoreAsync(
                 "quality",
                 0.9,
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
@@ -304,6 +315,7 @@ public sealed class LangfuseExperimentRunScoreTests
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             run.RecordEvaluationAsync(
                 evaluation,
+                options: null,
                 cancellationToken: cancellation.Token));
 
         Assert.Equal(cancellation.Token, exception.CancellationToken);
@@ -326,6 +338,7 @@ public sealed class LangfuseExperimentRunScoreTests
 
         var results = await run.RecordEvaluationAsync(
             evaluation,
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal(
@@ -354,6 +367,7 @@ public sealed class LangfuseExperimentRunScoreTests
         await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("done"),
+            options: null,
             cancellationToken: _cancellationToken);
         return run;
     }

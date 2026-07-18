@@ -94,8 +94,6 @@ public sealed class LangfuseExperimentItemScopeProvider<TCase, TOutput> :
                         : LangfuseExperimentItemLinkFailureMode.BestEffort),
                 cancellationToken)
             .ConfigureAwait(false);
-        return new LangfuseExperimentItemScope<TCase, TOutput>(
-            lifecycle,
-            IsRequired);
+        return new LangfuseExperimentItemScope<TCase, TOutput>(lifecycle);
     }
 }

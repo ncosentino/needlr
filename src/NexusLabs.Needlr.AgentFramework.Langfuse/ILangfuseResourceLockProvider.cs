@@ -14,10 +14,21 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 public interface ILangfuseResourceLockProvider
 {
     /// <summary>
-    /// Acquires exclusive ownership of an opaque resource key.
+    /// Acquires exclusive ownership of a resource key without caller cancellation.
     /// </summary>
     /// <param name="key">The stable opaque key supplied by Needlr.</param>
-    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>
+    /// An asynchronous lease whose disposal releases ownership.
+    /// </returns>
+    ValueTask<IAsyncDisposable> AcquireAsync(LangfuseResourceLockKey key);
+
+    /// <summary>
+    /// Acquires exclusive ownership of a resource key.
+    /// </summary>
+    /// <param name="key">The stable opaque key supplied by Needlr.</param>
+    /// <param name="cancellationToken">
+    /// A token that can cancel the wait before ownership is acquired.
+    /// </param>
     /// <returns>
     /// An asynchronous lease whose disposal releases ownership.
     /// </returns>
@@ -25,6 +36,6 @@ public interface ILangfuseResourceLockProvider
     /// <paramref name="cancellationToken"/> was canceled before ownership was acquired.
     /// </exception>
     ValueTask<IAsyncDisposable> AcquireAsync(
-        string key,
-        CancellationToken cancellationToken = default);
+        LangfuseResourceLockKey key,
+        CancellationToken cancellationToken);
 }

@@ -13,6 +13,12 @@ public interface ILangfuseDatasetClient
     /// </summary>
     bool IsEnabled { get; }
 
+    /// <summary>Lists the first page of up to 50 hosted datasets in provider order.</summary>
+    /// <returns>The validated first dataset page.</returns>
+    /// <exception cref="InvalidOperationException">Langfuse is not configured.</exception>
+    /// <exception cref="LangfuseException">The provider request or response is invalid.</exception>
+    Task<LangfusePage<LangfuseDataset>> ListDatasetsAsync();
+
     /// <summary>Lists one page of hosted datasets in provider order.</summary>
     /// <param name="page">The one-based page number.</param>
     /// <param name="pageSize">The number of datasets to request, from 1 through 100.</param>
@@ -25,9 +31,21 @@ public interface ILangfuseDatasetClient
     /// <exception cref="LangfuseException">The provider request or response is invalid.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     Task<LangfusePage<LangfuseDataset>> ListDatasetsAsync(
-        int page = 1,
-        int pageSize = 50,
-        CancellationToken cancellationToken = default);
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Lists the first page of up to 50 active items from the latest hosted dataset.
+    /// </summary>
+    /// <param name="selection">The hosted dataset selection.</param>
+    /// <returns>The validated active-item page.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="selection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The dataset name is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Langfuse is not configured.</exception>
+    /// <exception cref="LangfuseException">The provider request or response is invalid.</exception>
+    Task<LangfusePage<LangfuseDatasetItemSnapshot>> ListDatasetItemsAsync(
+        LangfuseDatasetSelection selection);
 
     /// <summary>
     /// Lists one page of active items from the latest or explicitly versioned hosted dataset.
@@ -47,9 +65,20 @@ public interface ILangfuseDatasetClient
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     Task<LangfusePage<LangfuseDatasetItemSnapshot>> ListDatasetItemsAsync(
         LangfuseDatasetSelection selection,
-        int page = 1,
-        int pageSize = 50,
-        CancellationToken cancellationToken = default);
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Loads dataset metadata and fully materializes every active item before returning.
+    /// </summary>
+    /// <param name="selection">The hosted dataset selection.</param>
+    /// <returns>The dataset metadata, selection, and complete ordered item snapshot.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="selection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The dataset name is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Langfuse is not configured.</exception>
+    /// <exception cref="LangfuseException">The provider request or response is invalid or inconsistent.</exception>
+    Task<LangfuseDatasetSnapshot> GetDatasetAsync(LangfuseDatasetSelection selection);
 
     /// <summary>
     /// Loads dataset metadata and fully materializes every active item before returning.
@@ -64,17 +93,39 @@ public interface ILangfuseDatasetClient
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     Task<LangfuseDatasetSnapshot> GetDatasetAsync(
         LangfuseDatasetSelection selection,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Ensures a dataset with the given name exists, creating it only when absent, with no
+    /// description. Safe to call on every run.
+    /// </summary>
+    /// <param name="name">The dataset name.</param>
+    /// <returns>A task that completes when the dataset exists in Langfuse.</returns>
+    Task EnsureDatasetAsync(string name);
 
     /// <summary>
     /// Ensures a dataset with the given name exists, creating it only when absent. Safe to call on
     /// every run.
     /// </summary>
     /// <param name="name">The dataset name.</param>
-    /// <param name="description">An optional description applied when the dataset is created.</param>
+    /// <param name="description">
+    /// A description applied when the dataset is created, or <see langword="null"/> for none.
+    /// </param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when the dataset exists in Langfuse.</returns>
-    Task EnsureDatasetAsync(string name, string? description = null, CancellationToken cancellationToken = default);
+    Task EnsureDatasetAsync(
+        string name,
+        string? description,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Upserts a dataset item without an explicit cancellation token. When
+    /// <see cref="LangfuseDatasetItem.Id"/> is set, an existing item with that id is updated;
+    /// otherwise a new item is created.
+    /// </summary>
+    /// <param name="item">The item to upsert.</param>
+    /// <returns>A task that completes when the item has been persisted.</returns>
+    Task UpsertItemAsync(LangfuseDatasetItem item);
 
     /// <summary>
     /// Upserts a dataset item. When <see cref="LangfuseDatasetItem.Id"/> is set, an existing item
@@ -83,5 +134,5 @@ public interface ILangfuseDatasetClient
     /// <param name="item">The item to upsert.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A task that completes when the item has been persisted.</returns>
-    Task UpsertItemAsync(LangfuseDatasetItem item, CancellationToken cancellationToken = default);
+    Task UpsertItemAsync(LangfuseDatasetItem item, CancellationToken cancellationToken);
 }

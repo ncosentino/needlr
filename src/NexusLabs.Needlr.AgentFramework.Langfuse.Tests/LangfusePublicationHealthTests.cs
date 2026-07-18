@@ -89,6 +89,7 @@ public sealed class LangfusePublicationHealthTests
         var result = await run.RunItemAsync(
             "case-1",
             (_, _) => Task.FromResult("subject-result"),
+            options: null,
             cancellationToken: _cancellationToken);
 
         Assert.Equal("subject-result", result.Value);

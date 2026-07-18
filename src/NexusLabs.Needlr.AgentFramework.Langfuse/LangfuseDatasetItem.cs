@@ -2,7 +2,8 @@ namespace NexusLabs.Needlr.AgentFramework.Langfuse;
 
 /// <summary>
 /// A single Langfuse dataset item — one eval case. Upserted via
-/// <see cref="ILangfuseDatasetClient.UpsertItemAsync"/> and later referenced by an experiment run.
+/// <see cref="ILangfuseDatasetClient.UpsertItemAsync(LangfuseDatasetItem)"/> and later referenced by
+/// an experiment run.
 /// </summary>
 /// <remarks>
 /// <see cref="Input"/>, <see cref="ExpectedOutput"/>, and <see cref="Metadata"/> are serialized to

@@ -8,6 +8,36 @@ public sealed class LangfuseDatasetCaseSourceTests
     private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     [Fact]
+    public async Task LoadAsync_TokenlessOverloadLoadsHostedDataset()
+    {
+        using var httpClient = LangfuseHttpStub.Create(
+            request => request.RequestUri!.AbsolutePath == "/api/public/v2/datasets/evals"
+                ? LangfuseDatasetApiStub.Dataset("dataset-1", "evals")
+                : LangfuseDatasetApiStub.Page(
+                    page: 1,
+                    pageSize: 100,
+                    totalItems: 1,
+                    totalPages: 1,
+                    LangfuseDatasetApiStub.Item("item-1", "dataset-1", "evals")),
+            []);
+        var source = new LangfuseDatasetCaseSource<string>(
+            CreateClient(httpClient),
+            new LangfuseDatasetSelection { Name = "evals" },
+            item => new ExperimentCase<string>
+            {
+                Id = item.Id,
+                Value = item.Id,
+            });
+
+#pragma warning disable xUnit1051 // This test intentionally exercises the tokenless hosted-source overload.
+        var result = await source.LoadAsync();
+#pragma warning restore xUnit1051
+
+        Assert.Equal("dataset-1", result.Source.Id);
+        Assert.Equal("item-1", Assert.Single(result.Cases).Value);
+    }
+
+    [Fact]
     public async Task LoadAsync_MapsHostedFieldsAndExplicitSourceIdentity()
     {
         var captured = new List<CapturedRequest>();
