@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -4743,17 +4743,43 @@
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.Delay'></a></p>
 <h2 id="experimentretrydecisiondelay-property">ExperimentRetryDecision.Delay Property<a class="headerlink" href="#experimentretrydecisiondelay-property" title="Permanent link">&para;</a></h2>
 <p>Gets the delay before the next attempt becomes ready.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Delay</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Delay</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.ShouldRetry'></a></p>
 <h2 id="experimentretrydecisionshouldretry-property">ExperimentRetryDecision.ShouldRetry Property<a class="headerlink" href="#experimentretrydecisionshouldretry-property" title="Permanent link">&para;</a></h2>
 <p>Gets a value indicating whether another attempt should be scheduled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">ShouldRetry</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">ShouldRetry</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.DoNotRetry()'></a></p>
+<h2 id="experimentretrydecisiondonotretry-method">ExperimentRetryDecision.DoNotRetry() Method<a class="headerlink" href="#experimentretrydecisiondonotretry-method" title="Permanent link">&para;</a></h2>
+<p>Creates a decision that stops retrying and records a zero delay.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentRetryDecision</span><span class="w"> </span><span class="n">DoNotRetry</span><span class="p">();</span>
+</span></code></pre></div>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision">ExperimentRetryDecision</a><br />
+A decision indicating that no further attempt should be scheduled.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.RetryAfter(System.TimeSpan)'></a></p>
+<h2 id="experimentretrydecisionretryaftertimespan-method">ExperimentRetryDecision.RetryAfter(TimeSpan) Method<a class="headerlink" href="#experimentretrydecisionretryaftertimespan-method" title="Permanent link">&para;</a></h2>
+<p>Creates a decision that schedules another attempt after the specified delay.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentRetryDecision</span><span class="w"> </span><span class="n">RetryAfter</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">delay</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.RetryAfter(System.TimeSpan).delay'></a></p>
+<p><code>delay</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.timespan" title="System.TimeSpan">System.TimeSpan</a></p>
+<p>The delay before the next attempt becomes ready. The delay must be non-negative and no
+greater than the maximum delay enforced by <a href="../ExperimentRetryPolicy/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryPolicy">ExperimentRetryPolicy</a>.</p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<p><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision">ExperimentRetryDecision</a><br />
+A decision indicating that another attempt should be scheduled.</p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception" title="System.ArgumentOutOfRangeException">System.ArgumentOutOfRangeException</a><br />
+<a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.RetryAfter(System.TimeSpan).delay" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentRetryDecision.RetryAfter(System.TimeSpan).delay">delay</a> is negative, infinite, or greater than the maximum representable
+            experiment retry delay.</p>
 
 
 
@@ -4830,7 +4856,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../../javascripts/api-version-switcher.js"></script>
       

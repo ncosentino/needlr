@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -5086,6 +5086,49 @@ observability provider.</p>
 <p>Every case is materialized and validated before execution. Cases expand in source order, then by
 ascending one-based trial index. Items return in that stable order regardless of completion or retry
 order.</p>
+<p>The provider-neutral execution APIs use explicit overloads rather than optional parameters:</p>
+<ul>
+<li><code>IExperimentCaseSource&lt;TCase&gt;.LoadAsync()</code> delegates to
+  <code>LoadAsync(CancellationToken.None)</code>;</li>
+<li><code>IExperimentRunner.RunAsync(definition, options)</code> delegates to the overload that accepts
+  <code>CancellationToken</code>;</li>
+<li><code>ExperimentRunner()</code> uses <code>TimeProvider.System</code>, while
+  <code>ExperimentRunner(TimeProvider?)</code> also falls back to <code>TimeProvider.System</code> for an explicit
+  null value.</li>
+</ul>
+<p>The built-in policies also use explicit constructor matrices. Neither policy exposes optional
+parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Explicit constructor suffix</th>
+<th>Resulting configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ExperimentBinarySuccessPolicy&lt;TCase,TOutput&gt;</code></td>
+<td>Statistical arguments only</td>
+<td>Required; unknown samples are inconclusive.</td>
+</tr>
+<tr>
+<td><code>ExperimentBinarySuccessPolicy&lt;TCase,TOutput&gt;</code></td>
+<td><code>bool isRequired, ExperimentUnknownSampleTreatment</code></td>
+<td>Both values specified explicitly.</td>
+</tr>
+<tr>
+<td><code>ExperimentRunEvaluationThresholdPolicy&lt;TCase,TOutput&gt;</code></td>
+<td>Threshold arguments only</td>
+<td>Required; missing metrics are inconclusive.</td>
+</tr>
+<tr>
+<td><code>ExperimentRunEvaluationThresholdPolicy&lt;TCase,TOutput&gt;</code></td>
+<td><code>bool isRequired, EvaluationMissingMetricBehavior</code></td>
+<td>Both values specified explicitly.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="cases-trials-and-attempts">Cases, Trials, and Attempts<a class="headerlink" href="#cases-trials-and-attempts" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -5217,6 +5260,12 @@ ownership of scheduling, retries, evaluation, or quality policy.</p>
 <li>sends every terminal quality status to <code>CompleteAsync</code> in registration order;</li>
 <li>disposes scopes in reverse order and records completion or disposal failure structurally.</li>
 </ol>
+<p><code>CompleteAsync</code> returns an <code>ExperimentItemPublicationOperationResult</code>, not the canonical
+provider result. Implementations select <code>Succeeded(correlations)</code>, <code>NotAttempted(correlations)</code>, or
+<code>Failed(correlations, failure)</code> and do not return provider identity. The factories snapshot the
+correlation list. The runner validates and snapshots correlation/failure content, then stamps the
+registered provider <code>Name</code> and <code>IsRequired</code> into the unchanged canonical
+<code>ExperimentItemPublicationResult</code>.</p>
 <p>The scope object remains alive across delayed retries, but no activation handle, worker slot, or
 shared-limiter lease remains held during the delay. <code>EnterAsync</code> receives only the caller token and
 runs outside <code>AttemptTimeout</code>; it executes after shared admission so provider setup participates in
@@ -5234,10 +5283,11 @@ scope deterministically; the first registration remains available.</p>
 <code>ExecutionPrerequisite</code> stops the next task attempt and produces <code>PrerequisiteFailed</code> with no
 fabricated attempt. Prerequisite failures are unknown statistical samples by default; the binary
 policy excludes them unless <code>ExperimentUnknownSampleTreatment.CountAsFailure</code> is selected.</p>
-<p><code>IsRequired</code> does not change item quality. It is retained on each
-<code>ExperimentItemPublicationResult</code> for aggregate publication health in the result-sink phase.
-Provider correlations use structured namespace/name/value triples and are copied into both the
-provider result and the item aggregate.</p>
+<p><code>IsRequired</code> does not change item quality. The runner copies it from the registered provider onto
+each canonical <code>ExperimentItemPublicationResult</code> for aggregate publication health in the
+result-sink phase. Provider correlations use structured namespace/name/value triples and are copied
+into both the provider result and the item aggregate. Malformed correlations or publication
+failures are rejected during normalization and become structured scope publication failures.</p>
 <p>Normal scope teardown is <code>CompleteAsync</code> then <code>DisposeAsync</code>. Caller cancellation invokes
 <code>AbortAsync</code> then <code>DisposeAsync</code> in reverse scope order for every entered scope whose completion has
 not started. Once <code>CompleteAsync</code> begins, that method owns cancellation-safe termination and the
@@ -5280,7 +5330,7 @@ with <code>WithMeaiReporting(...)</code>:</p>
 </span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EvaluationInputs</span><span class="p">(</span>
 </span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">Output</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span>
 </span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">Output</span><span class="p">.</span><span class="n">Response</span><span class="p">),</span>
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">MeaiReportingExperimentAdapterOptions</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">MeaiReportingExperimentOptions</span><span class="o">&lt;</span><span class="n">MyCase</span><span class="p">,</span><span class="w"> </span><span class="n">MyOutput</span><span class="o">&gt;</span>
 </span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">    </span><span class="p">{</span>
 </span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">        </span><span class="n">ResponseReuseMode</span><span class="w"> </span><span class="o">=</span>
 </span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">            </span><span class="n">MeaiReportingResponseReuseMode</span><span class="p">.</span><span class="n">CaseAndTrialReplay</span><span class="p">,</span>
@@ -5329,6 +5379,13 @@ finishes later.</p>
 <p>Needlr does not render MEAI reports or fabricate aggregate <code>ScenarioRun</code> entries. Read the configured
 <code>IEvaluationResultStore</code> and use MEAI's <code>HtmlReportWriter</code>, <code>JsonReportWriter</code>, or <code>dotnet aieval</code>
 tooling.</p>
+<p>MEAI Reporting and Langfuse can compose on the same definition. Add the Langfuse item scope and
+result sink, then call <code>WithMeaiReporting(...)</code>; Reporting produces the canonical item
+<code>EvaluationResult</code>, and the Langfuse sink projects those same metrics without re-evaluating. A
+consumer-defined sink can receive the same canonical run and publish domain artifacts independently.
+If execution fails before evaluation, the canonical item retains the failure, the Langfuse trial
+scope can still retain its trace and dataset link, and Reporting remains <code>NotAttempted</code> because no
+completed <code>ScenarioRun</code> exists to persist.</p>
 <h2 id="final-result-sinks">Final Result Sinks<a class="headerlink" href="#final-result-sinks" title="Permanent link">&para;</a></h2>
 <p><code>ExperimentDefinition&lt;TCase,TOutput&gt;.Sinks</code> publishes the completed canonical quality result without
 giving providers ownership of execution or quality policy.</p>
@@ -5338,12 +5395,14 @@ giving providers ownership of execution or quality policy.</p>
   reduction finish;</li>
 <li>runs sequentially in registration order;</li>
 <li>declares whether publication is required;</li>
-<li>returns <code>Succeeded</code>, <code>Failed</code>, or <code>NotAttempted</code>;</li>
+<li>returns <code>ExperimentSinkPublicationOperationResult.Succeeded()</code>, <code>NotAttempted()</code>, or
+  <code>Failed(failure)</code> without repeating its identity;</li>
 <li>owns provider retry only when its operation is provably idempotent.</li>
 </ul>
-<p>A thrown exception, <code>null</code>, or malformed sink result becomes a structured <code>ResultSinkFailed</code>
-operation and does not suppress later sinks. Caller-token cancellation propagates exactly, skips
-later sinks, and produces no outcome.</p>
+<p>The runner validates the operation result and stamps the registered sink <code>Name</code> and <code>IsRequired</code>
+onto the unchanged canonical <code>ExperimentSinkResult</code>. A thrown exception, <code>null</code>, or malformed sink
+operation becomes a structured <code>ResultSinkFailed</code> result and does not suppress later sinks.
+Caller-token cancellation propagates exactly, skips later sinks, and produces no outcome.</p>
 <p><code>IExperimentRunner.RunAsync</code> returns <code>ExperimentRunOutcome&lt;TCase,TOutput&gt;</code>:</p>
 <table>
 <thead>
@@ -5518,6 +5577,14 @@ property ordering:</p>
 <li>aggregate publication status and ordered final sink results;</li>
 <li>structured failures without raw exceptions or stack traces.</li>
 </ul>
+<p>Publication operation results are normalization inputs only and are not serialized. Equivalent
+canonical outcomes retain the existing schema-version-3 result and schema-version-4 envelope
+property names, ordering, and JSON bytes.</p>
+<p>Constructors and write operations also use explicit overloads. Reflection-based serialization
+offers tokenless, cancellable, default-options, and explicit-<code>JsonSerializerOptions</code> forms. The AOT
+stream path offers tokenless and cancellable <code>JsonTypeInfo&lt;T&gt;</code> forms. Tokenless overloads use
+<code>CancellationToken.None</code>; all overloads route through one implementation per serialization family
+so identical inputs produce identical JSON bytes.</p>
 <p>For Native AOT, pass caller-generated metadata:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Text.Json.Serialization</span><span class="p">;</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
@@ -5639,7 +5706,7 @@ report under the system temporary directory.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../javascripts/api-version-switcher.js"></script>
       

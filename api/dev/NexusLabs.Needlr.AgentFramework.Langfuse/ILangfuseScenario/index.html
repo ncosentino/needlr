@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -4763,33 +4763,63 @@ owning session is disabled or no listener is sampling the span.</p>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult)'></a></p>
+<h2 id="ilangfusescenariorecordevaluationasyncevaluationresult-method">ILangfuseScenario.RecordEvaluationAsync(EvaluationResult) Method<a class="headerlink" href="#ilangfusescenariorecordevaluationasyncevaluationresult-method" title="Permanent link">&para;</a></h2>
+<p>Projects every metric in a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a> to a Langfuse score on this
+scenario's trace. Numeric metrics become numeric scores, boolean metrics become boolean
+scores, and string metrics become categorical scores. Each metric's reason is sent as the
+score comment. Metrics whose value is unset are skipped.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordEvaluationAsync</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationResult</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult).result'></a></p>
+<p><code>result</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a></p>
+<p>The evaluation result to project.</p>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted all projected scores.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordevaluationasyncevaluationresult-langfuseevaluationscoreoptions-cancellationtoken-method">ILangfuseScenario.RecordEvaluationAsync(EvaluationResult, LangfuseEvaluationScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordevaluationasyncevaluationresult-langfuseevaluationscoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Projects every metric in a <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a> to a Langfuse score on this
 scenario's trace. Numeric metrics become numeric scores, boolean metrics become boolean
 scores, and string metrics become categorical scores. Each metric's reason is sent as the
 score comment. Metrics whose value is unset are skipped.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordEvaluationAsync</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationResult</span><span class="w"> </span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseEvaluationScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordEvaluationAsync</span><span class="p">(</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Extensions</span><span class="p">.</span><span class="n">AI</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">EvaluationResult</span><span class="w"> </span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseEvaluationScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions,System.Threading.CancellationToken).result'></a></p>
 <p><code>result</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.evaluation.evaluationresult" title="Microsoft.Extensions.AI.Evaluation.EvaluationResult">Microsoft.Extensions.AI.Evaluation.EvaluationResult</a></p>
 <p>The evaluation result to project.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseEvaluationScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions">LangfuseEvaluationScoreOptions</a></p>
-<p>Optional stable identity settings for projected metric scores.</p>
+<p>Stable identity settings for projected metric scores, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordEvaluationAsync(Microsoft.Extensions.AI.Evaluation.EvaluationResult,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseEvaluationScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted all projected scores.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool)'></a></p>
+<h2 id="ilangfusescenariorecordscoreasyncstring-bool-method">ILangfuseScenario.RecordScoreAsync(string, bool) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-bool-method" title="Permanent link">&para;</a></h2>
+<p>Records a boolean score (stored as <code>1</code>/<code>0</code>) on this scenario's trace.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
+<p>The boolean value.</p>
+<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordscoreasyncstring-bool-langfusescoreoptions-cancellationtoken-method">ILangfuseScenario.RecordScoreAsync(string, bool, LangfuseScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-bool-langfusescoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Records a boolean score (stored as <code>1</code>/<code>0</code>) on this scenario's trace.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4798,19 +4828,34 @@ A task that completes when Langfuse has accepted all projected scores.</p>
 <p>The boolean value.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double)'></a></p>
+<h2 id="ilangfusescenariorecordscoreasyncstring-double-method">ILangfuseScenario.RecordScoreAsync(string, double) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-double-method" title="Permanent link">&para;</a></h2>
+<p>Records a numeric score on this scenario's trace.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
+<p>The numeric value.</p>
+<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordscoreasyncstring-double-langfusescoreoptions-cancellationtoken-method">ILangfuseScenario.RecordScoreAsync(string, double, LangfuseScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-double-langfusescoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Records a numeric score on this scenario's trace.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4819,19 +4864,34 @@ A task that completes when Langfuse has accepted the score.</p>
 <p>The numeric value.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string)'></a></p>
+<h2 id="ilangfusescenariorecordscoreasyncstring-string-method">ILangfuseScenario.RecordScoreAsync(string, string) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-string-method" title="Permanent link">&para;</a></h2>
+<p>Records a categorical score on this scenario's trace.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The category label.</p>
+<h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordscoreasyncstring-string-langfusescoreoptions-cancellationtoken-method">ILangfuseScenario.RecordScoreAsync(string, string, LangfuseScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordscoreasyncstring-string-langfusescoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Records a categorical score on this scenario's trace.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4840,19 +4900,34 @@ A task that completes when Langfuse has accepted the score.</p>
 <p>The category label.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<h4 id="returns_7">Returns<a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool)'></a></p>
+<h2 id="ilangfusescenariorecordsessionscoreasyncstring-bool-method">ILangfuseScenario.RecordSessionScoreAsync(string, bool) Method<a class="headerlink" href="#ilangfusescenariorecordsessionscoreasyncstring-bool-method" title="Permanent link">&para;</a></h2>
+<p>Records a boolean session score (stored as <code>1</code>/<code>0</code>) for this scenario's session.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
+<p>The boolean value.</p>
+<h4 id="returns_8">Returns<a class="headerlink" href="#returns_8" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordsessionscoreasyncstring-bool-langfusescoreoptions-cancellationtoken-method">ILangfuseScenario.RecordSessionScoreAsync(string, bool, LangfuseScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordsessionscoreasyncstring-bool-langfusescoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Records a boolean session score (stored as <code>1</code>/<code>0</code>) for this scenario's session.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_9">Parameters<a class="headerlink" href="#parameters_9" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4861,11 +4936,28 @@ A task that completes when Langfuse has accepted the score.</p>
 <p>The boolean value.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,bool,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<h4 id="returns_9">Returns<a class="headerlink" href="#returns_9" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double)'></a></p>
+<h2 id="ilangfusescenariorecordsessionscoreasyncstring-double-method">ILangfuseScenario.RecordSessionScoreAsync(string, double) Method<a class="headerlink" href="#ilangfusescenariorecordsessionscoreasyncstring-double-method" title="Permanent link">&para;</a></h2>
+<p>Records a numeric score against the session this scenario belongs to (the session id passed
+when the scenario began), scoring the whole multi-turn conversation rather than this single
+trace. Surfaced as a non-fatal skip when the scenario has no session id.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_10">Parameters<a class="headerlink" href="#parameters_10" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.double" title="System.Double">System.Double</a></p>
+<p>The numeric value.</p>
+<h4 id="returns_10">Returns<a class="headerlink" href="#returns_10" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
@@ -4873,9 +4965,9 @@ A task that completes when Langfuse has accepted the score.</p>
 <p>Records a numeric score against the session this scenario belongs to (the session id passed
 when the scenario began), scoring the whole multi-turn conversation rather than this single
 trace. Surfaced as a non-fatal skip when the scenario has no session id.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_11">Parameters<a class="headerlink" href="#parameters_11" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4884,19 +4976,34 @@ trace. Surfaced as a non-fatal skip when the scenario has no session id.</p>
 <p>The numeric value.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,double,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_5">Returns<a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h4>
+<h4 id="returns_11">Returns<a class="headerlink" href="#returns_11" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
+A task that completes when Langfuse has accepted the score.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string)'></a></p>
+<h2 id="ilangfusescenariorecordsessionscoreasyncstring-string-method">ILangfuseScenario.RecordSessionScoreAsync(string, string) Method<a class="headerlink" href="#ilangfusescenariorecordsessionscoreasyncstring-string-method" title="Permanent link">&para;</a></h2>
+<p>Records a categorical session score for this scenario's session.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_12">Parameters<a class="headerlink" href="#parameters_12" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string).name'></a></p>
+<p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The score name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string).value'></a></p>
+<p><code>value</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The category label.</p>
+<h4 id="returns_12">Returns<a class="headerlink" href="#returns_12" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken)'></a></p>
 <h2 id="ilangfusescenariorecordsessionscoreasyncstring-string-langfusescoreoptions-cancellationtoken-method">ILangfuseScenario.RecordSessionScoreAsync(string, string, LangfuseScoreOptions, CancellationToken) Method<a class="headerlink" href="#ilangfusescenariorecordsessionscoreasyncstring-string-langfusescoreoptions-cancellationtoken-method" title="Permanent link">&para;</a></h2>
 <p>Records a categorical session score for this scenario's session.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="k">null</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">Task</span><span class="w"> </span><span class="n">RecordSessionScoreAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseScoreOptions</span><span class="o">?</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_13">Parameters<a class="headerlink" href="#parameters_13" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The score name.</p>
@@ -4905,20 +5012,20 @@ A task that completes when Langfuse has accepted the score.</p>
 <p>The category label.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).options'></a></p>
 <p><code>options</code> <a href="../LangfuseScoreOptions/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions">LangfuseScoreOptions</a></p>
-<p>Optional score identity and comment settings.</p>
+<p>Score identity and comment settings, or <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.RecordSessionScoreAsync(string,string,NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseScoreOptions,System.Threading.CancellationToken).cancellationToken'></a></p>
 <p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
 <p>A cancellation token.</p>
-<h4 id="returns_6">Returns<a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h4>
+<h4 id="returns_13">Returns<a class="headerlink" href="#returns_13" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task" title="System.Threading.Tasks.Task">System.Threading.Tasks.Task</a><br />
 A task that completes when Langfuse has accepted the score.</p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetInput(object)'></a></p>
 <h2 id="ilangfusescenariosetinputobject-method">ILangfuseScenario.SetInput(object) Method<a class="headerlink" href="#ilangfusescenariosetinputobject-method" title="Permanent link">&para;</a></h2>
 <p>Sets the trace-level input shown at the top of the trace in Langfuse. Strings are stored
 verbatim; other values are serialized to JSON. No-op when the owning session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetInput</span><span class="p">(</span><span class="kt">object</span><span class="w"> </span><span class="n">input</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetInput</span><span class="p">(</span><span class="kt">object</span><span class="w"> </span><span class="n">input</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_14">Parameters<a class="headerlink" href="#parameters_14" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetInput(object).input'></a></p>
 <p><code>input</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a></p>
 <p>The input value (typically the eval's prompt or request).</p>
@@ -4927,9 +5034,9 @@ verbatim; other values are serialized to JSON. No-op when the owning session is 
 <p>Sets the trace-level output shown at the top of the trace in Langfuse. Strings are stored
 verbatim; other values are serialized to JSON. Typically called with the agent's final
 answer before the scenario is disposed. No-op when the owning session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetOutput</span><span class="p">(</span><span class="kt">object</span><span class="w"> </span><span class="n">output</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetOutput</span><span class="p">(</span><span class="kt">object</span><span class="w"> </span><span class="n">output</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_15">Parameters<a class="headerlink" href="#parameters_15" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetOutput(object).output'></a></p>
 <p><code>output</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a></p>
 <p>The output value (typically the agent's final answer).</p>
@@ -4937,9 +5044,9 @@ answer before the scenario is disposed. No-op when the owning session is disable
 <h2 id="ilangfusescenariosetpromptlangfuseprompt-method">ILangfuseScenario.SetPrompt(LangfusePrompt) Method<a class="headerlink" href="#ilangfusescenariosetpromptlangfuseprompt-method" title="Permanent link">&para;</a></h2>
 <p>Links generations under this scenario to a prompt fetched from Langfuse prompt management,
 using its name and version. No-op when the owning session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetPrompt</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfusePrompt</span><span class="w"> </span><span class="n">prompt</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetPrompt</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfusePrompt</span><span class="w"> </span><span class="n">prompt</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_9">Parameters<a class="headerlink" href="#parameters_9" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_16">Parameters<a class="headerlink" href="#parameters_16" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt).prompt'></a></p>
 <p><code>prompt</code> <a href="../LangfusePrompt/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfusePrompt">LangfusePrompt</a></p>
 <p>The fetched prompt.</p>
@@ -4949,9 +5056,9 @@ using its name and version. No-op when the owning session is disabled.</p>
 stamping <code>langfuse.observation.prompt.name</code> / <code>version</code> on the chat-completion
 (generation) spans. Tool spans are unaffected. Call before running the agent. No-op when the
 owning session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetPrompt</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetPrompt</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Nullable</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="k">null</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_10">Parameters<a class="headerlink" href="#parameters_10" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_17">Parameters<a class="headerlink" href="#parameters_17" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetPrompt(string,System.Nullable_int_).name'></a></p>
 <p><code>name</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The managed prompt name (as it appears in Langfuse prompt management).</p>
@@ -4963,9 +5070,9 @@ owning session is disabled.</p>
 <p>Marks this scenario's trace as public so Langfuse exposes it via a shareable URL that needs
 no login — useful for linking a failing eval trace in a pull request. No-op when the owning
 session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetTracePublic</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">isPublic</span><span class="o">=</span><span class="k">true</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetTracePublic</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">isPublic</span><span class="o">=</span><span class="k">true</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_11">Parameters<a class="headerlink" href="#parameters_11" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_18">Parameters<a class="headerlink" href="#parameters_18" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetTracePublic(bool).isPublic'></a></p>
 <p><code>isPublic</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p>Whether the trace is public. Defaults to <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
@@ -4973,9 +5080,9 @@ session is disabled.</p>
 <h2 id="ilangfusescenariosetversionstring-method">ILangfuseScenario.SetVersion(string) Method<a class="headerlink" href="#ilangfusescenariosetversionstring-method" title="Permanent link">&para;</a></h2>
 <p>Sets the version of this scenario's trace (for example a git SHA or prompt/logic version),
 emitted as <code>langfuse.version</code>. No-op when the owning session is disabled.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetVersion</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">version</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="k">void</span><span class="w"> </span><span class="nf">SetVersion</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">version</span><span class="p">);</span>
 </span></code></pre></div>
-<h4 id="parameters_12">Parameters<a class="headerlink" href="#parameters_12" title="Permanent link">&para;</a></h4>
+<h4 id="parameters_19">Parameters<a class="headerlink" href="#parameters_19" title="Permanent link">&para;</a></h4>
 <p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseScenario.SetVersion(string).version'></a></p>
 <p><code>version</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p>The version identifier.</p>
@@ -5055,7 +5162,7 @@ emitted as <code>langfuse.version</code>. No-op when the owning session is disab
       <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../../javascripts/api-version-switcher.js"></script>
       

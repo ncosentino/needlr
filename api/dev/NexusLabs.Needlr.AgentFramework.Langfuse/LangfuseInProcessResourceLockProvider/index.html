@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -4748,25 +4748,38 @@ processes can initialize the same Langfuse project concurrently.</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">LangfuseInProcessResourceLockProvider</span><span class="p">();</span>
 </span></code></pre></div>
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(string,System.Threading.CancellationToken)'></a></p>
-<h2 id="langfuseinprocessresourcelockprovideracquireasyncstring-cancellationtoken-method">LangfuseInProcessResourceLockProvider.AcquireAsync(string, CancellationToken) Method<a class="headerlink" href="#langfuseinprocessresourcelockprovideracquireasyncstring-cancellationtoken-method" title="Permanent link">&para;</a></h2>
-<p>Acquires exclusive ownership of an opaque resource key.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">ValueTask</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">IAsyncDisposable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AcquireAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="o">=</span><span class="k">default</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="p">));</span>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey)'></a></p>
+<h2 id="langfuseinprocessresourcelockprovideracquireasynclangfuseresourcelockkey-method">LangfuseInProcessResourceLockProvider.AcquireAsync(LangfuseResourceLockKey) Method<a class="headerlink" href="#langfuseinprocessresourcelockprovideracquireasynclangfuseresourcelockkey-method" title="Permanent link">&para;</a></h2>
+<p>Acquires exclusive ownership of a resource key without caller cancellation.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">ValueTask</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">IAsyncDisposable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AcquireAsync</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseResourceLockKey</span><span class="w"> </span><span class="n">key</span><span class="p">);</span>
 </span></code></pre></div>
 <h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(string,System.Threading.CancellationToken).key'></a></p>
-<p><code>key</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey).key'></a></p>
+<p><code>key</code> <a href="../LangfuseResourceLockKey/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey">LangfuseResourceLockKey</a></p>
 <p>The stable opaque key supplied by Needlr.</p>
-<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(string,System.Threading.CancellationToken).cancellationToken'></a></p>
-<p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
-<p>A cancellation token.</p>
-<p>Implements <a href="../ILangfuseResourceLockProvider/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(string,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(string, System.Threading.CancellationToken)">AcquireAsync(string, CancellationToken)</a></p>
+<p>Implements <a href="../ILangfuseResourceLockProvider/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey)">AcquireAsync(LangfuseResourceLockKey)</a></p>
 <h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1" title="System.Threading.Tasks.ValueTask`1">System.Threading.Tasks.ValueTask&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iasyncdisposable" title="System.IAsyncDisposable">System.IAsyncDisposable</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1" title="System.Threading.Tasks.ValueTask`1">&gt;</a><br />
+An asynchronous lease whose disposal releases ownership.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey,System.Threading.CancellationToken)'></a></p>
+<h2 id="langfuseinprocessresourcelockprovideracquireasynclangfuseresourcelockkey-cancellationtoken-method">LangfuseInProcessResourceLockProvider.AcquireAsync(LangfuseResourceLockKey, CancellationToken) Method<a class="headerlink" href="#langfuseinprocessresourcelockprovideracquireasynclangfuseresourcelockkey-cancellationtoken-method" title="Permanent link">&para;</a></h2>
+<p>Acquires exclusive ownership of a resource key.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Tasks</span><span class="p">.</span><span class="n">ValueTask</span><span class="o">&lt;</span><span class="n">System</span><span class="p">.</span><span class="n">IAsyncDisposable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AcquireAsync</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Langfuse</span><span class="p">.</span><span class="n">LangfuseResourceLockKey</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey,System.Threading.CancellationToken).key'></a></p>
+<p><code>key</code> <a href="../LangfuseResourceLockKey/" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey">LangfuseResourceLockKey</a></p>
+<p>The stable opaque key supplied by Needlr.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey,System.Threading.CancellationToken).cancellationToken'></a></p>
+<p><code>cancellationToken</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken" title="System.Threading.CancellationToken">System.Threading.CancellationToken</a></p>
+<p>A token that can cancel the wait before ownership is acquired.</p>
+<p>Implements <a href="../ILangfuseResourceLockProvider/#NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey,System.Threading.CancellationToken)" title="NexusLabs.Needlr.AgentFramework.Langfuse.ILangfuseResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey, System.Threading.CancellationToken)">AcquireAsync(LangfuseResourceLockKey, CancellationToken)</a></p>
+<h4 id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1" title="System.Threading.Tasks.ValueTask`1">System.Threading.Tasks.ValueTask&lt;</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iasyncdisposable" title="System.IAsyncDisposable">System.IAsyncDisposable</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1" title="System.Threading.Tasks.ValueTask`1">&gt;</a><br />
 An asynchronous lease whose disposal releases ownership.</p>
 <h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.operationcanceledexception" title="System.OperationCanceledException">System.OperationCanceledException</a><br />
-<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(string,System.Threading.CancellationToken).cancellationToken" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(string, System.Threading.CancellationToken).cancellationToken">cancellationToken</a> was canceled before ownership was acquired.</p>
+<a href="./#NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey,System.Threading.CancellationToken).cancellationToken" title="NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseInProcessResourceLockProvider.AcquireAsync(NexusLabs.Needlr.AgentFramework.Langfuse.LangfuseResourceLockKey, System.Threading.CancellationToken).cancellationToken">cancellationToken</a> was canceled before ownership was acquired.</p>
 
 
 
@@ -4843,7 +4856,7 @@ An asynchronous lease whose disposal releases ownership.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../../javascripts/api-version-switcher.js"></script>
       

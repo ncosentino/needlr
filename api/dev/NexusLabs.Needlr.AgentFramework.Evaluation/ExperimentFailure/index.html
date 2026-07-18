@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../../../assets/needlr.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -4739,18 +4739,48 @@
 </span></code></pre></div>
 <p>Inheritance <a href="https://learn.microsoft.com/en-us/dotnet/api/system.object" title="System.Object">System.Object</a> &#129106; ExperimentFailure</p>
 <p>Implements <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">System.IEquatable&lt;</a><a href="./" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure">ExperimentFailure</a><a href="https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1" title="System.IEquatable`1">&gt;</a></p>
+<h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool)'></a></p>
+<h2 id="experimentfailureexperimentfailurecode-experimentfailurestage-string-string-bool-constructor">ExperimentFailure(ExperimentFailureCode, ExperimentFailureStage, string, string, bool) Constructor<a class="headerlink" href="#experimentfailureexperimentfailurecode-experimentfailurestage-string-string-bool-constructor" title="Permanent link">&para;</a></h2>
+<p>Initializes a validated structured failure.</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="nf">ExperimentFailure</span><span class="p">(</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureCode</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureStage</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">exceptionType</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isRetryable</span><span class="p">);</span>
+</span></code></pre></div>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).code'></a></p>
+<p><code>code</code> <a href="../ExperimentFailureCode/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode">ExperimentFailureCode</a></p>
+<p>The stable failure code.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).stage'></a></p>
+<p><code>stage</code> <a href="../ExperimentFailureStage/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage">ExperimentFailureStage</a></p>
+<p>The stage that produced the failure.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).exceptionType'></a></p>
+<p><code>exceptionType</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The originating exception type name.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).message'></a></p>
+<p><code>message</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
+<p>The exception message. An empty message is permitted.</p>
+<p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).isRetryable'></a></p>
+<p><code>isRetryable</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
+<p>A value indicating whether the active retry policy selected another attempt after this
+failure.</p>
+<h4 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h4>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception" title="System.ArgumentOutOfRangeException">System.ArgumentOutOfRangeException</a><br />
+<a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).code" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode, NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage, string, string, bool).code">code</a> or <a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).stage" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode, NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage, string, string, bool).stage">stage</a> is not a defined enumeration value.</p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception" title="System.ArgumentException">System.ArgumentException</a><br />
+<a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).exceptionType" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode, NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage, string, string, bool).exceptionType">exceptionType</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>, empty, or white space.</p>
+<p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception" title="System.ArgumentNullException">System.ArgumentNullException</a><br />
+<a href="./#NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode,NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage,string,string,bool).message" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExperimentFailure(NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode, NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage, string, string, bool).message">message</a> is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null" title="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 <h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.Code'></a></p>
 <h2 id="experimentfailurecode-property">ExperimentFailure.Code Property<a class="headerlink" href="#experimentfailurecode-property" title="Permanent link">&para;</a></h2>
 <p>Gets the stable failure code.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureCode</span><span class="w"> </span><span class="n">Code</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureCode</span><span class="w"> </span><span class="n">Code</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value">Property Value<a class="headerlink" href="#property-value" title="Permanent link">&para;</a></h4>
 <p><a href="../ExperimentFailureCode/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureCode">ExperimentFailureCode</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.ExceptionType'></a></p>
 <h2 id="experimentfailureexceptiontype-property">ExperimentFailure.ExceptionType Property<a class="headerlink" href="#experimentfailureexceptiontype-property" title="Permanent link">&para;</a></h2>
 <p>Gets the originating exception type name.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">ExceptionType</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">ExceptionType</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_1">Property Value<a class="headerlink" href="#property-value_1" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
@@ -4758,21 +4788,21 @@
 <h2 id="experimentfailureisretryable-property">ExperimentFailure.IsRetryable Property<a class="headerlink" href="#experimentfailureisretryable-property" title="Permanent link">&para;</a></h2>
 <p>Gets a value indicating whether the active retry policy selected another attempt after this
 failure.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">IsRetryable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">IsRetryable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_2">Property Value<a class="headerlink" href="#property-value_2" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.boolean" title="System.Boolean">System.Boolean</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.Message'></a></p>
 <h2 id="experimentfailuremessage-property">ExperimentFailure.Message Property<a class="headerlink" href="#experimentfailuremessage-property" title="Permanent link">&para;</a></h2>
 <p>Gets the exception message.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Message</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Message</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_3">Property Value<a class="headerlink" href="#property-value_3" title="Permanent link">&para;</a></h4>
 <p><a href="https://learn.microsoft.com/en-us/dotnet/api/system.string" title="System.String">System.String</a></p>
 <p><a name='NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailure.Stage'></a></p>
 <h2 id="experimentfailurestage-property">ExperimentFailure.Stage Property<a class="headerlink" href="#experimentfailurestage-property" title="Permanent link">&para;</a></h2>
 <p>Gets the stage that produced the failure.</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureStage</span><span class="w"> </span><span class="n">Stage</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">init</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">public</span><span class="w"> </span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">AgentFramework</span><span class="p">.</span><span class="n">Evaluation</span><span class="p">.</span><span class="n">Experiments</span><span class="p">.</span><span class="n">ExperimentFailureStage</span><span class="w"> </span><span class="n">Stage</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="property-value_4">Property Value<a class="headerlink" href="#property-value_4" title="Permanent link">&para;</a></h4>
 <p><a href="../ExperimentFailureStage/" title="NexusLabs.Needlr.AgentFramework.Evaluation.Experiments.ExperimentFailureStage">ExperimentFailureStage</a></p>
@@ -4852,7 +4882,7 @@ failure.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../../javascripts/api-version-switcher.js"></script>
       
