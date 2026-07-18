@@ -20,7 +20,6 @@ The generator checks for internal types implementing any of these interfaces:
 - `NexusLabs.Needlr.IWebApplicationPlugin`
 - `NexusLabs.Needlr.IWebApplicationBuilderPlugin`
 - `NexusLabs.Needlr.SignalR.IHubRegistrationPlugin`
-- `NexusLabs.Needlr.SemanticKernel.IKernelBuilderPlugin`
 
 ## How to Fix
 

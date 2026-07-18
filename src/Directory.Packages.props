@@ -19,29 +19,8 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Resilience" Version="10.1.0" />
     <!-- .NET MAUI (used by NexusLabs.Needlr.Maui; the net10.0 ref assemblies compile without the MAUI workload) -->
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.20" />
-    <!-- Microsoft Agent Framework (stable) -->
-    <PackageVersion Include="Microsoft.Agents.AI" Version="1.3.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Abstractions" Version="1.3.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.3.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows.Generators" Version="1.3.0" />
-    <!-- DevUI and Hosting (preview — isolated in NexusLabs.Needlr.AgentFramework.DevUI) -->
-    <PackageVersion Include="Microsoft.Agents.AI.DevUI" Version="1.3.0-preview.260423.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting" Version="1.3.0-preview.260423.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.3.0-alpha.260423.1" />
-    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
-    <!-- Microsoft.Extensions.AI.Evaluation stable 10.x line -->
-    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Evaluation.Reporting" Version="10.5.0" />
-    <!-- Azure OpenAI (for SimpleAgentFrameworkApp example) -->
-    <PackageVersion Include="Azure.AI.OpenAI" Version="2.7.0-beta.2" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.72.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.72.0" />
     <!-- Serilog packages -->
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
@@ -56,10 +35,6 @@
     <!-- ASP.NET packages -->
     <PackageVersion Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
-    <PackageVersion Include="OpenTelemetry" Version="1.15.3" />
-    <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.15.3" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
     <!-- Testing packages -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.3" />
@@ -75,8 +50,6 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.2" />
     <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="1.8.4" />
-    <!-- UI packages -->
-    <PackageVersion Include="Spectre.Console" Version="0.55.0" />
     <!-- Avalonia (for AvaloniaDemoApp example) -->
     <PackageVersion Include="Avalonia" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.0" />
@@ -84,7 +57,5 @@
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <!-- Benchmarking packages -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
-    <!-- GitHub Copilot SDK (used only by CopilotComparisonExample, excluded from CI) -->
-    <PackageVersion Include="GitHub.Copilot.SDK" Version="0.2.2" />
   </ItemGroup>
 </Project>

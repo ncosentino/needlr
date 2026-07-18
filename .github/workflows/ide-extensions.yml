@@ -22,7 +22,8 @@ env:
 jobs:
   build-vscode:
     name: Build VSCode Extension
-    runs-on: ubuntu-latest
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -139,7 +140,7 @@ jobs:
   release:
     name: Create GitHub Release
     needs: [build-vscode, build-vs-codelens, build-vs-toolwindow]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     if: ${{ inputs.create_release }}
     permissions:
       contents: write

@@ -14,7 +14,8 @@ env:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     permissions:
       contents: write
       packages: write
@@ -60,11 +61,6 @@ jobs:
 
     - name: Test
       run: |
-        # Run dotnet test per-project, excluding example evaluation projects
-        # that require API keys and are meant for manual/local runs only.
-        # We cannot use solution-wide dotnet test because the evaluation
-        # projects declare TestingPlatformDotnetTestSupport=true, which is
-        # incompatible with the VSTest target on .NET 10 SDK.
         failed=0
         while IFS= read -r proj; do
           echo "::group::Testing $(basename "$proj")"
@@ -79,9 +75,7 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --results-directory coverage || failed=1
           echo "::endgroup::"
-        done < <(find src -name '*.csproj' -path '*Tests*' \
-                   ! -path '*Examples*Evaluation*' \
-                   | sort)
+        done < <(find src -name '*.csproj' -path '*Tests*' | sort)
         exit $failed
 
     - name: Install ReportGenerator

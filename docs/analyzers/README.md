@@ -22,43 +22,6 @@ These analyzers are included with the `NexusLabs.Needlr` package.
 | [NDLRCOR012](NDLRCOR012.md) | Error | Disposable captive dependency |
 | [NDLRCOR015](NDLRCOR015.md) | Error | [RegisterAs<T>] type T not implemented by class |
 
-## MAF Analyzers (NexusLabs.Needlr.AgentFramework.Analyzers)
-
-These analyzers are included with the `NexusLabs.Needlr.AgentFramework.Analyzers` package.
-
-| Rule ID | Severity | Description |
-|---------|----------|-------------|
-| [NDLRMAF001](NDLRMAF001.md) | Error | [AgentHandoffsTo] target type is not a declared agent |
-| [NDLRMAF002](NDLRMAF002.md) | Error | Group chat has fewer than two members |
-| [NDLRMAF003](NDLRMAF003.md) | Warning | [AgentHandoffsTo] source class is not a declared agent |
-| [NDLRMAF004](NDLRMAF004.md) | Warning | Cyclic handoff chain detected |
-| [NDLRMAF005](NDLRMAF005.md) | Warning | FunctionGroups references an unregistered group name |
-| [NDLRMAF006](NDLRMAF006.md) | Error | Duplicate Order value in sequential pipeline |
-| [NDLRMAF007](NDLRMAF007.md) | Warning | Gap in sequential pipeline Order values |
-| [NDLRMAF008](NDLRMAF008.md) | Info | Agent participates in no topology declaration |
-| [NDLRMAF009](NDLRMAF009.md) | Warning | [WorkflowRunTerminationCondition] declared on a non-agent class |
-| [NDLRMAF010](NDLRMAF010.md) | Error | Termination condition type does not implement IWorkflowTerminationCondition |
-| [NDLRMAF011](NDLRMAF011.md) | Info | Prefer [AgentTerminationCondition] over [WorkflowRunTerminationCondition] for group chat members |
-
-## Graph Workflow Analyzers (NexusLabs.Needlr.AgentFramework.Analyzers)
-
-These analyzers validate DAG graph topologies declared via `[AgentGraphEntry]`, `[AgentGraphEdge]`, and `[AgentGraphNode]` attributes.
-
-| Rule ID | Severity | Description |
-|---------|----------|-------------|
-| [NDLRMAF016](NDLRMAF016.md) | Error | Cycle detected in agent graph |
-| [NDLRMAF017](NDLRMAF017.md) | Error | Graph has no entry point |
-| [NDLRMAF018](NDLRMAF018.md) | Error | Graph has multiple entry points |
-| [NDLRMAF019](NDLRMAF019.md) | Error | Graph edge target is not a declared agent |
-| [NDLRMAF020](NDLRMAF020.md) | Warning | Graph edge source is not a declared agent |
-| [NDLRMAF021](NDLRMAF021.md) | Warning | Graph entry point is not a declared agent |
-| [NDLRMAF022](NDLRMAF022.md) | Warning | Graph contains unreachable agents |
-| [NDLRMAF024](NDLRMAF024.md) | Warning | All edges from fan-out node are optional |
-| [NDLRMAF025](NDLRMAF025.md) | Error | CreateGraphWorkflow incompatible with GraphJoinMode.WaitAny |
-| [NDLRMAF027](NDLRMAF027.md) | Error | Terminal node has outgoing edges |
-| [NDLRMAF028](NDLRMAF028.md) | Error | Condition method not found or has wrong signature |
-| [NDLRMAF029](NDLRMAF029.md) | Error | Reducer method not found or has wrong signature |
-
 ## SignalR Analyzers(NexusLabs.Needlr.SignalR.Analyzers)
 
 These analyzers are included with the `NexusLabs.Needlr.SignalR` package.
@@ -135,7 +98,6 @@ Needlr uses a component-based naming convention for diagnostic IDs:
 | Component | Prefix | Example |
 |-----------|--------|---------|
 | Core Analyzers | `NDLRCOR` | `NDLRCOR001` |
-| MAF Analyzers | `NDLRMAF` | `NDLRMAF001` |
 | SignalR Analyzers | `NDLRSIG` | `NDLRSIG001` |
 | Logging Analyzers | `NDLRLOG` | `NDLRLOG001` |
 | Source Generators | `NDLRGEN` | `NDLRGEN001` |

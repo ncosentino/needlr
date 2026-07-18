@@ -14,7 +14,8 @@ env:
 
 jobs:
   check-changes:
-    runs-on: ubuntu-latest
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
     steps:
@@ -53,7 +54,7 @@ jobs:
   run-benchmarks:
     needs: check-changes
     if: needs.check-changes.outputs.has_changes == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     permissions:
       contents: write
       pages: write

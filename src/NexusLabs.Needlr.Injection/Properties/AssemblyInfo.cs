@@ -6,6 +6,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("NexusLabs.Needlr.Injection.Bundle")]
 [assembly: InternalsVisibleTo("NexusLabs.Needlr.AspNet")]
 [assembly: InternalsVisibleTo("NexusLabs.Needlr.Hosting")]
-[assembly: InternalsVisibleTo("NexusLabs.Needlr.SemanticKernel")]
 [assembly: InternalsVisibleTo("NexusLabs.Needlr.Injection.Tests")]
 [assembly: InternalsVisibleTo("NexusLabs.Needlr.IntegrationTests")]
