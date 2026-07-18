@@ -18,9 +18,7 @@ internal sealed class CallbackExperimentPolicy<TCase, TOutput>(
         CancellationToken cancellationToken)
     {
         callback();
-        return ValueTask.FromResult(new ExperimentPolicyVerdict
-        {
-            Decision = EvaluationDecision.Passed,
-        });
+        return ValueTask.FromResult(
+            ExperimentPolicyVerdict.WithoutEvidence(EvaluationDecision.Passed));
     }
 }

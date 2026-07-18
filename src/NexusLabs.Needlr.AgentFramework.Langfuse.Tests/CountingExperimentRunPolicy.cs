@@ -26,9 +26,7 @@ internal sealed class CountingExperimentRunPolicy<TCase, TOutput>(
     {
         cancellationToken.ThrowIfCancellationRequested();
         Interlocked.Increment(ref _invocationCount);
-        return ValueTask.FromResult(new ExperimentPolicyVerdict
-        {
-            Decision = decision,
-        });
+        return ValueTask.FromResult(
+            ExperimentPolicyVerdict.WithoutEvidence(decision));
     }
 }

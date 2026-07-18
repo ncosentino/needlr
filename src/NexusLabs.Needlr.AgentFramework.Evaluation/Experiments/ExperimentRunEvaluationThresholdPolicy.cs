@@ -116,30 +116,25 @@ public sealed class ExperimentRunEvaluationThresholdPolicy<TCase, TOutput> :
             var unavailableReason = runEvaluation is null
                 ? $"Run evaluation '{RunEvaluationName}' was not configured."
                 : $"Run evaluation '{RunEvaluationName}' did not complete successfully.";
-            return ValueTask.FromResult(new ExperimentPolicyVerdict
-            {
-                Decision = _missingMetricBehavior == EvaluationMissingMetricBehavior.Fail
-                    ? EvaluationDecision.Failed
-                    : EvaluationDecision.Inconclusive,
-                DeterministicEvidence = new ExperimentDeterministicPolicyEvidence
-                {
-                    RunEvaluationName = RunEvaluationName,
-                    UnavailableReason = unavailableReason,
-                },
-            });
+            var decision = _missingMetricBehavior == EvaluationMissingMetricBehavior.Fail
+                ? EvaluationDecision.Failed
+                : EvaluationDecision.Inconclusive;
+            return ValueTask.FromResult(
+                ExperimentPolicyVerdict.FromDeterministicEvidence(
+                    decision,
+                    ExperimentDeterministicPolicyEvidence.Unavailable(
+                        RunEvaluationName,
+                        unavailableReason)));
         }
 
         var thresholdResult = _thresholds.Evaluate(
             runEvaluation.Metrics,
             _missingMetricBehavior);
-        return ValueTask.FromResult(new ExperimentPolicyVerdict
-        {
-            Decision = thresholdResult.Decision,
-            DeterministicEvidence = new ExperimentDeterministicPolicyEvidence
-            {
-                RunEvaluationName = RunEvaluationName,
-                Thresholds = thresholdResult,
-            },
-        });
+        return ValueTask.FromResult(
+            ExperimentPolicyVerdict.FromDeterministicEvidence(
+                thresholdResult.Decision,
+                ExperimentDeterministicPolicyEvidence.Available(
+                    RunEvaluationName,
+                    thresholdResult)));
     }
 }

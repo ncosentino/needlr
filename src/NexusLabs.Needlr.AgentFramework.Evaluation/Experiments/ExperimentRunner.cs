@@ -769,13 +769,9 @@ public sealed class ExperimentRunner : IExperimentRunner
                     .ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 ArgumentNullException.ThrowIfNull(evaluation);
-                results[index] = new ExperimentRunEvaluationResult
-                {
-                    Name = evaluator.Name,
-                    Status = ExperimentRunEvaluationStatus.Succeeded,
-                    Evaluation = evaluation,
-                    Metrics = ExperimentMetricSnapshotFactory.Create(evaluation),
-                };
+                results[index] = ExperimentRunEvaluationResult.Succeeded(
+                    evaluator.Name,
+                    evaluation);
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -783,15 +779,12 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
             catch (Exception ex)
             {
-                results[index] = new ExperimentRunEvaluationResult
-                {
-                    Name = evaluator.Name,
-                    Status = ExperimentRunEvaluationStatus.Failed,
-                    Failure = ExperimentFailureFactory.Create(
+                results[index] = ExperimentRunEvaluationResult.Failed(
+                    evaluator.Name,
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.RunEvaluationFailed,
                         ExperimentFailureStage.RunEvaluation,
-                        ex),
-                };
+                        ex));
             }
         }
 
@@ -815,35 +808,11 @@ public sealed class ExperimentRunner : IExperimentRunner
                     .ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 ArgumentNullException.ThrowIfNull(evaluation);
-                if (!Enum.IsDefined(evaluation.Decision))
-                {
-                    throw new InvalidOperationException(
-                        $"Policy '{policy.Name}' returned an undefined decision.");
-                }
-
-                if (policy.Kind == ExperimentPolicyKind.Deterministic
-                    && evaluation.StatisticalEvidence is not null)
-                {
-                    throw new InvalidOperationException(
-                        $"Deterministic policy '{policy.Name}' returned statistical evidence.");
-                }
-
-                if (policy.Kind == ExperimentPolicyKind.Statistical
-                    && evaluation.DeterministicEvidence is not null)
-                {
-                    throw new InvalidOperationException(
-                        $"Statistical policy '{policy.Name}' returned deterministic evidence.");
-                }
-
-                results[index] = new ExperimentPolicyResult
-                {
-                    Name = policy.Name,
-                    Kind = policy.Kind,
-                    IsRequired = policy.IsRequired,
-                    Decision = evaluation.Decision,
-                    DeterministicEvidence = evaluation.DeterministicEvidence,
-                    StatisticalEvidence = evaluation.StatisticalEvidence,
-                };
+                results[index] = ExperimentPolicyResult.FromVerdict(
+                    policy.Name,
+                    policy.Kind,
+                    policy.IsRequired,
+                    evaluation);
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -851,17 +820,14 @@ public sealed class ExperimentRunner : IExperimentRunner
             }
             catch (Exception ex)
             {
-                results[index] = new ExperimentPolicyResult
-                {
-                    Name = policy.Name,
-                    Kind = policy.Kind,
-                    IsRequired = policy.IsRequired,
-                    Decision = EvaluationDecision.Inconclusive,
-                    Failure = ExperimentFailureFactory.Create(
+                results[index] = ExperimentPolicyResult.ExecutionFailed(
+                    policy.Name,
+                    policy.Kind,
+                    policy.IsRequired,
+                    ExperimentFailureFactory.Create(
                         ExperimentFailureCode.PolicyFailed,
                         ExperimentFailureStage.Policy,
-                        ex),
-                };
+                        ex));
             }
         }
 
