@@ -944,29 +944,34 @@ public sealed class LangfuseExperimentResultSinkTests
             WorkerCount = 1,
             Items =
             [
-                new ExperimentItemResult<int, string>
-                {
-                    Sequence = 0,
-                    Case = new ExperimentCase<int>
+                ExperimentItemResult<int, string>.Succeeded(
+                    0,
+                    new ExperimentCase<int>
                     {
                         Id = "case-1",
                         Value = 1,
                     },
-                    TrialIndex = 1,
-                    Status = ExperimentItemStatus.Succeeded,
-                    Attempts = [],
-                    HasOutput = true,
-                    Output = "done",
-                    Evaluation = new EvaluationResult(
-                        new NumericMetric("quality", 1)),
-                    Publications =
+                    1,
                     [
-                        new ExperimentItemPublicationResult
-                        {
-                            Name = LangfuseExperimentItemScopeProvider<int, string>.ProviderName,
-                            IsRequired = false,
-                            Status = ExperimentPublicationOperationStatus.Succeeded,
-                            Correlations =
+                        ExperimentAttemptResult.Succeeded(
+                            1,
+                            new DateTimeOffset(
+                                2026,
+                                7,
+                                15,
+                                0,
+                                0,
+                                0,
+                                TimeSpan.Zero),
+                            TimeSpan.FromSeconds(1)),
+                    ],
+                    "done",
+                    new EvaluationResult(
+                        new NumericMetric("quality", 1)),
+                    [
+                        ExperimentItemPublicationResult.Succeeded(
+                            LangfuseExperimentItemScopeProvider<int, string>.ProviderName,
+                            false,
                             [
                                 new ExperimentItemCorrelation
                                 {
@@ -976,10 +981,8 @@ public sealed class LangfuseExperimentResultSinkTests
                                         LangfuseExperimentItemScopeProvider<int, string>.TraceIdCorrelationName,
                                     Value = "trace-1",
                                 },
-                            ],
-                        },
-                    ],
-                },
+                            ]),
+                    ]),
             ],
             Decision = ExperimentRunDecision.Passed,
         };

@@ -204,13 +204,7 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         var publications = _states
             .Select(CreateFinalPublication)
             .ToArray();
-        var correlations = publications
-            .SelectMany(publication => publication.Correlations)
-            .ToArray();
-        return WithPublications(
-            result,
-            Array.AsReadOnly(correlations),
-            Array.AsReadOnly(publications));
+        return result.WithPublications(Array.AsReadOnly(publications));
     }
 
     public async Task<IReadOnlyList<Exception>> AbortAndDisposeAsync(
@@ -277,81 +271,30 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         ExperimentItemScopeRegistration<TCase, TOutput> registration)
     {
         ArgumentNullException.ThrowIfNull(publication);
-        if (!Enum.IsDefined(publication.Status))
+        return publication.Status switch
         {
-            throw new InvalidOperationException(
-                $"Item scope '{registration.Name}' returned an undefined publication status.");
-        }
-
-        ArgumentNullException.ThrowIfNull(publication.Correlations);
-        var correlationKeys = new HashSet<(string Namespace, string Name)>();
-        var correlations = new ExperimentItemCorrelation[publication.Correlations.Count];
-        for (var index = 0; index < publication.Correlations.Count; index++)
-        {
-            var correlation = publication.Correlations[index];
-            ArgumentNullException.ThrowIfNull(correlation);
-            ArgumentException.ThrowIfNullOrWhiteSpace(correlation.Namespace);
-            ArgumentException.ThrowIfNullOrWhiteSpace(correlation.Name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(correlation.Value);
-            if (!correlationKeys.Add((correlation.Namespace, correlation.Name)))
-            {
-                throw new InvalidOperationException(
-                    $"Item scope '{registration.Name}' returned duplicate correlation " +
-                    $"'{correlation.Namespace}:{correlation.Name}'.");
-            }
-
-            correlations[index] = new ExperimentItemCorrelation
-            {
-                Namespace = correlation.Namespace,
-                Name = correlation.Name,
-                Value = correlation.Value,
-            };
-        }
-
-        ExperimentFailure? failure = null;
-        if (publication.Status == ExperimentPublicationOperationStatus.Failed)
-        {
-            failure = ExperimentFailureFactory.ValidateAndSnapshotPublicationFailure(
-                publication.Failure!,
-                ExperimentFailureCode.ItemScopeFailed,
-                $"Item scope '{registration.Name}'");
-        }
-        else if (publication.Failure is not null)
-        {
-            throw new InvalidOperationException(
-                $"Item scope '{registration.Name}' returned a failure for status " +
-                $"'{publication.Status}'.");
-        }
-
-        return new ExperimentItemPublicationResult
-        {
-            Name = registration.Name,
-            IsRequired = registration.IsRequired,
-            Status = publication.Status,
-            Correlations = Array.AsReadOnly(correlations),
-            Failure = failure,
+            ExperimentPublicationOperationStatus.Succeeded =>
+                ExperimentItemPublicationResult.Succeeded(
+                    registration.Name,
+                    registration.IsRequired,
+                    publication.Correlations),
+            ExperimentPublicationOperationStatus.NotAttempted =>
+                ExperimentItemPublicationResult.NotAttempted(
+                    registration.Name,
+                    registration.IsRequired,
+                    publication.Correlations),
+            ExperimentPublicationOperationStatus.Failed =>
+                ExperimentItemPublicationResult.Failed(
+                    registration.Name,
+                    registration.IsRequired,
+                    publication.Correlations,
+                    publication.Failure!),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(publication),
+                publication.Status,
+                "The item publication operation status is not defined."),
         };
     }
-
-    private static ExperimentItemResult<TCase, TOutput> WithPublications(
-        ExperimentItemResult<TCase, TOutput> result,
-        IReadOnlyList<ExperimentItemCorrelation> correlations,
-        IReadOnlyList<ExperimentItemPublicationResult> publications) =>
-        new()
-        {
-            Sequence = result.Sequence,
-            Case = result.Case,
-            TrialIndex = result.TrialIndex,
-            Status = result.Status,
-            Attempts = result.Attempts,
-            HasOutput = result.HasOutput,
-            Output = result.Output,
-            Evaluation = result.Evaluation,
-            Metrics = result.Metrics,
-            Correlations = correlations,
-            Publications = publications,
-            Failure = result.Failure,
-        };
 
     private static ExperimentFailure CreatePrerequisiteFailure(
         string providerName,
@@ -432,12 +375,10 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         for (var index = startIndex; index < _states.Length; index++)
         {
             var state = _states[index];
-            state.Publication = new ExperimentItemPublicationResult
-            {
-                Name = state.Registration.Name,
-                IsRequired = state.Registration.IsRequired,
-                Status = ExperimentPublicationOperationStatus.NotAttempted,
-            };
+            state.Publication = ExperimentItemPublicationResult.NotAttempted(
+                state.Registration.Name,
+                state.Registration.IsRequired,
+                correlations: []);
         }
     }
 
@@ -446,22 +387,17 @@ internal sealed class ExperimentItemScopeManager<TCase, TOutput>
         var correlations = state.Publication?.Correlations ?? [];
         if (state.Failure is not null)
         {
-            return new ExperimentItemPublicationResult
-            {
-                Name = state.Registration.Name,
-                IsRequired = state.Registration.IsRequired,
-                Status = ExperimentPublicationOperationStatus.Failed,
-                Correlations = correlations,
-                Failure = state.Failure,
-            };
+            return ExperimentItemPublicationResult.Failed(
+                state.Registration.Name,
+                state.Registration.IsRequired,
+                correlations,
+                state.Failure);
         }
 
-        return state.Publication ?? new ExperimentItemPublicationResult
-        {
-            Name = state.Registration.Name,
-            IsRequired = state.Registration.IsRequired,
-            Status = ExperimentPublicationOperationStatus.NotAttempted,
-        };
+        return state.Publication ?? ExperimentItemPublicationResult.NotAttempted(
+            state.Registration.Name,
+            state.Registration.IsRequired,
+            correlations: []);
     }
 
     private async Task DisposeScopesAsync(

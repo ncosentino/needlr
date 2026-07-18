@@ -83,49 +83,39 @@ internal sealed class ExperimentResultSinkPipeline<TCase, TOutput>
         SinkRegistration registration)
     {
         ArgumentNullException.ThrowIfNull(result);
-        if (!Enum.IsDefined(result.Status))
+        return result.Status switch
         {
-            throw new InvalidOperationException(
-                $"Result sink '{registration.Name}' returned an undefined publication status.");
-        }
-
-        ExperimentFailure? failure = null;
-        if (result.Status == ExperimentPublicationOperationStatus.Failed)
-        {
-            failure = ExperimentFailureFactory.ValidateAndSnapshotPublicationFailure(
-                result.Failure!,
-                ExperimentFailureCode.ResultSinkFailed,
-                $"Result sink '{registration.Name}'");
-        }
-        else if (result.Failure is not null)
-        {
-            throw new InvalidOperationException(
-                $"Result sink '{registration.Name}' returned a failure for status '{result.Status}'.");
-        }
-
-        return new ExperimentSinkResult
-        {
-            Name = registration.Name,
-            IsRequired = registration.IsRequired,
-            Status = result.Status,
-            Failure = failure,
+            ExperimentPublicationOperationStatus.Succeeded =>
+                ExperimentSinkResult.Succeeded(
+                    registration.Name,
+                    registration.IsRequired),
+            ExperimentPublicationOperationStatus.NotAttempted =>
+                ExperimentSinkResult.NotAttempted(
+                    registration.Name,
+                    registration.IsRequired),
+            ExperimentPublicationOperationStatus.Failed =>
+                ExperimentSinkResult.Failed(
+                    registration.Name,
+                    registration.IsRequired,
+                    result.Failure!),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(result),
+                result.Status,
+                "The sink publication operation status is not defined."),
         };
     }
 
     private static ExperimentSinkResult CreateFailedResult(
         SinkRegistration registration,
         Exception exception) =>
-        new()
-        {
-            Name = registration.Name,
-            IsRequired = registration.IsRequired,
-            Status = ExperimentPublicationOperationStatus.Failed,
-            Failure = ExperimentFailureFactory.Create(
+        ExperimentSinkResult.Failed(
+            registration.Name,
+            registration.IsRequired,
+            ExperimentFailureFactory.Create(
                 ExperimentFailureCode.ResultSinkFailed,
                 ExperimentFailureStage.Publication,
                 exception,
-                $"Result sink '{registration.Name}' failed: {exception.Message}"),
-        };
+                $"Result sink '{registration.Name}' failed: {exception.Message}"));
 
     private static ExperimentPublicationStatus ReducePublicationStatus(
         IReadOnlyList<ExperimentItemResult<TCase, TOutput>> items,

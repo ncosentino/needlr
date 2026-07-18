@@ -693,12 +693,14 @@ public sealed class ExperimentRunner : IExperimentRunner
         var attempts = Array.AsReadOnly(state.Attempts.ToArray());
         if (definition.ItemEvaluator is null)
         {
-            return CreateSuccessfulItem(
-                state.WorkItem,
-                output,
+            return ExperimentItemResult<TCase, TOutput>.Succeeded(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
                 attempts,
+                output,
                 evaluation: null,
-                metrics: []);
+                publications: []);
         }
 
         try
@@ -719,13 +721,14 @@ public sealed class ExperimentRunner : IExperimentRunner
                 cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             ArgumentNullException.ThrowIfNull(evaluation);
-            var metrics = ExperimentMetricSnapshotFactory.Create(evaluation);
-            return CreateSuccessfulItem(
-                state.WorkItem,
-                output,
+            return ExperimentItemResult<TCase, TOutput>.Succeeded(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
                 attempts,
+                output,
                 evaluation,
-                metrics);
+                publications: []);
         }
         catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {
@@ -737,18 +740,14 @@ public sealed class ExperimentRunner : IExperimentRunner
                 ExperimentFailureCode.EvaluationFailed,
                 ExperimentFailureStage.ItemEvaluation,
                 ex);
-            return new ExperimentItemResult<TCase, TOutput>
-            {
-                Sequence = state.WorkItem.Sequence,
-                Case = state.WorkItem.Case,
-                TrialIndex = state.WorkItem.TrialIndex,
-                Status = ExperimentItemStatus.EvaluationFailed,
-                Attempts = attempts,
-                HasOutput = true,
-                Output = output,
-                Metrics = [],
-                Failure = failure,
-            };
+            return ExperimentItemResult<TCase, TOutput>.EvaluationFailed(
+                state.WorkItem.Sequence,
+                state.WorkItem.Case,
+                state.WorkItem.TrialIndex,
+                attempts,
+                output,
+                failure,
+                publications: []);
         }
     }
 
@@ -1043,35 +1042,14 @@ public sealed class ExperimentRunner : IExperimentRunner
         WorkItemState<TCase, TOutput> state,
         ExperimentItemStatus itemStatus,
         ExperimentFailure failure) =>
-        new()
-        {
-            Sequence = state.WorkItem.Sequence,
-            Case = state.WorkItem.Case,
-            TrialIndex = state.WorkItem.TrialIndex,
-            Status = itemStatus,
-            Attempts = Array.AsReadOnly(state.Attempts.ToArray()),
-            HasOutput = false,
-            Failure = failure,
-        };
-
-    private static ExperimentItemResult<TCase, TOutput> CreateSuccessfulItem<TCase, TOutput>(
-        WorkItem<TCase> workItem,
-        TOutput output,
-        IReadOnlyList<ExperimentAttemptResult> attempts,
-        EvaluationResult? evaluation,
-        IReadOnlyList<ExperimentMetricSnapshot> metrics) =>
-        new()
-        {
-            Sequence = workItem.Sequence,
-            Case = workItem.Case,
-            TrialIndex = workItem.TrialIndex,
-            Status = ExperimentItemStatus.Succeeded,
-            Attempts = attempts,
-            HasOutput = true,
-            Output = output,
-            Evaluation = evaluation,
-            Metrics = metrics,
-        };
+        ExperimentItemResult<TCase, TOutput>.Failed(
+            state.WorkItem.Sequence,
+            state.WorkItem.Case,
+            state.WorkItem.TrialIndex,
+            itemStatus,
+            Array.AsReadOnly(state.Attempts.ToArray()),
+            failure,
+            publications: []);
 
     private static ExperimentAttemptResult WithRetry(
         ExperimentAttemptResult attempt,
