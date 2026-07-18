@@ -365,6 +365,14 @@ Needlr does not render MEAI reports or fabricate aggregate `ScenarioRun` entries
 `IEvaluationResultStore` and use MEAI's `HtmlReportWriter`, `JsonReportWriter`, or `dotnet aieval`
 tooling.
 
+MEAI Reporting and Langfuse can compose on the same definition. Add the Langfuse item scope and
+result sink, then call `WithMeaiReporting(...)`; Reporting produces the canonical item
+`EvaluationResult`, and the Langfuse sink projects those same metrics without re-evaluating. A
+consumer-defined sink can receive the same canonical run and publish domain artifacts independently.
+If execution fails before evaluation, the canonical item retains the failure, the Langfuse trial
+scope can still retain its trace and dataset link, and Reporting remains `NotAttempted` because no
+completed `ScenarioRun` exists to persist.
+
 ## Final Result Sinks
 
 `ExperimentDefinition<TCase,TOutput>.Sinks` publishes the completed canonical quality result without

@@ -1,12 +1,16 @@
 using System.Net;
 using System.Text.Json;
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
+using Microsoft.Extensions.AI.Evaluation.Reporting;
+using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 using Moq;
 
 using NexusLabs.Needlr.AgentFramework.Evaluation;
 using NexusLabs.Needlr.AgentFramework.Evaluation.Experiments;
+using NexusLabs.Needlr.AgentFramework.Evaluation.Reporting;
 
 namespace NexusLabs.Needlr.AgentFramework.Langfuse.Tests;
 
@@ -16,6 +20,254 @@ public sealed class LangfuseExperimentResultSinkTests
     private static readonly Uri BaseUrl = new("https://lf.example/");
     private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly MockRepository _mocks = new(MockBehavior.Strict);
+
+    [Fact]
+    public async Task RunAsync_ComposesReportingLangfuseDynamicContextAndConsumerSink()
+    {
+        using var listener = LangfuseTestFactory.StartListener();
+        var captured = new List<CapturedRequest>();
+        using var httpClient = CreatePublishingHttpClient(captured);
+        var client = CreateClient(httpClient);
+        const string runId = "dual-provider-success";
+        var run = client.BeginExperimentRun("evals", runId);
+        var langfuseScope =
+            client.CreateExperimentItemScopeProvider<string, DualProviderExperimentOutput>(run);
+        var langfuseSink =
+            client.CreateExperimentResultSink<string, DualProviderExperimentOutput>(run);
+        var consumerSink =
+            new DualProviderExperimentResultSink<string, DualProviderExperimentOutput>();
+        var storagePath = CreateStoragePath();
+        Directory.CreateDirectory(storagePath);
+        try
+        {
+            var chatClient = CreateChatClient("subject response");
+            var evaluator = _mocks.Create<IEvaluator>();
+            evaluator
+                .SetupGet(instance => instance.EvaluationMetricNames)
+                .Returns(["quality"]);
+            evaluator
+                .Setup(instance => instance.EvaluateAsync(
+                    It.Is<IEnumerable<ChatMessage>>(messages => messages.Any()),
+                    It.IsAny<ChatResponse>(),
+                    It.IsAny<ChatConfiguration?>(),
+                    It.Is<IEnumerable<EvaluationContext>?>(contexts =>
+                        HasDraftContext(contexts)),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new EvaluationResult(new NumericMetric("quality", 1)));
+            var configuration = DiskBasedReportingConfiguration.Create(
+                storagePath,
+                [evaluator.Object],
+                new ChatConfiguration(chatClient.Object),
+                enableResponseCaching: false,
+                executionName: runId);
+            var contextFactoryCalls = 0;
+            var attempts = 0;
+            var definition =
+                new ExperimentDefinition<string, DualProviderExperimentOutput>
+                {
+                    Name = "dual-provider-conformance",
+                    CaseSource = new LocalExperimentCaseSource<string>(
+                        "local",
+                        [new ExperimentCase<string> { Id = "case-1", Value = "write" }]),
+                    ItemScopes = [langfuseScope],
+                    Sinks = [langfuseSink, consumerSink],
+                    Task = async (context, cancellationToken) =>
+                    {
+                        if (Interlocked.Increment(ref attempts) == 1)
+                        {
+                            throw new InvalidOperationException("retry once");
+                        }
+
+                        var reporting = context.Features
+                            .GetRequired<MeaiReportingExperimentItem>();
+                        var scenario = context.Features.GetRequired<ILangfuseScenario>();
+                        var messages = new ChatMessage[]
+                        {
+                            new(ChatRole.User, context.Case.Value),
+                        };
+                        scenario.SetInput(context.Case.Value);
+                        var response = await reporting.ChatConfiguration!.ChatClient
+                            .GetResponseAsync(
+                                messages,
+                                cancellationToken: cancellationToken);
+                        scenario.SetOutput(response.Text ?? string.Empty);
+                        return new DualProviderExperimentOutput(
+                            messages,
+                            response,
+                            new Dictionary<string, string>
+                            {
+                                ["draft.md"] = "# Draft",
+                            });
+                    },
+                }.WithMeaiReporting(
+                    configuration,
+                    context => new EvaluationInputs(
+                        context.Output.Messages,
+                        context.Output.Response),
+                    new MeaiReportingExperimentOptions<string, DualProviderExperimentOutput>
+                    {
+                        ResponseReuseMode = MeaiReportingResponseReuseMode.Disabled,
+                        IsRequired = true,
+                        AdditionalContextFactory = context =>
+                        {
+                            Interlocked.Increment(ref contextFactoryCalls);
+                            return
+                            [
+                                new ConformanceEvaluationContext(
+                                    context.Output.Artifacts["draft.md"]),
+                            ];
+                        },
+                    });
+
+            var outcome = await new ExperimentRunner().RunAsync(
+                definition,
+                new ExperimentRunOptions
+                {
+                    RunId = runId,
+                    MaxConcurrency = 1,
+                    RetryPolicy = new ExperimentRetryPolicy(
+                        maxAttempts: 2,
+                        retryOn: ExperimentRetryableOutcome.ExecutionFailure,
+                        delay: TimeSpan.Zero),
+                },
+                _cancellationToken);
+
+            var item = Assert.Single(outcome.Result.Items);
+            Assert.Equal(ExperimentItemStatus.Succeeded, item.Status);
+            Assert.Equal(2, attempts);
+            Assert.Equal(2, item.Attempts.Count);
+            Assert.True(
+                item.Attempts[0].Failure!.IsRetryable,
+                "Expected the first failed attempt to be retained as retryable.");
+            Assert.Equal(ExperimentAttemptStatus.Succeeded, item.Attempts[1].Status);
+            Assert.Equal(1, contextFactoryCalls);
+            Assert.Equal(
+                [LangfuseExperimentItemScopeProvider<string, DualProviderExperimentOutput>.ProviderName,
+                 MeaiReportingExperimentSchema.ProviderName],
+                item.Publications.Select(publication => publication.Name));
+            Assert.All(
+                item.Publications,
+                publication => Assert.Equal(
+                    ExperimentPublicationOperationStatus.Succeeded,
+                    publication.Status));
+            Assert.Equal(ExperimentPublicationStatus.Succeeded, outcome.PublicationStatus);
+            Assert.Equal(2, outcome.SinkResults.Count);
+            Assert.All(
+                outcome.SinkResults,
+                sink => Assert.Equal(
+                    ExperimentPublicationOperationStatus.Succeeded,
+                    sink.Status));
+            Assert.NotNull(consumerSink.PublishedResult);
+            var published = consumerSink.PublishedResult;
+            Assert.Equal(
+                "# Draft",
+                Assert.Single(published.Items).Output!.Artifacts["draft.md"]);
+            Assert.Equal(
+                1,
+                captured.Count(request => request.Uri.AbsolutePath.EndsWith(
+                    "/dataset-run-items",
+                    StringComparison.Ordinal)));
+            Assert.Equal(
+                1,
+                captured.Count(request => request.Uri.AbsolutePath.EndsWith(
+                    "/scores",
+                    StringComparison.Ordinal)));
+            Assert.Single(await ReadStoredResultsAsync(storagePath, runId));
+            chatClient.Verify(client => client.GetResponseAsync(
+                It.Is<IEnumerable<ChatMessage>>(messages => messages.Any()),
+                It.Is<ChatOptions?>(options => options == null),
+                It.IsAny<CancellationToken>()), Times.Once);
+            evaluator.Verify(instance => instance.EvaluateAsync(
+                It.Is<IEnumerable<ChatMessage>>(messages => messages.Any()),
+                It.IsAny<ChatResponse>(),
+                It.IsAny<ChatConfiguration?>(),
+                It.Is<IEnumerable<EvaluationContext>?>(contexts =>
+                    HasDraftContext(contexts)),
+                It.IsAny<CancellationToken>()), Times.Once);
+            _mocks.VerifyAll();
+        }
+        finally
+        {
+            Directory.Delete(storagePath, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ExecutionFailureRemainsCanonicalAndSkipsReportingPersistence()
+    {
+        using var listener = LangfuseTestFactory.StartListener();
+        var captured = new List<CapturedRequest>();
+        using var httpClient = CreatePublishingHttpClient(captured);
+        var client = CreateClient(httpClient);
+        const string runId = "dual-provider-failure";
+        var run = client.BeginExperimentRun("evals", runId);
+        var langfuseScope =
+            client.CreateExperimentItemScopeProvider<string, DualProviderExperimentOutput>(run);
+        var langfuseSink =
+            client.CreateExperimentResultSink<string, DualProviderExperimentOutput>(run);
+        var storagePath = CreateStoragePath();
+        Directory.CreateDirectory(storagePath);
+        try
+        {
+            var configuration = new ReportingConfiguration(
+                [new TaskCompletionEvaluator()],
+                new DiskBasedResultStore(storagePath),
+                executionName: runId);
+            var definition =
+                new ExperimentDefinition<string, DualProviderExperimentOutput>
+                {
+                    Name = "dual-provider-failure",
+                    CaseSource = new LocalExperimentCaseSource<string>(
+                        "local",
+                        [new ExperimentCase<string> { Id = "case-1", Value = "fail" }]),
+                    ItemScopes = [langfuseScope],
+                    Sinks = [langfuseSink],
+                    Task = (_, _) => throw new InvalidOperationException("execution failed"),
+                }.WithMeaiReporting(
+                    configuration,
+                    _ => throw new InvalidOperationException("evaluation must not run"),
+                    new MeaiReportingExperimentOptions<string, DualProviderExperimentOutput>
+                    {
+                        ResponseReuseMode = MeaiReportingResponseReuseMode.Disabled,
+                        IsRequired = true,
+                    });
+
+            var outcome = await new ExperimentRunner().RunAsync(
+                definition,
+                new ExperimentRunOptions { RunId = runId, MaxConcurrency = 1 },
+                _cancellationToken);
+
+            var item = Assert.Single(outcome.Result.Items);
+            Assert.Equal(ExperimentItemStatus.ExecutionFailed, item.Status);
+            Assert.Equal(ExperimentFailureCode.ExecutionFailed, item.Failure!.Code);
+            Assert.Equal(
+                ExperimentPublicationOperationStatus.Succeeded,
+                item.Publications.Single(publication =>
+                    publication.Name
+                    == LangfuseExperimentItemScopeProvider<
+                        string,
+                        DualProviderExperimentOutput>.ProviderName).Status);
+            Assert.Equal(
+                ExperimentPublicationOperationStatus.NotAttempted,
+                item.Publications.Single(publication =>
+                    publication.Name == MeaiReportingExperimentSchema.ProviderName).Status);
+            Assert.Empty(await ReadStoredResultsAsync(storagePath, runId));
+            Assert.Equal(
+                1,
+                captured.Count(request => request.Uri.AbsolutePath.EndsWith(
+                    "/dataset-run-items",
+                    StringComparison.Ordinal)));
+            Assert.Equal(
+                0,
+                captured.Count(request => request.Uri.AbsolutePath.EndsWith(
+                    "/scores",
+                    StringComparison.Ordinal)));
+        }
+        finally
+        {
+            Directory.Delete(storagePath, recursive: true);
+        }
+    }
 
     [Fact]
     public async Task RunAsync_ProjectsItemRunAndDecisionScoresWithContextualIds()
@@ -828,6 +1080,66 @@ public sealed class LangfuseExperimentResultSinkTests
             langfuseSink.GetPublicationSnapshot().ItemScores.Single().Status);
         _mocks.VerifyAll();
     }
+
+    private Mock<IChatClient> CreateChatClient(string responseText)
+    {
+        var chatClient = _mocks.Create<IChatClient>();
+        var metadata = new ChatClientMetadata(
+            providerName: "test-provider",
+            providerUri: new Uri("https://example.test"),
+            defaultModelId: "test-model");
+        chatClient
+            .Setup(client => client.GetService(
+                It.Is<Type>(type => type == typeof(ChatClientMetadata)),
+                It.Is<object?>(serviceKey => serviceKey == null)))
+            .Returns(metadata);
+        chatClient
+            .Setup(client => client.GetResponseAsync(
+                It.Is<IEnumerable<ChatMessage>>(messages => messages.Any()),
+                It.Is<ChatOptions?>(options => options == null),
+                It.IsAny<CancellationToken>()))
+            .Returns((
+                IEnumerable<ChatMessage> _,
+                ChatOptions? _,
+                CancellationToken cancellationToken) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return Task.FromResult(new ChatResponse(
+                    [new ChatMessage(ChatRole.Assistant, responseText)])
+                {
+                    ModelId = "test-model",
+                });
+            });
+        return chatClient;
+    }
+
+    private async Task<IReadOnlyList<ScenarioRunResult>> ReadStoredResultsAsync(
+        string storagePath,
+        string executionName)
+    {
+        var results = new List<ScenarioRunResult>();
+        var store = new DiskBasedResultStore(storagePath);
+        await foreach (var result in store.ReadResultsAsync(
+            executionName,
+            cancellationToken: _cancellationToken))
+        {
+            results.Add(result);
+        }
+
+        return results;
+    }
+
+    private static bool HasDraftContext(IEnumerable<EvaluationContext>? contexts) =>
+        contexts?.SingleOrDefault() is ConformanceEvaluationContext
+        {
+            Artifact: "# Draft",
+        };
+
+    private static string CreateStoragePath() =>
+        Path.Combine(
+            Path.GetTempPath(),
+            "needlr-dual-provider-tests",
+            Guid.NewGuid().ToString("N"));
 
     private static ILangfuseClient CreateClient(
         HttpClient httpClient,
