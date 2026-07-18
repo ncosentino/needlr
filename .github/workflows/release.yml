@@ -32,6 +32,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Add .NET global tools to PATH
+      run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
     - name: Install NBGV CLI
       run: dotnet tool install -g nbgv
 

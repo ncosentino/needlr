@@ -34,6 +34,9 @@ jobs:
         dotnet-version: |
           10.0.x
 
+    - name: Add .NET global tools to PATH
+      run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
@@ -268,7 +271,7 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Install AOT dependencies
-      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Console App
       env:
@@ -306,7 +309,7 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Install AOT dependencies
-      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Web App
       env:
