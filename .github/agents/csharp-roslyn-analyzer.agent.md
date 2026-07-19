@@ -76,7 +76,7 @@ Before answering ANY question about Roslyn analyzers:
 
 ### Diagnostic ID Conventions
 - Project-level prefix (e.g., `NDLR`, `CA`, `RS`)
-- Component codes for grouping (e.g., `NDLRCOR`, `NDLRGEN`, `NDLRMAF`)
+- Component codes for grouping (e.g., `NDLRCOR`, `NDLRGEN`, `NDLRLOG`)
 - Sequential numbering within each component
 - Never reuse a retired ID
 
@@ -127,8 +127,8 @@ source generators:
 | Project | Diagnostic Prefix | Focus |
 |---------|-------------------|-------|
 | `NexusLabs.Needlr.Analyzers` | `NDLRCOR` | Core DI analyzers: circular dependencies, lifetime mismatches, captive dependencies, disposable scoping, collection resolution, lazy resolution, keyed services, plugin constructors, reflection in AOT, global namespace types |
-| `NexusLabs.Needlr.Generators` (also contains analyzers) | `NDLRGEN` | Generator-specific: options attribute validation, HttpClient options validation, factory attribute validation, provider attribute validation, open decorator validation, unsupported data annotations, captive dependency detection |
-| `NexusLabs.Needlr.AgentFramework.Analyzers` | `NDLRMAF` | Agent framework: cyclic handoffs, function description requirements, function group references, miswired function types, group chat singletons, orphan agents, sequence ordering, topology validation, termination conditions, tool result ToString |
+| `NexusLabs.Needlr.Generators` (also contains analyzers) | `NDLRGEN`, `NDLRHTTP` | Generator-specific: options attribute validation, HttpClient options validation, factory attribute validation, provider attribute validation, open decorator validation, unsupported data annotations, captive dependency detection |
+| `NexusLabs.Needlr.Logging.Analyzers` | `NDLRLOG` | Logging method shape, containing type, logger discovery, and parameter validation |
 | `NexusLabs.Needlr.SignalR.Analyzers` | `NDLRSIG` | SignalR: hub path attribute validation |
 
 ### Established Patterns
@@ -139,9 +139,8 @@ context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 context.EnableConcurrentExecution();
 ```
 
-**Diagnostic descriptors** — centralized in `DiagnosticDescriptors.cs` (or
-`MafDiagnosticDescriptors.cs` for agent framework). Each descriptor has a
-corresponding `const string` ID in `DiagnosticIds.cs`.
+**Diagnostic descriptors** — centralized in `DiagnosticDescriptors.cs`. Each
+descriptor has a corresponding `const string` ID in `DiagnosticIds.cs`.
 
 **Release tracking** — every project has `AnalyzerReleases.Shipped.md` and
 `AnalyzerReleases.Unshipped.md` as `<AdditionalFiles>`.
