@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-20260712-041709</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OptionsResolutionBenchmarks-20260719-041420</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,21 +14,21 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.301
-  [Host]   : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.302
+  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                    </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                    </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveOptions</td><td>16.95 ns</td><td>0.115 ns</td><td>0.018 ns</td><td>1.00</td><td>0.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_ResolveOptions</td><td>16.71 ns</td><td>0.044 ns</td><td>0.011 ns</td><td>0.99</td><td>0.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_ResolveOptions</td><td>17.34 ns</td><td>2.642 ns</td><td>0.686 ns</td><td>1.02</td><td>0.04</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveOptions</td><td>25.08 ns</td><td>0.072 ns</td><td>0.019 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveOptions</td><td>22.94 ns</td><td>0.104 ns</td><td>0.016 ns</td><td>0.91</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveOptions</td><td>21.98 ns</td><td>0.286 ns</td><td>0.074 ns</td><td>0.88</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

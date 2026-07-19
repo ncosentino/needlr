@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CollectionResolutionBenchmarks-20260712-041324</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.CollectionResolutionBenchmarks-20260719-041029</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.301
-  [Host]   : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.302
+  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveCollection</td><td>45.22 ns</td><td>0.649 ns</td><td>0.100 ns</td><td>1.00</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_ResolveCollection</td><td>42.49 ns</td><td>0.896 ns</td><td>0.233 ns</td><td>0.94</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
-</tr><tr><td>Needlr_SourceGen_ResolveCollection</td><td>43.24 ns</td><td>0.463 ns</td><td>0.072 ns</td><td>0.96</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_ResolveCollection</td><td>47.40 ns</td><td>0.791 ns</td><td>0.122 ns</td><td>1.00</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ResolveCollection</td><td>48.99 ns</td><td>0.488 ns</td><td>0.076 ns</td><td>1.03</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_ResolveCollection</td><td>49.91 ns</td><td>1.217 ns</td><td>0.188 ns</td><td>1.05</td><td>1</td><td>0.0029</td><td>48 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>

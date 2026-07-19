@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20260712-041633</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20260719-041341</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.301
-  [Host]   : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.302
+  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                        </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>20.96 ns</td><td>1.095 ns</td><td>0.169 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>20.35 ns</td><td>0.366 ns</td><td>0.057 ns</td><td>0.97</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>20.40 ns</td><td>0.307 ns</td><td>0.080 ns</td><td>0.97</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>23.34 ns</td><td>0.762 ns</td><td>0.118 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>24.17 ns</td><td>0.227 ns</td><td>0.059 ns</td><td>1.04</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>21.53 ns</td><td>0.608 ns</td><td>0.158 ns</td><td>0.92</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>

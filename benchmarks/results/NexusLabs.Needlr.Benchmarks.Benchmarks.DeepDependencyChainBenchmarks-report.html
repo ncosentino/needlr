@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260712-041507</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260719-041215</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.301
-  [Host]   : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.9 (10.0.926.27113), X64 RyuJIT AVX2
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.302
+  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>15.62 ns</td><td>0.086 ns</td><td>0.013 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>15.35 ns</td><td>0.112 ns</td><td>0.029 ns</td><td>0.98</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>15.88 ns</td><td>0.135 ns</td><td>0.021 ns</td><td>1.02</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>18.57 ns</td><td>0.166 ns</td><td>0.026 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>19.41 ns</td><td>0.656 ns</td><td>0.101 ns</td><td>1.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>19.05 ns</td><td>0.756 ns</td><td>0.117 ns</td><td>1.03</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>
