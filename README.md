@@ -11,8 +11,8 @@ Needlr is an opinionated fluent dependency injection library for .NET that provi
 **Needlr is source-generation-first**: The default approach uses compile-time source generation for AOT compatibility and optimal performance. Reflection-based discovery is available as an explicit opt-in for dynamic scenarios.
 
 AI and agentic runtime, evaluation, and provider integrations are developed in
-[Foundry](https://github.com/ncosentino/foundry), including Foundry's optional Needlr
-integration packages.
+[Foundry](https://www.devleader.ca/projects/foundry), including Foundry's
+optional Needlr integration packages.
 
 ## Features
 

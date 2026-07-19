@@ -73,7 +73,7 @@ nav:
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - .NET MAUI: maui.md
-    - Foundry AI/Agentic Framework: https://github.com/ncosentino/foundry
+    - Foundry AI/Agentic Framework: https://www.devleader.ca/projects/foundry
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md

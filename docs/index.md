@@ -1,5 +1,5 @@
 ---
-description: Needlr is an opinionated fluent dependency injection library for .NET with source generation -- automate service registration, decorators, interceptors, factories, and AI integrations with compile-time safety.
+description: Needlr is a source-generation-first dependency injection library for .NET with automatic registration, decorators, factories, and analyzers.
 ---
 
 # Needlr
@@ -28,7 +28,7 @@ Needlr is a source-generation-first dependency injection library for .NET that p
 - **Plugin System** - Extensible architecture for modular applications
 - **Decorator Pattern Support** - Automatic decorator wiring with `[DecoratorFor<T>]` attribute
 - **Analyzers & Diagnostics** - Catch DI issues at compile-time, not runtime
-- **AI Integrations** - First-class support for Microsoft Agent Framework and Semantic Kernel
+- **Factories & Providers** - Generate factories and compose extensible service-provider boundaries
 
 ## Quick Start
 
