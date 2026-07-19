@@ -69,9 +69,15 @@ Use `IncludeNamespacePrefixes` to scope type discovery to the test assembly only
 
 ## Why the Generator Can Appear Twice (and How We Handle It)
 
-If your project references both `NexusLabs.Needlr.Build` and an integration package like `NexusLabs.Needlr.AgentFramework` or `NexusLabs.Needlr.SemanticKernel`, Roslyn could theoretically see two copies of `NexusLabs.Needlr.Generators.dll` — one from each package path. Running the generator twice produces duplicate type registration code that fails to compile.
+If your project references both `NexusLabs.Needlr.Build` and an external integration package
+that carries the Needlr generator, Roslyn could theoretically see two copies of
+`NexusLabs.Needlr.Generators.dll`. Running the generator twice produces duplicate type
+registration code that fails to compile.
 
-`NexusLabs.Needlr.Build` ships a `DeduplicateNeedlrGeneratorAnalyzers` MSBuild target that runs before compilation and ensures only one copy of the generator DLL is passed to Roslyn, regardless of how many are present in the analyzer item group. The integration packages (`AgentFramework`, `SemanticKernel`, `SignalR`) ship the same target as defense-in-depth.
+`NexusLabs.Needlr.Build` ships a `DeduplicateNeedlrGeneratorAnalyzers` MSBuild target that
+runs before compilation and ensures only one copy of the generator DLL is passed to Roslyn,
+regardless of how many are present in the analyzer item group. External integrations may
+ship the same target as defense-in-depth.
 
 ## Multi-Assembly TypeRegistry Composition
 

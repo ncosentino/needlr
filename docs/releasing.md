@@ -318,7 +318,6 @@ For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
 
    ```powershell
    dotnet build src/NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj -c Release
-   dotnet build src/NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj -c Release
    dotnet build src/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj -c Release
    ```
 
@@ -498,7 +497,7 @@ After the workflow succeeds:
    [nuget.org/packages/NexusLabs.Needlr](https://www.nuget.org/packages/NexusLabs.Needlr)
    and verify the new version appears under the Versions tab. Check a
    few other key packages too (`NexusLabs.Needlr.AspNet`,
-   `NexusLabs.Needlr.Generators`, `NexusLabs.Needlr.AgentFramework`).
+   `NexusLabs.Needlr.Generators`, `NexusLabs.Needlr.SignalR`).
 2. **GitHub Release:** visit
    [releases](https://github.com/ncosentino/needlr/releases) and verify
    the new tag shows up, is marked as pre-release, has the CHANGELOG

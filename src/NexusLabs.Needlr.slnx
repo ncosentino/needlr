@@ -35,39 +35,6 @@
     <Project Path="Examples/Reflection/MinimalWebApi/MinimalWebApi.csproj" />
     <Project Path="Examples/Reflection/PostPluginCallbackExample/PostPluginCallbackExample.csproj" />
   </Folder>
-  <Folder Name="/Examples/SemanticKernel/">
-    <Project Path="Examples/SemanticKernel/SimpleSemanticKernelApp/SimpleSemanticKernelApp.csproj" />
-  </Folder>
-  <Folder Name="/Examples/AgentFramework/">
-    <Project Path="Examples/AgentFramework/SimpleAgentFrameworkApp/SimpleAgentFrameworkApp.csproj" />
-    <Project Path="Examples/AgentFramework/SimpleAgentFrameworkApp.Agents/SimpleAgentFrameworkApp.Agents.csproj" />
-    <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp/GroupChatAgentFrameworkApp.csproj" />
-    <Project Path="Examples/AgentFramework/GroupChatAgentFrameworkApp.Agents/GroupChatAgentFrameworkApp.Agents.csproj" />
-    <Project Path="Examples/AgentFramework/AotAgentFrameworkApp/AotAgentFrameworkApp.csproj" />
-    <Project Path="Examples/AgentFramework/SpectreProgressApp/SpectreProgressApp.csproj" />
-    <Project Path="Examples/AgentFramework/IterativeTripPlannerApp/IterativeTripPlannerApp.csproj" />
-    <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Core/IterativeTripPlannerApp.Core.csproj" />
-    <Project Path="Examples/AgentFramework/IterativeTripPlannerApp.Evaluation/IterativeTripPlannerApp.Evaluation.csproj" />
-    <Project Path="Examples/AgentFramework/LangfuseEvaluationApp/LangfuseEvaluationApp.csproj" />
-    <Project Path="Examples/AgentFramework/LangfuseConformanceApp/LangfuseConformanceApp.csproj" />
-    <Project Path="Examples/AgentFramework/DevUIApp/DevUIApp.csproj" />
-    <Project Path="Examples/AgentFramework/DiagnosticAttributionApp/DiagnosticAttributionApp.csproj" />
-    <Project Path="Examples/AgentFramework/IterativeLoopDiagnosticsApp/IterativeLoopDiagnosticsApp.csproj" />
-    <Project Path="Examples/AgentFramework/GenAiTokenMetricsApp/GenAiTokenMetricsApp.csproj" />
-    <Project Path="Examples/AgentFramework/EarlyCompletionApp/EarlyCompletionApp.csproj" />
-    <Project Path="Examples/AgentFramework/ExperimentRunnerApp/ExperimentRunnerApp.csproj" />
-    <Project Path="Examples/AgentFramework/MeaiReportingExperimentApp/MeaiReportingExperimentApp.csproj" />
-    <Project Path="Examples/AgentFramework/GraphWorkflowApp/GraphWorkflowApp.csproj" />
-    <Project Path="Examples/AgentFramework/GeneratorCoexistenceApp/GeneratorCoexistenceApp.csproj" />
-    <Project Path="Examples/AgentFramework/GraphWorkflowApp.Agents/GraphWorkflowApp.Agents.csproj" />
-    <Project Path="Examples/AgentFramework/DagRoutingApp/DagRoutingApp.csproj" />
-    <Project Path="Examples/AgentFramework/DagRoutingApp.Agents/DagRoutingApp.Agents.csproj" />
-    <Project Path="Examples/AgentFramework/RfcPipelineApp/RfcPipelineApp.csproj" />
-    <Project Path="Examples/AgentFramework/RfcPipelineApp.Core/RfcPipelineApp.Core.csproj" />
-    <Project Path="Examples/AgentFramework/RfcPipelineApp.Tests/RfcPipelineApp.Tests.csproj" />
-    <Project Path="Examples/AgentFramework/CodeReviewPipelineApp/CodeReviewPipelineApp.csproj" />
-    <Project Path="Examples/AgentFramework/SupportTriagePipelineApp/SupportTriagePipelineApp.csproj" />
-  </Folder>
   <Folder Name="/Examples/MultiProjectApp/">
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Bootstrap/MultiProjectApp.Bootstrap.csproj" />
     <Project Path="Examples/MultiProjectApp/MultiProjectApp.Contracts/MultiProjectApp.Contracts.csproj" />
@@ -131,35 +98,10 @@
     <Project Path="NexusLabs.Needlr.Injection.Scrutor.Tests/NexusLabs.Needlr.Injection.Scrutor.Tests.csproj" />
     <Project Path="NexusLabs.Needlr.Injection.Scrutor/NexusLabs.Needlr.Injection.Scrutor.csproj" />
   </Folder>
-  <Folder Name="/Integrations/SemanticKernel/">
-    <Project Path="NexusLabs.Needlr.SemanticKernel.Generators/NexusLabs.Needlr.SemanticKernel.Generators.csproj" />
-    <Project Path="NexusLabs.Needlr.SemanticKernel.Tests/NexusLabs.Needlr.SemanticKernel.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.SemanticKernel/NexusLabs.Needlr.SemanticKernel.csproj" />
-  </Folder>
-  <Folder Name="/Integrations/AgentFramework/">
-    <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers/NexusLabs.Needlr.AgentFramework.Analyzers.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Analyzers.Tests/NexusLabs.Needlr.AgentFramework.Analyzers.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation/NexusLabs.Needlr.AgentFramework.Evaluation.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Reporting/NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Reporting.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Evaluation.Tests/NexusLabs.Needlr.AgentFramework.Evaluation.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Generators/NexusLabs.Needlr.AgentFramework.Generators.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Langfuse/NexusLabs.Needlr.AgentFramework.Langfuse.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Langfuse.Tests/NexusLabs.Needlr.AgentFramework.Langfuse.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Testing/NexusLabs.Needlr.AgentFramework.Testing.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Tests/NexusLabs.Needlr.AgentFramework.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests/NexusLabs.Needlr.AgentFramework.GeneratedWrapper.Tests.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework.Workflows/NexusLabs.Needlr.AgentFramework.Workflows.csproj" />
-    <Project Path="NexusLabs.Needlr.AgentFramework/NexusLabs.Needlr.AgentFramework.csproj" />
-  </Folder>
   <Folder Name="/Integrations/Avalonia/">
     <Project Path="NexusLabs.Needlr.Avalonia/NexusLabs.Needlr.Avalonia.csproj" />
     <Project Path="NexusLabs.Needlr.Avalonia.Attributes/NexusLabs.Needlr.Avalonia.Attributes.csproj" />
     <Project Path="NexusLabs.Needlr.Avalonia.Tests/NexusLabs.Needlr.Avalonia.Tests.csproj" />
-  </Folder>
-  <Folder Name="/Integrations/Copilot/">
-    <Project Path="NexusLabs.Needlr.Copilot/NexusLabs.Needlr.Copilot.csproj" />
-    <Project Path="NexusLabs.Needlr.Copilot.Tests/NexusLabs.Needlr.Copilot.Tests.csproj" />
   </Folder>
   <Folder Name="/Integrations/SignalR/">
     <Project Path="NexusLabs.Needlr.SignalR.Analyzers.Tests/NexusLabs.Needlr.SignalR.Analyzers.Tests.csproj" />
@@ -190,8 +132,6 @@
     <Project Path="NexusLabs.Needlr.Benchmarks/NexusLabs.Needlr.Benchmarks.csproj" />
   </Folder>
   <Project Path="NexusLabs.Needlr/NexusLabs.Needlr.csproj" />
-  <Project Path="NexusLabs.Needlr.AgentFramework.DevUI/NexusLabs.Needlr.AgentFramework.DevUI.csproj" />
-  <Project Path="NexusLabs.Needlr.AgentFramework.Generators.Tests/NexusLabs.Needlr.AgentFramework.Generators.Tests.csproj" />
   <Project Path="NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj" />
   <Project Path="NexusLabs.Needlr.Build/NexusLabs.Needlr.Build.csproj" />
   <Project Path="NexusLabs.Needlr.Extensions.Logging/NexusLabs.Needlr.Extensions.Logging.csproj" />

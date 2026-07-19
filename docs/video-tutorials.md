@@ -24,6 +24,6 @@ A collection of video tutorials and demonstrations to help developers learn and 
 - Fluent builder syntax with Syringe class
 - Weather forecast API example transformation
 - How Needlr keeps entry points thin
-- Real-world usage in BrandGhost (https://www.brandghost.ai) application
+- Real-world usage in production applications
 
 ---

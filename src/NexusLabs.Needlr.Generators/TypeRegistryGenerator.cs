@@ -798,11 +798,6 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
-            // Check for IHubRegistrationPlugin implementations
-            // NOTE: SignalR hub discovery is now handled by NexusLabs.Needlr.SignalR.Generators
-
-            // Check for SemanticKernel plugin types (classes/statics with [KernelFunction] methods)
-            // NOTE: SemanticKernel plugin discovery is now handled by NexusLabs.Needlr.SemanticKernel.Generators
         }
     }
 

@@ -19,7 +19,6 @@ copyright: >
   <br>
   <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a>
   <br>
-  <a href="https://www.brandghost.ai">BrandGhost: social media and SEO automation for brands</a>
 
 theme:
   name: material
@@ -67,7 +66,6 @@ nav:
     - HttpClient Options: http-clients.md
     - Factories: factories.md
     - Providers: providers.md
-    - Tiered Provider Selector: tiered-provider-selector.md
     - Interceptors: interceptors.md
     - Open Generic Decorators: open-generic-decorators.md
     - Compose and Expose Closed Generics: composed-closed-generics.md
@@ -75,26 +73,14 @@ nav:
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - .NET MAUI: maui.md
-    - AI Integrations: ai-integrations.md
-    - GitHub Copilot: copilot.md
-    - Agent Functions: agent-functions.md
-    - Iterative Agent Loop: iterative-agent-loop.md
-    - Tool Result Middleware: tool-result-middleware.md
-    - Progress Reporting: progress-reporting.md
-    - Stage Termination: stage-termination.md
-    - Pipeline Metrics: pipeline-metrics.md
-    - GenAI Token Metrics: gen-ai-token-metrics.md
-    - Evaluation: evaluation.md
-    - Experiment Runner: experiment-runner.md
-    - Langfuse: langfuse.md
-    - Testing Tool Integrations: testing-tools.md
-    - Workspace: workspace.md
+    - Foundry AI/Agentic Framework: https://www.devleader.ca/projects/foundry
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md
     - Plugin Development: plugin-development.md
     - Solution-Wide Source Generation: solution-wide-source-generation.md
     - Cross-Generator Plugins: cross-generator-plugins.md
+    - Local CI Runners: local-runners.md
     - Releasing Needlr: releasing.md
   - Benchmarks: benchmarks.md
   - Analyzers:
@@ -140,31 +126,6 @@ nav:
       - NDLRGEN036: analyzers/NDLRGEN036.md
       - NDLRGEN037: analyzers/NDLRGEN037.md
       - NDLRGEN038: analyzers/NDLRGEN038.md
-    - MAF Analyzers:
-      - NDLRMAF001: analyzers/NDLRMAF001.md
-      - NDLRMAF002: analyzers/NDLRMAF002.md
-      - NDLRMAF003: analyzers/NDLRMAF003.md
-      - NDLRMAF004: analyzers/NDLRMAF004.md
-      - NDLRMAF005: analyzers/NDLRMAF005.md
-      - NDLRMAF006: analyzers/NDLRMAF006.md
-      - NDLRMAF007: analyzers/NDLRMAF007.md
-      - NDLRMAF008: analyzers/NDLRMAF008.md
-      - NDLRMAF009: analyzers/NDLRMAF009.md
-      - NDLRMAF010: analyzers/NDLRMAF010.md
-      - NDLRMAF011: analyzers/NDLRMAF011.md
-      - NDLRMAF016: analyzers/NDLRMAF016.md
-      - NDLRMAF017: analyzers/NDLRMAF017.md
-      - NDLRMAF018: analyzers/NDLRMAF018.md
-      - NDLRMAF019: analyzers/NDLRMAF019.md
-      - NDLRMAF020: analyzers/NDLRMAF020.md
-      - NDLRMAF021: analyzers/NDLRMAF021.md
-      - NDLRMAF022: analyzers/NDLRMAF022.md
-      - NDLRMAF024: analyzers/NDLRMAF024.md
-      - NDLRMAF025: analyzers/NDLRMAF025.md
-      - NDLRMAF027: analyzers/NDLRMAF027.md
-      - NDLRMAF028: analyzers/NDLRMAF028.md
-      - NDLRMAF029: analyzers/NDLRMAF029.md
-      - NDLRMAF030: analyzers/NDLRMAF030.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
@@ -189,9 +150,7 @@ nav:
   - Coverage: coverage.md
   - Video Tutorials: video-tutorials.md
   - Architecture Decisions:
-    - ADR-0001 DAG Workflow Support: adr/adr-0001-dag-graph-workflow-support.md
-    - ADR-0002 ScriptedChatClient Build Decision: adr/adr-0002-build-scriptedchatclient-locally.md
-    - ADR-0003 Provider-neutral Experiment Runner: adr/adr-0003-provider-neutral-experiment-runner.md
+    - ADR-0004 Extract AI Platform to Foundry: adr/adr-0004-extract-ai-platform-to-foundry.md
 
 plugins:
   - search

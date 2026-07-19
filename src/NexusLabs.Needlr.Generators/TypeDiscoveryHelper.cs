@@ -714,7 +714,6 @@ internal static class TypeDiscoveryHelper
         "NexusLabs.Needlr.AspNet.IWebApplicationPlugin",
         "NexusLabs.Needlr.AspNet.IWebApplicationBuilderPlugin",
         "NexusLabs.Needlr.SignalR.IHubRegistrationPlugin",
-        "NexusLabs.Needlr.SemanticKernel.IKernelBuilderPlugin",
         "NexusLabs.Needlr.Hosting.IHostApplicationBuilderPlugin",
         "NexusLabs.Needlr.Hosting.IHostPlugin"
     ];
@@ -1247,9 +1246,6 @@ internal static class TypeDiscoveryHelper
     {
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
-
-    // NOTE: HasKernelFunctions was moved to NexusLabs.Needlr.SemanticKernel.Generators
-    // NOTE: HubRegistrationInfo was moved to NexusLabs.Needlr.SignalR.Generators
 
     /// <summary>
     /// Represents a constructor parameter with optional keyed service information.

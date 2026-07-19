@@ -38,7 +38,7 @@ namespace NexusLabs.Needlr.Generators;
 /// {
 ///     public string    ClientName     =&gt; "WebFetch"; // optional when suffix-stripping works
 ///     public TimeSpan  Timeout        { get; init; } = TimeSpan.FromSeconds(15);
-///     public string?   UserAgent      { get; init; } = "BrandGhost-Agent/1.0";
+///     public string?   UserAgent      { get; init; } = "ExampleProduct-Agent/1.0";
 ///     public Uri?      BaseAddress    { get; init; }
 ///     public IReadOnlyDictionary&lt;string, string&gt;? DefaultHeaders { get; init; }
 /// }

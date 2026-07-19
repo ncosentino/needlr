@@ -26,7 +26,7 @@ dotnet test src/NexusLabs.Needlr.slnx
 
 - PascalCase for all public members, types, and namespaces.
 - `_camelCase` for private fields.
-- Diagnostic IDs use the `NDLR` prefix with a component code: `NDLRCOR` (core), `NDLRGEN` (generators), `NDLRMAF` (agent framework), `NDLRSIG` (SignalR), `NDLRHTTP` (HttpClient).
+- Diagnostic IDs use the `NDLR` prefix with a component code: `NDLRCOR` (core), `NDLRGEN` (generators), `NDLRSIG` (SignalR), `NDLRLOG` (logging), `NDLRHTTP` (HttpClient).
 
 ## XML Documentation
 

@@ -113,7 +113,6 @@ projects and patterns:
 | Project | What It Generates |
 |---------|-------------------|
 | `NexusLabs.Needlr.Generators` | Core: `TypeRegistryGenerator` emits compile-time type registries, injectable type discovery, options binding, HttpClient wiring, factory generation, provider registration, interceptors, decorators |
-| `NexusLabs.Needlr.AgentFramework.Generators` | Agent framework: `AgentFrameworkFunctionRegistryGenerator` emits `AIFunction` registrations from `[AgentFunctionGroup]`, agent topology wiring, `AsyncLocalScoped` wrapper generation |
 | `NexusLabs.Needlr.SignalR.Generators` | SignalR: `SignalRHubRegistryGenerator` emits hub route registrations |
 | `NexusLabs.Needlr.FluentValidation.Generators` | FluentValidation: `FluentValidationAdapterGenerator` emits validator discovery |
 | `NexusLabs.Needlr.Roslyn.Shared` | Shared utilities compiled into each generator via `<Compile Include="..." Link="..."/>` |

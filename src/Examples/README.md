@@ -45,14 +45,6 @@ Examples showing integration with ASP.NET Core SignalR:
 |---------|-------------|
 | `ChatHubExample` | Real-time chat application using Needlr's SignalR integration with source-generated hub registration |
 
-### `SemanticKernel/` - Semantic Kernel Integration
-
-Examples showing integration with Microsoft Semantic Kernel:
-
-| Example | Description |
-|---------|-------------|
-| `SimpleSemanticKernelApp` | Basic Semantic Kernel integration with Needlr |
-
 ### `FluentValidation/` - Options Validation Examples
 
 Examples showing FluentValidation integration for options classes:
