@@ -4141,8 +4141,9 @@ the release script:</p>
 <p>You also need:</p>
 <ul>
 <li><strong>Push access to <code>origin/main</code></strong> on <code>ncosentino/needlr</code>.</li>
-<li><strong>A NuGet.org API key</strong> stored as <code>NUGET_API_KEY</code> in the GitHub
-  repository secrets (already set — the workflow reads it).</li>
+<li><strong>A NuGet.org trusted publishing policy</strong> for package owner <code>ncosentino</code>,
+  repository <code>ncosentino/needlr</code>, workflow <code>release.yml</code>, and environment
+  <code>release</code>.</li>
 <li><strong>The GitHub-provided <code>GITHUB_TOKEN</code></strong> (automatic, no setup).</li>
 </ul>
 <hr />
@@ -4154,7 +4155,7 @@ format enforced by <code>version.json</code>.</p>
 resolves at build time. Every <code>.csproj</code> inherits from it — <strong>there are
 zero hardcoded versions in individual project files</strong>.</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.2-alpha.25&quot;</span><span class="p">,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.3-alpha.1&quot;</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;publicReleaseRefSpec&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="s2">&quot;^refs/heads/main$&quot;</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="s2">&quot;^refs/heads/release/v\\d+\\.\\d+&quot;</span><span class="p">,</span>
@@ -4168,16 +4169,18 @@ zero hardcoded versions in individual project files</strong>.</p>
 <p>Tags are lightweight (not annotated) and follow the pattern:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;-&lt;label&gt;.&lt;counter&gt;
 </span></code></pre></div>
-<p>For alpha: <code>v0.0.2-alpha.25</code>, <code>v0.0.2-alpha.26</code>, ...</p>
+<p>For alpha: <code>v0.0.3-alpha.1</code>, <code>v0.0.3-alpha.2</code>, ...</p>
 <p><strong>Watch the separator:</strong> it's a <strong>dot</strong> between <code>alpha</code> and the
-counter, not a dash. <code>v0.0.2-alpha-0026</code> is wrong; <code>v0.0.2-alpha.26</code> is
+counter, not a dash. <code>v0.0.3-alpha-0002</code> is wrong; <code>v0.0.3-alpha.2</code> is
 right. NuGet displays the version with different normalization in its
 UI but the tag and <code>version.json</code> use the dotted form.</p>
+<p>For example, tag <code>v0.0.3-alpha.1</code> publishes NuGet package version
+<code>0.0.3-alpha-0001</code>.</p>
 <h3 id="finding-the-next-version">Finding the next version<a class="headerlink" href="#finding-the-next-version" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2</span> <span class="n">-DryRun</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
 </span></code></pre></div>
 <p>The <code>-Prerelease</code> flag scans existing tags for the highest
-<code>v0.0.2-alpha.*</code> and increments the counter. <code>-Base</code> pins the base
+<code>v0.0.3-alpha.*</code> and increments the counter. <code>-Base</code> pins the base
 version so a stale <code>version.json</code> doesn't confuse the calculation. The
 dry run prints what the real run would do.</p>
 <hr />
@@ -4451,7 +4454,7 @@ the dry-run output:</p>
 <hr />
 <h2 id="running-the-release">Running the release<a class="headerlink" href="#running-the-release" title="Permanent link">&para;</a></h2>
 <h3 id="dry-run-first">Dry run first<a class="headerlink" href="#dry-run-first" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2</span> <span class="n">-DryRun</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
 </span></code></pre></div>
 <p>Dry run:</p>
 <ul>
@@ -4464,13 +4467,13 @@ the dry-run output:</p>
 <p>If the dry run reports a missing CHANGELOG entry or unshipped
 analyzers, fix those and re-run.</p>
 <h3 id="real-run">Real run<a class="headerlink" href="#real-run" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span>
 </span></code></pre></div>
 <p>The real run, in order:</p>
 <ol>
 <li>Runs all gates.</li>
 <li>Runs <code>nbgv set-version &lt;new&gt;</code> to bump <code>version.json</code>.</li>
-<li>Creates a commit: <code>chore: bump version to 0.0.2-alpha.26</code>.</li>
+<li>Creates a commit: <code>chore: bump version to 0.0.3-alpha.2</code>.</li>
 <li>Creates a lightweight tag via <code>nbgv tag</code>.</li>
 <li>Runs <code>git push origin HEAD --tags</code>.</li>
 </ol>
@@ -4482,8 +4485,10 @@ analyzers, fix those and re-run.</p>
 <li>Run full test suite with coverage collection.</li>
 <li>Pack every <code>NexusLabs.Needlr*.csproj</code> except tests, benchmarks,
    integration tests.</li>
-<li><code>dotnet nuget push</code> every <code>.nupkg</code> to NuGet.org using
-   <code>${{ secrets.NUGET_API_KEY }}</code> with <code>--skip-duplicate</code>.</li>
+<li>Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
+   through <code>NuGet/login@v1</code>.</li>
+<li><code>dotnet nuget push</code> every <code>.nupkg</code> to NuGet.org with
+   <code>--skip-duplicate</code>.</li>
 <li><code>dotnet nuget push</code> every <code>.nupkg</code> to GitHub Packages using
    <code>${{ secrets.GITHUB_TOKEN }}</code> with <code>--skip-duplicate</code>.</li>
 <li>Extract the matching <code>## [&lt;version&gt;]</code> section from <code>CHANGELOG.md</code>.</li>
@@ -4583,9 +4588,10 @@ the bundle packages.</p>
 <h3 id="the-workflow-fires-but-nothing-publishes">The workflow fires but nothing publishes<a class="headerlink" href="#the-workflow-fires-but-nothing-publishes" title="Permanent link">&para;</a></h3>
 <p>Check the Actions tab for the workflow run. Common causes:</p>
 <ul>
-<li>The <code>NUGET_API_KEY</code> secret expired. Renew at
-  <a href="https://www.nuget.org/account/apikeys">nuget.org/account/apikeys</a>
-  and update the secret in repo settings.</li>
+<li>The NuGet trusted publishing policy does not match the repository owner,
+  repository, workflow filename, or <code>release</code> environment.</li>
+<li>The publish job is missing <code>id-token: write</code>, <code>environment: release</code>, or the
+  <code>NuGet/login@v1</code> token exchange.</li>
 <li>A transient NuGet.org outage. Re-run the workflow from the Actions
   tab.</li>
 <li>A package was already published at that version (<code>--skip-duplicate</code>
