@@ -466,26 +466,31 @@ The real run, in order:
 1. Runs all gates.
 2. Runs `nbgv set-version <new>` to bump `version.json`.
 3. Creates a commit: `chore: bump version to 0.0.3-alpha.2`.
-4. Creates a lightweight tag via `nbgv tag`.
-5. Runs `git push origin HEAD --tags`.
+4. Rebases and pushes the version commit to `main`, retrying a bounded number
+   of times if the coverage-badge bot wins the push race.
+5. Creates a lightweight tag via `nbgv tag` on the exact commit now present on
+   `main`.
+6. Pushes that tag to trigger the release workflow.
 
 ### When the tag lands on origin
 
 `.github/workflows/release.yml` fires on the tag push. Its steps:
 
-1. Checkout + setup .NET 10.
-2. Restore, build `src/NexusLabs.Needlr.slnx` with `-p:PublicRelease=true`.
-3. Run full test suite with coverage collection.
-4. Pack every `NexusLabs.Needlr*.csproj` except tests, benchmarks,
+1. Wait for the `ci.yml` push run on `main` for the exact tag commit to
+   complete successfully.
+2. Checkout + setup .NET 10.
+3. Restore, build `src/NexusLabs.Needlr.slnx` with `-p:PublicRelease=true`.
+4. Run full test suite with coverage collection.
+5. Pack every `NexusLabs.Needlr*.csproj` except tests, benchmarks,
    integration tests.
-5. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
+6. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
    through `NuGet/login@v1`.
-6. `dotnet nuget push` every `.nupkg` to NuGet.org with
+7. `dotnet nuget push` every `.nupkg` to NuGet.org with
    `--skip-duplicate`.
-7. `dotnet nuget push` every `.nupkg` to GitHub Packages using
+8. `dotnet nuget push` every `.nupkg` to GitHub Packages using
    `${{ secrets.GITHUB_TOKEN }}` with `--skip-duplicate`.
-8. Extract the matching `## [<version>]` section from `CHANGELOG.md`.
-9. Create a GitHub Release via `softprops/action-gh-release@v2`
+9. Extract the matching `## [<version>]` section from `CHANGELOG.md`.
+10. Create a GitHub Release via `softprops/action-gh-release@v2`
    flagged as pre-release because the tag contains `-`, attaching
    every `.nupkg` and `.snupkg` file.
 
@@ -609,6 +614,11 @@ the bundle packages.
 
 Check the Actions tab for the workflow run. Common causes:
 
+- The same-commit `ci.yml` push run on `main` is missing, still running, or
+  did not complete successfully.
+- A manually-created tag points to a commit that was never pushed to `main`.
+  `release.ps1` avoids this by landing the version commit before creating the
+  tag.
 - The NuGet trusted publishing policy does not match the repository owner,
   repository, workflow filename, or `release` environment.
 - The publish job is missing `id-token: write`, `environment: release`, or the

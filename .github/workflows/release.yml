@@ -13,7 +13,67 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
+  verify-main-ci:
+    name: Verify main CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      actions: read
+      contents: read
+
+    steps:
+    - name: Wait for successful same-commit main CI
+      uses: actions/github-script@v8
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const deadline = Date.now() + (40 * 60 * 1000);
+          let lastRun;
+          while (Date.now() < deadline) {
+            try {
+              const { data } = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'ci.yml',
+                branch: 'main',
+                event: 'push',
+                per_page: 100
+              });
+              const run = data.workflow_runs
+                .filter(candidate =>
+                  candidate.head_sha === context.sha &&
+                  candidate.head_branch === 'main')
+                .sort((left, right) =>
+                  new Date(right.created_at) - new Date(left.created_at))[0];
+
+              if (run) {
+                lastRun = run;
+                core.info(
+                  `Main CI ${run.id} for ${context.sha} is ${run.status}` +
+                  `${run.conclusion ? ` (${run.conclusion})` : ''}.`);
+                if (run.status === 'completed') {
+                  if (run.conclusion !== 'success') {
+                    core.setFailed(
+                      `Main CI must succeed before release: ${run.html_url}`);
+                  }
+                  return;
+                }
+              } else {
+                core.info(`Waiting for main CI on ${context.sha}.`);
+              }
+            } catch (error) {
+              core.warning(`Could not query main CI: ${error.message}`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 15000));
+          }
+
+          core.setFailed(
+            `Timed out waiting for successful main CI on ${context.sha}.` +
+            `${lastRun ? ` Last observed run: ${lastRun.html_url}` : ''}`);
+
   publish:
+    needs: verify-main-ci
     # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
     runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     environment: release
@@ -305,6 +365,11 @@ jobs:
     # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
       run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
 
     - name: Deploy Documentation to Cloudflare Pages
       uses: cloudflare/wrangler-action@v4

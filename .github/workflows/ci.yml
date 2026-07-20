@@ -224,6 +224,12 @@ jobs:
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
 
+    - name: Setup Node.js
+      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
     - name: Deploy Documentation to Cloudflare Pages
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: cloudflare/wrangler-action@v4
