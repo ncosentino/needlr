@@ -16,35 +16,36 @@ git pull
 # 2. Ship analyzers. Move every rule out of
 #    src/**/AnalyzerReleases.Unshipped.md into the matching
 #    AnalyzerReleases.Shipped.md under the EXISTING base-version
-#    release section (e.g. "## Release 0.0.2"). Keep rule IDs in
+#    release section (e.g. "## Release 0.0.3"). Keep rule IDs in
 #    alphanumeric order within the section.
 #
 #    The header uses the base version ONLY — RS2007 rejects
-#    pre-release labels, so "## Release 0.0.2-alpha.26" will not
-#    build. All alpha/beta/rc releases of 0.0.2 share one section.
+#    pre-release labels, so "## Release 0.0.3-alpha.2" will not
+#    build. All alpha/beta/rc releases of 0.0.3 share one section.
 #
-#    Commit as: chore: ship analyzers for 0.0.2-alpha.N
+#    Commit as: chore: ship analyzers for 0.0.3-alpha.N
 #    (scripts/release.ps1 refuses to proceed without this.)
 
 # 3. Add a CHANGELOG.md entry:
-#        ## [0.0.2-alpha.N] - YYYY-MM-DD
+#        ## [0.0.3-alpha.N] - YYYY-MM-DD
 #    with Added / Fixed / Changed sections.
 
 # 4. Dry-run the release script to validate every gate passes.
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.2 -DryRun
+./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
 
 # 5. Run for real. This bumps version.json, commits, tags, and pushes.
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.2
+./scripts/release.ps1 -Prerelease alpha -Base 0.0.3
 ```
 
-Pushing the `v0.0.2-alpha.N` tag to `origin` triggers
+Pushing the `v0.0.3-alpha.N` tag to `origin` triggers
 `.github/workflows/release.yml`, which:
 
 1. Builds the solution with `-p:PublicRelease=true`.
 2. Runs the full test suite with coverage.
 3. Packs every `NexusLabs.Needlr*.csproj` except `*.Tests`, `*.Benchmarks`, `*IntegrationTests`.
-4. Pushes all `.nupkg` + `.snupkg` files to NuGet.org and GitHub Packages.
-5. Creates a GitHub Release (flagged pre-release because the tag contains `-`)
+4. Exchanges the GitHub OIDC identity for a short-lived NuGet.org API key.
+5. Pushes all `.nupkg` + `.snupkg` files to NuGet.org and GitHub Packages.
+6. Creates a GitHub Release (flagged pre-release because the tag contains `-`)
    with release notes extracted from `CHANGELOG.md`.
 
 ## Gates enforced by `scripts/release.ps1`
@@ -68,7 +69,7 @@ If any gate fails, the script throws before touching `version.json` or git.
   reads at compile time. Do not edit by hand; use `nbgv set-version` or
   `release.ps1`.
 - Tag format: lightweight `v<SemVer>` with a dot before the prerelease
-  counter: `v0.0.2-alpha.26`, not `v0.0.2-alpha-0026`.
+  counter: `v0.0.3-alpha.2`, not `v0.0.3-alpha-0002`.
 - The release workflow's public-release regex is in `version.json` under
   `publicReleaseRefSpec`.
 

@@ -16,8 +16,10 @@ jobs:
   publish:
     # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
     runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    environment: release
     permissions:
       contents: write
+      id-token: write
       packages: write
 
     steps:
@@ -36,25 +38,43 @@ jobs:
       run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
     - name: Install NBGV CLI
-      run: dotnet tool install -g nbgv
+      run: |
+        dotnet tool install \
+          --tool-path "$RUNNER_TEMP/nbgv" \
+          nbgv \
+          --version 3.7.115
+        echo "$RUNNER_TEMP/nbgv" >> "$GITHUB_PATH"
 
-    - name: Validate tag format & prepare version
+    - name: Validate release version
       id: version
       shell: bash
       run: |
-        export NBGV_PublicRelease=true    # force public release behavior
+        if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+          echo "::error::Run the release workflow from a version tag."
+          exit 1
+        fi
 
-        TAG="${GITHUB_REF_NAME}"          # e.g., v0.0.1-alpha.3
-        TAG_CLEAN="${TAG#v}"              # strip leading "v"
+        TAG="${GITHUB_REF_NAME}"
+        if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+          echo "::error::Tag '${TAG}' is not a supported semantic version tag."
+          exit 1
+        fi
 
-        echo "Git tag: ${TAG}"
-        echo "Clean tag: ${TAG_CLEAN}"
+        VERSION="${TAG#v}"
+        NBGV_SEMVER="$(nbgv get-version -v SemVer2)"
+        NUGET_VERSION="$(nbgv get-version -v NuGetPackageVersion)"
+        if [[ "${NBGV_SEMVER}" != "${VERSION}" ]]; then
+          echo "::error::Tag version '${VERSION}' does not match NBGV semantic version '${NBGV_SEMVER}'."
+          exit 1
+        fi
 
-        # We don't hard-fail here if NBGV outputs a height suffix; we trust the tag for publishing
-        NUGETVER="$(nbgv get-version -v NuGetPackageVersion || true)"
-        echo "NBGV NuGetPackageVersion: ${NUGETVER}"
+        if ! grep -Fq "## [${VERSION}]" CHANGELOG.md; then
+          echo "::error::CHANGELOG.md does not contain a '${VERSION}' release section."
+          exit 1
+        fi
 
-        echo "version=${TAG_CLEAN}" >> "$GITHUB_OUTPUT"
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+        echo "package-version=${NUGET_VERSION}" >> "$GITHUB_OUTPUT"
 
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx
@@ -137,9 +157,33 @@ jobs:
     - name: List packages
       run: ls -la artifacts/packages
 
+    - name: Validate package versions
+      shell: pwsh
+      run: |
+        $expectedVersion = '${{ steps.version.outputs.package-version }}'
+        $packages = @(
+          Get-ChildItem artifacts/packages -Filter '*.nupkg'
+        )
+        if ($packages.Count -eq 0) {
+          throw 'No NuGet packages were produced.'
+        }
+        foreach ($package in $packages) {
+          if (-not $package.BaseName.EndsWith(
+            ".$expectedVersion",
+            [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Package '$($package.Name)' does not use expected version '$expectedVersion'."
+          }
+        }
+
+    - name: Authenticate to NuGet.org
+      id: nuget-login
+      uses: NuGet/login@v1
+      with:
+        user: ncosentino
+
     - name: Push to NuGet.org
       env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
       run: |
         dotnet nuget push "artifacts/packages/*.nupkg" \
           --api-key "$NUGET_API_KEY" \
@@ -165,8 +209,12 @@ jobs:
         NOTES=$(awk -v ver="$VERSION" '
           /^## \[/ { 
             if (found) exit
-            if (index($0, "[" ver "]")) found=1
+            if (index($0, "[" ver "]")) {
+              found=1
+              next
+            }
           }
+          found && /^\[[^]]+\]: / { exit }
           found { print }
         ' CHANGELOG.md)
         

@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.1] - 2026-07-19
+
 ### Changed
 
 - **BREAKING (alpha): AI and agentic packages have moved to [Foundry](https://github.com/ncosentino/foundry).** Foundry now owns Microsoft Agent Framework orchestration, MEAI evaluation and experiments, MEAI Reporting, Langfuse, GitHub Copilot, Semantic Kernel, testing, generators, analyzers, examples, and the optional `NexusLabs.Foundry.Needlr.*` integration packages. Needlr no longer carries AI provider dependencies or releases those capabilities on its version stream.

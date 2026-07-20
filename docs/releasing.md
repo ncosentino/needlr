@@ -43,8 +43,9 @@ the release script:
 You also need:
 
 - **Push access to `origin/main`** on `ncosentino/needlr`.
-- **A NuGet.org API key** stored as `NUGET_API_KEY` in the GitHub
-  repository secrets (already set — the workflow reads it).
+- **A NuGet.org trusted publishing policy** for package owner `ncosentino`,
+  repository `ncosentino/needlr`, workflow `release.yml`, and environment
+  `release`.
 - **The GitHub-provided `GITHUB_TOKEN`** (automatic, no setup).
 
 ---
@@ -62,7 +63,7 @@ zero hardcoded versions in individual project files**.
 
 ```json
 {
-  "version": "0.0.2-alpha.25",
+  "version": "0.0.3-alpha.1",
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
     "^refs/heads/release/v\\d+\\.\\d+",
@@ -82,21 +83,24 @@ Tags are lightweight (not annotated) and follow the pattern:
 v<major>.<minor>.<patch>-<label>.<counter>
 ```
 
-For alpha: `v0.0.2-alpha.25`, `v0.0.2-alpha.26`, ...
+For alpha: `v0.0.3-alpha.1`, `v0.0.3-alpha.2`, ...
 
 **Watch the separator:** it's a **dot** between `alpha` and the
-counter, not a dash. `v0.0.2-alpha-0026` is wrong; `v0.0.2-alpha.26` is
+counter, not a dash. `v0.0.3-alpha-0002` is wrong; `v0.0.3-alpha.2` is
 right. NuGet displays the version with different normalization in its
 UI but the tag and `version.json` use the dotted form.
+
+For example, tag `v0.0.3-alpha.1` publishes NuGet package version
+`0.0.3-alpha-0001`.
 
 ### Finding the next version
 
 ```powershell
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.2 -DryRun
+./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
 ```
 
 The `-Prerelease` flag scans existing tags for the highest
-`v0.0.2-alpha.*` and increments the counter. `-Base` pins the base
+`v0.0.3-alpha.*` and increments the counter. `-Base` pins the base
 version so a stale `version.json` doesn't confuse the calculation. The
 dry run prints what the real run would do.
 
@@ -437,7 +441,7 @@ Review the output, edit for tone, and append to `CHANGELOG.md`.
 ### Dry run first
 
 ```powershell
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.2 -DryRun
+./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
 ```
 
 Dry run:
@@ -454,14 +458,14 @@ analyzers, fix those and re-run.
 ### Real run
 
 ```powershell
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.2
+./scripts/release.ps1 -Prerelease alpha -Base 0.0.3
 ```
 
 The real run, in order:
 
 1. Runs all gates.
 2. Runs `nbgv set-version <new>` to bump `version.json`.
-3. Creates a commit: `chore: bump version to 0.0.2-alpha.26`.
+3. Creates a commit: `chore: bump version to 0.0.3-alpha.2`.
 4. Creates a lightweight tag via `nbgv tag`.
 5. Runs `git push origin HEAD --tags`.
 
@@ -474,12 +478,14 @@ The real run, in order:
 3. Run full test suite with coverage collection.
 4. Pack every `NexusLabs.Needlr*.csproj` except tests, benchmarks,
    integration tests.
-5. `dotnet nuget push` every `.nupkg` to NuGet.org using
-   `${{ secrets.NUGET_API_KEY }}` with `--skip-duplicate`.
-6. `dotnet nuget push` every `.nupkg` to GitHub Packages using
+5. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
+   through `NuGet/login@v1`.
+6. `dotnet nuget push` every `.nupkg` to NuGet.org with
+   `--skip-duplicate`.
+7. `dotnet nuget push` every `.nupkg` to GitHub Packages using
    `${{ secrets.GITHUB_TOKEN }}` with `--skip-duplicate`.
-7. Extract the matching `## [<version>]` section from `CHANGELOG.md`.
-8. Create a GitHub Release via `softprops/action-gh-release@v2`
+8. Extract the matching `## [<version>]` section from `CHANGELOG.md`.
+9. Create a GitHub Release via `softprops/action-gh-release@v2`
    flagged as pre-release because the tag contains `-`, attaching
    every `.nupkg` and `.snupkg` file.
 
@@ -603,9 +609,10 @@ the bundle packages.
 
 Check the Actions tab for the workflow run. Common causes:
 
-- The `NUGET_API_KEY` secret expired. Renew at
-  [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
-  and update the secret in repo settings.
+- The NuGet trusted publishing policy does not match the repository owner,
+  repository, workflow filename, or `release` environment.
+- The publish job is missing `id-token: write`, `environment: release`, or the
+  `NuGet/login@v1` token exchange.
 - A transient NuGet.org outage. Re-run the workflow from the Actions
   tab.
 - A package was already published at that version (`--skip-duplicate`
