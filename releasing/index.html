@@ -4474,12 +4474,17 @@ analyzers, fix those and re-run.</p>
 <li>Runs all gates.</li>
 <li>Runs <code>nbgv set-version &lt;new&gt;</code> to bump <code>version.json</code>.</li>
 <li>Creates a commit: <code>chore: bump version to 0.0.3-alpha.2</code>.</li>
-<li>Creates a lightweight tag via <code>nbgv tag</code>.</li>
-<li>Runs <code>git push origin HEAD --tags</code>.</li>
+<li>Rebases and pushes the version commit to <code>main</code>, retrying a bounded number
+   of times if the coverage-badge bot wins the push race.</li>
+<li>Creates a lightweight tag via <code>nbgv tag</code> on the exact commit now present on
+   <code>main</code>.</li>
+<li>Pushes that tag to trigger the release workflow.</li>
 </ol>
 <h3 id="when-the-tag-lands-on-origin">When the tag lands on origin<a class="headerlink" href="#when-the-tag-lands-on-origin" title="Permanent link">&para;</a></h3>
 <p><code>.github/workflows/release.yml</code> fires on the tag push. Its steps:</p>
 <ol>
+<li>Wait for the <code>ci.yml</code> push run on <code>main</code> for the exact tag commit to
+   complete successfully.</li>
 <li>Checkout + setup .NET 10.</li>
 <li>Restore, build <code>src/NexusLabs.Needlr.slnx</code> with <code>-p:PublicRelease=true</code>.</li>
 <li>Run full test suite with coverage collection.</li>
@@ -4588,6 +4593,11 @@ the bundle packages.</p>
 <h3 id="the-workflow-fires-but-nothing-publishes">The workflow fires but nothing publishes<a class="headerlink" href="#the-workflow-fires-but-nothing-publishes" title="Permanent link">&para;</a></h3>
 <p>Check the Actions tab for the workflow run. Common causes:</p>
 <ul>
+<li>The same-commit <code>ci.yml</code> push run on <code>main</code> is missing, still running, or
+  did not complete successfully.</li>
+<li>A manually-created tag points to a commit that was never pushed to <code>main</code>.
+  <code>release.ps1</code> avoids this by landing the version commit before creating the
+  tag.</li>
 <li>The NuGet trusted publishing policy does not match the repository owner,
   repository, workflow filename, or <code>release</code> environment.</li>
 <li>The publish job is missing <code>id-token: write</code>, <code>environment: release</code>, or the
