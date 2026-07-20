@@ -136,7 +136,7 @@ function Test-UnshippedAnalyzerRules {
     $content = Get-Content -Path $file.FullName
     # A "rule row" is any line starting with "NDLR" — that's the Needlr
     # analyzer prefix used across all diagnostic IDs (NDLRCOR, NDLRGEN,
-    # NDLRMAF, NDLRSIG, NDLRHTTP, etc.). Comment lines begin with ";" and
+    # NDLRLOG, NDLRSIG, NDLRHTTP, etc.). Comment lines begin with ";" and
     # header lines begin with "#" or "-".
     $ruleLines = $content | Where-Object { $_ -match '^NDLR' }
     if ($ruleLines.Count -gt 0) {
