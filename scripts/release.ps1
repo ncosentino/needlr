@@ -79,7 +79,13 @@ if (Test-Path $changelogPath) {
   }
 }
 
-if (-not $DryRun) { Ensure-CleanRepo }
+if (-not $DryRun) {
+  Ensure-CleanRepo
+  $currentBranch = (git branch --show-current).Trim()
+  if ($currentBranch -ne 'main') {
+    throw "Releases must run from the local main branch. Current branch: $currentBranch"
+  }
+}
 
 # CI gate: verify all check runs on HEAD are green before releasing
 if (-not $SkipCiCheck -and -not $DryRun) {
@@ -226,9 +232,9 @@ if ($DryRun) {
   Write-Host "[DRY RUN] Would run:"
   Write-Host "  nbgv set-version $Version"
   Write-Host "  git commit -am 'chore: bump version to $Version'"
-  Write-Host "  nbgv tag"
-  Write-Host "  git push origin --tags"
   Write-Host "  git pull --rebase && git push origin HEAD"
+  Write-Host "  nbgv tag"
+  Write-Host "  git push origin refs/tags/v$Version"
   exit 0
 }
 
@@ -257,31 +263,39 @@ try {
   }
 }
 
+$mainPushed = $false
+for ($attempt = 1; $attempt -le 3; $attempt++) {
+  git pull --rebase
+  if ($LASTEXITCODE -ne 0) {
+    throw "Rebase failed before release. Resolve the working tree; no tag was created."
+  }
+
+  git push origin HEAD
+  if ($LASTEXITCODE -eq 0) {
+    $mainPushed = $true
+    break
+  }
+
+  if ($attempt -lt 3) {
+    Write-Host "Main push raced with another commit; retrying ($attempt/3)." -ForegroundColor Yellow
+    Start-Sleep -Seconds 2
+  }
+}
+
+if (-not $mainPushed) {
+  throw "Version bump commit could not be pushed after 3 attempts. No tag was created."
+}
+Write-Host "Version bump committed to main." -ForegroundColor Green
+
 & nbgv tag
 if ($LASTEXITCODE -ne 0) {
-  throw "nbgv tag failed. The version bump commit exists on HEAD but no tag was created. Inspect tags with 'git tag --list v$Version' and resolve before re-running."
+  throw "nbgv tag failed after the version commit reached main. Inspect tags with 'git tag --list v$Version' before re-running."
 }
 
-# Push tags first so release.yml fires immediately on the new v* tag.
-# Then rebase+push HEAD separately to handle the coverage-badge bot race:
-# CI's "chore: update coverage badge [skip ci]" auto-commit often lands
-# between the CI gate check and this push, causing a non-fast-forward
-# rejection on HEAD. The tag push always succeeds (new ref). Splitting
-# them means the release is never blocked by the race — worst case the
-# version-bump commit needs one rebase attempt.
 git push origin "refs/tags/v$Version"
 if ($LASTEXITCODE -ne 0) {
-  throw "Tag push failed for v$Version. Inspect remote state; the tag exists locally but is not on origin."
+  throw "Tag push failed for v$Version. The version commit is on main but the release was not triggered."
 }
-Write-Host "Tag v$Version pushed — release.yml is firing." -ForegroundColor Green
-
-git pull --rebase 2>&1 | Out-Null
-git push origin HEAD
-if ($LASTEXITCODE -ne 0) {
-  Write-Host "WARNING: Version bump commit push failed (likely coverage-badge race)." -ForegroundColor Yellow
-  Write-Host "The tag and release are fine. Run 'git pull --rebase && git push' manually to land the bump." -ForegroundColor Yellow
-} else {
-  Write-Host "Version bump committed to main." -ForegroundColor Green
-}
+Write-Host "Tag v$Version pushed — release.yml is waiting for same-commit main CI." -ForegroundColor Green
 
 Write-Host "Tagged and pushed v$Version"

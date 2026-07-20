@@ -33,19 +33,22 @@ git pull
 # 4. Dry-run the release script to validate every gate passes.
 ./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
 
-# 5. Run for real. This bumps version.json, commits, tags, and pushes.
+# 5. Run for real. This bumps version.json, pushes the commit to main,
+#    then tags that exact commit.
 ./scripts/release.ps1 -Prerelease alpha -Base 0.0.3
 ```
 
 Pushing the `v0.0.3-alpha.N` tag to `origin` triggers
 `.github/workflows/release.yml`, which:
 
-1. Builds the solution with `-p:PublicRelease=true`.
-2. Runs the full test suite with coverage.
-3. Packs every `NexusLabs.Needlr*.csproj` except `*.Tests`, `*.Benchmarks`, `*IntegrationTests`.
-4. Exchanges the GitHub OIDC identity for a short-lived NuGet.org API key.
-5. Pushes all `.nupkg` + `.snupkg` files to NuGet.org and GitHub Packages.
-6. Creates a GitHub Release (flagged pre-release because the tag contains `-`)
+1. Waits for the `ci.yml` push run on `main` for the exact tag commit to
+   complete successfully.
+2. Builds the solution with `-p:PublicRelease=true`.
+3. Runs the full test suite with coverage.
+4. Packs every `NexusLabs.Needlr*.csproj` except `*.Tests`, `*.Benchmarks`, `*IntegrationTests`.
+5. Exchanges the GitHub OIDC identity for a short-lived NuGet.org API key.
+6. Pushes all `.nupkg` + `.snupkg` files to NuGet.org and GitHub Packages.
+7. Creates a GitHub Release (flagged pre-release because the tag contains `-`)
    with release notes extracted from `CHANGELOG.md`.
 
 ## Gates enforced by `scripts/release.ps1`
