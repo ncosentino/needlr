@@ -70,6 +70,7 @@ nav:
     - Open Generic Decorators: open-generic-decorators.md
     - Compose and Expose Closed Generics: composed-closed-generics.md
     - Cancellation-Aware Logging: cancellation-aware-logging.md
+    - Generated Constructors: generated-constructors.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - .NET MAUI: maui.md
@@ -126,9 +127,26 @@ nav:
       - NDLRGEN036: analyzers/NDLRGEN036.md
       - NDLRGEN037: analyzers/NDLRGEN037.md
       - NDLRGEN038: analyzers/NDLRGEN038.md
+      - NDLRGEN039: analyzers/NDLRGEN039.md
+      - NDLRGEN040: analyzers/NDLRGEN040.md
+      - NDLRGEN041: analyzers/NDLRGEN041.md
+      - NDLRGEN042: analyzers/NDLRGEN042.md
+      - NDLRGEN043: analyzers/NDLRGEN043.md
+      - NDLRGEN044: analyzers/NDLRGEN044.md
+      - NDLRGEN045: analyzers/NDLRGEN045.md
+      - NDLRGEN046: analyzers/NDLRGEN046.md
+      - NDLRGEN047: analyzers/NDLRGEN047.md
+      - NDLRGEN048: analyzers/NDLRGEN048.md
+      - NDLRGEN049: analyzers/NDLRGEN049.md
+      - NDLRGEN050: analyzers/NDLRGEN050.md
+      - NDLRGEN051: analyzers/NDLRGEN051.md
+      - NDLRGEN052: analyzers/NDLRGEN052.md
+      - NDLRGEN053: analyzers/NDLRGEN053.md
+      - NDLRGEN054: analyzers/NDLRGEN054.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
+      - NDLRSIG003: analyzers/NDLRSIG003.md
     - Logging Analyzers:
       - NDLRLOG001: analyzers/NDLRLOG001.md
       - NDLRLOG002: analyzers/NDLRLOG002.md
@@ -151,6 +169,7 @@ nav:
   - Video Tutorials: video-tutorials.md
   - Architecture Decisions:
     - ADR-0004 Extract AI Platform to Foundry: adr/adr-0004-extract-ai-platform-to-foundry.md
+    - ADR-0005 Generate Guarded Constructors: adr/adr-0005-generate-guarded-constructors.md
 
 plugins:
   - search

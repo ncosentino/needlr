@@ -17,4 +17,9 @@ public static class DiagnosticIds
     /// NDLRSIG002: HubType must be a typeof expression.
     /// </summary>
     public const string HubTypeMustBeTypeOf = "NDLRSIG002";
+
+    /// <summary>
+    /// NDLRSIG003: IHubRegistrationPlugin implementation is eligible for generated-constructor generation.
+    /// </summary>
+    public const string HubRegistrationPluginRequiresParameterlessActivation = "NDLRSIG003";
 }

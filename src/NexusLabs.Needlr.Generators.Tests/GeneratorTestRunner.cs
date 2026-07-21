@@ -59,12 +59,19 @@ public sealed class GeneratorTestRunner
     /// Used to test cross-assembly scenarios (e.g., a "framework" assembly with internal
     /// types that the host assembly should not be able to access).
     /// </summary>
+    /// <remarks>
+    /// Includes any references already added via <see cref="WithReference{T}"/> (call
+    /// those first in the fluent chain) so the cross-assembly source can itself declare
+    /// types that depend on Needlr attributes — for example, a custom guard-alias
+    /// attribute carrying <c>ConstructorGuardDefinitionAttribute</c> in a referenced
+    /// assembly.
+    /// </remarks>
     public GeneratorTestRunner WithCrossAssemblySource(string assemblyName, string source)
     {
         var compilation = CSharpCompilation.Create(
             assemblyName,
             [CSharpSyntaxTree.ParseText(source)],
-            Basic.Reference.Assemblies.Net100.References.All,
+            Basic.Reference.Assemblies.Net100.References.All.Concat(_additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var errors = compilation.GetDiagnostics()
@@ -290,6 +297,39 @@ public sealed class GeneratorTestRunner
     }
 
     /// <summary>
+    /// Runs any generator and returns all compiler error diagnostics (any <c>CSxxxx</c>
+    /// error) from the output compilation. Used to prove that a given source shape
+    /// compiles cleanly end-to-end — for example, that an attribute usage the generator
+    /// depends on does not itself trigger a compiler diagnostic such as CS0579 (duplicate
+    /// non-repeatable attribute).
+    /// </summary>
+    public IReadOnlyList<Diagnostic> RunGeneratorCompilationErrors(IIncrementalGenerator generator)
+    {
+        var parseOptions = _parseOptions ?? new CSharpParseOptions();
+        var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(_additionalReferences)
+            .ToArray();
+
+        var compilation = CSharpCompilation.Create(
+            _assemblyName,
+            syntaxTrees,
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out _);
+
+        return outputCompilation.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+    }
+
+    /// <summary>
     /// Runs a specific generator and returns all generated files.
     /// </summary>
     public GeneratedFile[] RunGenerator(IIncrementalGenerator generator)
@@ -406,6 +446,15 @@ public sealed class GeneratorTestRunner
         return new GeneratorTestRunner()
             .WithReference<GenerateTypeRegistryAttribute>()
             .WithReference<ProviderAttribute>();
+    }
+
+    /// <summary>
+    /// Creates a default runner configured for generated-constructor tests.
+    /// </summary>
+    public static GeneratorTestRunner ForConstructorGeneration()
+    {
+        return new GeneratorTestRunner()
+            .WithReference<GenerateConstructorAttribute>();
     }
 
     /// <summary>

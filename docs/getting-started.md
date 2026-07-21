@@ -392,6 +392,7 @@ var webApplication = new Syringe()
 - Bind typed settings from `appsettings.json` without manual registration via [Options Binding](options.md)
 - Source-generate named `HttpClient` registrations from typed options records via [HttpClient Options](http-clients.md)
 - Skip noisy cancellation logs with source-generated [Cancellation-Aware Logging](cancellation-aware-logging.md)
+- Remove constructor, field-assignment, and guard-clause boilerplate with source-generated [Generated Constructors](generated-constructors.md)
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding
 - Explore [Plugin Development](plugin-development.md) to extend functionality
 - Discover [Factory Delegates](factories.md) for types with runtime parameters

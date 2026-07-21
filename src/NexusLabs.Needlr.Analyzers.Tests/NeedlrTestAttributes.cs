@@ -192,4 +192,61 @@ namespace NexusLabs.Needlr
     /// All attributes including RegisterAs.
     /// </summary>
     public const string AllWithRegisterAs = Core + Keyed + RegisterAs + GenerateTypeRegistry;
+
+    /// <summary>
+    /// Generated-constructor feature attributes: GenerateConstructor, ConstructorGuard,
+    /// ConstructorIgnore, ConstructorGuardKind, and ConstructorNullGuardMode, matching
+    /// the real package's public shapes.
+    /// </summary>
+    public const string GeneratedConstructor = @"
+namespace NexusLabs.Needlr.Generators
+{
+    public enum ConstructorNullGuardMode
+    {
+        None = 0,
+        NonNullableReferences = 1,
+    }
+
+    public enum ConstructorGuardKind
+    {
+        None = 0,
+        NotNull = 1,
+        NotNullOrEmpty = 2,
+        NotNullOrWhiteSpace = 3,
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GenerateConstructorAttribute : System.Attribute
+    {
+        public GenerateConstructorAttribute() : this(ConstructorNullGuardMode.None) { }
+        public GenerateConstructorAttribute(ConstructorNullGuardMode mode) => Mode = mode;
+        public ConstructorNullGuardMode Mode { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
+    public sealed class ConstructorGuardAttribute : System.Attribute
+    {
+        public ConstructorGuardAttribute(ConstructorGuardKind kind) => Kind = kind;
+        public ConstructorGuardAttribute(System.Type guardType) => GuardType = guardType;
+        public ConstructorGuardAttribute(System.Type guardType, string methodName)
+        {
+            GuardType = guardType;
+            MethodName = methodName;
+        }
+
+        public ConstructorGuardKind Kind { get; }
+        public System.Type? GuardType { get; }
+        public string? MethodName { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class ConstructorIgnoreAttribute : System.Attribute
+    {
+    }
+}";
+
+    /// <summary>
+    /// All attributes including the generated-constructor feature.
+    /// </summary>
+    public const string AllWithGeneratedConstructor = Core + Keyed + GenerateTypeRegistry + GeneratedConstructor;
 }

@@ -30,6 +30,7 @@ These analyzers are included with the `NexusLabs.Needlr.SignalR` package.
 |---------|----------|-------------|
 | [NDLRSIG001](NDLRSIG001.md) | Warning | HubPath must be a constant expression |
 | [NDLRSIG002](NDLRSIG002.md) | Warning | HubType must be a typeof expression |
+| [NDLRSIG003](NDLRSIG003.md) | Error | IHubRegistrationPlugin implementation cannot use generated-constructor generation |
 
 ## Logging Analyzers (NexusLabs.Needlr.Logging.Analyzers)
 
@@ -77,6 +78,29 @@ These diagnostics are emitted by the source generator to detect configuration is
 | [NDLRGEN036](NDLRGEN036.md) | Error | [RegisterClosedOverImplementationsOf] composition must be an open generic class |
 | [NDLRGEN037](NDLRGEN037.md) | Error | [RegisterClosedOverImplementationsOf] composition must implement the As service type |
 | [NDLRGEN038](NDLRGEN038.md) | Warning | [RegisterClosedOverImplementationsOf] discovered type argument violates composition constraints |
+
+## Generated Constructor Diagnostics (NexusLabs.Needlr.Generators)
+
+These diagnostics are emitted by the `GeneratedConstructorAnalyzer` to validate `[GenerateConstructor]`, `[ConstructorGuard]`, `[ConstructorIgnore]`, and `[ConstructorGuardDefinition]` usage.
+
+| Rule ID | Severity | Description |
+|---------|----------|-------------|
+| [NDLRGEN039](NDLRGEN039.md) | Error | Generated-constructor type must be partial |
+| [NDLRGEN040](NDLRGEN040.md) | Error | Generated-constructor type shape is unsupported (record or nested type) |
+| [NDLRGEN041](NDLRGEN041.md) | Error | Generated-constructor conflicts with an explicit constructor |
+| [NDLRGEN042](NDLRGEN042.md) | Error | Generated-constructor base type requires a parameterless constructor |
+| [NDLRGEN043](NDLRGEN043.md) | Error | No eligible field for generated-constructor generation |
+| [NDLRGEN044](NDLRGEN044.md) | Error | Generated-constructor parameter names collide |
+| [NDLRGEN045](NDLRGEN045.md) | Warning | Constructor guard attribute has no effect |
+| [NDLRGEN046](NDLRGEN046.md) | Error | Constructor guard attribute applied to an ineligible field |
+| [NDLRGEN047](NDLRGEN047.md) | Error | Invalid constructor guard enum value |
+| [NDLRGEN048](NDLRGEN048.md) | Error | Constructor guard incompatible with field type |
+| [NDLRGEN049](NDLRGEN049.md) | Error | Custom constructor guard type is invalid |
+| [NDLRGEN050](NDLRGEN050.md) | Error | Custom constructor guard method name is invalid |
+| [NDLRGEN051](NDLRGEN051.md) | Error | Custom constructor guard method is invalid |
+| [NDLRGEN052](NDLRGEN052.md) | Error | Custom constructor guard method is ambiguous |
+| [NDLRGEN053](NDLRGEN053.md) | Error | [ConstructorGuardDefinition] target is invalid |
+| [NDLRGEN054](NDLRGEN054.md) | Error | [ConstructorGuardDefinition] guard contract is unresolved |
 
 ## HttpClient Diagnostics (NexusLabs.Needlr.Generators)
 

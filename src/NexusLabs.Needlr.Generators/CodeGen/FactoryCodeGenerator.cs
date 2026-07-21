@@ -108,17 +108,22 @@ internal static class FactoryCodeGenerator
             builder.AppendLine("    {");
             builder.Append($"        return new {factory.TypeName}(");
 
-            // Build constructor arguments - injectable first (from fields), then runtime
+            // Build constructor arguments as named arguments (paramName: value) rather
+            // than positionally. A generated constructor's parameter order follows field
+            // declaration order and need not match this injectable-then-runtime grouping,
+            // so binding by name is required for correctness regardless of which order
+            // the target constructor was declared or generated in.
             var allArgs = new List<string>();
             foreach (var inj in ctor.InjectableParameters)
             {
                 var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
-                allArgs.Add(fieldName);
+                var argName = inj.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
+                allArgs.Add($"{argName}: {fieldName}");
             }
             foreach (var rt in ctor.RuntimeParameters)
             {
                 var paramName = rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName));
-                allArgs.Add(paramName);
+                allArgs.Add($"{paramName}: {paramName}");
             }
 
             builder.Append(string.Join(", ", allArgs));
@@ -142,22 +147,26 @@ internal static class FactoryCodeGenerator
         builder.AppendLine($"{indent}services.AddSingleton<{funcType}>(sp =>");
         builder.AppendLine($"{indent}    ({runtimeParams}) => new {factory.TypeName}(");
 
-        // Build constructor call arguments
+        // Build constructor call arguments as named arguments — see the matching
+        // comment in GenerateFactoryImplementation for why positional binding is unsafe
+        // here.
         var allArgs = new List<string>();
         foreach (var inj in ctor.InjectableParameters)
         {
+            var argName = inj.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
             if (inj.IsKeyed)
             {
-                allArgs.Add($"sp.GetRequiredKeyedService<{inj.TypeName}>(\"{GeneratorHelpers.EscapeStringLiteral(inj.ServiceKey!)}\")");
+                allArgs.Add($"{argName}: sp.GetRequiredKeyedService<{inj.TypeName}>(\"{GeneratorHelpers.EscapeStringLiteral(inj.ServiceKey!)}\")");
             }
             else
             {
-                allArgs.Add($"sp.GetRequiredService<{inj.TypeName}>()");
+                allArgs.Add($"{argName}: sp.GetRequiredService<{inj.TypeName}>()");
             }
         }
         foreach (var rt in ctor.RuntimeParameters)
         {
-            allArgs.Add(rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName)));
+            var paramName = rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName));
+            allArgs.Add($"{paramName}: {paramName}");
         }
 
         for (int i = 0; i < allArgs.Count; i++)

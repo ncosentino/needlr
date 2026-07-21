@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 
 using NexusLabs.Needlr.Generators.Models;
+using NexusLabs.Needlr.Roslyn.Shared;
 
 namespace NexusLabs.Needlr.Generators;
 
@@ -144,6 +145,28 @@ internal static class ComposedRegistrationDiscoveryHelper
 
                 var closedComposition = marker.CompositionType.Construct(typeArguments.ToArray());
 
+                // A composition type using [GenerateConstructor]/field-triggered generation has
+                // its effective constructor derived from the shared field model instead of
+                // Roslyn's InstanceConstructors, which would otherwise only see the implicit
+                // parameterless constructor visible before the sibling GeneratedConstructorGenerator
+                // pass emits the real one within this compilation.
+                if (GeneratedConstructorEligibility.IsEligibleForGeneratedConstructor(closedComposition))
+                {
+                    var generatedFields = GeneratedConstructorEligibility.GetEligibleConstructorFields(closedComposition);
+                    var generatedArguments = generatedFields
+                        .Select(f => BuildResolutionExpression(f.Type, serviceKey: null))
+                        .ToList();
+
+                    registrations.Add(new DiscoveredComposedRegistration(
+                        facadeTypeName,
+                        closedComposition.ToDisplayString(FullyQualified),
+                        generatedArguments,
+                        marker.Lifetime,
+                        marker.AssemblyName,
+                        marker.SourceFilePath));
+                    continue;
+                }
+
                 var constructor = SelectConstructor(closedComposition);
                 if (constructor is null)
                     continue;
@@ -192,6 +215,11 @@ internal static class ComposedRegistrationDiscoveryHelper
         return result;
     }
 
+    // A composition type is now handled above, before this method is reached, when it is
+    // eligible for generated-constructor generation (see
+    // GeneratedConstructorEligibility.IsEligibleForGeneratedConstructor in Expand). This
+    // method remains the resolution path for a composition type with a hand-written
+    // constructor.
     private static IMethodSymbol? SelectConstructor(INamedTypeSymbol closedComposition)
     {
         IMethodSymbol? best = null;
@@ -213,8 +241,18 @@ internal static class ComposedRegistrationDiscoveryHelper
 
     private static string BuildResolutionExpression(IParameterSymbol parameter)
     {
-        var typeName = parameter.Type.ToDisplayString(FullyQualified);
-        var serviceKey = GetFromKeyedServicesKey(parameter);
+        return BuildResolutionExpression(parameter.Type, GetFromKeyedServicesKey(parameter));
+    }
+
+    /// <summary>
+    /// Builds a <c>sp.GetRequiredService&lt;T&gt;()</c> (or keyed-service) resolution
+    /// expression for a type, independent of whether it came from a hand-written
+    /// constructor's <see cref="IParameterSymbol"/> or a generated constructor's
+    /// <see cref="IFieldSymbol"/>.
+    /// </summary>
+    private static string BuildResolutionExpression(ITypeSymbol type, string? serviceKey)
+    {
+        var typeName = type.ToDisplayString(FullyQualified);
 
         return serviceKey is null
             ? $"sp.GetRequiredService<{typeName}>()"

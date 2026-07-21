@@ -170,6 +170,30 @@ internal static class TypeDiscoveryHelper
     {
         var paramTypes = new HashSet<string>(StringComparer.Ordinal);
 
+        // A type eligible for generated-constructor generation has its constructor
+        // emitted by a sibling GeneratedConstructorGenerator pass this compilation
+        // can't see yet, so the symbol-based scan below would only see the implicit
+        // parameterless constructor and incorrectly report zero parameter types. Use
+        // the same field-derived model instead, so decorator-interface classification
+        // for a generated constructor matches a hand-written one. This intentionally
+        // considers every eligible field (not just container-resolvable ones), since a
+        // field's suitability as a decorator-pattern parameter is independent of
+        // whether it happens to also be injectable.
+        var generatedModel = ConstructorGenerationDiscoveryHelper.TryGetModel(typeSymbol);
+        if (generatedModel != null)
+        {
+            foreach (var field in generatedModel.Value.Fields)
+            {
+                // ParameterTypeName preserves nullable-reference annotations (e.g. a
+                // trailing '?'), while the interface names compared against it in
+                // IsDecoratorInterface do not carry that annotation. Trim it so the
+                // comparison lines up for nullable decorator-pattern fields.
+                paramTypes.Add(field.ParameterTypeName.TrimEnd('?'));
+            }
+
+            return paramTypes;
+        }
+
         foreach (var ctor in typeSymbol.InstanceConstructors)
         {
             if (ctor.IsStatic)
@@ -823,6 +847,28 @@ internal static class TypeDiscoveryHelper
         if (HasDeferToContainerAttribute(typeSymbol))
             return GetExplicitLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
 
+        // Types eligible for generated-constructor generation ([GenerateConstructor] or a
+        // positive field-level constructor guard trigger) are always injectable. This
+        // generator cannot see the constructor emitted by the sibling
+        // GeneratedConstructorGenerator pass within the same compilation, so it must use
+        // the same field-derived model to determine the effective constructor shape
+        // instead of relying on typeSymbol.InstanceConstructors (which would otherwise
+        // still show only the implicit parameterless constructor and incorrectly emit
+        // `new Service()`). Referenced-assembly types already have their generated
+        // constructor compiled, so this returns null for them and falls through below.
+        if (ConstructorGenerationDiscoveryHelper.TryGetEffectiveConstructorParameters(typeSymbol) != null)
+            return GetExplicitLifetime(typeSymbol) ?? GeneratorLifetime.Singleton;
+
+        // A type can be eligible for constructor generation but not for automatic DI
+        // discovery (e.g. a field-triggered guard on a plain string parameter, which
+        // isn't a container-resolvable service type). Such a type must not fall through
+        // to the instance-constructor scan below: once the sibling generator emits its
+        // constructor, the implicit parameterless constructor this scan would otherwise
+        // find no longer exists, so falling through would incorrectly treat the type as
+        // injectable with zero parameters.
+        if (ConstructorGenerationDiscoveryHelper.TryGetModel(typeSymbol) != null)
+            return null;
+
         // Get all instance constructors
         var constructors = typeSymbol.InstanceConstructors;
 
@@ -887,7 +933,7 @@ internal static class TypeDiscoveryHelper
         return true;
     }
 
-    private static bool IsInjectableParameterType(ITypeSymbol typeSymbol)
+    internal static bool IsInjectableParameterType(ITypeSymbol typeSymbol)
     {
         // Must not be a delegate
         if (typeSymbol.TypeKind == TypeKind.Delegate)
@@ -1081,6 +1127,17 @@ internal static class TypeDiscoveryHelper
     /// <returns>True if the type has a parameterless constructor.</returns>
     public static bool HasParameterlessConstructor(INamedTypeSymbol typeSymbol)
     {
+        // A type eligible for generated-constructor generation ([GenerateConstructor] or
+        // a positive field-level constructor guard trigger) always has at least one
+        // eligible field, so its generated constructor always has at least one
+        // parameter. This symbol-based scan only sees the implicit parameterless
+        // constructor that exists before the sibling GeneratedConstructorGenerator pass
+        // runs within the same compilation, so it must be excluded here — otherwise
+        // plugin discovery would emit `() => new Type()` for a type that will no longer
+        // have a parameterless constructor once generation completes.
+        if (ConstructorGenerationDiscoveryHelper.TryGetModel(typeSymbol) != null)
+            return false;
+
         foreach (var ctor in typeSymbol.InstanceConstructors)
         {
             if (ctor.DeclaredAccessibility == Accessibility.Public &&

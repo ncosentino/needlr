@@ -213,4 +213,116 @@ public class {|#0:ServiceB|}(ServiceA a);
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
+
+    [Fact]
+    public async Task Error_WhenCycleIsComposedEntirelyOfGeneratedConstructors()
+    {
+        // Both ServiceA and ServiceB derive their effective constructor from
+        // [GenerateConstructor]; neither has a hand-written constructor for the
+        // analyzer's ConstructorDeclarationSyntax/primary-constructor scan to see.
+        var code = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[Scoped]
+[GenerateConstructor]
+public partial class ServiceA
+{
+    private readonly ServiceB _b;
+}
+
+[Scoped]
+[GenerateConstructor]
+public partial class {|#0:ServiceB|}
+{
+    private readonly ServiceA _a;
+}
+" + NeedlrTestAttributes.AllWithGeneratedConstructor;
+
+        var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
+            .WithLocation(0)
+            .WithArguments("ServiceA → ServiceB → ServiceA");
+
+        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics = { expected }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Error_WhenCycleIsPartlyComposedOfAGeneratedConstructor()
+    {
+        // ServiceA has a hand-written constructor; ServiceB's effective constructor is
+        // generated from its single eligible field. The cycle must still be detected
+        // across both dependency-collection strategies.
+        var code = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[Scoped]
+public class ServiceA
+{
+    public ServiceA(ServiceB b) { }
+}
+
+[Scoped]
+[GenerateConstructor]
+public partial class {|#0:ServiceB|}
+{
+    private readonly ServiceA _a;
+}
+" + NeedlrTestAttributes.AllWithGeneratedConstructor;
+
+        var expected = new DiagnosticResult(DiagnosticIds.CircularDependency, DiagnosticSeverity.Error)
+            .WithLocation(0)
+            .WithArguments("ServiceA → ServiceB → ServiceA");
+
+        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics = { expected }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoError_WhenGeneratedConstructorFieldIsIgnoredOrInitialized()
+    {
+        // Neither field is an eligible generated-constructor parameter: _a is excluded
+        // via [ConstructorIgnore], and _aInitialized has a field initializer. Neither
+        // may contribute a false dependency that would otherwise complete a cycle.
+        var code = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[Scoped]
+public class ServiceA
+{
+    public ServiceA(ServiceB b) { }
+}
+
+[Scoped]
+[GenerateConstructor]
+public partial class ServiceB
+{
+    [ConstructorIgnore]
+    private readonly ServiceA? _a;
+
+    private readonly ServiceA _aInitialized = null!;
+
+    private readonly string _name;
+}
+" + NeedlrTestAttributes.AllWithGeneratedConstructor;
+
+        var test = new CSharpAnalyzerTest<CircularDependencyAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
 }

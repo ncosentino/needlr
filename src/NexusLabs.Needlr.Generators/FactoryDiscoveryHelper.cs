@@ -1,5 +1,8 @@
 using Microsoft.CodeAnalysis;
 
+using NexusLabs.Needlr.Generators.Models;
+using NexusLabs.Needlr.Roslyn.Shared;
+
 namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
@@ -119,8 +122,27 @@ internal static class FactoryDiscoveryHelper
     /// </summary>
     /// <param name="typeSymbol">The type symbol to analyze.</param>
     /// <returns>A list of factory constructor infos, one for each viable constructor.</returns>
+    /// <remarks>
+    /// A type eligible for generated-constructor generation (<c>[GenerateConstructor]</c>
+    /// or a positive field-level constructor guard trigger) has its effective constructor
+    /// derived from <see cref="ConstructorGenerationDiscoveryHelper.TryGetModel"/> instead
+    /// of <see cref="INamedTypeSymbol.InstanceConstructors"/>, which would otherwise only
+    /// see the implicit parameterless constructor visible before the sibling
+    /// <c>GeneratedConstructorGenerator</c> pass emits the real one within this
+    /// compilation. The field-derived parameter list is partitioned into injectable and
+    /// runtime groups using the exact same rule as a hand-written constructor.
+    /// </remarks>
     public static IReadOnlyList<FactoryConstructorInfo> GetFactoryConstructors(INamedTypeSymbol typeSymbol)
     {
+        var generatedModel = ConstructorGenerationDiscoveryHelper.TryGetModel(typeSymbol);
+        if (generatedModel is not null)
+        {
+            var generatedCtor = BuildGeneratedConstructorFactoryInfo(typeSymbol, generatedModel.Value);
+            return generatedCtor is null
+                ? Array.Empty<FactoryConstructorInfo>()
+                : new[] { generatedCtor.Value };
+        }
+
         var result = new List<FactoryConstructorInfo>();
 
         foreach (var ctor in typeSymbol.InstanceConstructors)
@@ -167,6 +189,46 @@ internal static class FactoryDiscoveryHelper
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Builds the single <see cref="FactoryConstructorInfo"/> for a generated
+    /// constructor's field-derived parameter list, or <see langword="null"/> when no
+    /// field is a runtime (non-injectable) parameter — matching the hand-written-constructor
+    /// rule that a factory adds no value when every parameter is already container-resolvable.
+    /// </summary>
+    private static FactoryConstructorInfo? BuildGeneratedConstructorFactoryInfo(
+        INamedTypeSymbol typeSymbol,
+        GeneratedConstructorModel model)
+    {
+        // Paired by index with model.Fields: both are derived from the exact same
+        // ordered, filtered field set (GeneratedConstructorEligibility.GetEligibleConstructorFields),
+        // so the field's real ITypeSymbol (needed for injectability classification) lines
+        // up with the model's already-normalized parameter name/type-name strings.
+        var fieldSymbols = GeneratedConstructorEligibility.GetEligibleConstructorFields(typeSymbol);
+
+        var injectableParams = new List<TypeDiscoveryHelper.ConstructorParameterInfo>();
+        var runtimeParams = new List<TypeDiscoveryHelper.ConstructorParameterInfo>();
+
+        for (var i = 0; i < model.Fields.Length; i++)
+        {
+            var field = model.Fields[i];
+            var paramInfo = new TypeDiscoveryHelper.ConstructorParameterInfo(field.ParameterTypeName, serviceKey: null, field.ParameterName);
+
+            if (IsInjectableParameterType(fieldSymbols[i].Type))
+            {
+                injectableParams.Add(paramInfo);
+            }
+            else
+            {
+                runtimeParams.Add(paramInfo);
+            }
+        }
+
+        if (runtimeParams.Count == 0)
+            return null;
+
+        return new FactoryConstructorInfo(injectableParams.ToArray(), runtimeParams.ToArray());
     }
 
     /// <summary>

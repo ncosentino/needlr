@@ -18,6 +18,11 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- Include shared Roslyn utilities as source (compiled into this assembly) -->
+  <ItemGroup>
+    <Compile Include="..\NexusLabs.Needlr.Roslyn.Shared\GeneratedConstructorEligibility.cs" Link="Shared\GeneratedConstructorEligibility.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
