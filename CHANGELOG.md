@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.2] - 2026-07-22
+
 ### Added
 
 - **`NexusLabs.Needlr.Generators` — `[GenerateConstructor]`: source-generate a public constructor, field assignments, and guard clauses for a partial class from its eligible private `readonly` fields, eliminating hand-written constructor and guard-clause boilerplate given that a source generator still cannot inject statements into a user-authored (including primary) constructor.**
