@@ -42,6 +42,24 @@ public partial class UserService
     }
 
     [Fact]
+    public async Task NoDiagnostic_ForSealedPartialClass()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public interface IRepository { }
+
+[GenerateConstructor]
+public sealed partial class UserService
+{
+    private readonly IRepository _repository;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task NoDiagnostic_ForFieldTriggeredGenerationWithBuiltInGuard()
     {
         var test = CreateTest(@"

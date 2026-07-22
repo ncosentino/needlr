@@ -37,6 +37,33 @@ public sealed class GeneratedConstructorGeneratorTests
     }
 
     [Fact]
+    public void SealedPartialClass_GeneratesConstructorAndCompiles()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public interface IRepository { }
+
+                [GenerateConstructor]
+                public sealed partial class UserService
+                {
+                    private readonly IRepository _repository;
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+        var errors = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source)
+            .RunGeneratorCompilationErrors(new GeneratedConstructorGenerator());
+
+        Assert.Contains("public UserService(global::TestApp.IRepository repository)", generatedCode);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
     public void ExplicitNoneMode_MatchesBareAttribute()
     {
         var source = """

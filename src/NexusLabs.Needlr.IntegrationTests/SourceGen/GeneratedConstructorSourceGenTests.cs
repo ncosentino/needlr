@@ -38,6 +38,16 @@ public sealed class GeneratedConstructorSourceGenTests
     }
 
     [Fact]
+    public void SealedPartialClass_GeneratedConstructorConstructs()
+    {
+        var repository = new GcRepository();
+
+        var service = new GcSealedUserService(repository);
+
+        Assert.Same(repository, service.Repository);
+    }
+
+    [Fact]
     public void NonNullableReferencesMode_NullDependency_ThrowsArgumentNullExceptionWithGeneratedParameterName()
     {
         var exception = Assert.Throws<ArgumentNullException>(() => new GcGuardedUserService(null!));
@@ -244,6 +254,14 @@ public sealed class GcRepository : IGcRepository
 
 [GenerateConstructor]
 public partial class GcUserService
+{
+    private readonly IGcRepository _repository;
+
+    public IGcRepository Repository => _repository;
+}
+
+[GenerateConstructor]
+public sealed partial class GcSealedUserService
 {
     private readonly IGcRepository _repository;
 
