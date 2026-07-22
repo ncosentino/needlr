@@ -24,6 +24,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Open Generic Decorators](https://www.devleader.ca/projects/needlr/open-generic-decorators/) -- Define a single decorator class that automatically wraps all closed implementations of an open generic interface in .NET using Needlr's open generic decorator support -- source generation only.
 - [Compose and Expose Closed Generics](https://www.devleader.ca/projects/needlr/composed-closed-generics/) -- Source-generate a registration of an open generic composition type closed over the type argument of every discovered implementation of another open generic interface, exposed as a non-generic facade -- source generation only.
 - [Cancellation-Aware Logging](https://www.devleader.ca/projects/needlr/cancellation-aware-logging/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Generated Constructors](https://www.devleader.ca/projects/needlr/generated-constructors/) -- Source-generate a public constructor, field assignments, and guard clauses for a partial class from its eligible fields using Needlr's [GenerateConstructor] and [ConstructorGuard] attributes -- source generation only, no reflection.
 - [Service Catalog](https://www.devleader.ca/projects/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Breadcrumbs](https://www.devleader.ca/projects/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
 - [.NET MAUI](https://www.devleader.ca/projects/needlr/maui/) -- Opinionated fluent dependency injection for .NET with source generation
@@ -87,11 +88,30 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [NDLRGEN036](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN036/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN037](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN037/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN038](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN038/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN039](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN039/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN040](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN040/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN041](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN041/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN042](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN042/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN043](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN043/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN044](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN044/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN045](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN045/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN046](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN046/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN047](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN047/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN048](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN048/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN049](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN049/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN050](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN050/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN051](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN051/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN052](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN052/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN053](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN053/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN054](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN054/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN055](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN055/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN056](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN056/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## SignalR Analyzers
 
 - [NDLRSIG001](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG001/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRSIG002](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG002/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRSIG003](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG003/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Logging Analyzers
 
@@ -122,3 +142,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 ## Architecture Decisions
 
 - [ADR-0004 Extract AI Platform to Foundry](https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0005 Generate Guarded Constructors](https://www.devleader.ca/projects/needlr/adr/adr-0005-generate-guarded-constructors/) -- Opinionated fluent dependency injection for .NET with source generation
