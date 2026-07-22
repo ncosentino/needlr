@@ -1,6 +1,14 @@
 ; Shipped analyzer releases
 ; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
+## Release 0.0.3
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+NDLRSIG003 | NexusLabs.Needlr.SignalR | Error | HubRegistrationPluginConstructorAnalyzer, IHubRegistrationPlugin implementation cannot use generated-constructor generation
+
 ## Release 0.0.2
 
 ### New Rules

@@ -5,4 +5,3 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-NDLRSIG003 | NexusLabs.Needlr.SignalR | Error | HubRegistrationPluginConstructorAnalyzer, IHubRegistrationPlugin implementation cannot use generated-constructor generation
