@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+using NexusLabs.Needlr.Roslyn.Shared;
+
 namespace NexusLabs.Needlr.SignalR.Generators;
 
 /// <summary>
@@ -130,6 +132,18 @@ public class SignalRHubRegistryGenerator : IIncrementalGenerator
     private static bool HasParameterlessConstructor(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.IsAbstract || typeSymbol.IsStatic)
+            return false;
+
+        // A type eligible for generated-constructor generation ([GenerateConstructor] or
+        // a positive field-level constructor guard trigger) always has at least one
+        // eligible field, so its effective constructor always requires at least one
+        // argument. This symbol-based scan below only sees the implicit parameterless
+        // constructor that exists before the sibling GeneratedConstructorGenerator pass
+        // emits the real one within this compilation, so it must be excluded here —
+        // otherwise a hub-registration plugin that fundamentally requires parameterless
+        // activation would be treated as valid even though it can never actually be
+        // constructed that way once generation completes.
+        if (GeneratedConstructorEligibility.IsEligibleForGeneratedConstructor(typeSymbol))
             return false;
 
         foreach (var ctor in typeSymbol.InstanceConstructors)

@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+using NexusLabs.Needlr.Roslyn.Shared;
+
 namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
@@ -87,20 +89,11 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
         AttributeSyntax attributeSyntax,
         INamedTypeSymbol classSymbol)
     {
-        // Find the best constructor (public, most parameters)
-        var publicCtors = classSymbol.InstanceConstructors
-            .Where(c => c.DeclaredAccessibility == Accessibility.Public && !c.IsStatic)
-            .OrderByDescending(c => c.Parameters.Length)
-            .ToList();
-
-        if (publicCtors.Count == 0)
+        var parameterTypes = TryGetGeneratedConstructorParameterTypes(classSymbol) ?? GetBestExplicitConstructorParameterTypes(classSymbol);
+        if (parameterTypes is null)
             return;
 
-        // Check all constructors - we care about the "best" one for the warning
-        var bestCtor = publicCtors[0];
-        var parameters = bestCtor.Parameters;
-
-        if (parameters.Length == 0)
+        if (parameterTypes.Count == 0)
         {
             // No parameters at all - factory is pointless
             var diagnostic = Diagnostic.Create(
@@ -115,9 +108,9 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
         int injectableCount = 0;
         int runtimeCount = 0;
 
-        foreach (var param in parameters)
+        foreach (var parameterType in parameterTypes)
         {
-            if (IsInjectableParameterType(param.Type))
+            if (IsInjectableParameterType(parameterType))
             {
                 injectableCount++;
             }
@@ -147,6 +140,45 @@ public sealed class GenerateFactoryAttributeAnalyzer : DiagnosticAnalyzer
 
             context.ReportDiagnostic(diagnostic);
         }
+    }
+
+    /// <summary>
+    /// Returns the effective constructor parameter types for a type eligible for
+    /// generated-constructor generation (<c>[GenerateConstructor]</c> or a positive
+    /// field-level constructor guard trigger), derived from the same shared eligible-field
+    /// model the source generator and type-registry discovery use, or
+    /// <see langword="null"/> when the type is not eligible. Such a type's effective
+    /// constructor is emitted by a sibling generator pass rather than authored in its own
+    /// syntax tree, so runtime-vs-injectable classification must use this field-derived
+    /// parameter list instead of the type's (implicit, parameterless) symbol-visible
+    /// constructor.
+    /// </summary>
+    private static IReadOnlyList<ITypeSymbol>? TryGetGeneratedConstructorParameterTypes(INamedTypeSymbol classSymbol)
+    {
+        if (!GeneratedConstructorEligibility.IsEligibleForGeneratedConstructor(classSymbol))
+            return null;
+
+        return GeneratedConstructorEligibility.GetEligibleConstructorFields(classSymbol)
+            .Select(f => f.Type)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Returns the parameter types of the best (public, most-parameters) explicitly
+    /// authored instance constructor, or <see langword="null"/> when the type declares no
+    /// public instance constructor at all.
+    /// </summary>
+    private static IReadOnlyList<ITypeSymbol>? GetBestExplicitConstructorParameterTypes(INamedTypeSymbol classSymbol)
+    {
+        var publicCtors = classSymbol.InstanceConstructors
+            .Where(c => c.DeclaredAccessibility == Accessibility.Public && !c.IsStatic)
+            .OrderByDescending(c => c.Parameters.Length)
+            .ToList();
+
+        if (publicCtors.Count == 0)
+            return null;
+
+        return publicCtors[0].Parameters.Select(p => p.Type).ToList();
     }
 
     private static bool IsGenerateFactoryAttribute(INamedTypeSymbol attributeSymbol)

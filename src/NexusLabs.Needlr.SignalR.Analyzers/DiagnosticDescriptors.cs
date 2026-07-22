@@ -35,4 +35,18 @@ public static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "The HubType parameter of HubPathAttribute must be a typeof expression for AOT compatibility.",
         helpLinkUri: HelpLinkBase + "NDLRSIG002.md");
+
+    /// <summary>
+    /// NDLRSIG003: An IHubRegistrationPlugin implementation is eligible for
+    /// generated-constructor generation, which prevents it from being instantiated.
+    /// </summary>
+    public static readonly DiagnosticDescriptor HubRegistrationPluginRequiresParameterlessActivation = new(
+        id: DiagnosticIds.HubRegistrationPluginRequiresParameterlessActivation,
+        title: "IHubRegistrationPlugin implementation cannot use generated-constructor generation",
+        messageFormat: "Type '{0}' implements IHubRegistrationPlugin and is eligible for generated-constructor generation, but hub-registration plugins require parameterless activation; remove [GenerateConstructor] and every field-level constructor guard trigger, or add a hand-written parameterless constructor",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The SignalR hub-registration generator activates every IHubRegistrationPlugin implementation with a parameterless constructor, so it deliberately excludes any type eligible for generated-constructor generation from registration. Such a type is never activated and its hub is never registered.",
+        helpLinkUri: HelpLinkBase + "NDLRSIG003.md");
 }

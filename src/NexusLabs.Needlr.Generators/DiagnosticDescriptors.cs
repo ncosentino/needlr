@@ -405,6 +405,248 @@ internal static class DiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRGEN038.md");
 
     // ============================================================================
+    // Generated Constructor Analyzer (NDLRGEN039-054)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN039: A type using generated-constructor generation must be declared partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorRequiresPartialType = new(
+        id: "NDLRGEN039",
+        title: "Generated-constructor type must be partial",
+        messageFormat: "Type '{0}' must be declared 'partial' because it uses [GenerateConstructor] or a field-level constructor guard trigger, and a source generator can only add a constructor to a partial type",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Roslyn source generators can only contribute new members to a type declared partial. Add the 'partial' modifier to the class so the generated constructor can be added.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN039.md");
+
+    /// <summary>
+    /// NDLRGEN040: A record type or nested type cannot use generated-constructor generation.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorUnsupportedTypeShape = new(
+        id: "NDLRGEN040",
+        title: "Generated-constructor type shape is unsupported",
+        messageFormat: "Type '{0}' cannot use generated-constructor generation because it is {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Generated-constructor generation only supports top-level, non-record partial classes. Records and nested types are unsupported and must not carry [GenerateConstructor] or a field-level constructor guard trigger.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN040.md");
+
+    /// <summary>
+    /// NDLRGEN041: An explicit instance constructor conflicts with generated-constructor generation.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorConflictsWithExplicitConstructor = new(
+        id: "NDLRGEN041",
+        title: "Generated-constructor conflicts with an explicit constructor",
+        messageFormat: "Type '{0}' declares an explicit instance constructor, which conflicts with generated-constructor generation; remove the explicit constructor or remove [GenerateConstructor] and every field-level constructor guard trigger",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Generated-constructor generation requires exactly one unambiguous constructor. A type with its own explicit instance constructor is skipped entirely rather than generating a second, conflicting constructor.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN041.md");
+
+    /// <summary>
+    /// NDLRGEN042: The base type must expose an accessible parameterless constructor.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorBaseTypeRequiresParameterlessConstructor = new(
+        id: "NDLRGEN042",
+        title: "Generated-constructor base type requires a parameterless constructor",
+        messageFormat: "Type '{0}' derives from '{1}', which has no accessible parameterless constructor; generated-constructor generation requires the implicit 'base()' call to succeed",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The generated constructor relies on the implicit base() call. A base type that requires constructor arguments is unsupported; add an accessible parameterless constructor to the base type or remove the generated-constructor trigger.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN042.md");
+
+    /// <summary>
+    /// NDLRGEN043: No eligible field exists for generated-constructor generation.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorNoEligibleFields = new(
+        id: "NDLRGEN043",
+        title: "No eligible field for generated-constructor generation",
+        messageFormat: "Type '{0}' has no private readonly instance field without an initializer, so generated-constructor generation has nothing to generate",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Generated-constructor generation requires at least one eligible field: a private, instance, readonly field without an initializer that is not excluded by [ConstructorIgnore]. Add an eligible field or remove the generation trigger.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN043.md");
+
+    /// <summary>
+    /// NDLRGEN044: Normalized constructor parameter names collide.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GeneratedConstructorParameterNameCollision = new(
+        id: "NDLRGEN044",
+        title: "Generated-constructor parameter names collide",
+        messageFormat: "Type '{0}' has two or more eligible fields that normalize to the same constructor parameter name '{1}'; rename one of the conflicting fields",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Field names are normalized to constructor parameter names by removing a leading underscore and lower-casing the first letter. Two fields that normalize to the same name make the generated constructor's parameter list ambiguous.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN044.md");
+
+    /// <summary>
+    /// NDLRGEN045: A constructor guard exclusion attribute has no effect.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardAttributeHasNoEffect = new(
+        id: "NDLRGEN045",
+        title: "Constructor guard attribute has no effect",
+        messageFormat: "Field '{0}' has {1}, but its containing type has no [GenerateConstructor] and no other field has a positive constructor guard trigger, so no constructor is generated and this attribute has no effect",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "[ConstructorIgnore] and [ConstructorGuard(ConstructorGuardKind.None)] are exclusion-only modifiers. Applying one without [GenerateConstructor] on the class or a positive guard trigger elsewhere in the class produces no generated constructor, so the attribute has no effect. Remove the attribute, or add a generation trigger.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN045.md");
+
+    /// <summary>
+    /// NDLRGEN046: A constructor guard attribute is applied to an ineligible field.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardAttributeOnIneligibleField = new(
+        id: "NDLRGEN046",
+        title: "Constructor guard attribute applied to an ineligible field",
+        messageFormat: "Field '{0}' cannot participate in generated-constructor generation because it is {1}, so its constructor guard attribute has no effect",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Only a private, instance, readonly field without an initializer can become a generated-constructor parameter. Remove the constructor guard attribute, or change the field's declaration so it is eligible.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN046.md");
+
+    /// <summary>
+    /// NDLRGEN047: A guard-mode enum argument is not a defined value.
+    /// </summary>
+    public static readonly DiagnosticDescriptor InvalidConstructorGuardEnumValue = new(
+        id: "NDLRGEN047",
+        title: "Invalid constructor guard enum value",
+        messageFormat: "'{0}' is not a defined {1} value",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "ConstructorGuardKind and ConstructorNullGuardMode arguments must be one of the enum's defined members. A value produced by casting an undefined integer is rejected at compile time instead of silently falling back to a default.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN047.md");
+
+    /// <summary>
+    /// NDLRGEN048: A built-in guard kind is incompatible with the field's type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardIncompatibleWithFieldType = new(
+        id: "NDLRGEN048",
+        title: "Constructor guard incompatible with field type",
+        messageFormat: "The '{0}' guard cannot be used on field '{1}' of type '{2}': {3}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "NotNullOrEmpty and NotNullOrWhiteSpace only apply to string-compatible fields. NotNull only applies where a runtime null is actually possible: reference-type fields (nullable or not) and Nullable<T> value-type fields. Remove the guard, or choose a compatible guard kind.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN048.md");
+
+    /// <summary>
+    /// NDLRGEN049: A custom guard type is missing or inaccessible.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardTypeInvalid = new(
+        id: "NDLRGEN049",
+        title: "Custom constructor guard type is invalid",
+        messageFormat: "The custom guard type for field '{0}' is invalid: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A custom constructor guard type must exist and be accessible from the generated constructor. Fix the referenced type, or its accessibility.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN049.md");
+
+    /// <summary>
+    /// NDLRGEN050: A custom guard method name is empty or whitespace.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardMethodNameInvalid = new(
+        id: "NDLRGEN050",
+        title: "Custom constructor guard method name is invalid",
+        messageFormat: "The custom guard method name for field '{0}' must not be empty or consist only of white space",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "An explicit custom guard method name must be a non-empty, non-whitespace identifier, typically supplied through nameof().",
+        helpLinkUri: HelpLinkBase + "NDLRGEN050.md");
+
+    /// <summary>
+    /// NDLRGEN051: No compatible custom guard method was found.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardMethodInvalid = new(
+        id: "NDLRGEN051",
+        title: "Custom constructor guard method is invalid",
+        messageFormat: "Guard method '{0}' on type '{1}' is not valid for field '{2}' of type '{3}': {4}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A custom guard method must be an accessible static method returning void with exactly two parameters: a value compatible with the field's type, and a string parameter name. The generator calls this method directly, so its shape must be resolvable at compile time.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN051.md");
+
+    /// <summary>
+    /// NDLRGEN052: Multiple custom guard method overloads match the field.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardMethodAmbiguous = new(
+        id: "NDLRGEN052",
+        title: "Custom constructor guard method is ambiguous",
+        messageFormat: "Multiple accessible static methods named '{0}' on type '{1}' are compatible with field '{2}' of type '{3}'; the generator requires exactly one unambiguous match",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution. Remove or rename the extra overload(s) so exactly one method matches the field's type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN052.md");
+
+    /// <summary>
+    /// NDLRGEN053: [ConstructorGuardDefinition] is applied to an unsupported attribute type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardDefinitionTargetInvalid = new(
+        id: "NDLRGEN053",
+        title: "[ConstructorGuardDefinition] target is invalid",
+        messageFormat: "'{0}' cannot carry [ConstructorGuardDefinition] because it is {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[ConstructorGuardDefinition] must decorate an Attribute-derived type whose [AttributeUsage] allows AttributeTargets.Field, so the resulting alias attribute can be applied to a field like [ConstructorGuard].",
+        helpLinkUri: HelpLinkBase + "NDLRGEN053.md");
+
+    /// <summary>
+    /// NDLRGEN054: A [ConstructorGuardDefinition]'s own guard reference is unresolved.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardDefinitionUnresolvedGuard = new(
+        id: "NDLRGEN054",
+        title: "[ConstructorGuardDefinition] guard contract is unresolved",
+        messageFormat: "[ConstructorGuardDefinition] on '{0}' is invalid: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The guard type and method referenced by [ConstructorGuardDefinition] must resolve to the same accessible static Validate-compatible method contract required by a direct [ConstructorGuard] custom guard. Fix the referenced type or method on the alias attribute's definition.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN054.md");
+
+    /// <summary>
+    /// NDLRGEN055: A parameterized custom guard alias usage forwards an argument shape
+    /// or a named argument/property that this version does not support forwarding.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardAliasUsageArgumentUnsupported = new(
+        id: "NDLRGEN055",
+        title: "Constructor guard alias usage argument is unsupported",
+        messageFormat: "The alias attribute usage on field '{0}' is invalid: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A parameterized custom guard alias forwards every positional constructor argument of its usage onto the resolved guard method call, in declared order. Only null, bool, integral, char, string, enum, and Type argument shapes can be forwarded; arrays/params and float/double are not. Named attribute arguments and properties are never forwarded. Change the alias usage to avoid the unsupported argument, or forward it as a supported positional argument instead.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN055.md");
+
+    /// <summary>
+    /// NDLRGEN056: A custom guard method is incompatible with the arguments a
+    /// parameterized alias usage forwards to it, either because the method's effective
+    /// arity does not match the number of forwarded arguments, or because one of the
+    /// forwarded argument types is incompatible with the corresponding parameter.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardForwardedArgumentIncompatible = new(
+        id: "NDLRGEN056",
+        title: "Custom constructor guard method is incompatible with forwarded alias arguments",
+        messageFormat: "Guard method '{0}' on type '{1}' cannot accept the arguments forwarded for field '{2}' of type '{3}': {4}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A parameterized custom guard alias usage forwards its own positional constructor arguments between the guarded value and the trailing string parameter name. The resolved guard method must declare exactly one middle parameter per forwarded argument, and each middle parameter's type must be compatible with its corresponding forwarded argument's type (directly, or via generic method type-parameter unification with the field's type). Change the number or types of the alias usage's arguments, or the guard method's middle parameters, so they match exactly.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN056.md");
+
+    // ============================================================================
     // HttpClient Analyzers (NDLRHTTP001-006)
     // ============================================================================
 

@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+using NexusLabs.Needlr.Roslyn.Shared;
+
 namespace NexusLabs.Needlr.Analyzers;
 
 /// <summary>
@@ -99,6 +101,25 @@ public sealed class CircularDependencyAnalyzer : DiagnosticAnalyzer
                 if (typeInfo.Type is INamedTypeSymbol paramType)
                 {
                     dependencies.Add(paramType);
+                }
+            }
+        }
+
+        // A type with [GenerateConstructor] or a positive field-level constructor guard
+        // trigger has its effective constructor emitted by a sibling source generator
+        // rather than authored in this class's own syntax tree, so its dependencies must
+        // be derived from the shared eligible-field model instead of from constructor
+        // parameter syntax. This makes such a dependency participate in cycle detection
+        // exactly like a hand-written constructor parameter. GetEligibleConstructorFields
+        // already excludes fields marked [ConstructorIgnore] and fields with an
+        // initializer, so those never contribute a false dependency here.
+        if (GeneratedConstructorEligibility.IsEligibleForGeneratedConstructor(classSymbol))
+        {
+            foreach (var field in GeneratedConstructorEligibility.GetEligibleConstructorFields(classSymbol))
+            {
+                if (field.Type is INamedTypeSymbol fieldType)
+                {
+                    dependencies.Add(fieldType);
                 }
             }
         }

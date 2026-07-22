@@ -29,6 +29,7 @@
   <!-- Include shared Roslyn utilities as source (compiled into this assembly) -->
   <ItemGroup>
     <Compile Include="..\NexusLabs.Needlr.Roslyn.Shared\TypeDiscoveryHelper.cs" Link="Shared\TypeDiscoveryHelper.cs" />
+    <Compile Include="..\NexusLabs.Needlr.Roslyn.Shared\GeneratedConstructorEligibility.cs" Link="Shared\GeneratedConstructorEligibility.cs" />
   </ItemGroup>
 
   <!-- Pack the generator and attributes together -->

@@ -238,7 +238,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         });
     }
 
-    private static BreadcrumbLevel GetBreadcrumbLevel(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    internal static BreadcrumbLevel GetBreadcrumbLevel(Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
     {
         if (configOptions.GlobalOptions.TryGetValue("build_property.NeedlrBreadcrumbLevel", out var levelStr) &&
             !string.IsNullOrWhiteSpace(levelStr))
@@ -623,7 +623,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     
                     continue; // Don't add to injectable types - factory handles registration
                 }
-                // If no runtime params, fall through to normal registration (with warning in future analyzer)
+                // If no runtime params, fall through to normal direct-type registration.
             }
 
             // Check for DecoratorFor<T> attributes
@@ -733,7 +733,13 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
+                        // [GenerateConstructor]/field-triggered types get their constructor
+                        // emitted by a sibling generator pass this compilation can't see yet.
+                        // Use the same field-derived model instead of the symbol-based
+                        // constructor lookup, which would otherwise still see only the
+                        // implicit parameterless constructor.
+                        constructorParams = ConstructorGenerationDiscoveryHelper.TryGetEffectiveConstructorParameters(typeSymbol)?.ToArray()
+                            ?? TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
                     }
                     
                     // Get source file path and line for breadcrumbs (null for external assemblies)
@@ -760,16 +766,36 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // Check for hosted service types (BackgroundService or IHostedService implementations)
             if (TypeDiscoveryHelper.IsHostedServiceType(typeSymbol, isCurrentAssembly))
             {
-                var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                var constructorParams = TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
-                var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
-                
-                hostedServices.Add(new DiscoveredHostedService(
-                    typeName,
-                    assembly.Name,
-                    GeneratorLifetime.Singleton, // Hosted services are always singleton
-                    constructorParams,
-                    sourceFilePath));
+                // Use the same field-derived model that drives constructor generation
+                // when one applies, since the symbol-based lookup can't see the
+                // sibling generator's constructor output within this compilation.
+                var effectiveGeneratedParams = ConstructorGenerationDiscoveryHelper.TryGetEffectiveConstructorParameters(typeSymbol);
+                var isGeneratedButNotInjectable = effectiveGeneratedParams is null &&
+                    ConstructorGenerationDiscoveryHelper.TryGetModel(typeSymbol) != null;
+
+                // A type eligible for constructor generation whose generated constructor
+                // isn't fully container-resolvable (e.g. a field-triggered guard on a
+                // plain string) must not fall back to the symbol-based scan below: that
+                // scan only sees the implicit parameterless constructor that exists
+                // before the sibling GeneratedConstructorGenerator pass runs, so it would
+                // register `services.AddSingleton<T>()` for a hosted service whose real
+                // (generated) constructor the container can never actually activate.
+                // Skip automatic hosted registration entirely rather than emit metadata
+                // — and a registration call — for an unactivatable worker.
+                if (!isGeneratedButNotInjectable)
+                {
+                    var typeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var constructorParams = effectiveGeneratedParams?.ToArray()
+                        ?? TypeDiscoveryHelper.GetBestConstructorParametersWithKeys(typeSymbol)?.ToArray() ?? [];
+                    var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
+
+                    hostedServices.Add(new DiscoveredHostedService(
+                        typeName,
+                        assembly.Name,
+                        GeneratorLifetime.Singleton, // Hosted services are always singleton
+                        constructorParams,
+                        sourceFilePath));
+                }
             }
 
             // Check for [Provider] attribute

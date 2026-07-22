@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/Examples/SourceGen/">
     <Project Path="Examples/SourceGen/CarterSourceGen/CarterSourceGen.csproj" />
+    <Project Path="Examples/SourceGen/GeneratedConstructorExample/GeneratedConstructorExample.csproj" />
     <Project Path="Examples/SourceGen/HttpClientExample/HttpClientExample.csproj" />
     <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
   </Folder>

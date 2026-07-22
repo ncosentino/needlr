@@ -217,4 +217,98 @@ public class MyService
         };
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }}
+    }
+
+    // ------------------------------------------------------------------
+    // [GenerateFactory] interop with generated-constructor generation.
+    // A type using [GenerateConstructor] has no hand-written constructor for this
+    // analyzer to inspect via InstanceConstructors, so runtime-parameter validation must
+    // use the same shared eligible-field model the constructor generator itself uses.
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task NoError_WhenGeneratedConstructorHasMixedInjectableAndRuntimeFields()
+    {
+        var code = @"
+using NexusLabs.Needlr.Generators;
+
+public interface IRepository { }
+
+[GenerateConstructor]
+[GenerateFactory]
+public partial class ReportBuilder
+{
+    private readonly IRepository _repository;
+    private readonly string _reportName;
+}
+" + NeedlrTestAttributes.AllWithFactoryAndGeneratedConstructor;
+
+        var test = new CSharpAnalyzerTest<GenerateFactoryAttributeAnalyzer, DefaultVerifier>
+        {
+            TestCode = code
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Warning_WhenGeneratedConstructorHasAllInjectableFields()
+    {
+        var code = @"
+using NexusLabs.Needlr.Generators;
+
+public interface IRepository { }
+public interface IClock { }
+
+[GenerateConstructor]
+[{|#0:GenerateFactory|}]
+public partial class ReportBuilder
+{
+    private readonly IRepository _repository;
+    private readonly IClock _clock;
+}
+" + NeedlrTestAttributes.AllWithFactoryAndGeneratedConstructor;
+
+        var test = new CSharpAnalyzerTest<GenerateFactoryAttributeAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics =
+            {
+                new DiagnosticResult("NDLRGEN003", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+                    .WithLocation(0)
+                    .WithArguments("ReportBuilder")
+            }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Warning_WhenGeneratedConstructorHasNoInjectableFields()
+    {
+        var code = @"
+using NexusLabs.Needlr.Generators;
+
+[GenerateConstructor]
+[{|#0:GenerateFactory|}]
+public partial class ReportBuilder
+{
+    private readonly string _reportName;
+    private readonly int _pageCount;
+}
+" + NeedlrTestAttributes.AllWithFactoryAndGeneratedConstructor;
+
+        var test = new CSharpAnalyzerTest<GenerateFactoryAttributeAnalyzer, DefaultVerifier>
+        {
+            TestCode = code,
+            ExpectedDiagnostics =
+            {
+                new DiagnosticResult("NDLRGEN004", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+                    .WithLocation(0)
+                    .WithArguments("ReportBuilder")
+            }
+        };
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+}
