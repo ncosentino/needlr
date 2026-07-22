@@ -101,6 +101,8 @@ These diagnostics are emitted by the `GeneratedConstructorAnalyzer` to validate 
 | [NDLRGEN052](NDLRGEN052.md) | Error | Custom constructor guard method is ambiguous |
 | [NDLRGEN053](NDLRGEN053.md) | Error | [ConstructorGuardDefinition] target is invalid |
 | [NDLRGEN054](NDLRGEN054.md) | Error | [ConstructorGuardDefinition] guard contract is unresolved |
+| [NDLRGEN055](NDLRGEN055.md) | Error | Constructor guard alias usage argument is unsupported |
+| [NDLRGEN056](NDLRGEN056.md) | Error | Custom constructor guard method is incompatible with forwarded alias arguments |
 
 ## HttpClient Diagnostics (NexusLabs.Needlr.Generators)
 

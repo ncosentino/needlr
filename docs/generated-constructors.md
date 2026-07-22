@@ -383,8 +383,85 @@ public partial class OrderService
 
 `[CollectionNotEmpty]` and `[ConstructorGuard(typeof(CollectionNotEmptyGuard))]` normalize to the **exact same** internal guard model and generated call. This works whether the alias attribute is declared in the current project or in a referenced assembly -- Roslyn can inspect the meta-attribute either way. An alias attribute is itself validated once, at its own declaration, by [NDLRGEN053](analyzers/NDLRGEN053.md) and [NDLRGEN054](analyzers/NDLRGEN054.md).
 
-!!! warning "Parameterized aliases are deferred"
-    A parameterized alias such as `[MinCount(3)]` -- forwarding an attribute-compatible constant into a guard method, e.g. `MinCountGuard.Validate(orders, 3, nameof(orders))` -- is **not implemented**. Only the non-parameterized `[ConstructorGuardDefinition(typeof(GuardType))]` form (optionally with an explicit method name) is supported by this feature.
+### Parameterized Alias Arguments
+
+A parameterized alias such as `[MinCount(3)]` automatically forwards **every one of its own positional constructor arguments, in declared order**, onto the resolved guard method call -- spliced between the guarded value and the trailing `nameof` parameter name:
+
+```csharp
+public static class MinCountGuard
+{
+    public static void Validate<T>(IReadOnlyCollection<T>? value, int minimum, string parameterName)
+    {
+        ArgumentNullException.ThrowIfNull(value, parameterName);
+
+        if (value.Count < minimum)
+        {
+            throw new ArgumentException($"Must contain at least {minimum} element(s).", parameterName);
+        }
+    }
+}
+
+[ConstructorGuardDefinition(typeof(MinCountGuard))]
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class MinCountAttribute : Attribute
+{
+    public MinCountAttribute(int minimum) => Minimum = minimum;
+
+    public int Minimum { get; }
+}
+
+public partial class BulkOrderRequest
+{
+    [MinCount(3)]
+    private readonly IReadOnlyCollection<string> _lineItems;
+}
+
+// Generated call: MinCountGuard.Validate(lineItems, 3, nameof(lineItems));
+```
+
+The resolved guard method must declare exactly one middle parameter per forwarded argument -- `value`, then one parameter per alias constructor argument in order, then the trailing `string parameterName` -- and each middle parameter's type must be compatible with its corresponding forwarded argument's type (directly, or via generic method type-parameter unification with the field's type, as `MinCountGuard.Validate<T>` demonstrates above). A bare alias with no positional constructor arguments (e.g. `[CollectionNotEmpty]`) forwards zero arguments, so its generated call remains byte-for-byte identical to the two-argument shape the feature has always emitted.
+
+#### Supported forwarded argument shapes
+
+Every positional alias constructor argument is a compiler-validated attribute constant (a Roslyn `TypedConstant`), never raw source text or a runtime value. Only the following constant shapes can be forwarded:
+
+| Shape | Example alias usage | Rendered literal |
+|-------|----------------------|-------------------|
+| `null` | `[Defaultable(null)]` | `null` |
+| `bool` | `[Flagged(true)]` | `true` |
+| Signed/unsigned integral (`sbyte`, `byte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`) | `[Bounds(7u, 123456789012L, 9999999999UL)]` | `7u`, `123456789012L`, `9999999999UL` (the C# suffix required for the literal to round-trip to the same runtime type) |
+| `char` | `[Label("prefix", ':')]` | `':'` |
+| `string` | `[Label("prefix", ':')]` | `"prefix"` |
+| `enum` member | `[Risk(RiskLevel.High)]` | `global::TestApp.RiskLevel.High` (a fully qualified cast expression for a combined `[Flags]` value with no single matching member) |
+| `System.Type`, including open generics | `[OfType(typeof(List<>))]` | `typeof(global::System.Collections.Generic.List<>)` |
+
+#### Optional alias constructor parameters
+
+An omitted optional alias constructor argument still forwards -- Roslyn's `AttributeData.ConstructorArguments` always includes one entry per declared constructor parameter, filling in the parameter's effective default value for any argument the usage omits:
+
+```csharp
+[ConstructorGuardDefinition(typeof(RetryGuard))]
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class RetryAttribute : Attribute
+{
+    public RetryAttribute(int maxAttempts = 5) { }
+}
+
+[Retry]
+private readonly int _value;
+
+// Generated call: RetryGuard.Validate(value, 5, nameof(value));
+```
+
+#### Unsupported in this version
+
+The following are diagnosed by [NDLRGEN055](analyzers/NDLRGEN055.md) rather than silently dropped or approximated:
+
+- **Arrays and `params` arguments** -- forwarding an array as a single positional literal is inherently ambiguous.
+- **`float` and `double` arguments** -- floating-point literals can silently lose round-trip precision.
+- **Named attribute arguments and properties** -- only positional constructor arguments are ever forwarded, regardless of shape.
+
+When an alias usage's forwarded argument is a supported shape but is incompatible with the resolved guard method's corresponding middle parameter -- either because the method's effective arity does not match the number of forwarded arguments, or because a middle parameter's type is incompatible with its forwarded argument -- [NDLRGEN056](analyzers/NDLRGEN056.md) is reported instead. [NDLRGEN051](analyzers/NDLRGEN051.md) and [NDLRGEN052](analyzers/NDLRGEN052.md) retain their existing general invalid/ambiguous guard-method behavior for every other resolution failure.
 
 ## Factory, DI, and AOT Integration
 
@@ -456,9 +533,9 @@ The following are intentionally out of scope for the initial implementation and 
 - **Keyed fields or properties** -- generated-constructor generation only ever considers plain private `readonly` fields; there is no support for producing a `[FromKeyedServices]`-annotated generated-constructor parameter from a field or property annotation.
 - **Properties** as a source of constructor parameters -- only fields are considered.
 - **`NotEmpty`** as a built-in guard kind (see [Built-In Guards](#built-in-guards) above).
-- **Parameterized custom alias attributes** such as `[MinCount(3)]` (see [Custom Alias / Meta-Attributes](#custom-alias-meta-attributes) above).
+- **Array/`params` and floating-point (`float`/`double`) parameterized alias arguments, and every named attribute argument or property** -- diagnosed by [NDLRGEN055](analyzers/NDLRGEN055.md) (see [Parameterized Alias Arguments](#parameterized-alias-arguments) above); only the scalar constant shapes in that section's table are forwarded.
 - **`IHubRegistrationPlugin` implementations** -- SignalR hub-registration plugins require parameterless activation and cannot use generated-constructor generation at all; see [NDLRSIG003](analyzers/NDLRSIG003.md).
-- **Raw expressions or cross-field validation** supplied as attribute arguments -- every guard is a typed guard kind or a compile-time-resolved direct method reference, never an arbitrary spliced expression.
+- **Raw expressions, cross-field validation, or reflection** supplied as attribute arguments -- every guard is a typed guard kind or a compile-time-resolved direct method reference (with, at most, a fixed number of compiler-validated positional constants forwarded to it), never an arbitrary spliced expression or a runtime-reflected call.
 
 ## Attribute Reference
 
@@ -501,6 +578,8 @@ The following are intentionally out of scope for the initial implementation and 
 | [NDLRGEN052](analyzers/NDLRGEN052.md) | Error | Custom constructor guard method is ambiguous |
 | [NDLRGEN053](analyzers/NDLRGEN053.md) | Error | [ConstructorGuardDefinition] target is invalid |
 | [NDLRGEN054](analyzers/NDLRGEN054.md) | Error | [ConstructorGuardDefinition] guard contract is unresolved |
+| [NDLRGEN055](analyzers/NDLRGEN055.md) | Error | Constructor guard alias usage argument is unsupported |
+| [NDLRGEN056](analyzers/NDLRGEN056.md) | Error | Custom constructor guard method is incompatible with forwarded alias arguments |
 | [NDLRSIG003](analyzers/NDLRSIG003.md) | Error | `IHubRegistrationPlugin` implementation cannot use generated-constructor generation |
 
 ## Namespace Import
@@ -515,4 +594,4 @@ This is intentional -- it signals that the feature is source-generation-only.
 
 ## Full Runnable Example
 
-`src/Examples/SourceGen/GeneratedConstructorExample` is a runnable console application exercising every scenario described on this page: bare generation, the `NonNullableReferences` mode resolved through a real `Syringe`, field-triggered implicit generation, both built-in string guards, nullable/value-type behavior, a direct custom guard type, an explicit method selector, an application-defined alias attribute, and `[GenerateFactory]` interoperability.
+`src/Examples/SourceGen/GeneratedConstructorExample` is a runnable console application exercising every scenario described on this page: bare generation, the `NonNullableReferences` mode resolved through a real `Syringe`, field-triggered implicit generation, both built-in string guards, nullable/value-type behavior, a direct custom guard type, an explicit method selector, an application-defined alias attribute, a parameterized alias attribute (`[MinCount(3)]`) that forwards its own positional argument onto the resolved guard call, and `[GenerateFactory]` interoperability.

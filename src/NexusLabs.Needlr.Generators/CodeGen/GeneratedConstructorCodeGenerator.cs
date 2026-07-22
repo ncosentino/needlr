@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -102,14 +103,14 @@ internal static class GeneratedConstructorCodeGenerator
     private static List<string> ComposeGuardCalls(GeneratedConstructorNullGuardMode mode, EligibleConstructorField field)
     {
         var suppressDefault = field.ExplicitGuards.Any(g => g.Kind == GeneratedConstructorGuardKind.None);
-        var seen = new HashSet<(GeneratedConstructorGuardKind Kind, string? Type, string? Method)>();
+        var seen = new HashSet<(GeneratedConstructorGuardKind Kind, string? Type, string? Method, string ForwardedArguments)>();
         var calls = new List<string>();
 
         if (mode == GeneratedConstructorNullGuardMode.NonNullableReferences && field.IsNonNullableReferenceType && !suppressDefault)
         {
-            if (seen.Add((GeneratedConstructorGuardKind.NotNull, null, null)))
+            if (seen.Add((GeneratedConstructorGuardKind.NotNull, null, null, string.Empty)))
             {
-                calls.Add(BuildGuardCall(GeneratedConstructorGuardKind.NotNull, field.ParameterName, null, null));
+                calls.Add(BuildGuardCall(GeneratedConstructorGuardKind.NotNull, field.ParameterName, null, null, Array.Empty<string>()));
             }
         }
 
@@ -118,26 +119,54 @@ internal static class GeneratedConstructorCodeGenerator
             if (guard.Kind == GeneratedConstructorGuardKind.None)
                 continue;
 
-            var key = (guard.Kind, guard.CustomGuardTypeName, guard.CustomGuardMethodName);
+            var key = (guard.Kind, guard.CustomGuardTypeName, guard.CustomGuardMethodName, ForwardedArguments: string.Join("\u0001", guard.ForwardedArgumentLiterals));
             if (!seen.Add(key))
                 continue;
 
-            calls.Add(BuildGuardCall(guard.Kind, field.ParameterName, guard.CustomGuardTypeName, guard.CustomGuardMethodName));
+            calls.Add(BuildGuardCall(guard.Kind, field.ParameterName, guard.CustomGuardTypeName, guard.CustomGuardMethodName, guard.ForwardedArgumentLiterals));
         }
 
         return calls;
     }
 
-    private static string BuildGuardCall(GeneratedConstructorGuardKind kind, string parameterName, string? customGuardTypeName, string? customGuardMethodName)
+    private static string BuildGuardCall(
+        GeneratedConstructorGuardKind kind,
+        string parameterName,
+        string? customGuardTypeName,
+        string? customGuardMethodName,
+        string[] forwardedArgumentLiterals)
     {
         return kind switch
         {
             GeneratedConstructorGuardKind.NotNull => $"global::System.ArgumentNullException.ThrowIfNull({parameterName});",
             GeneratedConstructorGuardKind.NotNullOrEmpty => $"global::System.ArgumentException.ThrowIfNullOrEmpty({parameterName});",
             GeneratedConstructorGuardKind.NotNullOrWhiteSpace => $"global::System.ArgumentException.ThrowIfNullOrWhiteSpace({parameterName});",
-            GeneratedConstructorGuardKind.Custom => $"{customGuardTypeName}.{customGuardMethodName}({parameterName}, nameof({parameterName}));",
+            GeneratedConstructorGuardKind.Custom => BuildCustomGuardCall(parameterName, customGuardTypeName, customGuardMethodName, forwardedArgumentLiterals),
             _ => string.Empty,
         };
+    }
+
+    /// <summary>
+    /// Builds a custom guard method call, splicing any positional arguments forwarded
+    /// from a parameterized alias attribute usage between the guarded value and the
+    /// trailing <c>nameof</c> parameter name -- e.g.
+    /// <c>MinCountGuard.Validate(value, 3, nameof(value));</c>. When
+    /// <paramref name="forwardedArgumentLiterals"/> is empty (a built-in guard's
+    /// call, a direct <c>[ConstructorGuard(typeof(...))]</c> usage, or a bare alias
+    /// with no positional constructor arguments) the emitted call is byte-for-byte
+    /// identical to the two-argument shape this generator has always emitted.
+    /// </summary>
+    private static string BuildCustomGuardCall(
+        string parameterName,
+        string? customGuardTypeName,
+        string? customGuardMethodName,
+        string[] forwardedArgumentLiterals)
+    {
+        var argumentList = forwardedArgumentLiterals.Length == 0
+            ? parameterName
+            : $"{parameterName}, {string.Join(", ", forwardedArgumentLiterals)}";
+
+        return $"{customGuardTypeName}.{customGuardMethodName}({argumentList}, nameof({parameterName}));";
     }
 }
 

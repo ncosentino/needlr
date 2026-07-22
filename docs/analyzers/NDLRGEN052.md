@@ -46,4 +46,5 @@ public partial class OrderService
 ## See Also
 
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
+- [NDLRGEN056](NDLRGEN056.md) - Custom constructor guard method is incompatible with forwarded alias arguments
 - [Generated Constructors](../generated-constructors.md)

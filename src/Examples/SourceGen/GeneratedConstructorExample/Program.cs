@@ -180,8 +180,24 @@ Console.WriteLine("    (ReportBuilder has a non-injectable runtime parameter, so
 Console.WriteLine("     only its generated factory and Func<> delegate are registered)");
 Console.WriteLine();
 
+Console.WriteLine("-- DEMO 10: a parameterized custom guard alias, [MinCount(3)] --");
+var bulkOrder = new BulkOrderRequest(new[] { "sku-1", "sku-2", "sku-3" });
+Console.WriteLine($"  BulkOrderRequest([\"sku-1\", \"sku-2\", \"sku-3\"]) -> LineItems.Count = {bulkOrder.LineItems.Count}");
+
+try
+{
+    _ = new BulkOrderRequest(new[] { "sku-1", "sku-2" });
+    Console.WriteLine("  UNEXPECTED: no exception thrown for only 2 line items");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"  BulkOrderRequest([\"sku-1\", \"sku-2\"]) -> ArgumentException from MinCountGuard.Validate, ParamName = \"{ex.ParamName}\"");
+    Console.WriteLine("    (the alias usage's own \"3\" argument was forwarded onto the guard call: Validate(lineItems, 3, nameof(lineItems)))");
+}
+Console.WriteLine();
+
 Console.WriteLine("===============================================================================");
 Console.WriteLine("Done. See docs/generated-constructors.md for the full feature reference and");
-Console.WriteLine("docs/analyzers/NDLRGEN039.md through NDLRGEN054.md and NDLRSIG003.md for every");
+Console.WriteLine("docs/analyzers/NDLRGEN039.md through NDLRGEN056.md and NDLRSIG003.md for every");
 Console.WriteLine("diagnostic this feature can raise.");
 Console.WriteLine("===============================================================================");

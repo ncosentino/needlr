@@ -140,6 +140,106 @@ public sealed class GeneratedConstructorIncrementalCachingTests
     }
 
     [Fact]
+    public void EditingOneAliasGuardsForwardedLiteral_InvalidatesOnlyThatTypesModelAndOutput()
+    {
+        // Regression test for ConstructorFieldGuard's forwarded-argument-literal
+        // equality: changing only the literal argument of a parameterized alias
+        // attribute usage (e.g. [MinCount(3)] -> [MinCount(5)]) must be observed as a
+        // real change to TypeA's model/output, while TypeB -- an entirely unrelated
+        // type in the same compilation -- stays cached.
+        const string before = """
+            using System;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public static class MinCountGuard
+                {
+                    public static void Validate(int value, int min, string parameterName) { }
+                }
+
+                [ConstructorGuardDefinition(typeof(MinCountGuard))]
+                [AttributeUsage(AttributeTargets.Field)]
+                public sealed class MinCountAttribute : Attribute
+                {
+                    public MinCountAttribute(int min) { }
+                }
+
+                public interface ILogger { }
+
+                public partial class TypeA
+                {
+                    [MinCount(3)]
+                    private readonly int _value;
+                }
+
+                [GenerateConstructor]
+                public partial class TypeB
+                {
+                    private readonly ILogger _logger;
+                }
+            }
+            """;
+
+        const string after = """
+            using System;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public static class MinCountGuard
+                {
+                    public static void Validate(int value, int min, string parameterName) { }
+                }
+
+                [ConstructorGuardDefinition(typeof(MinCountGuard))]
+                [AttributeUsage(AttributeTargets.Field)]
+                public sealed class MinCountAttribute : Attribute
+                {
+                    public MinCountAttribute(int min) { }
+                }
+
+                public interface ILogger { }
+
+                public partial class TypeA
+                {
+                    [MinCount(5)]
+                    private readonly int _value;
+                }
+
+                [GenerateConstructor]
+                public partial class TypeB
+                {
+                    private readonly ILogger _logger;
+                }
+            }
+            """;
+
+        var (beforeCompilation, tree) = CreateCompilationWithTrackedTree(
+            "Types.cs",
+            ("Types.cs", before));
+
+        var afterCompilation = beforeCompilation.ReplaceSyntaxTree(tree, EditTree(tree, before, after));
+
+        var (_, secondRun) = RunIncremental(beforeCompilation, afterCompilation);
+
+        var modelOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Models);
+        var emissionOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Output);
+
+        Assert.Equal(2, modelOutputs.Length);
+        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
+        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
+
+        Assert.Equal(2, emissionOutputs.Length);
+        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
+        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
+
+        var secondRunResult = secondRun.Results.Single();
+        var generatedContent = string.Join("\n\n", secondRunResult.GeneratedSources.Select(s => s.SourceText.ToString()));
+        Assert.Contains("global::TestApp.MinCountGuard.Validate(value, 5, nameof(value));", generatedContent);
+    }
+
+    [Fact]
     public void MultiPartialDeclaration_ProducesExactlyOneModelAndOutput()
     {
         const string sourceA = """

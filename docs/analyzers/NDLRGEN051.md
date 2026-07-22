@@ -69,4 +69,5 @@ public partial class OrderService
 
 - [NDLRGEN049](NDLRGEN049.md) - Custom constructor guard type is invalid
 - [NDLRGEN052](NDLRGEN052.md) - Custom constructor guard method is ambiguous
+- [NDLRGEN056](NDLRGEN056.md) - Custom constructor guard method is incompatible with forwarded alias arguments
 - [Generated Constructors](../generated-constructors.md)

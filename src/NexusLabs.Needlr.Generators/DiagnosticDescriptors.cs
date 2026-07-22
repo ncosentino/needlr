@@ -616,6 +616,36 @@ internal static class DiagnosticDescriptors
         description: "The guard type and method referenced by [ConstructorGuardDefinition] must resolve to the same accessible static Validate-compatible method contract required by a direct [ConstructorGuard] custom guard. Fix the referenced type or method on the alias attribute's definition.",
         helpLinkUri: HelpLinkBase + "NDLRGEN054.md");
 
+    /// <summary>
+    /// NDLRGEN055: A parameterized custom guard alias usage forwards an argument shape
+    /// or a named argument/property that this version does not support forwarding.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardAliasUsageArgumentUnsupported = new(
+        id: "NDLRGEN055",
+        title: "Constructor guard alias usage argument is unsupported",
+        messageFormat: "The alias attribute usage on field '{0}' is invalid: {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A parameterized custom guard alias forwards every positional constructor argument of its usage onto the resolved guard method call, in declared order. Only null, bool, integral, char, string, enum, and Type argument shapes can be forwarded; arrays/params and float/double are not. Named attribute arguments and properties are never forwarded. Change the alias usage to avoid the unsupported argument, or forward it as a supported positional argument instead.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN055.md");
+
+    /// <summary>
+    /// NDLRGEN056: A custom guard method is incompatible with the arguments a
+    /// parameterized alias usage forwards to it, either because the method's effective
+    /// arity does not match the number of forwarded arguments, or because one of the
+    /// forwarded argument types is incompatible with the corresponding parameter.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardForwardedArgumentIncompatible = new(
+        id: "NDLRGEN056",
+        title: "Custom constructor guard method is incompatible with forwarded alias arguments",
+        messageFormat: "Guard method '{0}' on type '{1}' cannot accept the arguments forwarded for field '{2}' of type '{3}': {4}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A parameterized custom guard alias usage forwards its own positional constructor arguments between the guarded value and the trailing string parameter name. The resolved guard method must declare exactly one middle parameter per forwarded argument, and each middle parameter's type must be compatible with its corresponding forwarded argument's type (directly, or via generic method type-parameter unification with the field's type). Change the number or types of the alias usage's arguments, or the guard method's middle parameters, so they match exactly.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN056.md");
+
     // ============================================================================
     // HttpClient Analyzers (NDLRHTTP001-006)
     // ============================================================================

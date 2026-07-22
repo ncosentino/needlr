@@ -294,11 +294,48 @@ internal static class ConstructorGenerationDiscoveryHelper
 
             if (TryGetGuardDefinition(attrClass, out var guardTypeName, out var guardMethodName))
             {
-                guards.Add(new ConstructorFieldGuard(GeneratedConstructorGuardKind.Custom, guardTypeName, guardMethodName));
+                var forwardedArgumentLiterals = TryRenderForwardedArguments(attribute);
+                if (forwardedArgumentLiterals is null)
+                {
+                    // Unsupported arguments invalidate the complete guard call so the
+                    // generator never emits a partial or positionally incorrect call.
+                    continue;
+                }
+
+                guards.Add(new ConstructorFieldGuard(GeneratedConstructorGuardKind.Custom, guardTypeName, guardMethodName, forwardedArgumentLiterals));
             }
         }
 
         return guards.ToArray();
+    }
+
+    /// <summary>
+    /// Renders every positional constructor argument of a parameterized alias
+    /// attribute usage (e.g. <c>[MinCount(3)]</c>) in declared order, or
+    /// <see langword="null"/> when any argument is a shape
+    /// <see cref="TypedConstantRenderer"/> does not support or when named attribute
+    /// arguments are present. A direct
+    /// <c>[ConstructorGuard(typeof(...))]</c> usage never reaches this method, so it
+    /// always forwards zero arguments.
+    /// </summary>
+    private static string[]? TryRenderForwardedArguments(AttributeData attribute)
+    {
+        if (attribute.NamedArguments.Length > 0)
+            return null;
+
+        if (attribute.ConstructorArguments.Length == 0)
+            return System.Array.Empty<string>();
+
+        var rendered = new string[attribute.ConstructorArguments.Length];
+        for (var i = 0; i < attribute.ConstructorArguments.Length; i++)
+        {
+            if (!TypedConstantRenderer.TryRender(attribute.ConstructorArguments[i], out var literal))
+                return null;
+
+            rendered[i] = literal;
+        }
+
+        return rendered;
     }
 
     private static bool IsConstructorGuardAttributeClass(INamedTypeSymbol attrClass)

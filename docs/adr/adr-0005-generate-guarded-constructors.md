@@ -174,6 +174,35 @@ invalid class shapes, field eligibility, guard compatibility, and custom guard
 methods. Executable examples and strict documentation validation confirm that the
 public workflow and extension contract remain usable.
 
+## Outcome Notes
+
+### 2026-07-21: Parameterized custom guard alias arguments
+
+Following acceptance of this record, the non-parameterized custom guard alias
+contract was refined to also forward an alias attribute usage's own positional
+constructor arguments (e.g. `[MinCount(3)]`) directly onto the resolved guard
+method call, between the guarded value and the trailing parameter name. This is a
+direct-call refinement of the alias mechanism this record already establishes, not
+a new decision:
+
+- Every forwarded argument remains a compiler-validated attribute constant (a
+  Roslyn `TypedConstant`) rendered into source at compile time -- never a raw
+  spliced expression and never a reflection-invoked call. Only a closed set of
+  scalar constant shapes (`null`, `bool`, integral primitives, `char`, `string`,
+  `enum`, and `System.Type`) are rendered; arrays/params, floating-point values,
+  and named attribute arguments/properties are diagnosed rather than forwarded.
+- The guard method contract is still resolved and validated once at compile time,
+  now checking that the resolved method declares exactly one middle parameter per
+  forwarded argument with a compatible type, in addition to the value and trailing
+  parameter-name checks this record already required.
+- No new runtime dependency, reflection usage, or raw-expression capability was
+  introduced. The "Custom Guard Extensibility" decision and the "no reflection, no
+  arbitrary expressions" constraint above remain fully intact.
+
+See `docs/generated-constructors.md#parameterized-alias-arguments` for the
+supported contract and `docs/analyzers/NDLRGEN055.md` and
+`docs/analyzers/NDLRGEN056.md` for the diagnostics added alongside it.
+
 ## References
 
 - `DeferToContainerAttribute` documents Needlr's existing interoperability contract

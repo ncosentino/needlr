@@ -59,4 +59,5 @@ public sealed class CollectionNotEmptyAttribute : Attribute
 
 - [NDLRGEN053](NDLRGEN053.md) - [ConstructorGuardDefinition] target is invalid
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
+- [NDLRGEN055](NDLRGEN055.md) - Constructor guard alias usage argument is unsupported
 - [Generated Constructors](../generated-constructors.md)

@@ -21,3 +21,5 @@ NDLRGEN051 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer,
 NDLRGEN052 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer, Custom constructor guard method is ambiguous
 NDLRGEN053 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer, [ConstructorGuardDefinition] target is invalid
 NDLRGEN054 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer, [ConstructorGuardDefinition] guard contract is unresolved
+NDLRGEN055 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer, Constructor guard alias usage argument is unsupported
+NDLRGEN056 | NexusLabs.Needlr.Generators | Error | GeneratedConstructorAnalyzer, Custom constructor guard method is incompatible with forwarded alias arguments

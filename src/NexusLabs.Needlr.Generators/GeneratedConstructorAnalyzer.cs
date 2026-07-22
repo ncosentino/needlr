@@ -48,7 +48,9 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ConstructorGuardMethodInvalid,
             DiagnosticDescriptors.ConstructorGuardMethodAmbiguous,
             DiagnosticDescriptors.ConstructorGuardDefinitionTargetInvalid,
-            DiagnosticDescriptors.ConstructorGuardDefinitionUnresolvedGuard);
+            DiagnosticDescriptors.ConstructorGuardDefinitionUnresolvedGuard,
+            DiagnosticDescriptors.ConstructorGuardAliasUsageArgumentUnsupported,
+            DiagnosticDescriptors.ConstructorGuardForwardedArgumentIncompatible);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -384,7 +386,11 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
                     break;
 
                 case GuardOccurrenceKind.CustomType:
-                    AnalyzeCustomGuard(context, typeSymbol, occurrence, location, occurrence.GuardType, occurrence.MethodName, occurrence.MethodNameExplicit);
+                    // A direct [ConstructorGuard(typeof(...))] usage's own constructor
+                    // arguments are the guard type and an optional method name -- never
+                    // values to forward -- so it always resolves against zero forwarded
+                    // arguments.
+                    AnalyzeCustomGuard(context, typeSymbol, occurrence, location, occurrence.GuardType, occurrence.MethodName, occurrence.MethodNameExplicit, ImmutableArray<ITypeSymbol>.Empty);
                     break;
 
                 case GuardOccurrenceKind.Alias:
@@ -396,21 +402,32 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     /// Analyzes a field-level alias attribute occurrence (one meta-annotated with
-    /// <c>[ConstructorGuardDefinition]</c>). An alias declared in the current
-    /// compilation's source has its guard type, method name, and general method shape
-    /// validated once at its own declaration (NDLRGEN053/054), so this only reports the
-    /// field-type-specific incompatibility or ambiguity that can only be known at a
-    /// usage site. An alias declared in a referenced assembly cannot be diagnosed at a
-    /// declaration this compilation controls, so it receives the full field-usage
-    /// validation applied to a direct custom guard.
+    /// <c>[ConstructorGuardDefinition]</c>). Every positional constructor argument of
+    /// this alias usage (e.g. the <c>3</c> in <c>[MinCount(3)]</c>) is a candidate to
+    /// forward onto the resolved guard method call, so it is always validated here
+    /// first (NDLRGEN055) regardless of where the alias itself is declared. An alias
+    /// declared in the current compilation's source has its guard type, method name,
+    /// and general method shape validated once at its own declaration
+    /// (NDLRGEN053/054), so this only reports the field-type or forwarded-argument
+    /// incompatibility, or ambiguity, that can only be known at a usage site. An alias
+    /// declared in a referenced assembly cannot be diagnosed at a declaration this
+    /// compilation controls, so it receives the full field-usage validation applied to
+    /// a direct custom guard.
     /// </summary>
     private static void AnalyzeAliasGuardAtUsage(SyntaxNodeAnalysisContext context, INamedTypeSymbol containingType, GuardOccurrence occurrence, Location location)
     {
         var guardType = occurrence.GuardType;
 
+        if (!TryGetForwardedArgumentTypes(occurrence.Attribute, out var forwardedArgumentTypes, out var unsupportedReason))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.ConstructorGuardAliasUsageArgumentUnsupported, location, occurrence.Field.Name, unsupportedReason));
+            return;
+        }
+
         if (!occurrence.GuardTypeUsageIsInSourceAlias)
         {
-            AnalyzeCustomGuard(context, containingType, occurrence, location, guardType, occurrence.MethodName, occurrence.MethodNameExplicit);
+            AnalyzeCustomGuard(context, containingType, occurrence, location, guardType, occurrence.MethodName, occurrence.MethodNameExplicit, forwardedArgumentTypes);
             return;
         }
 
@@ -419,9 +436,20 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
 
         var methodName = string.IsNullOrEmpty(occurrence.MethodName) ? DefaultGuardMethodName : occurrence.MethodName!;
         var resolution = TryResolveGuardMethod(
-            context.Compilation, containingType, guardType, methodName, occurrence.Field.Type, out _, out var reason);
+            context.Compilation, containingType, guardType, methodName, occurrence.Field.Type, forwardedArgumentTypes, out _, out var reason, out var failureKind);
 
-        if (resolution == GuardMethodResolution.NotFound && reason == FieldTypeIncompatibleReason)
+        if (resolution == GuardMethodResolution.NotFound && failureKind == GuardResolutionFailureKind.ForwardedArgument)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.ConstructorGuardForwardedArgumentIncompatible,
+                location,
+                methodName,
+                guardType.ToDisplayString(),
+                occurrence.Field.Name,
+                occurrence.Field.Type.ToDisplayString(),
+                reason));
+        }
+        else if (resolution == GuardMethodResolution.NotFound && reason == FieldTypeIncompatibleReason)
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.ConstructorGuardMethodInvalid,
@@ -442,6 +470,62 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
                 occurrence.Field.Name,
                 occurrence.Field.Type.ToDisplayString()));
         }
+    }
+
+    /// <summary>
+    /// Validates every positional constructor argument of an alias attribute usage
+    /// (e.g. <c>[MinCount(3)]</c>) and returns the compile-time type of each one, in
+    /// declared order, to use for matching against the resolved guard method's middle
+    /// parameters. Reports the same unsupported-shape rule
+    /// <see cref="TypedConstantRenderer"/> enforces for code generation -- arrays and
+    /// floating-point values are not forwarded -- and additionally rejects any named
+    /// attribute argument or property, which this version never forwards regardless of
+    /// its shape.
+    /// </summary>
+    private static bool TryGetForwardedArgumentTypes(AttributeData attribute, out ImmutableArray<ITypeSymbol> forwardedArgumentTypes, out string? unsupportedReason)
+    {
+        if (attribute.NamedArguments.Length > 0)
+        {
+            forwardedArgumentTypes = ImmutableArray<ITypeSymbol>.Empty;
+            unsupportedReason = $"named argument '{attribute.NamedArguments[0].Key}' is not forwarded to the guard method in this version";
+            return false;
+        }
+
+        if (attribute.ConstructorArguments.Length == 0)
+        {
+            forwardedArgumentTypes = ImmutableArray<ITypeSymbol>.Empty;
+            unsupportedReason = null;
+            return true;
+        }
+
+        var builder = ImmutableArray.CreateBuilder<ITypeSymbol>(attribute.ConstructorArguments.Length);
+        for (var i = 0; i < attribute.ConstructorArguments.Length; i++)
+        {
+            var constant = attribute.ConstructorArguments[i];
+            if (!TypedConstantRenderer.TryRender(constant, out _))
+            {
+                forwardedArgumentTypes = ImmutableArray<ITypeSymbol>.Empty;
+                unsupportedReason = $"positional argument {i + 1} is {DescribeUnsupportedConstant(constant)}, which is not forwarded to the guard method in this version";
+                return false;
+            }
+
+            builder.Add(constant.Type!);
+        }
+
+        forwardedArgumentTypes = builder.MoveToImmutable();
+        unsupportedReason = null;
+        return true;
+    }
+
+    private static string DescribeUnsupportedConstant(TypedConstant constant)
+    {
+        if (constant.Kind == TypedConstantKind.Array)
+            return "an array";
+
+        if (constant.Value is float or double)
+            return "a floating-point value";
+
+        return "an unsupported value";
     }
 
     // ------------------------------------------------------------------
@@ -516,7 +600,7 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
     }
 
     // ------------------------------------------------------------------
-    // Custom guard type/method resolution: NDLRGEN049-052
+    // Custom guard type/method resolution: NDLRGEN049-052, NDLRGEN056
     // ------------------------------------------------------------------
 
     private static void AnalyzeCustomGuard(
@@ -526,7 +610,8 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
         Location location,
         ITypeSymbol? guardType,
         string? methodName,
-        bool methodNameExplicit)
+        bool methodNameExplicit,
+        ImmutableArray<ITypeSymbol> forwardedArgumentTypes)
     {
         if (guardType is null || guardType.TypeKind == TypeKind.Error)
         {
@@ -555,10 +640,21 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
         var effectiveMethodName = string.IsNullOrEmpty(methodName) ? DefaultGuardMethodName : methodName!;
 
         var resolution = TryResolveGuardMethod(
-            context.Compilation, containingType, guardType, effectiveMethodName, occurrence.Field.Type, out _, out var reason);
+            context.Compilation, containingType, guardType, effectiveMethodName, occurrence.Field.Type, forwardedArgumentTypes, out _, out var reason, out var failureKind);
 
         switch (resolution)
         {
+            case GuardMethodResolution.NotFound when failureKind == GuardResolutionFailureKind.ForwardedArgument:
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ConstructorGuardForwardedArgumentIncompatible,
+                    location,
+                    effectiveMethodName,
+                    guardType.ToDisplayString(),
+                    occurrence.Field.Name,
+                    occurrence.Field.Type.ToDisplayString(),
+                    reason));
+                break;
+
             case GuardMethodResolution.NotFound:
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.ConstructorGuardMethodInvalid,
@@ -590,13 +686,44 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
+    /// A classification of why a guard method candidate failed to resolve, used to pick
+    /// between the value/general-shape diagnostic (NDLRGEN051) and the forwarded
+    /// alias-argument diagnostic (NDLRGEN056) when reporting a <see cref="GuardMethodResolution.NotFound"/>
+    /// result.
+    /// </summary>
+    private enum GuardResolutionFailureKind
+    {
+        /// <summary>No candidate was rejected, or resolution succeeded.</summary>
+        None,
+
+        /// <summary>
+        /// The candidate was rejected for a reason unrelated to a specific forwarded
+        /// argument: it doesn't exist, isn't accessible/static/void, uses ref/out/in, or
+        /// its value parameter is incompatible with the field's type.
+        /// </summary>
+        General,
+
+        /// <summary>
+        /// The candidate was rejected specifically because of the arguments a
+        /// parameterized alias usage forwards to it: its effective arity does not match
+        /// the number of forwarded arguments, or a middle parameter's type is
+        /// incompatible with its corresponding forwarded argument.
+        /// </summary>
+        ForwardedArgument,
+    }
+
+    /// <summary>
     /// Resolves the accessible static guard method named <paramref name="methodName"/> on
-    /// <paramref name="guardType"/> that is compatible with <c>void Method(T value, string
-    /// parameterName)</c>, where <c>T</c> is compatible with <paramref name="fieldType"/>
-    /// (directly, or via a generic method's type-parameter unification). Pass
-    /// <see langword="null"/> for <paramref name="fieldType"/> to validate only the
-    /// method's general shape (used to validate a <c>[ConstructorGuardDefinition]</c> at
-    /// its own declaration, before any field type is known).
+    /// <paramref name="guardType"/> that is compatible with <c>void Method(T value,
+    /// ...forwarded arguments, string parameterName)</c>, where <c>T</c> is compatible
+    /// with <paramref name="fieldType"/> (directly, or via a generic method's
+    /// type-parameter unification), and each middle parameter is compatible with the
+    /// correspondingly-positioned entry of <paramref name="forwardedArgumentTypes"/>.
+    /// Pass <see langword="null"/> for <paramref name="fieldType"/> to validate only the
+    /// method's durable general shape -- at least a value and a trailing string
+    /// parameter name, in any accessible static void overload -- used to validate a
+    /// <c>[ConstructorGuardDefinition]</c> at its own declaration, before any usage
+    /// site's forwarded argument count is known.
     /// </summary>
     private static GuardMethodResolution TryResolveGuardMethod(
         Compilation compilation,
@@ -604,11 +731,14 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
         ITypeSymbol guardType,
         string methodName,
         ITypeSymbol? fieldType,
+        ImmutableArray<ITypeSymbol> forwardedArgumentTypes,
         out IMethodSymbol? method,
-        out string? reason)
+        out string? reason,
+        out GuardResolutionFailureKind failureKind)
     {
         method = null;
         reason = null;
+        failureKind = GuardResolutionFailureKind.None;
 
         var candidates = guardType.GetMembers(methodName).OfType<IMethodSymbol>()
             .Where(m => m.MethodKind == MethodKind.Ordinary)
@@ -617,9 +747,16 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
         if (candidates.Count == 0)
         {
             reason = $"no method named '{methodName}' was found on '{guardType.ToDisplayString()}'";
+            failureKind = GuardResolutionFailureKind.General;
             return GuardMethodResolution.NotFound;
         }
 
+        // The effective arity (value + every forwarded argument + the trailing
+        // parameter name) is only known once a usage site supplies its forwarded
+        // argument count; at definition-site validation (fieldType is null) any
+        // number of middle parameters is durable, since a usage site's own alias
+        // constructor determines that count later.
+        var expectedArity = fieldType is null ? (int?)null : forwardedArgumentTypes.Length + 2;
         var matches = new List<IMethodSymbol>();
 
         foreach (var candidate in candidates)
@@ -627,30 +764,42 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
             if (!compilation.IsSymbolAccessibleWithin(candidate, withinType))
             {
                 reason = "it is not accessible";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
             if (!candidate.IsStatic)
             {
                 reason = "it is not static";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
             if (!candidate.ReturnsVoid)
             {
                 reason = "it does not return void";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
-            if (candidate.Parameters.Length != 2)
+            if (candidate.Parameters.Length < 2)
             {
-                reason = "it does not have exactly two parameters";
+                reason = "it does not have at least a value parameter and a trailing string parameter name";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
-            if (candidate.Parameters[1].Type.SpecialType != SpecialType.System_String)
+            if (expectedArity.HasValue && candidate.Parameters.Length != expectedArity.Value)
             {
-                reason = "its second parameter is not a string parameter name";
+                reason = $"it has {candidate.Parameters.Length - 2} parameter(s) between the value and the parameter name, but this alias usage forwards {forwardedArgumentTypes.Length} argument(s)";
+                failureKind = GuardResolutionFailureKind.ForwardedArgument;
+                continue;
+            }
+
+            if (candidate.Parameters[candidate.Parameters.Length - 1].Type.SpecialType != SpecialType.System_String)
+            {
+                reason = "its last parameter is not a string parameter name";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
@@ -658,51 +807,69 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
             if (refKindParameter is not null)
             {
                 reason = $"its '{refKindParameter.Name}' parameter is passed by '{refKindParameter.RefKind.ToString().ToLowerInvariant()}', which a direct generated call cannot supply";
+                failureKind = GuardResolutionFailureKind.General;
                 continue;
             }
 
             if (fieldType is null)
             {
                 // Definition-site validation: the value parameter's exact compatibility
-                // cannot be checked without a concrete field type, so only the method's
-                // general shape is required here.
+                // and any middle parameters' forwarded-argument compatibility cannot be
+                // checked without a concrete usage site, so only the method's general
+                // shape is required here.
                 matches.Add(candidate);
                 continue;
             }
 
             var valueParameterType = candidate.Parameters[0].Type;
+            var middleParameters = candidate.Parameters.Skip(1).Take(candidate.Parameters.Length - 2).ToList();
+
             bool isCompatible;
+            string? candidateReason;
+            GuardResolutionFailureKind candidateFailureKind;
+
             if (candidate.IsGenericMethod)
             {
-                isCompatible = TryInferGenericParameterCompatibility(candidate, valueParameterType, fieldType, compilation, out var genericReason);
-                if (!isCompatible)
-                    reason = genericReason;
+                isCompatible = TryInferGenericParameterCompatibility(
+                    candidate, valueParameterType, fieldType, middleParameters, forwardedArgumentTypes, compilation,
+                    out candidateReason, out candidateFailureKind);
             }
             else
             {
-                isCompatible = IsAssignableTo(fieldType, valueParameterType, compilation);
-                if (!isCompatible)
-                    reason = FieldTypeIncompatibleReason;
+                isCompatible = TryCheckNonGenericCompatibility(
+                    fieldType, valueParameterType, middleParameters, forwardedArgumentTypes, compilation,
+                    out candidateReason, out candidateFailureKind);
             }
 
-            if (isCompatible)
+            if (!isCompatible)
             {
-                matches.Add(candidate);
+                reason = candidateReason;
+                failureKind = candidateFailureKind;
+                continue;
             }
+
+            matches.Add(candidate);
         }
 
         if (matches.Count == 1)
         {
             method = matches[0];
+            failureKind = GuardResolutionFailureKind.None;
             return GuardMethodResolution.Found;
         }
 
         if (matches.Count > 1)
         {
+            failureKind = GuardResolutionFailureKind.None;
             return GuardMethodResolution.Ambiguous;
         }
 
-        reason ??= "no accessible static method compatible with (value, string parameterName) was found";
+        if (reason is null)
+        {
+            reason = "no accessible static method compatible with (value, ...forwarded arguments, string parameterName) was found";
+            failureKind = GuardResolutionFailureKind.General;
+        }
+
         return GuardMethodResolution.NotFound;
     }
 
@@ -716,25 +883,76 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
+    /// Checks a non-generic guard method candidate's value parameter against
+    /// <paramref name="fieldType"/>, then each middle parameter against its
+    /// correspondingly-positioned entry of <paramref name="forwardedArgumentTypes"/>,
+    /// stopping at the first incompatibility found. The value-parameter check is
+    /// classified as <see cref="GuardResolutionFailureKind.General"/> (NDLRGEN051); a
+    /// middle-parameter check is classified as
+    /// <see cref="GuardResolutionFailureKind.ForwardedArgument"/> (NDLRGEN056), since
+    /// only a parameterized alias usage's own forwarded arguments can make a middle
+    /// parameter incompatible.
+    /// </summary>
+    private static bool TryCheckNonGenericCompatibility(
+        ITypeSymbol fieldType,
+        ITypeSymbol valueParameterType,
+        List<IParameterSymbol> middleParameters,
+        ImmutableArray<ITypeSymbol> forwardedArgumentTypes,
+        Compilation compilation,
+        out string? reason,
+        out GuardResolutionFailureKind failureKind)
+    {
+        if (!IsAssignableTo(fieldType, valueParameterType, compilation))
+        {
+            reason = FieldTypeIncompatibleReason;
+            failureKind = GuardResolutionFailureKind.General;
+            return false;
+        }
+
+        for (var i = 0; i < middleParameters.Count; i++)
+        {
+            if (!IsAssignableTo(forwardedArgumentTypes[i], middleParameters[i].Type, compilation))
+            {
+                reason = $"its parameter '{middleParameters[i].Name}' of type '{middleParameters[i].Type.ToDisplayString()}' is not compatible with the forwarded argument of type '{forwardedArgumentTypes[i].ToDisplayString()}'";
+                failureKind = GuardResolutionFailureKind.ForwardedArgument;
+                return false;
+            }
+        }
+
+        reason = null;
+        failureKind = GuardResolutionFailureKind.None;
+        return true;
+    }
+
+    /// <summary>
     /// True when <paramref name="genericMethod"/>'s value-parameter type
     /// (<paramref name="parameterType"/>) unifies with <paramref name="fieldType"/> (or
-    /// one of its base types/interfaces) such that EVERY one of the method's own type
-    /// parameters receives a binding -- an extra type parameter that appears only in
-    /// <paramref name="genericMethod"/>'s signature but never in the value parameter's
-    /// type can never be inferred from a direct call site with no explicit type
-    /// arguments, exactly like C#'s own method type inference -- and every bound type
-    /// argument satisfies its type parameter's declared constraints (see
-    /// <see cref="FindConstraintViolation"/>).
+    /// one of its base types/interfaces), every one of <paramref name="middleParameters"/>
+    /// unifies with its correspondingly-positioned entry of
+    /// <paramref name="forwardedArgumentTypes"/> using that same substitution -- so a
+    /// type parameter shared between the value and a forwarded argument must resolve to
+    /// the same type argument at both positions -- such that EVERY one of the method's
+    /// own type parameters receives a binding, and every bound type argument satisfies
+    /// its type parameter's declared constraints (see <see cref="FindConstraintViolation"/>).
+    /// A failure that occurs while unifying a middle parameter, or that is only
+    /// reachable via a type parameter that never appears in the value parameter's type,
+    /// is classified as <see cref="GuardResolutionFailureKind.ForwardedArgument"/>
+    /// (NDLRGEN056); every other failure is <see cref="GuardResolutionFailureKind.General"/>
+    /// (NDLRGEN051).
     /// </summary>
     private static bool TryInferGenericParameterCompatibility(
         IMethodSymbol genericMethod,
         ITypeSymbol parameterType,
         ITypeSymbol fieldType,
+        List<IParameterSymbol> middleParameters,
+        ImmutableArray<ITypeSymbol> forwardedArgumentTypes,
         Compilation compilation,
-        out string? reason)
+        out string? reason,
+        out GuardResolutionFailureKind failureKind)
     {
         var methodTypeParameters = new HashSet<ITypeSymbol>(genericMethod.TypeParameters, SymbolEqualityComparer.Default);
         string? lastReason = null;
+        var lastFailureKind = GuardResolutionFailureKind.General;
 
         foreach (var candidateType in GetTypeAndSupertypes(fieldType))
         {
@@ -742,26 +960,93 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
             if (!TryUnify(parameterType, candidateType, methodTypeParameters, substitution))
                 continue;
 
+            var forwardedMismatch = false;
+            for (var i = 0; i < middleParameters.Count; i++)
+            {
+                if (!TryUnify(middleParameters[i].Type, forwardedArgumentTypes[i], methodTypeParameters, substitution))
+                {
+                    lastReason ??= $"its parameter '{middleParameters[i].Name}' cannot accept the forwarded argument of type '{forwardedArgumentTypes[i].ToDisplayString()}'";
+                    lastFailureKind = GuardResolutionFailureKind.ForwardedArgument;
+                    forwardedMismatch = true;
+                    break;
+                }
+            }
+
+            if (forwardedMismatch)
+                continue;
+
             var unboundParameter = genericMethod.TypeParameters.FirstOrDefault(tp => !substitution.ContainsKey(tp));
             if (unboundParameter is not null)
             {
-                lastReason ??= $"its type parameter '{unboundParameter.Name}' cannot be inferred from the field's type";
+                var onlyForwarded = IsReachableOnlyThroughForwardedParameters(unboundParameter, parameterType, middleParameters);
+                lastReason ??= onlyForwarded
+                    ? $"its type parameter '{unboundParameter.Name}' cannot be inferred from the field's type or the forwarded arguments"
+                    : $"its type parameter '{unboundParameter.Name}' cannot be inferred from the field's type";
+                lastFailureKind = onlyForwarded ? GuardResolutionFailureKind.ForwardedArgument : GuardResolutionFailureKind.General;
                 continue;
             }
 
-            var constraintViolation = FindConstraintViolation(genericMethod.TypeParameters, substitution, compilation);
+            var constraintViolation = FindConstraintViolation(genericMethod.TypeParameters, substitution, compilation, out var violatingTypeParameter);
             if (constraintViolation is not null)
             {
+                var onlyForwarded = violatingTypeParameter is not null &&
+                    IsReachableOnlyThroughForwardedParameters(violatingTypeParameter, parameterType, middleParameters);
                 lastReason ??= constraintViolation;
+                lastFailureKind = onlyForwarded ? GuardResolutionFailureKind.ForwardedArgument : GuardResolutionFailureKind.General;
                 continue;
             }
 
             reason = null;
+            failureKind = GuardResolutionFailureKind.None;
             return true;
         }
 
         reason = lastReason ?? FieldTypeIncompatibleReason;
+        failureKind = lastReason is null ? GuardResolutionFailureKind.General : lastFailureKind;
         return false;
+    }
+
+    /// <summary>
+    /// True when <paramref name="typeParameter"/> appears anywhere within
+    /// <paramref name="type"/> -- as the type itself, as one of a named type's type
+    /// arguments (recursively), or as an array's element type. Used to decide whether a
+    /// generic guard method's unresolved or constraint-violating type parameter is
+    /// reachable from the value parameter's own type (a general-shape/value concern,
+    /// NDLRGEN051) or only from a forwarded alias argument's parameter (NDLRGEN056).
+    /// </summary>
+    private static bool ContainsTypeParameter(ITypeSymbol type, ITypeParameterSymbol typeParameter)
+    {
+        if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
+            return true;
+
+        if (type is INamedTypeSymbol namedType)
+            return namedType.TypeArguments.Any(typeArgument => ContainsTypeParameter(typeArgument, typeParameter));
+
+        if (type is IArrayTypeSymbol arrayType)
+            return ContainsTypeParameter(arrayType.ElementType, typeParameter);
+
+        return false;
+    }
+
+    /// <summary>
+    /// True when <paramref name="typeParameter"/> is reachable from at least one of
+    /// <paramref name="middleParameters"/>' types but not from
+    /// <paramref name="valueParameterType"/> -- meaning a resolution failure tied to
+    /// this type parameter is specifically a forwarded-alias-argument concern
+    /// (NDLRGEN056) rather than a general value/shape concern (NDLRGEN051). A type
+    /// parameter reachable from neither (e.g. an extra type parameter on a guard method
+    /// that forwards no arguments at all) is never classified as forwarded, since there
+    /// is then no forwarded argument it could plausibly be blamed on.
+    /// </summary>
+    private static bool IsReachableOnlyThroughForwardedParameters(
+        ITypeParameterSymbol typeParameter,
+        ITypeSymbol valueParameterType,
+        List<IParameterSymbol> middleParameters)
+    {
+        if (ContainsTypeParameter(valueParameterType, typeParameter))
+            return false;
+
+        return middleParameters.Any(parameter => ContainsTypeParameter(parameter.Type, typeParameter));
     }
 
     /// <summary>
@@ -773,12 +1058,16 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
     /// constraint type (an interface or base-class constraint) is checked via
     /// <c>Compilation.ClassifyConversion</c>, the same real conversion-classification
     /// API the compiler itself uses to decide whether an implicit conversion exists --
-    /// rather than a separate hand-rolled compatibility rule.
+    /// rather than a separate hand-rolled compatibility rule. <paramref name="violatingTypeParameter"/>
+    /// is set to the offending type parameter's own symbol, so a caller can determine
+    /// whether the violation is reachable from the value parameter's type or only from a
+    /// forwarded argument's parameter.
     /// </summary>
     private static string? FindConstraintViolation(
         ImmutableArray<ITypeParameterSymbol> typeParameters,
         Dictionary<ITypeSymbol, ITypeSymbol> substitution,
-        Compilation compilation)
+        Compilation compilation,
+        out ITypeParameterSymbol? violatingTypeParameter)
     {
         foreach (var typeParameter in typeParameters)
         {
@@ -786,19 +1075,29 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
                 continue;
 
             if (typeParameter.HasReferenceTypeConstraint && !argumentType.IsReferenceType)
+            {
+                violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires a reference type, but '{argumentType.ToDisplayString()}' is a value type";
+            }
 
             if (typeParameter.HasValueTypeConstraint && !argumentType.IsValueType)
+            {
+                violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires a non-nullable value type, but '{argumentType.ToDisplayString()}' is not";
+            }
 
             if (typeParameter.HasUnmanagedTypeConstraint && !argumentType.IsUnmanagedType)
+            {
+                violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires an unmanaged type, but '{argumentType.ToDisplayString()}' is not unmanaged";
+            }
 
             if (typeParameter.HasConstructorConstraint &&
                 argumentType is INamedTypeSymbol namedArgumentType &&
                 namedArgumentType.TypeKind != TypeKind.Struct &&
                 !GeneratedConstructorEligibility.HasAccessibleParameterlessConstructor(namedArgumentType))
             {
+                violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires a public parameterless constructor, which '{argumentType.ToDisplayString()}' does not have";
             }
 
@@ -811,10 +1110,12 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
                 if (conversion.Exists && (conversion.IsIdentity || conversion.IsImplicit))
                     continue;
 
+                violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires '{constraintType.ToDisplayString()}', which '{argumentType.ToDisplayString()}' does not satisfy";
             }
         }
 
+        violatingTypeParameter = null;
         return null;
     }
 
@@ -927,7 +1228,7 @@ public sealed class GeneratedConstructorAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var resolution = TryResolveGuardMethod(context.Compilation, typeSymbol, guardType, methodName, fieldType: null, out _, out var reason);
+            var resolution = TryResolveGuardMethod(context.Compilation, typeSymbol, guardType, methodName, fieldType: null, ImmutableArray<ITypeSymbol>.Empty, out _, out var reason, out _);
             if (resolution == GuardMethodResolution.NotFound)
             {
                 context.ReportDiagnostic(Diagnostic.Create(

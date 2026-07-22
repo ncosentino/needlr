@@ -143,6 +143,8 @@ nav:
       - NDLRGEN052: analyzers/NDLRGEN052.md
       - NDLRGEN053: analyzers/NDLRGEN053.md
       - NDLRGEN054: analyzers/NDLRGEN054.md
+      - NDLRGEN055: analyzers/NDLRGEN055.md
+      - NDLRGEN056: analyzers/NDLRGEN056.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md

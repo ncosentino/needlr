@@ -46,4 +46,5 @@ public sealed class CollectionNotEmptyAttribute : Attribute
 ## See Also
 
 - [NDLRGEN054](NDLRGEN054.md) - [ConstructorGuardDefinition] guard contract is unresolved
+- [NDLRGEN055](NDLRGEN055.md) - Constructor guard alias usage argument is unsupported
 - [Generated Constructors](../generated-constructors.md)
