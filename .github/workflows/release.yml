@@ -235,30 +235,6 @@ jobs:
           }
         }
 
-    - name: Authenticate to NuGet.org
-      id: nuget-login
-      uses: NuGet/login@v1
-      with:
-        user: ncosentino
-
-    - name: Push to NuGet.org
-      env:
-        NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-      run: |
-        dotnet nuget push "artifacts/packages/*.nupkg" \
-          --api-key "$NUGET_API_KEY" \
-          --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
-
-    - name: Push to GitHub Packages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        dotnet nuget push "artifacts/packages/*.nupkg" \
-          --api-key "$GITHUB_TOKEN" \
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-          --skip-duplicate
-
     - name: Extract Release Notes from CHANGELOG
       id: release-notes
       shell: bash
@@ -290,10 +266,15 @@ jobs:
           echo "CHANGELOG_EOF"
         } >> "$GITHUB_OUTPUT"
 
+    # Build documentation before publishing packages so Python setup and
+    # documentation-build failures happen before irreversible publication.
     - name: Setup Python for MkDocs
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install "mkdocs>=1.5,<2.0" mkdocs-material
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install MkDocs
+      run: python -m pip install -r docs/requirements.txt
 
     - name: Restore dotnet tools
       run: dotnet tool restore
@@ -324,6 +305,35 @@ jobs:
       run: |
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
+    - name: Authenticate to NuGet.org
+      id: nuget-login
+      uses: NuGet/login@v1
+      with:
+        user: ncosentino
+
+    - name: Push to NuGet.org
+      env:
+        NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push "artifacts/packages/*.nupkg" \
+          --api-key "$NUGET_API_KEY" \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+    - name: Push to GitHub Packages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        dotnet nuget push "artifacts/packages/*.nupkg" \
+          --api-key "$GITHUB_TOKEN" \
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --skip-duplicate
 
     - name: Restrict deploy to release.yml-owned paths
       run: |
@@ -365,11 +375,6 @@ jobs:
     # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
       run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
 
     - name: Deploy Documentation to Cloudflare Pages
       uses: cloudflare/wrangler-action@v4

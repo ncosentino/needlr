@@ -163,7 +163,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install MkDocs
-        run: pip install "mkdocs>=1.5,<2.0" mkdocs-material
+        run: python -m pip install -r docs/requirements.txt
 
       - name: Generate Articles Page
         run: python scripts/generate-articles.py docs/articles.md

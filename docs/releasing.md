@@ -38,7 +38,7 @@ the release script:
 | PowerShell 7+ (`pwsh`) | Runs `release.ps1` | [aka.ms/pwsh](https://aka.ms/pwsh) |
 | `nbgv` | Bumps `version.json` and tags | `dotnet tool install -g nbgv` |
 | `gh` CLI | CI gate queries GitHub check runs | [cli.github.com](https://cli.github.com) |
-| Python + mkdocs (optional) | Local docs validation | `pip install -r docs/requirements.txt` |
+| Python + mkdocs (optional) | Local docs validation | `python -m pip install -r docs/requirements.txt` |
 
 You also need:
 
@@ -482,17 +482,25 @@ The real run, in order:
 3. Restore, build `src/NexusLabs.Needlr.slnx` with `-p:PublicRelease=true`.
 4. Run full test suite with coverage collection.
 5. Pack every `NexusLabs.Needlr*.csproj` except tests, benchmarks,
-   integration tests.
-6. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
+   integration tests, then validate every package version.
+6. Extract the release notes, provision an action-managed Python environment,
+   install `docs/requirements.txt`, build the versioned documentation site, and
+   provision Node.js for the Cloudflare deployment.
+7. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
    through `NuGet/login@v1`.
-7. `dotnet nuget push` every `.nupkg` to NuGet.org with
+8. `dotnet nuget push` every `.nupkg` to NuGet.org with
    `--skip-duplicate`.
-8. `dotnet nuget push` every `.nupkg` to GitHub Packages using
+9. `dotnet nuget push` every `.nupkg` to GitHub Packages using
    `${{ secrets.GITHUB_TOKEN }}` with `--skip-duplicate`.
-9. Extract the matching `## [<version>]` section from `CHANGELOG.md`.
-10. Create a GitHub Release via `softprops/action-gh-release@v2`
+10. Deploy the merged documentation site to GitHub Pages and Cloudflare Pages.
+11. Create a GitHub Release via `softprops/action-gh-release@v2`
    flagged as pre-release because the tag contains `-`, attaching
    every `.nupkg` and `.snupkg` file.
+
+The publish job defaults to the PitCrew self-hosted Linux runner and supports
+`CI_RUNNER=ubuntu-latest` as a manual fallback. `actions/setup-python` provides
+the isolated Python environment on either runner; do not install documentation
+dependencies into the runner's system Python or bypass PEP 668 protections.
 
 Watch the workflow run at
 [Actions](https://github.com/ncosentino/needlr/actions/workflows/release.yml)
